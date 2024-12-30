@@ -8,6 +8,7 @@
 
 #include "framework.h"
 #include "EmberFall.h"
+#include "EditorInterface/Impl/EditorDevice.h"
 
 #define MAX_LOADSTRING 100
 

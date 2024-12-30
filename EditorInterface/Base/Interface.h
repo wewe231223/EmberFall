@@ -1,12 +1,31 @@
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ï»¿////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Interface.h
-// 2024.12.23 ±è½Â¹ü   - Interface ÇÁ·ÎÁ§Æ® ¸ŞÀÎ ÀÎÅÍÆäÀÌ½º ÆÄÀÏÀ» ÀÛ¼ºÇÔ  
+// 2024.12.23 ê¹€ìŠ¹ë²”   - Interface í”„ë¡œì íŠ¸ ë©”ì¸ ì¸í„°í˜ì´ìŠ¤ íŒŒì¼ì„ ì‘ì„±í•¨ 
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once 
+#include "Include/DirectXTK12/SimpleMath.h"
+#include <string>
 
-__interface IEditorDevice {
+// Editor Interface ì¤‘, Transform Editor ê°€ ì‚¬ìš©í•  Transform ì— ëŒ€í•œ ì¸í„°í˜ì´ìŠ¤ ì´ë‹¤. 
+__interface IEditorTransformBase {
 public:
-	
+	virtual DirectX::SimpleMath::Vector3& GetPosition()						PURE;
+	virtual DirectX::SimpleMath::Quaternion& GetRotation()					PURE;
+	virtual DirectX::SimpleMath::Vector3& GetScale()						PURE;
+
+	virtual const DirectX::SimpleMath::Vector3& GetPosition() const			PURE;
+	virtual const DirectX::SimpleMath::Quaternion& GetRotation() const		PURE;
+	virtual const DirectX::SimpleMath::Vector3& GetScale() const			PURE;
+};
+
+enum class EMessageType {
+	Info,
+	Warning,
+	Error,
+};
+
+__interface IConsole {
+	virtual void PushString(const std::string& string, EMessageType type);
 };
