@@ -10,8 +10,9 @@
 #include "EmberFall.h"
 #include "EditorInterface/Impl/EditorDevice.h"
 
-#define MAX_LOADSTRING 100
+#pragma comment(lib,"out/debug/EditorInterface.lib")
 
+#define MAX_LOADSTRING 100
 // 전역 변수:
 HINSTANCE hInst;                                // 현재 인스턴스입니다.
 HWND hWnd;
@@ -43,6 +44,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         return FALSE;
     }
+
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
 

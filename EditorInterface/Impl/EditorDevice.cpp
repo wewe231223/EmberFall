@@ -28,21 +28,28 @@ LRESULT CALLBACK EditorDeviceProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 
 EditorDevice::EditorDevice()
 {
-    if (!InitWindow()) {
-        ::abort();
-    }
+    mEditorDeviceThread = std::thread{ [this]() {EditorWindowWorker(); } };
 }
 
 EditorDevice::~EditorDevice()
 {
+    if (mEditorDeviceThread.joinable()) {
+        if (AUTOMATIC_CLOSED) {
+            PostThreadMessage(mEditorThreadID, WM_QUIT, 0, 0);
+        }
+        mEditorDeviceThread.join();
+    }
 }
 
-void EditorDevice::Join()
+void EditorDevice::Test()
 {
+   
 }
 
-bool EditorDevice::InitWindow()
+void EditorDevice::EditorWindowWorker()
 {
+    mEditorThreadID = ::GetCurrentThreadId();
+
     // 창 클래스 설정
     WNDCLASSEX wc = {};
     wc.cbSize = sizeof(WNDCLASSEX);
@@ -54,15 +61,38 @@ bool EditorDevice::InitWindow()
     wc.lpszClassName = L"EditorInterface";
 
     // 창 클래스 등록
-    if (!RegisterClassEx(&wc))
+    if (not RegisterClassEx(&wc))
     {
-        MessageBox(nullptr, L"Failed to register window class!", L"Error", MB_ICONERROR);
-        return false;
+        MessageBox(nullptr, L"Editor Window 의 초기화에 실패했습니다.", L"Error", MB_ICONERROR);
+        return;
     }
 
+	mEditorDeviceWindow = CreateWindowW(wc.lpszClassName, L"EditorInterface", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr, mApplicationHandle, nullptr);
+   
+	if (nullptr == mEditorDeviceWindow)
+	{
+        MessageBox(nullptr, L"Editor Window 의 초기화에 실패했습니다.", L"Error", MB_ICONERROR);
+        return;
+	}
+
+	::ShowWindow(mEditorDeviceWindow, SW_SHOWDEFAULT);
+	::UpdateWindow(mEditorDeviceWindow);
 
 
-    return true;
+    MSG msg{};
+
+	while (msg.message != WM_QUIT) {
+		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+        // 게임 루프... 
+        
+	}
+
+    // 이 함수가 종료되면, 메인 창도 꺼지도록 메세지를 보냄 
+	::PostThreadMessage(mMainThreadID, WM_QUIT, 0, 0);
 }
 
 
