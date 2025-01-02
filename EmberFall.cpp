@@ -3,7 +3,9 @@
 // EmberFall.cpp
 // 2024.12.23 김승범   - 프로젝트를 생성하고 이 파일을 작성함. 기본 코드 중 필요없는 부분을 제거함 
 //                      프로젝트가 out 폴더의 debug/release 에 출력하도록 프로젝트 설정을 변경함 
-//
+// 2025.01.03 김승범   - EditorDevice 를 InitInstance 함수에서 메인 윈도우를 만들고 난 후, 초기화 하도록 변경함
+//                      
+// 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"
@@ -45,11 +47,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
 
     MSG msg{};
-
+    
     // 기본 메시지 루프입니다:
     while (msg.message != WM_QUIT) {
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
@@ -57,8 +58,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             DispatchMessage(&msg);
 		}
         // 게임 루프... 
-
     }
+
+    
+
+	::DestroyWindow(hWnd);
+	gDevice.WaitForTerminate();
 
     return (int) msg.wParam;
 }
@@ -86,6 +91,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     break;
     case WM_DESTROY:
+        PostQuitMessage(0);
+        break;
+    case WM_CLOSE:
         PostQuitMessage(0);
         break;
     default:
@@ -136,7 +144,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
    hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+      CW_USEDEFAULT, CW_USEDEFAULT, 1920, 1080, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {
@@ -145,6 +153,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
+
+   gDevice.Initialize(hWnd);
 
    return TRUE;
 }

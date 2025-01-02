@@ -23,15 +23,26 @@ LRESULT CALLBACK EditorDeviceProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
     return 0;
 }
 
-
-
-
 EditorDevice::EditorDevice()
 {
-    mEditorDeviceThread = std::thread{ [this]() {EditorWindowWorker(); } };
 }
 
 EditorDevice::~EditorDevice()
+{
+}
+
+EditorDevice::operator bool() const
+{
+    return mEditorDeviceWindow != nullptr;
+}
+
+void EditorDevice::Initialize(HWND mainWindowHandle)
+{
+    mMainWindow = mainWindowHandle;
+    mEditorDeviceThread = std::thread{ [this]() {EditorWindowWorker(); } };
+}
+
+void EditorDevice::WaitForTerminate()
 {
     if (mEditorDeviceThread.joinable()) {
         if (AUTOMATIC_CLOSED) {
@@ -41,11 +52,7 @@ EditorDevice::~EditorDevice()
     }
 }
 
-void EditorDevice::Test()
-{
-   
-}
-
+// 여기서부터는 Device Thread 에서 작동하는 함수들이다. 
 void EditorDevice::EditorWindowWorker()
 {
     mEditorThreadID = ::GetCurrentThreadId();
@@ -67,7 +74,21 @@ void EditorDevice::EditorWindowWorker()
         return;
     }
 
-	mEditorDeviceWindow = CreateWindowW(wc.lpszClassName, L"EditorInterface", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, nullptr, nullptr, mApplicationHandle, nullptr);
+    // 창 스타일: 테두리 없음, 타이틀 바 없음
+    DWORD style = WS_EX_OVERLAPPEDWINDOW; // WS_POPUP은 테두리와 타이틀 바가 없는 창을 만듭니다.
+    DWORD exStyle = WS_EX_APPWINDOW; // 추가 스타일 설정 (필요에 따라 변경 가능)
+
+	mEditorDeviceWindow = CreateWindowEx(
+        exStyle,                                // 확장 스타일
+        L"EditorInterface",                     // 윈도우 클래스 이름
+        L"EditorInterface",                     // 윈도우 타이틀 (보이지 않음)
+        WS_OVERLAPPEDWINDOW,                    // 윈도우 스타일
+        CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, // 위치 및 크기
+        nullptr,                                // 부모 윈도우
+        nullptr,                                // 메뉴
+        mApplicationHandle,                     // 인스턴스 핸들
+        nullptr                                 // 추가 매개변수
+    );
    
 	if (nullptr == mEditorDeviceWindow)
 	{
@@ -78,7 +99,6 @@ void EditorDevice::EditorWindowWorker()
 	::ShowWindow(mEditorDeviceWindow, SW_SHOWDEFAULT);
 	::UpdateWindow(mEditorDeviceWindow);
 
-
     MSG msg{};
 
 	while (msg.message != WM_QUIT) {
@@ -88,11 +108,37 @@ void EditorDevice::EditorWindowWorker()
 			DispatchMessage(&msg);
 		}
         // 게임 루프... 
-        
+        EditorDevice::Update();
+        EditorDevice::Render();
 	}
 
     // 이 함수가 종료되면, 메인 창도 꺼지도록 메세지를 보냄 
 	::PostThreadMessage(mMainThreadID, WM_QUIT, 0, 0);
+}
+
+// TODO ::  이 함수는 메인 윈도우 핸들에 대한 Data Race 가능성을 고려하지 않고, 내가 하고자 하는 기능만 구현하였음. 
+//          이 코드 조각에서 Data Race 를 제거하면서도, lock 을 최대한 줄일 수 있는 방법은?  
+void EditorDevice::Update()
+{
+	static bool flag = true;
+    
+    if (flag) {
+        auto res = ::GetWindowRect(mMainWindow, std::addressof(mMainWindowRect));
+
+        if (res) {
+            ::SetWindowPos(mEditorDeviceWindow, NULL, mMainWindowRect.right, mMainWindowRect.top, 0, 0, SWP_NOSIZE);
+            ::SetWindowPos(mMainWindow, mEditorDeviceWindow, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE );
+        }
+        else {
+			::SetForegroundWindow(mEditorDeviceWindow);
+            flag = false;
+        }
+    }
+
+}
+
+void EditorDevice::Render()
+{
 }
 
 
