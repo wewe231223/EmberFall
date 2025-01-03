@@ -24,6 +24,10 @@ LRESULT CALLBACK EditorDeviceProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
     return 0;
 }
 
+struct EditorDevice::DirectXImpl {
+    ComPtr<ID3D12Device> device{ nullptr };
+};
+
 EditorDevice::EditorDevice()
 {
 }
@@ -101,6 +105,13 @@ void EditorDevice::EditorWindowWorker()
 	::ShowWindow(mEditorDeviceWindow, SW_SHOWDEFAULT);
 	::UpdateWindow(mEditorDeviceWindow);
 
+
+
+
+
+
+
+
     MSG msg{};
 
 	while (msg.message != WM_QUIT) {
@@ -118,16 +129,11 @@ void EditorDevice::EditorWindowWorker()
 	::PostThreadMessage(mMainThreadID, WM_QUIT, 0, 0);
 }
 
-// TODO ::  이 함수는 메인 윈도우 핸들에 대한 Data Race 가능성을 고려하지 않고, 내가 하고자 하는 기능만 구현하였음. 
-//          이 코드 조각에서 Data Race 를 제거하면서도, lock 을 최대한 줄일 수 있는 방법은?  
-//          ( 여기서 내가 추측하는 Data Race 는 현재 GetWindowRect 의 리턴을 통해 현재 창이 유효한지 간접적으로 검사 하고 있다. 
-//          하지만 GetWindowRect 이후에 창이 파괴되는 경우, MainWindowHandle 에 대한 일관성이 없어진다. - 두 쓰레드가 ( 메인 쓰레드, Editor 쓰레드 ) 동시에 메인 윈도우 핸들에 접근해서 발생하는 일 
 void EditorDevice::Update()
 {
 	static bool flag = true;
-    
-	std::unique_lock lock{ mEditorDeviceMutex };
     if (flag) {
+	    std::unique_lock lock{ mEditorDeviceMutex };
         auto res = ::GetWindowRect(mMainWindow, std::addressof(mMainWindowRect));
         if (res) {
             ::SetWindowPos(mEditorDeviceWindow, NULL, mMainWindowRect.right, mMainWindowRect.top, 0, 0, SWP_NOSIZE);
@@ -138,7 +144,7 @@ void EditorDevice::Update()
             flag = false;
         }
     }
-    lock.unlock();
+
 
 }
 

@@ -30,6 +30,9 @@
     <ClInclude Include="pch.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Impl\EditorRenderer.h">
+      <Filter>Impl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Impl\EditorDevice.cpp">
@@ -40,6 +43,9 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Impl\EditorRenderer.cpp">
+      <Filter>Impl</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-﻿#pragma once 
+#pragma once 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // EditorDevice.h
@@ -55,6 +55,9 @@ private:
 	std::thread			mEditorDeviceThread{};
 
 	std::mutex 			mEditorDeviceMutex{};
+
+	struct DirectXImpl;
+	std::unique_ptr<DirectXImpl> mDirectXImpl{ nullptr };
 };
 
 extern EditorDevice gDevice;
