@@ -19,8 +19,8 @@ private:
 	ComPtr<IDXGIFactory> mFactory{ nullptr };
 
 #ifdef _DEBUG
-	ComPtr<ID3D12Debug> mDebugController{ nullptr };
-	ComPtr<IDXGIDebug> mDXGIDebug{ nullptr };
+	ComPtr<ID3D12Debug6> mDebugController{ nullptr };
+	ComPtr<IDXGIDebug1> mDXGIDebug{ nullptr };
 #endif 
 
 	ComPtr<ID3D12Device> mDevice{ nullptr };
