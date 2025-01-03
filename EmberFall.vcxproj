@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Config\Config.h" />
+    <ClInclude Include="Config\IdentityConfig.h" />
     <ClInclude Include="EmberFall.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Resource.h" />
