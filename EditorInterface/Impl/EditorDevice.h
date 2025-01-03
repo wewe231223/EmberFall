@@ -11,10 +11,12 @@
 //						  구현하였음. 
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+#ifndef win32_lean_and_mean
 #define	win32_lean_and_mean
+#endif
 #include <Windows.h>
 #include <thread>
+#include <mutex>
 #include "../Base/Interface.h"
 
 class EditorDevice {
@@ -51,6 +53,8 @@ private:
 	RECT				mMainWindowRect{};
 
 	std::thread			mEditorDeviceThread{};
+
+	std::mutex 			mEditorDeviceMutex{};
 };
 
 extern EditorDevice gDevice;

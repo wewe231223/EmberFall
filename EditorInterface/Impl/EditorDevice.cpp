@@ -1,5 +1,6 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "EditorDevice.h"
+#include "../Config/Config.h"
 
 LRESULT CALLBACK EditorDeviceProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -83,7 +84,8 @@ void EditorDevice::EditorWindowWorker()
         L"EditorInterface",                     // 윈도우 클래스 이름
         L"EditorInterface",                     // 윈도우 타이틀 (보이지 않음)
         WS_OVERLAPPEDWINDOW,                    // 윈도우 스타일
-        CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, // 위치 및 크기
+        CW_USEDEFAULT, CW_USEDEFAULT,           // 위치 
+        Config::EDITOR_WINDOW_WIDTH<int>, Config::EDITOR_WINDOW_HEIGHT<int>, // 크기
         nullptr,                                // 부모 윈도우
         nullptr,                                // 메뉴
         mApplicationHandle,                     // 인스턴스 핸들
@@ -124,9 +126,9 @@ void EditorDevice::Update()
 {
 	static bool flag = true;
     
+	std::unique_lock lock{ mEditorDeviceMutex };
     if (flag) {
         auto res = ::GetWindowRect(mMainWindow, std::addressof(mMainWindowRect));
-
         if (res) {
             ::SetWindowPos(mEditorDeviceWindow, NULL, mMainWindowRect.right, mMainWindowRect.top, 0, 0, SWP_NOSIZE);
             ::SetWindowPos(mMainWindow, mEditorDeviceWindow, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE );
@@ -136,6 +138,7 @@ void EditorDevice::Update()
             flag = false;
         }
     }
+    lock.unlock();
 
 }
 

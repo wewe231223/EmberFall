@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // EmberFall.cpp
 // 2024.12.23 김승범   - 프로젝트를 생성하고 이 파일을 작성함. 기본 코드 중 필요없는 부분을 제거함 
@@ -13,6 +13,7 @@
 #include "EditorInterface/Impl/EditorDevice.h"
 
 #pragma comment(lib,"out/debug/EditorInterface.lib")
+#include "Config/Config.h"
 
 #define MAX_LOADSTRING 100
 // 전역 변수:
@@ -59,8 +60,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		}
         // 게임 루프... 
     }
-
-    
 
 	::DestroyWindow(hWnd);
 	gDevice.WaitForTerminate();
@@ -144,7 +143,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
    hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, CW_USEDEFAULT, 1920, 1080, nullptr, nullptr, hInstance, nullptr);
+      CW_USEDEFAULT, CW_USEDEFAULT, Config::WINDOW_WIDTH<int>, Config::WINDOW_HEIGHT<int>, nullptr, nullptr, hInstance, nullptr);
 
    if (!hWnd)
    {
