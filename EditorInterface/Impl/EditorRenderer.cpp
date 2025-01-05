@@ -4,6 +4,7 @@
 #include "../Utility/Exceptions.h"
 #include "../Utility/Enumerate.h"
 #include "../Config/Config.h"
+#include "../External/Include/DirectXTK12/d3dx12.h"
 #include "../External/Include/ImGui/imgui.h"
 #include "../External/Include/ImGui/imgui_impl_dx12.h"
 #include "../External/Include/ImGui/imgui_impl_win32.h"
@@ -17,7 +18,8 @@ EditorRenderer::EditorRenderer() {
 }
 
 EditorRenderer::~EditorRenderer() {
-	MessageBox(nullptr, L"EditorRenderer Destructor", L"EditorRenderer", MB_OK);
+	EditorRenderer::FlushCommandQueue();
+	EditorRenderer::TerminateIMGUI();
 }
 
 void EditorRenderer::Initialize(HWND hWnd) {
@@ -34,11 +36,58 @@ void EditorRenderer::Initialize(HWND hWnd) {
 }
 
 void EditorRenderer::Render() {
-	mAllocator->Reset();
-	mCommandList->Reset(mAllocator.Get(), nullptr);
+	EditorRenderer::ResetCommandList();
+	
+	auto currentBackBuffer = mRenderTargets[mRTIndex].Get();
+	CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET) };
+
+	mCommandList->ResourceBarrier(1, &barrier);
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mRTIndex), mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV) };
+	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::CornflowerBlue, 0, nullptr);
+
+	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+
+	D3D12_VIEWPORT viewport{};
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = Config::EDITOR_WINDOW_WIDTH<float>;
+	viewport.Height = Config::EDITOR_WINDOW_HEIGHT<float>;
+	viewport.MinDepth = 0.f;
+	viewport.MaxDepth = 1.f;
+
+	D3D12_RECT scissorRect{};
+	scissorRect.left = 0;
+	scissorRect.top = 0;
+	scissorRect.right = Config::EDITOR_WINDOW_WIDTH<LONG>;
+	scissorRect.bottom = Config::EDITOR_WINDOW_HEIGHT<LONG>;
+
+	mCommandList->RSSetViewports(1, &viewport);
+	mCommandList->RSSetScissorRects(1, &scissorRect);
+
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	// IMGUI 그리기... 
 
 
+	ImGui::Render();
+	mCommandList->SetDescriptorHeaps(1, mIMGUIHeap.GetAddressOf());
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), mCommandList.Get());
 
+	barrier = CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	mCommandList->ResourceBarrier(1, &barrier);
+
+	CheckHR(mCommandList->Close());
+	ID3D12CommandList* commandLists[] = { mCommandList.Get() };
+	mCommandQueue->ExecuteCommandLists(1, commandLists);
+
+	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
+
+	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
+
+	EditorRenderer::FlushCommandQueue();
 }
 
 void EditorRenderer::InitFactory() {
@@ -180,4 +229,34 @@ void EditorRenderer::InitIMGUI() {
 	}
 
 
+}
+
+void EditorRenderer::ResetCommandList()
+{
+	CheckHR(mAllocator->Reset());
+	CheckHR(mCommandList->Reset(mAllocator.Get(), nullptr));
+}
+
+void EditorRenderer::FlushCommandQueue()
+{
+	++mFenceValue;
+	CheckHR(mCommandQueue->Signal(mFence.Get(), mFenceValue));
+
+	if (mFence->GetCompletedValue() < mFenceValue) {
+		HANDLE eventHandle = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
+		CrashExp(eventHandle != nullptr, "Event can not be nullptr");
+
+		mFence->SetEventOnCompletion(mFenceValue, eventHandle);
+
+		::WaitForSingleObject(eventHandle, INFINITE);
+		::CloseHandle(eventHandle);
+	}
+}
+
+void EditorRenderer::TerminateIMGUI()
+{
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+	if (mIMGUIHeap) mIMGUIHeap.Reset();
 }

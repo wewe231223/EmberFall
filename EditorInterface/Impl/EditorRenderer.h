@@ -29,6 +29,8 @@ private:
 	void ResetCommandList();
 	void FlushCommandQueue();
 
+	void TerminateIMGUI();
+
 private:
 	HWND mEditorWindow{ nullptr };
 	ComPtr<IDXGIFactory6> mFactory{ nullptr };
@@ -51,6 +53,7 @@ private:
 
 	ComPtr<ID3D12DescriptorHeap> mRTVHeap{ nullptr };
 	std::array<ComPtr<ID3D12Resource>, 3> mRenderTargets{ nullptr };
+	UINT mRTIndex{ 0 };
 
 	ComPtr<ID3D12DescriptorHeap> mIMGUIHeap{ nullptr };
 };

@@ -28,7 +28,7 @@ EditorDevice::EditorDevice() {
 }
 
 EditorDevice::~EditorDevice() {
-    DebugBreak();
+
 }
 
 EditorDevice::operator bool() const {
@@ -141,6 +141,7 @@ void EditorDevice::Update() {
 }
 
 void EditorDevice::Render() {
+	mDirectXImpl->mRenderer.Render();
 }
 
 

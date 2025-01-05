@@ -27,7 +27,7 @@
 
 #if defined(_DEBUG) || defined(DEBUG)
 #define Crash(cause) assert(false && cause)
-#define CrashExp(expression, cause) if (false == expression) assert(false && cause)
+#define CrashExp(expression, cause) if (false == (expression)) assert(false && cause)
 #else
 #define Crash(cause) CrashRelease(cause)
 #define CrashExp(expression, cause) CrashExpRelease(expression, cause)
