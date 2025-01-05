@@ -12,5 +12,11 @@
     <ClInclude Include="Enumerate.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Crash.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="InputBuffer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -15,6 +15,7 @@ public:
 public:
 	void Initialize(HWND hWnd);
 	void Render();
+
 private:
 	void InitFactory();
 	void InitDevice();

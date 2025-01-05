@@ -24,12 +24,11 @@ struct EditorDevice::DirectXImpl {
 };
 
 
-
-
 EditorDevice::EditorDevice() {
 }
 
 EditorDevice::~EditorDevice() {
+    DebugBreak();
 }
 
 EditorDevice::operator bool() const {
@@ -48,6 +47,8 @@ void EditorDevice::WaitForTerminate() {
         }
         mEditorDeviceThread.join();
     }
+
+    mDirectXImpl.release();
 }
 
 // 여기서부터는 Device Thread 에서 작동하는 함수들이다. 
@@ -117,6 +118,8 @@ void EditorDevice::EditorWindowWorker() {
 
     // 이 함수가 종료되면, 메인 창도 꺼지도록 메세지를 보냄 
 	::PostThreadMessage(mMainThreadID, WM_QUIT, 0, 0);
+
+    mDirectXImpl.reset();
 }
 
 void EditorDevice::Update() {

@@ -129,8 +129,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Crash.h" />
     <ClInclude Include="Enumerate.h" />
     <ClInclude Include="Exceptions.h" />
+    <ClInclude Include="InputBuffer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

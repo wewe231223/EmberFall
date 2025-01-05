@@ -47,7 +47,7 @@ struct Config {
 	constexpr static bool IMGUI_DARK_THEME{ true };
 	constexpr static bool IMGUI_KOREAN{ true };
 
-	constexpr static const char* IMGUI_KOREAN_FONT_PATH{ "Resources/font/NotoSansKR-Regular-Hestia.otf" };
+	constexpr static const char* IMGUI_KOREAN_FONT_PATH{ "Resources/Font/NotoSansKR-Regular-Hestia.otf" };
 };
 
 

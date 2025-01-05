@@ -8,13 +8,16 @@
 #include "../External/Include/ImGui/imgui_impl_dx12.h"
 #include "../External/Include/ImGui/imgui_impl_win32.h"
 #include "../External/Include/ImGui/imgui_internal.h"
-
+#include "../Utility/Crash.h"
 #include <ranges>
+#include <vector>
 
 EditorRenderer::EditorRenderer() {
+
 }
 
 EditorRenderer::~EditorRenderer() {
+	MessageBox(nullptr, L"EditorRenderer Destructor", L"EditorRenderer", MB_OK);
 }
 
 void EditorRenderer::Initialize(HWND hWnd) {
