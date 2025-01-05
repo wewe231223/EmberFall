@@ -4,7 +4,6 @@
 // Config.h
 // 2025.01.03 김승범   - 윈도우 창 크기 와 같은 프로그램의 상수를 저장할 장소를 생성함.  
 //                      
-// 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <d3dcommon.h>
@@ -32,7 +31,6 @@ struct Config {
 	template<typename T = int>
 	constexpr static T WINDOW_HEIGHT{ static_cast<T>(720) };
 #endif
-
 	template<typename T = int> 
 	constexpr static T EDITOR_WINDOW_WIDTH{ static_cast<T>(Config::WINDOW_WIDTH<T> / 3) };
 
@@ -45,6 +43,11 @@ struct Config {
 	constexpr static bool ALLOW_TEARING{ false };
 	constexpr static D3D_FEATURE_LEVEL DIRECTX_FEATURE_LEVEL{ D3D_FEATURE_LEVEL_11_0 };
 	constexpr static DXGI_FORMAT RENDER_TARGET_FORMAT{ DXGI_FORMAT_R8G8B8A8_UNORM };
+
+	constexpr static bool IMGUI_DARK_THEME{ true };
+	constexpr static bool IMGUI_KOREAN{ true };
+
+	constexpr static const char* IMGUI_KOREAN_FONT_PATH{ "Resources/font/NotoSansKR-Regular-Hestia.otf" };
 };
 
 

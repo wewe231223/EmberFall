@@ -26,27 +26,22 @@ struct EditorDevice::DirectXImpl {
 
 
 
-EditorDevice::EditorDevice()
-{
+EditorDevice::EditorDevice() {
 }
 
-EditorDevice::~EditorDevice()
-{
+EditorDevice::~EditorDevice() {
 }
 
-EditorDevice::operator bool() const
-{
+EditorDevice::operator bool() const {
     return mEditorDeviceWindow != nullptr;
 }
 
-void EditorDevice::Initialize(HWND mainWindowHandle)
-{
+void EditorDevice::Initialize(HWND mainWindowHandle) {
     mMainWindow = mainWindowHandle;
     mEditorDeviceThread = std::thread{ [this]() {EditorWindowWorker(); } };
 }
 
-void EditorDevice::WaitForTerminate()
-{
+void EditorDevice::WaitForTerminate() {
     if (mEditorDeviceThread.joinable()) {
         if (AUTOMATIC_CLOSED) {
             PostThreadMessage(mEditorThreadID, WM_QUIT, 0, 0);
@@ -56,8 +51,7 @@ void EditorDevice::WaitForTerminate()
 }
 
 // 여기서부터는 Device Thread 에서 작동하는 함수들이다. 
-void EditorDevice::EditorWindowWorker()
-{
+void EditorDevice::EditorWindowWorker() {
     mEditorThreadID = ::GetCurrentThreadId();
 
     // 창 클래스 설정
@@ -125,8 +119,7 @@ void EditorDevice::EditorWindowWorker()
 	::PostThreadMessage(mMainThreadID, WM_QUIT, 0, 0);
 }
 
-void EditorDevice::Update()
-{
+void EditorDevice::Update() {
 	static bool flag = true;
     if (flag) {
 	    std::unique_lock lock{ mEditorDeviceMutex };
@@ -144,8 +137,7 @@ void EditorDevice::Update()
 
 }
 
-void EditorDevice::Render()
-{
+void EditorDevice::Render() {
 }
 
 
