@@ -7,6 +7,8 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <d3dcommon.h>
+#include <dxgiformat.h>
 #include "IdentityConfig.h"
 
 #ifdef 김승범컴퓨터 
@@ -15,34 +17,34 @@
 #define HD
 #endif 
 
-#ifdef FHD
+
 struct Config {
+#ifdef FHD
 	template<typename T = int> 
 	constexpr static T WINDOW_WIDTH{ static_cast<T>(1920) };
 
 	template<typename T = int> 
 	constexpr static T WINDOW_HEIGHT{ static_cast<T>(1080) };
+#elif defined(HD)
+	template<typename T = int>
+	constexpr static T WINDOW_WIDTH{ static_cast<T>(1280) };
+
+	template<typename T = int>
+	constexpr static T WINDOW_HEIGHT{ static_cast<T>(720) };
+#endif
 
 	template<typename T = int> 
 	constexpr static T EDITOR_WINDOW_WIDTH{ static_cast<T>(Config::WINDOW_WIDTH<T> / 3) };
 
 	template<typename T = int>
 	constexpr static T EDITOR_WINDOW_HEIGHT{ Config::WINDOW_HEIGHT<T> };
+
+	template<typename T = int> 
+	constexpr static T BACKBUFFER_COUNT{ 3 };
+
+	constexpr static bool ALLOW_TEARING{ false };
+	constexpr static D3D_FEATURE_LEVEL DIRECTX_FEATURE_LEVEL{ D3D_FEATURE_LEVEL_11_0 };
+	constexpr static DXGI_FORMAT RENDER_TARGET_FORMAT{ DXGI_FORMAT_R8G8B8A8_UNORM };
 };
-#endif 
 
-#ifdef HD
-struct Config {
-	template<typename T = int>
-	constexpr static T WINDOW_WIDTH{ static_cast<T>(1280) };
 
-	template<typename T = int>
-	constexpr static T WINDOW_HEIGHT{ static_cast<T>(720) };
-
-	template<typename T = int>
-	constexpr static T EDITOR_WINDOW_WIDTH{ static_cast<T>(Config::WINDOW_WIDTH<T> / 3) };
-
-	template<typename T = int>
-	constexpr static T EDITOR_WINDOW_HEIGHT{ Config::WINDOW_HEIGHT<T> };
-};
-#endif 

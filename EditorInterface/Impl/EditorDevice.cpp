@@ -1,19 +1,13 @@
 #include "pch.h"
 #include "EditorDevice.h"
 #include "../Config/Config.h"
+#include "EditorRenderer.h"
 
+// Procedure 
 LRESULT CALLBACK EditorDeviceProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
-    case WM_PAINT:
-    {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hWnd, &ps);
-        // TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
-        EndPaint(hWnd, &ps);
-    }
-    break;
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
@@ -24,9 +18,13 @@ LRESULT CALLBACK EditorDeviceProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
     return 0;
 }
 
+// DirectXImpl
 struct EditorDevice::DirectXImpl {
-    ComPtr<ID3D12Device> device{ nullptr };
+    EditorRenderer mRenderer{};
 };
+
+
+
 
 EditorDevice::EditorDevice()
 {
@@ -89,7 +87,7 @@ void EditorDevice::EditorWindowWorker()
         L"EditorInterface",                     // 윈도우 타이틀 (보이지 않음)
         WS_OVERLAPPEDWINDOW,                    // 윈도우 스타일
         CW_USEDEFAULT, CW_USEDEFAULT,           // 위치 
-        Config::EDITOR_WINDOW_WIDTH<int>, Config::EDITOR_WINDOW_HEIGHT<int>, // 크기
+        Config::EDITOR_WINDOW_WIDTH<>, Config::EDITOR_WINDOW_HEIGHT<>, // 크기
         nullptr,                                // 부모 윈도우
         nullptr,                                // 메뉴
         mApplicationHandle,                     // 인스턴스 핸들
@@ -105,10 +103,8 @@ void EditorDevice::EditorWindowWorker()
 	::ShowWindow(mEditorDeviceWindow, SW_SHOWDEFAULT);
 	::UpdateWindow(mEditorDeviceWindow);
 
-
-
-
-
+    mDirectXImpl = std::make_unique<DirectXImpl>();
+    mDirectXImpl->mRenderer.Initialize(mEditorDeviceWindow);
 
 
 
