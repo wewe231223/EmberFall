@@ -146,10 +146,6 @@ public:
         }
     }
 
-    operator bool() const {
-        return !Empty();
-    }
-
 public:
     void PushBack(const T& value) {
         if constexpr (RandomAccessible<Container<T, Allocator>>) {
