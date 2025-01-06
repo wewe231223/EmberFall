@@ -22,6 +22,9 @@
     <Filter Include="IMGUI">
       <UniqueIdentifier>{515694c2-16b3-4728-a599-72a2a443b340}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Console">
+      <UniqueIdentifier>{44c97898-5127-4c3d-b855-ada68f81e0b2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Impl\EditorDevice.h">
@@ -60,6 +63,9 @@
     <ClInclude Include="..\External\Include\ImGui\imstb_truetype.h">
       <Filter>IMGUI</Filter>
     </ClInclude>
+    <ClInclude Include="Console\Console.h">
+      <Filter>Console</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Impl\EditorDevice.cpp">
@@ -94,6 +100,9 @@
     </ClCompile>
     <ClCompile Include="..\External\Include\ImGui\imgui_widgets.cpp">
       <Filter>IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Console\Console.cpp">
+      <Filter>Console</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

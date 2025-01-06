@@ -13,6 +13,8 @@
 #include <ranges>
 #include <vector>
 
+#include "../Utility/InputBuffer.h"
+
 EditorRenderer::EditorRenderer() {
 
 }
@@ -231,19 +233,17 @@ void EditorRenderer::InitIMGUI() {
 
 }
 
-void EditorRenderer::ResetCommandList()
-{
+void EditorRenderer::ResetCommandList() {
 	CheckHR(mAllocator->Reset());
 	CheckHR(mCommandList->Reset(mAllocator.Get(), nullptr));
 }
 
-void EditorRenderer::FlushCommandQueue()
-{
+void EditorRenderer::FlushCommandQueue() {
 	++mFenceValue;
 	CheckHR(mCommandQueue->Signal(mFence.Get(), mFenceValue));
 
 	if (mFence->GetCompletedValue() < mFenceValue) {
-		HANDLE eventHandle = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
+		HANDLE eventHandle{ ::CreateEvent(nullptr, FALSE, FALSE, nullptr) };
 		CrashExp(eventHandle != nullptr, "Event can not be nullptr");
 
 		mFence->SetEventOnCompletion(mFenceValue, eventHandle);
@@ -253,8 +253,7 @@ void EditorRenderer::FlushCommandQueue()
 	}
 }
 
-void EditorRenderer::TerminateIMGUI()
-{
+void EditorRenderer::TerminateIMGUI() {
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();

@@ -1,183 +1,243 @@
-#include <array>
-
+#pragma once 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-// Crash.h
-// 2025 - 01 - 05 김성준 - 환형 큐 처럼 동작하면서, 
-//        버퍼가 모두 찼을 때 가장 오래된 데이터를 덮어쓰는 방식을 가진 새로운 버퍼 정의
-//
+// InputBuffer.h
+// 2025.01.05 김성준   - 환형 큐 처럼 동작하면서, 
+//                      버퍼가 모두 찼을 때 가장 오래된 데이터를 덮어쓰는 방식을 가진 새로운 버퍼 정의
+// 2025.01.06 김승범   - 원하는 기능을 추가하기에 애로사항이 있어 새롭게 작성함.  
+//                      
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include <iterator>
+#include <vector>
+#include "../Utility/Crash.h"
 
-template <typename T, size_t size>
+template<typename Container>
+concept RandomAccessible = requires(Container c, size_t i) {
+    { c[i] } -> std::convertible_to<typename Container::value_type&>;
+};
+
+template<typename Container>
 class InputBufferIterator {
 public:
-    #ifdef _HAS_CXX20
-        using iterator_concept = std::random_access_iterator;
-    #endif
-
-    using value_type = T;
-    using reference = T&;
-    using pointer = T*;
-    using const_reference = const T&;
+	using base_iterator = typename Container::iterator;
     using iterator_category = std::random_access_iterator_tag;
+    using value_type = typename Container::value_type;
+    using difference_type = std::ptrdiff_t;
+    using pointer = value_type*;
+    using reference = value_type&;
 
-public:
-    InputBufferIterator() noexcept { }
-
-    InputBufferIterator(pointer ptr, size_t offset = 0) noexcept : mPtr{ ptr }, mIndex{ offset } { }
-
-    ~InputBufferIterator() noexcept { }
-
-    InputBufferIterator(const InputBufferIterator& other) noexcept {
-        mPtr = other.mPtr;
-        mIndex = other.mIndex;
-    }
-
-    InputBufferIterator& operator=(const InputBufferIterator& other) noexcept {
-        mPtr = other.mPtr;
-        mIndex = other.mIndex;
-        return *this;
-    }
-
-    InputBufferIterator(InputBufferIterator&& other) noexcept {
-        mPtr = other.mPtr;
-        mIndex = other.mIndex;
-    }
-
-    InputBufferIterator& operator=(InputBufferIterator&& other) noexcept {
-        mPtr = other.mPtr;
-        mIndex = other.mIndex;
-        return *this;
+    InputBufferIterator(base_iterator begin, size_t bufferSize, size_t index)
+        : mBufferBegin(begin), mCurrent(begin), mBufferCapacity(bufferSize), mCurrentIndex(index) {
+		std::advance(mCurrent, mCurrentIndex % mBufferCapacity);
     }
 
 public:
-    reference operator*() {
-        return *(mPtr + mIndex);
+    reference operator*() const {
+		return *mCurrent;
     }
 
-    void operator++() {
-        ++mIndex;
-        if (mIndex >= size) {
-            mIndex = 0;
-        }
+    InputBufferIterator& operator++() {
+        mCurrentIndex++;
+		mCurrent = mBufferBegin;
+        std::advance(mCurrent, mCurrentIndex % mBufferCapacity);
+        return *this;
     }
 
     InputBufferIterator operator++(int) {
-        InputBufferIterator<T, size> iter{ *this };
-        ++mIndex;
-        if (mIndex >= size) {
-            mIndex = 0;
-        }
-        return iter;
+        InputBufferIterator temp = *this;
+        ++(*this);
+        return temp;
     }
 
-    void operator--() {
-        --mIndex;
-        if (mIndex < 0) {
-            mIndex = size;
-        }
+    InputBufferIterator& operator--() {
+        mCurrentIndex--;
+        mCurrent = mBufferBegin;
+        std::advance(mCurrent, mCurrentIndex % mBufferCapacity);
+        return *this;
     }
 
     InputBufferIterator operator--(int) {
-        InputBufferIterator<T, size> iter{ *this };
-        --mIndex;
-        if (mIndex < 0) {
-            mIndex = size;
-        }
-        return iter;
+        InputBufferIterator temp = *this;
+        --(*this);
+        return temp;
     }
 
-    bool operator==(const InputBufferIterator& iter) {
-        return mIndex == iter.mIndex;
+    InputBufferIterator operator+(difference_type n) const {
+        return InputBufferIterator(mBufferBegin, mBufferCapacity, mCurrentIndex + n);
     }
 
-    bool operator!=(const InputBufferIterator& iter) {
-        return mIndex != iter.mIndex;
+    InputBufferIterator operator-(difference_type n) const {
+        return InputBufferIterator(mBufferBegin, mBufferCapacity, mCurrentIndex - n);
     }
 
+    difference_type operator-(const InputBufferIterator& other) const {
+        return mCurrentIndex - other.mCurrentIndex;
+    }
+
+    bool operator==(const InputBufferIterator& other) const {
+        return mCurrentIndex == other.mCurrentIndex;
+    }
+
+    bool operator!=(const InputBufferIterator& other) const {
+        return mCurrentIndex != other.mCurrentIndex;
+    }
+
+    bool operator<(const InputBufferIterator& other) const {
+        return mCurrentIndex < other.mCurrentIndex;
+    }
+
+    bool operator>(const InputBufferIterator& other) const {
+        return mCurrentIndex > other.mCurrentIndex;
+    }
+
+    bool operator<=(const InputBufferIterator& other) const {
+        return mCurrentIndex <= other.mCurrentIndex;
+    }
+
+    bool operator>=(const InputBufferIterator& other) const {
+        return mCurrentIndex >= other.mCurrentIndex;
+    }
 private:
-    pointer mPtr{ nullptr };
-    size_t mIndex{ };
+    const base_iterator mBufferBegin{};
+	base_iterator mCurrent{};
+    size_t mBufferCapacity{};
+    size_t mCurrentIndex{};
+
 };
 
-template <typename T, size_t size>
+template<typename T, size_t Capacity, template<typename, typename> class Container = std::vector, typename Allocator = std::allocator<T>>
 class InputBuffer {
 public:
     using value_type = T;
+    using iterator = InputBufferIterator<Container<T, Allocator>>;
+    using value_type = T;
+    using allocator_type = Allocator;
     using reference = T&;
-    using pointer = T*;
     using const_reference = const T&;
-    using size_type = size_t;
-
-    using iterator = InputBufferIterator<T, size>;
-    using reverse_iterator = std::reverse_iterator<iterator>;
-
-    using Container = std::array<T, size>;
+    using size_type = decltype(Capacity);
 
 public:
-    InputBuffer() noexcept { }
-    ~InputBuffer() noexcept { }
-
-    InputBuffer(const InputBuffer& other) noexcept {
-
-    }
-
-    InputBuffer(InputBuffer&& other) noexcept {
-
-    }
-
-    InputBuffer& operator=(const InputBuffer& other) noexcept {
-        return *this;
-    }
-
-    InputBuffer& operator=(InputBuffer&& other) noexcept {
-        return *this;
+    explicit InputBuffer() : mBuffer(Capacity) {
+        CrashExp(Capacity > 0, "Capacity must be greater than 0");
     }
 
 public:
-    size_t MaxSize() const noexcept {
-        return size;
+    reference operator[](size_t index) {
+        CrashExp(index < mCount, "Index out of range");
+        size_t actualIndex = (mHead + index) % mBuffer.size();
+        if constexpr (RandomAccessible<Container<T, Allocator>>) {
+            return mBuffer[actualIndex];
+        }
+        else {
+            auto it = std::next(mBuffer.begin(), actualIndex);
+            return *it;
+        }
     }
 
-    size_t Size() const noexcept {
-        return mTail;
+    const_reference operator[](size_t index) const {
+        CrashExp(index < mCount, "Index out of range");
+        size_t actualIndex = (mHead + index) % mBuffer.size();
+        if constexpr (RandomAccessible<Container<T, Allocator>>) {
+            return mBuffer[actualIndex];
+        }
+        else {
+            auto it = std::next(mBuffer.begin(), actualIndex);
+            return *it;
+        }
     }
 
-    iterator Push(const T& data) {
-        mBuffer[mTail++] = data;
-        if (mTail >= size) {
-            mTail = 0;
+    operator bool() const {
+        return !Empty();
+    }
+
+public:
+    void PushBack(const T& value) {
+        if constexpr (RandomAccessible<Container<T, Allocator>>) {
+            mBuffer[mTail] = value;
+        }
+        else {
+            auto it = std::next(mBuffer.begin(), mTail);
+            *it = value;
         }
 
-        if (mTail == mHead) {
-            ++mHead;
-            if (mHead >= size) {
-                mHead = 0;
-            }
+        mTail = (mTail + 1) % mBuffer.size();
+        if (mCount < mBuffer.size()) {
+            ++mCount;
         }
-
-        return iterator{ mBuffer.data(), mTail };
+        else {
+            mHead = (mHead + 1) % mBuffer.size();
+        }
     }
 
-public:
+    reference Front() {
+        CrashExp(!Empty(), "Buffer is empty");
+        if constexpr (RandomAccessible<Container<T, Allocator>>) {
+            return mBuffer[mHead];
+        }
+        else {
+            auto it = std::next(mBuffer.begin(), mHead);
+            return *it;
+        }
+    }
+
+    const_reference Front() const {
+        CrashExp(!Empty(), "Buffer is empty");
+        if constexpr (RandomAccessible<Container<T, Allocator>>) {
+            return mBuffer[mHead];
+        }
+        else {
+            auto it = std::next(mBuffer.begin(), mHead);
+            return *it;
+        }
+    }
+
+    reference Back() {
+        CrashExp(!Empty(), "Buffer is empty");
+        size_t backIndex = (mTail + mBuffer.size() - 1) % mBuffer.size();
+        if constexpr (RandomAccessible<Container<T, Allocator>>) {
+            return mBuffer[backIndex];
+        }
+        else {
+            auto it = std::next(mBuffer.begin(), backIndex);
+            return *it;
+        }
+    }
+
+    const_reference Back() const {
+        CrashExp(!Empty(), "Buffer is empty");
+        size_t backIndex = (mTail + mBuffer.size() - 1) % mBuffer.size();
+        if constexpr (RandomAccessible<Container<T, Allocator>>) {
+            return mBuffer[backIndex];
+        }
+        else {
+            auto it = std::next(mBuffer.begin(), backIndex);
+            return *it;
+        }
+    }
+
+    bool Empty() const {
+        return mCount == 0;
+    }
+
+    bool Full() const {
+        return mCount == mBuffer.size();
+    }
+
+    size_type Size() const {
+        return mCount;
+    }
+
     iterator begin() {
-        return iterator{ mBuffer.data(), mHead };
+        return iterator(mBuffer.begin(), mBuffer.size(), mHead);
     }
 
     iterator end() {
-        return iterator{ mBuffer.data(), mTail };
-    }
-
-    reverse_iterator rbegin() {
-        return reverse_iterator(end());
-    }
-
-    reverse_iterator rend() {
-        return reverse_iterator(begin());
+        return iterator(mBuffer.begin(), mBuffer.size(), mHead + mCount);
     }
 
 private:
-    Container mBuffer{ };
-    size_t mHead{ };
-    size_t mTail{ };
+    Container<T, Allocator> mBuffer{};
+    size_type mTail{};
+    size_type mHead{};
+    size_type mCount{};
 };
