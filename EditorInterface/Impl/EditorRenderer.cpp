@@ -24,8 +24,6 @@ EditorRenderer::~EditorRenderer() {
 void EditorRenderer::Initialize(HWND hWnd) {
 	mEditorWindow = hWnd;
 
-	Console.Log("EditorRenderer Initialize", LogType::Info);
-
 	EditorRenderer::InitFactory();
 	EditorRenderer::InitDevice();
 	EditorRenderer::InitCommandQueue();
@@ -34,11 +32,15 @@ void EditorRenderer::Initialize(HWND hWnd) {
 	EditorRenderer::InitRenderTargets();
 	EditorRenderer::InitCommandList();
 	EditorRenderer::InitIMGUI();
+
+	Console.Log("정보 메세지 예시입니다.", LogType::Info);
+	Console.Log("경고 메세지 예시입니다.", LogType::Warning);
+	Console.Log("에러 메세지 예시입니다.", LogType::Error);
+
 }
 
 void EditorRenderer::Render() {
 	EditorRenderer::ResetCommandList();
-	Console.Log("EditorRenderer Initialize", LogType::Info);
 
 	auto currentBackBuffer = mRenderTargets[mRTIndex].Get();
 	CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET) };
