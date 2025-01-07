@@ -66,6 +66,9 @@
     <ClInclude Include="Console\Console.h">
       <Filter>Console</Filter>
     </ClInclude>
+    <ClInclude Include="..\External\Include\ImGui\imgui_color.h">
+      <Filter>IMGUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Impl\EditorDevice.cpp">

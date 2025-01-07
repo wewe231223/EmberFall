@@ -1,11 +1,16 @@
 #include "pch.h"
 #include "EditorDevice.h"
+#include "../External/Include/ImGui/imgui_impl_win32.h"
 #include "../Config/Config.h"
 #include "EditorRenderer.h"
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // Procedure 
 LRESULT CALLBACK EditorDeviceProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam);
+
     switch (message)
     {
     case WM_DESTROY:
@@ -80,7 +85,7 @@ void EditorDevice::EditorWindowWorker() {
         exStyle,                                // 확장 스타일
         L"EditorInterface",                     // 윈도우 클래스 이름
         L"EditorInterface",                     // 윈도우 타이틀 (보이지 않음)
-        WS_OVERLAPPEDWINDOW,                    // 윈도우 스타일
+        WS_POPUP,                    // 윈도우 스타일
         CW_USEDEFAULT, CW_USEDEFAULT,           // 위치 
         Config::EDITOR_WINDOW_WIDTH<>, Config::EDITOR_WINDOW_HEIGHT<>, // 크기
         nullptr,                                // 부모 윈도우

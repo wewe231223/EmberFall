@@ -59,6 +59,7 @@
   <ItemGroup>
     <ClInclude Include="..\External\Include\ImGui\imconfig.h" />
     <ClInclude Include="..\External\Include\ImGui\imgui.h" />
+    <ClInclude Include="..\External\Include\ImGui\imgui_color.h" />
     <ClInclude Include="..\External\Include\ImGui\imgui_impl_dx12.h" />
     <ClInclude Include="..\External\Include\ImGui\imgui_impl_win32.h" />
     <ClInclude Include="..\External\Include\ImGui\imgui_internal.h" />

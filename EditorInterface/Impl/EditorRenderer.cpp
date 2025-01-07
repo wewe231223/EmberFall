@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "EditorRenderer.h"
-
 #include "../Utility/Exceptions.h"
 #include "../Utility/Enumerate.h"
 #include "../Config/Config.h"
@@ -10,10 +9,8 @@
 #include "../External/Include/ImGui/imgui_impl_win32.h"
 #include "../External/Include/ImGui/imgui_internal.h"
 #include "../Utility/Crash.h"
-#include <ranges>
-#include <vector>
 
-#include "../Utility/InputBuffer.h"
+#include "../EditorInterface/Console/Console.h"
 
 EditorRenderer::EditorRenderer() {
 
@@ -27,6 +24,8 @@ EditorRenderer::~EditorRenderer() {
 void EditorRenderer::Initialize(HWND hWnd) {
 	mEditorWindow = hWnd;
 
+	Console.Log("EditorRenderer Initialize", LogType::Info);
+
 	EditorRenderer::InitFactory();
 	EditorRenderer::InitDevice();
 	EditorRenderer::InitCommandQueue();
@@ -39,7 +38,8 @@ void EditorRenderer::Initialize(HWND hWnd) {
 
 void EditorRenderer::Render() {
 	EditorRenderer::ResetCommandList();
-	
+	Console.Log("EditorRenderer Initialize", LogType::Info);
+
 	auto currentBackBuffer = mRenderTargets[mRTIndex].Get();
 	CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET) };
 
@@ -49,6 +49,24 @@ void EditorRenderer::Render() {
 	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::CornflowerBlue, 0, nullptr);
 
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+
+	RECT r{};
+	::GetWindowRect(mEditorWindow, &r);
+
+	//D3D12_VIEWPORT viewport{};
+	//viewport.TopLeftX = 0;
+	//viewport.TopLeftY = 0;
+	//viewport.Width = static_cast<float>(r.right - r.left);
+	//viewport.Height = static_cast<float>(r.bottom - r.top);
+	//viewport.MinDepth = 0.f;
+	//viewport.MaxDepth = 1.f;
+
+	//D3D12_RECT scissorRect{};
+	//scissorRect.left = 0;
+	//scissorRect.top = 0;
+	//scissorRect.right = r.right - r.left;
+	//scissorRect.bottom = r.bottom - r.top;
+
 
 	D3D12_VIEWPORT viewport{};
 	viewport.TopLeftX = 0;
@@ -72,7 +90,7 @@ void EditorRenderer::Render() {
 	ImGui::NewFrame();
 
 	// IMGUI 그리기... 
-
+	Console.Render();
 
 	ImGui::Render();
 	mCommandList->SetDescriptorHeaps(1, mIMGUIHeap.GetAddressOf());

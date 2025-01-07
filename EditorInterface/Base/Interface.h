@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // Interface.h
 // 2024.12.23 김승범   - Interface 프로젝트 메인 인터페이스 파일을 작성함 
@@ -20,12 +20,5 @@ public:
 	virtual const DirectX::SimpleMath::Vector3& GetScale() const			PURE;
 };
 
-enum class EMessageType {
-	Info,
-	Warning,
-	Error,
-};
 
-__interface IConsole {
-	virtual void PushString(const std::string& string, EMessageType type);
-};
+

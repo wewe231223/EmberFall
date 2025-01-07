@@ -1,10 +1,11 @@
 #pragma once 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-// InputBuffer.h
+// CircularBuffer.h
 // 2025.01.05 김성준   - 환형 큐 처럼 동작하면서, 
 //                      버퍼가 모두 찼을 때 가장 오래된 데이터를 덮어쓰는 방식을 가진 새로운 버퍼 정의
 // 2025.01.06 김승범   - 원하는 기능을 추가하기에 애로사항이 있어 새롭게 작성함.  
+// 2025.01.07 김승범   - CircularBuffer 로 이름을 변경하고, Emplace_back 을 추가함. 
 //                      
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include <iterator>
@@ -17,7 +18,7 @@ concept RandomAccessible = requires(Container c, size_t i) {
 };
 
 template<typename Container>
-class InputBufferIterator {
+class CircularBufferIterator {
 public:
 	using base_iterator = typename Container::iterator;
     using iterator_category = std::random_access_iterator_tag;
@@ -26,7 +27,7 @@ public:
     using pointer = value_type*;
     using reference = value_type&;
 
-    InputBufferIterator(base_iterator begin, size_t bufferSize, size_t index)
+    CircularBufferIterator(base_iterator begin, size_t bufferSize, size_t index)
         : mBufferBegin(begin), mCurrent(begin), mBufferCapacity(bufferSize), mCurrentIndex(index) {
 		std::advance(mCurrent, mCurrentIndex % mBufferCapacity);
     }
@@ -36,65 +37,65 @@ public:
 		return *mCurrent;
     }
 
-    InputBufferIterator& operator++() {
+    CircularBufferIterator& operator++() {
         mCurrentIndex++;
 		mCurrent = mBufferBegin;
         std::advance(mCurrent, mCurrentIndex % mBufferCapacity);
         return *this;
     }
 
-    InputBufferIterator operator++(int) {
-        InputBufferIterator temp = *this;
+    CircularBufferIterator operator++(int) {
+        CircularBufferIterator temp = *this;
         ++(*this);
         return temp;
     }
 
-    InputBufferIterator& operator--() {
+    CircularBufferIterator& operator--() {
         mCurrentIndex--;
         mCurrent = mBufferBegin;
         std::advance(mCurrent, mCurrentIndex % mBufferCapacity);
         return *this;
     }
 
-    InputBufferIterator operator--(int) {
-        InputBufferIterator temp = *this;
+    CircularBufferIterator operator--(int) {
+        CircularBufferIterator temp = *this;
         --(*this);
         return temp;
     }
 
-    InputBufferIterator operator+(difference_type n) const {
-        return InputBufferIterator(mBufferBegin, mBufferCapacity, mCurrentIndex + n);
+    CircularBufferIterator operator+(difference_type n) const {
+        return CircularBufferIterator(mBufferBegin, mBufferCapacity, mCurrentIndex + n);
     }
 
-    InputBufferIterator operator-(difference_type n) const {
-        return InputBufferIterator(mBufferBegin, mBufferCapacity, mCurrentIndex - n);
+    CircularBufferIterator operator-(difference_type n) const {
+        return CircularBufferIterator(mBufferBegin, mBufferCapacity, mCurrentIndex - n);
     }
 
-    difference_type operator-(const InputBufferIterator& other) const {
+    difference_type operator-(const CircularBufferIterator& other) const {
         return mCurrentIndex - other.mCurrentIndex;
     }
 
-    bool operator==(const InputBufferIterator& other) const {
+    bool operator==(const CircularBufferIterator& other) const {
         return mCurrentIndex == other.mCurrentIndex;
     }
 
-    bool operator!=(const InputBufferIterator& other) const {
+    bool operator!=(const CircularBufferIterator& other) const {
         return mCurrentIndex != other.mCurrentIndex;
     }
 
-    bool operator<(const InputBufferIterator& other) const {
+    bool operator<(const CircularBufferIterator& other) const {
         return mCurrentIndex < other.mCurrentIndex;
     }
 
-    bool operator>(const InputBufferIterator& other) const {
+    bool operator>(const CircularBufferIterator& other) const {
         return mCurrentIndex > other.mCurrentIndex;
     }
 
-    bool operator<=(const InputBufferIterator& other) const {
+    bool operator<=(const CircularBufferIterator& other) const {
         return mCurrentIndex <= other.mCurrentIndex;
     }
 
-    bool operator>=(const InputBufferIterator& other) const {
+    bool operator>=(const CircularBufferIterator& other) const {
         return mCurrentIndex >= other.mCurrentIndex;
     }
 private:
@@ -106,10 +107,10 @@ private:
 };
 
 template<typename T, size_t Capacity, template<typename, typename> class Container = std::vector, typename Allocator = std::allocator<T>>
-class InputBuffer {
+class CircularBuffer {
 public:
     using value_type = T;
-    using iterator = InputBufferIterator<Container<T, Allocator>>;
+    using iterator = CircularBufferIterator<Container<T, Allocator>>;
     using value_type = T;
     using allocator_type = Allocator;
     using reference = T&;
@@ -117,7 +118,7 @@ public:
     using size_type = decltype(Capacity);
 
 public:
-    explicit InputBuffer() : mBuffer(Capacity) {
+    explicit CircularBuffer() : mBuffer(Capacity) {
         CrashExp(Capacity > 0, "Capacity must be greater than 0");
     }
 
@@ -154,6 +155,25 @@ public:
         else {
             auto it = std::next(mBuffer.begin(), mTail);
             *it = value;
+        }
+
+        mTail = (mTail + 1) % mBuffer.size();
+        if (mCount < mBuffer.size()) {
+            ++mCount;
+        }
+        else {
+            mHead = (mHead + 1) % mBuffer.size();
+        }
+    }
+
+    template<typename... Args>
+    void EmplaceBack(Args&&... args) {
+        if constexpr (RandomAccessible<Container<T, Allocator>>) {
+            mBuffer[mTail] = T(std::forward<Args>(args)...);
+        }
+        else {
+            auto it = std::next(mBuffer.begin(), mTail);
+            *it = T(std::forward<Args>(args)...);
         }
 
         mTail = (mTail + 1) % mBuffer.size();

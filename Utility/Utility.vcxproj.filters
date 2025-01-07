@@ -15,7 +15,7 @@
     <ClInclude Include="Crash.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="InputBuffer.h">
+    <ClInclude Include="CircularBuffer.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

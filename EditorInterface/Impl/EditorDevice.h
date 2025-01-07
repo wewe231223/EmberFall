@@ -20,7 +20,7 @@
 #include "../Base/Interface.h"
 
 class EditorDevice {
-	static constexpr bool AUTOMATIC_CLOSED				{ false };
+	static constexpr bool AUTOMATIC_CLOSED				{ true };
 public:
 	EditorDevice();
 	~EditorDevice();
