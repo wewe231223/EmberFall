@@ -12,7 +12,7 @@
 #include "IdentityConfig.h"
 
 #ifdef 김승범컴퓨터 
-#define FHD
+#define HD
 #elif defined(김성준컴퓨터) 
 #define HD
 #endif 
@@ -38,7 +38,7 @@ struct Config {
 	template<typename T = int>
 	constexpr static T EDITOR_WINDOW_HEIGHT{ Config::WINDOW_HEIGHT<T> };
 
-	constexpr static bool WINDOWED{ false };
+	constexpr static bool WINDOWED{ true };
 	constexpr static bool AUTOMATIC_CLOSE{ WINDOWED ? false : true };
 
 	template<typename T = int> 

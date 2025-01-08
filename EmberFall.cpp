@@ -147,6 +147,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
        DWORD style = WS_OVERLAPPEDWINDOW;
        DWORD exStyle = WS_EX_OVERLAPPEDWINDOW;
 
+       int posX = (GetSystemMetrics(SM_CXSCREEN) / 2) - (Config::WINDOW_WIDTH<> / 2 + Config::EDITOR_WINDOW_WIDTH<> / 2);
+       int posY = (GetSystemMetrics(SM_CYSCREEN) / 2) - (Config::WINDOW_HEIGHT<> / 2);
+
        RECT adjustedRect{ 0, 0, Config::WINDOW_WIDTH<long>, Config::WINDOW_HEIGHT<long> };
        ::AdjustWindowRectEx(std::addressof(adjustedRect), style, FALSE, exStyle);
 
@@ -155,7 +158,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
            szWindowClass,                          // 윈도우 클래스 이름
            szTitle,                                // 윈도우 타이틀 
            style,                                  // 윈도우 스타일
-           CW_USEDEFAULT, CW_USEDEFAULT,           // 위치 
+           posX, posY,                             // 위치
            adjustedRect.right - adjustedRect.left,
            adjustedRect.bottom - adjustedRect.top, // 크기
            nullptr,                                // 부모 윈도우
@@ -168,12 +171,15 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
        DWORD style = WS_POPUP;
        DWORD exStyle = NULL;
 
+	   int posX = (GetSystemMetrics(SM_CXSCREEN) / 2) - (Config::WINDOW_WIDTH<> / 2 + Config::EDITOR_WINDOW_WIDTH<> / 2);
+	   int posY = (GetSystemMetrics(SM_CYSCREEN) / 2) - (Config::WINDOW_HEIGHT<> / 2 );
+
        hWnd = CreateWindowEx(
            exStyle,                                // 확장 스타일
            szWindowClass,                          // 윈도우 클래스 이름
            szTitle,                                // 윈도우 타이틀 
            style,                                  // 윈도우 스타일
-           CW_USEDEFAULT, CW_USEDEFAULT,           // 위치 
+           posX, posY,                             // 위치 
            Config::WINDOW_WIDTH<long>, Config::WINDOW_HEIGHT<long>, // 크기
            nullptr,                                // 부모 윈도우
            nullptr,                                // 메뉴
