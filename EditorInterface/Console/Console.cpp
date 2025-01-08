@@ -32,6 +32,8 @@ void ConsoleBase::Render()
 
 	ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 
+	std::lock_guard lock{ mConsoleLock };
+
 	ImGuiListClipper clipper;
 	clipper.Begin(static_cast<int>(mBuffer.Size()));
 

@@ -9,6 +9,7 @@
 #include <corecrt_wtime.h>
 #include <format>
 #include <chrono>
+#include <mutex>
 #include "../Utility/CircularBuffer.h"
 
 enum class LogType {
@@ -38,22 +39,31 @@ public:
 
 		switch (type) {
 		case LogType::Info:
+		{
+			std::lock_guard lock{ mConsoleLock };
 			mBuffer.EmplaceBack(
 				std::make_pair(
-					std::make_pair(std::format("[ INFO - {:02}:{:02}:{:02} ] ", local_time.tm_hour, local_time.tm_min, local_time.tm_sec),std::format(fmt,std::forward<Args>(args)...)), type)
+					std::make_pair(std::format("[ INFO - {:02}:{:02}:{:02} ] ", local_time.tm_hour, local_time.tm_min, local_time.tm_sec), std::format(fmt, std::forward<Args>(args)...)), type)
 			);
+		}
 			break;
 		case LogType::Warning:
+		{
+			std::lock_guard lock{ mConsoleLock };
 			mBuffer.EmplaceBack(
 				std::make_pair(
 					std::make_pair(std::format("[ WARN - {:02}:{:02}:{:02} ] ", local_time.tm_hour, local_time.tm_min, local_time.tm_sec), std::format(fmt, std::forward<Args>(args)...)), type)
 			);
+		}
 			break;
 		case LogType::Error:
+		{
+			std::lock_guard lock{ mConsoleLock };
 			mBuffer.EmplaceBack(
 				std::make_pair(
 					std::make_pair(std::format("[ ERROR - {:02}:{:02}:{:02} ] ", local_time.tm_hour, local_time.tm_min, local_time.tm_sec), std::format(fmt, std::forward<Args>(args)...)), type)
 			);
+		}
 			break;
 		default:
 			Crash("Invalid LogType");
@@ -64,6 +74,7 @@ public:
 	void Render();
 private:
 	CircularBuffer<std::pair<std::pair<std::string, std::string>,LogType>, CONSOLE_BUFFER_SIZE> mBuffer{};
+	std::mutex mConsoleLock{};
 };
 
 extern ConsoleBase Console;
