@@ -47,7 +47,7 @@ void EditorDevice::Initialize(HWND mainWindowHandle) {
 
 void EditorDevice::WaitForTerminate() {
     if (mEditorDeviceThread.joinable()) {
-        if (AUTOMATIC_CLOSED) {
+        if (Config::AUTOMATIC_CLOSE) {
             PostThreadMessage(mEditorThreadID, WM_QUIT, 0, 0);
         }
         mEditorDeviceThread.join();
@@ -77,23 +77,49 @@ void EditorDevice::EditorWindowWorker() {
         return;
     }
 
-    // 창 스타일: 테두리 없음, 타이틀 바 없음
-    DWORD style = WS_EX_OVERLAPPEDWINDOW; // WS_POPUP은 테두리와 타이틀 바가 없는 창을 만듭니다.
-    DWORD exStyle = WS_EX_APPWINDOW; // 추가 스타일 설정 (필요에 따라 변경 가능)
 
-	mEditorDeviceWindow = CreateWindowEx(
-        exStyle,                                // 확장 스타일
-        L"EditorInterface",                     // 윈도우 클래스 이름
-        L"EditorInterface",                     // 윈도우 타이틀 (보이지 않음)
-        WS_POPUP,                    // 윈도우 스타일
-        CW_USEDEFAULT, CW_USEDEFAULT,           // 위치 
-        Config::EDITOR_WINDOW_WIDTH<>, Config::EDITOR_WINDOW_HEIGHT<>, // 크기
-        nullptr,                                // 부모 윈도우
-        nullptr,                                // 메뉴
-        mApplicationHandle,                     // 인스턴스 핸들
-        nullptr                                 // 추가 매개변수
-    );
+    if constexpr (Config::WINDOWED) {
+        DWORD style = WS_OVERLAPPEDWINDOW;
+        DWORD exStyle = WS_EX_OVERLAPPEDWINDOW; 
+
+		RECT adjustedRect{ 0, 0, Config::EDITOR_WINDOW_WIDTH<long>, Config::EDITOR_WINDOW_HEIGHT<long> };
+		::AdjustWindowRectEx(std::addressof(adjustedRect), style, FALSE, exStyle);
+
+        mEditorDeviceWindow = CreateWindowEx(
+            exStyle,                                // 확장 스타일
+            L"EditorInterface",                     // 윈도우 클래스 이름
+            L"EditorInterface",                     // 윈도우 타이틀 (보이지 않음)
+            style,                                  // 윈도우 스타일
+            CW_USEDEFAULT, CW_USEDEFAULT,           // 위치 
+            adjustedRect.right - adjustedRect.left, 
+            adjustedRect.bottom - adjustedRect.top, // 크기
+            nullptr,                                // 부모 윈도우
+            nullptr,                                // 메뉴
+            mApplicationHandle,                     // 인스턴스 핸들
+            nullptr                                 // 추가 매개변수
+        );
+    }
+    else {
+		DWORD style = WS_POPUP; 
+		DWORD exStyle = NULL; 
+
+		mEditorDeviceWindow = CreateWindowEx(
+			exStyle,                                // 확장 스타일
+			L"EditorInterface",                     // 윈도우 클래스 이름
+			L"EditorInterface",                     // 윈도우 타이틀 (보이지 않음)
+			style,                                  // 윈도우 스타일
+			CW_USEDEFAULT, CW_USEDEFAULT,           // 위치 
+			Config::EDITOR_WINDOW_WIDTH<long>, Config::EDITOR_WINDOW_HEIGHT<long>, // 크기
+			nullptr,                                // 부모 윈도우
+			nullptr,                                // 메뉴
+			mApplicationHandle,                     // 인스턴스 핸들
+			nullptr                                 // 추가 매개변수
+		);
+    }
+
+
    
+
 	if (nullptr == mEditorDeviceWindow)
 	{
         MessageBox(nullptr, L"Editor Window 의 초기화에 실패했습니다.", L"Error", MB_ICONERROR);

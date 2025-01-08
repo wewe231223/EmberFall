@@ -142,9 +142,45 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
-   hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, CW_USEDEFAULT, Config::WINDOW_WIDTH<>, Config::WINDOW_HEIGHT<>, nullptr, nullptr, hInstance, nullptr);
 
+   if constexpr (Config::WINDOWED) {
+       DWORD style = WS_OVERLAPPEDWINDOW;
+       DWORD exStyle = WS_EX_OVERLAPPEDWINDOW;
+
+       RECT adjustedRect{ 0, 0, Config::WINDOW_WIDTH<long>, Config::WINDOW_HEIGHT<long> };
+       ::AdjustWindowRectEx(std::addressof(adjustedRect), style, FALSE, exStyle);
+
+       hWnd = CreateWindowEx(
+           exStyle,                                // 확장 스타일
+           szWindowClass,                          // 윈도우 클래스 이름
+           szTitle,                                // 윈도우 타이틀 
+           style,                                  // 윈도우 스타일
+           CW_USEDEFAULT, CW_USEDEFAULT,           // 위치 
+           adjustedRect.right - adjustedRect.left,
+           adjustedRect.bottom - adjustedRect.top, // 크기
+           nullptr,                                // 부모 윈도우
+           nullptr,                                // 메뉴
+           hInstance,                              // 인스턴스 핸들
+           nullptr                                 // 추가 매개변수
+       );
+   }
+   else {
+       DWORD style = WS_POPUP;
+       DWORD exStyle = NULL;
+
+       hWnd = CreateWindowEx(
+           exStyle,                                // 확장 스타일
+           szWindowClass,                          // 윈도우 클래스 이름
+           szTitle,                                // 윈도우 타이틀 
+           style,                                  // 윈도우 스타일
+           CW_USEDEFAULT, CW_USEDEFAULT,           // 위치 
+           Config::WINDOW_WIDTH<long>, Config::WINDOW_HEIGHT<long>, // 크기
+           nullptr,                                // 부모 윈도우
+           nullptr,                                // 메뉴
+           hInstance,                              // 인스턴스 핸들
+           nullptr                                 // 추가 매개변수
+       );
+   }
    if (!hWnd)
    {
       return FALSE;
