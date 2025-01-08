@@ -3,13 +3,18 @@
 // Console.h
 // 2025.01.06 김승범   - 프로그램의 전체적인 내부 정보 확인을 위한 Console 클래스를 정의함. 
 // 2025.01.07 김승범	  - Console 에 메세지를 넣는 Log 함수를 정의하고, Console 클래스의 이름을 변경함. 
+// 2025.01.08 김승범   - Console 클래스의 이름을 ConsoleBase 로 변경함.
+//						Render 함수와 Log 함수에 mutex 를 사용하여 안전하게 동시성을 지원하도록 변경하였다. 
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #pragma once 
 #include <corecrt_wtime.h>
+#include <fstream>
 #include <format>
 #include <chrono>
 #include <mutex>
+#include <filesystem>
+#include <queue>
 #include "../Utility/CircularBuffer.h"
 
 enum class LogType {
@@ -73,7 +78,10 @@ public:
 public:
 	void Render();
 private:
+	void ManageLogFile();
+private:
 	CircularBuffer<std::pair<std::pair<std::string, std::string>,LogType>, CONSOLE_BUFFER_SIZE> mBuffer{};
+	std::ofstream mLogFile{};
 	std::mutex mConsoleLock{};
 };
 

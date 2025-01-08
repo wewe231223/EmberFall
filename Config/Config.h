@@ -41,6 +41,10 @@ struct Config {
 	constexpr static bool WINDOWED{ true };
 	constexpr static bool AUTOMATIC_CLOSE{ WINDOWED ? false : true };
 
+	constexpr static const char* LOG_FILE_PATH{ "Log/" };
+	template <typename T = int>
+	constexpr static T LOG_FILE_COUNT_LIMIT{ static_cast<T>(10) };
+
 	template<typename T = int> 
 	constexpr static T BACKBUFFER_COUNT{ 3 };
 
