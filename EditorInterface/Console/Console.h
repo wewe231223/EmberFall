@@ -46,28 +46,35 @@ public:
 		case LogType::Info:
 		{
 			std::lock_guard lock{ mConsoleLock };
-			mBuffer.EmplaceBack(
+			decltype(auto) msg = mBuffer.EmplaceBack(
 				std::make_pair(
 					std::make_pair(std::format("[ INFO - {:02}:{:02}:{:02} ] ", local_time.tm_hour, local_time.tm_min, local_time.tm_sec), std::format(fmt, std::forward<Args>(args)...)), type)
 			);
+
+			mLogFile << msg.first.first << " : " << msg.first.second << std::endl;
+			
 		}
 			break;
 		case LogType::Warning:
 		{
 			std::lock_guard lock{ mConsoleLock };
-			mBuffer.EmplaceBack(
+			decltype(auto) msg = mBuffer.EmplaceBack(
 				std::make_pair(
 					std::make_pair(std::format("[ WARN - {:02}:{:02}:{:02} ] ", local_time.tm_hour, local_time.tm_min, local_time.tm_sec), std::format(fmt, std::forward<Args>(args)...)), type)
 			);
+
+			mLogFile << msg.first.first << " : " << msg.first.second << std::endl;
 		}
 			break;
 		case LogType::Error:
 		{
 			std::lock_guard lock{ mConsoleLock };
-			mBuffer.EmplaceBack(
+			decltype(auto) msg = mBuffer.EmplaceBack(
 				std::make_pair(
 					std::make_pair(std::format("[ ERROR - {:02}:{:02}:{:02} ] ", local_time.tm_hour, local_time.tm_min, local_time.tm_sec), std::format(fmt, std::forward<Args>(args)...)), type)
 			);
+
+			mLogFile << msg.first.first << " : " << msg.first.second << std::endl;
 		}
 			break;
 		default:

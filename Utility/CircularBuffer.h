@@ -167,23 +167,35 @@ public:
     }
 
     template<typename... Args>
-    void EmplaceBack(Args&&... args) {
+    [[maybe_unused]]
+    reference EmplaceBack(Args&&... args) {
         if constexpr (RandomAccessible<Container<T, Allocator>>) {
             mBuffer[mTail] = T(std::forward<Args>(args)...);
+            auto& ref = mBuffer[mTail];
+            mTail = (mTail + 1) % mBuffer.size();
+            if (mCount < mBuffer.size()) {
+                ++mCount;
+            }
+            else {
+                mHead = (mHead + 1) % mBuffer.size();
+            }
+            return ref;
         }
         else {
             auto it = std::next(mBuffer.begin(), mTail);
             *it = T(std::forward<Args>(args)...);
-        }
-
-        mTail = (mTail + 1) % mBuffer.size();
-        if (mCount < mBuffer.size()) {
-            ++mCount;
-        }
-        else {
-            mHead = (mHead + 1) % mBuffer.size();
+            auto& ref = *it;
+            mTail = (mTail + 1) % mBuffer.size();
+            if (mCount < mBuffer.size()) {
+                ++mCount;
+            }
+            else {
+                mHead = (mHead + 1) % mBuffer.size();
+            }
+            return ref;
         }
     }
+
 
     reference Front() {
         CrashExp(!Empty(), "Buffer is empty");

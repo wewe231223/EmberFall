@@ -35,17 +35,17 @@ ConsoleBase::ConsoleBase() {
 		localTime.tm_sec) };
 
 
-	std::ofstream logFile(fileName);
+	mLogFile = std::ofstream{ fileName };
 
-	CrashExp(logFile.is_open(), "로그 파일을 생성할 수 없습니다.");
+	CrashExp(mLogFile.is_open(), "로그 파일을 생성할 수 없습니다.");
 
-	logFile << std::format("Log : {:04}-{:02}-{:02} {:02}:{:02}:{:02}\n",
+	mLogFile << std::format("Log : {:04}-{:02}-{:02} {:02}:{:02}:{:02}\n",
 			localTime.tm_year + 1900,
 			localTime.tm_mon + 1,
 			localTime.tm_mday,
 			localTime.tm_hour,
 			localTime.tm_min,
-			localTime.tm_sec);
+			localTime.tm_sec) << std::endl;
 
 	ConsoleBase::Log("{} 에 로그 파일이 생성되었습니다.", LogType::Info, fileName);
 }
