@@ -47,7 +47,7 @@
       <Filter>Server</Filter>
     </ClCompile>
     <ClCompile Include="Listener.cpp">
-      <Filter>Pch</Filter>
+      <Filter>Server</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -84,6 +84,8 @@
     <ClInclude Include="Session.h">
       <Filter>Server</Filter>
     </ClInclude>
-    <ClInclude Include="Listener.h" />
+    <ClInclude Include="Listener.h">
+      <Filter>Server</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

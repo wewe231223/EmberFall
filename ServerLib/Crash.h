@@ -6,7 +6,7 @@
     if (expression) {                       \
         int* p = nullptr;                   \
         __analysis_assume(p != nullptr);    \
-        * p = expression;                   \
+        * p = 0;                            \
     }                                       \
 }
 
@@ -14,7 +14,7 @@
 {                                           \
     int* p = nullptr;                       \
     __analysis_assume(p != nullptr);        \
-    *p = expression;                        \
+    *p = 0;                                 \
 }
 
 #pragma endregion

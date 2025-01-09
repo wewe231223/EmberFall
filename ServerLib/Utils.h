@@ -23,4 +23,9 @@ namespace NetworkUtil {
     {
         return SOCKET_ERROR != ::setsockopt(socket, level, option, reinterpret_cast<T>(optval), sizeof(optval));
     }
+
+    SOCKET CreateSocket()
+    {
+        return ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, nullptr, NULL, WSA_FLAG_OVERLAPPED);
+    }
 }
