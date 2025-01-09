@@ -6,7 +6,7 @@ inline constexpr size_t MAX_BUF_SIZE = std::numeric_limits<unsigned short>::max(
 inline constexpr size_t BUF_RW_SIZE = 1024;
 inline const UINT32 HARDWARE_CONCURRENCY = std::thread::hardware_concurrency();
 
-enum IOType : UINT32 {
+enum class IOType : UINT32 {
     SEND,
     RECV,
     CONNECT,
