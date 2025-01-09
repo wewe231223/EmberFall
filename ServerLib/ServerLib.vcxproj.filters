@@ -40,6 +40,15 @@
     <ClCompile Include="pch.cpp">
       <Filter>Pch</Filter>
     </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="SessionManager.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Listener.cpp">
+      <Filter>Pch</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils.h">
@@ -69,5 +78,12 @@
     <ClInclude Include="pch.h">
       <Filter>Pch</Filter>
     </ClInclude>
+    <ClInclude Include="SessionManager.h">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Listener.h" />
   </ItemGroup>
 </Project>
