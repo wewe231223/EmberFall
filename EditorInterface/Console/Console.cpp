@@ -105,7 +105,8 @@ void ConsoleBase::Render() {
 
 void ConsoleBase::ManageLogFile() {
 	if (not std::filesystem::exists(Config::LOG_FILE_PATH) or not std::filesystem::is_directory(Config::LOG_FILE_PATH)) {
-		Crash("로그 파일 경로가 존재하지 않습니다.");
+		std::filesystem::create_directory(Config::LOG_FILE_PATH);
+		return;
 	}
 
 	struct CompareFileTime {

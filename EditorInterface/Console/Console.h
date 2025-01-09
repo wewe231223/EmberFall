@@ -54,7 +54,7 @@ public:
 			mLogFile << msg.first.first << " : " << msg.first.second << std::endl;
 			
 		}
-			break;
+			break; 
 		case LogType::Warning:
 		{
 			std::lock_guard lock{ mConsoleLock };
