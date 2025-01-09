@@ -16,11 +16,56 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Types.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Constants.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerCore.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="INetworkObject.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCPCore.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlappedEx.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>Pch</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Utils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Constants.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerCore.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Crash.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="INetworkObject.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="IOCPCore.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlappedEx.h">
+      <Filter>Core</Filter>
+    </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Pch</Filter>
     </ClInclude>
