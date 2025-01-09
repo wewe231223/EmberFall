@@ -12,6 +12,11 @@ public:
 	EditorRenderer();
 	~EditorRenderer();
 
+	EditorRenderer(const EditorRenderer& other) = delete;
+	EditorRenderer& operator=(const EditorRenderer& other) = delete;
+
+	EditorRenderer(EditorRenderer&& other) = delete;
+	EditorRenderer& operator=(EditorRenderer&& other) = delete;
 public:
 	void Initialize(HWND hWnd);
 	void Render();

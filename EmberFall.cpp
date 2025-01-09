@@ -13,6 +13,10 @@
 #include "EditorInterface/Impl/EditorDevice.h"
 
 #pragma comment(lib,"out/debug/EditorInterface.lib")
+
+#include "Renderer/core/Renderer.h"
+#pragma comment(lib,"out/debug/Renderer.lib")
+
 #include "Config/Config.h"
 
 #define MAX_LOADSTRING 100
@@ -48,8 +52,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
+	Renderer renderer{ hWnd };
 
+
+    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
     MSG msg{};
     
     // 기본 메시지 루프입니다:
@@ -58,6 +64,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             TranslateMessage(&msg);
             DispatchMessage(&msg);
 		}
+        renderer.Render();
         // 게임 루프... 
     }
 

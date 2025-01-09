@@ -32,6 +32,21 @@ public:
 		std::advance(mCurrent, mCurrentIndex % mBufferCapacity);
     }
 
+	~CircularBufferIterator() = default;
+
+    CircularBufferIterator(const CircularBufferIterator& other) 
+		: mBufferBegin(other.mBufferBegin), mCurrent(other.mCurrent), mBufferCapacity(other.mBufferCapacity), mCurrentIndex(other.mCurrentIndex) {}
+
+    CircularBufferIterator& operator=(const CircularBufferIterator& other) {
+		if (this != &other) {
+			mBufferBegin = other.mBufferBegin;
+			mCurrent = other.mCurrent;
+			mBufferCapacity = other.mBufferCapacity;
+			mCurrentIndex = other.mCurrentIndex;
+		}
+		return *this;
+    }
+
 public:
     reference operator*() const {
 		return *mCurrent;
@@ -122,6 +137,13 @@ public:
         CrashExp(Capacity > 0, "Capacity must be greater than 0");
     }
 
+	~CircularBuffer() = default;
+
+	CircularBuffer(const CircularBuffer&) = default;
+	CircularBuffer& operator=(const CircularBuffer&) = default;
+
+	CircularBuffer(CircularBuffer&&) = default;
+	CircularBuffer& operator=(CircularBuffer&&) = default;
 public:
     reference operator[](size_t index) {
         CrashExp(index < mCount, "Index out of range");

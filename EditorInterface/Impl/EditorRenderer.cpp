@@ -52,24 +52,6 @@ void EditorRenderer::Render() {
 
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
-	RECT r{};
-	::GetWindowRect(mEditorWindow, &r);
-
-	//D3D12_VIEWPORT viewport{};
-	//viewport.TopLeftX = 0;
-	//viewport.TopLeftY = 0;
-	//viewport.Width = static_cast<float>(r.right - r.left);
-	//viewport.Height = static_cast<float>(r.bottom - r.top);
-	//viewport.MinDepth = 0.f;
-	//viewport.MaxDepth = 1.f;
-
-	//D3D12_RECT scissorRect{};
-	//scissorRect.left = 0;
-	//scissorRect.top = 0;
-	//scissorRect.right = r.right - r.left;
-	//scissorRect.bottom = r.bottom - r.top;
-
-
 	D3D12_VIEWPORT viewport{};
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
