@@ -57,7 +57,23 @@ void Session::SetRemain(size_t remainSize) {
 void Session::RegisterSend(void* packet) {
     OverlappedSend* overlappedSend = new OverlappedSend{ reinterpret_cast<char*>(packet) };
     overlappedSend->mOwner = shared_from_this();
-    ::WSASend(mSocket, &overlappedSend->wsaBuf, 1, 0, 0, overlappedSend, nullptr);
+    auto result = ::WSASend(
+        mSocket, 
+        &overlappedSend->wsaBuf, 
+        1, 
+        0, 
+        0, 
+        overlappedSend, 
+        nullptr
+    );
+
+    if (SOCKET_ERROR == result) {
+        auto errorCode = ::WSAGetLastError();
+        if (WSA_IO_PENDING != errorCode) {
+            delete overlappedSend;
+            RegisterSend(packet);
+        }
+    }
 }
 
 SessionState Session::GetCurrentState() const {

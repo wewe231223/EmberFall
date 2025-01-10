@@ -9,7 +9,7 @@ struct OverlappedEx : public WSAOVERLAPPED {
     std::weak_ptr<INetworkObject> mOwner;
 
     // method
-    OverlappedEx();
+    OverlappedEx(IOType type);
     OverlappedEx(char* data, size_t len);
     OverlappedEx(const std::span<char>& span);
     OverlappedEx(char* packet);
@@ -24,7 +24,41 @@ struct OverlappedEx : public WSAOVERLAPPED {
     void ResetOverlapped();
 };
 
-struct OverlappedAccept : public OverlappedEx { };
-struct OverlappedConnect : public OverlappedEx { };
-struct OverlappedRecv : public OverlappedEx { };
-struct OverlappedSend : public OverlappedEx { };
+struct OverlappedAccept : public OverlappedEx {  
+    OverlappedAccept();
+
+    OverlappedAccept(const OverlappedAccept&) = delete;
+    OverlappedAccept(OverlappedAccept&&) noexcept = delete;
+    OverlappedAccept& operator=(const OverlappedAccept&) = delete;
+    OverlappedAccept& operator=(OverlappedAccept&&) noexcept = delete;
+};
+
+struct OverlappedConnect : public OverlappedEx { 
+    OverlappedConnect();
+
+    OverlappedConnect(const OverlappedConnect&) = delete;
+    OverlappedConnect(OverlappedConnect&&) noexcept = delete;
+    OverlappedConnect& operator=(const OverlappedConnect&) = delete;
+    OverlappedConnect& operator=(OverlappedConnect&&) noexcept = delete;
+};
+
+struct OverlappedRecv : public OverlappedEx {
+    OverlappedRecv();
+
+    OverlappedRecv(const OverlappedRecv&) = delete;
+    OverlappedRecv(OverlappedRecv&&) noexcept = delete;
+    OverlappedRecv& operator=(const OverlappedRecv&) = delete;
+    OverlappedRecv& operator=(OverlappedRecv&&) noexcept = delete;
+};
+
+struct OverlappedSend : public OverlappedEx { 
+    OverlappedSend();
+    OverlappedSend(char* data, size_t len);
+    OverlappedSend(const std::span<char>& span);
+    OverlappedSend(char* packet);
+
+    OverlappedSend(const OverlappedSend&) = delete;
+    OverlappedSend(OverlappedSend&&) noexcept = delete;
+    OverlappedSend& operator=(const OverlappedSend&) = delete;
+    OverlappedSend& operator=(OverlappedSend&&) noexcept = delete;
+};
