@@ -6,7 +6,7 @@
 Listener::Listener(const std::string& localIp, const unsigned short port)
     : mLocalIp{ localIp }, mLocalPort{ port } {
     mListenSocket = NetworkUtil::CreateSocket();
-    CrashExp(INVALID_SOCKET != mListenSocket);
+    CrashExp(INVALID_SOCKET != mListenSocket, "");
 
     sockaddr_in sockAddr{ };
     sockAddr.sin_family = AF_INET;
@@ -48,7 +48,10 @@ void Listener::RegisterAccept() {
     //std::shared_ptr<Session> session = std::make_shared<Session>();
     std::shared_ptr<Session> session = gSessionManager->CreateSessionObject();
 
-    ::memset(&mOverlappedAccept, 0, sizeof(OVERLAPPED));
+    mOverlappedAccept.ResetOverlapped();
+    mOverlappedAccept.owner = shared_from_this();
+    mOverlappedAccept.session = session;
+
     SOCKET clientSocket = reinterpret_cast<SOCKET>(session->GetHandle());
 
     INT addrSize{ sizeof(sockaddr_in) + 16 }; // addrsize는 내부 구현상 사용하는 주소체게 구조체 크기 + 16이 되어야함
@@ -66,15 +69,22 @@ void Listener::RegisterAccept() {
 
     if (not registSuccess) {
         int errorCode = ::WSAGetLastError();
-        if (WSA_IO_PENDING != errorCode) {
+        if (ERROR_IO_PENDING != errorCode) {
             RegisterAccept();
         }
     }
 }
 
 void Listener::ProcessAccept() {
-    auto session = std::static_pointer_cast<Session>(mOverlappedAccept.mOwner);
-    mOverlappedAccept.mOwner.reset();
+    auto session = mOverlappedAccept.GetSession();
 
-    gSessionManager->AddSession(session->GetId(), session);
+    if (true == gSessionManager->AddSession(session->GetId(), session)) {
+        std::cout << "Client Connected" << std::endl;
+    }
+    else {
+        std::cout << "Client Connect Failure" << std::endl;
+    }
+
+    mOverlappedAccept.owner.reset();
+    mOverlappedAccept.session.reset();
 }

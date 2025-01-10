@@ -71,7 +71,7 @@ void Session::SetRemain(size_t remainSize) {
 
 void Session::RegisterSend(void* packet) {
     OverlappedSend* overlappedSend = new OverlappedSend{ reinterpret_cast<char*>(packet) };
-    overlappedSend->mOwner = shared_from_this();
+    overlappedSend->owner = shared_from_this();
     auto result = ::WSASend(
         mSocket, 
         &overlappedSend->wsaBuf, 

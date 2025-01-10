@@ -10,7 +10,7 @@ IOCPCore::~IOCPCore() {
 
 void IOCPCore::Init(size_t workerThreadNum) {
     mIocpHandle = ::CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, static_cast<DWORD>(workerThreadNum));
-    CrashExp(INVALID_HANDLE_VALUE != mIocpHandle, "IOCP Creation Failure");
+    CrashExp(NULL == mIocpHandle, "IOCP Creation Failure");
 }
 
 void IOCPCore::RegisterSocket(SOCKET socket, ULONG_PTR registerKey) {
@@ -25,7 +25,7 @@ void IOCPCore::RegisterSocket(const INetworkObject* session) {
         0
     );
 
-    if (INVALID_HANDLE_VALUE == result) {
+    if (NULL == result) {
         return;
     }
 }
@@ -37,7 +37,7 @@ void IOCPCore::IOWorker() {
 
     while (true) {
         auto success = ::GetQueuedCompletionStatus(
-            INVALID_HANDLE_VALUE,
+            gIocpCore->GetHandle(),
             &receivedByte,
             &completionKey,
             &overlapped,
@@ -49,10 +49,8 @@ void IOCPCore::IOWorker() {
 
         if (not success) {
             if (IOType::ACCEPT == overlappedEx->type) {
-                if (overlappedEx->mOwner) {
-                    // TODO
-                }
-                continue;
+                std::cout << "Accept Error!" << std::endl;
+                Crash("");
             }
             else {
                 // TODO
@@ -61,6 +59,6 @@ void IOCPCore::IOWorker() {
             }
         }
 
-        std::shared_ptr<INetworkObject> owener = overlappedEx->mOwner;
+        overlappedEx->owner->ProcessOverlapped(overlappedEx, receivedByte);
     }
 }

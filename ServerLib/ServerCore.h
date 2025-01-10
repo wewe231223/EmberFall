@@ -10,7 +10,7 @@ public:
     void End();
 
 private:
-    std::unique_ptr<class Listener> mListener{ nullptr };
+    std::shared_ptr<class Listener> mListener;
     //std::unique_ptr<class PacketHandler> mPacketHandler{ nullptr };
 
     std::vector<std::thread> mWorkerThreads{ };

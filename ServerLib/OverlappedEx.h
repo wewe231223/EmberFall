@@ -6,7 +6,7 @@ struct OverlappedEx : public WSAOVERLAPPED {
     NetworkBuf<BUF_RW_SIZE> buffer;
     WSABUF wsaBuf;
     IOType type;
-    std::shared_ptr<INetworkObject> mOwner;
+    std::shared_ptr<INetworkObject> owner;
 
     // method
     OverlappedEx(IOType type);
@@ -25,12 +25,16 @@ struct OverlappedEx : public WSAOVERLAPPED {
 };
 
 struct OverlappedAccept : public OverlappedEx {  
+    std::shared_ptr<INetworkObject> session;
+
     OverlappedAccept();
 
     OverlappedAccept(const OverlappedAccept&) = delete;
     OverlappedAccept(OverlappedAccept&&) noexcept = delete;
     OverlappedAccept& operator=(const OverlappedAccept&) = delete;
     OverlappedAccept& operator=(OverlappedAccept&&) noexcept = delete;
+
+    std::shared_ptr<class Session> GetSession();
 };
 
 struct OverlappedConnect : public OverlappedEx { 

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "OverlappedEx.h"
+#include "Session.h"
 
 OverlappedEx::OverlappedEx(IOType type)
     : buffer{ }, wsaBuf{ 0, nullptr }, type{ type } {
@@ -34,6 +35,10 @@ void OverlappedEx::ResetOverlapped() {
 
 OverlappedAccept::OverlappedAccept() 
     : OverlappedEx{ IOType::ACCEPT } { }
+
+std::shared_ptr<Session> OverlappedAccept::GetSession() {
+    return std::static_pointer_cast<Session>(session);
+}
 
 OverlappedConnect::OverlappedConnect() 
     : OverlappedEx{ IOType::CONNECT } { }

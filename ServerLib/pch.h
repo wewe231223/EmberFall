@@ -6,6 +6,7 @@
 #include <MSWSock.h>
 
 #pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "mswsock.lib")
 
 #include <Windows.h>
 
@@ -44,5 +45,3 @@
 #include "Constants.h"
 #include "OverlappedEx.h"
 #include "Crash.h"
-
-#include <latch>
