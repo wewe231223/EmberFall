@@ -36,5 +36,5 @@ private:
     SOCKET mSocket{ INVALID_SOCKET };
     size_t mPrevRemainSize{ };
     SessionState mState{ SessionState::NONE };
-    OverlappedRecv mRecvOverlappedEx{ };
+    OverlappedRecv mOverlappedRecv{ };
 };

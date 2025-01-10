@@ -5,7 +5,6 @@
 class IOCPCore {
 public:
     IOCPCore();
-
     ~IOCPCore();
 
     IOCPCore(const IOCPCore&) = delete;
@@ -14,6 +13,8 @@ public:
     IOCPCore& operator=(IOCPCore&&) noexcept = delete;
 
 public:
+    void Init(size_t workerThreadNum);
+
     HANDLE GetHandle() const { return mIocpHandle; }
 
     void RegisterSocket(SOCKET socket, ULONG_PTR registerKey);

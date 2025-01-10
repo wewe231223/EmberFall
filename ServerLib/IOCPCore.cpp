@@ -1,14 +1,16 @@
 #include "pch.h"
 #include "IOCPCore.h"
 
-IOCPCore::IOCPCore() {
-    mIocpHandle = ::CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
-    CrashExp(INVALID_HANDLE_VALUE != mIocpHandle, "IOCP Creation Failure");
-}
+IOCPCore::IOCPCore() { }
 
 IOCPCore::~IOCPCore() {
     ::CloseHandle(mIocpHandle);
     mIocpHandle = INVALID_HANDLE_VALUE;
+}
+
+void IOCPCore::Init(size_t workerThreadNum) {
+    mIocpHandle = ::CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, workerThreadNum);
+    CrashExp(INVALID_HANDLE_VALUE != mIocpHandle, "IOCP Creation Failure");
 }
 
 void IOCPCore::RegisterSocket(SOCKET socket, ULONG_PTR registerKey) {
