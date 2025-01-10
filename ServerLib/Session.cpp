@@ -2,7 +2,7 @@
 #include "Session.h"
 
 Session::Session() {
-    mSocket = ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, nullptr, NULL, WSA_FLAG_OVERLAPPED);
+    mSocket = NetworkUtil::CreateSocket();
     CrashExp(mSocket != INVALID_SOCKET, "");
 
     mState = SessionState::DISCONNECTED;
@@ -47,7 +47,22 @@ void Session::Close() {
 void Session::RegisterRecv() {
     DWORD numOfTransffered{ };
     DWORD flag{ };
-    ::WSARecv(mSocket, &mRecvOverlappedEx.wsaBuf, 1, &numOfTransffered, &flag, &mRecvOverlappedEx, nullptr);
+    auto result = ::WSARecv(
+        mSocket, 
+        &mOverlappedRecv.wsaBuf,
+        1, 
+        &numOfTransffered, 
+        &flag, 
+        &mOverlappedRecv, 
+        nullptr
+    );
+
+    if (SOCKET_ERROR == result) {
+        auto errorCode = ::WSAGetLastError();
+        if (WSA_IO_PENDING != errorCode) {
+            RegisterRecv();
+        }
+    }
 }
 
 void Session::SetRemain(size_t remainSize) {
@@ -74,6 +89,12 @@ void Session::RegisterSend(void* packet) {
             RegisterSend(packet);
         }
     }
+}
+
+void Session::ProcessRecv() {
+}
+
+void Session::ProcessSend() {
 }
 
 SessionState Session::GetCurrentState() const {

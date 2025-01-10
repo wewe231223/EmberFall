@@ -22,7 +22,14 @@ void ServerCore::IOWorker() {
     OVERLAPPED* overlapped{ nullptr };
 
     while (true) {
-        auto success = ::GetQueuedCompletionStatus(INVALID_HANDLE_VALUE, &receivedByte, &completionKey, &overlapped, INFINITE);
+        auto success = ::GetQueuedCompletionStatus(
+            INVALID_HANDLE_VALUE, 
+            &receivedByte, 
+            &completionKey, 
+            &overlapped, 
+            INFINITE
+        );
+
         OverlappedEx* overlappedEx = reinterpret_cast<OverlappedEx*>(overlapped);
         SessionIdType clientId = static_cast<SessionIdType>(completionKey);
 

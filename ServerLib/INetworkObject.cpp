@@ -11,6 +11,6 @@ SessionIdType INetworkObject::GetId() const {
 }
 
 void INetworkObject::PostQueuedCompletionStatus() {
-    bool result = ::PostQueuedCompletionStatus(gIOCPCore.GetHandle(), 0, 0, nullptr);
+    bool result = ::PostQueuedCompletionStatus(gIocpCore->GetHandle(), 0, 0, nullptr);
     CrashExp(false != result, "PQCS Failed");
 }

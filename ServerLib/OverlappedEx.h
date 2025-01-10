@@ -6,13 +6,13 @@ struct OverlappedEx : public WSAOVERLAPPED {
     NetworkBuf<BUF_RW_SIZE> buffer;
     WSABUF wsaBuf;
     IOType type;
-    std::weak_ptr<INetworkObject> mOwner;
+    std::shared_ptr<INetworkObject> mOwner;
 
     // method
     OverlappedEx(IOType type);
-    OverlappedEx(char* data, size_t len);
-    OverlappedEx(const std::span<char>& span);
-    OverlappedEx(char* packet);
+    OverlappedEx(IOType type, char* data, size_t len);
+    OverlappedEx(IOType type, const std::span<char>& span);
+    OverlappedEx(IOType type, char* packet);
 
     OverlappedEx(const OverlappedEx&) = delete;
     OverlappedEx(OverlappedEx&&) noexcept = delete;

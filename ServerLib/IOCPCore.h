@@ -17,9 +17,10 @@ public:
     HANDLE GetHandle() const { return mIocpHandle; }
 
     void RegisterSocket(SOCKET socket, ULONG_PTR registerKey);
-
     void RegisterSocket(const INetworkObject* session);
+
+    void IOWorker();
 
 private:
     HANDLE mIocpHandle{ INVALID_HANDLE_VALUE };
-} gIOCPCore;
+};

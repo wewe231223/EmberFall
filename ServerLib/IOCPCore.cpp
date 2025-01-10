@@ -27,3 +27,38 @@ void IOCPCore::RegisterSocket(const INetworkObject* session) {
         return;
     }
 }
+
+void IOCPCore::IOWorker() {
+    DWORD receivedByte{ };
+    ULONG_PTR completionKey{ };
+    OVERLAPPED* overlapped{ nullptr };
+
+    while (true) {
+        auto success = ::GetQueuedCompletionStatus(
+            INVALID_HANDLE_VALUE,
+            &receivedByte,
+            &completionKey,
+            &overlapped,
+            INFINITE
+        );
+
+        OverlappedEx* overlappedEx = reinterpret_cast<OverlappedEx*>(overlapped);
+        SessionIdType clientId = static_cast<SessionIdType>(completionKey);
+
+        if (not success) {
+            if (IOType::ACCEPT == overlappedEx->type) {
+                if (overlappedEx->mOwner.expired()) {
+                    // TODO
+                }
+                continue;
+            }
+            else {
+                // TODO
+                //mClientManager->CloseSession(clientId);
+                continue;
+            }
+        }
+
+        std::shared_ptr<INetworkObject> owener = overlappedEx->mOwner.lock();
+    }
+}

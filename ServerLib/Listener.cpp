@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Listener.h"
 #include "Session.h"
+#include "SessionManager.h"
 
 Listener::Listener(const std::string& localIp, const unsigned short port)
     : mLocalIp{ localIp }, mLocalPort{ port } {
@@ -44,9 +45,10 @@ void Listener::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
 }
 
 void Listener::RegisterAccept() {
-    std::shared_ptr<Session> session = std::make_shared<Session>();
+    //std::shared_ptr<Session> session = std::make_shared<Session>();
+    std::shared_ptr<Session> session = gSessionManager->CreateSessionObject();
 
-    ::memset(&mAcceptOverlappedEx, 0, sizeof(OVERLAPPED));
+    ::memset(&mOverlappedAccept, 0, sizeof(OVERLAPPED));
     SOCKET clientSocket = reinterpret_cast<SOCKET>(session->GetHandle());
 
     INT addrSize{ sizeof(sockaddr_in) + 16 }; // addrsize는 내부 구현상 사용하는 주소체게 구조체 크기 + 16이 되어야함
@@ -54,12 +56,12 @@ void Listener::RegisterAccept() {
     auto registSuccess = ::AcceptEx(
         mListenSocket,
         clientSocket,
-        &mAcceptOverlappedEx.wsaBuf,
+        &mOverlappedAccept.wsaBuf,
         0,
         addrSize,
         addrSize,
         &received,
-        &mAcceptOverlappedEx
+        &mOverlappedAccept
     );
 
     if (not registSuccess) {
@@ -71,5 +73,8 @@ void Listener::RegisterAccept() {
 }
 
 void Listener::ProcessAccept() {
+    auto session = std::static_pointer_cast<Session>(mOverlappedAccept.mOwner);
+    mOverlappedAccept.mOwner.reset();
 
+    gSessionManager->AddSession(session->GetId(), session);
 }
