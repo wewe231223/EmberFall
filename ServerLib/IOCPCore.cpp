@@ -9,7 +9,7 @@ IOCPCore::~IOCPCore() {
 }
 
 void IOCPCore::Init(size_t workerThreadNum) {
-    mIocpHandle = ::CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, workerThreadNum);
+    mIocpHandle = ::CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, static_cast<DWORD>(workerThreadNum));
     CrashExp(INVALID_HANDLE_VALUE != mIocpHandle, "IOCP Creation Failure");
 }
 
@@ -49,7 +49,7 @@ void IOCPCore::IOWorker() {
 
         if (not success) {
             if (IOType::ACCEPT == overlappedEx->type) {
-                if (overlappedEx->mOwner.expired()) {
+                if (overlappedEx->mOwner) {
                     // TODO
                 }
                 continue;
@@ -61,6 +61,6 @@ void IOCPCore::IOWorker() {
             }
         }
 
-        std::shared_ptr<INetworkObject> owener = overlappedEx->mOwner.lock();
+        std::shared_ptr<INetworkObject> owener = overlappedEx->mOwner;
     }
 }

@@ -19,12 +19,12 @@ namespace NetworkUtil {
     }
 
     template <typename T>
-    bool SetSocketOpt(SOCKET socket, int level, int option, T optval)
+    inline bool SetSocketOpt(SOCKET socket, int level, int option, T optval)
     {
         return SOCKET_ERROR != ::setsockopt(socket, level, option, reinterpret_cast<T>(optval), sizeof(optval));
     }
 
-    SOCKET CreateSocket()
+    inline SOCKET CreateSocket()
     {
         return ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, nullptr, NULL, WSA_FLAG_OVERLAPPED);
     }
