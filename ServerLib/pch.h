@@ -16,6 +16,7 @@
 // I/O header
 #include <iostream>
 #include <fstream>
+#include <print>
 
 // container
 #include <array>

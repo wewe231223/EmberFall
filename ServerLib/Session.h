@@ -27,14 +27,22 @@ public:
 
     SessionState GetCurrentState() const;
 
+    void InitSessionNetAddress(char* addressBuffer);
+    std::pair<std::string, UINT16> GetAddress() const;
+
     /* std::lock_guard 사용을 위한 함수 정의 */
     void lock();
     void unlock();
 
 private:
     std::mutex mLock{ };
-    SOCKET mSocket{ INVALID_SOCKET };
-    size_t mPrevRemainSize{ };
+
+    std::string mIP{ };
+    UINT16 mPort{ };
+
     SessionState mState{ SessionState::NONE };
+    size_t mPrevRemainSize{ };
+
+    SOCKET mSocket{ INVALID_SOCKET };
     OverlappedRecv mOverlappedRecv{ };
 };

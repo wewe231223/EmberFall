@@ -3,7 +3,7 @@
 
 Session::Session() {
     mSocket = NetworkUtil::CreateSocket();
-    CrashExp(mSocket != INVALID_SOCKET, "");
+    CrashExp(mSocket == INVALID_SOCKET, "");
 
     mState = SessionState::DISCONNECTED;
 }
@@ -48,12 +48,12 @@ void Session::RegisterRecv() {
     DWORD numOfTransffered{ };
     DWORD flag{ };
     auto result = ::WSARecv(
-        mSocket, 
+        mSocket,
         &mOverlappedRecv.wsaBuf,
-        1, 
-        &numOfTransffered, 
-        &flag, 
-        &mOverlappedRecv, 
+        1,
+        &numOfTransffered,
+        &flag,
+        &mOverlappedRecv,
         nullptr
     );
 
@@ -73,12 +73,12 @@ void Session::RegisterSend(void* packet) {
     OverlappedSend* overlappedSend = new OverlappedSend{ reinterpret_cast<char*>(packet) };
     overlappedSend->owner = shared_from_this();
     auto result = ::WSASend(
-        mSocket, 
-        &overlappedSend->wsaBuf, 
-        1, 
-        0, 
-        0, 
-        overlappedSend, 
+        mSocket,
+        &overlappedSend->wsaBuf,
+        1,
+        0,
+        0,
+        overlappedSend,
         nullptr
     );
 
@@ -92,13 +92,41 @@ void Session::RegisterSend(void* packet) {
 }
 
 void Session::ProcessRecv() {
+    // TODO
 }
 
 void Session::ProcessSend() {
+    // TODO
 }
 
 SessionState Session::GetCurrentState() const {
     return mState;
+}
+
+void Session::InitSessionNetAddress(char* addressBuffer) {
+    sockaddr_in* localAddr{ nullptr };
+    sockaddr_in* remoteAddr{ nullptr };
+    int localAddrLen = 0;
+    int remoteAddrLen = 0;
+
+    GetAcceptExSockaddrs(
+        addressBuffer,
+        0,
+        sizeof(sockaddr_in) + 16,
+        sizeof(sockaddr_in) + 16,
+        reinterpret_cast<sockaddr**>(&localAddr),
+        &localAddrLen,
+        reinterpret_cast<sockaddr**>(&remoteAddr),
+        &remoteAddrLen
+    );
+
+    mIP.resize(INET_ADDRSTRLEN);
+    ::inet_ntop(AF_INET, &localAddr->sin_addr, mIP.data(), INET_ADDRSTRLEN);
+    mPort = ::ntohs(localAddr->sin_port);
+}
+
+std::pair<std::string, UINT16> Session::GetAddress() const {
+    return std::make_pair(mIP, mPort);
 }
 
 void Session::lock() {

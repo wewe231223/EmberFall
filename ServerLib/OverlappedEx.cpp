@@ -3,26 +3,8 @@
 #include "Session.h"
 
 OverlappedEx::OverlappedEx(IOType type)
-    : buffer{ }, wsaBuf{ 0, nullptr }, type{ type } {
+    : wsaBuf{ 0, nullptr }, type{ type } {
     ResetOverlapped();
-}
-
-OverlappedEx::OverlappedEx(IOType type, char* data, size_t len)
-    : buffer{ }, wsaBuf{ static_cast<UINT32>(len), buffer.data() }, type{ type } {
-    ResetOverlapped();
-    ::memcpy(buffer.data(), data, len);
-}
-
-OverlappedEx::OverlappedEx(IOType type, const std::span<char>& span)
-    : buffer{ }, wsaBuf{ static_cast<UINT32>(span.size()), buffer.data() }, type{ type } {
-    ResetOverlapped();
-    ::memcpy(buffer.data(), span.data(), span.size());
-}
-
-OverlappedEx::OverlappedEx(IOType type, char* packet)
-    : buffer{ }, wsaBuf{ static_cast<UINT32>(packet[0]), buffer.data() }, type{ type } {
-    ResetOverlapped();
-    ::memcpy(buffer.data(), packet, static_cast<size_t>(packet[0]));
 }
 
 WSAOVERLAPPED* OverlappedEx::GetRawPtr() {
@@ -33,27 +15,42 @@ void OverlappedEx::ResetOverlapped() {
     ::memset(this, 0, sizeof(OVERLAPPED));
 }
 
-OverlappedAccept::OverlappedAccept() 
-    : OverlappedEx{ IOType::ACCEPT } { }
+OverlappedAccept::OverlappedAccept()
+    : OverlappedEx{ IOType::ACCEPT }, buffer{ } { }
 
 std::shared_ptr<Session> OverlappedAccept::GetSession() {
     return std::static_pointer_cast<Session>(session);
 }
 
-OverlappedConnect::OverlappedConnect() 
+OverlappedConnect::OverlappedConnect()
     : OverlappedEx{ IOType::CONNECT } { }
 
-OverlappedRecv::OverlappedRecv() 
+OverlappedRecv::OverlappedRecv()
     :OverlappedEx{ IOType::RECV } { }
 
-OverlappedSend::OverlappedSend() 
-    : OverlappedEx{ IOType::SEND } { }
+OverlappedSend::OverlappedSend()
+    : OverlappedEx{ IOType::SEND }, buffer{ } { }
 
-OverlappedSend::OverlappedSend(char* data, size_t len) 
-    : OverlappedEx{ IOType::SEND, data, len } { }
+OverlappedSend::OverlappedSend(char* data, size_t len)
+    : OverlappedEx{ IOType::SEND }, buffer{ } {
+    ResetOverlapped();
+    ::memcpy(buffer.data(), data, len);
+    wsaBuf.buf = buffer.data();
+    wsaBuf.len = static_cast<ULONG>(len);
+}
 
 OverlappedSend::OverlappedSend(const std::span<char>& span)
-    : OverlappedEx{ IOType::SEND, span} { }
+    : OverlappedEx{ IOType::SEND }, buffer{ } {
+    ResetOverlapped();
+    ::memcpy(buffer.data(), span.data(), span.size());
+    wsaBuf.buf = buffer.data();
+    wsaBuf.len = static_cast<ULONG>(span.size());
+}
 
 OverlappedSend::OverlappedSend(char* packet)
-    : OverlappedEx{ IOType::SEND, packet } { }
+    : OverlappedEx{ IOType::SEND }, buffer{ } {
+    ResetOverlapped();
+    ::memcpy(buffer.data(), packet, static_cast<size_t>(packet[0]));
+    wsaBuf.buf = buffer.data();
+    wsaBuf.len = packet[0];
+}

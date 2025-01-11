@@ -79,10 +79,12 @@ void Listener::ProcessAccept() {
     auto session = mOverlappedAccept.GetSession();
 
     if (true == gSessionManager->AddSession(session->GetId(), session)) {
-        std::cout << "Client Connected" << std::endl;
+        session->InitSessionNetAddress(mOverlappedAccept.buffer.data());
+        auto [ip, port] = session->GetAddress();
+        std::cout << std::format("Client [IP: {}, PORT: {}] Connected\n", ip, port);
     }
     else {
-        std::cout << "Client Connect Failure" << std::endl;
+        std::cout << "Client Connect Failure\n";
     }
 
     mOverlappedAccept.owner.reset();
