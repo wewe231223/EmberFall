@@ -3,10 +3,6 @@
 #include "INetworkObject.h"
 
 struct OverlappedEx : public WSAOVERLAPPED {
-    WSABUF wsaBuf;
-    IOType type;
-    std::shared_ptr<INetworkObject> owner;
-
     // method
     OverlappedEx(IOType type);
 
@@ -18,13 +14,15 @@ struct OverlappedEx : public WSAOVERLAPPED {
     WSAOVERLAPPED* GetRawPtr();
 
     void ResetOverlapped();
+
+public:
+    WSABUF wsaBuf;
+    IOType type;
+    std::shared_ptr<INetworkObject> owner;
 };
 
 inline constexpr size_t ADDR_BUF_SIZE = (sizeof(sockaddr_in) + 16) * 2;
 struct OverlappedAccept : public OverlappedEx {
-    NetworkBuf<ADDR_BUF_SIZE> buffer;
-    std::shared_ptr<INetworkObject> session;
-
     OverlappedAccept();
 
     OverlappedAccept(const OverlappedAccept&) = delete;
@@ -33,6 +31,10 @@ struct OverlappedAccept : public OverlappedEx {
     OverlappedAccept& operator=(OverlappedAccept&&) noexcept = delete;
 
     std::shared_ptr<class Session> GetSession();
+
+public:
+    NetworkBuf<ADDR_BUF_SIZE> buffer;
+    std::shared_ptr<INetworkObject> session;
 };
 
 struct OverlappedConnect : public OverlappedEx {
@@ -51,11 +53,12 @@ struct OverlappedRecv : public OverlappedEx {
     OverlappedRecv(OverlappedRecv&&) noexcept = delete;
     OverlappedRecv& operator=(const OverlappedRecv&) = delete;
     OverlappedRecv& operator=(OverlappedRecv&&) noexcept = delete;
+
+public:
+    NetworkBuf<BUF_RW_SIZE> buffer;
 };
 
 struct OverlappedSend : public OverlappedEx {
-    NetworkBuf<BUF_RW_SIZE> buffer;
-
     OverlappedSend();
     OverlappedSend(char* data, size_t len);
     OverlappedSend(const std::span<char>& span);
@@ -65,4 +68,7 @@ struct OverlappedSend : public OverlappedEx {
     OverlappedSend(OverlappedSend&&) noexcept = delete;
     OverlappedSend& operator=(const OverlappedSend&) = delete;
     OverlappedSend& operator=(OverlappedSend&&) noexcept = delete;
+
+public:
+    NetworkBuf<BUF_RW_SIZE> buffer;
 };

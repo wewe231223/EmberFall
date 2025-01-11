@@ -22,8 +22,8 @@ public:
     virtual void Close() override;
     void RegisterRecv();
     void RegisterSend(void* packet);
-    void ProcessRecv();
-    void ProcessSend();
+    void ProcessRecv(INT32 numOfBytes);
+    void ProcessSend(INT32 numOfBytes);
 
     SessionState GetCurrentState() const;
 

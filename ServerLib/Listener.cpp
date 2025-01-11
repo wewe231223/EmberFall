@@ -6,7 +6,7 @@
 Listener::Listener(const std::string& localIp, const unsigned short port)
     : mLocalIp{ localIp }, mLocalPort{ port } {
     mListenSocket = NetworkUtil::CreateSocket();
-    CrashExp(INVALID_SOCKET != mListenSocket, "");
+    CrashExp(INVALID_SOCKET == mListenSocket, "");
 
     sockaddr_in sockAddr{ };
     sockAddr.sin_family = AF_INET;
@@ -40,7 +40,8 @@ void Listener::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
         return;
     }
 
-    // TODO
+    ProcessAccept();
+
     RegisterAccept();
 }
 
@@ -59,7 +60,7 @@ void Listener::RegisterAccept() {
     auto registSuccess = ::AcceptEx(
         mListenSocket,
         clientSocket,
-        &mOverlappedAccept.wsaBuf,
+        mOverlappedAccept.buffer.data(),
         0,
         addrSize,
         addrSize,
@@ -78,7 +79,7 @@ void Listener::RegisterAccept() {
 void Listener::ProcessAccept() {
     auto session = mOverlappedAccept.GetSession();
 
-    if (true == gSessionManager->AddSession(session->GetId(), session)) {
+    if (true == gSessionManager->AddSession(session)) {
         session->InitSessionNetAddress(mOverlappedAccept.buffer.data());
         auto [ip, port] = session->GetAddress();
         std::cout << std::format("Client [IP: {}, PORT: {}] Connected\n", ip, port);

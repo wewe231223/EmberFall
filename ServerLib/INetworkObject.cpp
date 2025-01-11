@@ -6,6 +6,10 @@ INetworkObject::INetworkObject() { }
 
 INetworkObject::~INetworkObject() { }
 
+void INetworkObject::InitId(SessionIdType id) {
+    mId = id;
+}
+
 SessionIdType INetworkObject::GetId() const {
     return mId;
 }

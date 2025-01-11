@@ -18,7 +18,7 @@ public:
     HANDLE GetHandle() const { return mIocpHandle; }
 
     void RegisterSocket(SOCKET socket, ULONG_PTR registerKey);
-    void RegisterSocket(const INetworkObject* session);
+    void RegisterSocket(const std::shared_ptr<INetworkObject>& networkObject);
 
     void IOWorker();
 

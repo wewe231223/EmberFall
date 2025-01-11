@@ -6,6 +6,7 @@ public:
     virtual ~INetworkObject();
 
 public:
+    void InitId(SessionIdType id);
     SessionIdType GetId() const;
     virtual void Close() abstract;
 

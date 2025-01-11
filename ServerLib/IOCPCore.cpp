@@ -17,11 +17,11 @@ void IOCPCore::RegisterSocket(SOCKET socket, ULONG_PTR registerKey) {
     auto result = ::CreateIoCompletionPort(reinterpret_cast<HANDLE>(socket), mIocpHandle, registerKey, 0);
 }
 
-void IOCPCore::RegisterSocket(const INetworkObject* session) {
+void IOCPCore::RegisterSocket(const std::shared_ptr<INetworkObject>& networkObject) {
     auto result = ::CreateIoCompletionPort(
-        session->GetHandle(),
+        networkObject->GetHandle(),
         mIocpHandle,
-        static_cast<ULONG_PTR>(session->GetId()),
+        static_cast<ULONG_PTR>(networkObject->GetId()),
         0
     );
 

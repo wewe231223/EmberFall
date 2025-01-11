@@ -16,7 +16,7 @@ public:
 
 public:
     std::shared_ptr<Session> CreateSessionObject();
-    bool AddSession(SessionIdType id, std::shared_ptr<Session> session);
+    bool AddSession(std::shared_ptr<Session> session);
     void CloseSession(SessionIdType id);
 
     std::shared_ptr<Session> GetSession(SessionIdType id);

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Session.h"
+#include "SessionManager.h"
 
 Session::Session() {
     mSocket = NetworkUtil::CreateSocket();
@@ -22,6 +23,7 @@ void Session::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
         break;
 
     case IOType::RECV:
+        ProcessRecv(numOfBytes);
         break;
 
     case IOType::CONNECT:
@@ -47,6 +49,11 @@ void Session::Close() {
 void Session::RegisterRecv() {
     DWORD receivedBytes{ };
     DWORD flag{ };
+
+    mOverlappedRecv.ResetOverlapped();
+    mOverlappedRecv.owner = shared_from_this();
+    mOverlappedRecv.wsaBuf.buf = mOverlappedRecv.buffer.data();
+    mOverlappedRecv.wsaBuf.len = static_cast<UINT32>(mOverlappedRecv.buffer.size());
     auto result = ::WSARecv(
         mSocket,
         &mOverlappedRecv.wsaBuf,
@@ -91,11 +98,21 @@ void Session::RegisterSend(void* packet) {
     }
 }
 
-void Session::ProcessRecv() {
+void Session::ProcessRecv(INT32 numOfBytes) {
     // TODO
+    std::cout << std::format("RECV Len: {}\n", numOfBytes);
+    mOverlappedRecv.owner.reset();
+    if (0 >= numOfBytes) {
+        gSessionManager->CloseSession(GetId());
+        return;
+    }
+
+    // 받아온 Recv 버퍼의 내용을 저장해야함.
+
+    RegisterRecv();
 }
 
-void Session::ProcessSend() {
+void Session::ProcessSend(INT32 numOfBytes) {
     // TODO
 }
 

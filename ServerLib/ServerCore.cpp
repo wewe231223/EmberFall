@@ -19,7 +19,7 @@ void ServerCore::Start(const std::string& ip, const unsigned short port, size_t 
 
     gIocpCore->Init(workerThreadNum);
     mListener = std::make_unique<Listener>(ip, port);
-    gIocpCore->RegisterSocket(mListener.get());
+    gIocpCore->RegisterSocket(mListener);
     mListener->RegisterAccept();
 
     for (size_t i = 0; i < workerThreadNum; ++i) {

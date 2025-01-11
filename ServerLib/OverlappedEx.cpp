@@ -26,7 +26,10 @@ OverlappedConnect::OverlappedConnect()
     : OverlappedEx{ IOType::CONNECT } { }
 
 OverlappedRecv::OverlappedRecv()
-    :OverlappedEx{ IOType::RECV } { }
+    :OverlappedEx{ IOType::RECV }, buffer{ } { 
+    wsaBuf.buf = buffer.data();
+    wsaBuf.len = static_cast<ULONG>(buffer.size());
+}
 
 OverlappedSend::OverlappedSend()
     : OverlappedEx{ IOType::SEND }, buffer{ } { }
