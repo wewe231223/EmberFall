@@ -214,7 +214,7 @@ void Renderer::InitDepthStencilBuffer() {
 
 	auto resourceDesc = CD3DX12_RESOURCE_DESC::Tex2D(
 		DXGI_FORMAT_D32_FLOAT,
-		Config::WINDOW_WIDTH<UINT>, 
+		Config::WINDOW_WIDTH<UINT64>, 
 		Config::WINDOW_HEIGHT<UINT>, 
 		1, 0, 1, 0, 
 		D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
@@ -246,7 +246,7 @@ void Renderer::FlushCommandQueue() {
 		CrashExp(eventHandle != nullptr, "Event can not be nullptr");
 
 		mDirectXImpl->mFence->SetEventOnCompletion(mDirectXImpl->mFenceValue, eventHandle);
-		WaitForSingleObject(eventHandle, INFINITE);
-		CloseHandle(eventHandle);
+		::WaitForSingleObject(eventHandle, INFINITE);
+		::CloseHandle(eventHandle);
 	}
 }
