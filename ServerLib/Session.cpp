@@ -3,7 +3,7 @@
 
 Session::Session() {
     mSocket = NetworkUtil::CreateSocket();
-    CrashExp(mSocket == INVALID_SOCKET, "");
+    CrashExp(INVALID_SOCKET == mSocket, "");
 
     mState = SessionState::DISCONNECTED;
 }
@@ -45,13 +45,13 @@ void Session::Close() {
 }
 
 void Session::RegisterRecv() {
-    DWORD numOfTransffered{ };
+    DWORD receivedBytes{ };
     DWORD flag{ };
     auto result = ::WSARecv(
         mSocket,
         &mOverlappedRecv.wsaBuf,
         1,
-        &numOfTransffered,
+        &receivedBytes,
         &flag,
         &mOverlappedRecv,
         nullptr

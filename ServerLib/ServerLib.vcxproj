@@ -71,10 +71,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)Lib\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)out\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)Lib\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)out\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -152,6 +152,7 @@
     <ClInclude Include="INetworkObject.h" />
     <ClInclude Include="IOCPCore.h" />
     <ClInclude Include="Listener.h" />
+    <ClInclude Include="Lock.h" />
     <ClInclude Include="OverlappedEx.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ServerCore.h" />
@@ -165,6 +166,7 @@
     <ClCompile Include="INetworkObject.cpp" />
     <ClCompile Include="IOCPCore.cpp" />
     <ClCompile Include="Listener.cpp" />
+    <ClCompile Include="Lock.cpp" />
     <ClCompile Include="OverlappedEx.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

@@ -49,6 +49,9 @@
     <ClCompile Include="Listener.cpp">
       <Filter>Server</Filter>
     </ClCompile>
+    <ClCompile Include="Lock.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils.h">
@@ -86,6 +89,9 @@
     </ClInclude>
     <ClInclude Include="Listener.h">
       <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Lock.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
