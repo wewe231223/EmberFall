@@ -52,11 +52,6 @@ void IOCPCore::IOWorker() {
                 std::cout << "Accept Error!" << std::endl;
                 Crash("");
             }
-            else {
-                // TODO
-                //mClientManager->CloseSession(clientId);
-                continue;
-            }
         }
 
         overlappedEx->owner->ProcessOverlapped(overlappedEx, receivedByte);
