@@ -16,21 +16,30 @@
     <Filter Include="Core">
       <UniqueIdentifier>{753ab945-fe3e-45fd-9671-00512ba9013a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource">
+      <UniqueIdentifier>{42bedd54-c68b-433d-8a07-0566c1b390e7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="core\Renderer.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Core\Renderer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\Texture.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="core\Renderer.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Renderer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\Texture.h">
+      <Filter>Resource</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

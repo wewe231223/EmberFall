@@ -72,7 +72,7 @@ void Renderer::Render() {
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mDirectXImpl->mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mDirectXImpl->mRTIndex), rtvDescriptorSize };
 	auto dsvHandle = mDirectXImpl->mDSHeap->GetCPUDescriptorHandleForHeapStart();
 	
-	mDirectXImpl->mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::CornflowerBlue, 0, nullptr);
+	mDirectXImpl->mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
 	mDirectXImpl->mCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	mDirectXImpl->mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 
@@ -92,7 +92,6 @@ void Renderer::Render() {
 
 	mDirectXImpl->mCommandList->RSSetViewports(1, &viewport);
 	mDirectXImpl->mCommandList->RSSetScissorRects(1, &scissorRect);
-
 
 	// Rendering... 
 
