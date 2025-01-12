@@ -28,7 +28,7 @@ struct OverlappedAccept : public OverlappedEx {
     OverlappedAccept(const OverlappedAccept&) = delete;
     OverlappedAccept(OverlappedAccept&&) noexcept = delete;
     OverlappedAccept& operator=(const OverlappedAccept&) = delete;
-    OverlappedAccept& operator=(OverlappedAccept&&) noexcept = delete;
+    OverlappedAccept& operator=(OverlappedAccept&&) noexcept = delete;  
 
     std::shared_ptr<class Session> GetSession();
 

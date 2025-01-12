@@ -3,16 +3,27 @@
 #include "Session.h"
 #include "IOCPCore.h"
 
-SessionManager::SessionManager() { }
+SessionManager::SessionManager() { 
+    for (size_t i = 0; i < MAX_SESSION_VAL; ++i) {
+        mSessionIdMap.push(i); // Initialize Id
+    }
+}
 
-SessionManager::~SessionManager() { }
+SessionManager::~SessionManager() { 
+    mSessions.clear();
+}
 
 std::shared_ptr<Session> SessionManager::CreateSessionObject() {
     return std::make_shared<Session>();
 }
 
 bool SessionManager::AddSession(std::shared_ptr<Session> session) {
-    auto id = mSessionCount.fetch_add(1); // temp code
+    SessionIdType id{ };
+    if (not mSessionIdMap.try_pop(id)) {
+        return false;
+    }
+
+    mSessionCount.fetch_add(1);
 
     mSessions[id] = session;
     session->InitId(id);
@@ -28,7 +39,9 @@ void SessionManager::CloseSession(SessionIdType id) {
     std::lock_guard sessionsGuard{ mSessionsLock };
     auto it = mSessions.find(id);
     if (it != mSessions.end()) {
+        mSessionIdMap.push(id);
         mSessions.unsafe_erase(it);
+        mSessionCount.fetch_sub(1);
         std::cout << std::format("Session[{}]: erased from session map\n", id);
     }
 }

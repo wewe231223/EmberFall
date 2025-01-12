@@ -3,6 +3,7 @@
 class Session;
 
 class SessionManager {
+    inline constexpr static size_t MAX_SESSION_VAL = std::numeric_limits<SessionIdType>::max();
     inline constexpr static size_t MAX_CLIENT_SIZE = 10;
 
 public:
@@ -22,7 +23,10 @@ public:
     std::shared_ptr<Session> GetSession(SessionIdType id);
 
 private:
-    std::mutex mSessionsLock;
+    std::mutex mSessionsLock{ };
     std::atomic<SessionIdType> mSessionCount{ };
-    Concurrency::concurrent_unordered_map<SessionIdType, std::shared_ptr<Session>> mSessions;
+    Concurrency::concurrent_unordered_map<SessionIdType, std::shared_ptr<Session>> mSessions{ };
+
+    /* 세션에 대한 Id 들을 미리 담아놓기 위한 Queue */
+    Concurrency::concurrent_queue<SessionIdType> mSessionIdMap{ };
 };
