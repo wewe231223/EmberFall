@@ -30,6 +30,12 @@
     <ClCompile Include="Resource\Texture.cpp">
       <Filter>Resource</Filter>
     </ClCompile>
+    <ClCompile Include="Core\ResourceManager.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\DefaultBuffer.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -39,6 +45,12 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Resource\Texture.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ResourceManager.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\DefaultBuffer.h">
       <Filter>Resource</Filter>
     </ClInclude>
   </ItemGroup>

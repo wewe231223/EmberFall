@@ -95,6 +95,8 @@ void Renderer::Render() {
 
 	// Rendering... 
 
+
+
 	barrier = CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 	mDirectXImpl->mCommandList->ResourceBarrier(1, &barrier);
 

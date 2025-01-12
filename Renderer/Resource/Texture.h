@@ -11,8 +11,7 @@
 class Texture {
 public:
 	Texture();
-	
-	Texture(DXGI_FORMAT format, UINT64 width, UINT height, const D3D12_HEAP_PROPERTIES& heapProperties, D3D12_HEAP_FLAGS heapFlag, D3D12_RESOURCE_FLAGS resourceFlag,const D3D12_CLEAR_VALUE& clearValue);
+	Texture(ComPtr<ID3D12Device> device, DXGI_FORMAT format, UINT64 width, UINT height, D3D12_HEAP_FLAGS heapFlag, D3D12_RESOURCE_FLAGS resourceFlag);
 	Texture(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const std::filesystem::path& filePath);
 
 	Texture(const Texture&) = delete;
@@ -23,10 +22,9 @@ public:
 public:
 	ComPtr<ID3D12Resource> Get();
 	ID3D12Resource** GetAddressOf();
-
-
+private:
+	void LoadDefaultTexture(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
 private:
 	ComPtr<ID3D12Resource> mResource{ nullptr };
-
 	ComPtr<ID3D12Resource> mUploadbuffer{ nullptr };
 };
