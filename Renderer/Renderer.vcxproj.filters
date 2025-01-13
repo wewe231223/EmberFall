@@ -53,5 +53,8 @@
     <ClInclude Include="Resource\DefaultBuffer.h">
       <Filter>Resource</Filter>
     </ClInclude>
+    <ClInclude Include="Core\Defines.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

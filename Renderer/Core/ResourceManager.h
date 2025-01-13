@@ -6,6 +6,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "../Utility/DirectXInclude.h"
+#include "../Resource/DefaultBuffer.h"
+#include "../Core/Defines.h"
 
 class ResourceManager {
 public:
@@ -20,4 +22,6 @@ public:
 public:
 private:
 	ComPtr<ID3D12DescriptorHeap> mTextureHeap{ nullptr };
+
+	DefaultBuffer<ModelContext> mModelContexts{};
 };

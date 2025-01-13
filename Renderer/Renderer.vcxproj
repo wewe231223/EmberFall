@@ -153,6 +153,7 @@
     <ClCompile Include="Resource\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Core\Defines.h" />
     <ClInclude Include="Core\Renderer.h" />
     <ClInclude Include="Core\ResourceManager.h" />
     <ClInclude Include="pch.h" />
