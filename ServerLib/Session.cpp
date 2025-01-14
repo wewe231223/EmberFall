@@ -122,10 +122,6 @@ void Session::ProcessRecv(INT32 numOfBytes) {
     std::cout << std::format("RECV Len: {}\n", numOfBytes);
     mOverlappedRecv.owner.reset();
     if (0 >= numOfBytes) {
-        if (0 > numOfBytes) {
-            std::cout << "Recv Error" << std::endl;
-        }
-
         gSessionManager->CloseSession(GetId());
         return;
     }

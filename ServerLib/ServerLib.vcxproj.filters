@@ -52,6 +52,9 @@
     <ClCompile Include="Lock.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="PacketHandler.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils.h">
@@ -92,6 +95,9 @@
     </ClInclude>
     <ClInclude Include="Lock.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketHandler.h">
+      <Filter>Server</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
