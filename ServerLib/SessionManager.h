@@ -1,5 +1,22 @@
 #pragma once
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// SessionManager
+// 2025 - 01 - 14 (설명 추가 날짜)
+//      김성준: Session객체 관리
+//              Send, SendAll을 통해 Send 작업 등록
+// 
+// ID
+//      Session의 ID는 MAX_CLIENT 만큼 concurrent_queue에 미리 저장
+//      try_pop이 실패하면 모든 Session이 연결되어 있는 것 -> 더이상 연결 X
+// 
+// 01 - 14 
+//      Session Map에 대한 Lock을 SRWLock으로 변경
+//      Send 함수에서는 Write 연산 X 동시에 여러 Send 작업이 수행될 수 있도록 변경
+// 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 class Session;
 
 class SessionManager {
