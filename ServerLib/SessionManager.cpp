@@ -58,7 +58,7 @@ void SessionManager::Send(SessionIdType to, void* packet) {
     }
 
     auto session = it->second;
-    if (SessionState::DISCONNECTED == session->GetCurrentState()) {
+    if (false == session->IsConnected()) {
         return;
     }
 
@@ -68,7 +68,7 @@ void SessionManager::Send(SessionIdType to, void* packet) {
 void SessionManager::SendAll(void* packet) {
     Lock::SRWLockGuard sessionsGuard{ Lock::SRW_MODE::SRW_READ, mSessionsLock };
     for (auto& [id, session] : mSessions) {
-        if (SessionState::DISCONNECTED == session->GetCurrentState()) {
+        if (false == session->IsConnected()) {
             continue;
         }
 

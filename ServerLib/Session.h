@@ -26,6 +26,7 @@ public:
     void ProcessSend(INT32 numOfBytes);
 
     SessionState GetCurrentState() const;
+    bool IsConnected() const;
 
     void InitSessionNetAddress(char* addressBuffer);
     std::pair<std::string, UINT16> GetAddress() const;
@@ -41,6 +42,7 @@ private:
     UINT16 mPort{ };
 
     SessionState mState{ SessionState::NONE };
+    std::atomic_bool mConnected{ false }; // 01-14 클라이언트 연결여부를 atomic_bool로 수정
     size_t mPrevRemainSize{ };
 
     SOCKET mSocket{ INVALID_SOCKET };

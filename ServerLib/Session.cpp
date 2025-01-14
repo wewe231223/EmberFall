@@ -5,8 +5,6 @@
 Session::Session() {
     mSocket = NetworkUtil::CreateSocket();
     CrashExp(INVALID_SOCKET == mSocket, "");
-
-    mState = SessionState::DISCONNECTED;
 }
 
 Session::~Session() {
@@ -36,14 +34,12 @@ void Session::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
 }
 
 void Session::Close() {
-    if (INVALID_SOCKET == mSocket) {
-        return;
+    if (false == mConnected.exchange(false)) { // 원래 값이 false였다면 이미 다른 쓰레드가 이 함수에 접근한 것
+        return; // 이경우 해당 쓰레드에서 별다른 작업을 할 필요는 없다.
     }
 
-    ::shutdown(mSocket, SD_BOTH);
     ::closesocket(mSocket);
     mSocket = INVALID_SOCKET;
-    mState = SessionState::CONNECTED;
 }
 
 void Session::RegisterRecv() {
@@ -120,7 +116,15 @@ SessionState Session::GetCurrentState() const {
     return mState;
 }
 
+bool Session::IsConnected() const {
+    return mConnected.load();
+}
+
 void Session::InitSessionNetAddress(char* addressBuffer) {
+    if (true == mConnected.exchange(true)) {
+        return;
+    }
+
     sockaddr_in* localAddr{ nullptr };
     sockaddr_in* remoteAddr{ nullptr };
     int localAddrLen = 0;
