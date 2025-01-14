@@ -5,7 +5,7 @@
 
 SessionManager::SessionManager() { 
     for (size_t i = 0; i < MAX_SESSION_VAL; ++i) {
-        mSessionIdMap.push(i); // Initialize Id
+        mSessionIdMap.push(static_cast<SessionIdType>(i)); // Initialize Id
     }
 }
 

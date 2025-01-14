@@ -18,6 +18,7 @@ HANDLE Session::GetHandle() const {
 void Session::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
     switch (overlapped->type) {
     case IOType::SEND:
+        delete overlapped;
         break;
 
     case IOType::RECV:
@@ -94,14 +95,43 @@ void Session::RegisterSend(void* packet) {
     }
 }
 
+void Session::RegisterSend(void* data, size_t size) {
+    OverlappedSend* overlappedSend = new OverlappedSend{ reinterpret_cast<char*>(data), size };
+    overlappedSend->owner = shared_from_this();
+    auto result = ::WSASend(
+        mSocket,
+        &overlappedSend->wsaBuf,
+        1,
+        0,
+        0,
+        overlappedSend,
+        nullptr
+    );
+
+    if (SOCKET_ERROR == result) {
+        auto errorCode = ::WSAGetLastError();
+        if (WSA_IO_PENDING != errorCode) {
+            delete overlappedSend;
+            RegisterSend(data, size);
+        }
+    }
+}
+
 void Session::ProcessRecv(INT32 numOfBytes) {
     // TODO
     std::cout << std::format("RECV Len: {}\n", numOfBytes);
     mOverlappedRecv.owner.reset();
     if (0 >= numOfBytes) {
+        if (0 > numOfBytes) {
+            std::cout << "Recv Error" << std::endl;
+        }
+
         gSessionManager->CloseSession(GetId());
         return;
     }
+
+    // Echo Test
+    RegisterSend(mOverlappedRecv.buffer.data(), numOfBytes);
 
     // 받아온 Recv 버퍼의 내용을 저장해야함.
 
@@ -110,10 +140,6 @@ void Session::ProcessRecv(INT32 numOfBytes) {
 
 void Session::ProcessSend(INT32 numOfBytes) {
     // TODO
-}
-
-SessionState Session::GetCurrentState() const {
-    return mState;
 }
 
 bool Session::IsConnected() const {

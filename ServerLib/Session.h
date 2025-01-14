@@ -2,12 +2,6 @@
 
 #include "INetworkObject.h"
 
-enum class SessionState : UINT {
-    CONNECTED,
-    DISCONNECTED,
-    NONE,
-};
-
 class Session : public INetworkObject {
 public:
     Session();
@@ -22,10 +16,10 @@ public:
     virtual void Close() override;
     void RegisterRecv();
     void RegisterSend(void* packet);
+    void RegisterSend(void* data, size_t size);
     void ProcessRecv(INT32 numOfBytes);
     void ProcessSend(INT32 numOfBytes);
 
-    SessionState GetCurrentState() const;
     bool IsConnected() const;
 
     void InitSessionNetAddress(char* addressBuffer);
@@ -41,7 +35,6 @@ private:
     std::string mIP{ };
     UINT16 mPort{ };
 
-    SessionState mState{ SessionState::NONE };
     std::atomic_bool mConnected{ false }; // 01-14 클라이언트 연결여부를 atomic_bool로 수정
     size_t mPrevRemainSize{ };
 
