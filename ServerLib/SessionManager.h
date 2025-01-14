@@ -22,8 +22,11 @@ public:
 
     std::shared_ptr<Session> GetSession(SessionIdType id);
 
+    void Send(SessionIdType to, void* packet);
+    void SendAll(void* packet);
+
 private:
-    std::mutex mSessionsLock{ };
+    Lock::SRWLock mSessionsLock{ }; // 01-14 std::mutex -> SRWLock으로 변경
     std::atomic<SessionIdType> mSessionCount{ };
     Concurrency::concurrent_unordered_map<SessionIdType, std::shared_ptr<Session>> mSessions{ };
 

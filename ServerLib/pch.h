@@ -46,3 +46,4 @@
 #include "Constants.h"
 #include "OverlappedEx.h"
 #include "Crash.h"
+#include "Lock.h"

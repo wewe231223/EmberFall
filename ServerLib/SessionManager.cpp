@@ -36,7 +36,7 @@ bool SessionManager::AddSession(std::shared_ptr<Session> session) {
 }
 
 void SessionManager::CloseSession(SessionIdType id) {
-    std::lock_guard sessionsGuard{ mSessionsLock };
+    Lock::SRWLockGuard sessionsGuard{ Lock::SRW_MODE::SRW_WRITE, mSessionsLock };
     auto it = mSessions.find(id);
     if (it != mSessions.end()) {
         mSessionIdMap.push(id);
@@ -48,4 +48,30 @@ void SessionManager::CloseSession(SessionIdType id) {
 
 std::shared_ptr<Session> SessionManager::GetSession(SessionIdType id) {
     return mSessions[id];
+}
+
+void SessionManager::Send(SessionIdType to, void* packet) {
+    Lock::SRWLockGuard sessionsGuard{ Lock::SRW_MODE::SRW_READ, mSessionsLock };
+    auto it = mSessions.find(to);
+    if (it == mSessions.end()) {
+        return;
+    }
+
+    auto session = it->second;
+    if (SessionState::DISCONNECTED == session->GetCurrentState()) {
+        return;
+    }
+
+    session->RegisterSend(packet);
+}
+
+void SessionManager::SendAll(void* packet) {
+    Lock::SRWLockGuard sessionsGuard{ Lock::SRW_MODE::SRW_READ, mSessionsLock };
+    for (auto& [id, session] : mSessions) {
+        if (SessionState::DISCONNECTED == session->GetCurrentState()) {
+            continue;
+        }
+
+        session->RegisterSend(packet);
+    }
 }
