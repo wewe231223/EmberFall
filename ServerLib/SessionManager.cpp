@@ -23,6 +23,7 @@ bool SessionManager::AddSession(std::shared_ptr<Session> session) {
         return false;
     }
 
+    Lock::SRWLockGuard sessionsGuard{ Lock::SRW_MODE::SRW_WRITE, mSessionsLock };
     mSessionCount.fetch_add(1);
 
     mSessions[id] = session;
@@ -75,3 +76,15 @@ void SessionManager::SendAll(void* packet) {
         session->RegisterSend(packet);
     }
 }
+
+void SessionManager::SendAll(void* data, size_t size) {
+    Lock::SRWLockGuard sessionsGuard{ Lock::SRW_MODE::SRW_READ, mSessionsLock };
+    for (auto& [id, session] : mSessions) {
+        if (false == session->IsConnected()) {
+            continue;
+        }
+
+        session->RegisterSend(data, size);
+    }
+}
+

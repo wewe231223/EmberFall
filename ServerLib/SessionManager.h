@@ -41,6 +41,7 @@ public:
 
     void Send(SessionIdType to, void* packet);
     void SendAll(void* packet);
+    void SendAll(void* data, size_t size);
 
 private:
     Lock::SRWLock mSessionsLock{ }; // 01-14 std::mutex -> SRWLock으로 변경

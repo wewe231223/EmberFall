@@ -11,7 +11,5 @@ public:
 
 private:
     std::shared_ptr<class Listener> mListener;
-    //std::unique_ptr<class PacketHandler> mPacketHandler{ nullptr };
-
     std::vector<std::thread> mWorkerThreads{ };
 };

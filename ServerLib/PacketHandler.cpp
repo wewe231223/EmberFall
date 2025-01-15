@@ -56,32 +56,29 @@ PacketHandler::PacketHandler() { }
 PacketHandler::~PacketHandler() { }
 
 void PacketHandler::Write(void* data, size_t size) {
-    if (true == mSwap.load()) {
-        std::cout << "Wait Swap End..." << std::endl;
-        mSwap.wait(false);
-    }
+    mSwap.wait(true);
+
+    mWriting.store(true);
 
     mWriteCount.fetch_add(1);
     mBuffers[mWriteOnlyIdx].Write(data, size);
     mWriteCount.fetch_sub(1);
-    if (0 == mWriteCount) {
-        mWriteCount.notify_all();
+
+    mWriting.store(0 != mWriteCount);
+    if (true == mSwap.load() and false == mWriting.load()) {
+        std::cout << "notifying Writing End" << std::endl;
+        mWriting.notify_all();
     }
 }
 
 void PacketHandler::Swap() {
-    mSwap.exchange(true);
-    if (0 < mWriteCount.load()) {
-        std::cout << "Wait Writing End..." << std::endl;
-        mWriteCount.wait(0);
-    }
+    mSwap.store(true);
+    mWriting.wait(true);
 
-    std::cout << "Start Swap!..." << std::endl;
     std::swap(mWriteOnlyIdx, mReadOnlyIdx);
     mBuffers[mWriteOnlyIdx].Reset();
 
-    mSwap.exchange(false);
-    std::cout << "Swap End!..." << std::endl;
+    mSwap.store(false);
     mSwap.notify_all();
 }
 
@@ -89,4 +86,12 @@ void PacketHandler::Reset() {
     for (auto& buffer : mBuffers) {
         buffer.Reset();
     }
+}
+
+RecvBuffer& PacketHandler::GetBuffer(bool swap) {
+    if (swap) {
+        Swap();
+    }
+
+    return mBuffers[mReadOnlyIdx];
 }

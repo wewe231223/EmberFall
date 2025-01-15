@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Session.h"
 #include "SessionManager.h"
+#include "PacketHandler.h"
 
 Session::Session() {
     mSocket = NetworkUtil::CreateSocket();
@@ -127,10 +128,12 @@ void Session::ProcessRecv(INT32 numOfBytes) {
     }
 
     // Echo Test
-    RegisterSend(mOverlappedRecv.buffer.data(), numOfBytes);
+    //RegisterSend(mOverlappedRecv.buffer.data(), numOfBytes);
+    mOverlappedRecv.buffer[numOfBytes] = '\n'; // 출력 테스트용
+    numOfBytes += 1;
 
     // 받아온 Recv 버퍼의 내용을 저장해야함.
-
+    gPacketHandler->Write(mOverlappedRecv.buffer.data(), numOfBytes);
     RegisterRecv();
 }
 

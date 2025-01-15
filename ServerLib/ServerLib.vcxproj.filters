@@ -16,7 +16,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Utils.cpp">
+    <ClCompile Include="NetworkUtils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="Types.cpp">
@@ -57,7 +57,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Utils.h">
+    <ClInclude Include="NetworkUtils.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Constants.h">

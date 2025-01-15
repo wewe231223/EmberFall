@@ -8,6 +8,8 @@
 
 #include "../ServerLib/pch.h"
 #include "../ServerLib/ServerCore.h"
+#include "../ServerLib/PacketHandler.h"
+#include "../ServerLib/SessionManager.h"
 
 #pragma comment(lib, "../out/debug/ServerLib.lib")
 
@@ -17,7 +19,17 @@ int main()
     core.Start("127.0.0.1", 7777);
 
     volatile bool test{ true };
-    while (test);
+    while (test) {
+        auto& buffer = gPacketHandler->GetBuffer();
+        if (0 == buffer.Size()) {
+            continue;
+        }
+
+        std::cout << "Total RecvBytes: " << buffer.Size() << std::endl;
+        std::cout << "Contents: " << buffer.Data() << std::endl;
+
+        gSessionManager->SendAll(buffer.Data(), buffer.Size());
+    }
 
     core.End();
 }

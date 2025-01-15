@@ -23,6 +23,7 @@
 // RecvBuffer 의 mReadPos 멤버는 추후 사용예정
 // 
 // !! 완벽히 동작하는지 아직 확인 X (01-15) !!
+//      가끔 Recv 된 데이터가 제대로 써지지 않는 문제가 있음. - 01-15(진행중)
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -65,10 +66,13 @@ public:
     void Swap();
     void Reset(); // unsafe
 
+    RecvBuffer& GetBuffer(bool swap = true);
+
 private:
-    UINT8 mReadOnlyIdx{ };
-    UINT8 mWriteOnlyIdx{ };
+    UINT8 mReadOnlyIdx{ 0 };
+    UINT8 mWriteOnlyIdx{ 1 };
     std::atomic_bool mSwap{ };
+    std::atomic_bool mWriting{ false };
     std::atomic_uchar mWriteCount{ };
     std::array<RecvBuffer, 2> mBuffers{ };
 };
