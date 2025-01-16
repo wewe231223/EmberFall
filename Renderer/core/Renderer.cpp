@@ -7,6 +7,8 @@
 #include "../Config/Config.h"
 #include "../EditorInterface/Console/Console.h"
 
+#include "../Utility/Serializer.h"
+
 struct Renderer::DirectXImpl {
 	ComPtr<IDXGIFactory6> mFactory{ nullptr };
 
@@ -48,6 +50,8 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitDepthStencilBuffer();
 
 	Renderer::FlushCommandQueue();
+
+	Serializer serializer{ "Renderer.bin" };
 
 	Console.Log("Renderer 초기화가 완료되었습니다.", LogType::Info);
 }
