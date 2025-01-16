@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Renderer.h"
+#include "Resource/Texture.h"
 #include "../Utility/Exceptions.h"
 #include "../Utility/Crash.h"
 #include "../Utility/Enumerate.h"
@@ -26,11 +27,11 @@ struct Renderer::DirectXImpl {
 	ComPtr<ID3D12GraphicsCommandList> mCommandList{ nullptr };
 
 	ComPtr<ID3D12DescriptorHeap> mRTVHeap{ nullptr };
-	std::array<ComPtr<ID3D12Resource>, Config::BACKBUFFER_COUNT<UINT>> mRenderTargets{ nullptr };
+	std::array<Texture, Config::BACKBUFFER_COUNT<UINT>> mRenderTargets{};
 	UINT mRTIndex{ 0 };
 
 	ComPtr<ID3D12DescriptorHeap> mDSHeap{ nullptr };
-	ComPtr<ID3D12Resource> mDepthStencilBuffer{ nullptr };
+	Texture mDepthStencilBuffer{};
 };
 
 Renderer::Renderer(HWND rendererWindowHandle) 
@@ -63,7 +64,7 @@ void Renderer::Render() {
 
 	auto& currentBackBuffer = mDirectXImpl->mRenderTargets[mDirectXImpl->mRTIndex];
 
-	CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET) };
+	CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.GetResource().Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET)};
 
 	mDirectXImpl->mCommandList->ResourceBarrier(1, &barrier);
 
@@ -97,7 +98,7 @@ void Renderer::Render() {
 
 
 
-	barrier = CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	barrier = CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.GetResource().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 	mDirectXImpl->mCommandList->ResourceBarrier(1, &barrier);
 
 	CheckHR(mDirectXImpl->mCommandList->Close());
@@ -198,7 +199,7 @@ void Renderer::InitRenderTargets() {
 	D3D12_CPU_DESCRIPTOR_HANDLE handle{ mDirectXImpl->mRTVHeap->GetCPUDescriptorHandleForHeapStart() };
 
 	for (auto& renderTarget : mDirectXImpl->mRenderTargets) {
-		mDirectXImpl->mDevice->CreateRenderTargetView(renderTarget.Get(), nullptr, handle);
+		mDirectXImpl->mDevice->CreateRenderTargetView(renderTarget.GetResource().Get(), nullptr, handle);
 		handle.ptr += rtvDescriptorSize;
 	}
 }
@@ -231,7 +232,7 @@ void Renderer::InitDepthStencilBuffer() {
 		)
 	);
 
-	mDirectXImpl->mDevice->CreateDepthStencilView(mDirectXImpl->mDepthStencilBuffer.Get(), nullptr, mDirectXImpl->mDSHeap->GetCPUDescriptorHandleForHeapStart());
+	mDirectXImpl->mDevice->CreateDepthStencilView(mDirectXImpl->mDepthStencilBuffer.GetResource().Get(), nullptr, mDirectXImpl->mDSHeap->GetCPUDescriptorHandleForHeapStart());
 }
 
 void Renderer::ResetCommandList() {

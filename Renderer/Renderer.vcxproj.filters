@@ -19,6 +19,9 @@
     <Filter Include="Resource">
       <UniqueIdentifier>{42bedd54-c68b-433d-8a07-0566c1b390e7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="External">
+      <UniqueIdentifier>{a7eebe25-70c3-4eac-9954-3433b3537cce}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -35,6 +38,12 @@
     </ClCompile>
     <ClCompile Include="Resource\DefaultBuffer.cpp">
       <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\Include\DirectXTK12\DDSTextureLoader12.cpp">
+      <Filter>External</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\Include\DirectXTK12\WICTextureLoader12.cpp">
+      <Filter>External</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Texture.h"
-#include "../External/Include/DirectXTK12/DDSTextureLoader.h"
-#include "../External/Include/DirectXTK12/WICTextureLoader.h"
+#include "../External/Include/DirectXTK12/DDSTextureLoader12.h"
+#include "../External/Include/DirectXTK12/WICTextureLoader12.h"
 #include "../Utility/Exceptions.h"
 #include "../EditorInterface/Console/Console.h"
 
@@ -121,7 +121,7 @@ Texture& Texture::operator=(Texture&& other) noexcept {
 	return *this;
 }
 
-ComPtr<ID3D12Resource> Texture::Get() {
+ComPtr<ID3D12Resource> Texture::GetResource() {
 	return mResource;
 }
 

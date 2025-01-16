@@ -20,7 +20,7 @@ public:
 	Texture(Texture&&) noexcept;
 	Texture& operator=(Texture&&) noexcept;
 public:
-	ComPtr<ID3D12Resource> Get();
+	ComPtr<ID3D12Resource> GetResource();
 	ID3D12Resource** GetAddressOf();
 private:
 	void LoadDefaultTexture(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
