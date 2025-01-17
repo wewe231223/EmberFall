@@ -14,7 +14,7 @@
 class Listener : public INetworkObject {
 public:
     Listener() = delete;
-    Listener(const std::string& localIp, const unsigned short port);
+    Listener(const unsigned short port);
     ~Listener();
 
 public:
@@ -29,6 +29,5 @@ private:
     SOCKET mListenSocket{ INVALID_SOCKET };
     OverlappedAccept mOverlappedAccept{ };
 
-    const std::string mLocalIp{ };
     const unsigned short mLocalPort{ };
 };

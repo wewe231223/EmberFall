@@ -6,7 +6,7 @@ public:
     ~ServerCore();
 
 public:
-    void Start(const std::string& ip, const unsigned short port, size_t workerThreadNum=HARDWARE_CONCURRENCY);
+    void Start(const unsigned short port, size_t workerThreadNum=HARDWARE_CONCURRENCY);
     void End();
 
 private:

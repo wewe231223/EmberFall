@@ -16,7 +16,7 @@
 int main()
 {
     ServerCore core;
-    core.Start("127.0.0.1", 7777);
+    core.Start(7777);
 
     volatile bool test{ true };
     while (test) {

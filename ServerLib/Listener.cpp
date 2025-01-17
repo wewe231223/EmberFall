@@ -3,15 +3,15 @@
 #include "Session.h"
 #include "SessionManager.h"
 
-Listener::Listener(const std::string& localIp, const unsigned short port)
-    : mLocalIp{ localIp }, mLocalPort{ port } {
+Listener::Listener(const unsigned short port)
+    : mLocalPort{ port } {
     mListenSocket = NetworkUtil::CreateSocket();
     CrashExp(INVALID_SOCKET == mListenSocket, "");
 
     sockaddr_in sockAddr{ };
     sockAddr.sin_family = AF_INET;
     sockAddr.sin_port = ::htons(port);
-    ::inet_pton(AF_INET, localIp.c_str(), &sockAddr.sin_addr.s_addr);
+    sockAddr.sin_addr.s_addr = ::htonl(INADDR_ANY);
 
     if (SOCKET_ERROR == ::bind(mListenSocket, reinterpret_cast<sockaddr*>(&sockAddr), sizeof(sockAddr))) {
         Crash("");
