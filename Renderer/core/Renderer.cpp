@@ -51,8 +51,6 @@ Renderer::Renderer(HWND rendererWindowHandle)
 
 	Renderer::FlushCommandQueue();
 
-	Serializer serializer{ "Renderer.bin" };
-
 	Console.Log("Renderer 초기화가 완료되었습니다.", LogType::Info);
 }
 
