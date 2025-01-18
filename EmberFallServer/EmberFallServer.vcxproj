@@ -132,6 +132,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="EmberFallServer.cpp" />
+    <ClCompile Include="ServerFrame.cpp" />
+    <ClCompile Include="ServerGameScene.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ServerFrame.h" />
+    <ClInclude Include="ServerGameScene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
