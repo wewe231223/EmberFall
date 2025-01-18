@@ -16,21 +16,39 @@
     <Filter Include="Scene">
       <UniqueIdentifier>{b34f11e1-9640-4206-8617-4d01fe269257}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System">
+      <UniqueIdentifier>{8f075b25-8593-4829-a1a0-d88efd628079}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component">
+      <UniqueIdentifier>{588d4730-dbcd-4f21-9ea0-5024eaee1aca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Scene\SceneBase.cpp">
+    <ClCompile Include="Scene\Scene.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\GameObject.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Component\ComponentBase.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Scene\SceneBase.h">
+    <ClInclude Include="Scene\Scene.h">
       <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\GameObject.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Component\ComponentBase.h">
+      <Filter>Component</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

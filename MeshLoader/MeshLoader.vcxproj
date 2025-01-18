@@ -138,9 +138,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Base\MeshBase.cpp" />
     <ClCompile Include="Loader\PlaneMeshLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Base\MeshBase.h" />
     <ClInclude Include="Loader\PlaneMeshLoader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

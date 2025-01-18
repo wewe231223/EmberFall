@@ -16,15 +16,24 @@
     <Filter Include="Loader">
       <UniqueIdentifier>{282c6c9b-6082-4f29-bc81-b6536689ba31}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Base">
+      <UniqueIdentifier>{0c1d0592-7f49-4ee6-8d1c-e6b410d0f524}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Loader\PlaneMeshLoader.cpp">
       <Filter>Loader</Filter>
     </ClCompile>
+    <ClCompile Include="Base\MeshBase.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Loader\PlaneMeshLoader.h">
       <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Base\MeshBase.h">
+      <Filter>Base</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
