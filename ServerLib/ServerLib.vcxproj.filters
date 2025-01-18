@@ -8,11 +8,11 @@
     <Filter Include="Utils">
       <UniqueIdentifier>{86b6a1e0-f710-422c-8e65-44e578fc0e92}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Core">
-      <UniqueIdentifier>{8eef7fb9-10b7-4f77-b858-a1eb2cd65150}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Server">
       <UniqueIdentifier>{cfab8d29-6f52-4915-81f1-01b64e7231fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Server\Core">
+      <UniqueIdentifier>{8eef7fb9-10b7-4f77-b858-a1eb2cd65150}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -26,16 +26,16 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="ServerCore.cpp">
-      <Filter>Core</Filter>
+      <Filter>Server\Core</Filter>
     </ClCompile>
     <ClCompile Include="INetworkObject.cpp">
-      <Filter>Core</Filter>
+      <Filter>Server\Core</Filter>
     </ClCompile>
     <ClCompile Include="IOCPCore.cpp">
-      <Filter>Core</Filter>
+      <Filter>Server\Core</Filter>
     </ClCompile>
     <ClCompile Include="OverlappedEx.cpp">
-      <Filter>Core</Filter>
+      <Filter>Server\Core</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>Pch</Filter>
@@ -55,6 +55,9 @@
     <ClCompile Include="PacketHandler.cpp">
       <Filter>Server</Filter>
     </ClCompile>
+    <ClCompile Include="MemoryPool.cpp">
+      <Filter>Server\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkUtils.h">
@@ -64,7 +67,7 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="ServerCore.h">
-      <Filter>Core</Filter>
+      <Filter>Server\Core</Filter>
     </ClInclude>
     <ClInclude Include="Types.h">
       <Filter>Utils</Filter>
@@ -73,16 +76,13 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="INetworkObject.h">
-      <Filter>Core</Filter>
+      <Filter>Server\Core</Filter>
     </ClInclude>
     <ClInclude Include="IOCPCore.h">
-      <Filter>Core</Filter>
+      <Filter>Server\Core</Filter>
     </ClInclude>
     <ClInclude Include="OverlappedEx.h">
-      <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="pch.h">
-      <Filter>Pch</Filter>
+      <Filter>Server\Core</Filter>
     </ClInclude>
     <ClInclude Include="SessionManager.h">
       <Filter>Server</Filter>
@@ -97,6 +97,12 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="PacketHandler.h">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPool.h">
+      <Filter>Server\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
       <Filter>Server</Filter>
     </ClInclude>
   </ItemGroup>

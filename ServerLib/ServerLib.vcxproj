@@ -155,6 +155,7 @@
     <ClInclude Include="IOCPCore.h" />
     <ClInclude Include="Listener.h" />
     <ClInclude Include="Lock.h" />
+    <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="OverlappedEx.h" />
     <ClInclude Include="PacketHandler.h" />
     <ClInclude Include="pch.h" />
@@ -170,6 +171,7 @@
     <ClCompile Include="IOCPCore.cpp" />
     <ClCompile Include="Listener.cpp" />
     <ClCompile Include="Lock.cpp" />
+    <ClCompile Include="MemoryPool.cpp" />
     <ClCompile Include="OverlappedEx.cpp" />
     <ClCompile Include="PacketHandler.cpp" />
     <ClCompile Include="pch.cpp">
