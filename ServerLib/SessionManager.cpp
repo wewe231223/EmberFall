@@ -31,7 +31,6 @@ bool SessionManager::AddSession(std::shared_ptr<Session> session) {
     std::cout << std::format("Session[{}]: add in session map\n", id);
 
     gIocpCore->RegisterSocket(session);
-    session->RegisterRecv();
 
     return true;
 }

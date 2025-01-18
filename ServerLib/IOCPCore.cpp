@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "IOCPCore.h"
+#include "SessionManager.h"
 
 IOCPCore::IOCPCore() { }
 
@@ -49,8 +50,12 @@ void IOCPCore::IOWorker() {
 
         if (not success) {
             if (IOType::ACCEPT == overlappedEx->type) {
-                std::cout << "Accept Error!" << std::endl;
-                Crash("");
+                std::cout << std::format("Accept Error!\n");
+                Crash("Accept Error");
+            }
+            else {
+                std::cout << std::format("Client[{}] Error\n", clientId);
+                gSessionManager->CloseSession(clientId);
             }
         }
 

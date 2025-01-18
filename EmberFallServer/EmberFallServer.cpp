@@ -1,35 +1,21 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // EmberFallServer.cpp
-// 2025 - 01 - 14 김성준: 서버 코드를 실행하기 위한 프로젝트 생성
-//                      
+// 2025 - 01 - 14 김성준   : 서버 코드를 실행하기 위한 프로젝트 생성
+//      - 01 - 18          : pch 추가
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "../ServerLib/pch.h"
-#include "../ServerLib/ServerCore.h"
-#include "../ServerLib/PacketHandler.h"
-#include "../ServerLib/SessionManager.h"
+#include "pch.h"
 
-#pragma comment(lib, "../out/debug/ServerLib.lib")
+#include "ServerFrame.h"
 
 int main()
 {
-    ServerCore core;
-    core.Start(7777);
+    std::cout << "Server Project Start" << std::endl;
 
-    volatile bool test{ true };
-    while (test) {
-        auto& buffer = gPacketHandler->GetBuffer();
-        if (0 == buffer.Size()) {
-            continue;
-        }
+    ServerFrame server{ };
 
-        std::cout << "Total RecvBytes: " << buffer.Size() << std::endl;
-        std::cout << "Contents: " << buffer.Data() << std::endl;
-
-        gSessionManager->SendAll(buffer.Data(), buffer.Size());
-    }
-
-    core.End();
+    server.InitGameScenes();
+    server.GameLoop();
 }

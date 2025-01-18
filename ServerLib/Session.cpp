@@ -181,6 +181,8 @@ void Session::InitSessionNetAddress(char* addressBuffer) {
     mIP.resize(INET_ADDRSTRLEN);
     ::inet_ntop(AF_INET, &remoteAddr->sin_addr, mIP.data(), INET_ADDRSTRLEN);
     mPort = ::ntohs(remoteAddr->sin_port);
+
+    RegisterRecv();
 }
 
 std::pair<std::string, UINT16> Session::GetAddress() const {
