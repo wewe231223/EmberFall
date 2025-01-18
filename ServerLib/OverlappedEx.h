@@ -83,5 +83,5 @@ struct OverlappedSend : public OverlappedEx {
     OverlappedSend& operator=(OverlappedSend&&) noexcept = delete;
 
 public:
-    NetworkBuf<BUF_RW_SIZE> buffer;
+    NetworkBuf<BUF_RW_SIZE - sizeof(OverlappedEx)> buffer;
 };

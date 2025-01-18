@@ -11,7 +11,7 @@ MemoryPool::~MemoryPool() {
 }
 
 bool MemoryPool::AllocMemBlocks(size_t memBlockSize, size_t memBlockCount) {
-    if (0 == memBlockCount or 32 < memBlockSize) {
+    if (0 == memBlockCount or 32 > memBlockSize) {
         return false;
     }
 
@@ -51,7 +51,7 @@ void* MemoryPool::Pop() {
 
 bool MemoryPool::Push(void* ptr) {
     ptrdiff_t dist{ static_cast<char*>(ptr) - static_cast<char*>(mBasePtr) };
-    if (dist < 0 or dist >= mMemBlockCount * mMemBlockSize) {
+    if (dist < 0 or dist >= static_cast<ptrdiff_t>(mMemBlockCount * mMemBlockSize)) {
         return false;
     }
 

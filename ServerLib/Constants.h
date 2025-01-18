@@ -25,3 +25,4 @@ enum class IOType : UINT32 {
 extern std::unique_ptr<class IOCPCore> gIocpCore;
 extern std::unique_ptr<class SessionManager> gSessionManager;
 extern std::unique_ptr<class PacketHandler> gPacketHandler;
+extern std::unique_ptr<class SendBufferFactory> gSendBufferFactory;

@@ -58,6 +58,9 @@
     <ClCompile Include="MemoryPool.cpp">
       <Filter>Server\Core</Filter>
     </ClCompile>
+    <ClCompile Include="SendBuffers.cpp">
+      <Filter>Server\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkUtils.h">
@@ -104,6 +107,9 @@
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="SendBuffers.h">
+      <Filter>Server\Core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

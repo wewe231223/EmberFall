@@ -2,6 +2,7 @@
 #include "Session.h"
 #include "SessionManager.h"
 #include "PacketHandler.h"
+#include "SendBuffers.h"
 
 Session::Session() {
     mSocket = NetworkUtil::CreateSocket();
@@ -19,7 +20,7 @@ HANDLE Session::GetHandle() const {
 void Session::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
     switch (overlapped->type) {
     case IOType::SEND:
-        delete overlapped;
+        gSendBufferFactory->ReleaseOverlapped(reinterpret_cast<OverlappedSend*>(overlapped));
         break;
 
     case IOType::RECV:
@@ -83,7 +84,8 @@ void Session::RegisterSend(void* packet) {
         return;
     }
 
-    OverlappedSend* overlappedSend = new OverlappedSend{ reinterpret_cast<char*>(packet) };
+    auto overlappedSend = gSendBufferFactory->GetOverlapped(packet, reinterpret_cast<char*>(packet)[0]);
+    //OverlappedSend* overlappedSend = new OverlappedSend{ reinterpret_cast<char*>(packet) };
     overlappedSend->owner = shared_from_this();
     auto result = ::WSASend(
         mSocket,
@@ -109,7 +111,8 @@ void Session::RegisterSend(void* data, size_t size) {
         return;
     }
 
-    OverlappedSend* overlappedSend = new OverlappedSend{ reinterpret_cast<char*>(data), size };
+    auto overlappedSend = gSendBufferFactory->GetOverlapped(data, size);
+    //OverlappedSend* overlappedSend = new OverlappedSend{ reinterpret_cast<char*>(data), size };
     overlappedSend->owner = shared_from_this();
     auto result = ::WSASend(
         mSocket,
