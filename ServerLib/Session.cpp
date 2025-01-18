@@ -45,6 +45,10 @@ void Session::Close() {
 }
 
 void Session::RegisterRecv() {
+    if (false == mConnected.load()) {
+        return;
+    }
+
     DWORD receivedBytes{ };
     DWORD flag{ };
 
@@ -75,6 +79,10 @@ void Session::SetRemain(size_t remainSize) {
 }
 
 void Session::RegisterSend(void* packet) {
+    if (false == mConnected.load()) {
+        return;
+    }
+
     OverlappedSend* overlappedSend = new OverlappedSend{ reinterpret_cast<char*>(packet) };
     overlappedSend->owner = shared_from_this();
     auto result = ::WSASend(
@@ -97,6 +105,10 @@ void Session::RegisterSend(void* packet) {
 }
 
 void Session::RegisterSend(void* data, size_t size) {
+    if (false == mConnected.load()) {
+        return;
+    }
+
     OverlappedSend* overlappedSend = new OverlappedSend{ reinterpret_cast<char*>(data), size };
     overlappedSend->owner = shared_from_this();
     auto result = ::WSASend(
