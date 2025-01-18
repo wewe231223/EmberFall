@@ -15,6 +15,16 @@ bool MemoryPool::AllocMemBlocks(size_t memBlockSize, size_t memBlockCount) {
         return false;
     }
 
+    bool availableSize = std::any_of(AVAILABLE_BLOCK_SIZES, AVAILABLE_BLOCK_SIZES + sizeof(AVAILABLE_BLOCK_SIZES) / sizeof(size_t), 
+        [&memBlockSize](AvailableBlockSize size) {
+            return static_cast<size_t>(size) == memBlockSize;
+        }
+    );
+
+    if (false == availableSize) {
+        return false;
+    }
+
     mMemBlockCount = memBlockCount;
     mMemBlockSize = memBlockSize;
 
