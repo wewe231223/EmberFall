@@ -212,11 +212,28 @@ void Session::unlock() {
 
 bool Session::Connect(const std::string& serverIp, const UINT16 port) {
     sockaddr_in serverAddr{ };
-    ::memset(&serverAddr, 0, sizeof(serverAddr));
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = ::htons(port);
-    ::inet_pton(AF_INET, serverIp.c_str(), &serverAddr.sin_addr.s_addr);
+    NetworkUtil::InitSockAddr(serverAddr, 0);
+    if (SOCKET_ERROR == ::bind(mSocket, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr))) {
+        return false;
+    }
 
-    // TODO
-    return true;
+    if (false == NetworkUtil::InitSockAddr(serverAddr, port, serverIp.data())) {
+        return false;
+    }
+
+    if (false == NetworkUtil::InitConnectExFunc(mSocket)) {
+        return false;
+    }
+
+    DWORD bytes{ };
+    auto clientCore = std::static_pointer_cast<ClientCore>(GetCore());
+    return NetworkUtil::ConnectEx(
+        mSocket,
+        reinterpret_cast<sockaddr*>(&serverAddr),
+        sizeof(serverAddr),
+        nullptr,
+        NULL,
+        &bytes,
+        clientCore->GetOverlappedConnect()
+    );
 }

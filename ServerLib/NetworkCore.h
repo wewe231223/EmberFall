@@ -33,7 +33,7 @@ public:
 public:
     NetworkType GetType() const;
     std::shared_ptr<IOCPCore> GetIOCPCore() const;
-    std::shared_ptr<class PacketHandler> GetPacketHandler() const;
+    std::shared_ptr<PacketHandler> GetPacketHandler() const;
     std::shared_ptr<SendBufferFactory> GetSendBufferFactory() const;
 
     virtual void Init();
@@ -74,10 +74,12 @@ public:
     virtual bool Start(const std::string& ip, const UINT16 port) override;
     virtual void End() override;
 
+    OverlappedConnect* GetOverlappedConnect();
     void Send(void* data, size_t dataSize);
-    //void CloseSession();
+    void CloseSession();
 
 private:
     std::thread mWorkerThread{ };
     std::shared_ptr<class Session> mSession{ nullptr };
+    OverlappedConnect mOverlappedConnect{ };
 };

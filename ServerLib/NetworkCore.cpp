@@ -103,10 +103,18 @@ void ClientCore::End() {
         mWorkerThread.join();
     }
 
-    mSession->Close();
+    CloseSession();
     ::WSACleanup();
+}
+
+OverlappedConnect* ClientCore::GetOverlappedConnect() {
+    return &mOverlappedConnect;
 }
 
 void ClientCore::Send(void* data, size_t dataSize) {
     mSession->RegisterSend(data, dataSize);
+}
+
+void ClientCore::CloseSession() {
+    mSession->Close();
 }

@@ -14,7 +14,7 @@
 class Listener : public INetworkObject {
 public:
     Listener() = delete;
-    Listener(const unsigned short port, std::shared_ptr<class INetworkCore> coreService);
+    Listener(const UINT16 port, std::shared_ptr<class INetworkCore> coreService);
     ~Listener();
 
 public:

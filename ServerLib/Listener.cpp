@@ -4,15 +4,13 @@
 #include "SessionManager.h"
 #include "NetworkCore.h"
 
-Listener::Listener(const unsigned short port, std::shared_ptr<INetworkCore> coreService)
+Listener::Listener(const UINT16 port, std::shared_ptr<INetworkCore> coreService)
     : INetworkObject{ coreService }, mLocalPort{ port } {
     mListenSocket = NetworkUtil::CreateSocket();
     CrashExp(INVALID_SOCKET == mListenSocket, "");
 
     sockaddr_in sockAddr{ };
-    sockAddr.sin_family = AF_INET;
-    sockAddr.sin_port = ::htons(port);
-    sockAddr.sin_addr.s_addr = ::htonl(INADDR_ANY);
+    NetworkUtil::InitSockAddr(sockAddr, port);
 
     if (SOCKET_ERROR == ::bind(mListenSocket, reinterpret_cast<sockaddr*>(&sockAddr), sizeof(sockAddr))) {
         Crash("");
