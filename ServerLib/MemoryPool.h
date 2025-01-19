@@ -8,28 +8,9 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-enum class AvailableBlockSize : size_t {
-    BLOCK_SIZE_32 = 32,
-    BLOCK_SIZE_64 = 64,
-    BLOCK_SIZE_128 = 128,
-    BLOCK_SIZE_256 = 256,
-    BLOCK_SIZE_512 = 512,
-    BLOCK_SIZE_1024 = 1024,
-};
-
 class MemoryPool {
 public:
     using MemBlockIdxType = size_t;
-
-    inline static size_t MIN_BLOCK_SIZE = 32;
-    inline static AvailableBlockSize AVAILABLE_BLOCK_SIZES[]{
-         AvailableBlockSize::BLOCK_SIZE_32,
-         AvailableBlockSize::BLOCK_SIZE_64,
-         AvailableBlockSize::BLOCK_SIZE_128,
-         AvailableBlockSize::BLOCK_SIZE_256,
-         AvailableBlockSize::BLOCK_SIZE_512,
-         AvailableBlockSize::BLOCK_SIZE_1024
-    };
 
 public:
     MemoryPool();

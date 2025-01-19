@@ -32,28 +32,4 @@ OverlappedRecv::OverlappedRecv()
 }
 
 OverlappedSend::OverlappedSend()
-    : OverlappedEx{ IOType::SEND }, buffer{ } { }
-
-OverlappedSend::OverlappedSend(char* data, size_t len)
-    : OverlappedEx{ IOType::SEND }, buffer{ } {
-    ResetOverlapped();
-    ::memcpy(buffer.data(), data, len);
-    wsaBuf.buf = buffer.data();
-    wsaBuf.len = static_cast<ULONG>(len);
-}
-
-OverlappedSend::OverlappedSend(const std::span<char>& span)
-    : OverlappedEx{ IOType::SEND }, buffer{ } {
-    ResetOverlapped();
-    ::memcpy(buffer.data(), span.data(), span.size());
-    wsaBuf.buf = buffer.data();
-    wsaBuf.len = static_cast<ULONG>(span.size());
-}
-
-OverlappedSend::OverlappedSend(char* packet)
-    : OverlappedEx{ IOType::SEND }, buffer{ } {
-    ResetOverlapped();
-    ::memcpy(buffer.data(), packet, static_cast<size_t>(packet[0]));
-    wsaBuf.buf = buffer.data();
-    wsaBuf.len = packet[0];
-}
+    : OverlappedEx{ IOType::SEND } { }

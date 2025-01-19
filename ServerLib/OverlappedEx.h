@@ -73,15 +73,9 @@ public:
 
 struct OverlappedSend : public OverlappedEx {
     OverlappedSend();
-    OverlappedSend(char* data, size_t len);
-    OverlappedSend(const std::span<char>& span);
-    OverlappedSend(char* packet);
 
     OverlappedSend(const OverlappedSend&) = delete;
     OverlappedSend(OverlappedSend&&) noexcept = delete;
     OverlappedSend& operator=(const OverlappedSend&) = delete;
     OverlappedSend& operator=(OverlappedSend&&) noexcept = delete;
-
-public:
-    NetworkBuf<BUF_RW_SIZE - sizeof(OverlappedEx)> buffer;
 };

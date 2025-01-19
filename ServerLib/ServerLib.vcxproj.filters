@@ -11,7 +11,7 @@
     <Filter Include="Server">
       <UniqueIdentifier>{cfab8d29-6f52-4915-81f1-01b64e7231fd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Server\Core">
+    <Filter Include="Core">
       <UniqueIdentifier>{8eef7fb9-10b7-4f77-b858-a1eb2cd65150}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -26,16 +26,16 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="ServerCore.cpp">
-      <Filter>Server\Core</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="INetworkObject.cpp">
-      <Filter>Server\Core</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="IOCPCore.cpp">
-      <Filter>Server\Core</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="OverlappedEx.cpp">
-      <Filter>Server\Core</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>Pch</Filter>
@@ -56,10 +56,10 @@
       <Filter>Server</Filter>
     </ClCompile>
     <ClCompile Include="MemoryPool.cpp">
-      <Filter>Server\Core</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="SendBuffers.cpp">
-      <Filter>Server\Core</Filter>
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -70,7 +70,7 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="ServerCore.h">
-      <Filter>Server\Core</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Types.h">
       <Filter>Utils</Filter>
@@ -79,13 +79,13 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="INetworkObject.h">
-      <Filter>Server\Core</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="IOCPCore.h">
-      <Filter>Server\Core</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="OverlappedEx.h">
-      <Filter>Server\Core</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="SessionManager.h">
       <Filter>Server</Filter>
@@ -103,13 +103,13 @@
       <Filter>Server</Filter>
     </ClInclude>
     <ClInclude Include="MemoryPool.h">
-      <Filter>Server\Core</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Server</Filter>
     </ClInclude>
     <ClInclude Include="SendBuffers.h">
-      <Filter>Server\Core</Filter>
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
