@@ -1,9 +1,7 @@
 #pragma once
 
 #include "../ServerLib/pch.h"
-#include "../ServerLib/ServerCore.h"
-#include "../ServerLib/PacketHandler.h"
-#include "../ServerLib/SessionManager.h"
+#include "../ServerLib/NetworkCore.h"
 
 #if defined(DEBUG) || defined(_DEBUG)
 #pragma comment(lib, "../out/Debug/ServerLib.lib")

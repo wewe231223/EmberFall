@@ -29,7 +29,7 @@
 
 class Session : public INetworkObject {
 public:
-    Session();
+    Session(std::shared_ptr<class INetworkCore> coreService);
     ~Session();
 
 public:
@@ -43,7 +43,7 @@ public:
     void RegisterSend(void* packet);
     void RegisterSend(void* data, size_t size);
     void ProcessRecv(INT32 numOfBytes);
-    void ProcessSend(INT32 numOfBytes);
+    void ProcessSend(INT32 numOfBytes, OverlappedSend* overlappedSend);
 
     bool IsConnected() const;
 
@@ -53,6 +53,9 @@ public:
     /* std::lock_guard 사용을 위한 함수 정의 */
     void lock();
     void unlock();
+
+    // For Client
+    bool Connect(const std::string& serverIp, const UINT16 port);
 
 private:
     std::mutex mLock{ };

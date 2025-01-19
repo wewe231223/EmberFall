@@ -1,9 +1,10 @@
 #include "pch.h"
 #include "SessionManager.h"
 #include "Session.h"
-#include "IOCPCore.h"
+#include "NetworkCore.h"
 
-SessionManager::SessionManager() { 
+SessionManager::SessionManager(std::shared_ptr<ServerCore> coreService) 
+    : mCoreService{ coreService } {
     for (size_t i = 0; i < MAX_SESSION_VAL; ++i) {
         mSessionIdMap.push(static_cast<SessionIdType>(i)); // Initialize Id
     }
@@ -14,7 +15,7 @@ SessionManager::~SessionManager() {
 }
 
 std::shared_ptr<Session> SessionManager::CreateSessionObject() {
-    return std::make_shared<Session>();
+    return std::make_shared<Session>(mCoreService);
 }
 
 bool SessionManager::AddSession(std::shared_ptr<Session> session) {
@@ -30,7 +31,7 @@ bool SessionManager::AddSession(std::shared_ptr<Session> session) {
     session->InitId(id);
     std::cout << std::format("Session[{}]: add in session map\n", id);
 
-    gIocpCore->RegisterSocket(session);
+    mCoreService->GetIOCPCore()->RegisterSocket(session);
 
     return true;
 }

@@ -6,7 +6,7 @@ public:
     virtual ~IServerGameScene();
 
 public:
-    virtual void ProcessPackets() abstract;
+    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) abstract;
     virtual void Update(const float deltaTime) abstract;
 };
 
@@ -16,6 +16,6 @@ public:
     ~EchoTestScene();
 
 public:
-    void ProcessPackets() override;
+    void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) override;
     virtual void Update(const float deltaTime) override;
 };

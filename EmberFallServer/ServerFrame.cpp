@@ -2,9 +2,11 @@
 #include "ServerFrame.h"
 #include "ServerGameScene.h"
 
-ServerFrame::ServerFrame() 
-    : mServerCore{ std::make_unique<ServerCore>() } { 
-    mServerCore->Start(SERVER_PORT);
+ServerFrame::ServerFrame() {
+    mServerCore = std::make_shared<ServerCore> ();
+    mServerCore->Init();
+
+    mServerCore->Start("127.0.0.1", SERVER_PORT);
 }
 
 ServerFrame::~ServerFrame() { 
@@ -20,7 +22,7 @@ void ServerFrame::InitGameScenes() {
 
 void ServerFrame::GameLoop() {
     while (true) {
-        mCurrentScene->ProcessPackets();
+        mCurrentScene->ProcessPackets(mServerCore);
         mCurrentScene->Update(0.0f); // Temp
     }
 }

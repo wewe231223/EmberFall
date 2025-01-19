@@ -1,8 +1,9 @@
 #include "pch.h"
 #include "IOCPCore.h"
-#include "SessionManager.h"
+#include "NetworkCore.h"
 
-IOCPCore::IOCPCore() { }
+IOCPCore::IOCPCore(std::shared_ptr<INetworkCore> coreService) 
+    : mCoreService{ coreService } { }
 
 IOCPCore::~IOCPCore() {
     ::CloseHandle(mIocpHandle);
@@ -38,7 +39,7 @@ void IOCPCore::IOWorker() {
 
     while (true) {
         auto success = ::GetQueuedCompletionStatus(
-            gIocpCore->GetHandle(),
+            GetHandle(),
             &receivedByte,
             &completionKey,
             &overlapped,
@@ -53,9 +54,20 @@ void IOCPCore::IOWorker() {
                 std::cout << std::format("Accept Error!\n");
                 Crash("Accept Error");
             }
+            else if (IOType::CONNECT == overlappedEx->type) {
+                std::cout << std::format("Connect Error!\n");
+                Crash("Connect Error");
+            }
+
+            // IOType::SEND or IOType::RECV
+            std::cout << std::format("Client[{}] Error\n", clientId);
+            if (NetworkType::SERVER == mCoreService->GetType()) {
+                auto serverCore = std::static_pointer_cast<ServerCore>(mCoreService);
+                serverCore->GetSessionManager()->CloseSession(clientId);
+            }
             else {
-                std::cout << std::format("Client[{}] Error\n", clientId);
-                gSessionManager->CloseSession(clientId);
+                auto clientCore = std::static_pointer_cast<ClientCore>(mCoreService);
+                // TODO
             }
         }
 

@@ -49,9 +49,10 @@ OverlappedSend* SendBufferFactory::GetOverlapped(void* data, size_t dataSize) {
     return mBuffers[bufferSize].GetOverlapped(data, dataSize); // TEST
 }
 
+[[maybe_unuse]]
 bool SendBufferFactory::ReleaseOverlapped(OverlappedSend* overlapped) {
     size_t dataSize = overlapped->wsaBuf.len;
-    if (dataSize > MEM_BLOCK_SIZES[MEM_BLOCK_SIZE_CNT - 1] or dataSize < MEM_BLOCK_SIZES[0]) {
+    if (dataSize > MEM_BLOCK_SIZES[MEM_BLOCK_SIZE_CNT - 1] or 0 == dataSize) {
         return false;
     }
 

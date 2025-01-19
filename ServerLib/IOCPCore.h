@@ -13,7 +13,7 @@
 
 class IOCPCore {
 public:
-    IOCPCore();
+    IOCPCore(std::shared_ptr<class INetworkCore> coreService);
     ~IOCPCore();
 
     IOCPCore(const IOCPCore&) = delete;
@@ -33,4 +33,5 @@ public:
 
 private:
     HANDLE mIocpHandle{ INVALID_HANDLE_VALUE };
+    std::shared_ptr<class INetworkCore> mCoreService{ nullptr };
 };

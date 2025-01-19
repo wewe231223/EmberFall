@@ -1,8 +1,9 @@
 #include "pch.h"
 #include "INetworkObject.h"
-#include "IOCPCore.h"
+#include "NetworkCore.h"
 
-INetworkObject::INetworkObject() { }
+INetworkObject::INetworkObject(std::shared_ptr<INetworkCore> coreService) 
+    : mCoreService{ coreService } { }
 
 INetworkObject::~INetworkObject() { }
 
@@ -14,7 +15,12 @@ SessionIdType INetworkObject::GetId() const {
     return mId;
 }
 
+std::shared_ptr<INetworkCore> INetworkObject::GetCore() const {
+    return mCoreService;
+}
+
 void INetworkObject::PostQueuedCompletionStatus() {
-    bool result = ::PostQueuedCompletionStatus(gIocpCore->GetHandle(), 0, 0, nullptr);
+    auto iocpCore = mCoreService->GetIOCPCore();
+    bool result = ::PostQueuedCompletionStatus(iocpCore->GetHandle(), 0, 0, nullptr);
     CrashExp(false != result, "PQCS Failed");
 }

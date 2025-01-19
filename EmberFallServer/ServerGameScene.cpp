@@ -9,8 +9,9 @@ EchoTestScene::EchoTestScene() { }
 
 EchoTestScene::~EchoTestScene() { }
 
-void EchoTestScene::ProcessPackets() {
-    auto& buffer = gPacketHandler->GetBuffer();
+void EchoTestScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
+    auto packetHandler = serverCore->GetPacketHandler();
+    auto& buffer = packetHandler->GetBuffer();
     if (0 == buffer.Size()) {
         return;
     }
@@ -18,7 +19,8 @@ void EchoTestScene::ProcessPackets() {
     std::cout << "Total RecvBytes: " << buffer.Size() << std::endl;
     std::cout << "Contents: " << buffer.Data() << std::endl;
 
-    gSessionManager->SendAll(buffer.Data(), buffer.Size());
+    auto sessionManager = serverCore->GetSessionManager();
+    sessionManager->SendAll(buffer.Data(), buffer.Size());
 }
 
 void EchoTestScene::Update(const float deltaTime) {

@@ -2,9 +2,10 @@
 #include "Listener.h"
 #include "Session.h"
 #include "SessionManager.h"
+#include "NetworkCore.h"
 
-Listener::Listener(const unsigned short port)
-    : mLocalPort{ port } {
+Listener::Listener(const unsigned short port, std::shared_ptr<INetworkCore> coreService)
+    : INetworkObject{ coreService }, mLocalPort{ port } {
     mListenSocket = NetworkUtil::CreateSocket();
     CrashExp(INVALID_SOCKET == mListenSocket, "");
 
@@ -46,8 +47,8 @@ void Listener::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
 }
 
 void Listener::RegisterAccept() {
-    //std::shared_ptr<Session> session = std::make_shared<Session>();
-    std::shared_ptr<Session> session = gSessionManager->CreateSessionObject();
+    auto sessionManager = std::static_pointer_cast<ServerCore>(GetCore())->GetSessionManager();
+    std::shared_ptr<Session> session = sessionManager->CreateSessionObject();
 
     mOverlappedAccept.ResetOverlapped();
     mOverlappedAccept.owner = shared_from_this();
@@ -79,7 +80,8 @@ void Listener::RegisterAccept() {
 void Listener::ProcessAccept() {
     auto session = mOverlappedAccept.GetSession();
 
-    if (true == gSessionManager->AddSession(session)) {
+    auto sessionManager = std::static_pointer_cast<ServerCore>(GetCore())->GetSessionManager();
+    if (true == sessionManager->AddSession(session)) {
         session->InitSessionNetAddress(mOverlappedAccept.buffer.data());
         auto [ip, port] = session->GetAddress();
         std::cout << std::format("Client [IP: {}, PORT: {}] Connected\n", ip, port);

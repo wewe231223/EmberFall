@@ -25,9 +25,6 @@
     <ClCompile Include="Constants.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="ServerCore.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="INetworkObject.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -39,9 +36,6 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>Pch</Filter>
-    </ClCompile>
-    <ClCompile Include="Session.cpp">
-      <Filter>Server</Filter>
     </ClCompile>
     <ClCompile Include="SessionManager.cpp">
       <Filter>Server</Filter>
@@ -61,6 +55,12 @@
     <ClCompile Include="SendBuffers.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkCore.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkUtils.h">
@@ -68,9 +68,6 @@
     </ClInclude>
     <ClInclude Include="Constants.h">
       <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="ServerCore.h">
-      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Types.h">
       <Filter>Utils</Filter>
@@ -90,9 +87,6 @@
     <ClInclude Include="SessionManager.h">
       <Filter>Server</Filter>
     </ClInclude>
-    <ClInclude Include="Session.h">
-      <Filter>Server</Filter>
-    </ClInclude>
     <ClInclude Include="Listener.h">
       <Filter>Server</Filter>
     </ClInclude>
@@ -109,6 +103,12 @@
       <Filter>Server</Filter>
     </ClInclude>
     <ClInclude Include="SendBuffers.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkCore.h">
       <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>

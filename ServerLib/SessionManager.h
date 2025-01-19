@@ -24,7 +24,7 @@ class SessionManager {
     inline constexpr static size_t MAX_CLIENT_SIZE = 10;
 
 public:
-    SessionManager();
+    SessionManager(std::shared_ptr<class ServerCore> coreService);
     ~SessionManager();
 
     SessionManager(const SessionManager&) = delete;
@@ -44,6 +44,7 @@ public:
     void SendAll(void* data, size_t size);
 
 private:
+    std::shared_ptr<class ServerCore> mCoreService{ nullptr };
     Lock::SRWLock mSessionsLock{ }; // 01-14 std::mutex -> SRWLock으로 변경
     std::atomic<SessionIdType> mSessionCount{ };
     Concurrency::concurrent_unordered_map<SessionIdType, std::shared_ptr<Session>> mSessions{ };

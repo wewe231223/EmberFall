@@ -1,10 +1,9 @@
 #include "pch.h"
 #include "Session.h"
-#include "SessionManager.h"
-#include "PacketHandler.h"
-#include "SendBuffers.h"
+#include "NetworkCore.h"
 
-Session::Session() {
+Session::Session(std::shared_ptr<class INetworkCore> coreService) 
+    : INetworkObject{ coreService } {
     mSocket = NetworkUtil::CreateSocket();
     CrashExp(INVALID_SOCKET == mSocket, "");
 }
@@ -20,7 +19,7 @@ HANDLE Session::GetHandle() const {
 void Session::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
     switch (overlapped->type) {
     case IOType::SEND:
-        gSendBufferFactory->ReleaseOverlapped(reinterpret_cast<OverlappedSend*>(overlapped));
+        ProcessSend(numOfBytes, reinterpret_cast<OverlappedSend*>(overlapped));
         break;
 
     case IOType::RECV:
@@ -84,7 +83,8 @@ void Session::RegisterSend(void* packet) {
         return;
     }
 
-    auto overlappedSend = gSendBufferFactory->GetOverlapped(packet, reinterpret_cast<char*>(packet)[0]);
+    auto sendBufferFactory = GetCore()->GetSendBufferFactory();
+    auto overlappedSend = sendBufferFactory->GetOverlapped(packet, reinterpret_cast<char*>(packet)[0]);
     //OverlappedSend* overlappedSend = new OverlappedSend{ reinterpret_cast<char*>(packet) };
     overlappedSend->owner = shared_from_this();
     auto result = ::WSASend(
@@ -111,7 +111,8 @@ void Session::RegisterSend(void* data, size_t size) {
         return;
     }
 
-    auto overlappedSend = gSendBufferFactory->GetOverlapped(data, size);
+    auto sendBufferFactory = GetCore()->GetSendBufferFactory();
+    auto overlappedSend = sendBufferFactory->GetOverlapped(data, size);
     //OverlappedSend* overlappedSend = new OverlappedSend{ reinterpret_cast<char*>(data), size };
     overlappedSend->owner = shared_from_this();
     auto result = ::WSASend(
@@ -135,11 +136,19 @@ void Session::RegisterSend(void* data, size_t size) {
 
 void Session::ProcessRecv(INT32 numOfBytes) {
     // TODO
+    auto coreService = GetCore();
+
     std::cout << std::format("RECV Len: {}\n", numOfBytes);
     mOverlappedRecv.owner.reset();
     if (0 >= numOfBytes) {
-        gSessionManager->CloseSession(GetId());
-        return;
+        if (NetworkType::SERVER == coreService->GetType()) {
+            auto serverCore = std::static_pointer_cast<ServerCore>(coreService);
+            serverCore->GetSessionManager()->CloseSession(GetId());
+            return;
+        }
+        else {
+            // 클라이언트 모드에서 종료는?
+        }
     }
 
     // Echo Test
@@ -148,12 +157,13 @@ void Session::ProcessRecv(INT32 numOfBytes) {
     numOfBytes += 1;
 
     // 받아온 Recv 버퍼의 내용을 저장해야함.
-    gPacketHandler->Write(mOverlappedRecv.buffer.data(), numOfBytes);
+    coreService->GetPacketHandler()->Write(mOverlappedRecv.buffer.data(), numOfBytes);
     RegisterRecv();
 }
 
-void Session::ProcessSend(INT32 numOfBytes) {
-    // TODO
+void Session::ProcessSend(INT32 numOfBytes, OverlappedSend* overlappedSend) {
+    auto sendBufferFactory = GetCore()->GetSendBufferFactory();
+    sendBufferFactory->ReleaseOverlapped(overlappedSend);
 }
 
 bool Session::IsConnected() const {
@@ -198,4 +208,15 @@ void Session::lock() {
 
 void Session::unlock() {
     mLock.unlock();
+}
+
+bool Session::Connect(const std::string& serverIp, const UINT16 port) {
+    sockaddr_in serverAddr{ };
+    ::memset(&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = ::htons(port);
+    ::inet_pton(AF_INET, serverIp.c_str(), &serverAddr.sin_addr.s_addr);
+
+    // TODO
+    return true;
 }

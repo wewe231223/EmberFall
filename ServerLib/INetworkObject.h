@@ -12,12 +12,14 @@
 
 class INetworkObject abstract : public std::enable_shared_from_this<INetworkObject> {
 public:
-    INetworkObject();
+    INetworkObject(std::shared_ptr<class INetworkCore> coreService);
     virtual ~INetworkObject();
 
 public:
     void InitId(SessionIdType id);
     SessionIdType GetId() const;
+    std::shared_ptr<class INetworkCore> GetCore() const;
+
     virtual void Close() abstract;
 
     virtual HANDLE GetHandle() const abstract;
@@ -28,4 +30,5 @@ public:
 
 private:
     SessionIdType mId{ INVALID_CLIENT_ID };
+    std::shared_ptr<class INetworkCore> mCoreService{ nullptr };
 };
