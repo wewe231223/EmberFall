@@ -147,7 +147,9 @@ void Session::ProcessRecv(INT32 numOfBytes) {
             return;
         }
         else {
-            // 클라이언트 모드에서 종료는?
+            auto clientCore = std::static_pointer_cast<ClientCore>(coreService);
+            clientCore->CloseSession();
+            return;
         }
     }
 
@@ -200,14 +202,6 @@ void Session::InitSessionNetAddress(char* addressBuffer) {
 
 std::pair<std::string, UINT16> Session::GetAddress() const {
     return std::make_pair(mIP, mPort);
-}
-
-void Session::lock() {
-    mLock.lock();
-}
-
-void Session::unlock() {
-    mLock.unlock();
 }
 
 bool Session::Connect(const std::string& serverIp, const UINT16 port) {

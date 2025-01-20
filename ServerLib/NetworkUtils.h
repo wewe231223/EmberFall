@@ -8,6 +8,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace NetworkUtil {
+    inline LPFN_CONNECTEX ConnectEx;
+    inline LPFN_DISCONNECTEX DisconnectEx;
 
     template <typename MaybeIter>
     concept IsIterator = std::contiguous_iterator<MaybeIter> or std::random_access_iterator<MaybeIter>
@@ -71,7 +73,4 @@ namespace NetworkUtil {
             return false;
         }
     }
-
-    inline LPFN_CONNECTEX ConnectEx;
-    inline LPFN_DISCONNECTEX DisconnectEx;
 }

@@ -21,6 +21,7 @@
 //          RegisterSend -> I/O -> WorkerThread -> ProcessSend
 // 
 //      01 - 15 연결 여부를 Enum 값에서 atomic_bool로 설정 연결여부 확인에 lock은 필요 없도록 함
+//      01 - 20 std::mutex mLock 변수 삭제, lock, unlock 함수 삭제
 //          
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -50,16 +51,10 @@ public:
     void InitSessionNetAddress(char* addressBuffer);
     std::pair<std::string, UINT16> GetAddress() const;
 
-    /* std::lock_guard 사용을 위한 함수 정의 */
-    void lock();
-    void unlock();
-
     // For Client
     bool Connect(const std::string& serverIp, const UINT16 port);
 
 private:
-    std::mutex mLock{ };
-
     std::string mIP{ };
     UINT16 mPort{ };
 
