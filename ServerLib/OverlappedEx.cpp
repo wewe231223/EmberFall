@@ -33,3 +33,6 @@ OverlappedRecv::OverlappedRecv()
 
 OverlappedSend::OverlappedSend()
     : OverlappedEx{ IOType::SEND } { }
+
+OverlappedDisconnect::OverlappedDisconnect()
+    : OverlappedEx{ IOType::DISCONNECT } { }

@@ -19,14 +19,11 @@ public:
     void InitId(SessionIdType id);
     SessionIdType GetId() const;
     std::shared_ptr<class INetworkCore> GetCore() const;
+    virtual bool IsClosed() const abstract;
 
     virtual void Close() abstract;
-
     virtual HANDLE GetHandle() const abstract;
-
     virtual void ProcessOverlapped(class OverlappedEx* overlapped, INT32 numOfBytes) abstract;
-
-    void PostQueuedCompletionStatus();
 
 private:
     SessionIdType mId{ INVALID_CLIENT_ID };

@@ -18,9 +18,3 @@ SessionIdType INetworkObject::GetId() const {
 std::shared_ptr<INetworkCore> INetworkObject::GetCore() const {
     return mCoreService;
 }
-
-void INetworkObject::PostQueuedCompletionStatus() {
-    auto iocpCore = mCoreService->GetIOCPCore();
-    bool result = ::PostQueuedCompletionStatus(iocpCore->GetHandle(), 0, 0, nullptr);
-    CrashExp(false != result, "PQCS Failed");
-}

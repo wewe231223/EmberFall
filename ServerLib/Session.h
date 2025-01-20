@@ -36,6 +36,7 @@ public:
 public:
     void SetRemain(size_t remainSize);
     virtual HANDLE GetHandle() const override;
+    virtual bool IsClosed() const override;
 
     virtual void ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) override;
 

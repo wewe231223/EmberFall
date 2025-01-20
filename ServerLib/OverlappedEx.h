@@ -59,6 +59,15 @@ struct OverlappedConnect : public OverlappedEx {
     OverlappedConnect& operator=(OverlappedConnect&&) noexcept = delete;
 };
 
+struct OverlappedDisconnect : public OverlappedEx {
+    OverlappedDisconnect();
+
+    OverlappedDisconnect(const OverlappedDisconnect&) = delete;
+    OverlappedDisconnect(OverlappedDisconnect&&) noexcept = delete;
+    OverlappedDisconnect& operator=(const OverlappedDisconnect&) = delete;
+    OverlappedDisconnect& operator=(OverlappedDisconnect&&) noexcept = delete;
+};
+
 struct OverlappedRecv : public OverlappedEx {
     OverlappedRecv();
 

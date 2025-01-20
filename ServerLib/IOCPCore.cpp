@@ -67,8 +67,13 @@ void IOCPCore::IOWorker() {
             }
             else {
                 auto clientCore = std::static_pointer_cast<ClientCore>(mCoreService);
-                // TODO
+                clientCore->CloseSession();
+                break;
             }
+        }
+
+        if (IOType::DISCONNECT == overlappedEx->type) {
+            break;
         }
 
         overlappedEx->owner->ProcessOverlapped(overlappedEx, receivedByte);

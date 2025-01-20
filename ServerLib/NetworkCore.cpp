@@ -30,12 +30,20 @@ void INetworkCore::Init() {
     mSendBufferFactory = std::make_shared<SendBufferFactory>();
 }
 
+bool INetworkCore::PQCS(INT32 transfferdBytes, ULONG_PTR completionKey, OverlappedEx* overlapped) {
+    return ::PostQueuedCompletionStatus(mIocpCore->GetHandle(), transfferdBytes, completionKey, overlapped->GetRawPtr());
+}
+
 ServerCore::ServerCore(size_t workerThreadNum) 
     : INetworkCore{ NetworkType::SERVER }, mWorkerThreadNum{ workerThreadNum } {
     mWorkerThreads.reserve(workerThreadNum);
 }
 
 ServerCore::~ServerCore() { }
+
+bool ServerCore::IsListenerClosed() const {
+    return mListener->IsClosed();
+}
 
 std::shared_ptr<SessionManager> ServerCore::GetSessionManager() const {
     return mSessionManager;
@@ -105,12 +113,17 @@ bool ClientCore::Start(const std::string& ip, const UINT16 port) {
 
 void ClientCore::End() {
     CloseSession();
+    PQCS(0, 0, &mOverlappedDisconnect);
 
     if (mWorkerThread.joinable()) {
         mWorkerThread.join();
     }
 
     ::WSACleanup();
+}
+
+bool ClientCore::IsClosedSession() const {
+    return mSession->IsClosed();
 }
 
 OverlappedConnect* ClientCore::GetOverlappedConnect() {

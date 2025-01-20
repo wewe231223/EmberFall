@@ -40,6 +40,8 @@ public:
     virtual bool Start(const std::string& ip, const UINT16 port) abstract;
     virtual void End() abstract;
 
+    bool PQCS(INT32 transfferdBytes, ULONG_PTR completionKey, OverlappedEx* overlapped);
+
 private:
     NetworkType mType{ };
     std::shared_ptr<IOCPCore> mIocpCore{ nullptr };
@@ -53,6 +55,7 @@ public:
     virtual ~ServerCore();
 
 public:
+    bool IsListenerClosed() const;
     std::shared_ptr<SessionManager> GetSessionManager() const;
 
     virtual bool Start(const std::string& ip, const UINT16 port) override;
@@ -74,6 +77,7 @@ public:
     virtual bool Start(const std::string& ip, const UINT16 port) override;
     virtual void End() override;
 
+    bool IsClosedSession() const;
     OverlappedConnect* GetOverlappedConnect();
     void Send(void* data, size_t dataSize);
     void CloseSession();
@@ -82,4 +86,5 @@ private:
     std::thread mWorkerThread{ };
     std::shared_ptr<class Session> mSession{ nullptr };
     OverlappedConnect mOverlappedConnect{ };
+    OverlappedDisconnect mOverlappedDisconnect{ };
 };

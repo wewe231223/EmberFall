@@ -16,6 +16,10 @@ HANDLE Session::GetHandle() const {
     return reinterpret_cast<HANDLE>(mSocket);
 }
 
+bool Session::IsClosed() const {
+    return INVALID_SOCKET == mSocket;
+}
+
 void Session::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
     switch (overlapped->type) {
     case IOType::SEND:
@@ -31,7 +35,6 @@ void Session::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
         break;
 
     default:
-        /* Print Error Log */
         break;
     }
 }

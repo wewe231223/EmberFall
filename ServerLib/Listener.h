@@ -20,6 +20,7 @@ public:
 public:
     virtual HANDLE GetHandle() const override;
     virtual void Close() override;
+    virtual bool IsClosed() const override;
 
     virtual void ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) override;
     void RegisterAccept();

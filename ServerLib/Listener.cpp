@@ -31,6 +31,11 @@ HANDLE Listener::GetHandle() const {
 
 void Listener::Close() {
     ::closesocket(mListenSocket);
+    mListenSocket = INVALID_SOCKET;
+}
+
+bool Listener::IsClosed() const {
+    return mListenSocket == INVALID_SOCKET;
 }
 
 void Listener::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
