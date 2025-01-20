@@ -53,6 +53,7 @@ public:
 
     // For Client
     bool Connect(const std::string& serverIp, const UINT16 port);
+    void ProcessConnect(INT32 numOfBytes, OverlappedConnect* overlapped);
 
 private:
     std::string mIP{ };

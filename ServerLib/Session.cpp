@@ -27,6 +27,7 @@ void Session::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
         break;
 
     case IOType::CONNECT:
+        ProcessConnect(numOfBytes, reinterpret_cast<OverlappedConnect*>(overlapped));
         break;
 
     default:
@@ -100,7 +101,7 @@ void Session::RegisterSend(void* packet) {
     if (SOCKET_ERROR == result) {
         auto errorCode = ::WSAGetLastError();
         if (WSA_IO_PENDING != errorCode) {
-            delete overlappedSend;
+            sendBufferFactory->ReleaseOverlapped(overlappedSend);
             RegisterSend(packet);
         }
     }
@@ -128,7 +129,7 @@ void Session::RegisterSend(void* data, size_t size) {
     if (SOCKET_ERROR == result) {
         auto errorCode = ::WSAGetLastError();
         if (WSA_IO_PENDING != errorCode) {
-            delete overlappedSend;
+            sendBufferFactory->ReleaseOverlapped(overlappedSend);
             RegisterSend(data, size);
         }
     }
@@ -168,7 +169,7 @@ void Session::ProcessSend(INT32 numOfBytes, OverlappedSend* overlappedSend) {
     sendBufferFactory->ReleaseOverlapped(overlappedSend);
 }
 
-bool Session::IsConnected() const {
+bool Session::IsConnected() const { 
     return mConnected.load();
 }
 
@@ -221,13 +222,30 @@ bool Session::Connect(const std::string& serverIp, const UINT16 port) {
 
     DWORD bytes{ };
     auto clientCore = std::static_pointer_cast<ClientCore>(GetCore());
-    return NetworkUtil::ConnectEx(
+    auto overlappedConnect = clientCore->GetOverlappedConnect();
+    overlappedConnect->owner = shared_from_this();
+    auto result = NetworkUtil::ConnectEx(
         mSocket,
         reinterpret_cast<sockaddr*>(&serverAddr),
         sizeof(serverAddr),
         nullptr,
         NULL,
         &bytes,
-        clientCore->GetOverlappedConnect()
+        overlappedConnect
     );
+
+    if (false == result) {
+        auto errorCode = ::WSAGetLastError();
+        if (WSA_IO_PENDING != errorCode) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+void Session::ProcessConnect(INT32 numOfBytes, OverlappedConnect* overlapped) {
+    if (true == mConnected.exchange(true)) {
+        return;
+    }
 }

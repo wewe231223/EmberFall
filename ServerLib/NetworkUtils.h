@@ -69,8 +69,6 @@ namespace NetworkUtil {
             nullptr
         );
 
-        if (0 != result) {
-            return false;
-        }
+        return 0 == result;
     }
 }

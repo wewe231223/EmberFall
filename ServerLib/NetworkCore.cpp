@@ -81,7 +81,6 @@ void ServerCore::End() {
 
 ClientCore::ClientCore() 
     : INetworkCore{ NetworkType::CLIENT } {
-    mSession = std::make_shared<Session>(shared_from_this());
 }
 
 ClientCore::~ClientCore() { }
@@ -92,18 +91,25 @@ bool ClientCore::Start(const std::string& ip, const UINT16 port) {
         return false;
     }
 
-    mSession->Connect(ip, port);
+    GetIOCPCore()->Init(1);
+    mSession = std::make_shared<Session>(shared_from_this());
+    GetIOCPCore()->RegisterSocket(mSession);
+    if (not mSession->Connect(ip, port)) {
+        return false;
+    }
+
     mWorkerThread = std::thread{ [=]() { GetIOCPCore()->IOWorker(); } };
 
     return true;
 }
 
 void ClientCore::End() {
+    CloseSession();
+
     if (mWorkerThread.joinable()) {
         mWorkerThread.join();
     }
 
-    CloseSession();
     ::WSACleanup();
 }
 
