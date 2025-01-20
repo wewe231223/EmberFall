@@ -64,6 +64,7 @@ void IOCPCore::IOWorker() {
             if (NetworkType::SERVER == mCoreService->GetType()) {
                 auto serverCore = std::static_pointer_cast<ServerCore>(mCoreService);
                 serverCore->GetSessionManager()->CloseSession(clientId);
+                continue;
             }
             else {
                 auto clientCore = std::static_pointer_cast<ClientCore>(mCoreService);
