@@ -36,7 +36,10 @@
     <ClCompile Include="Component\ComponentBase.cpp">
       <Filter>Component</Filter>
     </ClCompile>
-    <ClCompile Include="System\ArchType.cpp">
+    <ClCompile Include="System\ArcheType.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="System\PartIdentifier.cpp">
       <Filter>System</Filter>
     </ClCompile>
   </ItemGroup>
@@ -53,7 +56,10 @@
     <ClInclude Include="Component\ComponentBase.h">
       <Filter>Component</Filter>
     </ClInclude>
-    <ClInclude Include="System\ArchType.h">
+    <ClInclude Include="System\ArcheType.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="System\PartIdentifier.h">
       <Filter>System</Filter>
     </ClInclude>
   </ItemGroup>

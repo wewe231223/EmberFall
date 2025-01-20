@@ -11,9 +11,7 @@
 #include "framework.h"
 #include "EmberFall.h"
 #include "EditorInterface/Impl/EditorDevice.h"
-
 #pragma comment(lib,"out/debug/EditorInterface.lib")
-
 #include "Renderer/core/Renderer.h"
 #pragma comment(lib,"out/debug/Renderer.lib")
 

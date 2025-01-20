@@ -130,6 +130,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Crash.h" />
+    <ClInclude Include="Defines.h" />
     <ClInclude Include="DirectXInclude.h" />
     <ClInclude Include="Enumerate.h" />
     <ClInclude Include="Exceptions.h" />

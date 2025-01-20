@@ -2,11 +2,7 @@
 #include <vector>
 #include <memory>
 #include "../Game/Component/ComponentBase.h"
-
-template <typename T>
-concept HasIndex = requires {
-	{ T::index } -> std::convertible_to<size_t>;
-};
+#include "../Utility/Defines.h"
 
 class GameObject {
 public:

@@ -150,14 +150,16 @@
     </ClCompile>
     <ClCompile Include="Scene\GameObject.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
-    <ClCompile Include="System\ArchType.cpp" />
+    <ClCompile Include="System\ArcheType.cpp" />
+    <ClCompile Include="System\PartIdentifier.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Component\ComponentBase.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Scene\GameObject.h" />
     <ClInclude Include="Scene\Scene.h" />
-    <ClInclude Include="System\ArchType.h" />
+    <ClInclude Include="System\ArcheType.h" />
+    <ClInclude Include="System\PartIdentifier.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
