@@ -36,6 +36,9 @@
     <ClCompile Include="Component\ComponentBase.cpp">
       <Filter>Component</Filter>
     </ClCompile>
+    <ClCompile Include="System\ArchType.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scene\Scene.h">
@@ -49,6 +52,9 @@
     </ClInclude>
     <ClInclude Include="Component\ComponentBase.h">
       <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="System\ArchType.h">
+      <Filter>System</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
