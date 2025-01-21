@@ -20,6 +20,11 @@ public:
 	bool Test(const PartIdentifier& other) const {
 		return mParts == other.mParts;
 	}
+
+	bool Test(size_t index) const {
+		CrashExp(index < mParts.size(), "Index out of range");
+		return mParts.test(index);
+	}
 private:
 	std::bitset<64> mParts{};
 };
