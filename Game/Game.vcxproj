@@ -148,17 +148,15 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Scene\GameObject.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
-    <ClCompile Include="System\ArcheType.cpp" />
+    <ClCompile Include="System\GameObject.cpp" />
     <ClCompile Include="System\PartIdentifier.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Component\ComponentBase.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Scene\GameObject.h" />
     <ClInclude Include="Scene\Scene.h" />
-    <ClInclude Include="System\ArcheType.h" />
+    <ClInclude Include="System\GameObject.h" />
     <ClInclude Include="System\PartIdentifier.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

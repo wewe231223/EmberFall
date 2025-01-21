@@ -2,5 +2,5 @@
 
 class ComponentBase {
 public:
-	virtual ~ComponentBase() = 0;
+	virtual ~ComponentBase() = default;
 };

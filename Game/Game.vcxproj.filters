@@ -30,16 +30,13 @@
     <ClCompile Include="pch.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\GameObject.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
     <ClCompile Include="Component\ComponentBase.cpp">
       <Filter>Component</Filter>
     </ClCompile>
-    <ClCompile Include="System\ArcheType.cpp">
+    <ClCompile Include="System\PartIdentifier.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="System\PartIdentifier.cpp">
+    <ClCompile Include="System\GameObject.cpp">
       <Filter>System</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,16 +47,13 @@
     <ClInclude Include="pch.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\GameObject.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
     <ClInclude Include="Component\ComponentBase.h">
       <Filter>Component</Filter>
     </ClInclude>
-    <ClInclude Include="System\ArcheType.h">
+    <ClInclude Include="System\PartIdentifier.h">
       <Filter>System</Filter>
     </ClInclude>
-    <ClInclude Include="System\PartIdentifier.h">
+    <ClInclude Include="System\GameObject.h">
       <Filter>System</Filter>
     </ClInclude>
   </ItemGroup>
