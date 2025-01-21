@@ -28,13 +28,14 @@
 
 #include "INetworkObject.h"
 
+using RecvBuf = NetworkBuf<BUF_RW_SIZE>;
+
 class Session : public INetworkObject {
 public:
     Session(std::shared_ptr<class INetworkCore> coreService);
     ~Session();
 
 public:
-    void SetRemain(size_t remainSize);
     virtual HANDLE GetHandle() const override;
     virtual bool IsClosed() const override;
 
@@ -55,6 +56,7 @@ public:
     // For Client
     bool Connect(const std::string& serverIp, const UINT16 port);
     void ProcessConnect(INT32 numOfBytes, OverlappedConnect* overlapped);
+    RecvBuf::iterator ValidatePackets(RecvBuf::iterator iter, RecvBuf::iterator last);
 
 private:
     std::string mIP{ };

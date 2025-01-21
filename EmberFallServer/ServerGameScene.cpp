@@ -25,3 +25,17 @@ void EchoTestScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore
 
 void EchoTestScene::Update(const float deltaTime) {
 }
+
+PlayScene::PlayScene() { }
+
+PlayScene::~PlayScene() { }
+
+void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) { 
+    auto packetHandler = serverCore->GetPacketHandler();
+    auto& buffer = packetHandler->GetBuffer();
+    if (0 == buffer.Size()) {
+        return;
+    }
+}
+
+void PlayScene::Update(const float deltaTime) { }

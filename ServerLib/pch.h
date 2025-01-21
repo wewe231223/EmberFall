@@ -46,5 +46,6 @@
 #include "OverlappedEx.h"
 #include "Crash.h"
 #include "Lock.h"
+#include "Protocol.h"
 
 using namespace std::literals;

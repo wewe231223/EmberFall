@@ -19,3 +19,13 @@ public:
     void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) override;
     virtual void Update(const float deltaTime) override;
 };
+
+class PlayScene : IServerGameScene {
+public:
+    PlayScene();
+    ~PlayScene();
+
+public:
+    void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) override;
+    virtual void Update(const float deltaTime) override;
+};

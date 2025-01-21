@@ -21,12 +21,6 @@ namespace NetworkUtil {
         return &(*iter);
     }
 
-    template <std::random_access_iterator Iter>
-    inline typename Iter::value_type* AddressOf(Iter iter)
-    {
-        return &(*iter);
-    }
-
     template <typename T>
     inline bool SetSocketOpt(SOCKET socket, int level, int option, T optval)
     {
@@ -70,5 +64,11 @@ namespace NetworkUtil {
         );
 
         return 0 == result;
+    }
+
+    template <std::contiguous_iterator Iter> requires std::is_same_v<typename Iter::value_type, char>
+    inline PacketSizeType GetPacketSizeFromIter(Iter iter)
+    {
+        return *(reinterpret_cast<PacketSizeType*>(AddressOf(iter)));
     }
 }

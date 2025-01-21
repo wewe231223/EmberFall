@@ -58,8 +58,8 @@ void Session::RegisterRecv() {
 
     mOverlappedRecv.ResetOverlapped();
     mOverlappedRecv.owner = shared_from_this();
-    mOverlappedRecv.wsaBuf.buf = mOverlappedRecv.buffer.data();
-    mOverlappedRecv.wsaBuf.len = static_cast<UINT32>(mOverlappedRecv.buffer.size());
+    mOverlappedRecv.wsaBuf.buf = mOverlappedRecv.buffer.data() + mPrevRemainSize;
+    mOverlappedRecv.wsaBuf.len = static_cast<UINT32>(mOverlappedRecv.buffer.size() - mPrevRemainSize);
     auto result = ::WSARecv(
         mSocket,
         &mOverlappedRecv.wsaBuf,
@@ -76,10 +76,6 @@ void Session::RegisterRecv() {
             RegisterRecv();
         }
     }
-}
-
-void Session::SetRemain(size_t remainSize) {
-    mPrevRemainSize = remainSize;
 }
 
 void Session::RegisterSend(void* packet) {
@@ -157,13 +153,15 @@ void Session::ProcessRecv(INT32 numOfBytes) {
         }
     }
 
-    // Echo Test
-    //RegisterSend(mOverlappedRecv.buffer.data(), numOfBytes);
-    mOverlappedRecv.buffer[numOfBytes] = '\n'; // 출력 테스트용
-    numOfBytes += 1;
+    auto dataBeg = mOverlappedRecv.buffer.begin();
+    auto dataEnd = dataBeg + numOfBytes;
+    auto remainBegin = ValidatePackets(dataBeg, dataEnd);
+    mPrevRemainSize = std::distance(remainBegin, dataEnd);
+    auto dataSize = numOfBytes - mPrevRemainSize;
 
-    // 받아온 Recv 버퍼의 내용을 저장해야함.
-    coreService->GetPacketHandler()->Write(mOverlappedRecv.buffer.data(), numOfBytes);
+    // 받아온 Recv 버퍼의 내용을 저장.
+    coreService->GetPacketHandler()->Write(mOverlappedRecv.buffer.data(), dataSize);
+    std::move(remainBegin, dataEnd, dataBeg);
     RegisterRecv();
 }
 
@@ -251,4 +249,17 @@ void Session::ProcessConnect(INT32 numOfBytes, OverlappedConnect* overlapped) {
     if (true == mConnected.exchange(true)) {
         return;
     }
+}
+
+RecvBuf::iterator Session::ValidatePackets(RecvBuf::iterator iter, RecvBuf::iterator last) {
+    auto it = iter;
+    while (it != last) {
+        auto packetSize = NetworkUtil::GetPacketSizeFromIter(it);
+        if (std::distance(it, last) < packetSize) {
+            break;
+        }
+        it += packetSize;
+    }
+
+    return it;
 }
