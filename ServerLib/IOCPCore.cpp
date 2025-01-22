@@ -15,6 +15,10 @@ void IOCPCore::Init(size_t workerThreadNum) {
     CrashExp(NULL == mIocpHandle, "IOCP Creation Failure");
 }
 
+HANDLE IOCPCore::GetHandle() const {
+    return mIocpHandle;
+}
+
 void IOCPCore::RegisterSocket(SOCKET socket, ULONG_PTR registerKey) {
     auto result = ::CreateIoCompletionPort(reinterpret_cast<HANDLE>(socket), mIocpHandle, registerKey, 0);
 }

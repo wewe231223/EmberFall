@@ -8,19 +8,19 @@ RecvBuffer::~RecvBuffer() { }
 RecvBuffer::RecvBuffer(const RecvBuffer& other) {
     std::copy(other.mBuffer.begin(), other.mBuffer.end(), mBuffer.begin());
     mWritePos = other.mWritePos.load();
-    mReadPos = other.mReadPos.load();
+    mReadPos = other.mReadPos;
 }
 
 RecvBuffer::RecvBuffer(RecvBuffer&& other) noexcept {
     std::copy(other.mBuffer.begin(), other.mBuffer.end(), mBuffer.begin());
     mWritePos = other.mWritePos.load();
-    mReadPos = other.mReadPos.load();
+    mReadPos = other.mReadPos;
 }
 
 RecvBuffer& RecvBuffer::operator=(const RecvBuffer& other) {
     std::copy(other.mBuffer.begin(), other.mBuffer.end(), mBuffer.begin());
     mWritePos = other.mWritePos.load();
-    mReadPos = other.mReadPos.load();
+    mReadPos = other.mReadPos;
 
     return *this;
 }
@@ -28,13 +28,24 @@ RecvBuffer& RecvBuffer::operator=(const RecvBuffer& other) {
 RecvBuffer& RecvBuffer::operator=(RecvBuffer&& other) noexcept {
     std::copy(other.mBuffer.begin(), other.mBuffer.end(), mBuffer.begin());
     mWritePos = other.mWritePos.load();
-    mReadPos = other.mReadPos.load();
+    mReadPos = other.mReadPos;
 
     return *this;
 }
 
 char* RecvBuffer::Data() {
     return mBuffer.data();
+}
+
+void RecvBuffer::Read(void* buffer, size_t size) {
+    auto srcIter = mBuffer.begin() + mReadPos;
+    auto packetSize = NetworkUtil::GetPacketSizeFromIter(srcIter);
+    if (size < packetSize) {
+        return;
+    }
+
+    ::memcpy(buffer, NetworkUtil::AddressOf(srcIter), packetSize);
+    mReadPos += size;
 }
 
 void RecvBuffer::Write(void* data, size_t size) {
@@ -44,7 +55,7 @@ void RecvBuffer::Write(void* data, size_t size) {
 
 void RecvBuffer::Reset() {
     mWritePos.store(0);
-    mReadPos.store(0);
+    mReadPos = 0;
 }
 
 size_t RecvBuffer::Size() const {

@@ -85,7 +85,6 @@ void Session::RegisterSend(void* packet) {
 
     auto sendBufferFactory = GetCore()->GetSendBufferFactory();
     auto overlappedSend = sendBufferFactory->GetOverlapped(packet, reinterpret_cast<char*>(packet)[0]);
-    //OverlappedSend* overlappedSend = new OverlappedSend{ reinterpret_cast<char*>(packet) };
     overlappedSend->owner = shared_from_this();
     auto result = ::WSASend(
         mSocket,
@@ -113,7 +112,6 @@ void Session::RegisterSend(void* data, size_t size) {
 
     auto sendBufferFactory = GetCore()->GetSendBufferFactory();
     auto overlappedSend = sendBufferFactory->GetOverlapped(data, size);
-    //OverlappedSend* overlappedSend = new OverlappedSend{ reinterpret_cast<char*>(data), size };
     overlappedSend->owner = shared_from_this();
     auto result = ::WSASend(
         mSocket,
@@ -135,7 +133,6 @@ void Session::RegisterSend(void* data, size_t size) {
 }
 
 void Session::ProcessRecv(INT32 numOfBytes) {
-    // TODO
     auto coreService = GetCore();
 
     std::cout << std::format("RECV Len: {}\n", numOfBytes);

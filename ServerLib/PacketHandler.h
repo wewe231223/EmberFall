@@ -41,13 +41,27 @@ public:
 
 public:
     char* Data();
+    void Read(void* buffer, size_t size);
+
     void Write(void* data, size_t size);
     void Reset();
     size_t Size() const;
 
+    template <typename T>
+    void Read(T& data) {
+        auto srcIter = mBuffer.begin() + mReadPos;
+        auto packetSize = NetworkUtil::GetPacketSizeFromIter(srcIter);
+        if (sizeof(T) < packetSize) {
+            return;
+        }
+
+        ::memcpy(&data, NetworkUtil::AddressOf(srcIter), packetSize);
+        mReadPos += sizeof(T);
+    }
+
 private:
     std::atomic_ullong mWritePos{ };
-    std::atomic_ullong mReadPos{ };
+    size_t mReadPos{ };
     std::array<char, RECV_BUF_SIZE> mBuffer{ };
 };
 
