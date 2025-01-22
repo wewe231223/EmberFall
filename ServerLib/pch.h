@@ -40,12 +40,12 @@
 #include <concurrent_unordered_map.h>
 #include <concurrent_queue.h>
 
-#include "NetworkUtils.h"
 #include "Types.h"
 #include "Constants.h"
 #include "OverlappedEx.h"
 #include "Crash.h"
 #include "Lock.h"
 #include "Protocol.h"
+#include "NetworkUtils.h"
 
 using namespace std::literals;

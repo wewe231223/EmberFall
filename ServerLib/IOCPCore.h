@@ -24,7 +24,7 @@ public:
 public:
     void Init(size_t workerThreadNum);
 
-    HANDLE GetHandle() const { return mIocpHandle; }
+    HANDLE GetHandle() const;
 
     void RegisterSocket(SOCKET socket, ULONG_PTR registerKey);
     void RegisterSocket(const std::shared_ptr<INetworkObject>& networkObject);

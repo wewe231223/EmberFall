@@ -62,6 +62,14 @@ size_t RecvBuffer::Size() const {
     return mWritePos.load();
 }
 
+size_t RecvBuffer::GetReadPos() const {
+    return mReadPos;    
+}
+
+bool RecvBuffer::IsReadEnd() const {
+    return Size() <= mReadPos;
+}
+
 PacketHandler::PacketHandler() { }
 
 PacketHandler::~PacketHandler() { }
@@ -77,7 +85,6 @@ void PacketHandler::Write(void* data, size_t size) {
 
     mWriting.store(0 != mWriteCount);
     if (true == mSwap.load() and false == mWriting.load()) {
-        std::cout << "notifying Writing End" << std::endl;
         mWriting.notify_all();
     }
 }

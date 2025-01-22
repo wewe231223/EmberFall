@@ -17,7 +17,12 @@ void EchoTestScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore
     }
 
     std::cout << "Total RecvBytes: " << buffer.Size() << std::endl;
-    std::cout << "Contents: " << buffer.Data() << std::endl;
+    PacketChat chat{ };
+    while (not buffer.IsReadEnd()) {
+        buffer.Read(chat);
+        chat.chatdata[chat.size] = '\0';
+        std::cout << chat.chatdata << std::endl;
+    }
 
     auto sessionManager = serverCore->GetSessionManager();
     sessionManager->SendAll(buffer.Data(), buffer.Size());

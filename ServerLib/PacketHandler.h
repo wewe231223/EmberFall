@@ -20,11 +20,6 @@
 //                  Swap 함수 호출시 새로운 WriteOnlyBuffer의 Reset은 보장됨.
 //          5. RecvBuffer의 move, copy는 가급적 사용 X
 // 
-// RecvBuffer 의 mReadPos 멤버는 추후 사용예정
-// 
-// !! 완벽히 동작하는지 아직 확인 X (01-15) !!
-//      가끔 Recv 된 데이터가 제대로 써지지 않는 문제가 있음. - 01-15(진행중)
-// 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 inline constexpr size_t RECV_BUF_SIZE = std::numeric_limits<unsigned short>::max();
@@ -40,12 +35,14 @@ public:
     RecvBuffer& operator=(RecvBuffer&& other) noexcept;
 
 public:
+    size_t Size() const;
+    size_t GetReadPos() const;
+    bool IsReadEnd() const;
     char* Data();
-    void Read(void* buffer, size_t size);
 
+    void Read(void* buffer, size_t size);
     void Write(void* data, size_t size);
     void Reset();
-    size_t Size() const;
 
     template <typename T>
     void Read(T& data) {
