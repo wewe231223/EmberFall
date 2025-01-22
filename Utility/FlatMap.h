@@ -10,6 +10,7 @@ class FlatMap {
 public:
     using value_type = std::pair<Key, Value>;
     using container_type = std::vector<value_type>;
+	using reference = typename container_type::reference;
     using size_type = typename container_type::size_type;
     using iterator = typename container_type::iterator;
     using const_iterator = typename container_type::const_iterator;
@@ -98,19 +99,19 @@ public:
         return mData.erase(first, last);
     }
 
-    Value& At(const Key& key) {
+    reference At(const Key& key) {
         auto it = LowerBound(key);
         CrashExp(it != mData.end() && it->first == key, "Key not found");
         return it->second;
     }
 
-    const Value& At(const Key& key) const {
+    const reference At(const Key& key) const {
         const auto it = LowerBound(key);
 		CrashExp(it != mData.end() && it->first == key, "Key not found");
         return it->second;
     }
 
-    Value& operator[](const Key& key) {
+    reference operator[](const Key& key) {
         auto it = LowerBound(key);
         if (it == mData.end() or it->first != key) {
             it = mData.insert(it, std::make_pair(key, Value{}));
@@ -118,7 +119,7 @@ public:
         return it->second;
     }
 
-    const Value& operator[](const Key& key) const {
+    const reference operator[](const Key& key) const {
         const auto it = LowerBound(key);
         if (it == mData.end() or it->first != key) {
             it = mData.insert(it, std::make_pair(key, Value{}));
