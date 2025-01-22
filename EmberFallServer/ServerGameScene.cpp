@@ -41,6 +41,12 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
     if (0 == buffer.Size()) {
         return;
     }
+
+    PacketInput input{ };
+    while (not buffer.IsReadEnd()) {
+        buffer.Read(input);
+        std::cout << std::format("RECV INPUT: KEY: {}, STATE: {}\n", input.key.key, input.key.state);
+    }
 }
 
 void PlayScene::Update(const float deltaTime) { }

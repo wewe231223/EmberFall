@@ -15,7 +15,7 @@ ServerFrame::~ServerFrame() {
 }
 
 void ServerFrame::InitGameScenes() {
-    mGameScenes.emplace_back(std::make_shared<EchoTestScene>());
+    mGameScenes.emplace_back(std::make_shared<PlayScene>());
 
     mCurrentScene = mGameScenes.front();
 }

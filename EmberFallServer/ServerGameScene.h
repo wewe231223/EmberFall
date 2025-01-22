@@ -20,7 +20,7 @@ public:
     virtual void Update(const float deltaTime) override;
 };
 
-class PlayScene : IServerGameScene {
+class PlayScene : public IServerGameScene {
 public:
     PlayScene();
     ~PlayScene();

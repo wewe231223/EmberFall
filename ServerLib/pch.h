@@ -40,6 +40,11 @@
 #include <concurrent_unordered_map.h>
 #include <concurrent_queue.h>
 
+#include "../External/Include/DirectXTK12/SimpleMath.h"
+
+using namespace std::literals;
+namespace SimpleMath = DirectX::SimpleMath;
+
 #include "Types.h"
 #include "Constants.h"
 #include "OverlappedEx.h"
@@ -47,5 +52,3 @@
 #include "Lock.h"
 #include "Protocol.h"
 #include "NetworkUtils.h"
-
-using namespace std::literals;

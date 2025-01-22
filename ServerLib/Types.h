@@ -19,6 +19,11 @@ using NetworkBuf = std::array<char, size>;
 template <size_t size>
 using NetworkBufIter = NetworkBuf<size>::iterator;
 
+struct Key {
+    BYTE key;
+    bool state;
+};
+
 template <size_t size>
 struct NetworkBufRange {
     NetworkBufIter<size> start;
