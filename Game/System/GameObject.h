@@ -1,6 +1,9 @@
 #pragma once 
 #include <vector>
 #include <memory>
+#include <span>
+#include <numeric>
+#include <map>
 #include "../Game/Component/ComponentBase.h"
 #include "../Game/System/PartIdentifier.h"
 #include "../Utility/Defines.h"
@@ -21,11 +24,11 @@ public:
 public:
 	template<typename T> 
 	T& GetComponent() {
-
+		
 	}
 private:
-	ArcheType* mArcheType;
-	size_t mArcheTypeIndex{ 0xFFFF'FFFF'FFFF'FFFF };
+	ArcheType* mArcheType{ nullptr };
+	size_t mArcheTypeIndex{ std::numeric_limits<size_t>::max() };
 };
 
 
@@ -41,24 +44,26 @@ class ArcheType {
 		Container(Container&&) noexcept = default;
 		Container& operator=(Container&&) noexcept = default;
 	public:
+		bool operator==(ComponentType type) const;
+	public:
 		template<typename T> 
 		void Initialize() {
 			CrashExp(mData == nullptr, "Can not be double Initialize");
 			mElementSize = sizeof(T);
 			mCapacity = 10;
-			mData = std::make_unique<ComponentBase[]>(mCapacity);
+			mData = std::make_unique<T[]>(mCapacity);
 		}
 
 		void CheckReallocate(size_t current); 
 
 		template<typename T> 
-		T* Data() {
-			CrashExp(mData != nullptr, "Data is nullptr");
-			return static_cast<T>(mData.get());
+		std::span<T> GetComponentArr(size_t current) {
+			CrashExp(mCapacity >= current, "Out of range");
+			return std::span<T>(reinterpret_cast<T*>(mData.get()), current);
 		}
 
 	private:
-		size_t mType{ 0xFFFF'FFFF'FFFF'FFFF };
+		ComponentType mType{};
 		size_t mElementSize{ 0 };
 		size_t mCapacity{ 0 };
 		std::unique_ptr<ComponentBase[]> mData{ nullptr };
@@ -80,8 +85,14 @@ public:
 
 	GameObject CreateGameObject();
 
+	template<typename T> 
+	std::span<T> GetComponentArr() {
+		
+	}
+
 private:
 	template<typename T> 
+		requires HasIndex<T> 
 	void InitArcheType() {
 		auto& back = mComponents.back();
 		back.Initialize<T>();
@@ -89,6 +100,8 @@ private:
 
 private:
 	PartIdentifier mPartIdentifier{};
+	
+	
 
 	std::vector<Container> mComponents{};
 	size_t mCurrent{ 0 };

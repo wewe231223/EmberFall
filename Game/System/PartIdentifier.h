@@ -3,6 +3,8 @@
 #include "../Utility/Defines.h"
 #include "../Utility/Crash.h"
 
+using ComponentType = std::bitset<64>;
+
 class PartIdentifier {
 public:
 	PartIdentifier() = default;
@@ -26,5 +28,5 @@ public:
 		return mParts.test(index);
 	}
 private:
-	std::bitset<64> mParts{};
+	ComponentType mParts{};
 };
