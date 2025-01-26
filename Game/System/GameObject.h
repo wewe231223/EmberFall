@@ -1,36 +1,13 @@
 #pragma once 
-#include <vector>
 #include <memory>
 #include <span>
 #include <numeric>
-#include <map>
+#include <unordered_map>
 #include "../Game/Component/ComponentBase.h"
 #include "../Game/System/PartIdentifier.h"
 #include "../Utility/Defines.h"
 
-class ArcheType;
-
-class GameObject {
-	friend ArcheType;
-public:
-	GameObject() = default;
-	~GameObject() = default;
-
-	GameObject(const GameObject&) = default;
-	GameObject& operator=(const GameObject&) = default;
-
-	GameObject(GameObject&&) noexcept = default;
-	GameObject& operator=(GameObject&&) noexcept = default;
-public:
-	template<typename T> 
-	T& GetComponent() {
-		
-	}
-private:
-	ArcheType* mArcheType{ nullptr };
-	size_t mArcheTypeIndex{ std::numeric_limits<size_t>::max() };
-};
-
+class GameObject;
 
 class ArcheType {
 	class Container {
@@ -87,22 +64,44 @@ public:
 
 	template<typename T> 
 	std::span<T> GetComponentArr() {
-		
+		return mComponents[T::index].GetComponentArr<T>(mCurrent);
+	}
+
+	bool CheckCompatibility(const PartIdentifier& partIdentifier) const {
+		return mPartIdentifier == partIdentifier;
 	}
 
 private:
-	template<typename T> 
-		requires HasIndex<T> 
+	template<typename T> requires HasIndex<T> 
 	void InitArcheType() {
-		auto& back = mComponents.back();
-		back.Initialize<T>();
+		mComponents[T::index].Initialize<T>();
 	}
 
 private:
 	PartIdentifier mPartIdentifier{};
-	
-	
-
-	std::vector<Container> mComponents{};
+	std::unordered_map<ComponentType, Container> mComponents{};
 	size_t mCurrent{ 0 };
+};
+
+
+class GameObject {
+	friend ArcheType;
+public:
+	GameObject() = default;
+	~GameObject() = default;
+
+	GameObject(const GameObject&) = default;
+	GameObject& operator=(const GameObject&) = default;
+
+	GameObject(GameObject&&) noexcept = default;
+	GameObject& operator=(GameObject&&) noexcept = default;
+public:
+	template<typename T> requires HasIndex<T> 
+	T& GetComponent() {
+		CrashExp(mArcheType != nullptr, "ArcheType is nullptr");
+		return mArcheType->mComponents[T::index].GetComponentArr<T>(mArcheTypeIndex);
+	}
+private:
+	ArcheType* mArcheType{ nullptr };
+	size_t mArcheTypeIndex{ std::numeric_limits<size_t>::max() };
 };

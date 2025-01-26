@@ -144,6 +144,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Component\ComponentBase.cpp" />
+    <ClCompile Include="Component\MeshRenderer.cpp" />
+    <ClCompile Include="Component\Transform.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -151,13 +153,18 @@
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="System\GameObject.cpp" />
     <ClCompile Include="System\PartIdentifier.cpp" />
+    <ClCompile Include="System\RenderSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Component\ComponentBase.h" />
+    <ClInclude Include="Component\MeshRenderer.h" />
+    <ClInclude Include="Component\Transform.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="System\GameObject.h" />
     <ClInclude Include="System\PartIdentifier.h" />
+    <ClInclude Include="System\RenderSystem.h" />
+    <ClInclude Include="System\System.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -18,6 +18,8 @@
 #include <dxgidebug.h>
 #include <d3dcompiler.h>
 #include "../External/Include/DirectXTK12/d3dx12.h"
+#include "../External/Include/DirectXTK12/SimpleMath.h"
+#include "../External/Include/DirectXTK12/SimpleMath.inl"
 
 // DirectX12 Library
 #pragma comment(lib, "d3d12.lib")

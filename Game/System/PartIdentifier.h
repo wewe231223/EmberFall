@@ -8,6 +8,11 @@ using ComponentType = std::bitset<64>;
 class PartIdentifier {
 public:
 	PartIdentifier() = default;
+
+	template<typename... Types> 
+	PartIdentifier() {
+		((mParts.set(Types::index)), ...);
+	}
 public:
 	bool operator==(const PartIdentifier& other) const {
 		return PartIdentifier::Test(other);

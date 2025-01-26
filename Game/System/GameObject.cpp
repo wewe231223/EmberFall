@@ -1,6 +1,10 @@
 #include "pch.h"
 #include "GameObject.h"
 
+bool ArcheType::Container::operator==(ComponentType type) const {
+	return mType == type;
+}
+
 void ArcheType::Container::CheckReallocate(size_t current) {
 	CrashExp(mData != nullptr, "Data is nullptr");
 
@@ -14,7 +18,7 @@ void ArcheType::Container::CheckReallocate(size_t current) {
 
 GameObject ArcheType::CreateGameObject() {	
 	mCurrent++;
-	for (auto& componentArr : mComponents) {
+	for (auto& [type, componentArr] : mComponents) {
 		componentArr.CheckReallocate(mCurrent);
 	}
 
