@@ -122,12 +122,24 @@ void ClientCore::End() {
     ::WSACleanup();
 }
 
+void ClientCore::InitSessionId(SessionIdType id) {
+    mSession->InitId(id);
+}
+
+SessionIdType ClientCore::GetSessionId() const {
+    return mSession->GetId();
+}
+
 bool ClientCore::IsClosedSession() const {
     return mSession->IsClosed();
 }
 
 OverlappedConnect* ClientCore::GetOverlappedConnect() {
     return &mOverlappedConnect;
+}
+
+void ClientCore::Send(void* packet) {
+    mSession->RegisterSend(packet);
 }
 
 void ClientCore::Send(void* data, size_t dataSize) {

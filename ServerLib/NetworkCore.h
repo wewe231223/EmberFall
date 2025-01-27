@@ -76,9 +76,12 @@ public:
 public:
     virtual bool Start(const std::string& ip, const UINT16 port) override;
     virtual void End() override;
-
+    
+    void InitSessionId(SessionIdType id);
+    SessionIdType GetSessionId() const;
     bool IsClosedSession() const;
     OverlappedConnect* GetOverlappedConnect();
+    void Send(void* packet);
     void Send(void* data, size_t dataSize);
     void CloseSession();
 

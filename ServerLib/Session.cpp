@@ -246,6 +246,16 @@ void Session::ProcessConnect(INT32 numOfBytes, OverlappedConnect* overlapped) {
     if (true == mConnected.exchange(true)) {
         return;
     }
+
+    RegisterRecv();
+}
+
+void Session::WaitTilSessionConn() {
+    mConnected.wait(false);
+}
+
+void Session::NotifyingSessionConn() {
+    mConnected.notify_all();
 }
 
 RecvBuf::iterator Session::ValidatePackets(RecvBuf::iterator iter, RecvBuf::iterator last) {

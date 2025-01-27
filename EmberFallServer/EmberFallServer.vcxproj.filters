@@ -31,6 +31,9 @@
     <ClCompile Include="GameObject.cpp">
       <Filter>Object</Filter>
     </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Frame</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -47,6 +50,9 @@
     </ClInclude>
     <ClInclude Include="GameObject.h">
       <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Frame</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

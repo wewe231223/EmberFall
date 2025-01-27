@@ -20,6 +20,9 @@ template <size_t size>
 using NetworkBufIter = NetworkBuf<size>::iterator;
 
 struct Key {
+    inline static constexpr bool DOWN = true;
+    inline static constexpr bool UP = false;
+
     BYTE key;
     bool state;
 };

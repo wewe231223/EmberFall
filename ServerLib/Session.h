@@ -52,12 +52,14 @@ public:
 
     void InitSessionNetAddress(char* addressBuffer);
     std::pair<std::string, UINT16> GetAddress() const;
+    RecvBuf::iterator ValidatePackets(RecvBuf::iterator iter, RecvBuf::iterator last);
 
     // For Client
     bool Connect(const std::string& serverIp, const UINT16 port);
     void ProcessConnect(INT32 numOfBytes, OverlappedConnect* overlapped);
-    RecvBuf::iterator ValidatePackets(RecvBuf::iterator iter, RecvBuf::iterator last);
-
+    void WaitTilSessionConn();
+    void NotifyingSessionConn();
+       
 private:
     std::string mIP{ };
     UINT16 mPort{ };
