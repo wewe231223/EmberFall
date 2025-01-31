@@ -1,7 +1,7 @@
 #pragma once 
 #include "../Game/Component/ComponentBase.h"
 
-class MeshRenderer : public ComponentBase{
+class MeshRenderer : public ComponentBase {
 public:
 	static constexpr size_t index = 1;
 public:

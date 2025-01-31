@@ -22,6 +22,9 @@
     <Filter Include="External">
       <UniqueIdentifier>{a7eebe25-70c3-4eac-9954-3433b3537cce}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shader">
+      <UniqueIdentifier>{3cf66ffa-4534-4a2c-8fc4-bcbc1f5f77d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -45,6 +48,9 @@
     <ClCompile Include="..\External\Include\DirectXTK12\WICTextureLoader12.cpp">
       <Filter>External</Filter>
     </ClCompile>
+    <ClCompile Include="core\Shader.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -63,6 +69,9 @@
       <Filter>Resource</Filter>
     </ClInclude>
     <ClInclude Include="Core\Defines.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\Shader.h">
       <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>

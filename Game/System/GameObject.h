@@ -55,7 +55,7 @@ public:
 	ArcheType(ArcheType&&) noexcept = default;
 	ArcheType& operator=(ArcheType&&) noexcept = default;
 public:
-	template<typename ...ComponentTypes> 
+	template<typename ...ComponentTypes>
 	void Initialize() {
 		(ArcheType::InitArcheType<ComponentTypes>(), ...);
 	}

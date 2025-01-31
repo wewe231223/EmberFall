@@ -4,10 +4,13 @@
 #include "../Utility/DirectXInclude.h"
 #include <vector>
 
-class RenderSystem : public ISystem {
+// 오브젝트의 상수 버퍼를 작성하는 시스템 
+// 프러스텀 컬링은 어디에서?? 
+
+class PlaneRenderSystem : public ISystem {
 public:
-	RenderSystem();
-	virtual ~RenderSystem(); 
+	PlaneRenderSystem();
+	virtual ~PlaneRenderSystem(); 
 public:
 	virtual void Subscribe(ArcheType* archeType) override;
 	virtual const PartIdentifier& GetPartIdentifier() const override;
@@ -16,5 +19,5 @@ private:
 	PartIdentifier mPartIdentifier{};
 	std::vector<ArcheType*> mArcheTypes{};
 
-
+	void* mModelContext{ nullptr };
 };

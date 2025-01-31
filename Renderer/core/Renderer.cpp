@@ -52,6 +52,11 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::FlushCommandQueue();
 
 	Console.Log("Renderer 초기화가 완료되었습니다.", LogType::Info);
+
+
+	std::ofstream out{ "Shader/test.bin" };
+
+
 }
 
 Renderer::~Renderer() {

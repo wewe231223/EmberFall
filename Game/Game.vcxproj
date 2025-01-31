@@ -153,7 +153,7 @@
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="System\GameObject.cpp" />
     <ClCompile Include="System\PartIdentifier.cpp" />
-    <ClCompile Include="System\RenderSystem.cpp" />
+    <ClCompile Include="System\PlaneRenderSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Component\ComponentBase.h" />
@@ -163,7 +163,7 @@
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="System\GameObject.h" />
     <ClInclude Include="System\PartIdentifier.h" />
-    <ClInclude Include="System\RenderSystem.h" />
+    <ClInclude Include="System\PlaneRenderSystem.h" />
     <ClInclude Include="System\System.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
