@@ -88,7 +88,7 @@ void Listener::ProcessAccept() {
         session->InitSessionNetAddress(mOverlappedAccept.buffer.data());
         auto [ip, port] = session->GetAddress();
         
-        PacketNotifyId notifyingId{ sizeof(PacketNotifyId), PacketType::PT_NOTIFYING_ID, session->GetId() };
+        PacketNotifyId notifyingId{ sizeof(PacketNotifyId), PacketType::PT_NOTIFYING_ID_SC, session->GetId() };
         sessionManager->Send(session->GetId(), &notifyingId);
 
         std::cout << std::format("Client [IP: {}, PORT: {}] Connected\n", ip, port);

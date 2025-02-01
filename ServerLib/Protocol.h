@@ -6,7 +6,8 @@ using PacketTypeIdx = BYTE;
 // 0x00 ~ Server To Client
 namespace PacketType {
     inline constexpr PacketTypeIdx PT_INPUT_CS = 0x00;   // TEST
-    inline constexpr PacketTypeIdx PT_NOTIFYING_ID = 0x81;
+    inline constexpr PacketTypeIdx PT_GAMEOBJ_CS = 0x01;
+    inline constexpr PacketTypeIdx PT_NOTIFYING_ID_SC = 0x81;
     inline constexpr PacketTypeIdx PT_GAMEOBJ_SC = 0x82; // TEST
 }
 

@@ -157,7 +157,12 @@ void Session::ProcessRecv(INT32 numOfBytes) {
     auto dataSize = numOfBytes - mPrevRemainSize;
 
     // 받아온 Recv 버퍼의 내용을 저장.
-    coreService->GetPacketHandler()->Write(mOverlappedRecv.buffer.data(), dataSize);
+    if (0 == mPrevRemainSize) {
+        coreService->GetPacketHandler()->Write(mOverlappedRecv.buffer.data(), dataSize);
+        RegisterRecv();
+        return;
+    }
+
     std::move(remainBegin, dataEnd, dataBeg);
     RegisterRecv();
 }
