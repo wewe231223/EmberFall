@@ -1,0 +1,2 @@
+Shader.hlsl { vs vs_5_1 vs_main ps ps_5_1 ps_main } <params.hlsl>
+NShaders.hlsl { vs vs_5_1 nvs_main ps ps_5_1 nps_main } <params.hlsl>

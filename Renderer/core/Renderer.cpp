@@ -6,8 +6,8 @@
 #include "../Utility/Enumerate.h"
 #include "../Config/Config.h"
 #include "../EditorInterface/Console/Console.h"
-
 #include "../Utility/Serializer.h"
+#include "../Renderer/core/Shader.h"
 
 struct Renderer::DirectXImpl {
 	ComPtr<IDXGIFactory6> mFactory{ nullptr };
@@ -40,6 +40,9 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	: mRendererWindow(rendererWindowHandle) {
 	mDirectXImpl = std::make_unique<DirectXImpl>();
 	
+	// 셰이더 매니저 테스트용.. 
+	gShaderManager.Test();
+
 	Renderer::InitFactory();
 	Renderer::InitDevice();
 	Renderer::InitCommandQueue();
@@ -52,11 +55,6 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::FlushCommandQueue();
 
 	Console.Log("Renderer 초기화가 완료되었습니다.", LogType::Info);
-
-
-	std::ofstream out{ "Shader/test.bin" };
-
-
 }
 
 Renderer::~Renderer() {

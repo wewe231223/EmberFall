@@ -9,20 +9,20 @@ public:
 	Transform(); 
 	virtual ~Transform(); 
 public: // Getter 
-	const DirectX::SimpleMath::Vector3& GetPosition() const;
-	DirectX::SimpleMath::Vector3& GetPosition();
+	const SimpleMath::Vector3& GetPosition() const;
+	SimpleMath::Vector3& GetPosition();
 
-	const DirectX::SimpleMath::Quaternion& GetRotation() const;
-	DirectX::SimpleMath::Quaternion& GetRotation();
+	const SimpleMath::Quaternion& GetRotation() const;
+	SimpleMath::Quaternion& GetRotation();
 
-	const DirectX::SimpleMath::Vector3& GetScale() const;
-	DirectX::SimpleMath::Vector3& GetScale();
+	const SimpleMath::Vector3& GetScale() const;
+	SimpleMath::Vector3& GetScale();
 public:
 
 private:
-	DirectX::SimpleMath::Vector3 mPosition{ DirectX::SimpleMath::Vector3::Zero };
-	DirectX::SimpleMath::Quaternion mRotation{ DirectX::SimpleMath::Quaternion::Identity };
-	DirectX::SimpleMath::Vector3 mScale{ DirectX::SimpleMath::Vector3::One };
+	SimpleMath::Vector3 mPosition{ SimpleMath::Vector3::Zero };
+	SimpleMath::Quaternion mRotation{ SimpleMath::Quaternion::Identity };
+	SimpleMath::Vector3 mScale{ SimpleMath::Vector3::One };
 	
 	Transform* mParent{};
 

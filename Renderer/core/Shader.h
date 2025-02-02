@@ -3,15 +3,16 @@
 #include <filesystem>
 #include "../Utility/DirectXInclude.h"
 
+
 enum ShaderType : BYTE {
-	None = 1,
-	VertexShader,
+	None = 0xFF,
+	VertexShader = 0,
 	PixelShader,
 	GeometryShader,
 	HullShader,
 	DomainShader,
+	END,
 };
-
 
 class ShaderManager {
 	constexpr static const char* SHADER_METADATA_PATH = "Shader/ShaderMetadata.txt";
@@ -25,13 +26,17 @@ public:
 	ShaderManager(ShaderManager&&) = delete;
 	ShaderManager& operator=(ShaderManager&&) = delete;
 public:
-
+	void Test() {}
 private:
-	void ReCompile(const std::filesystem::path& source, const std::string model, const std::string entry);
+	void ProcessShader(const std::filesystem::path& source, const std::vector<std::tuple<std::string, std::string, std::string>>& shaderInfo, const std::vector<std::filesystem::path>& includes);
+	void ReCompile(const std::filesystem::path& source, const std::string& type, const std::string& model, const std::string& entry);
+	/* 호출하기 전에 파일이 있는지 확인해야 함 */ 
+	void Load(ComPtr<ID3D12Blob>& blob, const std::filesystem::path& path);
 private:
-	std::unordered_map<std::string, std::pair<size_t,ComPtr<ID3D10Blob>>> mShaderBlobs{};
+	std::unordered_map<std::string,std::array<ComPtr<ID3D12Blob>, ShaderType::END>> mShaderBlobs{};
 };
 
+extern ShaderManager gShaderManager; 
 
 class GraphicsShaderBase {
 	struct InputLayout {
@@ -55,3 +60,4 @@ public:
 
 	
 };
+

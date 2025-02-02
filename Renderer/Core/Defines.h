@@ -9,5 +9,5 @@
 #include "../External/Include/DirectXTK12/SimpleMath.inl"
 
 struct ModelContext {
-	DirectX::SimpleMath::Matrix world;
+	SimpleMath::Matrix world;
 };

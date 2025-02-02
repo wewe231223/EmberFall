@@ -27,3 +27,6 @@
 #pragma comment(lib, "dxguid.lib")
 
 using namespace Microsoft::WRL;
+namespace SimpleMath = DirectX::SimpleMath;
+
+using ID3D12Blob = ID3D10Blob;
