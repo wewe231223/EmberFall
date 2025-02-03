@@ -26,6 +26,11 @@
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxguid.lib")
 
+#ifdef _DEBUG
+#pragma comment(lib, "External/lib/debug/DirectXTK12.lib")
+#else 
+#pragma comment(lib, "External/lib/release/DirectXTK12.lib")
+#endif 
 using namespace Microsoft::WRL;
 namespace SimpleMath = DirectX::SimpleMath;
 
