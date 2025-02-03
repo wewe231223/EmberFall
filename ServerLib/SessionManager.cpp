@@ -46,6 +46,8 @@ void SessionManager::CloseSession(SessionIdType id) {
         mSessions.unsafe_erase(it);
         mSessionCount.fetch_sub(1);
         std::cout << std::format("Session[{}]: erased from session map\n", id);
+
+        mOnSessionDisconnFn(id);
     }
 }
 

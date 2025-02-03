@@ -47,12 +47,14 @@ void PlayScene::RegisterOnSessionConnect(const std::shared_ptr<ServerCore>& serv
         GameObject obj{ };
         obj.InitId(id);
         mPlayers[id] = obj;
+        std::cout << std::format("Add player {}\n", id);
     });
 
-    sessionManager->RegisterOnSessionConnect([=](SessionIdType id) {
+    sessionManager->RegisterOnSessionDisconnect([=](SessionIdType id) {
         std::lock_guard objectGuard{ mGameObjectLock };
         auto it = mPlayers.find(id);
         if (it != mPlayers.end()) {
+            std::cout << std::format("Erase player {}\n", id);
             mPlayers.erase(it);
         }
     });
@@ -82,9 +84,9 @@ void PlayScene::Update(const float deltaTime) {
 void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) {
     auto sessionManager = serverCore->GetSessionManager();
     PacketGameObj objPacket{ sizeof(PacketGameObj), PacketType::PT_GAMEOBJ_SC, 0 };
-    for (auto& [id, obj] : mPlayers) {
+    for (auto& [id, obj] : mPlayers) { // lock 은 안걸고 일단 보내보자 어짜피 connect 상태가 아니라면 send는 실패할것
         objPacket.id = id;
-        auto objWorld = obj.GetWorld();
+        auto objWorld = obj.GetWorld(); 
         std::memcpy(&objPacket.world, &objWorld, sizeof(SimpleMath::Matrix));
         sessionManager->SendAll(&objPacket);
     }
