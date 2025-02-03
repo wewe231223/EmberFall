@@ -8,7 +8,7 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-inline constexpr SessionIdType INVALID_CLIENT_ID = std::numeric_limits<SessionIdType>::max();
+inline constexpr SessionIdType INVALID_SESSION_ID = std::numeric_limits<SessionIdType>::max();
 
 inline constexpr size_t MAX_KEY_SIZE = 256;
 inline constexpr size_t MAX_BUF_SIZE = std::numeric_limits<unsigned short>::max();

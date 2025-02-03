@@ -37,6 +37,12 @@ public:
     bool AddSession(std::shared_ptr<Session> session);
     void CloseSession(SessionIdType id);
 
+    // Session이 연결/연결 해제되었을 때 SessionManager가 실행할 함수를 등록.
+    // 함수는 IOCP의 작업자 쓰레드에서 동작하므로 공유객체가 있다면 등록한 함수내에서 별도로
+    // 공유객체에 대한 처리를 해주어야 한다.
+    void RegisterOnSessionConnect(std::function<void(SessionIdType)>&& fn);
+    void RegisterOnSessionDisconnect(std::function<void(SessionIdType)>&& fn);
+
     std::shared_ptr<Session> GetSession(SessionIdType id);
 
     void Send(SessionIdType to, void* packet);
@@ -44,6 +50,9 @@ public:
     void SendAll(void* data, size_t size);
 
 private:
+    std::function<void(SessionIdType)> mOnSessionConnFn{ [](SessionIdType){ } };
+    std::function<void(SessionIdType)> mOnSessionDisconnFn{ [](SessionIdType){ } };
+
     std::shared_ptr<class ServerCore> mCoreService{ nullptr };
     Lock::SRWLock mSessionsLock{ }; // 01-14 std::mutex -> SRWLock으로 변경
     std::atomic<SessionIdType> mSessionCount{ };

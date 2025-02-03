@@ -33,6 +33,8 @@ bool SessionManager::AddSession(std::shared_ptr<Session> session) {
 
     mCoreService->GetIOCPCore()->RegisterSocket(session);
 
+    mOnSessionConnFn(id);
+
     return true;
 }
 
@@ -45,6 +47,14 @@ void SessionManager::CloseSession(SessionIdType id) {
         mSessionCount.fetch_sub(1);
         std::cout << std::format("Session[{}]: erased from session map\n", id);
     }
+}
+
+void SessionManager::RegisterOnSessionConnect(std::function<void(SessionIdType)>&& fn) {
+    mOnSessionConnFn = fn;
+}
+
+void SessionManager::RegisterOnSessionDisconnect(std::function<void(SessionIdType)>&& fn) {
+    mOnSessionDisconnFn = fn;
 }
 
 std::shared_ptr<Session> SessionManager::GetSession(SessionIdType id) {

@@ -29,6 +29,7 @@
 #include <ranges>
 #include <numeric>
 #include <algorithm>
+#include <functional>
 
 // concurrency support
 #include <thread>

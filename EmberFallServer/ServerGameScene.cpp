@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "ServerGameScene.h"
+#include "GameObject.h"
 
 IServerGameScene::IServerGameScene() { }
 
@@ -8,6 +9,8 @@ IServerGameScene::~IServerGameScene() { }
 EchoTestScene::EchoTestScene() { }
 
 EchoTestScene::~EchoTestScene() { }
+
+void EchoTestScene::RegisterOnSessionConnect(const std::shared_ptr<ServerCore>& serverCore) { }
 
 void EchoTestScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
     auto packetHandler = serverCore->GetPacketHandler();
@@ -28,14 +31,34 @@ void EchoTestScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore
     sessionManager->SendAll(buffer.Data(), buffer.Size());
 }
 
-void EchoTestScene::Update(const float deltaTime) {
-}
+void EchoTestScene::Update(const float deltaTime) { }
+
+void EchoTestScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) { }
 
 PlayScene::PlayScene() { }
 
 PlayScene::~PlayScene() { }
 
-void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) { 
+void PlayScene::RegisterOnSessionConnect(const std::shared_ptr<ServerCore>& serverCore) {
+    auto sessionManager = serverCore->GetSessionManager();
+
+    sessionManager->RegisterOnSessionConnect([=](SessionIdType id) {
+        std::lock_guard objectGuard{ mGameObjectLock };
+        GameObject obj{ };
+        obj.InitId(id);
+        mPlayers[id] = obj;
+    });
+
+    sessionManager->RegisterOnSessionConnect([=](SessionIdType id) {
+        std::lock_guard objectGuard{ mGameObjectLock };
+        auto it = mPlayers.find(id);
+        if (it != mPlayers.end()) {
+            mPlayers.erase(it);
+        }
+    });
+}
+
+void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
     auto packetHandler = serverCore->GetPacketHandler();
     auto& buffer = packetHandler->GetBuffer();
     if (0 == buffer.Size()) {
@@ -45,8 +68,24 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
     PacketInput input{ };
     while (not buffer.IsReadEnd()) {
         buffer.Read(input);
-        std::cout << std::format("RECV INPUT: KEY: {}, STATE: {}\n", input.key.key, input.key.state);
+        
+        mPlayers[input.id].SetInput(input.key);
     }
 }
 
-void PlayScene::Update(const float deltaTime) { }
+void PlayScene::Update(const float deltaTime) { 
+    for (auto& [id, obj] : mPlayers) {
+        obj.Update(deltaTime);
+    }
+}
+
+void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) {
+    auto sessionManager = serverCore->GetSessionManager();
+    PacketGameObj objPacket{ sizeof(PacketGameObj), PacketType::PT_GAMEOBJ_SC, 0 };
+    for (auto& [id, obj] : mPlayers) {
+        objPacket.id = id;
+        auto objWorld = obj.GetWorld();
+        std::memcpy(&objPacket.world, &objWorld, sizeof(SimpleMath::Matrix));
+        sessionManager->SendAll(&objPacket);
+    }
+}

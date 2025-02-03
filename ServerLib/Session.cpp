@@ -85,6 +85,10 @@ void Session::RegisterSend(void* packet) {
 
     auto sendBufferFactory = GetCore()->GetSendBufferFactory();
     auto overlappedSend = sendBufferFactory->GetOverlapped(packet, reinterpret_cast<char*>(packet)[0]);
+    if (nullptr == overlappedSend) {
+        return;
+    }
+
     overlappedSend->owner = shared_from_this();
     auto result = ::WSASend(
         mSocket,

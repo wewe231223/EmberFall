@@ -20,6 +20,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ServerLib", "ServerLib\ServerLib.vcxproj", "{110020AE-90E9-4D29-B700-E61288FE47E9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EmberFallServer", "EmberFallServer\EmberFallServer.vcxproj", "{DD834B1E-3AC9-4445-AC2A-AE120E2AC424}"
+	ProjectSection(ProjectDependencies) = postProject
+		{110020AE-90E9-4D29-B700-E61288FE47E9} = {110020AE-90E9-4D29-B700-E61288FE47E9}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

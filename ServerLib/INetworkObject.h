@@ -26,6 +26,6 @@ public:
     virtual void ProcessOverlapped(class OverlappedEx* overlapped, INT32 numOfBytes) abstract;
 
 private:
-    SessionIdType mId{ INVALID_CLIENT_ID };
+    SessionIdType mId{ INVALID_SESSION_ID };
     std::shared_ptr<class INetworkCore> mCoreService{ nullptr };
 };

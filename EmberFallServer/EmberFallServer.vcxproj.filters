@@ -34,6 +34,12 @@
     <ClCompile Include="Input.cpp">
       <Filter>Frame</Filter>
     </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp">
+      <Filter>pch</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -52,6 +58,9 @@
       <Filter>Object</Filter>
     </ClInclude>
     <ClInclude Include="Input.h">
+      <Filter>Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
       <Filter>Frame</Filter>
     </ClInclude>
   </ItemGroup>
