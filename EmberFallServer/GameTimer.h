@@ -11,13 +11,13 @@ public:
     using ExecutionFn = std::function<void()>;
 
 public:
-    TimerEvent() = default;
-    ~TimerEvent() = default;
+    TimerEvent();
+    ~TimerEvent();
 
     TimerEvent(const TimerEvent& other);
-    TimerEvent(TimerEvent&& other);
+    TimerEvent(TimerEvent&& other) noexcept;
     TimerEvent& operator=(const TimerEvent& other);
-    TimerEvent& operator=(TimerEvent&& other);
+    TimerEvent& operator=(TimerEvent&& other) noexcept;
 
 private:
     std::atomic_bool mExecuting{ };
@@ -27,18 +27,27 @@ private:
 class GameTimer { 
 public:
     using Clock = std::chrono::high_resolution_clock;
-    using TimePoint = Clock::time_point;
+    using TimePeriod = std::milli;
+    using Duration = std::chrono::duration<float, TimePeriod>;
+    using TimePoint = std::chrono::high_resolution_clock::time_point;
+
+public:
+    GameTimer();
+    ~GameTimer();
 
 public:
     UINT32 GetFps() const;
     float GetDeltaTime() const;
 
-    float Update();
+    void Update();
 
 private:
     float mDeltaTime{ };
     float mTimeScale{ };
+    float mFpsCounter{ };
     UINT32 mFps{ };
+
+    TimePoint mPrevPoint{ };
 
     Concurrency::concurrent_queue<TimerEvent> mEventQueue{ };
 };

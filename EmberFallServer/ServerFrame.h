@@ -14,7 +14,8 @@ public:
 private:
     bool mDone{ };
     std::shared_ptr<class ServerCore> mServerCore{ nullptr };
-    std::vector<std::shared_ptr<class IServerGameScene>> mGameScenes{ };
+    std::shared_ptr<class GameTimer> mTimer{ };
 
+    std::vector<std::shared_ptr<class IServerGameScene>> mGameScenes{ };
     std::shared_ptr<class IServerGameScene> mCurrentScene{ };
 };

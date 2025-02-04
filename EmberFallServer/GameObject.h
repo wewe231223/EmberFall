@@ -12,6 +12,7 @@
 #include "Transform.h"
 
 inline constexpr BYTE MAX_INPUT_STORED = 100;
+inline constexpr float TEMP_SPEED = 20.0f;
 
 class GameObject {
 public:
@@ -33,8 +34,8 @@ public:
 
 private:
     SessionIdType mId{ INVALID_SESSION_ID };
-    size_t mKeyInputSize{ };
-    std::array<Key, MAX_INPUT_STORED> mKeyInputs{ };
+
+    std::array<bool, MAX_KEY_SIZE> mKeyState{ };
 
     Transform mTransform{ };
 };

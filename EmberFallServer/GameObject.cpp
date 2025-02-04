@@ -9,40 +9,36 @@ GameObject::~GameObject() {
 }
 
 void GameObject::SetInput(Key key) {
-    mKeyInputs[mKeyInputSize++] = key;
+    mKeyState[key.key] = key.state;
 }
 
 void GameObject::Update(const float deltaTime) {
     SimpleMath::Vector3 moveVec{ SimpleMath::Vector3::Zero };
-    for (size_t idx = 0; idx < mKeyInputSize; ++idx) {
-        auto [key, state] = mKeyInputs[idx];
-        if ('A' == key and true == state) {
-            moveVec.x -= 1.0f;
-        }
+    if (Key::DOWN == mKeyState['A']) {
+        moveVec.x -= TEMP_SPEED * deltaTime;
+    }
 
-        if ('D' == key and true == state) {
-            moveVec.x += 1.0f;
-        }
+    if (Key::DOWN == mKeyState['D']) {
+        moveVec.x += TEMP_SPEED * deltaTime;
+    }
 
-        if ('W' == key and true == state) {
-            moveVec.z += 1.0f;
-        }
+    if (Key::DOWN == mKeyState['W']) {
+        moveVec.z -= TEMP_SPEED * deltaTime;
+    }
 
-        if ('S' == key and true == state) {
-            moveVec.z -= 1.0f;
-        }
+    if (Key::DOWN == mKeyState['S']) {
+        moveVec.z += TEMP_SPEED * deltaTime;
+    }
 
-        if ('Q' == key and true == state) {
-            moveVec.y -= 1.0f;
-        }
+    if (Key::DOWN == mKeyState['Q']) {
+        moveVec.y -= TEMP_SPEED * deltaTime;
+    }
 
-        if ('E' == key and true == state) {
-            moveVec.y += 1.0f;
-        }
+    if (Key::DOWN == mKeyState['E']) {
+        moveVec.y += TEMP_SPEED * deltaTime;
     }
     
-    mTransform.Translate(moveVec);
-    mKeyInputSize = 0;
+    mTransform.Move(moveVec);
 
     mTransform.Update();
 }
