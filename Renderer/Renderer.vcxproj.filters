@@ -19,9 +19,6 @@
     <Filter Include="Resource">
       <UniqueIdentifier>{42bedd54-c68b-433d-8a07-0566c1b390e7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="External">
-      <UniqueIdentifier>{a7eebe25-70c3-4eac-9954-3433b3537cce}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shader">
       <UniqueIdentifier>{3cf66ffa-4534-4a2c-8fc4-bcbc1f5f77d9}</UniqueIdentifier>
     </Filter>
@@ -42,14 +39,14 @@
     <ClCompile Include="Resource\DefaultBuffer.cpp">
       <Filter>Resource</Filter>
     </ClCompile>
-    <ClCompile Include="..\External\Include\DirectXTK12\DDSTextureLoader12.cpp">
-      <Filter>External</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\Include\DirectXTK12\WICTextureLoader12.cpp">
-      <Filter>External</Filter>
-    </ClCompile>
     <ClCompile Include="core\Shader.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\PlaneMesh.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource\PlaneModel.cpp">
+      <Filter>Resource</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -73,6 +70,12 @@
     </ClInclude>
     <ClInclude Include="core\Shader.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\PlaneMesh.h">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\PlaneModel.h">
+      <Filter>Resource</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

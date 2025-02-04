@@ -226,10 +226,10 @@ GraphicsShaderBase::GraphicsShaderBase(ComPtr<ID3D12Device> device) {
 	CheckHR(device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&mRootSignature)));
 	
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
+	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 
 	auto inputLayout = CreateInputLayout();
 
-	// 뭔가 뭔가.. 여기서 더..? 
 	psoDesc.InputLayout = { inputLayout.InputElements.data(), inputLayout.ElementCount };
 	psoDesc.pRootSignature = mRootSignature.Get();
 	psoDesc.VS = CreateVertexShader();
@@ -249,6 +249,8 @@ GraphicsShaderBase::GraphicsShaderBase(ComPtr<ID3D12Device> device) {
 	psoDesc.DSVFormat = CreateDSVFormat();
 
 	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPipelineState)));
+
+	CreateBuffers(device);
 }
 
 GraphicsShaderBase::~GraphicsShaderBase() {

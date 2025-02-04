@@ -63,6 +63,8 @@ private:
 
 extern ShaderManager gShaderManager; 
 
+
+// 배치 처리를 어떻게 하지
 class GraphicsShaderBase {
 protected:
 	struct InputLayout {
@@ -86,7 +88,8 @@ public:
 public:
 	virtual void AppendConstantBuffer(ConstantShaderRegister regNo, void* data) {};
 	virtual void AppendShaderResourceBuffer(ShaderResourceRegister regNo, void* data) {};
-private:
+
+protected:
 	virtual InputLayout CreateInputLayout();
 	virtual D3D12_RASTERIZER_DESC CreateRasterizerState();
 	virtual D3D12_BLEND_DESC CreateBlendState();
@@ -105,8 +108,14 @@ private:
 	virtual D3D12_SHADER_BYTECODE CreateDomainShader();
 
 	virtual void CreateBuffers(ComPtr<ID3D12Device> device) {};
+
 private:
 	ComPtr<ID3D12RootSignature> mRootSignature{};
 	ComPtr<ID3D12PipelineState> mPipelineState{};
 };
 
+
+class StandardShader : public GraphicsShaderBase {
+public:
+
+};
