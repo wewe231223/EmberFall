@@ -1,5 +1,14 @@
 #pragma once
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Transform.cpp
+// 2025 - 02 - 04 김성준 : 충돌 감지를 위한 충돌체를 표현.
+//                      Collider 클래스로 대부분을 표현
+//                      다른 Collider와의 충돌처리는 어떻게?
+// 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 enum class CollisionState : BYTE {
     NONE,
     ENTER,
@@ -7,10 +16,17 @@ enum class CollisionState : BYTE {
     EXIT
 };
 
-class Collider {
+enum class ColliderType : BYTE {
+    BOX,
+    SPHERE,
+    ORIENTED_BOX,
+    OTHER
+};
+
+class Collider : public std::enable_shared_from_this<Collider> {
 public:
-    Collider();
-    ~Collider();
+    Collider(ColliderType type);
+    virtual ~Collider();
 
     Collider(const Collider& other);
     Collider(Collider&& other) noexcept;
@@ -18,12 +34,68 @@ public:
     Collider& operator=(Collider&& other) noexcept;
 
 public:
-    virtual bool CheckCollision(Collider& other) abstract;
+    void Disable();
+    void Enable();
+    bool IsEnable() const;
+
+    virtual void CheckCollision(const std::shared_ptr<Collider>& other) const abstract;
 
     virtual void OnCollisionEnter() abstract;
     virtual void OnCollisionStay() abstract;
     virtual void OnCollisionExit() abstract;
 
 protected:
+    std::string mTag{ };                            // OTHER 타입일 경우 식별할 수 있도록 string으로 구성.
+    ColliderType mType{ ColliderType::OTHER };
     CollisionState mState{ CollisionState::NONE };
+    bool mEnable{ true };
 };
+
+class BoxCollider : public Collider {
+public:
+    BoxCollider();
+    ~BoxCollider();
+
+public:
+    virtual void CheckCollision(const std::shared_ptr<Collider>& other) const override;
+
+    virtual void OnCollisionEnter() override;
+    virtual void OnCollisionStay() override;
+    virtual void OnCollisionExit() override;
+
+private:
+    DirectX::BoundingBox mBoundingBox{ };
+};
+
+// 일단 더 생각해보자
+//class SphereCollider : public Collider {
+//public:
+//    SphereCollider();
+//    ~SphereCollider();
+//
+//public:
+//    virtual void CheckCollision(const std::shared_ptr<Collider>& other) const override;
+//
+//    virtual void OnCollisionEnter() override;
+//    virtual void OnCollisionStay() override;
+//    virtual void OnCollisionExit() override;
+//
+//private:
+//    DirectX::BoundingSphere mBoundingBox{ };
+//};
+//
+//class OrientedBoxCollider : public Collider {
+//public:
+//    OrientedBoxCollider();
+//    ~OrientedBoxCollider();
+//
+//public:
+//    virtual void CheckCollision(const std::shared_ptr<Collider>& other) const override;
+//
+//    virtual void OnCollisionEnter() override;
+//    virtual void OnCollisionStay() override;
+//    virtual void OnCollisionExit() override;
+//
+//private:
+//    DirectX::BoundingOrientedBox mBoundingBox{ };
+//};
