@@ -27,6 +27,10 @@ public:
     SimpleMath::Matrix GetWorld() const;
     Transform& GetTransform();
 
+    SimpleMath::Vector3 GetPosition() const;
+    SimpleMath::Quaternion GetRotation() const;
+    SimpleMath::Vector3 GetScale() const;
+
 private:
     SessionIdType mId{ INVALID_SESSION_ID };
     size_t mKeyInputSize{ };

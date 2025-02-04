@@ -25,8 +25,14 @@ struct PacketChat : public PacketHeader {
 };
 
 struct PacketGameObj : public PacketHeader {
-    SimpleMath::Vector3 look; // look 벡터
-    SimpleMath::Matrix world; // 4x4 행렬 보내기
+    SimpleMath::Vector3 position;
+    SimpleMath::Quaternion rotation;
+    SimpleMath::Vector3 scale;
+};
+
+struct PacketGameObjCS : public PacketHeader {
+    SimpleMath::Vector3 look;
+    SimpleMath::Quaternion rotation;
 };
 
 struct PacketInput : public PacketHeader {

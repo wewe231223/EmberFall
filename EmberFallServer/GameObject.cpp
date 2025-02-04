@@ -62,3 +62,15 @@ SimpleMath::Matrix GameObject::GetWorld() const {
 Transform& GameObject::GetTransform() {
     return mTransform;
 }
+
+SimpleMath::Vector3 GameObject::GetPosition() const {
+    return mTransform.GetPosition();
+}
+
+SimpleMath::Quaternion GameObject::GetRotation() const {
+    return mTransform.GetRotation();
+}
+
+SimpleMath::Vector3 GameObject::GetScale() const {
+    return mTransform.GetScale();
+}

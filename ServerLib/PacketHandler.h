@@ -47,6 +47,11 @@ public:
     template <typename T>
     void Read(T& data) {
         auto srcIter = mBuffer.begin() + mReadPos;
+        if constexpr (std::is_same_v<T, PacketHeader>) {
+            ::memcpy(&data, NetworkUtil::AddressOf(srcIter), sizeof(PacketHeader));
+            return;
+        }
+
         auto packetSize = NetworkUtil::GetPacketSizeFromIter(srcIter);
         if (sizeof(T) < packetSize) {
             return;

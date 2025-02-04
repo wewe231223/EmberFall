@@ -86,8 +86,9 @@ void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) 
     PacketGameObj objPacket{ sizeof(PacketGameObj), PacketType::PT_GAMEOBJ_SC, 0 };
     for (auto& [id, obj] : mPlayers) { // lock 은 안걸고 일단 보내보자 어짜피 connect 상태가 아니라면 send는 실패할것
         objPacket.id = id;
-        auto objWorld = obj.GetWorld(); 
-        std::memcpy(&objPacket.world, &objWorld, sizeof(SimpleMath::Matrix));
+        objPacket.position = obj.GetPosition();
+        objPacket.rotation = obj.GetRotation();
+        objPacket.scale = obj.GetScale();
         sessionManager->SendAll(&objPacket);
     }
 }
