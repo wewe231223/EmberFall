@@ -66,6 +66,10 @@ void Transform::Move(const SimpleMath::Vector3& moveVec) {
     Translate(SimpleMath::Vector3::Transform(moveVec, mRotation));
 }
 
+void Transform::Rotation(const SimpleMath::Quaternion& quat) {
+    mRotation = quat;
+}
+
 void Transform::Rotate(const float yaw, const float pitch, const float roll) {
     auto yawPitchRoll = SimpleMath::Quaternion::CreateFromYawPitchRoll(yaw, pitch, roll);
     mRotation = SimpleMath::Quaternion::Concatenate(yawPitchRoll, mRotation);

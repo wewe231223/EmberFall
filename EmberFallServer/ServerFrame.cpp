@@ -26,7 +26,7 @@ void ServerFrame::InitGameScenes() {
 
 void ServerFrame::GameLoop() {
     while (true) {
-        std::this_thread::sleep_for(33ms);
+        std::this_thread::sleep_for(16ms);
         mTimer->Update();
         const float deltaTime = mTimer->GetDeltaTime();
 

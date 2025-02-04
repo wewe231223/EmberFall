@@ -67,11 +67,31 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
         return;
     }
 
-    PacketInput input{ };
+    PacketHeader header{ };
     while (not buffer.IsReadEnd()) {
-        buffer.Read(input);
+        buffer.Read(header);
         
-        mPlayers[input.id].SetInput(input.key);
+        switch (header.type) {
+        case PacketType::PT_INPUT_CS:
+            {
+                PacketInput input;  
+                buffer.Read(input);
+                mPlayers[input.id].SetInput(input.key);
+            }
+            break;
+
+        case PacketType::PT_GAMEOBJ_CS:
+            {
+                PacketGameObjCS obj;
+                buffer.Read(obj);
+                mPlayers[obj.id].GetTransform().Rotation(obj.rotation);
+            }
+        break;
+
+        default:
+            std::cout << std::format("PacketError Size: {}, Type: {}\n", header.size, header.type);
+            break;
+        }
     }
 }
 

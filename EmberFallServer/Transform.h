@@ -31,6 +31,8 @@ public:
     void Move(const SimpleMath::Vector3& moveVec);
     //void Move(const SimpleMath::Vector3& dir, float force);
 
+    void Rotation(const SimpleMath::Quaternion& quat);
+
     void Rotate(const float yaw=0.0f, const float pitch=0.0f, const float roll=0.0f);
     void Rotate(const SimpleMath::Vector3& v);
     void Rotate(const SimpleMath::Quaternion& quat);
