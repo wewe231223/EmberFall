@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ServerGameScene.h"
 #include "GameObject.h"
+#include "Terrain.h"
 
 IServerGameScene::IServerGameScene() { }
 
@@ -35,7 +36,17 @@ void EchoTestScene::Update(const float deltaTime) { }
 
 void EchoTestScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) { }
 
-PlayScene::PlayScene() { }
+PlayScene::PlayScene() { 
+    mTerrain = std::make_unique<Terrain>("../Resources/HeightMap.raw");
+
+    for (int i = 0; i < 10; ++i) {
+        // TEST 용도
+        float x, z;
+        std::cout << "Input X, Z (float) -> GetHeight(x, z): ";
+        std::cin >> x >> z;
+        std::cout << std::format("Height: {}\n", mTerrain->GetHeight(SimpleMath::Vector3{ x, 0.0f, z }));
+    }
+}
 
 PlayScene::~PlayScene() { }
 

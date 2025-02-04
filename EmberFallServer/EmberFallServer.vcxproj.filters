@@ -34,11 +34,17 @@
     <ClCompile Include="Input.cpp">
       <Filter>Frame</Filter>
     </ClCompile>
-    <ClCompile Include="Transform.cpp">
-      <Filter>Frame</Filter>
-    </ClCompile>
     <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp">
       <Filter>pch</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
+      <Filter>Object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -60,8 +66,14 @@
     <ClInclude Include="Input.h">
       <Filter>Frame</Filter>
     </ClInclude>
+    <ClInclude Include="Collider.h">
+      <Filter>Object</Filter>
+    </ClInclude>
     <ClInclude Include="Transform.h">
-      <Filter>Frame</Filter>
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Terrain.h">
+      <Filter>Object</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

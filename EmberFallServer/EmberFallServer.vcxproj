@@ -142,6 +142,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp" />
+    <ClCompile Include="Collider.cpp" />
     <ClCompile Include="EmberFallServer.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameTimer.cpp" />
@@ -152,15 +153,18 @@
     </ClCompile>
     <ClCompile Include="ServerFrame.cpp" />
     <ClCompile Include="ServerGameScene.cpp" />
+    <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Collider.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ServerFrame.h" />
     <ClInclude Include="ServerGameScene.h" />
+    <ClInclude Include="Terrain.h" />
     <ClInclude Include="Transform.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
