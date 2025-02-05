@@ -52,7 +52,7 @@ public:
 
 private:
     std::mutex mGameObjectLock{ };
-    std::unordered_map<SessionIdType, class GameObject> mPlayers{ };
+    std::unordered_map<SessionIdType, std::shared_ptr<class GameObject>> mPlayers{ };
 
     std::unique_ptr<class Terrain> mTerrain{ }; // test
 };

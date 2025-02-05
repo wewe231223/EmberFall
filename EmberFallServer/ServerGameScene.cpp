@@ -2,6 +2,8 @@
 #include "ServerGameScene.h"
 #include "GameObject.h"
 #include "Terrain.h"
+#include "Collider.h"
+#include "CollisionWorld.h"
 
 IServerGameScene::IServerGameScene() { }
 
@@ -36,16 +38,8 @@ void EchoTestScene::Update(const float deltaTime) { }
 
 void EchoTestScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) { }
 
-PlayScene::PlayScene() { 
-    mTerrain = std::make_unique<Terrain>("../Resources/HeightMap.raw");
-
-    for (int i = 0; i < 10; ++i) {
-        // TEST 용도
-        float x, z;
-        std::cout << "Input X, Z (float) -> GetHeight(x, z): ";
-        std::cin >> x >> z;
-        std::cout << std::format("Height: {}\n", mTerrain->GetHeight(SimpleMath::Vector3{ x, 0.0f, z }));
-    }
+PlayScene::PlayScene() {
+    //mTerrain = std::make_unique<Terrain>("../Resources/HeightMap.raw");
 }
 
 PlayScene::~PlayScene() { }
@@ -54,18 +48,19 @@ void PlayScene::RegisterOnSessionConnect(const std::shared_ptr<ServerCore>& serv
     auto sessionManager = serverCore->GetSessionManager();
 
     sessionManager->RegisterOnSessionConnect([=](SessionIdType id) {
-        std::lock_guard objectGuard{ mGameObjectLock };
-        GameObject obj{ };
-        obj.InitId(id);
+        std::shared_ptr<GameObject> obj = std::make_shared<GameObject>();
+        obj->InitId(id);
         mPlayers[id] = obj;
+        obj->MakeCollider<BoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3::One);
+        gCollisionWorld->AddCollisionObject("player", obj);
         std::cout << std::format("Add player {}\n", id);
     });
 
     sessionManager->RegisterOnSessionDisconnect([=](SessionIdType id) {
-        std::lock_guard objectGuard{ mGameObjectLock };
         auto it = mPlayers.find(id);
         if (it != mPlayers.end()) {
             std::cout << std::format("Erase player {}\n", id);
+            gCollisionWorld->RemoveObejctFromGroup("player", it->second);
             mPlayers.erase(it);
         }
     });
@@ -87,7 +82,7 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
             {
                 PacketInput input;  
                 buffer.Read(input);
-                mPlayers[input.id].SetInput(input.key);
+                mPlayers[input.id]->SetInput(input.key);
             }
             break;
 
@@ -95,7 +90,7 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
             {
                 PacketGameObjCS obj;
                 buffer.Read(obj);
-                mPlayers[obj.id].GetTransform().Rotation(obj.rotation);
+                mPlayers[obj.id]->GetTransform().Rotation(obj.rotation);
             }
         break;
 
@@ -108,8 +103,10 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
 
 void PlayScene::Update(const float deltaTime) { 
     for (auto& [id, obj] : mPlayers) {
-        obj.Update(deltaTime);
+        obj->Update(deltaTime);
     }
+
+    gCollisionWorld->HandleCollision();
 }
 
 void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) {
@@ -117,9 +114,9 @@ void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) 
     PacketGameObj objPacket{ sizeof(PacketGameObj), PacketType::PT_GAMEOBJ_SC, 0 };
     for (auto& [id, obj] : mPlayers) { // lock 은 안걸고 일단 보내보자 어짜피 connect 상태가 아니라면 send는 실패할것
         objPacket.id = id;
-        objPacket.position = obj.GetPosition();
-        objPacket.rotation = obj.GetRotation();
-        objPacket.scale = obj.GetScale();
+        objPacket.position = obj->GetPosition();
+        objPacket.rotation = obj->GetRotation();
+        objPacket.scale = obj->GetScale();
         sessionManager->SendAll(&objPacket);
     }
 }

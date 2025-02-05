@@ -10,3 +10,5 @@
 #else
 #pragma comment(lib, "../out/Release/ServerLib.lib")
 #endif
+
+extern std::unique_ptr<class CollisionWorld> gCollisionWorld;

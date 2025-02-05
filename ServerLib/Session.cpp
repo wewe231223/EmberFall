@@ -139,7 +139,7 @@ void Session::RegisterSend(void* data, size_t size) {
 void Session::ProcessRecv(INT32 numOfBytes) {
     auto coreService = GetCore();
 
-    std::cout << std::format("RECV Len: {}\n", numOfBytes);
+    //std::cout << std::format("RECV Len: {}\n", numOfBytes);
     mOverlappedRecv.owner.reset();
     if (0 >= numOfBytes) {
         if (NetworkType::SERVER == coreService->GetType()) {

@@ -38,11 +38,8 @@ public:
     void Enable();
     bool IsEnable() const;
 
-    virtual void CheckCollision(const std::shared_ptr<Collider>& other) const abstract;
-
-    virtual void OnCollisionEnter() abstract;
-    virtual void OnCollisionStay() abstract;
-    virtual void OnCollisionExit() abstract;
+    virtual void UpdatePosition(const SimpleMath::Vector3& position) abstract;
+    virtual bool CheckCollision(const std::shared_ptr<Collider>& other) const abstract;
 
 protected:
     std::string mTag{ };                            // OTHER 타입일 경우 식별할 수 있도록 string으로 구성.
@@ -53,15 +50,13 @@ protected:
 
 class BoxCollider : public Collider {
 public:
-    BoxCollider();
+    BoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents);
     ~BoxCollider();
 
 public:
-    virtual void CheckCollision(const std::shared_ptr<Collider>& other) const override;
+    virtual void UpdatePosition(const SimpleMath::Vector3& position) override;
 
-    virtual void OnCollisionEnter() override;
-    virtual void OnCollisionStay() override;
-    virtual void OnCollisionExit() override;
+    virtual bool CheckCollision(const std::shared_ptr<Collider>& other) const override;
 
 private:
     DirectX::BoundingBox mBoundingBox{ };

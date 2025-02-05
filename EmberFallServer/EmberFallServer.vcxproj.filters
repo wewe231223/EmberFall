@@ -11,6 +11,12 @@
     <Filter Include="Object">
       <UniqueIdentifier>{6c8effd1-71c6-45ff-9ef0-1dbefb68bd3c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Collision">
+      <UniqueIdentifier>{8d52854a-4d78-44c9-bd56-5e9f29d605bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component">
+      <UniqueIdentifier>{382a9043-5187-43b0-8898-fc3fb22c595e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -31,20 +37,23 @@
     <ClCompile Include="GameObject.cpp">
       <Filter>Object</Filter>
     </ClCompile>
-    <ClCompile Include="Input.cpp">
-      <Filter>Frame</Filter>
-    </ClCompile>
     <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp">
       <Filter>pch</Filter>
     </ClCompile>
-    <ClCompile Include="Collider.cpp">
-      <Filter>Object</Filter>
-    </ClCompile>
-    <ClCompile Include="Transform.cpp">
-      <Filter>Object</Filter>
-    </ClCompile>
     <ClCompile Include="Terrain.cpp">
       <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionWorld.cpp">
+      <Filter>Collision</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -63,17 +72,20 @@
     <ClInclude Include="GameObject.h">
       <Filter>Object</Filter>
     </ClInclude>
-    <ClInclude Include="Input.h">
-      <Filter>Frame</Filter>
-    </ClInclude>
-    <ClInclude Include="Collider.h">
-      <Filter>Object</Filter>
-    </ClInclude>
-    <ClInclude Include="Transform.h">
-      <Filter>Object</Filter>
-    </ClInclude>
     <ClInclude Include="Terrain.h">
       <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionWorld.h">
+      <Filter>Collision</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

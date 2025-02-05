@@ -1,12 +1,10 @@
 #include "pch.h"
 #include "GameObject.h"
+#include "Collider.h"
 
-GameObject::GameObject() {
-}
+GameObject::GameObject() { }
 
-GameObject::~GameObject() {
-
-}
+GameObject::~GameObject() { }
 
 void GameObject::SetInput(Key key) {
     mKeyState[key.key] = key.state;
@@ -41,6 +39,10 @@ void GameObject::Update(const float deltaTime) {
     mTransform.Move(moveVec);
 
     mTransform.Update();
+
+    if (nullptr != mCollider) {
+        mCollider->UpdatePosition(GetPosition());
+    }
 }
 
 void GameObject::InitId(SessionIdType id) {
@@ -69,4 +71,12 @@ SimpleMath::Quaternion GameObject::GetRotation() const {
 
 SimpleMath::Vector3 GameObject::GetScale() const {
     return mTransform.GetScale();
+}
+
+std::shared_ptr<Collider> GameObject::GetCollider() const {
+    return mCollider;
+}
+
+void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {
+    std::cout << std::format("Collision!!! Group: {}\n", groupTag);
 }
