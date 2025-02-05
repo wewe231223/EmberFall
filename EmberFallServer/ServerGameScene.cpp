@@ -91,7 +91,7 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
             {
                 PacketGameObjCS obj;
                 buffer.Read(obj);
-                mPlayers[obj.id]->GetTransform().Rotation(obj.rotation);
+                mPlayers[obj.id]->GetTransform()->Rotation(obj.rotation);
             }
         break;
 
@@ -107,7 +107,7 @@ void PlayScene::Update(const float deltaTime) {
         obj->Update(deltaTime);
     }
 
-    //mCollisionWorld.HandleCollision();
+    mCollisionWorld.HandleCollision();
 }
 
 void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) {

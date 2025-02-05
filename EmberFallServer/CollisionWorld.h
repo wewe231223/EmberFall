@@ -44,9 +44,8 @@ public:
     void RemoveObejctFromGroup(const std::string& groupTag, std::shared_ptr<GameObject> obj);
     void HandleCollision();
 
-    bool CheckCollision(const std::shared_ptr<GameObject>& obj1, const std::shared_ptr<GameObject>& obj2);
-
 private:
+    void HandleCollision(const std::string& groupTag, std::shared_ptr<GameObject>& obj1, std::shared_ptr<GameObject>& obj2);
     void HandleCollisionListPair(const std::string& groupTag, CollisionPair& listPair);
     void HandleCollisionList(const std::string& groupTag, CollisionList& list);
 

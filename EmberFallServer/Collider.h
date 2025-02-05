@@ -7,7 +7,13 @@
 //                      Collider 클래스로 대부분을 표현
 //                      다른 Collider와의 충돌처리는 어떻게?
 // 
+//        02 - 05 : 어짜피 GameObject는 Transform을 무조건 가지도록 할 것임.
+//                  Transform을 참조해서 Update를 할 수 있도록 하자.
+//                  그러면 Update 함수도 가상함수로 구성할 수 있음.
+// 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class Transform;
 
 enum class CollisionState : BYTE {
     NONE,
@@ -38,11 +44,19 @@ public:
     void Enable();
     bool IsEnable() const;
 
-    virtual void UpdatePosition(const SimpleMath::Vector3& position) abstract;
-    virtual bool CheckCollision(const std::shared_ptr<Collider>& other) const abstract;
+    void SetTransform(const std::shared_ptr<Transform>& transform);
+
+    virtual void Update() abstract;
+    virtual CollisionState CheckCollision(const std::shared_ptr<Collider>& other) abstract;
+
+protected:
+    CollisionState UpdateState(CollisionState state);
+    CollisionState UpdateState(bool collisionResult);
 
 protected:
     std::string mTag{ };                            // OTHER 타입일 경우 식별할 수 있도록 string으로 구성.
+    std::weak_ptr<Transform> mTransform{ };         // GameObject 에서 가지는 Transform 참조
+
     ColliderType mType{ ColliderType::OTHER };
     CollisionState mState{ CollisionState::NONE };
     bool mEnable{ true };
@@ -54,9 +68,9 @@ public:
     ~BoxCollider();
 
 public:
-    virtual void UpdatePosition(const SimpleMath::Vector3& position) override;
+    virtual void Update() override;
 
-    virtual bool CheckCollision(const std::shared_ptr<Collider>& other) const override;
+    virtual CollisionState CheckCollision(const std::shared_ptr<Collider>& other) override;
 
 private:
     DirectX::BoundingBox mBoundingBox{ };

@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "GameObject.h"
-#include "Collider.h"
 
-GameObject::GameObject() { }
+GameObject::GameObject()
+    : mTransform{ std::make_shared<Transform>() } { }
 
 GameObject::~GameObject() { }
 
@@ -36,12 +36,12 @@ void GameObject::Update(const float deltaTime) {
         moveVec.y += TEMP_SPEED * deltaTime;
     }
     
-    mTransform.Move(moveVec);
+    mTransform->Move(moveVec);
 
-    mTransform.Update();
+    mTransform->Update();
 
     if (nullptr != mCollider) {
-        mCollider->UpdatePosition(GetPosition());
+        mCollider->Update();
     }
 }
 
@@ -54,30 +54,35 @@ SessionIdType GameObject::GetId() const {
 }
 
 SimpleMath::Matrix GameObject::GetWorld() const {
-    return mTransform.GetWorld();
+    return mTransform->GetWorld();
 }
 
-Transform& GameObject::GetTransform() {
+std::shared_ptr<Transform> GameObject::GetTransform() {
     return mTransform;
-}
-
-SimpleMath::Vector3 GameObject::GetPosition() const {
-    return mTransform.GetPosition();
-}
-
-SimpleMath::Quaternion GameObject::GetRotation() const {
-    return mTransform.GetRotation();
-}
-
-SimpleMath::Vector3 GameObject::GetScale() const {
-    return mTransform.GetScale();
 }
 
 std::shared_ptr<Collider> GameObject::GetCollider() const {
     return mCollider;
 }
 
-void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {
-    static size_t collisionTime{ };
-    std::cout << std::format("Collision!!! Group: {}, Times: {}, opponent ID: {}\n", groupTag, ++collisionTime, opponent->GetId());
+SimpleMath::Vector3 GameObject::GetPosition() const {
+    return mTransform->GetPosition();
+}
+
+SimpleMath::Quaternion GameObject::GetRotation() const {
+    return mTransform->GetRotation();
+}
+
+SimpleMath::Vector3 GameObject::GetScale() const {
+    return mTransform->GetScale();
+}
+
+void GameObject::OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {
+    std::cout << std::format("Collision!!! Group: {}, opponent ID: {}\n", groupTag, opponent->GetId());
+}
+
+void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { }
+
+void GameObject::OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { 
+    std::cout << std::format("Collision End!!! Group: {}, opponent ID: {}\n", groupTag, opponent->GetId());
 }

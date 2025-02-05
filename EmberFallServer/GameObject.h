@@ -9,9 +9,8 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "Collider.h"
 #include "Transform.h"
-
-class Collider;
 
 inline constexpr BYTE MAX_INPUT_STORED = 100;
 inline constexpr float TEMP_SPEED = 20.0f;
@@ -28,27 +27,30 @@ public:
     void InitId(SessionIdType id);
     SessionIdType GetId() const;
     SimpleMath::Matrix GetWorld() const;
-    Transform& GetTransform();
+
+    std::shared_ptr<Transform> GetTransform();
+    std::shared_ptr<Collider> GetCollider() const;
 
     SimpleMath::Vector3 GetPosition() const;
     SimpleMath::Quaternion GetRotation() const;
     SimpleMath::Vector3 GetScale() const;
 
-    std::shared_ptr<Collider> GetCollider() const;
-
     template <typename ColliderType, typename... Args> 
         requires std::derived_from<ColliderType, Collider> and std::is_constructible_v<ColliderType, Args...>
     void MakeCollider(Args&&... args) {
         mCollider = std::make_shared<ColliderType>(args...);
+        mCollider->SetTransform(mTransform);
     }
 
-    void OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
+    void OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
+    void OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
+    void OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
 
 private:
-    SessionIdType mId{ INVALID_SESSION_ID };     // network id
-    std::array<bool, MAX_KEY_SIZE> mKeyState{ }; // input
+    SessionIdType mId{ INVALID_SESSION_ID };        // network id
+    std::array<bool, MAX_KEY_SIZE> mKeyState{ };    // input
 
-    Transform mTransform{ };                    // Transform
+    std::shared_ptr<Transform> mTransform{ };       // Transform
 
     std::shared_ptr<Collider> mCollider{ nullptr }; // collision 
 };

@@ -84,21 +84,37 @@ void CollisionWorld::HandleCollision() {
     }
 }
 
-bool CollisionWorld::CheckCollision(const std::shared_ptr<GameObject>& obj1, const std::shared_ptr<GameObject>& obj2) {
+void CollisionWorld::HandleCollision(const std::string& groupTag, std::shared_ptr<GameObject>& obj1, std::shared_ptr<GameObject>& obj2) {
     auto c1 = obj1->GetCollider();
     auto c2 = obj2->GetCollider();
 
-    return c1->CheckCollision(c2);
+    auto collisionResult =  c1->CheckCollision(c2);
+
+    switch (collisionResult) {
+    case CollisionState::ENTER:
+        obj1->OnCollisionEnter(groupTag, obj2);
+        obj2->OnCollisionEnter(groupTag, obj1);
+        break;
+
+    case CollisionState::STAY:
+        obj1->OnCollisionStay(groupTag, obj2);
+        obj2->OnCollisionStay(groupTag, obj1);
+        break;
+       
+    case CollisionState::EXIT:
+        obj1->OnCollisionExit(groupTag, obj2);
+        obj2->OnCollisionExit(groupTag, obj1);
+        break;
+
+    default:
+        break;
+    }
 }
 
 void CollisionWorld::HandleCollisionListPair(const std::string& groupTag, CollisionPair& listPair) {
     for (auto& obj1 : listPair.first) {
         for (auto& obj2 : listPair.second) {
-            if (true == CheckCollision(obj1, obj2)) {
-                // 첫 번째 리스트 오브젝트와 두 번째 리스트 오브젝트와의 충돌체크
-                obj1->OnCollision(groupTag, obj2);
-                obj2->OnCollision(groupTag, obj1);
-            }
+            HandleCollision(groupTag, obj1, obj2);
         }
     }
 }
@@ -112,10 +128,7 @@ void CollisionWorld::HandleCollisionList(const std::string& groupTag, CollisionL
             auto obj1 = *listIter;
             auto obj2 = *next;
 
-            if (true == CheckCollision(obj1, obj2)) {
-                obj1->OnCollision(groupTag, obj2);
-                obj2->OnCollision(groupTag, obj1);
-            }
+            HandleCollision(groupTag, obj1, obj2);
         }
     }
 }
