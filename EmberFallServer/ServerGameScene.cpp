@@ -107,7 +107,7 @@ void PlayScene::Update(const float deltaTime) {
         obj->Update(deltaTime);
     }
 
-    mCollisionWorld.HandleCollision();
+    //mCollisionWorld.HandleCollision();
 }
 
 void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) {
