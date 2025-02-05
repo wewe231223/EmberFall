@@ -49,7 +49,7 @@ void CollisionWorld::AddCollisionObject(const std::string& groupTag, std::shared
     mCollisionWorld[groupTag].first.push_back(obj);
 }
 
-void CollisionWorld::RemoveObejctFromGroup(const std::string& groupTag, std::shared_ptr<GameObject> obj) {
+void CollisionWorld::RemoveObjectFromGroup(const std::string& groupTag, std::shared_ptr<GameObject> obj) {
     if (nullptr == obj) {
         return;
     }
@@ -85,30 +85,15 @@ void CollisionWorld::HandleCollision() {
 }
 
 void CollisionWorld::HandleCollision(const std::string& groupTag, std::shared_ptr<GameObject>& obj1, std::shared_ptr<GameObject>& obj2) {
-    auto c1 = obj1->GetCollider();
-    auto c2 = obj2->GetCollider();
+    auto collider1 = obj1->GetCollider();
+    auto collider2 = obj2->GetCollider();
 
-    auto collisionResult =  c1->CheckCollision(c2);
+    auto collisionResult = collider1->CheckCollision(collider2);
+    collider1->UpdateState(collisionResult, obj2->GetId());
+    collider2->UpdateState(collisionResult, obj1->GetId());
 
-    switch (collisionResult) {
-    case CollisionState::ENTER:
-        obj1->OnCollisionEnter(groupTag, obj2);
-        obj2->OnCollisionEnter(groupTag, obj1);
-        break;
-
-    case CollisionState::STAY:
-        obj1->OnCollisionStay(groupTag, obj2);
-        obj2->OnCollisionStay(groupTag, obj1);
-        break;
-       
-    case CollisionState::EXIT:
-        obj1->OnCollisionExit(groupTag, obj2);
-        obj2->OnCollisionExit(groupTag, obj1);
-        break;
-
-    default:
-        break;
-    }
+    obj1->OnCollision(groupTag, obj2);
+    obj2->OnCollision(groupTag, obj1);
 }
 
 void CollisionWorld::HandleCollisionListPair(const std::string& groupTag, CollisionPair& listPair) {

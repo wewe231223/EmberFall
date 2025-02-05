@@ -77,6 +77,26 @@ SimpleMath::Vector3 GameObject::GetScale() const {
     return mTransform->GetScale();
 }
 
+void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {
+    auto state = mCollider->GetState(opponent->GetId());
+    switch (state) {
+    case CollisionState::ENTER:
+        OnCollisionEnter(groupTag, opponent);
+        break;
+
+    case CollisionState::STAY:
+        OnCollisionStay(groupTag, opponent);
+        break;
+
+    case CollisionState::EXIT:
+        OnCollisionExit(groupTag, opponent);
+        break;
+
+    default:
+        break;
+    }
+}
+
 void GameObject::OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {
     std::cout << std::format("Collision!!! Group: {}, opponent ID: {}\n", groupTag, opponent->GetId());
 }

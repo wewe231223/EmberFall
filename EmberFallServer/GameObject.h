@@ -42,6 +42,9 @@ public:
         mCollider->SetTransform(mTransform);
     }
 
+    void OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
+
+private:
     void OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
     void OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
     void OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);

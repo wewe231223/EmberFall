@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <map>
 
 #include "../ServerLib/pch.h"
 #include "../ServerLib/NetworkCore.h"

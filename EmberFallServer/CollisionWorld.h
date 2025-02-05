@@ -41,7 +41,7 @@ public:
     void AddCollisionPair(const std::string& groupTag, std::shared_ptr<GameObject> obj1=nullptr, std::shared_ptr<GameObject> obj2=nullptr);
     // 같은 오브젝트 간의 충돌체크 그룹 설정 (ex: player-player)
     void AddCollisionObject(const std::string& groupTag, std::shared_ptr<GameObject> obj);
-    void RemoveObejctFromGroup(const std::string& groupTag, std::shared_ptr<GameObject> obj);
+    void RemoveObjectFromGroup(const std::string& groupTag, std::shared_ptr<GameObject> obj);
     void HandleCollision();
 
 private:

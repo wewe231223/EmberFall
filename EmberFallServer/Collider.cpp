@@ -7,19 +7,11 @@ Collider::Collider(ColliderType type)
 
 Collider::~Collider() { }
 
-Collider::Collider(const Collider& other) 
-    : mState{ other.mState } { }
-
 Collider::Collider(Collider&& other) noexcept 
-    : mState{ other.mState } { }
-
-Collider& Collider::operator=(const Collider& other) {
-    mState = other.mState;
-    return *this;
-}
+    : mStates{ std::move(other.mStates) } { }
 
 Collider& Collider::operator=(Collider&& other) noexcept {
-    mState = other.mState;
+    mStates = std::move(other.mStates);
     return *this;
 }
 
@@ -39,21 +31,29 @@ void Collider::SetTransform(const std::shared_ptr<Transform>& transform) {
     mTransform = transform;
 }
 
-CollisionState Collider::UpdateState(CollisionState state) {
-    mState = state;
-    return mState;
+CollisionState Collider::GetState(NetworkObjectIdType id) const {
+    if (mStates.contains(id)) {
+        return mStates.at(id);
+    }
+
+    return CollisionState::NONE;
 }
 
-CollisionState Collider::UpdateState(bool collisionResult) {
+void Collider::UpdateState(bool collisionResult, NetworkObjectIdType objId) {
     if (true == collisionResult) {
-        switch (mState) {
+        if (not mStates.contains(objId)) {
+            mStates[objId] = CollisionState::NONE;
+        }
+
+        auto& state = mStates[objId];
+        switch (state) {
         case CollisionState::NONE:
         case CollisionState::EXIT:
-            mState = CollisionState::ENTER;
+            state = CollisionState::ENTER;
             break;
 
         case CollisionState::ENTER:
-            mState = CollisionState::STAY;
+            state = CollisionState::STAY;
             break;
 
         default:        // STAY인 경우 처리 X
@@ -61,22 +61,26 @@ CollisionState Collider::UpdateState(bool collisionResult) {
         }
     }
     else {
-        switch (mState) {
+        if (not mStates.contains(objId)) {
+            return;
+        }
+
+        auto& state = mStates[objId];
+        switch (state) {
         case CollisionState::ENTER:
         case CollisionState::STAY:
-            mState = CollisionState::EXIT;
+            state = CollisionState::EXIT;
             break;
 
         case CollisionState::EXIT:
-            mState = CollisionState::NONE;
+            state = CollisionState::NONE;
             break;
 
-        default:        // NONE인 경우 처리 X
+        default:        // NONE인 경우 Map에서 삭제
+            mStates.erase(objId);
             break;
         }
     }
-
-    return mState;
 }
 
 BoxCollider::BoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents) 
@@ -92,13 +96,13 @@ void BoxCollider::Update() {
     mBoundingBox.Center = mTransform.lock()->GetPosition();
 }
 
-CollisionState BoxCollider::CheckCollision(const std::shared_ptr<Collider>& other) {
+bool BoxCollider::CheckCollision(const std::shared_ptr<Collider>& other) {
     if (false == mEnable or false == other->IsEnable()) {
-        return UpdateState(CollisionState::NONE);
+        return false;
     }
 
     auto collider = std::static_pointer_cast<BoxCollider>(other);
     bool collisionResult = mBoundingBox.Intersects(collider->mBoundingBox);
 
-    return UpdateState(collisionResult);
+    return collisionResult;
 }

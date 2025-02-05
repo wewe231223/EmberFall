@@ -56,7 +56,7 @@ void PlayScene::ExitPlayer(SessionIdType id) {
     auto it = mPlayers.find(id);
     if (it != mPlayers.end()) {
         std::cout << std::format("Erase player {}\n", id);
-        mCollisionWorld.RemoveObejctFromGroup("player", it->second);
+        mCollisionWorld.RemoveObjectFromGroup("player", it->second);
         mPlayers.erase(it);
     }
 }
