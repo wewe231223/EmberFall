@@ -50,5 +50,5 @@ private:
 
     Transform mTransform{ };                    // Transform
 
-    std::shared_ptr<Collider> mCollider{ nullptr }; // collision
+    std::shared_ptr<Collider> mCollider{ nullptr }; // collision 
 };

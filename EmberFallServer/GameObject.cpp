@@ -78,5 +78,6 @@ std::shared_ptr<Collider> GameObject::GetCollider() const {
 }
 
 void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {
-    std::cout << std::format("Collision!!! Group: {}\n", groupTag);
+    static size_t collisionTime{ };
+    std::cout << std::format("Collision!!! Group: {}, Times: {}, opponent ID: {}\n", groupTag, ++collisionTime, opponent->GetId());
 }

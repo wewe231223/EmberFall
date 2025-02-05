@@ -20,6 +20,16 @@
 //                  Swap 함수 호출시 새로운 WriteOnlyBuffer의 Reset은 보장됨.
 //          5. RecvBuffer의 move, copy는 가급적 사용 X
 // 
+//      02 - 05 : 데드락 문제
+//              너무 생각없이 문제를 해결한거 같다.
+//              두개의 atomic_bool 변수로 문제를 해결하는 방식이 잘못되었다는 걸 뒤늦게 깨달았다.
+//              wait함수와 store 함수 중간에 ContextSwitching이 일어나서 충분히 데드락 상태에 빠질 수 있다.
+//              
+//              변경 -> 어짜피 Write는 여러 쓰레드가, Swap (Read) 는 하나의 쓰레드만 접근하도록 할 것이니
+//                  SRWLock을 사용하면 문제를 해결할 수 있을 것 같다.
+//                  Write에서 Shared 모드로, Swap에서 Exclusive 모드로 Locking하면 문제가 해결된다.
+//                  어짜피 Non-Blocking으로 문제를 해결할 생각은 없었으니 이 방법을 쓰기로 했다.
+// 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 inline constexpr size_t RECV_BUF_SIZE = std::numeric_limits<unsigned short>::max();
@@ -87,9 +97,7 @@ public:
 private:
     UINT8 mReadOnlyIdx{ 0 };
     UINT8 mWriteOnlyIdx{ 1 };
-    std::atomic_bool mSwap{ };
-    std::atomic_bool mWriting{ false };
-    std::atomic_uchar mWriteCount{ };
+    Lock::SRWLock mBufferLock{ };
     std::array<RecvBuffer, 2> mBuffers{ };
 };
 

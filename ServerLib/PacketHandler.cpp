@@ -75,29 +75,16 @@ PacketHandler::PacketHandler() { }
 PacketHandler::~PacketHandler() { }
 
 void PacketHandler::Write(void* data, size_t size) {
-    mSwap.wait(true);
+    Lock::SRWLockGuard bufferGuard{ Lock::SRW_MODE::SRW_READ, mBufferLock };
 
-    mWriting.store(true);
-
-    mWriteCount.fetch_add(1);
     mBuffers[mWriteOnlyIdx].Write(data, size);
-    mWriteCount.fetch_sub(1);
-
-    mWriting.store(0 != mWriteCount);
-    if (true == mSwap.load() and false == mWriting.load()) {
-        mWriting.notify_all();
-    }
 }
 
 void PacketHandler::Swap() {
-    mSwap.store(true);
-    mWriting.wait(true);
+    Lock::SRWLockGuard bufferGuard{ Lock::SRW_MODE::SRW_WRITE, mBufferLock };
 
     std::swap(mWriteOnlyIdx, mReadOnlyIdx);
     mBuffers[mWriteOnlyIdx].Reset();
-
-    mSwap.store(false);
-    mSwap.notify_all();
 }
 
 void PacketHandler::Reset() {

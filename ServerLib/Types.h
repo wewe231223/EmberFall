@@ -9,6 +9,7 @@
 
 using SessionIdType = BYTE;
 using PacketSizeType = BYTE;
+using NetworkObjectIdType = size_t;
 
 using ExtraInfo = std::variant<void*, SOCKET, unsigned long long, HANDLE>;
 

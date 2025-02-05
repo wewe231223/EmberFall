@@ -60,6 +60,9 @@ public:
     float GetHeight(const SimpleMath::Vector2& pos, float offset = 0.0f) const;
     float GetHeight(const SimpleMath::Vector3& pos, float offset = 0.0f) const;
 
+    //bool Contains(const SimpleMath::Vector3& position);
+    //bool Contains(const std::shared_ptr<class Collider>& collider);
+
 private:
     SimpleMath::Vector3 mScale{ };
     std::shared_ptr<HeightMap> mHeightMap{ };
