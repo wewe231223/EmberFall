@@ -31,9 +31,9 @@ bool Lock::SRWLock::TryReadLock() {
     return ::TryAcquireSRWLockShared(&mLock);
 }
 
-Lock::SRWLockGuard::SRWLockGuard(SRW_MODE mode, SRWLock& lock)
+Lock::SRWLockGuard::SRWLockGuard(SRWLockMode mode, SRWLock& lock)
     : mLock{ lock }, mMode{ mode }, mLocked { false } {
-    if (SRW_MODE::SRW_READ == mode) {
+    if (SRWLockMode::SRW_SHARED == mode) {
         mLock.ReadLock();
         mLocked.exchange(true);
     }
@@ -44,7 +44,7 @@ Lock::SRWLockGuard::SRWLockGuard(SRW_MODE mode, SRWLock& lock)
 }
 
 Lock::SRWLockGuard::~SRWLockGuard() {
-    if (SRW_MODE::SRW_READ == mMode) {
+    if (SRWLockMode::SRW_SHARED == mMode) {
         mLock.ReadUnlock();
         mLocked.exchange(false);
     }

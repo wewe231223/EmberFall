@@ -32,9 +32,9 @@ namespace Lock {
         SRWLOCK mLock{ };
     };
 
-    enum class SRW_MODE : BYTE {
-        SRW_READ,
-        SRW_WRITE = 0x01,
+    enum class SRWLockMode : BYTE {
+        SRW_SHARED,
+        SRW_EXCLUSIVE = 0x01,
         SRW_TRY_READ = 0xF0,
         SRW_TRY_WRITE = 0xF1,
 
@@ -43,12 +43,12 @@ namespace Lock {
 
     class SRWLockGuard {
     public:
-        explicit SRWLockGuard(SRW_MODE mode, SRWLock& lock);
+        explicit SRWLockGuard(SRWLockMode mode, SRWLock& lock);
         ~SRWLockGuard();
 
     private:
         SRWLock& mLock;
         std::atomic_bool mLocked{ false };
-        SRW_MODE mMode{ };
+        SRWLockMode mMode{ };
     };
 }

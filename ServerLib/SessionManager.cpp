@@ -24,7 +24,7 @@ bool SessionManager::AddSession(std::shared_ptr<Session> session) {
         return false;
     }
 
-    Lock::SRWLockGuard sessionsGuard{ Lock::SRW_MODE::SRW_WRITE, mSessionsLock };
+    Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mSessionsLock };
     mSessionCount.fetch_add(1);
 
     mSessions[id] = session;
@@ -39,7 +39,7 @@ bool SessionManager::AddSession(std::shared_ptr<Session> session) {
 }
 
 void SessionManager::CloseSession(SessionIdType id) {
-    Lock::SRWLockGuard sessionsGuard{ Lock::SRW_MODE::SRW_WRITE, mSessionsLock };
+    Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mSessionsLock };
     auto it = mSessions.find(id);
     if (it != mSessions.end()) {
         mSessionIdMap.push(id);
@@ -64,7 +64,7 @@ std::shared_ptr<Session> SessionManager::GetSession(SessionIdType id) {
 }
 
 void SessionManager::Send(SessionIdType to, void* packet) {
-    Lock::SRWLockGuard sessionsGuard{ Lock::SRW_MODE::SRW_READ, mSessionsLock };
+    Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
     auto it = mSessions.find(to);
     if (it == mSessions.end()) {
         return;
@@ -79,7 +79,7 @@ void SessionManager::Send(SessionIdType to, void* packet) {
 }
 
 void SessionManager::SendAll(void* packet) {
-    Lock::SRWLockGuard sessionsGuard{ Lock::SRW_MODE::SRW_READ, mSessionsLock };
+    Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
     for (auto& [id, session] : mSessions) {
         if (false == session->IsConnected()) {
             continue;
@@ -90,7 +90,7 @@ void SessionManager::SendAll(void* packet) {
 }
 
 void SessionManager::SendAll(void* data, size_t size) {
-    Lock::SRWLockGuard sessionsGuard{ Lock::SRW_MODE::SRW_READ, mSessionsLock };
+    Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
     for (auto& [id, session] : mSessions) {
         if (false == session->IsConnected()) {
             continue;
