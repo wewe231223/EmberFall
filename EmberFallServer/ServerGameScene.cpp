@@ -3,7 +3,6 @@
 #include "GameObject.h"
 #include "Terrain.h"
 #include "Collider.h"
-#include "CollisionWorld.h"
 
 IServerGameScene::IServerGameScene() { }
 
@@ -44,26 +43,28 @@ PlayScene::PlayScene() {
 
 PlayScene::~PlayScene() { }
 
+void PlayScene::EnterPlayer(SessionIdType id) {
+    std::shared_ptr<GameObject> obj = std::make_shared<GameObject>();
+    obj->InitId(id);
+    mPlayers[id] = obj;
+    obj->MakeCollider<BoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3::One);
+    mCollisionWorld.AddCollisionObject("player", obj);
+    std::cout << std::format("Add player {}\n", id);
+}
+
+void PlayScene::ExitPlayer(SessionIdType id) {
+    auto it = mPlayers.find(id);
+    if (it != mPlayers.end()) {
+        std::cout << std::format("Erase player {}\n", id);
+        mCollisionWorld.RemoveObejctFromGroup("player", it->second);
+        mPlayers.erase(it);
+    }
+}
+
 void PlayScene::RegisterOnSessionConnect(const std::shared_ptr<ServerCore>& serverCore) {
     auto sessionManager = serverCore->GetSessionManager();
-
-    sessionManager->RegisterOnSessionConnect([=](SessionIdType id) {
-        std::shared_ptr<GameObject> obj = std::make_shared<GameObject>();
-        obj->InitId(id);
-        mPlayers[id] = obj;
-        obj->MakeCollider<BoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3::One);
-        gCollisionWorld->AddCollisionObject("player", obj);
-        std::cout << std::format("Add player {}\n", id);
-    });
-
-    sessionManager->RegisterOnSessionDisconnect([=](SessionIdType id) {
-        auto it = mPlayers.find(id);
-        if (it != mPlayers.end()) {
-            std::cout << std::format("Erase player {}\n", id);
-            gCollisionWorld->RemoveObejctFromGroup("player", it->second);
-            mPlayers.erase(it);
-        }
-    });
+    sessionManager->RegisterOnSessionConnect(std::bind_front(&PlayScene::EnterPlayer, this));
+    sessionManager->RegisterOnSessionDisconnect(std::bind_front(&PlayScene::ExitPlayer, this));
 }
 
 void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
@@ -106,7 +107,7 @@ void PlayScene::Update(const float deltaTime) {
         obj->Update(deltaTime);
     }
 
-    gCollisionWorld->HandleCollision();
+    mCollisionWorld.HandleCollision();
 }
 
 void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) {

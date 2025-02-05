@@ -14,6 +14,7 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "CollisionWorld.h"
 
 class IServerGameScene abstract {
 public:
@@ -50,9 +51,14 @@ public:
     virtual void Update(const float deltaTime) override;
     virtual void SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) override;
 
+public:
+    void EnterPlayer(SessionIdType id);
+    void ExitPlayer(SessionIdType id);
+
 private:
     std::mutex mGameObjectLock{ };
     std::unordered_map<SessionIdType, std::shared_ptr<class GameObject>> mPlayers{ };
 
     std::unique_ptr<class Terrain> mTerrain{ }; // test
+    CollisionWorld mCollisionWorld{ };
 };
