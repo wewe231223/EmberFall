@@ -8,7 +8,7 @@ CollisionWorld::CollisionWorld() { }
 CollisionWorld::~CollisionWorld() { }
 
 bool CollisionWorld::Contains(const std::string& groupTag) const {
-    return mCollisionWorld.end() != mCollisionWorld.find(groupTag);
+    return mCollisionWorld.contains(groupTag);
 }
 
 void CollisionWorld::AddCollisionPair(const std::string& groupTag, std::shared_ptr<GameObject> obj1, std::shared_ptr<GameObject> obj2) {
@@ -61,14 +61,14 @@ void CollisionWorld::RemoveObejctFromGroup(const std::string& groupTag, std::sha
     CollisionList& firstList = mCollisionWorld[groupTag].first;
     auto objSearch = std::find(firstList.begin(), firstList.end(), obj);
     if (objSearch != firstList.end()) {
-        //std::erase(firstList, objSearch);
+        std::erase(firstList, *objSearch);
         return;
     }
 
     CollisionList& secondList = mCollisionWorld[groupTag].second;
     objSearch = std::find(secondList.begin(), secondList.end(), obj);
     if (objSearch != secondList.end()) {
-        //std::erase(secondList, objSearch);
+        std::erase(secondList, *objSearch);
         return;
     }
 }
