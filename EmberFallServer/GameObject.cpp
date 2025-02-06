@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "GameObject.h"
+#include "Physics.h"
 
-GameObject::GameObject()
+GameObject::GameObject() 
     : mTransform{ std::make_shared<Transform>() } { }
 
 GameObject::~GameObject() { }
@@ -10,7 +11,7 @@ void GameObject::SetInput(Key key) {
     mKeyState[key.key] = key.state;
 }
 
-void GameObject::Update(const float deltaTime) {
+void GameObject::UpdateInput(const float deltaTime) {
     SimpleMath::Vector3 moveVec{ SimpleMath::Vector3::Zero };
     if (Key::DOWN == mKeyState['A']) {
         moveVec.x -= TEMP_SPEED * deltaTime;
@@ -35,9 +36,12 @@ void GameObject::Update(const float deltaTime) {
     if (Key::DOWN == mKeyState['E']) {
         moveVec.y += TEMP_SPEED * deltaTime;
     }
-    
-    mTransform->Move(moveVec);
 
+    mTransform->Move(moveVec);
+}
+
+void GameObject::Update(const float deltaTime) {
+    mPhysics->Update(deltaTime);
     mTransform->Update();
 
     if (nullptr != mCollider) {
@@ -45,11 +49,11 @@ void GameObject::Update(const float deltaTime) {
     }
 }
 
-void GameObject::InitId(SessionIdType id) {
+void GameObject::InitId(NetworkObjectIdType id) {
     mId = id;
 }
 
-SessionIdType GameObject::GetId() const {
+NetworkObjectIdType GameObject::GetId() const {
     return mId;
 }
 
@@ -77,6 +81,22 @@ SimpleMath::Vector3 GameObject::GetScale() const {
     return mTransform->GetScale();
 }
 
+void GameObject::SetColor(const SimpleMath::Vector3& color) {
+    mColor = color;
+}
+
+SimpleMath::Vector3 GameObject::GetColor() const {
+    if (mCollider->IsColliding()) {
+        return SimpleMath::Vector3{ 1.0f, 0.0f, 0.0f }; // RED
+    }
+    return mColor;
+}
+
+void GameObject::MakePhysics() {
+    mPhysics = std::make_shared<Physics>();
+    mPhysics->SetTransform(mTransform);
+}
+
 void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {
     auto state = mCollider->GetState(opponent->GetId());
     switch (state) {
@@ -95,6 +115,10 @@ void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameOb
     default:
         break;
     }
+}
+
+void GameObject::OnCollisionTerrain(const float height) {
+    mTransform->SetY(height);
 }
 
 void GameObject::OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {

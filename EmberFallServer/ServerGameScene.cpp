@@ -38,17 +38,23 @@ void EchoTestScene::Update(const float deltaTime) { }
 void EchoTestScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) { }
 
 PlayScene::PlayScene() {
-    //mTerrain = std::make_unique<Terrain>("../Resources/HeightMap.raw");
+    mTerrain = std::make_shared<Terrain>("../Resources/HeightMap.raw");
+    mCollisionWorld.AddTerrain(mTerrain);
 }
 
 PlayScene::~PlayScene() { }
+
+#define RAND_COLOR static_cast<float>(rand()) / static_cast<float>(RAND_MAX) // TEST
 
 void PlayScene::EnterPlayer(SessionIdType id) {
     std::shared_ptr<GameObject> obj = std::make_shared<GameObject>();
     obj->InitId(id);
     mPlayers[id] = obj;
-    obj->MakeCollider<BoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3::One);
+    obj->MakePhysics();
+    obj->MakeCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
+    obj->SetColor(SimpleMath::Vector3{ RAND_COLOR, RAND_COLOR, RAND_COLOR });
     mCollisionWorld.AddCollisionObject("player", obj);
+    mCollisionWorld.AddObjectInTerrainGroup(obj);
     std::cout << std::format("Add player {}\n", id);
 }
 
@@ -57,6 +63,7 @@ void PlayScene::ExitPlayer(SessionIdType id) {
     if (it != mPlayers.end()) {
         std::cout << std::format("Erase player {}\n", id);
         mCollisionWorld.RemoveObjectFromGroup("player", it->second);
+        mCollisionWorld.RemoveObjectFromTerrainGroup(it->second);
         mPlayers.erase(it);
     }
 }
@@ -104,10 +111,16 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
 
 void PlayScene::Update(const float deltaTime) { 
     for (auto& [id, obj] : mPlayers) {
+        obj->UpdateInput(deltaTime);
+    }
+
+    for (auto& [id, obj] : mPlayers) {
         obj->Update(deltaTime);
     }
 
     mCollisionWorld.HandleCollision();
+
+    mCollisionWorld.HandleTerrainCollision();
 }
 
 void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) {
@@ -115,6 +128,7 @@ void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) 
     PacketGameObj objPacket{ sizeof(PacketGameObj), PacketType::PT_GAMEOBJ_SC, 0 };
     for (auto& [id, obj] : mPlayers) { // lock 은 안걸고 일단 보내보자 어짜피 connect 상태가 아니라면 send는 실패할것
         objPacket.id = id;
+        objPacket.color = obj->GetColor();
         objPacket.position = obj->GetPosition();
         objPacket.rotation = obj->GetRotation();
         objPacket.scale = obj->GetScale();

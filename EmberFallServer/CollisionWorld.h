@@ -19,6 +19,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class GameObject;
+class Terrain;
 
 using CollisionList = std::vector<std::shared_ptr<GameObject>>;
 using CollisionPair = std::pair<CollisionList, CollisionList>;
@@ -36,13 +37,18 @@ public:
     CollisionWorld& operator=(CollisionWorld&&) noexcept = delete;
 
 public:
+    void AddTerrain(std::shared_ptr<Terrain> terrain);
+    void AddObjectInTerrainGroup(std::shared_ptr<GameObject> object);
+
     bool Contains(const std::string& groupTag) const;
     // 서로 다른 두 오브젝트 간의 충돌체크 그룹 설정 (ex: player-enemy) 같은 오브젝트 간의 충돌체크 그룹 설정은 AddCollisionObject
     void AddCollisionPair(const std::string& groupTag, std::shared_ptr<GameObject> obj1=nullptr, std::shared_ptr<GameObject> obj2=nullptr);
     // 같은 오브젝트 간의 충돌체크 그룹 설정 (ex: player-player)
     void AddCollisionObject(const std::string& groupTag, std::shared_ptr<GameObject> obj);
     void RemoveObjectFromGroup(const std::string& groupTag, std::shared_ptr<GameObject> obj);
+    void RemoveObjectFromTerrainGroup(std::shared_ptr<GameObject> obj);
     void HandleCollision();
+    void HandleTerrainCollision();
 
 private:
     void HandleCollision(const std::string& groupTag, std::shared_ptr<GameObject>& obj1, std::shared_ptr<GameObject>& obj2);
@@ -50,6 +56,8 @@ private:
     void HandleCollisionList(const std::string& groupTag, CollisionList& list);
 
 private:
+    std::shared_ptr<Terrain> mTerrain{ };
+    CollisionList mCollisionTerrainList{ };
     CollisionMap mCollisionWorld{ };
 };
 

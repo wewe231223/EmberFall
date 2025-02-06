@@ -2,10 +2,19 @@
 #include "CollisionWorld.h"
 #include "GameObject.h"
 #include "Collider.h"
+#include "Terrain.h"
 
 CollisionWorld::CollisionWorld() { }
 
 CollisionWorld::~CollisionWorld() { }
+
+void CollisionWorld::AddTerrain(std::shared_ptr<Terrain> terrain) {
+    mTerrain = terrain;
+}
+
+void CollisionWorld::AddObjectInTerrainGroup(std::shared_ptr<GameObject> object) {
+    mCollisionTerrainList.push_back(object);
+}
 
 bool CollisionWorld::Contains(const std::string& groupTag) const {
     return mCollisionWorld.contains(groupTag);
@@ -73,6 +82,14 @@ void CollisionWorld::RemoveObjectFromGroup(const std::string& groupTag, std::sha
     }
 }
 
+void CollisionWorld::RemoveObjectFromTerrainGroup(std::shared_ptr<GameObject> obj) {
+    auto objSearch = std::find(mCollisionTerrainList.begin(), mCollisionTerrainList.end(), obj);
+    if (objSearch != mCollisionTerrainList.end()) {
+        std::erase(mCollisionTerrainList, *objSearch);
+        return;
+    }
+}
+
 void CollisionWorld::HandleCollision() {
     for (auto& [group, listPair] : mCollisionWorld) {
         if (listPair.second.empty()) {  // 두번째 리스트를 사용하지 않으면 같은 종류의 오브젝트끼리만 충돌체크 (첫번째 리스트만 사용)
@@ -80,6 +97,15 @@ void CollisionWorld::HandleCollision() {
         }
         else {
             HandleCollisionListPair(group, listPair);
+        }
+    }
+}
+
+void CollisionWorld::HandleTerrainCollision() {
+    float terrainHeight{ };
+    for (auto& object : mCollisionTerrainList) {
+        if (mTerrain->Contains(object->GetCollider(), terrainHeight)) {
+            object->OnCollisionTerrain(terrainHeight);
         }
     }
 }

@@ -152,6 +152,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Physics.cpp" />
     <ClCompile Include="ServerFrame.cpp" />
     <ClCompile Include="ServerGameScene.cpp" />
     <ClCompile Include="Terrain.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Physics.h" />
     <ClInclude Include="ServerFrame.h" />
     <ClInclude Include="ServerGameScene.h" />
     <ClInclude Include="Terrain.h" />

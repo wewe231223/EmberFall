@@ -13,6 +13,8 @@ inline constexpr SessionIdType INVALID_SESSION_ID = std::numeric_limits<SessionI
 inline constexpr size_t MAX_KEY_SIZE = 256;
 inline constexpr size_t MAX_BUF_SIZE = std::numeric_limits<unsigned short>::max();
 inline constexpr size_t BUF_RW_SIZE = 1024;
+inline constexpr NetworkObjectIdType OBJECT_ID_START = INVALID_SESSION_ID + 1;
+
 inline const UINT32 HARDWARE_CONCURRENCY = std::thread::hardware_concurrency();
 
 enum class IOType : UINT32 {
@@ -21,4 +23,11 @@ enum class IOType : UINT32 {
     CONNECT,
     DISCONNECT,
     ACCEPT
+};
+
+enum class CollisionState : BYTE {
+    NONE,
+    ENTER,
+    STAY,
+    EXIT
 };

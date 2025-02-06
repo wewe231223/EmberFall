@@ -26,20 +26,18 @@ struct PacketChat : public PacketHeader {
 };
 
 struct PacketGameObj : public PacketHeader {
+    SimpleMath::Vector3 color;
     SimpleMath::Vector3 position;
     SimpleMath::Quaternion rotation;
     SimpleMath::Vector3 scale;
 };
 
 struct PacketGameObjCS : public PacketHeader {
+    SimpleMath::Vector3 color;
     SimpleMath::Quaternion rotation;
 };
 
 struct PacketInput : public PacketHeader {
     Key key;
-};
-
-struct PacketCollision : public PacketHeader {
-    
 };
 #pragma pack(pop)

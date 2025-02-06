@@ -55,6 +55,9 @@
     <ClCompile Include="CollisionWorld.cpp">
       <Filter>Collision</Filter>
     </ClCompile>
+    <ClCompile Include="Physics.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -86,6 +89,9 @@
     </ClInclude>
     <ClInclude Include="CollisionWorld.h">
       <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics.h">
+      <Filter>Component</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -22,11 +22,11 @@ public:
     
 public:
     void SetInput(Key key);
+    void UpdateInput(const float deltaTime);
     void Update(const float deltaTime);
 
-    void InitId(SessionIdType id);
-    SessionIdType GetId() const;
-    SimpleMath::Matrix GetWorld() const;
+    void InitId(NetworkObjectIdType id);
+    NetworkObjectIdType GetId() const;
 
     std::shared_ptr<Transform> GetTransform();
     std::shared_ptr<Collider> GetCollider() const;
@@ -34,6 +34,10 @@ public:
     SimpleMath::Vector3 GetPosition() const;
     SimpleMath::Quaternion GetRotation() const;
     SimpleMath::Vector3 GetScale() const;
+    SimpleMath::Matrix GetWorld() const;
+
+    void SetColor(const SimpleMath::Vector3& color);
+    SimpleMath::Vector3 GetColor() const;
 
     template <typename ColliderType, typename... Args> 
         requires std::derived_from<ColliderType, Collider> and std::is_constructible_v<ColliderType, Args...>
@@ -42,7 +46,10 @@ public:
         mCollider->SetTransform(mTransform);
     }
 
+    void MakePhysics(); // test
+
     void OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
+    void OnCollisionTerrain(const float height);
 
 private:
     void OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
@@ -50,10 +57,13 @@ private:
     void OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
 
 private:
-    SessionIdType mId{ INVALID_SESSION_ID };        // network id
+    SimpleMath::Vector3 mColor{ SimpleMath::Vector3::One }; // for detecting collision
+
+    NetworkObjectIdType mId{ INVALID_SESSION_ID };        // network id
     std::array<bool, MAX_KEY_SIZE> mKeyState{ };    // input
 
     std::shared_ptr<Transform> mTransform{ };       // Transform
 
     std::shared_ptr<Collider> mCollider{ nullptr }; // collision 
+    std::shared_ptr<class Physics> mPhysics{ };
 };

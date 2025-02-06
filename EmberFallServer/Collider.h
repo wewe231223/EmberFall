@@ -15,13 +15,6 @@
 
 class Transform;
 
-enum class CollisionState : BYTE {
-    NONE,
-    ENTER,
-    STAY,
-    EXIT
-};
-
 enum class ColliderType : BYTE {
     BOX,
     SPHERE,
@@ -43,7 +36,9 @@ public:
 public:
     void Disable();
     void Enable();
+    ColliderType GetType() const;
     bool IsEnable() const;
+    bool IsColliding() const;
 
     void SetTransform(const std::shared_ptr<Transform>& transform);
     CollisionState GetState(NetworkObjectIdType id) const;
@@ -58,53 +53,58 @@ protected:
     std::weak_ptr<Transform> mTransform{ };         // GameObject 에서 가지는 Transform 참조
 
     ColliderType mType{ ColliderType::OTHER };
-    std::map<NetworkObjectIdType, CollisionState> mStates{ };
+    std::map<NetworkObjectIdType, CollisionState> mStates{ };   // 이전 충돌 결과를 기억하기 위한 map
+    unsigned short mCollisionCount{ 0 };
     bool mEnable{ true };
 };
 
 class BoxCollider : public Collider {
 public:
+    BoxCollider();
     BoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents);
     ~BoxCollider();
 
 public:
-    virtual void Update() override;
+    DirectX::BoundingBox& GetBoundingBox();
 
+    virtual void Update() override;
     virtual bool CheckCollision(const std::shared_ptr<Collider>& other) override;
 
 private:
+    DirectX::BoundingBox mLocalBox{ };
     DirectX::BoundingBox mBoundingBox{ };
 };
 
-// 일단 더 생각해보자
-//class SphereCollider : public Collider {
-//public:
-//    SphereCollider();
-//    ~SphereCollider();
-//
-//public:
-//    virtual void CheckCollision(const std::shared_ptr<Collider>& other) const override;
-//
-//    virtual void OnCollisionEnter() override;
-//    virtual void OnCollisionStay() override;
-//    virtual void OnCollisionExit() override;
-//
-//private:
-//    DirectX::BoundingSphere mBoundingBox{ };
-//};
-//
-//class OrientedBoxCollider : public Collider {
-//public:
-//    OrientedBoxCollider();
-//    ~OrientedBoxCollider();
-//
-//public:
-//    virtual void CheckCollision(const std::shared_ptr<Collider>& other) const override;
-//
-//    virtual void OnCollisionEnter() override;
-//    virtual void OnCollisionStay() override;
-//    virtual void OnCollisionExit() override;
-//
-//private:
-//    DirectX::BoundingOrientedBox mBoundingBox{ };
-//};
+class SphereCollider : public Collider {
+public:
+    SphereCollider();
+    SphereCollider(const SimpleMath::Vector3& center, const float radius);
+    ~SphereCollider();
+
+public:
+    DirectX::BoundingSphere& GetBoundingSphere();
+
+    virtual void Update() override;
+    virtual bool CheckCollision(const std::shared_ptr<Collider>& other) override;
+
+private:
+    DirectX::BoundingSphere mLocalSphere{ };
+    DirectX::BoundingSphere mBoundingSphere{ };
+};
+
+class OrientedBoxCollider : public Collider {
+public:
+    OrientedBoxCollider();
+    OrientedBoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents);
+    ~OrientedBoxCollider();
+
+public:
+    DirectX::BoundingOrientedBox& GetBoundingBox();
+
+    virtual void Update() override;
+    virtual bool CheckCollision(const std::shared_ptr<Collider>& other) override;
+
+private:
+    DirectX::BoundingOrientedBox mLocalBox{ };
+    DirectX::BoundingOrientedBox mBoundingBox{ };
+};

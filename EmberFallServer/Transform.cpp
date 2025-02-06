@@ -58,6 +58,10 @@ SimpleMath::Matrix Transform::GetWorld() const {
     return mWorld;
 }
 
+void Transform::SetY(const float y) {
+    mPosition.y = y;
+}
+
 void Transform::Translate(const SimpleMath::Vector3& v) {
     mPosition += v;
 }

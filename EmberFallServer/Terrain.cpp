@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Terrain.h"
+#include "Collider.h"
 
 HeightMap::HeightMap(std::string_view imageFilePath, size_t imageWidth, size_t imageHeight) {
     std::filesystem::path path{ imageFilePath };
@@ -68,7 +69,7 @@ float HeightMap::GetPixel(const float u, const float v) const {
     size_t iu{ static_cast<size_t>(u) };
     size_t iv{ static_cast<size_t>(v) };
 
-    if ((iu >= mWidth - 1 or iu >= mHeight - 1) or (0 > iu or 0 > iv)) {
+    if ((iu >= mWidth - 1 or iu >= mHeight - 1) or (0.0f > u or 0.0f > v)) {
         return 0.0f;
     }
 
@@ -146,4 +147,40 @@ float Terrain::GetHeight(const SimpleMath::Vector3& pos, float offset) const {
 
     float pixel = mHeightMap->GetPixel(idxX, idxZ);
     return pixel * mScale.y + offset;
+}
+
+bool Terrain::Contains(const SimpleMath::Vector3& position) {
+    return position.y <= GetHeight(position);
+}
+
+bool Terrain::Contains(const std::shared_ptr<Collider>& collider, float& height) {
+    switch (collider->GetType()) {
+    case ColliderType::BOX:
+    {
+        auto a = std::static_pointer_cast<BoxCollider>(collider);
+        auto center = a->GetBoundingBox().Center;
+        height = GetHeight(center, -a->GetBoundingBox().Extents.y);
+        return center.y < height;
+    }
+
+    case ColliderType::SPHERE:
+    {
+        auto a = std::static_pointer_cast<SphereCollider>(collider);
+        auto center = a->GetBoundingSphere().Center;
+        height = GetHeight(center, -a->GetBoundingSphere().Radius);
+        return center.y < height;
+        
+    }
+
+    case ColliderType::ORIENTED_BOX:
+    {
+        auto a = std::static_pointer_cast<OrientedBoxCollider>(collider);
+        auto center = a->GetBoundingBox().Center;
+        height = GetHeight(center, -a->GetBoundingBox().Extents.y);
+        return center.y < height;
+    }
+
+    default:
+        return false;
+    }
 }
