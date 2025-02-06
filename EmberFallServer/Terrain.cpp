@@ -99,13 +99,22 @@ size_t HeightMap::PixelCount() const {
     return mPixels.size();
 }
 
-Terrain::Terrain(std::string_view imageFile, const SimpleMath::Vector3& scale, size_t imageWidth, size_t imageHeight) 
-    : mScale{ scale } {
+Terrain::Terrain(std::string_view imageFile, const SimpleMath::Vector2& mapSize, size_t imageWidth, size_t imageHeight) 
+    : mMapSize{ mapSize } {
     mHeightMap = std::make_shared<HeightMap>(imageFile, imageWidth, imageHeight);
+
+    mTileSize = { mMapSize.x / static_cast<float>(mHeightMap->ImageWidth()),
+        mMapSize.y / static_cast<float>(mHeightMap->ImageHeight()) };
+
+    mLeftBottom = -mMapSize / 2.0f;
+
+    std::cout << std::format("Terrain Generate Success\n");
+    std::cout << std::format("Map Size (Meter): {} x {}, TileSize: ({}, {})\nCenter of Scene: (0.0, 0.0)\n",
+        mMapSize.x, mMapSize.y, mTileSize.x, mTileSize.y);
 }
 
 Terrain::Terrain(std::shared_ptr<HeightMap> image, const SimpleMath::Vector3& scale) 
-    : mScale{ scale }, mHeightMap{ image } { }
+    : mMapSize{ scale }, mHeightMap{ image } { }
 
 Terrain::~Terrain() { }
 
@@ -125,28 +134,24 @@ void Terrain::ResetHeightMap(std::shared_ptr<HeightMap> heightMap) {
     mHeightMap = heightMap;
 }
 
-void Terrain::ResetScale(const SimpleMath::Vector3& scale) {
-    mScale = scale;
-}
-
 std::shared_ptr<HeightMap> Terrain::GetHeightMap() const {
     return mHeightMap;
 }
 
 float Terrain::GetHeight(const SimpleMath::Vector2& pos, float offset) const {
-    float idxX = pos.x / mScale.x;
-    float idxZ = pos.y / mScale.z;
+    float idxX = (pos.x - mLeftBottom.x) / mTileSize.x;
+    float idxZ = (pos.y - mLeftBottom.y) / mTileSize.y;
 
     float pixel = mHeightMap->GetPixel(idxX, idxZ);
-    return pixel * mScale.y + offset;
+    return pixel * mScaleY + offset;
 }
 
 float Terrain::GetHeight(const SimpleMath::Vector3& pos, float offset) const {
-    float idxX = pos.x / mScale.x;
-    float idxZ = pos.z / mScale.z;
+    float idxX = (pos.x - mLeftBottom.x) / mTileSize.x;
+    float idxZ = (pos.z - mLeftBottom.y) / mTileSize.y;
 
     float pixel = mHeightMap->GetPixel(idxX, idxZ);
-    return pixel * mScale.y + offset;
+    return pixel * mScaleY + offset;
 }
 
 bool Terrain::Contains(const SimpleMath::Vector3& position) {

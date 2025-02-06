@@ -65,5 +65,5 @@ private:
     std::shared_ptr<Transform> mTransform{ };       // Transform
 
     std::shared_ptr<Collider> mCollider{ nullptr }; // collision 
-    std::shared_ptr<class Physics> mPhysics{ };
+    std::shared_ptr<class Physics> mPhysics{ };     // Physics Test
 };

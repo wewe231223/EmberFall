@@ -50,9 +50,11 @@ void PlayScene::EnterPlayer(SessionIdType id) {
     std::shared_ptr<GameObject> obj = std::make_shared<GameObject>();
     obj->InitId(id);
     mPlayers[id] = obj;
+
     obj->MakePhysics();
     obj->MakeCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
     obj->SetColor(SimpleMath::Vector3{ RAND_COLOR, RAND_COLOR, RAND_COLOR });
+
     mCollisionWorld.AddCollisionObject("player", obj);
     mCollisionWorld.AddObjectInTerrainGroup(obj);
     std::cout << std::format("Add player {}\n", id);
@@ -98,7 +100,8 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
             {
                 PacketGameObjCS obj;
                 buffer.Read(obj);
-                mPlayers[obj.id]->GetTransform()->Rotation(obj.rotation);
+                auto player = mPlayers[obj.id];
+                player->GetTransform()->Rotation(obj.rotation); // 공유변수 오류.
             }
         break;
 

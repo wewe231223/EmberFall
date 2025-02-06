@@ -5,7 +5,7 @@
 // Physics Base
 class Physics { 
 public:
-    inline static constexpr float GRAVITY_FACTOR = 100.0f;
+    inline static constexpr float GRAVITY_FACTOR = 10.0f;
 
 public:
     Physics();
