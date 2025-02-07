@@ -29,13 +29,13 @@ void GameObject::UpdateInput(const float deltaTime) {
         moveVec.z += TEMP_SPEED * deltaTime;
     }
 
-    if (Key::DOWN == mKeyState['Q']) {
-        moveVec.y -= TEMP_SPEED * deltaTime;
-    }
+    //if (Key::DOWN == mKeyState['Q']) {
+    //    moveVec.y -= TEMP_SPEED * deltaTime;
+    //}
 
-    if (Key::DOWN == mKeyState['E']) {
-        moveVec.y += TEMP_SPEED * deltaTime;
-    }
+    //if (Key::DOWN == mKeyState['E']) {
+    //    moveVec.y += TEMP_SPEED * deltaTime;
+    //}
 
     if (Key::DOWN == mKeyState[VK_SPACE]) {
         mTransform->Translate(SimpleMath::Vector3{ 0.0f, 30.0f, 0.0f });

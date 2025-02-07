@@ -63,7 +63,7 @@ public:
     bool Contains(const std::shared_ptr<class Collider>& collider, float& height);
 
 private:
-    float mScaleY{ 0.5f };
+    float mScaleY{ 0.0f };
     SimpleMath::Vector2 mMapSize{ };
     SimpleMath::Vector2 mTileSize{ };
     SimpleMath::Vector2 mLeftBottom{ };
