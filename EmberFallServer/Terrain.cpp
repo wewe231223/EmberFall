@@ -23,6 +23,12 @@ HeightMap::HeightMap(std::string_view imageFilePath, size_t imageWidth, size_t i
     mPixels.resize(fileSize / sizeof(PixelType));
     imageFile.read(reinterpret_cast<char*>(mPixels.data()), fileSize);
 
+    for (int z = 0; z < mHeight; ++z) {
+        for (int x = 0; x < mWidth; ++x) {
+            std::swap(mPixels[x + z * mWidth], mPixels[x + (mHeight - z - 1) * mWidth]); // flip
+        }
+    }
+
     std::cout << std::format("Height Map Load Success [File: {}] [Size: {}]\n", imageFilePath, fileSize);
     std::cout << std::format("Height Map Info [Width: {}] [Height: {}]\n", mWidth, mHeight);
 }
@@ -69,7 +75,7 @@ float HeightMap::GetPixel(const float u, const float v) const {
     size_t iu{ static_cast<size_t>(u) };
     size_t iv{ static_cast<size_t>(v) };
 
-    if ((iu >= mWidth - 1 or iu >= mHeight - 1) or (0.0f > u or 0.0f > v)) {
+    if ((iu >= mWidth - 1 or iv >= mHeight - 1) or (0.0f > u or 0.0f > v)) {
         return 0.0f;
     }
 
@@ -164,7 +170,7 @@ bool Terrain::Contains(const std::shared_ptr<Collider>& collider, float& height)
     {
         auto a = std::static_pointer_cast<BoxCollider>(collider);
         auto center = a->GetBoundingBox().Center;
-        height = GetHeight(center, -a->GetBoundingBox().Extents.y);
+        height = GetHeight(center, a->GetBoundingBox().Extents.y);
         return center.y < height;
     }
 
@@ -172,7 +178,7 @@ bool Terrain::Contains(const std::shared_ptr<Collider>& collider, float& height)
     {
         auto a = std::static_pointer_cast<SphereCollider>(collider);
         auto center = a->GetBoundingSphere().Center;
-        height = GetHeight(center, -a->GetBoundingSphere().Radius);
+        height = GetHeight(center, a->GetBoundingSphere().Radius);
         return center.y < height;
         
     }
@@ -181,7 +187,7 @@ bool Terrain::Contains(const std::shared_ptr<Collider>& collider, float& height)
     {
         auto a = std::static_pointer_cast<OrientedBoxCollider>(collider);
         auto center = a->GetBoundingBox().Center;
-        height = GetHeight(center, -a->GetBoundingBox().Extents.y);
+        height = GetHeight(center, a->GetBoundingBox().Extents.y);
         return center.y < height;
     }
 

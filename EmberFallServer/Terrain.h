@@ -42,7 +42,7 @@ private:
 
 class Terrain {
 public:
-    Terrain(std::string_view imageFile, const SimpleMath::Vector2& mapSize = { 257.0f, 257.0f }, size_t imageWidth = 0, size_t imageHeight = 0);
+    Terrain(std::string_view imageFile, const SimpleMath::Vector2& mapSize = { 1000.0f, 1000.0f }, size_t imageWidth = 0, size_t imageHeight = 0);
     Terrain(std::shared_ptr<HeightMap> image, const SimpleMath::Vector3& scale=SimpleMath::Vector3::One);
     ~Terrain();
 
@@ -63,7 +63,7 @@ public:
     bool Contains(const std::shared_ptr<class Collider>& collider, float& height);
 
 private:
-    float mScaleY{ 1.0f };
+    float mScaleY{ 0.5f };
     SimpleMath::Vector2 mMapSize{ };
     SimpleMath::Vector2 mTileSize{ };
     SimpleMath::Vector2 mLeftBottom{ };
