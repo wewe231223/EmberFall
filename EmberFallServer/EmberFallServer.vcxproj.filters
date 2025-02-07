@@ -58,6 +58,9 @@
     <ClCompile Include="Physics.cpp">
       <Filter>Component</Filter>
     </ClCompile>
+    <ClCompile Include="GameObjectComponent.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -91,6 +94,9 @@
       <Filter>Collision</Filter>
     </ClInclude>
     <ClInclude Include="Physics.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjectComponent.h">
       <Filter>Component</Filter>
     </ClInclude>
   </ItemGroup>

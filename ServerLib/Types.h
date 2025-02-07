@@ -7,6 +7,17 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// m/s^2
+#define M_PER_SEC2
+// m/s
+#define M_PER_SEC
+// cm/s
+#define CM_PER_SEC
+// km/s
+#define KM_PER_SEC
+// km/h
+#define KM_PER_HOUR
+
 using SessionIdType = BYTE;
 using PacketSizeType = BYTE;
 using NetworkObjectIdType = size_t;

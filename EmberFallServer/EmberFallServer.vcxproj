@@ -146,6 +146,7 @@
     <ClCompile Include="CollisionWorld.cpp" />
     <ClCompile Include="EmberFallServer.cpp" />
     <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GameObjectComponent.cpp" />
     <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="pch.cpp">
@@ -162,6 +163,7 @@
     <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionWorld.h" />
     <ClInclude Include="GameObject.h" />
+    <ClInclude Include="GameObjectComponent.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="pch.h" />

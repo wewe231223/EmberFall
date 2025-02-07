@@ -27,18 +27,15 @@ Transform& Transform::operator=(Transform&& other) noexcept {
     return *this;
 }
 
-SimpleMath::Vector3 Transform::Forward() const
-{
+SimpleMath::Vector3 Transform::Forward() const {
     return SimpleMath::Vector3();
 }
 
-SimpleMath::Vector3 Transform::Right() const
-{
+SimpleMath::Vector3 Transform::Right() const {
     return SimpleMath::Vector3();
 }
 
-SimpleMath::Vector3 Transform::Up() const
-{
+SimpleMath::Vector3 Transform::Up() const {
     return SimpleMath::Vector3();
 }
 
@@ -67,7 +64,10 @@ void Transform::Translate(const SimpleMath::Vector3& v) {
 }
 
 void Transform::Move(const SimpleMath::Vector3& moveVec) {
-    Translate(SimpleMath::Vector3::Transform(moveVec, mRotation));
+    Translate(SimpleMath::Vector3{ 0.0f, moveVec.y, 0.0f });
+
+    auto xzMove = SimpleMath::Vector3{ moveVec.x, 0.0f, moveVec.z };
+    Translate(SimpleMath::Vector3::Transform(xzMove, mRotation));
 }
 
 void Transform::Rotation(const SimpleMath::Quaternion& quat) {

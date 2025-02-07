@@ -1,50 +1,22 @@
 #include "pch.h"
 #include "GameObject.h"
 #include "Physics.h"
+#include "Input.h"
 
 GameObject::GameObject() 
-    : mTransform{ std::make_shared<Transform>() } { }
+    : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() } {
+    mPhysics->SetTransform(mTransform);
+    mInput = std::make_shared<Input>(mPhysics, mTransform);
+}
 
 GameObject::~GameObject() { }
 
 void GameObject::SetInput(Key key) {
-    mKeyState[key.key] = key.state;
-}
-
-void GameObject::UpdateInput(const float deltaTime) {
-    SimpleMath::Vector3 moveVec{ SimpleMath::Vector3::Zero };
-    if (Key::DOWN == mKeyState['A']) {
-        moveVec.x -= TEMP_SPEED * deltaTime;
-    }
-
-    if (Key::DOWN == mKeyState['D']) {
-        moveVec.x += TEMP_SPEED * deltaTime;
-    }
-
-    if (Key::DOWN == mKeyState['W']) {
-        moveVec.z -= TEMP_SPEED * deltaTime;
-    }
-
-    if (Key::DOWN == mKeyState['S']) {
-        moveVec.z += TEMP_SPEED * deltaTime;
-    }
-
-    //if (Key::DOWN == mKeyState['Q']) {
-    //    moveVec.y -= TEMP_SPEED * deltaTime;
-    //}
-
-    //if (Key::DOWN == mKeyState['E']) {
-    //    moveVec.y += TEMP_SPEED * deltaTime;
-    //}
-
-    if (Key::DOWN == mKeyState[VK_SPACE]) {
-        mTransform->Translate(SimpleMath::Vector3{ 0.0f, 30.0f, 0.0f });
-    }
-
-    mTransform->Move(moveVec);
+    mInput->UpdateInput(key);
 }
 
 void GameObject::Update(const float deltaTime) {
+    mInput->Update(deltaTime);
     mPhysics->Update(deltaTime);
     mTransform->Update();
 
@@ -96,11 +68,6 @@ SimpleMath::Vector3 GameObject::GetColor() const {
     return mColor;
 }
 
-void GameObject::MakePhysics() {
-    mPhysics = std::make_shared<Physics>();
-    mPhysics->SetTransform(mTransform);
-}
-
 void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {
     auto state = mCollider->GetState(opponent->GetId());
     switch (state) {
@@ -129,7 +96,13 @@ void GameObject::OnCollisionEnter(const std::string& groupTag, std::shared_ptr<G
     std::cout << std::format("Collision!!! Group: {}, opponent ID: {}\n", groupTag, opponent->GetId());
 }
 
-void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { }
+void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { 
+    static constexpr float repulsiveForce = 2.0f;
+    SimpleMath::Vector3 repulsiveDir = GetPosition() - opponent->GetPosition();
+    repulsiveDir.Normalize();
+
+    mTransform->Translate(repulsiveDir * repulsiveForce);
+}
 
 void GameObject::OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { 
     std::cout << std::format("Collision End!!! Group: {}, opponent ID: {}\n", groupTag, opponent->GetId());

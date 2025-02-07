@@ -10,7 +10,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "Collider.h"
-#include "Transform.h"
+#include "GameObjectComponent.h"
 
 inline constexpr BYTE MAX_INPUT_STORED = 100;
 inline constexpr float TEMP_SPEED = 20.0f;
@@ -22,7 +22,6 @@ public:
     
 public:
     void SetInput(Key key);
-    void UpdateInput(const float deltaTime);
     void Update(const float deltaTime);
 
     void InitId(NetworkObjectIdType id);
@@ -46,8 +45,6 @@ public:
         mCollider->SetTransform(mTransform);
     }
 
-    void MakePhysics(); // test
-
     void OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
     void OnCollisionTerrain(const float height);
 
@@ -59,11 +56,11 @@ private:
 private:
     SimpleMath::Vector3 mColor{ SimpleMath::Vector3::One }; // for detecting collision
 
-    NetworkObjectIdType mId{ INVALID_SESSION_ID };        // network id
-    std::array<bool, MAX_KEY_SIZE> mKeyState{ };    // input
+    NetworkObjectIdType mId{ INVALID_SESSION_ID };          // network id
+    std::shared_ptr<class Input> mInput{ };                 // input
 
-    std::shared_ptr<Transform> mTransform{ };       // Transform
+    std::shared_ptr<Transform> mTransform{ };               // Transform
 
-    std::shared_ptr<Collider> mCollider{ nullptr }; // collision 
-    std::shared_ptr<class Physics> mPhysics{ };     // Physics Test
+    std::shared_ptr<Collider> mCollider{ nullptr };         // collision 
+    std::shared_ptr<class Physics> mPhysics{ };             // Physics Test
 };

@@ -51,7 +51,6 @@ void PlayScene::EnterPlayer(SessionIdType id) {
     obj->InitId(id);
     mPlayers[id] = obj;
 
-    obj->MakePhysics();
     obj->MakeCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
     obj->GetTransform()->Scale(SimpleMath::Vector3{ 10.0f });
     obj->SetColor(SimpleMath::Vector3{ RAND_COLOR, RAND_COLOR, RAND_COLOR });
@@ -114,10 +113,6 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
 }
 
 void PlayScene::Update(const float deltaTime) { 
-    for (auto& [id, obj] : mPlayers) {
-        obj->UpdateInput(deltaTime);
-    }
-
     for (auto& [id, obj] : mPlayers) {
         obj->Update(deltaTime);
     }
