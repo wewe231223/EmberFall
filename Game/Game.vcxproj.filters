@@ -48,6 +48,9 @@
     <ClCompile Include="Component\Transform.cpp">
       <Filter>Component</Filter>
     </ClCompile>
+    <ClCompile Include="System\SystemManager.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scene\Scene.h">
@@ -76,6 +79,9 @@
     </ClInclude>
     <ClInclude Include="Component\Transform.h">
       <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="System\SystemManager.h">
+      <Filter>System</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

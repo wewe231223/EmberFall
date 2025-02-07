@@ -154,6 +154,7 @@
     <ClCompile Include="System\GameObject.cpp" />
     <ClCompile Include="System\PartIdentifier.cpp" />
     <ClCompile Include="System\PlaneRenderSystem.cpp" />
+    <ClCompile Include="System\SystemManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Component\ComponentBase.h" />
@@ -165,6 +166,7 @@
     <ClInclude Include="System\PartIdentifier.h" />
     <ClInclude Include="System\PlaneRenderSystem.h" />
     <ClInclude Include="System\System.h" />
+    <ClInclude Include="System\SystemManager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

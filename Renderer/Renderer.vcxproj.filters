@@ -22,6 +22,9 @@
     <Filter Include="Shader">
       <UniqueIdentifier>{3cf66ffa-4534-4a2c-8fc4-bcbc1f5f77d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Manager">
+      <UniqueIdentifier>{0ade9b90-ab5d-41b0-a160-6b396c42007e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -33,9 +36,6 @@
     <ClCompile Include="Resource\Texture.cpp">
       <Filter>Resource</Filter>
     </ClCompile>
-    <ClCompile Include="Core\ResourceManager.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
     <ClCompile Include="Resource\DefaultBuffer.cpp">
       <Filter>Resource</Filter>
     </ClCompile>
@@ -45,8 +45,11 @@
     <ClCompile Include="Resource\PlaneMesh.cpp">
       <Filter>Resource</Filter>
     </ClCompile>
-    <ClCompile Include="Resource\PlaneModel.cpp">
+    <ClCompile Include="Resource\Material.cpp">
       <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Manager\MeshRenderManager.cpp">
+      <Filter>Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -59,14 +62,8 @@
     <ClInclude Include="Resource\Texture.h">
       <Filter>Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Core\ResourceManager.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="Resource\DefaultBuffer.h">
       <Filter>Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="Core\Defines.h">
-      <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="core\Shader.h">
       <Filter>Core</Filter>
@@ -74,8 +71,11 @@
     <ClInclude Include="Resource\PlaneMesh.h">
       <Filter>Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\PlaneModel.h">
+    <ClInclude Include="Resource\Material.h">
       <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Manager\MeshRenderManager.h">
+      <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

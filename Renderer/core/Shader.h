@@ -64,7 +64,6 @@ private:
 extern ShaderManager gShaderManager; 
 
 
-// 배치 처리를 어떻게 하지
 class GraphicsShaderBase {
 protected:
 	struct InputLayout {
@@ -85,10 +84,11 @@ public:
 
 	GraphicsShaderBase(GraphicsShaderBase&&) = default;
 	GraphicsShaderBase& operator=(GraphicsShaderBase&&) = default;
-public:
-	virtual void AppendConstantBuffer(ConstantShaderRegister regNo, void* data) {};
-	virtual void AppendShaderResourceBuffer(ShaderResourceRegister regNo, void* data) {};
 
+public:
+	virtual UINT GetShaderID() const; 
+
+	void SetShader(ComPtr<ID3D12GraphicsCommandList> commandList);
 protected:
 	virtual InputLayout CreateInputLayout();
 	virtual D3D12_RASTERIZER_DESC CreateRasterizerState();
@@ -106,9 +106,6 @@ protected:
 	virtual D3D12_SHADER_BYTECODE CreateGeometryShader();
 	virtual D3D12_SHADER_BYTECODE CreateHullShader();
 	virtual D3D12_SHADER_BYTECODE CreateDomainShader();
-
-	virtual void CreateBuffers(ComPtr<ID3D12Device> device) {};
-
 private:
 	ComPtr<ID3D12RootSignature> mRootSignature{};
 	ComPtr<ID3D12PipelineState> mPipelineState{};

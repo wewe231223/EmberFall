@@ -1,4 +1,5 @@
 #pragma once 
+
 #include "../Game/System/PartIdentifier.h"
 #include "../Game/System/GameObject.h"
 
@@ -10,6 +11,6 @@
 struct ISystem abstract {
 	virtual ~ISystem() = default;
 	virtual const PartIdentifier& GetPartIdentifier() const = 0;
-	virtual void Subscribe(ArcheType* archeType) = 0;
-	virtual void Update() = 0;
+	virtual void Update(ArcheType*) = 0;
 };
+

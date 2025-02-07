@@ -14,6 +14,8 @@
 #include "../Utility/Crash.h"
 #include "../EditorInterface/Console/Console.h"
 
+#undef max 
+
 //------------------------------------------------------------------------------------------------[ ShaderManager ]------------------------------------------------------------------------------------------------
 
 ShaderManager::ShaderManager() {
@@ -249,8 +251,6 @@ GraphicsShaderBase::GraphicsShaderBase(ComPtr<ID3D12Device> device) {
 	psoDesc.DSVFormat = CreateDSVFormat();
 
 	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPipelineState)));
-
-	CreateBuffers(device);
 }
 
 GraphicsShaderBase::~GraphicsShaderBase() {
@@ -368,4 +368,13 @@ D3D12_SHADER_BYTECODE GraphicsShaderBase::CreateHullShader() {
 
 D3D12_SHADER_BYTECODE GraphicsShaderBase::CreateDomainShader() {
 	return D3D12_SHADER_BYTECODE();
+}
+
+UINT GraphicsShaderBase::GetShaderID() const {
+	return std::numeric_limits<UINT>::max();
+}
+
+void GraphicsShaderBase::SetShader(ComPtr<ID3D12GraphicsCommandList> commandList) {
+	commandList->SetPipelineState(mPipelineState.Get());
+	commandList->SetGraphicsRootSignature(mRootSignature.Get());
 }

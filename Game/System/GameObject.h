@@ -7,6 +7,10 @@
 #include "../Game/System/PartIdentifier.h"
 #include "../Utility/Defines.h"
 
+#ifdef max 
+#undef max 
+#endif 
+
 class GameObject;
 
 class ArcheType {
