@@ -25,7 +25,11 @@ public:
     void UpdateInput(BYTE key, bool state);
     bool GetState(BYTE key) const;
 
-    void Update(float deltaTime);
+    virtual void Update(float deltaTime) override;
+#ifdef _DEBUG
+    // 디버그용 함수
+    void Update(float deltaTime, SessionIdType id);
+#endif
 
 private:
     std::array<bool, MAX_KEY_SIZE> mKeys{ };

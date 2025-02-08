@@ -16,7 +16,11 @@ void GameObject::SetInput(Key key) {
 }
 
 void GameObject::Update(const float deltaTime) {
+#ifdef _DEBUG 
+    mInput->Update(deltaTime, mId);
+#else
     mInput->Update(deltaTime);
+#endif
     mPhysics->Update(deltaTime);
     mTransform->Update();
 
@@ -37,8 +41,12 @@ SimpleMath::Matrix GameObject::GetWorld() const {
     return mTransform->GetWorld();
 }
 
-std::shared_ptr<Transform> GameObject::GetTransform() {
+std::shared_ptr<Transform> GameObject::GetTransform() const {
     return mTransform;
+}
+
+std::shared_ptr<Physics> GameObject::GetPhysics() const {
+    return mPhysics;
 }
 
 std::shared_ptr<Collider> GameObject::GetCollider() const {
@@ -104,8 +112,19 @@ void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<Ga
     auto obb1 = std::static_pointer_cast<OrientedBoxCollider>(mCollider)->GetBoundingBox();
     auto obb2 = std::static_pointer_cast<OrientedBoxCollider>(opponent->mCollider)->GetBoundingBox();
 
-    auto repulsiveVec = MathUtil::CalcObbRepulsiveVec(obb1, obb2);
-    mTransform->Translate(repulsiveVec * 0.5f);
+    float myMess = mPhysics->mFactor.mess;
+    float opponentMess = opponent->mPhysics->mFactor.mess;
+    // 내가 무거울 수록 덜 밀려나는 구조.
+    float coefficient = opponentMess / (myMess + opponentMess); // 0.0f ~ 1.0f 사이 값.
+    auto repulsiveVec = MathUtil::CalcObbRepulsiveVec(obb1, obb2) * coefficient;
+    if (mPhysics->IsOnGround()) {
+        repulsiveVec.y = 0.0f;
+    }
+    else {
+        repulsiveVec.y /= coefficient; // 땅에 있지 않은 오브젝트는 반발력을 최대로
+    }
+
+    mTransform->Translate(repulsiveVec);
 }
 
 void GameObject::OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { 

@@ -34,16 +34,17 @@ void Physics::SetVelocity(const SimpleMath::Vector3& velocity) {
     mVelocity = velocity;
 }
 
-void Physics::Jump(const float deltaTime, const float jumpForce) {
+void Physics::Jump(const float deltaTime) {
     if (false == IsOnGround()) {
         return;
     }
 
-    mVelocity.y = jumpForce / DEFAULT_MESS * deltaTime; // v = F / mess * time (m/s)
+    mOnGround = false;
+    mVelocity.y = mFactor.jumpForce / mFactor.mess * deltaTime; // v = F / mess * time (m/s)
 }
 
 float Physics::GetMaxMoveSpeed() const {
-    return mMoveSpeedMax;
+    return mFactor.maxMoveSpeed;
 }
 
 void Physics::AddVelocity(const SimpleMath::Vector3& speed) {

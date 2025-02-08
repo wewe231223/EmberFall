@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "Collider.h"
 #include "Terrain.h"
+#include "Physics.h"
 
 CollisionWorld::CollisionWorld() { }
 
@@ -103,10 +104,15 @@ void CollisionWorld::HandleCollision() {
 
 void CollisionWorld::HandleTerrainCollision() {
     float terrainHeight{ };
+    bool onGround{ false };
     for (auto& object : mCollisionTerrainList) {
+        onGround = false;
         if (mTerrain->Contains(object->GetCollider(), terrainHeight)) {
+            onGround = true;
             object->OnCollisionTerrain(terrainHeight);
         }
+
+        object->GetPhysics()->SetOnGround(onGround);
     }
 }
 

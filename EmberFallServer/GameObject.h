@@ -27,7 +27,8 @@ public:
     void InitId(NetworkObjectIdType id);
     NetworkObjectIdType GetId() const;
 
-    std::shared_ptr<Transform> GetTransform();
+    std::shared_ptr<Transform> GetTransform() const;
+    std::shared_ptr<Physics> GetPhysics() const;
     std::shared_ptr<Collider> GetCollider() const;
 
     SimpleMath::Vector3 GetPosition() const;
