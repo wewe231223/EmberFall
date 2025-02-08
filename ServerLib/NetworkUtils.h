@@ -195,7 +195,7 @@ namespace MathUtil {
             auto range2 = GetProjectionRange(b2Points, axis);
 
             auto overlap = ::fabs(range1.max - range2.min);
-            if (overlap < minRange) {
+            if (overlap < minRange and false == MathUtil::IsZero(overlap)) {
                 shortestAxis = axis;
                 minRange = overlap;
             }
@@ -206,7 +206,7 @@ namespace MathUtil {
             auto range2 = GetProjectionRange(b2Points, axis);
 
             auto overlap = ::fabs(range1.max - range2.min);
-            if (overlap < minRange) {
+            if (overlap < minRange and false == MathUtil::IsZero(overlap)) {
                 shortestAxis = axis;
                 minRange = overlap;
             }
@@ -221,7 +221,7 @@ namespace MathUtil {
                 auto range2 = GetProjectionRange(b2Points, axis);
 
                 auto overlap = ::fabs(range1.max - range2.min);
-                if (overlap < minRange) {
+                if (overlap < minRange and false == MathUtil::IsZero(overlap)) {
                     shortestAxis = axis;
                     minRange = overlap;
                 }
