@@ -13,6 +13,7 @@ class DefaultBuffer {
 public:
 	DefaultBuffer() = default;
 	DefaultBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, size_t size, void* initialData = nullptr);
+	DefaultBuffer(ComPtr<ID3D12Device> device, size_t size);
 	~DefaultBuffer();
 
 	DefaultBuffer(const DefaultBuffer& other) = delete;
@@ -24,11 +25,14 @@ public:
 public:
 	bool Empty() const; 
 	void Copy(ComPtr<ID3D12GraphicsCommandList> commandList, void* data, std::ptrdiff_t begin = 0, std::ptrdiff_t end = 0);
+	void AccumulateData(ComPtr<ID3D12GraphicsCommandList> commandList, void* data, size_t size);
+	void ResetAccumulation();
 private:
 	ComPtr<ID3D12Resource> mBuffer{ nullptr };
 	ComPtr<ID3D12Resource> mUploadBuffer{ nullptr };
 
-	void* mBufferPtr{ nullptr };
+	BYTE* mBufferPtr{ nullptr };
+	BYTE* mAccumulationPtr{ nullptr };
 
 	size_t mSize{ 0 };
 };

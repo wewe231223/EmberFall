@@ -152,7 +152,7 @@
     </ClCompile>
     <ClCompile Include="Resource\DefaultBuffer.cpp" />
     <ClCompile Include="Resource\Material.cpp" />
-    <ClCompile Include="Resource\PlaneMesh.cpp" />
+    <ClCompile Include="Resource\PlainMesh.cpp" />
     <ClCompile Include="Resource\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -162,7 +162,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource\DefaultBuffer.h" />
     <ClInclude Include="Resource\Material.h" />
-    <ClInclude Include="Resource\PlaneMesh.h" />
+    <ClInclude Include="Resource\PlainMesh.h" />
     <ClInclude Include="Resource\Texture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,13 +1,13 @@
 #include "pch.h"
-#include "PlaneMesh.h"
+#include "PlainMesh.h"
 
-PlaneMesh::PlaneMesh() {
+PlainMesh::PlainMesh() {
 }
 
-PlaneMesh::~PlaneMesh() {
+PlainMesh::~PlainMesh() {
 }
 
-PlaneMesh::PlaneMesh(PlaneMesh&& other) noexcept {
+PlainMesh::PlainMesh(PlainMesh&& other) noexcept {
 	if (this != &other) {
 		mVertexBuffers = std::move(other.mVertexBuffers);
 		mIndexBuffer = std::move(other.mIndexBuffer);
@@ -18,7 +18,7 @@ PlaneMesh::PlaneMesh(PlaneMesh&& other) noexcept {
 	}
 }
 
-PlaneMesh& PlaneMesh::operator=(PlaneMesh&& other) noexcept {
+PlainMesh& PlainMesh::operator=(PlainMesh&& other) noexcept {
 	if (this != &other) {
 		mVertexBuffers = std::move(other.mVertexBuffers);
 		mIndexBuffer = std::move(other.mIndexBuffer);
@@ -30,7 +30,7 @@ PlaneMesh& PlaneMesh::operator=(PlaneMesh&& other) noexcept {
 	return *this;
 }
 
-void PlaneMesh::Bind(ComPtr<ID3D12GraphicsCommandList> commandList) const {
+void PlainMesh::Bind(ComPtr<ID3D12GraphicsCommandList> commandList) const {
 	commandList->IASetPrimitiveTopology(mPrimitiveTopology);
 	commandList->IASetVertexBuffers(0,static_cast<UINT>(mVertexBufferViews.size()), mVertexBufferViews.data());
 	if (mIndexed) {
@@ -38,6 +38,10 @@ void PlaneMesh::Bind(ComPtr<ID3D12GraphicsCommandList> commandList) const {
 	}
 }
 
-UINT PlaneMesh::GetUnitCount() const {
+bool PlainMesh::GetIndexed() const {
+	return mIndexed;
+}
+
+UINT PlainMesh::GetUnitCount() const {
 	return mUnitCount;
 }

@@ -42,7 +42,7 @@
     <ClCompile Include="core\Shader.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Resource\PlaneMesh.cpp">
+    <ClCompile Include="Resource\PlainMesh.cpp">
       <Filter>Resource</Filter>
     </ClCompile>
     <ClCompile Include="Resource\Material.cpp">
@@ -68,7 +68,7 @@
     <ClInclude Include="core\Shader.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\PlaneMesh.h">
+    <ClInclude Include="Resource\PlainMesh.h">
       <Filter>Resource</Filter>
     </ClInclude>
     <ClInclude Include="Resource\Material.h">

@@ -1,19 +1,20 @@
 #pragma once 
 #include "Resource/DefaultBuffer.h"
 
-class PlaneMesh {
+class PlainMesh {
 public:
-	PlaneMesh(); 
-	~PlaneMesh();
+	PlainMesh(); 
+	~PlainMesh();
 	// Other Ctors... 
 
-	PlaneMesh(const PlaneMesh& other) = delete;
-	PlaneMesh& operator=(const PlaneMesh& other) = delete;
+	PlainMesh(const PlainMesh& other) = delete;
+	PlainMesh& operator=(const PlainMesh& other) = delete;
 
-	PlaneMesh(PlaneMesh&& other) noexcept;
-	PlaneMesh& operator=(PlaneMesh&& other) noexcept;
+	PlainMesh(PlainMesh&& other) noexcept;
+	PlainMesh& operator=(PlainMesh&& other) noexcept;
 public:
 	void Bind(ComPtr<ID3D12GraphicsCommandList> commandList) const;
+	bool GetIndexed() const;
 	UINT GetUnitCount() const; 
 private:
 	std::vector<DefaultBuffer> mVertexBuffers{};
