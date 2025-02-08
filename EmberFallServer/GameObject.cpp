@@ -97,11 +97,15 @@ void GameObject::OnCollisionEnter(const std::string& groupTag, std::shared_ptr<G
 }
 
 void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { 
-    static constexpr float repulsiveForce = 2.0f;
-    SimpleMath::Vector3 repulsiveDir = GetPosition() - opponent->GetPosition();
-    repulsiveDir.Normalize();
+    if (ColliderType::ORIENTED_BOX != mCollider->GetType()) {
+        return;
+    }
 
-    mTransform->Translate(repulsiveDir * repulsiveForce);
+    auto obb1 = std::static_pointer_cast<OrientedBoxCollider>(mCollider)->GetBoundingBox();
+    auto obb2 = std::static_pointer_cast<OrientedBoxCollider>(opponent->mCollider)->GetBoundingBox();
+
+    auto repulsiveVec = MathUtil::CalcObbRepulsiveVec(obb1, obb2);
+    mTransform->Translate(repulsiveVec * 0.5f);
 }
 
 void GameObject::OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { 

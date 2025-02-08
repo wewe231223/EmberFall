@@ -26,29 +26,29 @@ void Input::Update(float deltaTime) {
         return;
     }
     
-    SimpleMath::Vector3 moveVec{ SimpleMath::Vector3::Zero };
+    SimpleMath::Vector3 moveDir{ SimpleMath::Vector3::Zero };
     if (Key::DOWN == mKeys['A']) {
-        moveVec.x -= 1.0f;
+        moveDir.x -= 1.0f;
     }
 
     if (Key::DOWN == mKeys['D']) {
-        moveVec.x += 1.0f;
+        moveDir.x += 1.0f;
     }
 
     if (Key::DOWN == mKeys['W']) {
-        moveVec.z -= 1.0f;
+        moveDir.z -= 1.0f;
     }
 
     if (Key::DOWN == mKeys['S']) {
-        moveVec.z += 1.0f;
+        moveDir.z += 1.0f;
     }
 
     if (Key::DOWN == mKeys[VK_SPACE]) {
-        physics->Jump();
+        physics->Jump(deltaTime);
     }
 
-    moveVec.Normalize();
-    moveVec *= physics->GetMoveSpeed();
+    moveDir.Normalize();
+    auto velocity = moveDir * physics->GetMaxMoveSpeed();
     
-    physics->SetSpeed(moveVec);
+    physics->SetMoveVelocity(velocity);
 }

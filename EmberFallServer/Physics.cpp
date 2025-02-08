@@ -5,24 +5,49 @@ Physics::Physics() { }
 
 Physics::~Physics() { }
 
-void Physics::SetTransform(const std::shared_ptr<Transform>& transform) { 
+bool Physics::IsMoving() const {
+    return false == MathUtil::IsVectorZero(mVelocity);
+}
+
+bool Physics::IsMovingXZ() const {
+    SimpleMath::Vector3 xzVelocity{ mVelocity.x, 0.0f, mVelocity.z };
+    return false == MathUtil::IsVectorZero(mVelocity);
+}
+
+bool Physics::IsOnGround() const {
+    return mOnGround;
+}
+
+void Physics::SetOnGround(bool state) {
+    mOnGround = state;
+}
+
+void Physics::SetTransform(const std::shared_ptr<Transform>& transform) {
     mTransform = transform;
 }
 
-void Physics::SetSpeed(const SimpleMath::Vector3& speed) {
-    mSpeed = speed;
+void Physics::SetMoveVelocity(const SimpleMath::Vector3& moveVel) {
+    mMoveVelocity = moveVel;
 }
 
-void Physics::Jump() {
-    mSpeed.y = mJumpSpeed;
+void Physics::SetVelocity(const SimpleMath::Vector3& velocity) {
+    mVelocity = velocity;
 }
 
-float Physics::GetMoveSpeed() const {
-    return mMoveSpeed;
+void Physics::Jump(const float deltaTime, const float jumpForce) {
+    if (false == IsOnGround()) {
+        return;
+    }
+
+    mVelocity.y = jumpForce / DEFAULT_MESS * deltaTime; // v = F / mess * time (m/s)
 }
 
-void Physics::AddSpeed(const SimpleMath::Vector3& speed) {
-    mSpeed += speed;
+float Physics::GetMaxMoveSpeed() const {
+    return mMoveSpeedMax;
+}
+
+void Physics::AddVelocity(const SimpleMath::Vector3& speed) {
+    mVelocity += speed;
 }
 
 void Physics::Update(const float deltaTime) {
@@ -30,7 +55,18 @@ void Physics::Update(const float deltaTime) {
         return;
     }
 
-    auto gravity = SimpleMath::Vector3{ 0.0f, -DEFAULT_MESS * GRAVITY_FACTOR * deltaTime, 0.0f };
-    mSpeed += gravity;
-    mTransform.lock()->Move(mSpeed * deltaTime);
+    UpdateGravity(deltaTime);   // 중력 적용
+    // 입력으로 인해 생기는 이동속도 추가
+    mTransform.lock()->Move(mMoveVelocity * deltaTime);
+    mTransform.lock()->Move(mVelocity * deltaTime);
+}
+
+void Physics::UpdateGravity(const float deltaTime) {
+    if (IsOnGround()) {
+        mVelocity.y = 0.0f;
+        return;
+    }
+
+    auto speed = GRAVITY_FACTOR * deltaTime; // m/s
+    mVelocity.y -= speed;
 }
