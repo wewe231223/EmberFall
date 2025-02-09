@@ -29,6 +29,10 @@ void GameObject::Update(const float deltaTime) {
     }
 }
 
+bool GameObject::IsActive() const {
+    return true == mActive;
+}
+
 void GameObject::InitId(NetworkObjectIdType id) {
     mId = id;
 }

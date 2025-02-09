@@ -13,8 +13,7 @@
 // 
 //                      여러개의 물리 세계를 생성하는 것은 제한하지 않으나 복사, 이동은 제한
 // 
-//                      충돌 처리는 각 그룹을 순회하면서 그룹 내의 모든 오브젝트에 대해 충돌처리를 수행함
-//                      
+//                      충돌 처리는 각 그룹을 순회하면서 그룹 내의 모든 오브젝트에 대해 충돌처리를 수행함           
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -57,6 +56,7 @@ private:
 
 private:
     std::shared_ptr<Terrain> mTerrain{ };
+    std::shared_ptr<GameObject> mPlayer{ };
     CollisionList mCollisionTerrainList{ };
     CollisionMap mCollisionWorld{ };
 };

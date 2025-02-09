@@ -283,3 +283,5 @@ RecvBuf::iterator Session::ValidatePackets(RecvBuf::iterator iter, RecvBuf::iter
 
     return it;
 }
+
+void Session::OnConnect() { }

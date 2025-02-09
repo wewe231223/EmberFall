@@ -49,6 +49,8 @@ PlayScene::~PlayScene() { }
 void PlayScene::EnterPlayer(SessionIdType id) {
     std::shared_ptr<GameObject> obj = std::make_shared<GameObject>();
     obj->InitId(id);
+
+    Lock::SRWLockGuard playerGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mPlayerLock };
     mPlayers[id] = obj;
 
     obj->MakeCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
@@ -63,6 +65,7 @@ void PlayScene::EnterPlayer(SessionIdType id) {
 void PlayScene::ExitPlayer(SessionIdType id) {
     auto it = mPlayers.find(id);
     if (it != mPlayers.end()) {
+        Lock::SRWLockGuard playerGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mPlayerLock };
         std::cout << std::format("Erase player {}\n", id);
         mCollisionWorld.RemoveObjectFromGroup("player", it->second);
         mCollisionWorld.RemoveObjectFromTerrainGroup(it->second);
@@ -84,6 +87,7 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
     }
 
     PacketHeader header{ };
+    Lock::SRWLockGuard playerGuard{ Lock::SRWLockMode::SRW_SHARED, mPlayerLock };
     while (not buffer.IsReadEnd()) {
         buffer.Read(header);
         
@@ -92,16 +96,23 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
             {
                 PacketInput input;  
                 buffer.Read(input);
+                
+                if (not mPlayers.contains(header.id)) {
+                    break;
+                }
                 mPlayers[input.id]->SetInput(input.key);
             }
             break;
 
-        case PacketType::PT_GAMEOBJ_CS:
+        case PacketType::PT_PLAYER_INFO_CS:
             {
-                PacketGameObjCS obj;
+                PacketPlayerInfoCS obj;
                 buffer.Read(obj);
-                auto player = mPlayers[obj.id];
-                player->GetTransform()->Rotation(obj.rotation); // 공유변수 오류.
+
+                if (not mPlayers.contains(header.id)) {
+                    break;
+                }
+                mPlayers[obj.id]->GetTransform()->Rotation(obj.rotation); // 공유변수 오류.
             }
         break;
 
@@ -112,10 +123,12 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
     }
 }
 
-void PlayScene::Update(const float deltaTime) { 
+void PlayScene::Update(const float deltaTime) {
+    mPlayerLock.ReadLock();
     for (auto& [id, obj] : mPlayers) {
         obj->Update(deltaTime);
     }
+    mPlayerLock.ReadUnlock();
 
     mCollisionWorld.HandleCollision();
 
@@ -124,13 +137,28 @@ void PlayScene::Update(const float deltaTime) {
 
 void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) {
     auto sessionManager = serverCore->GetSessionManager();
-    PacketGameObj objPacket{ sizeof(PacketGameObj), PacketType::PT_GAMEOBJ_SC, 0 };
-    for (auto& [id, obj] : mPlayers) { // lock 은 안걸고 일단 보내보자 어짜피 connect 상태가 아니라면 send는 실패할것
-        objPacket.id = id;
+
+    PacketPlayerInfoSC playerPacket{ sizeof(PacketPlayerInfoSC), PacketType::PT_PLAYER_INFO_SC };
+    mPlayerLock.ReadLock();
+    for (auto& [id, player] : mPlayers) {
+        playerPacket.id = id;
+        playerPacket.color = player->GetColor();
+        playerPacket.position = player->GetPosition();
+        playerPacket.rotation = player->GetRotation();
+        playerPacket.scale = player->GetScale();
+        sessionManager->SendAll(&playerPacket);
+    }
+    mPlayerLock.ReadUnlock();
+
+    PacketGameObject objPacket{ sizeof(PacketGameObject), PacketType::PT_GAME_OBJECT_SC };
+    for (size_t id{ 0 }; auto & obj : mObjects) {
+        objPacket.objectId = id;
         objPacket.color = obj->GetColor();
         objPacket.position = obj->GetPosition();
         objPacket.rotation = obj->GetRotation();
         objPacket.scale = obj->GetScale();
         sessionManager->SendAll(&objPacket);
+
+        ++id;
     }
 }

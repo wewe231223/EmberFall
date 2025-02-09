@@ -26,25 +26,14 @@ void Physics::SetTransform(const std::shared_ptr<Transform>& transform) {
     mTransform = transform;
 }
 
-void Physics::SetMoveVelocity(const SimpleMath::Vector3& moveVel) {
-    mMoveVelocity = moveVel;
-}
-
-void Physics::SetVelocity(const SimpleMath::Vector3& velocity) {
-    mVelocity = velocity;
-}
-
 void Physics::Jump(const float deltaTime) {
     if (false == IsOnGround()) {
         return;
     }
 
     mOnGround = false;
+    mJumpForce = mFactor.jumpForce;
     mVelocity.y = mFactor.jumpForce / mFactor.mess * deltaTime; // v = F / mess * time (m/s)
-}
-
-float Physics::GetMaxMoveSpeed() const {
-    return mFactor.maxMoveSpeed;
 }
 
 void Physics::AddVelocity(const SimpleMath::Vector3& speed) {
@@ -56,18 +45,23 @@ void Physics::Update(const float deltaTime) {
         return;
     }
 
+    auto transform = mTransform.lock();
     UpdateGravity(deltaTime);   // 중력 적용
-    // 입력으로 인해 생기는 이동속도 추가
-    mTransform.lock()->Move(mMoveVelocity * deltaTime);
-    mTransform.lock()->Move(mVelocity * deltaTime);
+
+    transform->Move(mVelocity * deltaTime);
+
+    ResetVelocity();
+}
+
+void Physics::ResetVelocity() {
+    mVelocity = SimpleMath::Vector3::Zero;
 }
 
 void Physics::UpdateGravity(const float deltaTime) {
     if (IsOnGround()) {
-        mVelocity.y = 0.0f;
-        return;
+        mJumpForce = 0.0f;
     }
 
-    auto speed = GRAVITY_FACTOR * deltaTime; // m/s
-    mVelocity.y -= speed;
+    mJumpForce -= mFactor.mess * GRAVITY_FACTOR; // kg * m / s^2
+    mVelocity.y += mJumpForce / mFactor.mess * deltaTime;
 }

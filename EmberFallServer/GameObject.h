@@ -5,6 +5,9 @@
 // GameObject.h
 // 
 // 2025 - 02 - 02 김성준 : GameObject
+// 
+//                      : Player가 Session을 상속하도록 하면 더이상 ID는 필요 X
+//                      : GameObject 동기화또한 고정배열에서의 인덱스를 ID로 사용하게 할것.
 //                  
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,6 +27,7 @@ public:
     void SetInput(Key key);
     void Update(const float deltaTime);
 
+    bool IsActive() const;
     void InitId(NetworkObjectIdType id);
     NetworkObjectIdType GetId() const;
 
@@ -55,6 +59,8 @@ private:
     void OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
 
 private:
+    bool mActive{ true };
+
     SimpleMath::Vector3 mColor{ SimpleMath::Vector3::One }; // for detecting collision
 
     NetworkObjectIdType mId{ INVALID_SESSION_ID };          // network id

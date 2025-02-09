@@ -52,9 +52,9 @@ void Input::Update(float deltaTime) {
     }
 
     moveDir.Normalize();
-    auto velocity = moveDir * physics->GetMaxMoveSpeed();
+    auto velocity = moveDir * physics->mFactor.maxMoveSpeed;
 
-    physics->SetMoveVelocity(velocity);
+    physics->AddVelocity(velocity);
 }
 
 #ifdef _DEBUG
@@ -91,8 +91,8 @@ void Input::Update(float deltaTime, SessionIdType id) {
     }
 
     moveDir.Normalize();
-    auto velocity = moveDir * physics->GetMaxMoveSpeed();
-    
-    physics->SetMoveVelocity(velocity);
+    auto velocity = moveDir * physics->mFactor.maxMoveSpeed;
+
+    physics->AddVelocity(velocity);
 }
 #endif

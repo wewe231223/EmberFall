@@ -67,6 +67,9 @@
     <ClCompile Include="MemoryPool.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="ObjectPool.cpp">
+      <Filter>Pch</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkUtils.h">
@@ -118,6 +121,9 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
+      <Filter>Pch</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectPool.h">
       <Filter>Pch</Filter>
     </ClInclude>
   </ItemGroup>

@@ -11,6 +11,7 @@ struct PhysicsFactor {
     float mess{ DEFAULT_MESS };
     float jumpForce{ mess * 300.f };
     float maxMoveSpeed{ DEFAULT_MAX_MOVE_SPEED };
+    float friction{ 0.9f };
 };
 
 // Physics Base
@@ -26,17 +27,14 @@ public:
     bool IsOnGround() const;
     bool IsMoving() const;
     bool IsMovingXZ() const;
-    float GetMaxMoveSpeed() const;
-
-    void SetMoveVelocity(const SimpleMath::Vector3& moveVel);
-    void SetVelocity(const SimpleMath::Vector3& velocity);
 
     void Jump(const float deltaTime);
 
     void AddVelocity(const SimpleMath::Vector3& velocity);
-    void Update(const float deltaTime);
+    virtual void Update(const float deltaTime);
 
 private:
+    void ResetVelocity();
     void UpdateGravity(const float deltaTime);
 
 public:
@@ -44,8 +42,8 @@ public:
 
 private:
     bool mOnGround{ true };
+    float mJumpForce{ };
 
-    SimpleMath::Vector3 mMoveVelocity{ SimpleMath::Vector3::Zero };
     SimpleMath::Vector3 mVelocity{ SimpleMath::Vector3::Zero };
     std::weak_ptr<Transform> mTransform{ };
 };
