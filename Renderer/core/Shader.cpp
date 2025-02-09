@@ -18,7 +18,7 @@
 
 //------------------------------------------------------------------------------------------------[ ShaderManager ]------------------------------------------------------------------------------------------------
 
-ShaderManager::ShaderManager() {
+ShaderFileManager::ShaderFileManager() {
 	std::ifstream metadataFile{ SHADER_METADATA_PATH };
 	CrashExp(metadataFile.is_open(), "File not found");
 
@@ -54,19 +54,19 @@ ShaderManager::ShaderManager() {
 			}
 		}
 
-		ShaderManager::ProcessShader( "Shader/Sources/" + source, shaderInfo, includes);
+		ShaderFileManager::ProcessShader( "Shader/Sources/" + source, shaderInfo, includes);
 	}
 }
 
-ComPtr<ID3D12Blob>& ShaderManager::GetShaderBlob(const std::string& name, ShaderType type) {
+ComPtr<ID3D12Blob>& ShaderFileManager::GetShaderBlob(const std::string& name, ShaderType type) {
 	return mShaderBlobs[name][type];
 }
 
-std::array<ComPtr<ID3D12Blob>, ShaderType::END>& ShaderManager::GetShaderBlobs(const std::string& name) {
+std::array<ComPtr<ID3D12Blob>, ShaderType::END>& ShaderFileManager::GetShaderBlobs(const std::string& name) {
 	return mShaderBlobs[name];
 }
 
-void ShaderManager::ProcessShader(const std::filesystem::path& source, const std::vector<std::tuple<std::string, std::string, std::string>>& shaderInfo, const std::vector<std::filesystem::path>& includes) {
+void ShaderFileManager::ProcessShader(const std::filesystem::path& source, const std::vector<std::tuple<std::string, std::string, std::string>>& shaderInfo, const std::vector<std::filesystem::path>& includes) {
 	static std::filesystem::path binPath{ "Shader/Binarys/" };
 
 	if (not std::filesystem::exists(source)) {
@@ -97,7 +97,7 @@ void ShaderManager::ProcessShader(const std::filesystem::path& source, const std
 	if (firstBinaryPath.empty() or std::filesystem::last_write_time(firstBinaryPath) <= lastSourceWriteTime) {
 		// 재 컴파일 이후 바이너리 파일에 쓰고 맵에 등록까지 완료 
 		for (const auto& [type, model, entry] : shaderInfo) {
-			ShaderManager::ReCompile(source, type, model, entry);
+			ShaderFileManager::ReCompile(source, type, model, entry);
 		} 
 	}
 	else {
@@ -106,7 +106,7 @@ void ShaderManager::ProcessShader(const std::filesystem::path& source, const std
 			std::filesystem::path binaryPath{ binPath / binaryFileName };
 
 			ComPtr<ID3D12Blob> shaderBlob{};
-			ShaderManager::Load(shaderBlob, binaryPath);
+			ShaderFileManager::Load(shaderBlob, binaryPath);
 
 			ShaderType eType{};
 
@@ -135,7 +135,7 @@ void ShaderManager::ProcessShader(const std::filesystem::path& source, const std
 
 }
 
-void ShaderManager::ReCompile(const std::filesystem::path& source, const std::string& type, const std::string& model, const std::string& entry) {
+void ShaderFileManager::ReCompile(const std::filesystem::path& source, const std::string& type, const std::string& model, const std::string& entry) {
 	Console.Log("Compiling shader : {}", LogType::Info, source.string());
 
 	ComPtr<ID3D12Blob> shaderBlob{};
@@ -160,7 +160,7 @@ void ShaderManager::ReCompile(const std::filesystem::path& source, const std::st
 			shaderBlob->Release();
 		}
 
-		ShaderManager::Load(shaderBlob, binaryPath);
+		ShaderFileManager::Load(shaderBlob, binaryPath);
 	}
 	
 	ShaderType eType{};
@@ -187,7 +187,7 @@ void ShaderManager::ReCompile(const std::filesystem::path& source, const std::st
 	mShaderBlobs[source.stem().string()][eType] = shaderBlob;
 }
 
-void ShaderManager::Load(ComPtr<ID3D12Blob>& blob, const std::filesystem::path& path) {
+void ShaderFileManager::Load(ComPtr<ID3D12Blob>& blob, const std::filesystem::path& path) {
 	auto size = std::filesystem::file_size(path);
 
 	::D3DCreateBlob(size, blob.GetAddressOf());
@@ -196,7 +196,7 @@ void ShaderManager::Load(ComPtr<ID3D12Blob>& blob, const std::filesystem::path& 
 	file.read(static_cast<char*>(blob->GetBufferPointer()), size);
 }
 
-ShaderManager gShaderManager{};
+ShaderFileManager gShaderManager{};
 
 //------------------------------------------------------------------------------------------------[ ShaderManager ]------------------------------------------------------------------------------------------------
 

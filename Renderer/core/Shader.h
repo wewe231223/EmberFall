@@ -13,40 +13,17 @@ enum ShaderType : BYTE {
 	END,
 };
 
-enum class ConstantShaderRegister : WORD {
-	NONE = 0xFF'FF,
-	c0 = 0,
-	c1,
-	c2,
-	c3,
-	c4,
-	c5,
-	END
-};
-
-enum class ShaderResourceRegister : WORD {
-	NONE = 0xFF'FF,
-	t0 = 0,
-	t1,
-	t2,
-	t3,
-	t4,
-	t5,
-	END
-};
-
-
-class ShaderManager {
+class ShaderFileManager {
 	constexpr static const char* SHADER_METADATA_PATH = "Shader/ShaderMetadata.txt";
 public:
-	ShaderManager(); 
-	~ShaderManager() = default; 
+	ShaderFileManager(); 
+	~ShaderFileManager() = default; 
 
-	ShaderManager(const ShaderManager&) = delete;
-	ShaderManager& operator=(const ShaderManager&) = delete;
+	ShaderFileManager(const ShaderFileManager&) = delete;
+	ShaderFileManager& operator=(const ShaderFileManager&) = delete;
 
-	ShaderManager(ShaderManager&&) = delete;
-	ShaderManager& operator=(ShaderManager&&) = delete;
+	ShaderFileManager(ShaderFileManager&&) = delete;
+	ShaderFileManager& operator=(ShaderFileManager&&) = delete;
 public:
 	void Test() {}
 	
@@ -61,7 +38,7 @@ private:
 	std::unordered_map<std::string,std::array<ComPtr<ID3D12Blob>, ShaderType::END>> mShaderBlobs{};
 };
 
-extern ShaderManager gShaderManager; 
+extern ShaderFileManager gShaderManager; 
 
 
 class GraphicsShaderBase {
@@ -87,7 +64,6 @@ public:
 
 public:
 	virtual UINT GetShaderID() const; 
-
 	void SetShader(ComPtr<ID3D12GraphicsCommandList> commandList);
 protected:
 	virtual InputLayout CreateInputLayout();
