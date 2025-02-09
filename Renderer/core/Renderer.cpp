@@ -8,6 +8,7 @@
 #include "../EditorInterface/Console/Console.h"
 #include "../Utility/Serializer.h"
 #include "../Renderer/core/Shader.h"
+#include "../Manager/MeshRenderManager.h"
 
 struct Renderer::DirectXImpl {
 	ComPtr<IDXGIFactory6> mFactory{ nullptr };
@@ -34,6 +35,8 @@ struct Renderer::DirectXImpl {
 
 	ComPtr<ID3D12DescriptorHeap> mDSHeap{ nullptr };
 	Texture mDepthStencilBuffer{};
+
+	MeshRenderManager mMeshRenderManager{};
 };
 
 Renderer::Renderer(HWND rendererWindowHandle) 
@@ -51,6 +54,8 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitCommandList();
 	Renderer::InitRenderTargets();
 	Renderer::InitDepthStencilBuffer();
+
+	mDirectXImpl->mMeshRenderManager = MeshRenderManager(mDirectXImpl->mDevice);
 
 	Renderer::FlushCommandQueue();
 
