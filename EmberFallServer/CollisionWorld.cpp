@@ -65,20 +65,22 @@ void CollisionWorld::RemoveObjectFromGroup(const std::string& groupTag, std::sha
     }
 
     if (false == Contains(groupTag)) {
-        mCollisionWorld[groupTag] = CollisionPair{ };
+        return;
     }
 
     CollisionList& firstList = mCollisionWorld[groupTag].first;
     auto objSearch = std::find(firstList.begin(), firstList.end(), obj);
     if (objSearch != firstList.end()) {
-        std::erase(firstList, *objSearch);
+        std::swap(*objSearch, firstList.back());
+        firstList.pop_back();
         return;
     }
 
     CollisionList& secondList = mCollisionWorld[groupTag].second;
     objSearch = std::find(secondList.begin(), secondList.end(), obj);
     if (objSearch != secondList.end()) {
-        std::erase(secondList, *objSearch);
+        std::swap(*objSearch, secondList.back());
+        secondList.pop_back();
         return;
     }
 }

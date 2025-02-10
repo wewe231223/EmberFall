@@ -13,7 +13,11 @@
 // 
 //                      여러개의 물리 세계를 생성하는 것은 제한하지 않으나 복사, 이동은 제한
 // 
-//                      충돌 처리는 각 그룹을 순회하면서 그룹 내의 모든 오브젝트에 대해 충돌처리를 수행함           
+//                      충돌 처리는 각 그룹을 순회하면서 그룹 내의 모든 오브젝트에 대해 충돌처리를 수행함         
+// 
+//         02 - 09 :  지금은 공유변수 문제가 일어나지 않지만 충분히 일어날 만 하다.
+//                    Player를 지우는 부분은 다른 쓰레드에서 일어나므로 Lock을 걸어야한다.
+//                    Player는 그냥 따로 관리하는 걸로 하자.
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -23,7 +27,6 @@ class Terrain;
 using CollisionList = std::vector<std::shared_ptr<GameObject>>;
 using CollisionPair = std::pair<CollisionList, CollisionList>;
 using CollisionMap = std::unordered_map<std::string, CollisionPair>;
-using GroupMap = std::vector<std::string>;
 
 class CollisionWorld {
 public:
@@ -46,6 +49,7 @@ public:
     void AddCollisionObject(const std::string& groupTag, std::shared_ptr<GameObject> obj);
     void RemoveObjectFromGroup(const std::string& groupTag, std::shared_ptr<GameObject> obj);
     void RemoveObjectFromTerrainGroup(std::shared_ptr<GameObject> obj);
+
     void HandleCollision();
     void HandleTerrainCollision();
 
@@ -56,7 +60,7 @@ private:
 
 private:
     std::shared_ptr<Terrain> mTerrain{ };
-    std::shared_ptr<GameObject> mPlayer{ };
+    CollisionList mPlayers{ };
     CollisionList mCollisionTerrainList{ };
     CollisionMap mCollisionWorld{ };
 };

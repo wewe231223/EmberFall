@@ -48,13 +48,15 @@ void Input::Update(float deltaTime) {
     }
 
     if (Key::DOWN == mKeys[VK_F1]) {
-        physics->mFactor.mess += 10.0f;
+        physics->mFactor.mass += 10.0f;
+    }
+
+    if (Key::DOWN == mKeys[VK_F2]) {
+        physics->mFactor.acceleration += 1.0f;
     }
 
     moveDir.Normalize();
-    auto velocity = moveDir * physics->mFactor.maxMoveSpeed;
-
-    physics->AddVelocity(velocity);
+    physics->Acceleration(moveDir, deltaTime);
 }
 
 #ifdef _DEBUG
@@ -86,13 +88,16 @@ void Input::Update(float deltaTime, SessionIdType id) {
     }
 
     if (Key::DOWN == mKeys[VK_F1]) {
-        physics->mFactor.mess += 10.0f;
-        std::cout << std::format("[ID: {}] DOWN F1 mess += 10.0f, currentMess: {}\n", id, physics->mFactor.mess);
+        physics->mFactor.mass += 10.0f;
+        std::cout << std::format("[ID: {}] DOWN F1 mess += 10.0f, currentMess: {}\n", id, physics->mFactor.mass);
+    }
+
+    if (Key::DOWN == mKeys[VK_F2]) {
+        physics->mFactor.acceleration += 1.0f;
+        std::cout << std::format("[ID: {}] DOWN F1 acceleration += 1.0f, current acc: {}\n", id, physics->mFactor.acceleration);
     }
 
     moveDir.Normalize();
-    auto velocity = moveDir * physics->mFactor.maxMoveSpeed;
-
-    physics->AddVelocity(velocity);
+    physics->Acceleration(moveDir, deltaTime);
 }
 #endif

@@ -112,7 +112,7 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
                 if (not mPlayers.contains(header.id)) {
                     break;
                 }
-                mPlayers[obj.id]->GetTransform()->Rotation(obj.rotation); // 공유변수 오류.
+                mPlayers[obj.id]->GetTransform()->Rotation(obj.rotation);
             }
         break;
 

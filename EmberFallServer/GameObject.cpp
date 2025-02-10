@@ -101,6 +101,7 @@ void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameOb
 }
 
 void GameObject::OnCollisionTerrain(const float height) {
+    mPhysics->SetOnGround(true);
     mTransform->SetY(height);
 }
 
@@ -116,8 +117,8 @@ void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<Ga
     auto obb1 = std::static_pointer_cast<OrientedBoxCollider>(mCollider)->GetBoundingBox();
     auto obb2 = std::static_pointer_cast<OrientedBoxCollider>(opponent->mCollider)->GetBoundingBox();
 
-    float myMess = mPhysics->mFactor.mess;
-    float opponentMess = opponent->mPhysics->mFactor.mess;
+    float myMess = mPhysics->mFactor.mass;
+    float opponentMess = opponent->mPhysics->mFactor.mass;
     // 내가 무거울 수록 덜 밀려나는 구조.
     float coefficient = opponentMess / (myMess + opponentMess); // 0.0f ~ 1.0f 사이 값.
     auto repulsiveVec = MathUtil::CalcObbRepulsiveVec(obb1, obb2) * coefficient;
