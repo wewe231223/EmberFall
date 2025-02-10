@@ -2,7 +2,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-// ServerGameScene.cpp
+// ServerGameScene.h
 // 
 // 2025 - 02 - 02 : GameScene에서 SessionManager의 Connect, Disconnect 가 일어날 때 호출될 함수를 등록하고
 //                  그 함수안에서 GameObject의 추가/삭제를 하는 점이 별로인거 같다.
@@ -19,22 +19,43 @@
 // 
 //                  일단 오브젝트는 미리 다 만들어 놓고 쓰는걸로 하고, 고정 Array를 쓰는걸로 하자.
 //                  Id는 일단 배열의 index로 설정을 하자.
+// 
+//        02 - 10 : Player를 각자의 게임씬에서 입/퇴장 처리를 하려니 복잡해진다.
+//                  차라리 GameFrame에서 플레이어 입/퇴장 처리를 하고 게임 씬에 플레이어 정보를 보내자.
+// 
+//                  개선:
+//                      ServerFrame의 OnPlayerConnect, OnPlayerDisconnect에서 실제 Player의 오브젝트를 생성
+//                      PlayerEvent를 발생시키고 concurrent_queue에 저장함.
+//                      GameScene에서는 이 concurrent_queue에 저장된 이벤트를 읽어서 Player오브젝트를 추가/삭제
 //                  
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "CollisionWorld.h"
 
+class GameObject;
+
 class IServerGameScene abstract {
+public:
+    // ServerScene에서 한번에 처리할 수 있는 EVENT (5번의 try_pop)
+    static constexpr size_t ONCE_PROCESSING_EVENT = 5;
+
 public:
     IServerGameScene();
     virtual ~IServerGameScene();
 
 public:
-    virtual void RegisterOnSessionConnect(const std::shared_ptr<ServerCore>& serverCore) abstract;
-    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) abstract;
+    virtual void DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerEvent>& eventQueue);
+
+    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) abstract;
     virtual void Update(const float deltaTime) abstract;
     virtual void SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) abstract;
+
+    virtual void AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject);
+    virtual void ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject);
+
+protected:
+    std::unordered_map<SessionIdType, std::shared_ptr<class GameObject>> mPlayers{ };
 };
 
 class EchoTestScene : public IServerGameScene {
@@ -43,34 +64,29 @@ public:
     ~EchoTestScene();
 
 public:
-    virtual void RegisterOnSessionConnect(const std::shared_ptr<ServerCore>& serverCore) override;
-    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) override;
+    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) override;
     virtual void Update(const float deltaTime) override;
     virtual void SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) override;
 };
 
 class PlayScene : public IServerGameScene {
-    inline static constexpr size_t MAX_OBJECT = 5000; // 최대 오브젝트 개수 제한.
+    inline static constexpr size_t MAX_OBJECT = 100; // 최대 오브젝트 개수 제한.
 
 public:
     PlayScene();
     ~PlayScene();
 
 public:
-    virtual void RegisterOnSessionConnect(const std::shared_ptr<ServerCore>& serverCore) override;
-    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) override;
+    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) override;
     virtual void Update(const float deltaTime) override;
     virtual void SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) override;
 
-public:
-    void EnterPlayer(SessionIdType id);
-    void ExitPlayer(SessionIdType id);
+    virtual void AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) override;
+    virtual void ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) override;
 
 private:
-    Lock::SRWLock mPlayerLock{ };
-    std::unordered_map<SessionIdType, std::shared_ptr<class GameObject>> mPlayers{ };
     std::vector<std::shared_ptr<class GameObject>> mObjects{ };
 
-    std::shared_ptr<class Terrain> mTerrain{ }; // test
+    std::shared_ptr<class Terrain> mTerrain{ };
     CollisionWorld mCollisionWorld{ };
 };

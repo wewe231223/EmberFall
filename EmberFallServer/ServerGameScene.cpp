@@ -3,18 +3,53 @@
 #include "GameObject.h"
 #include "Terrain.h"
 #include "Collider.h"
+#include "Input.h"
 
 IServerGameScene::IServerGameScene() { }
 
 IServerGameScene::~IServerGameScene() { }
 
+void IServerGameScene::DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerEvent>& eventQueue) {
+    for (size_t i = 0; i < ONCE_PROCESSING_EVENT; ++i) {
+        PlayerEvent event{ };
+        if (false == eventQueue.try_pop(event)) {
+            return;
+        }
+
+        switch (event.eventType) {
+        case PlayerEvent::EventType::CONNECT:
+            AddPlayer(event.id, event.player);
+            break;
+
+        case PlayerEvent::EventType::DISCONNECT:
+            ExitPlayer(event.id, event.player);
+            break;
+
+        default:
+            std::cout << std::format("Player Event Error\n");
+            break;
+        }
+    }
+}
+
+void IServerGameScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
+    mPlayers[id] = playerObject;
+}
+
+void IServerGameScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
+    auto it = mPlayers.find(id);
+    if (it == mPlayers.end()) {
+        return;
+    }
+
+    mPlayers.erase(it);
+}
+
 EchoTestScene::EchoTestScene() { }
 
 EchoTestScene::~EchoTestScene() { }
 
-void EchoTestScene::RegisterOnSessionConnect(const std::shared_ptr<ServerCore>& serverCore) { }
-
-void EchoTestScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
+void EchoTestScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<InputManager>& inputManager) {
     auto packetHandler = serverCore->GetPacketHandler();
     auto& buffer = packetHandler->GetBuffer();
     if (0 == buffer.Size()) {
@@ -44,42 +79,7 @@ PlayScene::PlayScene() {
 
 PlayScene::~PlayScene() { }
 
-#define RAND_COLOR static_cast<float>(rand()) / static_cast<float>(RAND_MAX) // TEST
-
-void PlayScene::EnterPlayer(SessionIdType id) {
-    std::shared_ptr<GameObject> obj = std::make_shared<GameObject>();
-    obj->InitId(id);
-
-    Lock::SRWLockGuard playerGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mPlayerLock };
-    mPlayers[id] = obj;
-
-    obj->MakeCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
-    obj->GetTransform()->Scale(SimpleMath::Vector3{ 10.0f });
-    obj->SetColor(SimpleMath::Vector3{ RAND_COLOR, RAND_COLOR, RAND_COLOR });
-
-    mCollisionWorld.AddCollisionObject("player", obj);
-    mCollisionWorld.AddObjectInTerrainGroup(obj);
-    std::cout << std::format("Add player {}\n", id);
-}
-
-void PlayScene::ExitPlayer(SessionIdType id) {
-    auto it = mPlayers.find(id);
-    if (it != mPlayers.end()) {
-        Lock::SRWLockGuard playerGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mPlayerLock };
-        std::cout << std::format("Erase player {}\n", id);
-        mCollisionWorld.RemoveObjectFromGroup("player", it->second);
-        mCollisionWorld.RemoveObjectFromTerrainGroup(it->second);
-        mPlayers.erase(it);
-    }
-}
-
-void PlayScene::RegisterOnSessionConnect(const std::shared_ptr<ServerCore>& serverCore) {
-    auto sessionManager = serverCore->GetSessionManager();
-    sessionManager->RegisterOnSessionConnect(std::bind_front(&PlayScene::EnterPlayer, this));
-    sessionManager->RegisterOnSessionDisconnect(std::bind_front(&PlayScene::ExitPlayer, this));
-}
-
-void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
+void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<InputManager>& inputManager) {
     auto packetHandler = serverCore->GetPacketHandler();
     auto& buffer = packetHandler->GetBuffer();
     if (0 == buffer.Size()) {
@@ -87,20 +87,20 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
     }
 
     PacketHeader header{ };
-    Lock::SRWLockGuard playerGuard{ Lock::SRWLockMode::SRW_SHARED, mPlayerLock };
     while (not buffer.IsReadEnd()) {
         buffer.Read(header);
+        if (not mPlayers.contains(header.id)) {
+            buffer.Read(nullptr, header.size);
+            break;
+        }
         
         switch (header.type) {
         case PacketType::PT_INPUT_CS:
             {
-                PacketInput input;  
-                buffer.Read(input);
-                
-                if (not mPlayers.contains(header.id)) {
-                    break;
-                }
-                mPlayers[input.id]->SetInput(input.key);
+                PacketInput inputPacket;  
+                buffer.Read(inputPacket);
+                auto input = inputManager->GetInput(inputPacket.id);
+                input->UpdateInput(inputPacket.key);
             }
             break;
 
@@ -108,10 +108,6 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
             {
                 PacketPlayerInfoCS obj;
                 buffer.Read(obj);
-
-                if (not mPlayers.contains(header.id)) {
-                    break;
-                }
                 mPlayers[obj.id]->GetTransform()->Rotation(obj.rotation);
             }
         break;
@@ -124,14 +120,11 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
 }
 
 void PlayScene::Update(const float deltaTime) {
-    mPlayerLock.ReadLock();
     for (auto& [id, obj] : mPlayers) {
         obj->Update(deltaTime);
     }
-    mPlayerLock.ReadUnlock();
 
     mCollisionWorld.HandleCollision();
-
     mCollisionWorld.HandleTerrainCollision();
 }
 
@@ -139,7 +132,6 @@ void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) 
     auto sessionManager = serverCore->GetSessionManager();
 
     PacketPlayerInfoSC playerPacket{ sizeof(PacketPlayerInfoSC), PacketType::PT_PLAYER_INFO_SC };
-    mPlayerLock.ReadLock();
     for (auto& [id, player] : mPlayers) {
         playerPacket.id = id;
         playerPacket.color = player->GetColor();
@@ -148,7 +140,6 @@ void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) 
         playerPacket.scale = player->GetScale();
         sessionManager->SendAll(&playerPacket);
     }
-    mPlayerLock.ReadUnlock();
 
     PacketGameObject objPacket{ sizeof(PacketGameObject), PacketType::PT_GAME_OBJECT_SC };
     for (size_t id{ 0 }; auto & obj : mObjects) {
@@ -161,4 +152,22 @@ void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) 
 
         ++id;
     }
+}
+
+void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
+    mPlayers[id] = playerObject;
+    mCollisionWorld.AddCollisionObject("Player", playerObject);
+    mCollisionWorld.AddObjectInTerrainGroup(playerObject);
+}
+
+void PlayScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
+    auto it = mPlayers.find(id);
+    if (it == mPlayers.end()) {
+        return;
+    }
+
+    mCollisionWorld.RemoveObjectFromGroup("Player", playerObject);
+    mCollisionWorld.RemoveObjectFromTerrainGroup(playerObject);
+
+    mPlayers.erase(it);
 }

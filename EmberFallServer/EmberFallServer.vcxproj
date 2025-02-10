@@ -145,6 +145,7 @@
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="CollisionWorld.cpp" />
     <ClCompile Include="EmberFallServer.cpp" />
+    <ClCompile Include="Events.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameObjectComponent.cpp" />
     <ClCompile Include="GameTimer.cpp" />
@@ -154,6 +155,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Physics.cpp" />
+    <ClCompile Include="PlayerScript.cpp" />
     <ClCompile Include="Script.cpp" />
     <ClCompile Include="ServerFrame.cpp" />
     <ClCompile Include="ServerGameScene.cpp" />
@@ -163,12 +165,14 @@
   <ItemGroup>
     <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionWorld.h" />
+    <ClInclude Include="Events.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameObjectComponent.h" />
     <ClInclude Include="GameTimer.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Physics.h" />
+    <ClInclude Include="PlayerScript.h" />
     <ClInclude Include="Script.h" />
     <ClInclude Include="ServerFrame.h" />
     <ClInclude Include="ServerGameScene.h" />

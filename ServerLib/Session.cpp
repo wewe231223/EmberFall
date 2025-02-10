@@ -73,7 +73,7 @@ void Session::RegisterRecv() {
     if (SOCKET_ERROR == result) {
         auto errorCode = ::WSAGetLastError();
         if (WSA_IO_PENDING != errorCode) {
-            RegisterRecv();
+            HandleSocketError(errorCode);
         }
     }
 }
@@ -104,7 +104,7 @@ void Session::RegisterSend(void* packet) {
         auto errorCode = ::WSAGetLastError();
         if (WSA_IO_PENDING != errorCode) {
             sendBufferFactory->ReleaseOverlapped(overlappedSend);
-            RegisterSend(packet);
+            HandleSocketError(errorCode);
         }
     }
 }
@@ -135,7 +135,7 @@ void Session::RegisterSend(void* data, size_t size) {
         auto errorCode = ::WSAGetLastError();
         if (WSA_IO_PENDING != errorCode) {
             sendBufferFactory->ReleaseOverlapped(overlappedSend);
-            RegisterSend(data, size);
+            HandleSocketError(errorCode);
         }
     }
 }
@@ -146,16 +146,8 @@ void Session::ProcessRecv(INT32 numOfBytes) {
     //std::cout << std::format("RECV Len: {}\n", numOfBytes);
     mOverlappedRecv.owner.reset();
     if (0 >= numOfBytes) {
-        if (NetworkType::SERVER == coreService->GetType()) {
-            auto serverCore = std::static_pointer_cast<ServerCore>(coreService);
-            serverCore->GetSessionManager()->CloseSession(GetId());
-            return;
-        }
-        else {
-            auto clientCore = std::static_pointer_cast<ClientCore>(coreService);
-            clientCore->CloseSession();
-            return;
-        }
+        Disconnect();
+        return;
     }
 
     auto dataBeg = mOverlappedRecv.buffer.begin();
@@ -176,7 +168,12 @@ void Session::ProcessRecv(INT32 numOfBytes) {
 }
 
 void Session::ProcessSend(INT32 numOfBytes, OverlappedSend* overlappedSend) {
-    auto sendBufferFactory = GetCore()->GetSendBufferFactory();
+    auto coreService = GetCore();
+    if (0 >= numOfBytes) {
+
+    }
+
+    auto sendBufferFactory = coreService->GetSendBufferFactory();
     sendBufferFactory->ReleaseOverlapped(overlappedSend);
 }
 
@@ -285,3 +282,29 @@ RecvBuf::iterator Session::ValidatePackets(RecvBuf::iterator iter, RecvBuf::iter
 }
 
 void Session::OnConnect() { }
+
+void Session::Disconnect() {
+    auto coreService = GetCore();
+    if (NetworkType::SERVER == coreService->GetType()) {
+        auto serverCore = std::static_pointer_cast<ServerCore>(coreService);
+        serverCore->GetSessionManager()->CloseSession(GetId());
+        return;
+    }
+    else {
+        auto clientCore = std::static_pointer_cast<ClientCore>(coreService);
+        clientCore->CloseSession();
+        return;
+    }
+}
+
+void Session::HandleSocketError(INT32 errorCore) {
+    switch (errorCore) {
+    case WSAECONNRESET: // 소프트웨어로 인해 연결 중단.
+    case WSAECONNABORTED: // 피어별 연결 다시 설정. (원격 호스트에서 강제 중단.)
+        Disconnect();
+        break;
+
+    default:
+        break;
+    }
+}

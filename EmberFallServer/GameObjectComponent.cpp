@@ -1,7 +1,11 @@
 #include "pch.h"
 #include "GameObjectComponent.h"
+#include "GameObject.h"
 
-GameObjectComponent::GameObjectComponent(const std::shared_ptr<Physics>& physics, const std::shared_ptr<Transform>& transform) 
+GameObjectComponent::GameObjectComponent(const std::shared_ptr<class GameObject>& owner) 
+    : mPhysics{ owner->GetPhysics() }, mTransform{ owner->GetTransform() } { }
+
+GameObjectComponent::GameObjectComponent(const std::shared_ptr<Physics>& physics, const std::shared_ptr<Transform>& transform)
     : mPhysics{ physics }, mTransform{ transform } { }
 
 GameObjectComponent::~GameObjectComponent() { }

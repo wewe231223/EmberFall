@@ -17,6 +17,9 @@
     <Filter Include="Component">
       <UniqueIdentifier>{382a9043-5187-43b0-8898-fc3fb22c595e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Script">
+      <UniqueIdentifier>{8ffa7fd5-09b9-4c09-98bb-37e62f49b8a1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -62,15 +65,18 @@
       <Filter>Component</Filter>
     </ClCompile>
     <ClCompile Include="Script.cpp">
+      <Filter>Script</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerScript.cpp">
+      <Filter>Script</Filter>
+    </ClCompile>
+    <ClCompile Include="Events.cpp">
       <Filter>pch</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>pch</Filter>
-    </ClInclude>
-    <ClInclude Include="ServerFrame.h">
-      <Filter>Frame</Filter>
     </ClInclude>
     <ClInclude Include="ServerGameScene.h">
       <Filter>Frame</Filter>
@@ -102,6 +108,17 @@
     <ClInclude Include="GameObjectComponent.h">
       <Filter>Component</Filter>
     </ClInclude>
-    <ClInclude Include="Script.h" />
+    <ClInclude Include="Script.h">
+      <Filter>Script</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerScript.h">
+      <Filter>Script</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerFrame.h">
+      <Filter>Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Events.h">
+      <Filter>pch</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -6,6 +6,9 @@
 // 
 // 2025 - 02 - 02 김성준 : GameObject
 //                      : GameObject 동기화또한 고정배열에서의 인덱스를 ID로 사용하게 할것.
+// 
+//        02 - 10 : Input 삭제 
+//                  Script 컴포넌트 추가 - PlayerScript에서 Input 처리.
 //                  
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,9 +30,6 @@ public:
     ~GameObject();
     
 public:
-    void SetInput(Key key);
-    void Update(const float deltaTime);
-
     bool IsActive() const;
     void InitId(NetworkObjectIdType id);
     NetworkObjectIdType GetId() const;
@@ -48,10 +48,18 @@ public:
 
     template <typename ColliderType, typename... Args> 
         requires std::derived_from<ColliderType, Collider> and std::is_constructible_v<ColliderType, Args...>
-    void MakeCollider(Args&&... args) {
+    void CreateCollider(Args&&... args) {
         mCollider = std::make_shared<ColliderType>(args...);
         mCollider->SetTransform(mTransform);
     }
+
+    template <typename ComponentType, typename... Args>
+        requires std::derived_from<ComponentType, GameObjectComponent>
+    void CreateComponent(Args&&... args) {
+        mComponents.emplace_back(std::make_shared<ComponentType>(args...));
+    }
+
+    void Update(const float deltaTime);
 
     void OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
     void OnCollisionTerrain(const float height);
@@ -64,13 +72,12 @@ private:
 private:
     bool mActive{ true };
 
-    SimpleMath::Vector3 mColor{ SimpleMath::Vector3::One }; // for detecting collision
+    NetworkObjectIdType mId{ INVALID_SESSION_ID };                      // network id
+    SimpleMath::Vector3 mColor{ SimpleMath::Vector3::One };             // for detecting collision
 
-    NetworkObjectIdType mId{ INVALID_SESSION_ID };          // network id
-    std::shared_ptr<class Input> mInput{ };                 // input
+    std::shared_ptr<Transform> mTransform{ };                           // Transform
+    std::shared_ptr<class Physics> mPhysics{ };                         // Physics Test
+    std::vector<std::shared_ptr<GameObjectComponent>> mComponents{ };   // Components
 
-    std::shared_ptr<Transform> mTransform{ };               // Transform
-
-    std::shared_ptr<Collider> mCollider{ nullptr };         // collision 
-    std::shared_ptr<class Physics> mPhysics{ };             // Physics Test
+    std::shared_ptr<Collider> mCollider{ nullptr };                     // 
 };

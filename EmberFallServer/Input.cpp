@@ -1,8 +1,7 @@
 #include "pch.h"
 #include "Input.h"
 
-Input::Input(const std::shared_ptr<Physics>& physics, const std::shared_ptr<Transform>& transform) 
-    : GameObjectComponent{ physics, transform } {
+Input::Input() {
     mKeys.fill(Key::UP);
 }
 
@@ -20,84 +19,21 @@ bool Input::GetState(BYTE key) const {
     return mKeys[key];
 }
 
-void Input::Update(float deltaTime) {
-    auto physics = GetPhysics();
-    if (nullptr == physics) {
-        return;
-    }
+InputManager::InputManager() { }
 
-    SimpleMath::Vector3 moveDir{ SimpleMath::Vector3::Zero };
-    if (Key::DOWN == mKeys['A']) {
-        moveDir.x -= 1.0f;
-    }
+InputManager::~InputManager() { }
 
-    if (Key::DOWN == mKeys['D']) {
-        moveDir.x += 1.0f;
+void InputManager::DeleteInput(SessionIdType id) {
+    auto it = mInputMap.find(id);
+    if (it == mInputMap.end()) {
+        mInputMap.erase(it);
     }
-
-    if (Key::DOWN == mKeys['W']) {
-        moveDir.z -= 1.0f;
-    }
-
-    if (Key::DOWN == mKeys['S']) {
-        moveDir.z += 1.0f;
-    }
-
-    if (Key::DOWN == mKeys[VK_SPACE]) {
-        physics->Jump(deltaTime);
-    }
-
-    if (Key::DOWN == mKeys[VK_F1]) {
-        physics->mFactor.mass += 10.0f;
-    }
-
-    if (Key::DOWN == mKeys[VK_F2]) {
-        physics->mFactor.acceleration += 1.0f;
-    }
-
-    moveDir.Normalize();
-    physics->Acceleration(moveDir, deltaTime);
 }
 
-#ifdef _DEBUG
-void Input::Update(float deltaTime, SessionIdType id) {
-    auto physics = GetPhysics();
-    if (nullptr == physics) {
-        return;
-    }
-    
-    SimpleMath::Vector3 moveDir{ SimpleMath::Vector3::Zero };
-    if (Key::DOWN == mKeys['A']) {
-        moveDir.x -= 1.0f;
+std::shared_ptr<Input> InputManager::GetInput(SessionIdType id) {
+    if (false == mInputMap.contains(id)) {
+        mInputMap[id] = std::make_shared<Input>();
     }
 
-    if (Key::DOWN == mKeys['D']) {
-        moveDir.x += 1.0f;
-    }
-
-    if (Key::DOWN == mKeys['W']) {
-        moveDir.z -= 1.0f;
-    }
-
-    if (Key::DOWN == mKeys['S']) {
-        moveDir.z += 1.0f;
-    }
-
-    if (Key::DOWN == mKeys[VK_SPACE]) {
-        physics->Jump(deltaTime);
-    }
-
-    if (Key::DOWN == mKeys[VK_F1]) {
-        physics->mFactor.mass += 10.0f;
-        std::cout << std::format("[ID: {}] DOWN F1 mess += 10.0f, currentMess: {}\n", id, physics->mFactor.mass);
-    }
-
-    if (Key::DOWN == mKeys[VK_F2]) {
-        physics->mFactor.acceleration += 1.0f;
-        std::cout << std::format("[ID: {}] DOWN F1 acceleration += 1.0f, current acc: {}\n", id, physics->mFactor.acceleration);
-    }
-
-    moveDir.Normalize();
-    physics->Acceleration(moveDir, deltaTime);
+    return mInputMap[id];
 }
-#endif

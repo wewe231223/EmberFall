@@ -21,8 +21,12 @@
 //      Send
 //          RegisterSend -> I/O -> WorkerThread -> ProcessSend
 // 
-//      01 - 15 연결 여부를 Enum 값에서 atomic_bool로 설정 연결여부 확인에 lock은 필요 없도록 함
-//      01 - 20 std::mutex mLock 변수 삭제, lock, unlock 함수 삭제
+//      01 - 15 : 연결 여부를 Enum 값에서 atomic_bool로 설정 연결여부 확인에 lock은 필요 없도록 함
+//      01 - 20 : std::mutex mLock 변수 삭제, lock, unlock 함수 삭제
+// 
+//      02 - 10 : SocketError가 발생했을 때 다시 재귀로 IO함수를 호출하고 있는데 에러를 관리하는 함수를 따로 만들어
+//                그 함수를 호출하는 방식으로 다시 만들었다.
+//                정상적으로 종료되지 않거나 호스트가 강제로 종료되면 StackOverflow문제가 발생되는 현상 해결
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -40,8 +44,8 @@ public:
     virtual bool IsClosed() const override;
 
     virtual void ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) override;
-
     virtual void Close() override;
+
     void RegisterRecv();
     void RegisterSend(void* packet);
     void RegisterSend(void* data, size_t size);
@@ -55,6 +59,10 @@ public:
     RecvBuf::iterator ValidatePackets(RecvBuf::iterator iter, RecvBuf::iterator last);
 
     virtual void OnConnect();
+
+    // 에러 발생으로 인한 연결 종료 처리
+    void Disconnect();
+    void HandleSocketError(INT32 errorCore);
 
     // For Client
     bool Connect(const std::string& serverIp, const UINT16 port);

@@ -11,3 +11,5 @@
 #else
 #pragma comment(lib, "../out/Release/ServerLib.lib")
 #endif
+
+#include "Events.h"

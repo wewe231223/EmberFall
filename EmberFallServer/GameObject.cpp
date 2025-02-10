@@ -6,28 +6,9 @@
 GameObject::GameObject() 
     : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() } {
     mPhysics->SetTransform(mTransform);
-    mInput = std::make_shared<Input>(mPhysics, mTransform);
 }
 
 GameObject::~GameObject() { }
-
-void GameObject::SetInput(Key key) {
-    mInput->UpdateInput(key);
-}
-
-void GameObject::Update(const float deltaTime) {
-#ifdef _DEBUG 
-    mInput->Update(deltaTime, mId);
-#else
-    mInput->Update(deltaTime);
-#endif
-    mPhysics->Update(deltaTime);
-    mTransform->Update();
-
-    if (nullptr != mCollider) {
-        mCollider->Update();
-    }
-}
 
 bool GameObject::IsActive() const {
     return true == mActive;
@@ -78,6 +59,19 @@ SimpleMath::Vector3 GameObject::GetColor() const {
         return SimpleMath::Vector3{ 1.0f, 0.0f, 0.0f }; // RED
     }
     return mColor;
+}
+
+void GameObject::Update(const float deltaTime) {
+    for (auto& component : mComponents) {
+        component->Update(deltaTime);
+    }
+
+    mPhysics->Update(deltaTime);
+    mTransform->Update();
+
+    if (nullptr != mCollider) {
+        mCollider->Update();
+    }
 }
 
 void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {

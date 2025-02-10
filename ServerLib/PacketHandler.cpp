@@ -38,6 +38,11 @@ char* RecvBuffer::Data() {
 }
 
 void RecvBuffer::Read(void* buffer, size_t size) {
+    if (nullptr == buffer) {
+        mReadPos += size;
+        return;
+    }
+
     auto srcIter = mBuffer.begin() + mReadPos;
     auto packetSize = NetworkUtil::GetPacketSizeFromIter(srcIter);
     if (size < packetSize) {

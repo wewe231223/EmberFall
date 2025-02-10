@@ -5,6 +5,7 @@
 
 class GameObjectComponent abstract : public std::enable_shared_from_this<GameObjectComponent> {
 public:
+    GameObjectComponent(const std::shared_ptr<class GameObject>& owner);
     GameObjectComponent(const std::shared_ptr<Physics>& physics=nullptr, const std::shared_ptr<Transform>& transform=nullptr);
     virtual ~GameObjectComponent();
 
