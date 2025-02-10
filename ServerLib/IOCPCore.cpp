@@ -55,16 +55,16 @@ void IOCPCore::IOWorker() {
 
         if (not success) {
             if (IOType::ACCEPT == overlappedEx->type) {
-                std::cout << std::format("Accept Error!\n");
+                gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Accept Error!!");
                 Crash("Accept Error");
             }
             else if (IOType::CONNECT == overlappedEx->type) {
-                std::cout << std::format("Connect Error!\n");
+                gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Connect Error!!");
                 Crash("Connect Error");
             }
 
             // IOType::SEND or IOType::RECV
-            std::cout << std::format("Client[{}] Error\n", clientId);
+            gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Client[{}] Error", static_cast<INT32>(clientId));
             if (NetworkType::SERVER == mCoreService->GetType()) {
                 auto serverCore = std::static_pointer_cast<ServerCore>(mCoreService);
                 serverCore->GetSessionManager()->CloseSession(clientId);

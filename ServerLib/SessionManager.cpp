@@ -29,7 +29,7 @@ bool SessionManager::AddSession(std::shared_ptr<Session> session) {
 
     mSessions[id] = session;
     session->InitId(id);
-    std::cout << std::format("Session[{}]: add in session map\n", id);
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Session[{}]: add in session map\n", id);
 
     mCoreService->GetIOCPCore()->RegisterSocket(session);
 
@@ -45,7 +45,7 @@ void SessionManager::CloseSession(SessionIdType id) {
         mSessionIdMap.push(id);
         mSessions.unsafe_erase(it);
         mSessionCount.fetch_sub(1);
-        std::cout << std::format("Session[{}]: erased from session map\n", id);
+        gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Session[{}]: erased from session map", id);
 
         mOnSessionDisconnFn(id);
     }

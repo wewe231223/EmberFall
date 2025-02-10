@@ -100,7 +100,7 @@ void GameObject::OnCollisionTerrain(const float height) {
 }
 
 void GameObject::OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {
-    std::cout << std::format("Collision!!! Group: {}, opponent ID: {}\n", groupTag, opponent->GetId());
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Collision Start!!! Group: {}, opponent ID: {}", groupTag, opponent->GetId());
 }
 
 void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { 
@@ -127,5 +127,5 @@ void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<Ga
 }
 
 void GameObject::OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { 
-    std::cout << std::format("Collision End!!! Group: {}, opponent ID: {}\n", groupTag, opponent->GetId());
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Collision End!!! Group: {}, opponent ID: {}", groupTag, opponent->GetId());
 }

@@ -29,8 +29,8 @@ HeightMap::HeightMap(std::string_view imageFilePath, size_t imageWidth, size_t i
         }
     }
 
-    std::cout << std::format("Height Map Load Success [File: {}] [Size: {}]\n", imageFilePath, fileSize);
-    std::cout << std::format("Height Map Info [Width: {}] [Height: {}]\n", mWidth, mHeight);
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Height Map Load Success [File: {}] [Size: {}]", imageFilePath, fileSize);
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Height Map Info [Width: {}] [Height: {}]", mWidth, mHeight);
 }
 
 HeightMap::~HeightMap() { }
@@ -114,8 +114,9 @@ Terrain::Terrain(std::string_view imageFile, const SimpleMath::Vector2& mapSize,
 
     mLeftBottom = -mMapSize / 2.0f;
 
-    std::cout << std::format("Terrain Generate Success\n");
-    std::cout << std::format("Map Size (Meter): {} x {}, TileSize: ({}, {})\nCenter of Scene: (0.0, 0.0)\n",
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Terrain Generate Success");
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, 
+        "Map Size (Meter): {} x {}, TileSize: ({}, {})\nCenter of Scene: (0.0, 0.0)",
         mMapSize.x, mMapSize.y, mTileSize.x, mTileSize.y);
 }
 

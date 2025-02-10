@@ -26,7 +26,7 @@ void IServerGameScene::DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerE
             break;
 
         default:
-            std::cout << std::format("Player Event Error\n");
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player Event Error!");
             break;
         }
     }
@@ -56,7 +56,7 @@ void EchoTestScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore
         return;
     }
 
-    std::cout << "Total RecvBytes: " << buffer.Size() << std::endl;
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Total RecvBytes: {}", buffer.Size());
     PacketChat chat{ };
     while (not buffer.IsReadEnd()) {
         buffer.Read(chat);
@@ -113,7 +113,7 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, st
         break;
 
         default:
-            std::cout << std::format("PacketError Size: {}, Type: {}\n", header.size, header.type);
+            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "PacketError Size: {}, Type: {}", header.size, header.type);
             break;
         }
     }

@@ -16,6 +16,7 @@
 // I/O header
 #include <iostream>
 #include <fstream>
+#include <format>
 
 // container
 #include <array>
@@ -23,6 +24,7 @@
 #include <unordered_map>
 
 // utils
+#include <string>
 #include <chrono>
 #include <variant>
 #include <concepts>
@@ -30,6 +32,8 @@
 #include <numeric>
 #include <algorithm>
 #include <functional>
+
+#include <source_location>
 
 // concurrency support
 #include <thread>
@@ -45,6 +49,8 @@
 
 using namespace std::literals;
 namespace SimpleMath = DirectX::SimpleMath;
+
+#include "LogConsole.h"
 
 #include "Types.h"
 #include "Constants.h"

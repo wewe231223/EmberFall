@@ -17,6 +17,9 @@
     <Filter Include="Common">
       <UniqueIdentifier>{841cdc65-b5b3-42f6-913a-5984ee91356e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Log">
+      <UniqueIdentifier>{de9f8042-7637-4ffc-be8c-5e47c53929b8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetworkUtils.cpp">
@@ -67,8 +70,11 @@
     <ClCompile Include="MemoryPool.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="LogConsole.cpp">
+      <Filter>Log</Filter>
+    </ClCompile>
     <ClCompile Include="ObjectPool.cpp">
-      <Filter>Pch</Filter>
+      <Filter>Utils</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -123,8 +129,11 @@
     <ClInclude Include="pch.h">
       <Filter>Pch</Filter>
     </ClInclude>
+    <ClInclude Include="LogConsole.h">
+      <Filter>Log</Filter>
+    </ClInclude>
     <ClInclude Include="ObjectPool.h">
-      <Filter>Pch</Filter>
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

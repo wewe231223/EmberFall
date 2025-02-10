@@ -27,6 +27,29 @@ namespace NetworkUtil {
         return SOCKET_ERROR != ::setsockopt(socket, level, option, reinterpret_cast<T>(optval), sizeof(optval));
     }
 
+    inline std::string WSAErrorMessage(const std::source_location& sl = std::source_location::current())
+    {
+        auto errorCode = WSAGetLastError();
+
+        LPVOID msg;
+        FormatMessageA(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+            NULL,
+            errorCode,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            reinterpret_cast<char*>(&msg),
+            0,
+            NULL
+        );
+
+        auto str = std::format("Error Occurred!\n\nFILE: {}\n\nFUNCTION: {}\n\nLINE: {}\n\nError Code: {}\n\nError: {}",
+            sl.file_name(), sl.function_name(), sl.line(), errorCode, reinterpret_cast<char*>(msg));
+
+        LocalFree(msg);
+
+        return str;
+    }
+
     inline SOCKET CreateSocket()
     {
         return ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, nullptr, NULL, WSA_FLAG_OVERLAPPED);

@@ -7,16 +7,21 @@
 Listener::Listener(const UINT16 port, std::shared_ptr<INetworkCore> coreService)
     : INetworkObject{ coreService }, mLocalPort{ port } {
     mListenSocket = NetworkUtil::CreateSocket();
-    CrashExp(INVALID_SOCKET == mListenSocket, "");
+    if (INVALID_SOCKET == mListenSocket) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Create Socket Failure: {}", NetworkUtil::WSAErrorMessage());
+        Crash("");
+    }
 
     sockaddr_in sockAddr{ };
     NetworkUtil::InitSockAddr(sockAddr, port);
 
     if (SOCKET_ERROR == ::bind(mListenSocket, reinterpret_cast<sockaddr*>(&sockAddr), sizeof(sockAddr))) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "::bind Error: {}", NetworkUtil::WSAErrorMessage());
         Crash("");
     }
 
     if (SOCKET_ERROR == ::listen(mListenSocket, SOMAXCONN)) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "::listen Error: {}", NetworkUtil::WSAErrorMessage());
         Crash("");
     }
 }
@@ -74,7 +79,7 @@ void Listener::RegisterAccept() {
 
     if (not registSuccess) {
         int errorCode = ::WSAGetLastError();
-        if (ERROR_IO_PENDING != errorCode) {
+        if (WSA_IO_PENDING != errorCode) {
             RegisterAccept();
         }
     }
@@ -91,10 +96,10 @@ void Listener::ProcessAccept() {
         PacketNotifyId notifyingId{ sizeof(PacketNotifyId), PacketType::PT_NOTIFYING_ID_SC, session->GetId() };
         sessionManager->Send(session->GetId(), &notifyingId);
 
-        std::cout << std::format("Client [IP: {}, PORT: {}] Connected\n", ip, port);
+        gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Client [IP: {}, PORT: {}] Connected", ip, port);
     }
     else {
-        std::cout << "Client Connect Failure\n";
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Client Connect Failure");
     }
 
     mOverlappedAccept.owner.reset();

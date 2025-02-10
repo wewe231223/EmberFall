@@ -31,3 +31,5 @@ enum class CollisionState : BYTE {
     STAY,
     EXIT
 };
+
+extern std::unique_ptr<LogConsole> gLogConsole;

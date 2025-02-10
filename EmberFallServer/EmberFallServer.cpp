@@ -12,7 +12,7 @@
 
 int main()
 {
-    std::cout << "Server Project Start" << std::endl;
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Server Project Start");
 
     ServerFrame server{ };
 
