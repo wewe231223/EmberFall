@@ -91,6 +91,7 @@ void SessionManager::SendAll(void* packet) {
 
 void SessionManager::SendAll(void* data, size_t size) {
     Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "SendAll Lock");
     for (auto& [id, session] : mSessions) {
         if (false == session->IsConnected()) {
             continue;

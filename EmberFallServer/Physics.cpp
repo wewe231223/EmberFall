@@ -88,7 +88,7 @@ void Physics::ClampVelocity() {
 }
 
 void Physics::UpdateFriction(const float deltaTime, const SimpleMath::Vector3& moveDir, const float speed) {
-    if (false == IsOnGround()) {
+    if (false == IsOnGround() or MathUtil::IsEqualVector(MathUtil::AbsVector(moveDir), SimpleMath::Vector3::Up)) {
         return;
     }
 

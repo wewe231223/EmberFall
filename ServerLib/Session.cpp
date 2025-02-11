@@ -44,6 +44,7 @@ void Session::Close() {
         return; // 이경우 해당 쓰레드에서 별다른 작업을 할 필요는 없다.
     }
 
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Close Session Success");
     ::closesocket(mSocket);
     mSocket = INVALID_SOCKET;
 }
@@ -143,8 +144,6 @@ void Session::RegisterSend(void* data, size_t size) {
 }
 
 void Session::ProcessRecv(INT32 numOfBytes) {
-    auto coreService = GetCore();
-
     mOverlappedRecv.owner.reset();
     if (0 >= numOfBytes) {
         Disconnect();
@@ -158,6 +157,7 @@ void Session::ProcessRecv(INT32 numOfBytes) {
     auto dataSize = numOfBytes - mPrevRemainSize;
 
     // 받아온 Recv 버퍼의 내용을 저장.
+    auto coreService = GetCore();
     if (0 == mPrevRemainSize) {
         coreService->GetPacketHandler()->Write(mOverlappedRecv.buffer.data(), dataSize);
         RegisterRecv();
@@ -287,6 +287,7 @@ void Session::OnConnect() { }
 
 void Session::Disconnect() {
     auto coreService = GetCore();
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Session [{}] Disconnected", GetId());
     if (NetworkType::SERVER == coreService->GetType()) {
         auto serverCore = std::static_pointer_cast<ServerCore>(coreService);
         serverCore->GetSessionManager()->CloseSession(GetId());

@@ -32,7 +32,7 @@
 
 #include "INetworkObject.h"
 
-using RecvBuf = NetworkBuf<BUF_RW_SIZE>;
+using RecvBuf = NetworkBuf<BUF_NETWORK_RECV_SIZE>;
 
 class Session : public INetworkObject {
 public:

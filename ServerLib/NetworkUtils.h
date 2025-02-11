@@ -110,6 +110,11 @@ namespace MathUtil {
     inline constexpr float EPSILON = 1.0e-06f;
     inline constexpr SimpleMath::Vector3 EPSILON_VEC3 = SimpleMath::Vector3{ EPSILON };
 
+    inline SimpleMath::Vector3 AbsVector(const SimpleMath::Vector3& v)
+    {
+        return DirectX::XMVectorAbs(v);
+    }
+
     inline bool IsVectorZero(const SimpleMath::Vector3& v)
     {
         auto absVector = DirectX::XMVectorAbs(v);

@@ -41,6 +41,7 @@ SendBufferFactory::~SendBufferFactory() { }
 
 OverlappedSend* SendBufferFactory::GetOverlapped(void* data, size_t dataSize) {
     if (dataSize > MEM_BLOCK_SIZES[MEM_BLOCK_SIZE_CNT - 1] or 0 == dataSize) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Send buffer DataSize Error Size: {}", dataSize);
         return nullptr;
     }
 
@@ -51,9 +52,11 @@ OverlappedSend* SendBufferFactory::GetOverlapped(void* data, size_t dataSize) {
 bool SendBufferFactory::ReleaseOverlapped(OverlappedSend* overlapped) {
     size_t dataSize = overlapped->wsaBuf.len;
     if (dataSize > MEM_BLOCK_SIZES[MEM_BLOCK_SIZE_CNT - 1] or 0 == dataSize) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "ReleaseFail Send buffer DataSize Error Size: {}", dataSize);
         return false;
     }
 
+    overlapped->owner.reset();
     size_t bufferSize = *std::upper_bound(MEM_BLOCK_SIZES, MEM_BLOCK_SIZES + MEM_BLOCK_SIZE_CNT, dataSize);
 
     return mBuffers[bufferSize].ReleaseOverlapped(overlapped);

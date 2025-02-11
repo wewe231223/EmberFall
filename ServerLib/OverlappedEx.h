@@ -77,7 +77,7 @@ struct OverlappedRecv : public OverlappedEx {
     OverlappedRecv& operator=(OverlappedRecv&&) noexcept = delete;
 
 public:
-    NetworkBuf<BUF_RW_SIZE> buffer;
+    NetworkBuf<BUF_NETWORK_RECV_SIZE> buffer;
 };
 
 struct OverlappedSend : public OverlappedEx {

@@ -54,6 +54,7 @@ void IOCPCore::IOWorker() {
         SessionIdType clientId = static_cast<SessionIdType>(completionKey);
 
         if (not success) {
+            overlappedEx->owner.reset();
             if (IOType::ACCEPT == overlappedEx->type) {
                 gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Accept Error!!");
                 Crash("Accept Error");
@@ -64,14 +65,23 @@ void IOCPCore::IOWorker() {
             }
 
             // IOType::SEND or IOType::RECV
-            gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Client[{}] Error", static_cast<INT32>(clientId));
             if (NetworkType::SERVER == mCoreService->GetType()) {
                 auto serverCore = std::static_pointer_cast<ServerCore>(mCoreService);
+                if (IOType::SEND == overlappedEx->type) {
+                    serverCore->GetSendBufferFactory()->ReleaseOverlapped(reinterpret_cast<OverlappedSend*>(overlappedEx));
+                    gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Client[{}] Error Send", static_cast<INT32>(clientId));
+                }
+
                 serverCore->GetSessionManager()->CloseSession(clientId);
                 continue;
             }
             else {
                 auto clientCore = std::static_pointer_cast<ClientCore>(mCoreService);
+                if (IOType::SEND == overlappedEx->type) {
+                    clientCore->GetSendBufferFactory()->ReleaseOverlapped(reinterpret_cast<OverlappedSend*>(overlappedEx));
+                    gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Error Send");
+                }
+
                 clientCore->CloseSession();
                 break;
             }
