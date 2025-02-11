@@ -93,11 +93,9 @@ void Physics::UpdateFriction(const float deltaTime, const SimpleMath::Vector3& m
     }
 
     float normalForce = mFactor.mass * GRAVITY_ACCELERATION;
-
     SimpleMath::Vector3 frictionForce = -moveDir * mFactor.friction * normalForce;
     frictionForce.y = 0.0f; // Y축 계산 X
     SimpleMath::Vector3 frictionAcc = frictionForce / mFactor.mass;
-
     SimpleMath::Vector3 resultVelocity = mVelocity + frictionAcc * deltaTime;
 
     mVelocity.x = (mVelocity.x * resultVelocity.x < 0.0f) ? 0.0f : resultVelocity.x;
@@ -110,10 +108,10 @@ void Physics::UpdateGravity(const float deltaTime, const SimpleMath::Vector3& mo
         return;
     }
 
-    SimpleMath::Vector3 dragForce = SimpleMath::Vector3::Down * mFactor.dragCoeffi * speed * speed;
+    SimpleMath::Vector3 dragForce = SimpleMath::Vector3::Up * mFactor.dragCoeffi * speed * speed;
     SimpleMath::Vector3 dragAcceleration = dragForce / mFactor.mass;
 
     // 최종 가속도 = 중력 + 공기 저항
-    SimpleMath::Vector3 acceleration = SimpleMath::Vector3::Down * GRAVITY_ACCELERATION + dragForce;
+    SimpleMath::Vector3 acceleration = SimpleMath::Vector3::Down * GRAVITY_ACCELERATION + dragAcceleration;
     mVelocity += acceleration * deltaTime;
 }

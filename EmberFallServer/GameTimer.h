@@ -39,9 +39,11 @@ public:
     UINT32 GetFps() const;
     float GetDeltaTime() const;
 
+    void Sync(INT32 syncFrame=0);
     void Update();
 
 private:
+    float mSyncRatio{ };
     float mDeltaTime{ };
     float mTimeScale{ };
     float mFpsCounter{ };

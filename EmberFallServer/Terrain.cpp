@@ -141,6 +141,14 @@ void Terrain::ResetHeightMap(std::shared_ptr<HeightMap> heightMap) {
     mHeightMap = heightMap;
 }
 
+SimpleMath::Vector2 Terrain::GetMapSize() const {
+    return mMapSize;
+}
+
+std::pair<SimpleMath::Vector2, SimpleMath::Vector2> Terrain::GetArea() const {
+    return std::make_pair(mLeftBottom, mLeftBottom + mMapSize);
+}
+
 std::shared_ptr<HeightMap> Terrain::GetHeightMap() const {
     return mHeightMap;
 }

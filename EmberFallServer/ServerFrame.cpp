@@ -32,12 +32,11 @@ void ServerFrame::InitGameScenes() {
     mGameScenes.emplace_back(std::make_shared<PlayScene>());
 
     mCurrentScene = mGameScenes.front();
+    mTimer->Sync(30);
 }
 
 void ServerFrame::GameLoop() {
     while (true) {
-        std::this_thread::sleep_for(33ms);
-
         mTimer->Update();
         const float deltaTime = mTimer->GetDeltaTime();
 

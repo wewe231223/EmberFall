@@ -31,6 +31,8 @@ public:
     
 public:
     bool IsActive() const;
+    void SetActive(bool active);
+
     void InitId(NetworkObjectIdType id);
     NetworkObjectIdType GetId() const;
 

@@ -156,6 +156,7 @@
     </ClCompile>
     <ClCompile Include="Physics.cpp" />
     <ClCompile Include="PlayerScript.cpp" />
+    <ClCompile Include="GameRandom.cpp" />
     <ClCompile Include="Script.cpp" />
     <ClCompile Include="ServerFrame.cpp" />
     <ClCompile Include="ServerGameScene.cpp" />
@@ -173,6 +174,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Physics.h" />
     <ClInclude Include="PlayerScript.h" />
+    <ClInclude Include="GameRandom.h" />
     <ClInclude Include="Script.h" />
     <ClInclude Include="ServerFrame.h" />
     <ClInclude Include="ServerGameScene.h" />

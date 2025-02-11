@@ -14,6 +14,10 @@ bool GameObject::IsActive() const {
     return true == mActive;
 }
 
+void GameObject::SetActive(bool active) {
+    mActive = active;
+}
+
 void GameObject::InitId(NetworkObjectIdType id) {
     mId = id;
 }

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <filesystem>
+
+#include <random>
 #include <map>
 
 #include "../ServerLib/pch.h"
@@ -13,3 +15,4 @@
 #endif
 
 #include "Events.h"
+#include "GameRandom.h"

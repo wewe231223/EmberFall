@@ -30,6 +30,15 @@ float GameTimer::GetDeltaTime() const {
     return mDeltaTime;
 }
 
+void GameTimer::Sync(INT32 syncFrame) {
+    if (0 == syncFrame) {
+        mSyncRatio = 0.0f;
+        return;
+    }
+
+    mSyncRatio = 1.0f / static_cast<float>(syncFrame);
+}
+
 void GameTimer::Update() {
     static UINT32 fpsCount{ };
     ++fpsCount;
@@ -40,8 +49,16 @@ void GameTimer::Update() {
     mFpsCounter += mDeltaTime;
     if (1.0f <= mFpsCounter) {
         mFps = fpsCount;
+        fpsCount = 0;
         mFpsCounter = 0.0f;
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "FPS: {}", mFps);
     }
 
     mPrevPoint = curPoint;
+
+    if (mDeltaTime < mSyncRatio) {
+        auto sleepMilliSec = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::duration<float>(mSyncRatio - mDeltaTime));
+        std::this_thread::sleep_for(sleepMilliSec);
+        mDeltaTime = mSyncRatio;
+    }
 }

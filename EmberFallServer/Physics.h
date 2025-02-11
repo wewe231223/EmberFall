@@ -20,8 +20,8 @@ inline static constexpr float DEFAULT_JUMP_TIEM = 0.2f;
 struct PhysicsFactor {
     float acceleration{ DEFAULT_ACCELERATION };
     float mass{ DEFAULT_MASS };
-    float jumpForce{ mass * 300.f };
-    float dragCoeffi{ 0.5f };
+    float jumpForce{ mass * 1000.f };
+    float dragCoeffi{ 0.1f };
     float maxMoveSpeed{ DEFAULT_MAX_MOVE_SPEED };
     float friction{ 1.2f };
     float jumpTime{ 0.2f };

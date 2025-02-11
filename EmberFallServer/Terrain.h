@@ -56,6 +56,9 @@ public:
 
     void ResetHeightMap(std::shared_ptr<HeightMap> heightMap = nullptr);
 
+    SimpleMath::Vector2 GetMapSize() const;
+    std::pair<SimpleMath::Vector2, SimpleMath::Vector2> GetArea() const;
+
     float GetHeight(const SimpleMath::Vector2& pos, float offset = 0.0f) const;
     float GetHeight(const SimpleMath::Vector3& pos, float offset = 0.0f) const;
 
@@ -63,7 +66,7 @@ public:
     bool Contains(const std::shared_ptr<class Collider>& collider, float& height);
 
 private:
-    float mScaleY{ 0.0f };
+    float mScaleY{ 0.3f };
     SimpleMath::Vector2 mMapSize{ };
     SimpleMath::Vector2 mTileSize{ };
     SimpleMath::Vector2 mLeftBottom{ };

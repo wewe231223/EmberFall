@@ -75,6 +75,24 @@ void EchoTestScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCo
 PlayScene::PlayScene() {
     mTerrain = std::make_shared<Terrain>("../Resources/HeightMap.raw");
     mCollisionWorld.AddTerrain(mTerrain);
+
+    mObjects.resize(MAX_OBJECT);
+    for (auto& object : mObjects) {
+        object = std::make_shared<GameObject>();
+        object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
+        object->SetColor(Random::GetRandomColor());
+        object->GetTransform()->Translate(Random::GetRandomVec3(-500.0f, 500.0f));
+        object->GetTransform()->Scale(SimpleMath::Vector3{ 5.0f });
+        object->GetTransform()->SetY(1000.0f);
+
+        object->SetActive(true);
+
+        //auto& factors = object->GetPhysics()->mFactor;
+        //factors.mass = 10.0f;
+
+        mCollisionWorld.AddCollisionPair("Player-Object", nullptr, object);
+        mCollisionWorld.AddObjectInTerrainGroup(object);
+    }
 }
 
 PlayScene::~PlayScene() { }
@@ -124,6 +142,10 @@ void PlayScene::Update(const float deltaTime) {
         obj->Update(deltaTime);
     }
 
+    for (auto& object : mObjects) {
+        object->Update(deltaTime);
+    }
+
     mCollisionWorld.HandleCollision();
     mCollisionWorld.HandleTerrainCollision();
 }
@@ -144,6 +166,7 @@ void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) 
     PacketGameObject objPacket{ sizeof(PacketGameObject), PacketType::PT_GAME_OBJECT_SC };
     for (size_t id{ 0 }; auto & obj : mObjects) {
         objPacket.objectId = id;
+        objPacket.state = obj->IsActive();
         objPacket.color = obj->GetColor();
         objPacket.position = obj->GetPosition();
         objPacket.rotation = obj->GetRotation();
@@ -156,7 +179,11 @@ void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) 
 
 void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
     mPlayers[id] = playerObject;
+
+    playerObject->GetTransform()->Translate(Random::GetRandomVec3(-500.0f, 500.0f));
+
     mCollisionWorld.AddCollisionObject("Player", playerObject);
+    mCollisionWorld.AddCollisionObject("Player-Object", playerObject);
     mCollisionWorld.AddObjectInTerrainGroup(playerObject);
 }
 
@@ -167,6 +194,7 @@ void PlayScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerO
     }
 
     mCollisionWorld.RemoveObjectFromGroup("Player", playerObject);
+    mCollisionWorld.AddCollisionPair("Player-Object", playerObject);
     mCollisionWorld.RemoveObjectFromTerrainGroup(playerObject);
 
     mPlayers.erase(it);
