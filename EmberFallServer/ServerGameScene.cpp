@@ -77,13 +77,16 @@ PlayScene::PlayScene() {
     mCollisionWorld.AddTerrain(mTerrain);
 
     mObjects.resize(MAX_OBJECT);
-    for (auto& object : mObjects) {
+    for (size_t id{ 0 }; auto & object : mObjects) {
         object = std::make_shared<GameObject>();
+        object->InitId(OBJECT_ID_START + id);
+        ++id;
+
         object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
         object->SetColor(Random::GetRandomColor());
         object->GetTransform()->Translate(Random::GetRandomVec3(-500.0f, 500.0f));
         object->GetTransform()->Scale(SimpleMath::Vector3{ 5.0f });
-        object->GetTransform()->SetY(1000.0f);
+        object->GetTransform()->SetY(Random::GetRandom<float>(500.0f, 1000.0f));
 
         object->SetActive(true);
 
@@ -91,6 +94,7 @@ PlayScene::PlayScene() {
         //factors.mass = 10.0f;
 
         mCollisionWorld.AddCollisionPair("Player-Object", nullptr, object);
+        mCollisionWorld.AddCollisionObject("Object", object);
         mCollisionWorld.AddObjectInTerrainGroup(object);
     }
 }

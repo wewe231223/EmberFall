@@ -59,9 +59,9 @@ void GameObject::SetColor(const SimpleMath::Vector3& color) {
 }
 
 SimpleMath::Vector3 GameObject::GetColor() const {
-    if (mCollider->IsColliding()) {
-        return SimpleMath::Vector3{ 1.0f, 0.0f, 0.0f }; // RED
-    }
+    //if (mCollider->IsColliding()) { // 디버깅을 위한 색상 변경
+    //    return SimpleMath::Vector3{ 1.0f, 0.0f, 0.0f }; // RED
+    //}
     return mColor;
 }
 
@@ -99,18 +99,18 @@ void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameOb
 }
 
 void GameObject::OnCollisionTerrain(const float height) {
-    mPhysics->SetOnGround(true);
     mTransform->SetY(height);
+    mPhysics->SetOnGround(true);
 }
 
 void GameObject::OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Collision Start!!! Group: {}, opponent ID: {}", groupTag, opponent->GetId());
+    //gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Collision Start!!! Group: {}, opponent ID: {}", groupTag, opponent->GetId());
 }
 
 void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { 
-    if (ColliderType::ORIENTED_BOX != mCollider->GetType()) {
-        return;
-    }
+    //if (ColliderType::ORIENTED_BOX != mCollider->GetType()) {
+    //    return;
+    //}
 
     auto obb1 = std::static_pointer_cast<OrientedBoxCollider>(mCollider)->GetBoundingBox();
     auto obb2 = std::static_pointer_cast<OrientedBoxCollider>(opponent->mCollider)->GetBoundingBox();
@@ -120,16 +120,25 @@ void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<Ga
     // 내가 무거울 수록 덜 밀려나는 구조.
     float coefficient = opponentMess / (myMess + opponentMess); // 0.0f ~ 1.0f 사이 값.
     auto repulsiveVec = MathUtil::CalcObbRepulsiveVec(obb1, obb2) * coefficient;
-    if (mPhysics->IsOnGround()) {
-        repulsiveVec.y = 0.0f;
+
+    if (mPhysics->IsOnGround() and opponent->mPhysics->IsOnGround()) {
+        mTransform->Translate(repulsiveVec);
+        return;
     }
     else {
-        repulsiveVec.y /= coefficient; // 땅에 있지 않은 오브젝트는 반발력을 최대로
+        if (mPhysics->IsOnGround()) {
+            repulsiveVec = SimpleMath::Vector3::Zero;
+        }
+        else {
+            mPhysics->SetOnOtherObject(true);
+            repulsiveVec.x = repulsiveVec.z = 0.0f;
+            repulsiveVec.y /= coefficient; // 땅에 있지 않은 오브젝트는 반발력을 최대로
+        }
     }
 
     mTransform->Translate(repulsiveVec);
 }
 
 void GameObject::OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { 
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Collision End!!! Group: {}, opponent ID: {}", groupTag, opponent->GetId());
+    //gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Collision End!!! Group: {}, opponent ID: {}", groupTag, opponent->GetId());
 }

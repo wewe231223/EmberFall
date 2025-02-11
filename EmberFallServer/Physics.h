@@ -35,9 +35,11 @@ public:
 
 public:
     void SetOnGround(bool state);
+    void SetOnOtherObject(bool state);
     void SetTransform(const std::shared_ptr<Transform>& transform);
 
     bool IsOnGround() const;
+    bool IsOnOtherObject() const;
     bool IsMoving() const;
     bool IsMovingXZ() const;
 
@@ -59,6 +61,7 @@ public:
 
 private:
     bool mOnGround{ true };
+    bool mOnOtherObject{ true };
 
     SimpleMath::Vector3 mVelocity{ SimpleMath::Vector3::Zero };
     std::weak_ptr<Transform> mTransform{ };

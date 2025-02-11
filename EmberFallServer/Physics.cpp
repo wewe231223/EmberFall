@@ -18,8 +18,16 @@ bool Physics::IsOnGround() const {
     return mOnGround;
 }
 
+bool Physics::IsOnOtherObject() const {
+    return mOnOtherObject;
+}
+
 void Physics::SetOnGround(bool state) {
     mOnGround = state;
+}
+
+void Physics::SetOnOtherObject(bool state) {
+    mOnOtherObject = state;
 }
 
 void Physics::SetTransform(const std::shared_ptr<Transform>& transform) {
@@ -73,6 +81,8 @@ void Physics::Update(const float deltaTime) {
 
     auto transform = mTransform.lock();
     transform->Move(mVelocity * deltaTime);
+
+    mOnOtherObject = false;
 }
 
 void Physics::ClampVelocity() {
@@ -88,7 +98,8 @@ void Physics::ClampVelocity() {
 }
 
 void Physics::UpdateFriction(const float deltaTime, const SimpleMath::Vector3& moveDir, const float speed) {
-    if (false == IsOnGround() or MathUtil::IsEqualVector(MathUtil::AbsVector(moveDir), SimpleMath::Vector3::Up)) {
+    if (false == IsOnGround() or IsOnOtherObject() or
+        MathUtil::IsEqualVector(MathUtil::AbsVector(moveDir), SimpleMath::Vector3::Up)) {
         return;
     }
 
@@ -103,7 +114,7 @@ void Physics::UpdateFriction(const float deltaTime, const SimpleMath::Vector3& m
 }
 
 void Physics::UpdateGravity(const float deltaTime, const SimpleMath::Vector3& moveDir, const float speed) {
-    if (IsOnGround()) {
+    if (IsOnGround() or IsOnOtherObject()) {
         mVelocity.y = 0.0f;
         return;
     }

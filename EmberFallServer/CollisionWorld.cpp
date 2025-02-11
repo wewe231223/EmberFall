@@ -111,6 +111,7 @@ void CollisionWorld::HandleTerrainCollision() {
         onGround = false;
         if (mTerrain->Contains(object->GetCollider(), terrainHeight)) {
             onGround = true;
+            object->GetPhysics()->mFactor.friction = 1.0f;
             object->OnCollisionTerrain(terrainHeight);
         }
 

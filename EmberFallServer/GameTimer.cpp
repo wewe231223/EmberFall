@@ -32,7 +32,7 @@ float GameTimer::GetDeltaTime() const {
 
 void GameTimer::Sync(INT32 syncFrame) {
     if (0 == syncFrame) {
-        mSyncRatio = 0.0f;
+        mSyncRatio = 0.0f; 
         return;
     }
 

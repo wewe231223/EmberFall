@@ -70,7 +70,7 @@ public:
 };
 
 class PlayScene : public IServerGameScene {
-    inline static constexpr size_t MAX_OBJECT = 100; // 최대 오브젝트 개수 제한.
+    inline static constexpr size_t MAX_OBJECT = 200; // 최대 오브젝트 개수 제한.
 
 public: 
     PlayScene();
