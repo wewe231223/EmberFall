@@ -2,7 +2,6 @@
 #include "LogConsole.h"
 
 LogConsole::LogConsole() {
-    ::system("mode con:cols=80 lines=20");
     mConsoleHandle = ::GetStdHandle(STD_OUTPUT_HANDLE);
     mPrintThread = std::thread{ [=]() { Worker(); } };
 }

@@ -86,6 +86,7 @@ void Session::RegisterSend(void* packet) {
     auto sendBufferFactory = GetCore()->GetSendBufferFactory();
     auto overlappedSend = sendBufferFactory->GetOverlapped(packet, reinterpret_cast<char*>(packet)[0]);
     if (nullptr == overlappedSend) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Get Overlapped Send Failure");
         return;
     }
 
@@ -117,6 +118,7 @@ void Session::RegisterSend(void* data, size_t size) {
     auto sendBufferFactory = GetCore()->GetSendBufferFactory();
     auto overlappedSend = sendBufferFactory->GetOverlapped(data, size);
     if (nullptr == overlappedSend) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Get Overlapped Send Failure");
         return;
     }
 
@@ -143,7 +145,6 @@ void Session::RegisterSend(void* data, size_t size) {
 void Session::ProcessRecv(INT32 numOfBytes) {
     auto coreService = GetCore();
 
-    //std::cout << std::format("RECV Len: {}\n", numOfBytes);
     mOverlappedRecv.owner.reset();
     if (0 >= numOfBytes) {
         Disconnect();
@@ -170,7 +171,8 @@ void Session::ProcessRecv(INT32 numOfBytes) {
 void Session::ProcessSend(INT32 numOfBytes, OverlappedSend* overlappedSend) {
     auto coreService = GetCore();
     if (0 >= numOfBytes) {
-
+        Disconnect();
+        return;
     }
 
     auto sendBufferFactory = coreService->GetSendBufferFactory();
@@ -288,12 +290,10 @@ void Session::Disconnect() {
     if (NetworkType::SERVER == coreService->GetType()) {
         auto serverCore = std::static_pointer_cast<ServerCore>(coreService);
         serverCore->GetSessionManager()->CloseSession(GetId());
-        return;
     }
     else {
         auto clientCore = std::static_pointer_cast<ClientCore>(coreService);
         clientCore->CloseSession();
-        return;
     }
 }
 
@@ -305,6 +305,7 @@ void Session::HandleSocketError(INT32 errorCore) {
         break;
 
     default:
+        gLogConsole->PushLog(DebugLevel::LEVEL_ERROR, "Socket Error: {}", NetworkUtil::WSAErrorMessage());
         break;
     }
 }

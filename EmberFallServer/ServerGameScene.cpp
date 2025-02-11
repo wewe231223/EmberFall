@@ -90,7 +90,7 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, st
     while (not buffer.IsReadEnd()) {
         buffer.Read(header);
         if (not mPlayers.contains(header.id)) {
-            buffer.Read(nullptr, header.size);
+            buffer.AdvanceReadPos(header.size);
             break;
         }
         

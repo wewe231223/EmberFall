@@ -32,7 +32,7 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-inline constexpr size_t RECV_BUF_SIZE = std::numeric_limits<unsigned short>::max();
+inline constexpr size_t RECV_BUF_SIZE = std::numeric_limits<unsigned short>::max() * 10; // 655350
 
 class RecvBuffer {
 public:
@@ -50,6 +50,7 @@ public:
     bool IsReadEnd() const;
     char* Data();
 
+    void AdvanceReadPos(size_t size);
     void Read(void* buffer, size_t size);
     void Write(void* data, size_t size);
     void Reset();
