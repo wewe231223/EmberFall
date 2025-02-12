@@ -20,6 +20,9 @@
     <Filter Include="Log">
       <UniqueIdentifier>{de9f8042-7637-4ffc-be8c-5e47c53929b8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Literals">
+      <UniqueIdentifier>{ca88efeb-3a56-4111-b747-bc44139a03a1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetworkUtils.cpp">
@@ -75,6 +78,9 @@
     </ClCompile>
     <ClCompile Include="ObjectPool.cpp">
       <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="UnitLiterals.cpp">
+      <Filter>Pch</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -134,6 +140,9 @@
     </ClInclude>
     <ClInclude Include="ObjectPool.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="UnitLiterals.h">
+      <Filter>Literals</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

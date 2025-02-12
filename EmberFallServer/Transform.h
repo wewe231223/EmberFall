@@ -44,6 +44,7 @@ public:
     void Update();
 
 private:
+    SimpleMath::Vector3 mPrevPosition{ SimpleMath::Vector3::Zero };
     SimpleMath::Vector3 mPosition{ SimpleMath::Vector3::Zero };
     SimpleMath::Quaternion mRotation{ SimpleMath::Quaternion::Identity };
     SimpleMath::Vector3 mScale{ SimpleMath::Vector3::One };

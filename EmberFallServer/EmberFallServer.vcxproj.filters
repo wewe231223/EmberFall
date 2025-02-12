@@ -23,15 +23,15 @@
     <Filter Include="Utils">
       <UniqueIdentifier>{8389f802-350b-4427-bf5b-bc265ed71c1b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{5367a523-1d53-4f63-b084-8ade79c3e76a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <Filter>pch</Filter>
     </ClCompile>
     <ClCompile Include="ServerFrame.cpp">
-      <Filter>Frame</Filter>
-    </ClCompile>
-    <ClCompile Include="ServerGameScene.cpp">
       <Filter>Frame</Filter>
     </ClCompile>
     <ClCompile Include="EmberFallServer.cpp">
@@ -79,13 +79,19 @@
     <ClCompile Include="Input.cpp">
       <Filter>Frame</Filter>
     </ClCompile>
+    <ClCompile Include="GameEvent.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="ViewList.cpp">
+      <Filter>pch</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerGameScene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>pch</Filter>
-    </ClInclude>
-    <ClInclude Include="ServerGameScene.h">
-      <Filter>Frame</Filter>
     </ClInclude>
     <ClInclude Include="GameTimer.h">
       <Filter>Frame</Filter>
@@ -128,6 +134,15 @@
     </ClInclude>
     <ClInclude Include="Input.h">
       <Filter>Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEvent.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewList.h">
+      <Filter>pch</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerGameScene.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

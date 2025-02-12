@@ -146,6 +146,7 @@
     <ClCompile Include="CollisionWorld.cpp" />
     <ClCompile Include="EmberFallServer.cpp" />
     <ClCompile Include="Events.cpp" />
+    <ClCompile Include="GameEvent.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameObjectComponent.cpp" />
     <ClCompile Include="GameTimer.cpp" />
@@ -162,11 +163,13 @@
     <ClCompile Include="ServerGameScene.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="ViewList.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionWorld.h" />
     <ClInclude Include="Events.h" />
+    <ClInclude Include="GameEvent.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameObjectComponent.h" />
     <ClInclude Include="GameTimer.h" />
@@ -180,6 +183,7 @@
     <ClInclude Include="ServerGameScene.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="ViewList.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

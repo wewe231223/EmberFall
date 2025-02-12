@@ -35,7 +35,7 @@
 
 class GameObject;
 
-class IServerGameScene abstract {
+class IServerGameScene abstract : public std::enable_shared_from_this<IServerGameScene> {
 public:
     // ServerScene에서 한번에 처리할 수 있는 EVENT (5번의 try_pop)
     static constexpr size_t ONCE_PROCESSING_EVENT = 5;
@@ -45,6 +45,9 @@ public:
     virtual ~IServerGameScene();
 
 public:
+    std::vector<std::shared_ptr<class GameObject>>& GetPlayers() { };
+    virtual std::vector<std::shared_ptr<class GameObject>>& GetObjects() abstract;
+
     virtual void DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerEvent>& eventQueue);
 
     virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) abstract;
@@ -64,9 +67,14 @@ public:
     ~EchoTestScene();
 
 public:
+    virtual std::vector<std::shared_ptr<class GameObject>>& GetObjects() override { return mObjects; }
+
     virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) override;
     virtual void Update(const float deltaTime) override;
     virtual void SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) override;
+
+private:
+    std::vector<std::shared_ptr<class GameObject>> mObjects{ };
 };
 
 class PlayScene : public IServerGameScene {
@@ -77,6 +85,8 @@ public:
     ~PlayScene();
 
 public:
+    virtual std::vector<std::shared_ptr<class GameObject>>& GetObjects() override;
+     
     virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) override;
     virtual void Update(const float deltaTime) override;
     virtual void SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) override;

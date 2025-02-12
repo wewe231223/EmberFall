@@ -4,6 +4,7 @@
 #include "Terrain.h"
 #include "Collider.h"
 #include "Input.h"
+#include "PlayerScript.h"
 
 IServerGameScene::IServerGameScene() { }
 
@@ -90,8 +91,8 @@ PlayScene::PlayScene() {
 
         object->SetActive(true);
 
-        //auto& factors = object->GetPhysics()->mFactor;
-        //factors.mass = 10.0f;
+        auto& factors = object->GetPhysics()->mFactor;
+        factors.mass = 10.0f;
 
         mCollisionWorld.AddCollisionPair("Player-Object", nullptr, object);
         mCollisionWorld.AddCollisionObject("Object", object);
@@ -100,6 +101,10 @@ PlayScene::PlayScene() {
 }
 
 PlayScene::~PlayScene() { }
+
+std::vector<std::shared_ptr<class GameObject>>& PlayScene::GetObjects() {
+    return mObjects;
+}
 
 void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<InputManager>& inputManager) {
     auto packetHandler = serverCore->GetPacketHandler();
@@ -167,23 +172,22 @@ void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) 
         sessionManager->SendAll(&playerPacket);
     }
 
-    PacketGameObject objPacket{ sizeof(PacketGameObject), PacketType::PT_GAME_OBJECT_SC };
-    for (size_t id{ 0 }; auto & obj : mObjects) {
-        objPacket.objectId = id;
-        objPacket.state = obj->IsActive();
-        objPacket.color = obj->GetColor();
-        objPacket.position = obj->GetPosition();
-        objPacket.rotation = obj->GetRotation();
-        objPacket.scale = obj->GetScale();
-        sessionManager->SendAll(&objPacket);
-
-        ++id;
-    }
+    //PacketGameObject objPacket{ sizeof(PacketGameObject), PacketType::PT_GAME_OBJECT_SC };
+    //for (auto & obj : mObjects) {
+    //    objPacket.objectId = obj->GetId() - OBJECT_ID_START;
+    //    objPacket.state = obj->IsActive();
+    //    objPacket.color = obj->GetColor();
+    //    objPacket.position = obj->GetPosition();
+    //    objPacket.rotation = obj->GetRotation();
+    //    objPacket.scale = obj->GetScale();
+    //    sessionManager->SendAll(&objPacket);
+    //}
 }
 
 void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
     mPlayers[id] = playerObject;
 
+    playerObject->GetComponent<PlayerScript>()->ResetGameScene(shared_from_this());
     playerObject->GetTransform()->Translate(Random::GetRandomVec3(-500.0f, 500.0f));
 
     mCollisionWorld.AddCollisionObject("Player", playerObject);

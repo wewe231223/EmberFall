@@ -54,11 +54,23 @@ public:
         mCollider = std::make_shared<ColliderType>(args...);
         mCollider->SetTransform(mTransform);
     }
-
+    
     template <typename ComponentType, typename... Args>
         requires std::derived_from<ComponentType, GameObjectComponent>
     void CreateComponent(Args&&... args) {
         mComponents.emplace_back(std::make_shared<ComponentType>(args...));
+    }
+
+    template <typename ComponentType> requires std::derived_from<ComponentType, GameObjectComponent>
+    std::shared_ptr<ComponentType> GetComponent() {
+        for (auto& componenet : mComponents) {
+            auto ptr = std::dynamic_pointer_cast<ComponentType>(componenet);
+            if (nullptr != ptr) {
+                return ptr;
+            }
+        }
+
+        return nullptr;
     }
 
     void Update(const float deltaTime);

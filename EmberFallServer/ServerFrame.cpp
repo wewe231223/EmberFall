@@ -52,7 +52,7 @@ void ServerFrame::OnPlayerConnect(SessionIdType id) {
     
     object->InitId(id);
     object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
-    object->CreateComponent<PlayerScript>(object, mInputManager->GetInput(id));
+    object->CreateComponent<PlayerScript>(object, mInputManager->GetInput(id), mServerCore->GetSessionManager());
     object->GetTransform()->Scale(SimpleMath::Vector3{ 10.0f });
     object->SetColor(SimpleMath::Vector3{ RAND_COLOR, RAND_COLOR, RAND_COLOR });
 

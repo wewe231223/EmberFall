@@ -2,15 +2,17 @@
 #include "PlayerScript.h"
 #include "Input.h"
 
+#include "GameObject.h"
 #include "ServerGameScene.h"
 
-PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input) 
-    : Script{ owner }, mInput{ input } { }
+PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input, std::shared_ptr<SessionManager> sessionManager)
+    : Script{ owner }, mInput{ input }, mViewList{ static_cast<SessionIdType>(owner->GetId()), sessionManager } {}
 
 PlayerScript::~PlayerScript() { }
 
 void PlayerScript::ResetGameScene(std::shared_ptr<IServerGameScene> gameScene) {
     mGameScene = gameScene;
+    mViewList.mCurrentScene = gameScene;
 }
 
 std::shared_ptr<IServerGameScene> PlayerScript::GetCurrentScene() const {
@@ -18,6 +20,10 @@ std::shared_ptr<IServerGameScene> PlayerScript::GetCurrentScene() const {
 }
 
 void PlayerScript::Update(const float deltaTime) {
+    mViewList.mPosition = GetOwner()->GetPosition();
+    mViewList.Update();
+    mViewList.Send();
+
     auto physics = GetPhysics();
     if (nullptr == physics) {
         return;

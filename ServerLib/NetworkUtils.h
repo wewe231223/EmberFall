@@ -97,24 +97,17 @@ namespace NetworkUtil {
 }
 
 namespace MathUtil {
-    using OBBPoints = std::array<SimpleMath::Vector3, 8>;
-    using OBBPlaneNormals = std::array<SimpleMath::Vector3, 3>;
-    using OBBEdges = std::array<SimpleMath::Vector3, 3>;
-
-    struct ProjectionRange {
-        float min;
-        float max;
-    };
-
     inline constexpr float SYSTEM_EPSILON = std::numeric_limits<float>::epsilon();
     inline constexpr float EPSILON = 1.0e-06f;
     inline constexpr SimpleMath::Vector3 EPSILON_VEC3 = SimpleMath::Vector3{ EPSILON };
 
+    // Absolute
     inline SimpleMath::Vector3 AbsVector(const SimpleMath::Vector3& v)
     {
         return DirectX::XMVectorAbs(v);
     }
 
+    // Compare EPSILON Vector
     inline bool IsVectorZero(const SimpleMath::Vector3& v)
     {
         auto absVector = DirectX::XMVectorAbs(v);
@@ -122,11 +115,13 @@ namespace MathUtil {
         return DirectX::XMVector3NearEqual(DirectX::XMVectorAbs(v), SimpleMath::Vector3::Zero, EPSILON_VEC3);
     }
 
+    // Compare v1, v2
     inline bool IsEqualVector(const SimpleMath::Vector3& v1, const SimpleMath::Vector3& v2) 
     {
         return DirectX::XMVector3NearEqual(v1, v2, EPSILON_VEC3);
     }
 
+    // Compare Zero or Epsilon
     template <typename T> requires std::is_arithmetic_v<T>
     inline bool IsZero(T val)
     {
@@ -138,11 +133,51 @@ namespace MathUtil {
         }
     }
 
+    // Projection Vector to Axis
     inline float Projection(const SimpleMath::Vector3& vector, SimpleMath::Vector3 axis)
     {
         axis.Normalize();
         return axis.Dot(vector);
     }
+
+    inline bool IsInRange(float radius, const SimpleMath::Vector3& point)
+    {
+        return point.LengthSquared() < (radius * radius);
+    }
+
+    inline float VectorLengthSq(const SimpleMath::Vector3& v1, const SimpleMath::Vector3& v2)
+    {
+        auto sub = v1 - v2;
+        return sub.LengthSquared();
+    }
+
+    inline float VectorLength(const SimpleMath::Vector3& v1, const SimpleMath::Vector3& v2)
+    {
+        auto sub = v1 - v2;
+        return sub.Length();
+    }
+
+    inline bool IsInRange(const SimpleMath::Vector3& center, float radius, const SimpleMath::Vector3& point)
+    {
+        return VectorLengthSq(center, point) < (radius * radius);
+    }
+
+    // Convert Vector3 to Vector2 , Ignore Y
+    inline SimpleMath::Vector2 ConvertXZVector(const SimpleMath::Vector3& v)
+    {
+        return SimpleMath::Vector2{ v.x, v.z };
+    }
+}
+
+namespace Collision {
+    using OBBPoints = std::array<SimpleMath::Vector3, 8>;
+    using OBBPlaneNormals = std::array<SimpleMath::Vector3, 3>;
+    using OBBEdges = std::array<SimpleMath::Vector3, 3>;
+
+    struct ProjectionRange {
+        float min;
+        float max;
+    };
 
     inline void GetOBBPlaneNormals(const DirectX::BoundingOrientedBox& obb, OBBPlaneNormals& normals)
     {
@@ -196,7 +231,7 @@ namespace MathUtil {
         return { *min, *max };
     }
 
-    inline SimpleMath::Vector3 CalcObbRepulsiveVec(const DirectX::BoundingOrientedBox& b1, const DirectX::BoundingOrientedBox& b2)
+    inline SimpleMath::Vector3 GetMinTransVec(const DirectX::BoundingOrientedBox& b1, const DirectX::BoundingOrientedBox& b2)
     {
         OBBPoints b1Points{ };
         GetOBBPoints(b1, b1Points); // OBB 8개 꼭짓점 얻기 (world 좌표계)
@@ -260,10 +295,50 @@ namespace MathUtil {
         SimpleMath::Vector3 c2 = b2.Center;
         auto toOpponentCenter = c1 - c2;
         // b2 에서 b1를 향하도록 벡터의 방향을 조정 (Dot결과에 따라서 부호 변경 (방향만 반대인 평행 벡터)
-        if (toOpponentCenter.Dot(shortestAxis) < EPSILON) {
+        if (toOpponentCenter.Dot(shortestAxis) < MathUtil::EPSILON) {
             shortestAxis = -shortestAxis;
         }
 
         return shortestAxis * minRange;
+    }
+
+    inline SimpleMath::Vector3 GetMinTransVec(const DirectX::BoundingSphere& s1, const DirectX::BoundingSphere& s2)
+    {
+        SimpleMath::Vector3 centerVec = SimpleMath::Vector3{ s1.Center } - SimpleMath::Vector3{ s2.Center };
+        float distBetweenCenter = centerVec.Length();
+
+        float overlap = distBetweenCenter - (s1.Radius + s2.Radius);
+        return centerVec * overlap;
+    }
+
+    inline SimpleMath::Vector3 GetMinTransVec(const DirectX::BoundingBox& b1, const DirectX::BoundingBox& b2)
+    {
+        SimpleMath::Vector3 minB1 = SimpleMath::Vector3{ b1.Center } - SimpleMath::Vector3{ b1.Extents };
+        SimpleMath::Vector3 maxB1 = SimpleMath::Vector3{ b1.Center } + SimpleMath::Vector3{ b1.Extents };
+
+        SimpleMath::Vector3 minB2 = SimpleMath::Vector3{ b2.Center } - SimpleMath::Vector3{ b2.Extents };
+        SimpleMath::Vector3 maxB2 = SimpleMath::Vector3{ b2.Center } + SimpleMath::Vector3{ b2.Extents };
+
+        auto overlappedBoxMin = SimpleMath::Vector3{
+            std::max(minB1.x, minB2.x),
+            std::max(minB1.y, minB2.y),
+            std::max(minB1.z, minB2.z)
+        }; // left bottom
+
+        auto overlappedBoxMax = SimpleMath::Vector3{
+            std::min(maxB1.x, maxB2.x),
+            std::min(maxB1.y, maxB2.y),
+            std::min(maxB1.z, maxB2.z)
+        }; // right top
+
+        return SimpleMath::Vector3::Zero;
+    }
+
+    inline SimpleMath::Vector3 GetMinTransVec(const DirectX::BoundingOrientedBox& b1, const DirectX::BoundingBox& b2)
+    {
+        DirectX::BoundingOrientedBox orientedBox;
+        DirectX::BoundingOrientedBox::CreateFromBoundingBox(orientedBox, b2);
+
+        return GetMinTransVec(b1, orientedBox);
     }
 }

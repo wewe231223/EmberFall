@@ -10,10 +10,13 @@
 //                  
 //                  Player는 현재 자신이 속한 GameScene의 정보를 알 수 있도록 참조하도록 함.
 // 
+//        02 - 11 : ViewList 추가
+// 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 #include "Script.h"
+#include "ViewList.h"
 
 class GameObject;
 class Input;
@@ -21,7 +24,7 @@ class IServerGameScene;
 
 class PlayerScript : public Script {
 public:
-    PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input);
+    PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input, std::shared_ptr<SessionManager> sessionManager);
     virtual ~PlayerScript();
 
 public:
@@ -37,5 +40,6 @@ public:
 private:
     std::shared_ptr<Input> mInput{ };
     std::shared_ptr<IServerGameScene> mGameScene{ };
+    ViewList mViewList;
 };
 
