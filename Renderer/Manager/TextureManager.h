@@ -54,12 +54,13 @@ public:
 	MaterialManager& operator=(MaterialManager&& other) = default;
 public:
 	void CreateMaterial(const std::string& name, const MaterialConstants& material);
-	void CreateMaterial(const std::string& name, const MaterialConstants& material, UINT diffuseTexture);
+	void CreateMaterial(const std::string& name, UINT diffuseTexture);
 
 	void UploadMaterial(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList); 
 
 	void Bind(ComPtr<ID3D12GraphicsCommandList> commandList);
 private:
 	DefaultBuffer mMaterialBuffer{};
-	std::vector<MaterialConstants> mMaterials{};
+	std::vector<MaterialConstants> mMaterialData{};
+	std::unordered_map<std::string, MaterialIndex> mMaterials{};
 };

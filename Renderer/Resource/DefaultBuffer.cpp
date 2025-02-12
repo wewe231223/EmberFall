@@ -82,6 +82,23 @@ DefaultBuffer::~DefaultBuffer() {
 	}
 }
 
+DefaultBuffer::DefaultBuffer(const DefaultBuffer& other) {
+	mBuffer = other.mBuffer;
+	mUploadBuffer = other.mUploadBuffer;
+	mElementSize = other.mElementSize;
+	mSize = other.mSize;
+}
+
+DefaultBuffer& DefaultBuffer::operator=(const DefaultBuffer& other) {
+	if (this != &other) {
+		mBuffer = other.mBuffer;
+		mUploadBuffer = other.mUploadBuffer;
+		mElementSize = other.mElementSize;
+		mSize = other.mSize;
+	}
+	return *this;
+}
+
 DefaultBuffer::DefaultBuffer(DefaultBuffer&& other) noexcept {
 	if (this != &other) {
 		mBuffer = std::move(other.mBuffer);

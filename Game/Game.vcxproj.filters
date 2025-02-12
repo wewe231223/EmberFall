@@ -39,7 +39,7 @@
     <ClCompile Include="System\GameObject.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="System\PlaneRenderSystem.cpp">
+    <ClCompile Include="System\MeshRenderSystem.cpp">
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="Component\MeshRenderer.cpp">
@@ -68,7 +68,7 @@
     <ClInclude Include="System\GameObject.h">
       <Filter>System</Filter>
     </ClInclude>
-    <ClInclude Include="System\PlaneRenderSystem.h">
+    <ClInclude Include="System\MeshRenderSystem.h">
       <Filter>System</Filter>
     </ClInclude>
     <ClInclude Include="System\System.h">

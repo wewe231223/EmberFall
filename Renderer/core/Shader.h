@@ -1,4 +1,5 @@
 #pragma once 
+#include <array>
 #include <string>
 #include <filesystem>
 #include "../Utility/DirectXInclude.h"
@@ -56,8 +57,8 @@ public:
 	GraphicsShaderBase(ComPtr<ID3D12Device> device); 
 	virtual ~GraphicsShaderBase(); 
 
-	GraphicsShaderBase(const GraphicsShaderBase&) = delete;
-	GraphicsShaderBase& operator=(const GraphicsShaderBase&) = delete;
+	GraphicsShaderBase(const GraphicsShaderBase&) = default;
+	GraphicsShaderBase& operator=(const GraphicsShaderBase&) = default;
 
 	GraphicsShaderBase(GraphicsShaderBase&&) = default;
 	GraphicsShaderBase& operator=(GraphicsShaderBase&&) = default;

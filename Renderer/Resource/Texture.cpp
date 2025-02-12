@@ -102,6 +102,23 @@ Texture::Texture(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> 
 
 }
 
+Texture::Texture(const Texture& other) {
+	mResource = other.mResource;
+	if (nullptr != other.mUploadbuffer) {
+		mUploadbuffer = other.mUploadbuffer;
+	}
+}
+
+Texture& Texture::operator=(const Texture& other) {
+	if (this != &other) {
+		mResource = other.mResource;
+		if (nullptr != other.mUploadbuffer) {
+			mUploadbuffer = other.mUploadbuffer;
+		}
+	}
+	return *this;
+}
+
 Texture::Texture(Texture&& other) noexcept {
 	mResource = std::move(other.mResource);
 	

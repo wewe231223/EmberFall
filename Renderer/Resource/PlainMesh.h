@@ -1,5 +1,5 @@
 #pragma once 
-#include "Resource/DefaultBuffer.h"
+#include "../Renderer/Resource/DefaultBuffer.h"
 
 class PlainMesh {
 public:
@@ -7,8 +7,8 @@ public:
 	~PlainMesh();
 	// Other Ctors... 
 
-	PlainMesh(const PlainMesh& other) = delete;
-	PlainMesh& operator=(const PlainMesh& other) = delete;
+	PlainMesh(const PlainMesh& other);
+	PlainMesh& operator=(const PlainMesh& other);
 
 	PlainMesh(PlainMesh&& other) noexcept;
 	PlainMesh& operator=(PlainMesh&& other) noexcept;

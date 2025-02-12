@@ -165,8 +165,8 @@ public:
 	DefaultBuffer(ComPtr<ID3D12Device> device, size_t unitSize, size_t numofElement);
 	~DefaultBuffer();
 
-	DefaultBuffer(const DefaultBuffer& other) = delete;
-	DefaultBuffer& operator=(const DefaultBuffer& other) = delete;
+	DefaultBuffer(const DefaultBuffer& other);
+	DefaultBuffer& operator=(const DefaultBuffer& other);
 
 	DefaultBuffer(DefaultBuffer&& other) noexcept; 
 	DefaultBuffer& operator=(DefaultBuffer&& other) noexcept;

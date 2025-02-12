@@ -13,6 +13,25 @@ public:
 	PartIdentifier() {
 		((mParts.set(Types::index)), ...);
 	}
+
+	PartIdentifier(const PartIdentifier& other) {
+		mParts = other.mParts;
+	}
+
+	PartIdentifier& operator=(const PartIdentifier& other) {
+		mParts = other.mParts;
+		return *this;
+	}
+
+	PartIdentifier(PartIdentifier&& other) noexcept {
+		mParts = std::move(other.mParts);
+	}
+
+	PartIdentifier& operator=(PartIdentifier&& other) noexcept {
+		mParts = std::move(other.mParts);
+		return *this;
+	}
+
 public:
 	bool operator==(const PartIdentifier& other) const {
 		return PartIdentifier::Test(other);

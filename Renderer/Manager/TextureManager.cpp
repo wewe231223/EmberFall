@@ -56,17 +56,25 @@ void TextureManager::Bind(ComPtr<ID3D12GraphicsCommandList> commandList) {
 }
 
 void MaterialManager::CreateMaterial(const std::string& name, const MaterialConstants& material) {
-
+	mMaterialData.emplace_back(material);
+	mMaterials[name] = mMaterialData.size() - 1;
 }
 
-void MaterialManager::CreateMaterial(const std::string& name, const MaterialConstants& material, UINT diffuseTexture) {
-
+void MaterialManager::CreateMaterial(const std::string& name, UINT diffuseTexture) {
+	MaterialConstants material{};
+	material.mDiffuseTexture[0] = diffuseTexture;
+	CreateMaterial(name, material);
 }
 
 void MaterialManager::UploadMaterial(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+	mMaterialData.shrink_to_fit(); 
+	mMaterialBuffer = DefaultBuffer(device, commandList, sizeof(MaterialConstants), mMaterialData.size(), mMaterialData.data());
 
+	::memcpy(mMaterialBuffer.Data(), mMaterialData.data(), mMaterialData.size() * sizeof(MaterialConstants));
+	
+	mMaterialBuffer.Upload(commandList);
 }
 
 void MaterialManager::Bind(ComPtr<ID3D12GraphicsCommandList> commandList) {
-
+	commandList->SetGraphicsRootShaderResourceView(1, *mMaterialBuffer.GPUBegin());
 }

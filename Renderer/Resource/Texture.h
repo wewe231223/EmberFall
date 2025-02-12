@@ -14,8 +14,8 @@ public:
 	Texture(ComPtr<ID3D12Device> device, DXGI_FORMAT format, UINT64 width, UINT height, D3D12_HEAP_FLAGS heapFlag, D3D12_RESOURCE_FLAGS resourceFlag);
 	Texture(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const std::filesystem::path& filePath);
 
-	Texture(const Texture&) = delete;
-	Texture& operator=(const Texture&) = delete;
+	Texture(const Texture&);
+	Texture& operator=(const Texture&);
 
 	Texture(Texture&&) noexcept;
 	Texture& operator=(Texture&&) noexcept;
