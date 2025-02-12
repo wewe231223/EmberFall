@@ -71,10 +71,10 @@
     <ClInclude Include="Resource\PlainMesh.h">
       <Filter>Resource</Filter>
     </ClInclude>
-    <ClInclude Include="Manager\MeshRenderManager.h">
+    <ClInclude Include="Manager\TextureManager.h">
       <Filter>Manager</Filter>
     </ClInclude>
-    <ClInclude Include="Manager\TextureManager.h">
+    <ClInclude Include="Manager\MeshRenderManager.h">
       <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
