@@ -79,9 +79,6 @@
     <ClCompile Include="ObjectPool.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="UnitLiterals.cpp">
-      <Filter>Pch</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkUtils.h">
@@ -141,7 +138,7 @@
     <ClInclude Include="ObjectPool.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="UnitLiterals.h">
+    <ClInclude Include="GameUnits.h">
       <Filter>Literals</Filter>
     </ClInclude>
   </ItemGroup>

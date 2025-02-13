@@ -59,3 +59,5 @@ namespace SimpleMath = DirectX::SimpleMath;
 #include "Lock.h"
 #include "Protocol.h"
 #include "NetworkUtils.h"
+
+#include "GameUnits.h"

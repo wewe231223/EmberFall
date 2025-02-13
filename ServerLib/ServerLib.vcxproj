@@ -170,7 +170,7 @@
     <ClInclude Include="SessionManager.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="NetworkUtils.h" />
-    <ClInclude Include="UnitLiterals.h" />
+    <ClInclude Include="GameUnits.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Constants.cpp" />
@@ -196,7 +196,6 @@
     <ClCompile Include="SessionManager.cpp" />
     <ClCompile Include="Types.cpp" />
     <ClCompile Include="NetworkUtils.cpp" />
-    <ClCompile Include="UnitLiterals.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
