@@ -21,12 +21,23 @@ void ViewList::Update() {
         return;
     }
 
+    auto& playerList = mCurrentScene->GetPlayers();
+    for (const auto& player : playerList) {
+        auto playerPos = player->GetPosition();
+
+        if (MathUtil::IsInRange(mPosition, mViewRange, playerPos)) {
+            AddInRange(player);
+        }
+        else {
+            EraseFromRange(player);
+        }
+    }
+
     auto& objectList = mCurrentScene->GetObjects();
     for (const auto& object : objectList) {
         auto objectPos = object->GetPosition();
 
-        float distance = (objectPos - mPosition).LengthSquared();
-        if (distance < mViewRange * mViewRange) {
+        if (MathUtil::IsInRange(mPosition, mViewRange, objectPos)) {
             AddInRange(object);
         }
         else {
@@ -38,15 +49,28 @@ void ViewList::Update() {
 void ViewList::Send() {
     static size_t prevSendSize{ };
 
+    PacketPlayerInfoSC playerPacket{ sizeof(PacketPlayerInfoSC), PacketType::PT_PLAYER_INFO_SC };
     PacketGameObject objPacket{ sizeof(PacketGameObject), PacketType::PT_GAME_OBJECT_SC };
+    NetworkObjectIdType objectId{ };
     for (const auto& object : mObjectInRange) {
-        objPacket.objectId = object->GetId() - OBJECT_ID_START;
-        objPacket.state = object->IsActive();
-        objPacket.color = object->GetColor();
-        objPacket.position = object->GetPosition();
-        objPacket.rotation = object->GetRotation();
-        objPacket.scale = object->GetScale();
-        mSessionManager->Send(mOwnerId, &objPacket);
+        objectId = object->GetId();
+        if (objectId < INVALID_SESSION_ID) {
+            playerPacket.id = objectId;
+            playerPacket.color = object->GetColor();
+            playerPacket.position = object->GetPosition();
+            playerPacket.rotation = object->GetRotation();
+            playerPacket.scale = object->GetScale();
+            mSessionManager->Send(mOwnerId, &playerPacket);
+        }
+        else {
+            objPacket.objectId = objectId - OBJECT_ID_START;
+            objPacket.state = object->IsActive();
+            objPacket.color = object->GetColor();
+            objPacket.position = object->GetPosition();
+            objPacket.rotation = object->GetRotation();
+            objPacket.scale = object->GetScale();
+            mSessionManager->Send(mOwnerId, &objPacket);
+        }
     }
 
     size_t sendSize{ sizeof(PacketGameObject) * mObjectInRange.size() };

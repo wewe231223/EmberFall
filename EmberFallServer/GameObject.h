@@ -28,6 +28,11 @@ class GameObject : public std::enable_shared_from_this<GameObject> {
 public:
     GameObject();
     ~GameObject();
+
+public:
+    bool operator<(const GameObject& object) {
+        return mId < object.mId;
+    }
     
 public:
     bool IsActive() const;

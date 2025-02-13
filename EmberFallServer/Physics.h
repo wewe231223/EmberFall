@@ -13,7 +13,7 @@
 inline static constexpr float GRAVITY_ACCELERATION = 10.0f M_PER_SEC2;     // gravity (10.0 m/s^2)
 inline static constexpr float DEFAULT_ACCELERATION = 20.0f M_PER_SEC2;
 inline static constexpr float DEFAULT_MASS = 70.0f;       // kg
-inline static constexpr float DEFAULT_MAX_MOVE_SPEED = 20.0f M_PER_SEC; // m/s
+inline static constexpr float DEFAULT_MAX_MOVE_SPEED = 5.0f M_PER_SEC; // m/s
 inline static constexpr float DEFAULT_JUMP_FORCE = 10000.0f; // N = F = Mess * accel = kg * m / s^2
 inline static constexpr float DEFAULT_JUMP_TIEM = 0.2f;
 

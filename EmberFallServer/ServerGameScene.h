@@ -27,6 +27,9 @@
 //                      ServerFrame의 OnPlayerConnect, OnPlayerDisconnect에서 실제 Player의 오브젝트를 생성
 //                      PlayerEvent를 발생시키고 concurrent_queue에 저장함.
 //                      GameScene에서는 이 concurrent_queue에 저장된 이벤트를 읽어서 Player오브젝트를 추가/삭제
+// 
+//        02 - 12 : ViewList를 적용하면서 GameScene에서 오브젝트 패킷을 직접 전송하는 코드 삭제
+//        02 - 13 : ViewList에서 플레이어 정보도 전송
 //                  
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -45,19 +48,19 @@ public:
     virtual ~IServerGameScene();
 
 public:
-    std::vector<std::shared_ptr<class GameObject>>& GetPlayers() { };
+    std::vector<std::shared_ptr<class GameObject>>& GetPlayers();
     virtual std::vector<std::shared_ptr<class GameObject>>& GetObjects() abstract;
 
     virtual void DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerEvent>& eventQueue);
 
     virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) abstract;
     virtual void Update(const float deltaTime) abstract;
-    virtual void SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) abstract;
 
     virtual void AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject);
     virtual void ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject);
 
 protected:
+    std::vector<std::shared_ptr<class GameObject>> mPlayerList{ };
     std::unordered_map<SessionIdType, std::shared_ptr<class GameObject>> mPlayers{ };
 };
 
@@ -71,7 +74,6 @@ public:
 
     virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) override;
     virtual void Update(const float deltaTime) override;
-    virtual void SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) override;
 
 private:
     std::vector<std::shared_ptr<class GameObject>> mObjects{ };
@@ -89,7 +91,6 @@ public:
      
     virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) override;
     virtual void Update(const float deltaTime) override;
-    virtual void SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) override;
 
     virtual void AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) override;
     virtual void ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) override;

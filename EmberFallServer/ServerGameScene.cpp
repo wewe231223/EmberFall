@@ -10,6 +10,10 @@ IServerGameScene::IServerGameScene() { }
 
 IServerGameScene::~IServerGameScene() { }
 
+std::vector<std::shared_ptr<GameObject>>& IServerGameScene::GetPlayers() {
+    return mPlayerList;
+}
+
 void IServerGameScene::DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerEvent>& eventQueue) {
     for (size_t i = 0; i < ONCE_PROCESSING_EVENT; ++i) {
         PlayerEvent event{ };
@@ -35,6 +39,7 @@ void IServerGameScene::DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerE
 
 void IServerGameScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
     mPlayers[id] = playerObject;
+    mPlayerList.push_back(playerObject);
 }
 
 void IServerGameScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
@@ -42,6 +47,10 @@ void IServerGameScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> 
     if (it == mPlayers.end()) {
         return;
     }
+
+    auto objSearch = std::find(mPlayerList.begin(), mPlayerList.end(), playerObject);
+    std::swap(*objSearch, mPlayerList.back());
+    mPlayerList.pop_back();
 
     mPlayers.erase(it);
 }
@@ -70,8 +79,6 @@ void EchoTestScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore
 }
 
 void EchoTestScene::Update(const float deltaTime) { }
-
-void EchoTestScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) { }
 
 PlayScene::PlayScene() {
     mTerrain = std::make_shared<Terrain>("../Resources/HeightMap.raw");
@@ -159,33 +166,9 @@ void PlayScene::Update(const float deltaTime) {
     mCollisionWorld.HandleTerrainCollision();
 }
 
-void PlayScene::SendUpdateResult(const std::shared_ptr<ServerCore>& serverCore) {
-    auto sessionManager = serverCore->GetSessionManager();
-
-    PacketPlayerInfoSC playerPacket{ sizeof(PacketPlayerInfoSC), PacketType::PT_PLAYER_INFO_SC };
-    for (auto& [id, player] : mPlayers) {
-        playerPacket.id = id;
-        playerPacket.color = player->GetColor();
-        playerPacket.position = player->GetPosition();
-        playerPacket.rotation = player->GetRotation();
-        playerPacket.scale = player->GetScale();
-        sessionManager->SendAll(&playerPacket);
-    }
-
-    //PacketGameObject objPacket{ sizeof(PacketGameObject), PacketType::PT_GAME_OBJECT_SC };
-    //for (auto & obj : mObjects) {
-    //    objPacket.objectId = obj->GetId() - OBJECT_ID_START;
-    //    objPacket.state = obj->IsActive();
-    //    objPacket.color = obj->GetColor();
-    //    objPacket.position = obj->GetPosition();
-    //    objPacket.rotation = obj->GetRotation();
-    //    objPacket.scale = obj->GetScale();
-    //    sessionManager->SendAll(&objPacket);
-    //}
-}
-
 void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
     mPlayers[id] = playerObject;
+    mPlayerList.push_back(playerObject);
 
     playerObject->GetComponent<PlayerScript>()->ResetGameScene(shared_from_this());
     playerObject->GetTransform()->Translate(Random::GetRandomVec3(-500.0f, 500.0f));
@@ -200,6 +183,10 @@ void PlayScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerO
     if (it == mPlayers.end()) {
         return;
     }
+
+    auto objSearch = std::find(mPlayerList.begin(), mPlayerList.end(), playerObject);
+    std::swap(*objSearch, mPlayerList.back());
+    mPlayerList.pop_back();
 
     mCollisionWorld.RemoveObjectFromGroup("Player", playerObject);
     mCollisionWorld.AddCollisionPair("Player-Object", playerObject);

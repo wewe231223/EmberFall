@@ -114,7 +114,7 @@ void Physics::UpdateFriction(const float deltaTime, const SimpleMath::Vector3& m
 }
 
 void Physics::UpdateGravity(const float deltaTime, const SimpleMath::Vector3& moveDir, const float speed) {
-    if (IsOnGround() or IsOnOtherObject()) {
+    if (IsOnOtherObject()) {
         mVelocity.y = 0.0f;
         return;
     }

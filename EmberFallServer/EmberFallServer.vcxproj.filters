@@ -79,9 +79,6 @@
     <ClCompile Include="Input.cpp">
       <Filter>Frame</Filter>
     </ClCompile>
-    <ClCompile Include="GameEvent.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="ViewList.cpp">
       <Filter>pch</Filter>
     </ClCompile>
@@ -134,9 +131,6 @@
     </ClInclude>
     <ClInclude Include="Input.h">
       <Filter>Frame</Filter>
-    </ClInclude>
-    <ClInclude Include="GameEvent.h">
-      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="ViewList.h">
       <Filter>pch</Filter>
