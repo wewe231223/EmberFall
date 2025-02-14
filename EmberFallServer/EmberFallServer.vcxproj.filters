@@ -85,6 +85,9 @@
     <ClCompile Include="ServerGameScene.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="BoundingObject.cpp">
+      <Filter>pch</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -138,5 +141,6 @@
     <ClInclude Include="ServerGameScene.h">
       <Filter>Scene</Filter>
     </ClInclude>
+    <ClInclude Include="BoundingObject.h" />
   </ItemGroup>
 </Project>

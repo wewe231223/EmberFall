@@ -142,6 +142,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp" />
+    <ClCompile Include="BoundingObject.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="CollisionWorld.cpp" />
     <ClCompile Include="EmberFallServer.cpp" />
@@ -165,6 +166,7 @@
     <ClCompile Include="ViewList.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BoundingObject.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionWorld.h" />
     <ClInclude Include="Events.h" />

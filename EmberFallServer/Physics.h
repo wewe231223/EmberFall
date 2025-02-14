@@ -62,7 +62,6 @@ public:
 private:
     bool mOnGround{ true };
     bool mOnOtherObject{ true };
-    NetworkObjectIdType mAboveObjectId{ INVALID_SESSION_ID };
 
     SimpleMath::Vector3 mVelocity{ SimpleMath::Vector3::Zero };
     std::weak_ptr<Transform> mTransform{ };

@@ -35,6 +35,12 @@ struct PlayerEvent {
     std::shared_ptr<class GameObject> player;
 };
 
+struct CollisionEvent {
+    std::shared_ptr<class GameObject> object1;
+    std::shared_ptr<class GameObject> object2;
+    SimpleMath::Vector3 transVector;
+};
+
 struct GameEvent {
     NetworkObjectIdType receiver;
     NetworkObjectIdType sender;

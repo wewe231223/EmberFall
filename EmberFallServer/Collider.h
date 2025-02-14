@@ -53,7 +53,7 @@ protected:
     std::weak_ptr<Transform> mTransform{ };         // GameObject 에서 가지는 Transform 참조
 
     ColliderType mType{ ColliderType::OTHER };
-    std::map<NetworkObjectIdType, CollisionState> mStates{ };   // 이전 충돌 결과를 기억하기 위한 map
+    std::unordered_map<NetworkObjectIdType, CollisionState> mStates{ };   // 이전 충돌 결과를 기억하기 위한 map
     unsigned short mCollisionCount{ 0 };
     bool mEnable{ true };
 };

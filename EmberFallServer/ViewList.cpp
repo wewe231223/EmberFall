@@ -55,7 +55,7 @@ void ViewList::Send() {
     for (const auto& object : mObjectInRange) {
         objectId = object->GetId();
         if (objectId < INVALID_SESSION_ID) {
-            playerPacket.id = objectId;
+            playerPacket.id = static_cast<SessionIdType>(objectId);
             playerPacket.color = object->GetColor();
             playerPacket.position = object->GetPosition();
             playerPacket.rotation = object->GetRotation();

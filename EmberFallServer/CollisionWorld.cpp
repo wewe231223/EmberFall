@@ -127,8 +127,16 @@ void CollisionWorld::HandleCollision(const std::string& groupTag, std::shared_pt
     collider1->UpdateState(collisionResult, obj2->GetId());
     collider2->UpdateState(collisionResult, obj1->GetId());
 
-    obj1->OnCollision(groupTag, obj2);
-    obj2->OnCollision(groupTag, obj1);
+    SimpleMath::Vector3 minTransVec{ SimpleMath::Vector3::Zero };
+    if (true == collisionResult) {
+        minTransVec = Collision::GetMinTransVec(
+            std::static_pointer_cast<OrientedBoxCollider>(collider1)->GetBoundingBox(),
+            std::static_pointer_cast<OrientedBoxCollider>(collider2)->GetBoundingBox()
+        );
+    }
+
+    obj1->OnCollision(groupTag, obj2, minTransVec);
+    obj2->OnCollision(groupTag, obj1, -minTransVec);
 }
 
 void CollisionWorld::HandleCollisionListPair(const std::string& groupTag, CollisionPair& listPair) {

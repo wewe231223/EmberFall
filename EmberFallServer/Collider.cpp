@@ -53,12 +53,11 @@ void Collider::UpdateState(bool collisionResult, NetworkObjectIdType objId) {
             mStates[objId] = CollisionState::NONE;
         }
 
-        auto& state = mStates[objId];
+        decltype(auto) state = mStates[objId];
         switch (state) {
         case CollisionState::NONE:
         case CollisionState::EXIT:
             state = CollisionState::ENTER;
-            ++mCollisionCount;
             break;
 
         case CollisionState::ENTER:
@@ -74,12 +73,11 @@ void Collider::UpdateState(bool collisionResult, NetworkObjectIdType objId) {
             return;
         }
 
-        auto& state = mStates[objId];
+        decltype(auto) state = mStates[objId];
         switch (state) {
         case CollisionState::ENTER:
         case CollisionState::STAY:
             state = CollisionState::EXIT;
-            --mCollisionCount;
             break;
 
         case CollisionState::EXIT:

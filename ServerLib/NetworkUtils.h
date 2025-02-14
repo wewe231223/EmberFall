@@ -167,6 +167,14 @@ namespace MathUtil {
     {
         return SimpleMath::Vector2{ v.x, v.z };
     }
+
+    // planeNormal은 Normalize된 벡터여야함.
+    inline SimpleMath::Vector3 SlidingVector(const SimpleMath::Vector3& v, const SimpleMath::Vector3& planeNormal)
+    {
+        float projectionToNormal = v.Dot(planeNormal);
+        SimpleMath::Vector3 slidingVec = v + (planeNormal * -projectionToNormal);
+        return slidingVec;
+    }
 }
 
 namespace Collision {

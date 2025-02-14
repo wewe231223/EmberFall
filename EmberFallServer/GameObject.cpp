@@ -78,7 +78,7 @@ void GameObject::Update(const float deltaTime) {
     }
 }
 
-void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {
+void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& minTrans) {
     auto state = mCollider->GetState(opponent->GetId());
     switch (state) {
     case CollisionState::ENTER:
@@ -86,7 +86,7 @@ void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameOb
         break;
 
     case CollisionState::STAY:
-        OnCollisionStay(groupTag, opponent);
+        OnCollisionStay(groupTag, opponent, minTrans);
         break;
 
     case CollisionState::EXIT:
@@ -100,32 +100,30 @@ void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameOb
 
 void GameObject::OnCollisionTerrain(const float height) {
     mTransform->SetY(height);
-    mPhysics->SetOnGround(true);
 }
 
 void GameObject::OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { }
 
-void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {
+void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& minTrans) {
     auto obb1 = std::static_pointer_cast<OrientedBoxCollider>(mCollider)->GetBoundingBox();
     auto obb2 = std::static_pointer_cast<OrientedBoxCollider>(opponent->mCollider)->GetBoundingBox();
 
     float myMass = mPhysics->mFactor.mass;
     float opponentMass = opponent->mPhysics->mFactor.mass;
     // 내가 무거울 수록 덜 밀려나는 구조.
-    float coefficient = (opponentMass / (myMass + opponentMass)) + MathUtil::EPSILON; // 0.0f ~ 1.0f 사이 값. (EPSILON 추가)
-    auto repulsiveVec = Collision::GetMinTransVec(obb1, obb2) * coefficient;
+    float coefficient = opponentMass / (myMass + opponentMass); // 0.0f ~ 1.0f 사이 값.
+    auto repulsiveVec = minTrans;
+    mTransform->Translate(repulsiveVec);
 
-    bool amIOnGround = mPhysics->IsOnGround();
-    bool isOpponentOnGround = opponent->mPhysics->IsOnGround();
-    if ((amIOnGround and isOpponentOnGround) or (not amIOnGround and not isOpponentOnGround)) {
-        mTransform->Translate(repulsiveVec);
-    }
+    bool onOtherObject{ false };
+    bool amIOnGround = mPhysics->IsOnGround() or mPhysics->IsOnOtherObject();
+    bool isOpponentOnGround = opponent->mPhysics->IsOnGround() or opponent->mPhysics->IsOnOtherObject();
 
-    if ((mTransform->GetPrevPosition().y) > (obb2.Center.y + obb2.Extents.y)) {
-        mPhysics->SetOnGround(true);
-        mPhysics->SetOnOtherObject(true);
+    if (not amIOnGround and (mTransform->GetPrevPosition().y > (obb2.Center.y + obb2.Extents.y))) {
+        onOtherObject = true;
         mTransform->SetY(obb1.Extents.y + obb2.Center.y + obb2.Extents.y);
     }
+    mPhysics->SetOnOtherObject(onOtherObject);
 }
 
 void GameObject::OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { }

@@ -80,12 +80,12 @@ public:
 
     void Update(const float deltaTime);
 
-    void OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
+    void OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& minTrans);
     void OnCollisionTerrain(const float height);
 
 private:
     void OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
-    void OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
+    void OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& minTrans);
     void OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
 
 private:
@@ -97,6 +97,5 @@ private:
     std::shared_ptr<Transform> mTransform{ };                           // Transform
     std::shared_ptr<class Physics> mPhysics{ };                         // Physics Test
     std::vector<std::shared_ptr<GameObjectComponent>> mComponents{ };   // Components
-
     std::shared_ptr<Collider> mCollider{ nullptr };                     // 
 };

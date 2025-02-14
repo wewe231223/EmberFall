@@ -179,7 +179,7 @@ bool Terrain::Contains(const std::shared_ptr<Collider>& collider, float& height)
         {
             auto a = std::static_pointer_cast<BoxCollider>(collider);
             auto center = a->GetBoundingBox().Center;
-            height = GetHeight(center, a->GetBoundingBox().Extents.y);
+            height = GetHeight(center, a->GetBoundingBox().Extents.y) + MathUtil::EPSILON;
             return center.y < height;
         }
 
@@ -195,7 +195,7 @@ bool Terrain::Contains(const std::shared_ptr<Collider>& collider, float& height)
         {
             auto a = std::static_pointer_cast<OrientedBoxCollider>(collider);
             auto center = a->GetBoundingBox().Center;
-            height = GetHeight(center, a->GetBoundingBox().Extents.y);
+            height = GetHeight(center, a->GetBoundingBox().Extents.y) + MathUtil::EPSILON;
             return center.y < height;
         }
 
