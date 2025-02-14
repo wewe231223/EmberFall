@@ -28,15 +28,19 @@ Transform& Transform::operator=(Transform&& other) noexcept {
 }
 
 SimpleMath::Vector3 Transform::Forward() const {
-    return SimpleMath::Vector3();
+    return SimpleMath::Vector3::Transform(SimpleMath::Vector3::Forward, mRotation);
 }
 
 SimpleMath::Vector3 Transform::Right() const {
-    return SimpleMath::Vector3();
+    return SimpleMath::Vector3::Transform(SimpleMath::Vector3::Right, mRotation);
 }
 
 SimpleMath::Vector3 Transform::Up() const {
-    return SimpleMath::Vector3();
+    return SimpleMath::Vector3::Transform(SimpleMath::Vector3::Up, mRotation);
+}
+
+SimpleMath::Vector3 Transform::GetPrevPosition() const {
+    return mPrevPosition;
 }
 
 SimpleMath::Vector3 Transform::GetPosition() const {
@@ -64,6 +68,8 @@ void Transform::Translate(const SimpleMath::Vector3& v) {
 }
 
 void Transform::Move(const SimpleMath::Vector3& moveVec) {
+    mPrevPosition = mPosition;
+
     Translate(SimpleMath::Vector3{ 0.0f, moveVec.y, 0.0f });
 
     auto xzMove = SimpleMath::Vector3{ moveVec.x, 0.0f, moveVec.z };

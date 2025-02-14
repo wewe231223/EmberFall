@@ -22,6 +22,7 @@ public:
     SimpleMath::Vector3 Right() const;
     SimpleMath::Vector3 Up() const;
 
+    SimpleMath::Vector3 GetPrevPosition() const;
     SimpleMath::Vector3 GetPosition() const;
     SimpleMath::Quaternion GetRotation() const;
     SimpleMath::Vector3 GetScale() const;
@@ -45,6 +46,7 @@ public:
 
 private:
     SimpleMath::Vector3 mPrevPosition{ SimpleMath::Vector3::Zero };
+
     SimpleMath::Vector3 mPosition{ SimpleMath::Vector3::Zero };
     SimpleMath::Quaternion mRotation{ SimpleMath::Quaternion::Identity };
     SimpleMath::Vector3 mScale{ SimpleMath::Vector3::One };

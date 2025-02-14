@@ -25,9 +25,6 @@ void PlayerScript::Update(const float deltaTime) {
     mViewList.Send();
 
     auto physics = GetPhysics();
-    if (nullptr == physics) {
-        return;
-    }
 
     SimpleMath::Vector3 moveDir{ SimpleMath::Vector3::Zero };
     if (Key::DOWN == mInput->GetState('A')) {

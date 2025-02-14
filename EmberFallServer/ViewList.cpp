@@ -72,12 +72,6 @@ void ViewList::Send() {
             mSessionManager->Send(mOwnerId, &objPacket);
         }
     }
-
-    size_t sendSize{ sizeof(PacketGameObject) * mObjectInRange.size() };
-    if (prevSendSize != sendSize) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Send size: {}", sendSize);
-        prevSendSize = sendSize;
-    }
 }
 
 void ViewList::AddInRange(std::shared_ptr<GameObject> obj) {

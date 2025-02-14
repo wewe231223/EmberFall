@@ -24,10 +24,18 @@ bool Physics::IsOnOtherObject() const {
 
 void Physics::SetOnGround(bool state) {
     mOnGround = state;
+
+    if (true == state) {
+        mVelocity.y = 0.0f;
+    }
 }
 
 void Physics::SetOnOtherObject(bool state) {
     mOnOtherObject = state;
+
+    if (true == state) {
+        mVelocity.y = 0.0f;
+    }
 }
 
 void Physics::SetTransform(const std::shared_ptr<Transform>& transform) {
@@ -35,7 +43,7 @@ void Physics::SetTransform(const std::shared_ptr<Transform>& transform) {
 }
 
 void Physics::Jump(const float deltaTime) {
-    if (false == IsOnGround()) {
+    if (false == IsOnGround() and false == IsOnOtherObject()) {
         return;
     }
 
@@ -81,8 +89,6 @@ void Physics::Update(const float deltaTime) {
 
     auto transform = mTransform.lock();
     transform->Move(mVelocity * deltaTime);
-
-    mOnOtherObject = false;
 }
 
 void Physics::ClampVelocity() {
@@ -98,8 +104,7 @@ void Physics::ClampVelocity() {
 }
 
 void Physics::UpdateFriction(const float deltaTime, const SimpleMath::Vector3& moveDir, const float speed) {
-    if (false == IsOnGround() or IsOnOtherObject() or
-        MathUtil::IsEqualVector(MathUtil::AbsVector(moveDir), SimpleMath::Vector3::Up)) {
+    if (MathUtil::IsEqualVector(MathUtil::AbsVector(moveDir), SimpleMath::Vector3::Up)) {
         return;
     }
 
@@ -114,11 +119,6 @@ void Physics::UpdateFriction(const float deltaTime, const SimpleMath::Vector3& m
 }
 
 void Physics::UpdateGravity(const float deltaTime, const SimpleMath::Vector3& moveDir, const float speed) {
-    if (IsOnOtherObject()) {
-        mVelocity.y = 0.0f;
-        return;
-    }
-
     SimpleMath::Vector3 dragForce = SimpleMath::Vector3::Up * mFactor.dragCoeffi * speed * speed;
     SimpleMath::Vector3 dragAcceleration = dragForce / mFactor.mass;
 

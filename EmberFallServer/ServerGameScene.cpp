@@ -93,8 +93,8 @@ PlayScene::PlayScene() {
         object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
         object->SetColor(Random::GetRandomColor());
         object->GetTransform()->Translate(Random::GetRandomVec3(-500.0f, 500.0f));
-        object->GetTransform()->Scale(SimpleMath::Vector3{ 5.0f });
-        object->GetTransform()->SetY(Random::GetRandom<float>(500.0f, 1000.0f));
+        object->GetTransform()->Scale(SimpleMath::Vector3{ 10.0f });
+        object->GetTransform()->SetY(Random::GetRandom<float>(0.0f, 100.0f));
 
         object->SetActive(true);
 
@@ -162,8 +162,8 @@ void PlayScene::Update(const float deltaTime) {
         object->Update(deltaTime);
     }
 
-    mCollisionWorld.HandleCollision();
     mCollisionWorld.HandleTerrainCollision();
+    mCollisionWorld.HandleCollision();
 }
 
 void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
@@ -171,10 +171,10 @@ void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerOb
     mPlayerList.push_back(playerObject);
 
     playerObject->GetComponent<PlayerScript>()->ResetGameScene(shared_from_this());
-    playerObject->GetTransform()->Translate(Random::GetRandomVec3(-500.0f, 500.0f));
+    playerObject->GetTransform()->Translate(Random::GetRandomVec3(-100.0f, 100.0f));
 
     mCollisionWorld.AddCollisionObject("Player", playerObject);
-    mCollisionWorld.AddCollisionObject("Player-Object", playerObject);
+    mCollisionWorld.AddCollisionPair("Player-Object", playerObject);
     mCollisionWorld.AddObjectInTerrainGroup(playerObject);
 }
 
@@ -189,7 +189,7 @@ void PlayScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerO
     mPlayerList.pop_back();
 
     mCollisionWorld.RemoveObjectFromGroup("Player", playerObject);
-    mCollisionWorld.AddCollisionPair("Player-Object", playerObject);
+    mCollisionWorld.RemoveObjectFromGroup("Player-Object", playerObject);
     mCollisionWorld.RemoveObjectFromTerrainGroup(playerObject);
 
     mPlayers.erase(it);

@@ -103,42 +103,29 @@ void GameObject::OnCollisionTerrain(const float height) {
     mPhysics->SetOnGround(true);
 }
 
-void GameObject::OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {
-    //gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Collision Start!!! Group: {}, opponent ID: {}", groupTag, opponent->GetId());
-}
+void GameObject::OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { }
 
-void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { 
-    //if (ColliderType::ORIENTED_BOX != mCollider->GetType()) {
-    //    return;
-    //}
-
+void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) {
     auto obb1 = std::static_pointer_cast<OrientedBoxCollider>(mCollider)->GetBoundingBox();
     auto obb2 = std::static_pointer_cast<OrientedBoxCollider>(opponent->mCollider)->GetBoundingBox();
 
     float myMass = mPhysics->mFactor.mass;
     float opponentMass = opponent->mPhysics->mFactor.mass;
     // 내가 무거울 수록 덜 밀려나는 구조.
-    float coefficient = opponentMass / (myMass + opponentMass); // 0.0f ~ 1.0f 사이 값.
+    float coefficient = (opponentMass / (myMass + opponentMass)) + MathUtil::EPSILON; // 0.0f ~ 1.0f 사이 값. (EPSILON 추가)
     auto repulsiveVec = Collision::GetMinTransVec(obb1, obb2) * coefficient;
 
-    if (mPhysics->IsOnGround() and opponent->mPhysics->IsOnGround()) {
+    bool amIOnGround = mPhysics->IsOnGround();
+    bool isOpponentOnGround = opponent->mPhysics->IsOnGround();
+    if ((amIOnGround and isOpponentOnGround) or (not amIOnGround and not isOpponentOnGround)) {
         mTransform->Translate(repulsiveVec);
-        return;
-    }
-    else {
-        if (mPhysics->IsOnGround()) {
-            repulsiveVec = SimpleMath::Vector3::Zero;
-        }
-        else {
-            mPhysics->SetOnOtherObject(true);
-            repulsiveVec.x = repulsiveVec.z = 0.0f;
-            repulsiveVec.y /= coefficient; // 땅에 있지 않은 오브젝트는 반발력을 최대로
-        }
     }
 
-    mTransform->Translate(repulsiveVec);
+    if ((mTransform->GetPrevPosition().y) > (obb2.Center.y + obb2.Extents.y)) {
+        mPhysics->SetOnGround(true);
+        mPhysics->SetOnOtherObject(true);
+        mTransform->SetY(obb1.Extents.y + obb2.Center.y + obb2.Extents.y);
+    }
 }
 
-void GameObject::OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { 
-    //gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Collision End!!! Group: {}, opponent ID: {}", groupTag, opponent->GetId());
-}
+void GameObject::OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { }
