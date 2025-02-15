@@ -30,6 +30,15 @@
     <ClCompile Include="GameObject\Transform.cpp">
       <Filter>GameObject</Filter>
     </ClCompile>
+    <ClCompile Include="GameObject\Collider.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Camera.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Scene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -40,6 +49,15 @@
     </ClInclude>
     <ClInclude Include="GameObject\Transform.h">
       <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject\Collider.h">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Camera.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Scene.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

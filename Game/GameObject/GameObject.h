@@ -4,6 +4,7 @@
 #include "../Renderer/Core/Shader.h"
 #include "../Utility/Defines.h"
 #include "../Game/GameObject/Transform.h"
+#include "../GameObject/Collider.h"
 #define MONO_TYPE_MESH
 
 #ifdef MONO_TYPE_MESH 
@@ -26,6 +27,7 @@ private:
 	MaterialIndex mMaterial{ 0 };
 
 	Transform mTransform{};
+	Collider mCollider{};
 
 	bool mActiveState{};
 };
