@@ -1,7 +1,28 @@
 #include "pch.h"
 #include "PlainMesh.h"
+#include "../External/Include/DirectXTK12/GeometricPrimitive.h"
+
 
 PlainMesh::PlainMesh() {
+}
+
+PlainMesh::PlainMesh(ComPtr<ID3D12Device> device, EmbeddedMeshType type, UINT size) {
+	
+	static std::unique_ptr<DirectX::GeometricPrimitive> primitive{};
+
+	switch (type) {
+	case EmbeddedMeshType::Plane:
+
+
+
+		break;
+	case EmbeddedMeshType::Cube:
+		break;
+	case EmbeddedMeshType::Sphere:
+		break;
+	default:
+		break;
+	}
 }
 
 PlainMesh::~PlainMesh() {

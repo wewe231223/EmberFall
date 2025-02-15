@@ -1,11 +1,19 @@
 #pragma once 
 #include "../Renderer/Resource/DefaultBuffer.h"
 
+enum class EmbeddedMeshType : BYTE {
+	Plane,
+	Cube,
+	Sphere,
+};
+
+
 class PlainMesh {
 public:
 	PlainMesh(); 
-	~PlainMesh();
 	// Other Ctors... 
+	PlainMesh(ComPtr<ID3D12Device> device, EmbeddedMeshType type, UINT size = 1);
+	~PlainMesh();
 
 	PlainMesh(const PlainMesh& other);
 	PlainMesh& operator=(const PlainMesh& other);
