@@ -78,4 +78,14 @@
       <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Shader\Sources\Standard.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Shader\ShaderMetadata.txt">
+      <Filter>Shader</Filter>
+    </Text>
+  </ItemGroup>
 </Project>
