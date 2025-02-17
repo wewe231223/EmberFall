@@ -63,6 +63,7 @@ private:
     bool mOnGround{ true };
     bool mOnOtherObject{ true };
 
+    SimpleMath::Vector3 mPrevImpulse{ };
     SimpleMath::Vector3 mVelocity{ SimpleMath::Vector3::Zero };
     std::weak_ptr<Transform> mTransform{ };
 };

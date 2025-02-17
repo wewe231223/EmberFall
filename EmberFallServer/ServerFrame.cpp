@@ -32,7 +32,7 @@ void ServerFrame::InitGameScenes() {
     mGameScenes.emplace_back(std::make_shared<PlayScene>());
 
     mCurrentScene = mGameScenes.front();
-    mTimer->Sync(30);
+    mTimer->Sync(0);
 }
 
 void ServerFrame::GameLoop() {
@@ -43,6 +43,7 @@ void ServerFrame::GameLoop() {
         mCurrentScene->DispatchPlayerEvent(mPlayerEventQueue);
         mCurrentScene->ProcessPackets(mServerCore, mInputManager);
         mCurrentScene->Update(deltaTime);
+        mCurrentScene->LateUpdate(deltaTime);
     }
 }
 

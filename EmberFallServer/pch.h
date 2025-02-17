@@ -4,6 +4,7 @@
 
 #include <random>
 #include <map>
+#include <deque>
 
 #include "../ServerLib/pch.h"
 #include "../ServerLib/NetworkCore.h"

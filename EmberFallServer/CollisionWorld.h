@@ -63,5 +63,7 @@ private:
     CollisionList mPlayers{ };
     CollisionList mCollisionTerrainList{ };
     CollisionMap mCollisionWorld{ };
+
+    std::vector<CollisionContact> mContacts{ };
 };
 

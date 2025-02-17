@@ -22,6 +22,11 @@ enum class ColliderType : BYTE {
     OTHER
 };
 
+struct ContactImpulse {
+    NetworkObjectIdType opponentId;
+    SimpleMath::Vector3 prevImpulse;
+};
+
 class Collider : public std::enable_shared_from_this<Collider> {
 public:
     Collider(ColliderType type);

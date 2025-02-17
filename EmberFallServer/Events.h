@@ -41,6 +41,15 @@ struct CollisionEvent {
     SimpleMath::Vector3 transVector;
 };
 
+struct CollisionContact {
+    std::shared_ptr<GameObject> objectA;
+    std::shared_ptr<GameObject> objectB;
+    SimpleMath::Vector3 minTrans;          // 침투 벡터
+    SimpleMath::Vector3 contactNormal;     // 충돌 법선 벡터
+    float penetrationDepth;                // 침투 깊이
+    SimpleMath::Vector3 accumulatedImpulse; // 이전 프레임의 임펄스 (Contact Warming)
+};
+
 struct GameEvent {
     NetworkObjectIdType receiver;
     NetworkObjectIdType sender;

@@ -119,6 +119,10 @@ void Physics::UpdateFriction(const float deltaTime, const SimpleMath::Vector3& m
 }
 
 void Physics::UpdateGravity(const float deltaTime, const SimpleMath::Vector3& moveDir, const float speed) {
+    if (IsOnGround()) {
+        return;
+    }
+
     SimpleMath::Vector3 dragForce = SimpleMath::Vector3::Up * mFactor.dragCoeffi * speed * speed;
     SimpleMath::Vector3 dragAcceleration = dragForce / mFactor.mass;
 

@@ -85,8 +85,11 @@
     <ClCompile Include="ServerGameScene.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
-    <ClCompile Include="BoundingObject.cpp">
-      <Filter>pch</Filter>
+    <ClCompile Include="Grid.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="GridWorld.cpp">
+      <Filter>Collision</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -141,6 +144,11 @@
     <ClInclude Include="ServerGameScene.h">
       <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="BoundingObject.h" />
+    <ClInclude Include="Grid.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="GridWorld.h">
+      <Filter>Collision</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

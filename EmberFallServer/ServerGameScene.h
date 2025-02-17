@@ -35,6 +35,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "CollisionWorld.h"
+#include "GridWorld.h"
 
 class GameObject;
 
@@ -55,6 +56,7 @@ public:
 
     virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) abstract;
     virtual void Update(const float deltaTime) abstract;
+    virtual void LateUpdate(const float deltaTime) abstract;
 
     virtual void AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject);
     virtual void ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject);
@@ -74,6 +76,7 @@ public:
 
     virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) override;
     virtual void Update(const float deltaTime) override;
+    virtual void LateUpdate(const float deltaTime) override;
 
 private:
     std::vector<std::shared_ptr<class GameObject>> mObjects{ };
@@ -91,6 +94,7 @@ public:
      
     virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) override;
     virtual void Update(const float deltaTime) override;
+    virtual void LateUpdate(const float deltaTime) override;
 
     virtual void AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) override;
     virtual void ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) override;
@@ -100,4 +104,5 @@ private:
 
     std::shared_ptr<class Terrain> mTerrain{ };
     CollisionWorld mCollisionWorld{ };
+    GridWorld mGridWorld{ 50.0f, 50.0f, 1000.0f, 1000.0f };
 };

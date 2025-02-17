@@ -84,4 +84,5 @@ bool ViewList::EraseFromRange(std::shared_ptr<GameObject> obj) {
     }
    
     mObjectInRange.erase(obj);
+    return true;
 }

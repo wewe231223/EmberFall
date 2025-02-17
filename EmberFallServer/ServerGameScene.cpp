@@ -80,6 +80,8 @@ void EchoTestScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore
 
 void EchoTestScene::Update(const float deltaTime) { }
 
+void EchoTestScene::LateUpdate(const float deltaTime) { }
+
 PlayScene::PlayScene() {
     mTerrain = std::make_shared<Terrain>("../Resources/HeightMap.raw");
     mCollisionWorld.AddTerrain(mTerrain);
@@ -162,8 +164,13 @@ void PlayScene::Update(const float deltaTime) {
         object->Update(deltaTime);
     }
 
+    mGridWorld.Update(mObjects);
+
     mCollisionWorld.HandleTerrainCollision();
-    mCollisionWorld.HandleCollision();
+    //mCollisionWorld.HandleCollision();
+}
+
+void PlayScene::LateUpdate(const float deltaTime) { 
 }
 
 void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {

@@ -142,7 +142,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp" />
-    <ClCompile Include="BoundingObject.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="CollisionWorld.cpp" />
     <ClCompile Include="EmberFallServer.cpp" />
@@ -150,6 +149,8 @@
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameObjectComponent.cpp" />
     <ClCompile Include="GameTimer.cpp" />
+    <ClCompile Include="Grid.cpp" />
+    <ClCompile Include="GridWorld.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -166,13 +167,14 @@
     <ClCompile Include="ViewList.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BoundingObject.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionWorld.h" />
     <ClInclude Include="Events.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameObjectComponent.h" />
     <ClInclude Include="GameTimer.h" />
+    <ClInclude Include="Grid.h" />
+    <ClInclude Include="GridWorld.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Physics.h" />

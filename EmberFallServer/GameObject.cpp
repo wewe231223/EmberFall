@@ -78,7 +78,7 @@ void GameObject::Update(const float deltaTime) {
     }
 }
 
-void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& minTrans) {
+void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
     auto state = mCollider->GetState(opponent->GetId());
     switch (state) {
     case CollisionState::ENTER:
@@ -86,7 +86,7 @@ void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameOb
         break;
 
     case CollisionState::STAY:
-        OnCollisionStay(groupTag, opponent, minTrans);
+        OnCollisionStay(groupTag, opponent, impulse);
         break;
 
     case CollisionState::EXIT:
@@ -104,7 +104,7 @@ void GameObject::OnCollisionTerrain(const float height) {
 
 void GameObject::OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { }
 
-void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& minTrans) {
+void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
     auto obb1 = std::static_pointer_cast<OrientedBoxCollider>(mCollider)->GetBoundingBox();
     auto obb2 = std::static_pointer_cast<OrientedBoxCollider>(opponent->mCollider)->GetBoundingBox();
 
@@ -112,7 +112,7 @@ void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<Ga
     float opponentMass = opponent->mPhysics->mFactor.mass;
     // 내가 무거울 수록 덜 밀려나는 구조.
     float coefficient = opponentMass / (myMass + opponentMass); // 0.0f ~ 1.0f 사이 값.
-    auto repulsiveVec = minTrans;
+    auto repulsiveVec = impulse;
     mTransform->Translate(repulsiveVec);
 
     bool onOtherObject{ false };
@@ -126,4 +126,6 @@ void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<Ga
     mPhysics->SetOnOtherObject(onOtherObject);
 }
 
-void GameObject::OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { }
+void GameObject::OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { 
+    //mPhysics->SetOnOtherObject(false);
+}

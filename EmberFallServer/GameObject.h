@@ -28,11 +28,6 @@ class GameObject : public std::enable_shared_from_this<GameObject> {
 public:
     GameObject();
     ~GameObject();
-
-public:
-    bool operator<(const GameObject& object) {
-        return mId < object.mId;
-    }
     
 public:
     bool IsActive() const;
@@ -80,12 +75,12 @@ public:
 
     void Update(const float deltaTime);
 
-    void OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& minTrans);
+    void OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
     void OnCollisionTerrain(const float height);
 
 private:
     void OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
-    void OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& minTrans);
+    void OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
     void OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
 
 private:
