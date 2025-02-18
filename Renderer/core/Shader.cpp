@@ -188,6 +188,8 @@ void ShaderFileManager::ReCompile(const std::filesystem::path& source, const std
 }
 
 void ShaderFileManager::Load(ComPtr<ID3D12Blob>& blob, const std::filesystem::path& path) {
+	Console.Log("Loading shader : {}", LogType::Info, path.string());
+
 	auto size = std::filesystem::file_size(path);
 
 	::D3DCreateBlob(size, blob.GetAddressOf());
@@ -200,57 +202,8 @@ ShaderFileManager gShaderManager{};
 
 //------------------------------------------------------------------------------------------------[ ShaderManager ]------------------------------------------------------------------------------------------------
 
-GraphicsShaderBase::GraphicsShaderBase(ComPtr<ID3D12Device> device) {
-	static std::array<CD3DX12_STATIC_SAMPLER_DESC, 6> staticSamplers{};
-
-	staticSamplers[0] = { 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP };
-	staticSamplers[1] = { 1, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP };
-	staticSamplers[2] = { 2, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP };
-	staticSamplers[3] = { 3, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP };
-	staticSamplers[4] = { 4, D3D12_FILTER_ANISOTROPIC, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, 0.0f, 8 };
-	staticSamplers[5] = { 5, D3D12_FILTER_ANISOTROPIC, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, 0.0f, 8 };
-
-	D3D12_ROOT_SIGNATURE_DESC rootsignatureDesc{};
-	auto rootParameters = CreateRootParameters();
-
-	rootsignatureDesc.NumParameters = rootParameters.ParameterCount;
-	rootsignatureDesc.pParameters = rootParameters.Parameters.data();
-	rootsignatureDesc.NumStaticSamplers = static_cast<UINT>(staticSamplers.size());
-	rootsignatureDesc.pStaticSamplers = staticSamplers.data();
-	rootsignatureDesc.Flags = CreateRootSignatureFlag();
+GraphicsShaderBase::GraphicsShaderBase() {
 	
-	ComPtr<ID3D12Blob> signatureBlob{};
-	ComPtr<ID3D12Blob> errorBlob{};
-
-	auto hr = ::D3D12SerializeRootSignature(&rootsignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, signatureBlob.GetAddressOf(), errorBlob.GetAddressOf());
-	CrashExp(SUCCEEDED(hr), reinterpret_cast<const char*>(errorBlob->GetBufferPointer()));
-
-	CheckHR(device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&mRootSignature)));
-	
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
-	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-
-	auto inputLayout = CreateInputLayout();
-
-	psoDesc.InputLayout = { inputLayout.InputElements.data(), inputLayout.ElementCount };
-	psoDesc.pRootSignature = mRootSignature.Get();
-	psoDesc.VS = CreateVertexShader();
-	psoDesc.PS = CreatePixelShader();
-	psoDesc.GS = CreateGeometryShader();
-	psoDesc.HS = CreateHullShader();
-	psoDesc.DS = CreateDomainShader();
-	psoDesc.RasterizerState = CreateRasterizerState();
-	psoDesc.BlendState = CreateBlendState();
-	psoDesc.DepthStencilState = CreateDepthStencilState();
-	psoDesc.SampleMask = UINT_MAX;
-	psoDesc.PrimitiveTopologyType = CreatePrimitiveTopologyType();
-	psoDesc.NumRenderTargets = CreateNumOfRenderTarget();
-	CreateRTVFormat(psoDesc.RTVFormats);
-	psoDesc.SampleDesc.Count = 1;
-	psoDesc.SampleDesc.Quality = 0;
-	psoDesc.DSVFormat = CreateDSVFormat();
-
-	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPipelineState)));
 }
 
 GraphicsShaderBase::~GraphicsShaderBase() {
@@ -342,8 +295,8 @@ UINT GraphicsShaderBase::CreateNumOfRenderTarget() {
 	return 1;
 }
 
-void GraphicsShaderBase::CreateRTVFormat(DXGI_FORMAT* formats) {
-	::memset(formats, static_cast<int>(Config::RENDER_TARGET_FORMAT), sizeof(DXGI_FORMAT) * 8);
+void GraphicsShaderBase::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
+	formats[0] = Config::RENDER_TARGET_FORMAT;
 }
 
 DXGI_FORMAT GraphicsShaderBase::CreateDSVFormat() {
@@ -370,6 +323,60 @@ D3D12_SHADER_BYTECODE GraphicsShaderBase::CreateDomainShader() {
 	return D3D12_SHADER_BYTECODE();
 }
 
+void GraphicsShaderBase::CreateShader(ComPtr<ID3D12Device> device) {
+	static std::array<CD3DX12_STATIC_SAMPLER_DESC, 6> staticSamplers{};
+
+	staticSamplers[0] = { 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP };
+	staticSamplers[1] = { 1, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP };
+	staticSamplers[2] = { 2, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP };
+	staticSamplers[3] = { 3, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP };
+	staticSamplers[4] = { 4, D3D12_FILTER_ANISOTROPIC, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, 0.0f, 8 };
+	staticSamplers[5] = { 5, D3D12_FILTER_ANISOTROPIC, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, 0.0f, 8 };
+
+	D3D12_ROOT_SIGNATURE_DESC rootsignatureDesc{};
+	auto rootParameters = CreateRootParameters();
+
+	rootsignatureDesc.NumParameters = rootParameters.ParameterCount;
+	rootsignatureDesc.pParameters = rootParameters.Parameters.data();
+	rootsignatureDesc.NumStaticSamplers = static_cast<UINT>(staticSamplers.size());
+	rootsignatureDesc.pStaticSamplers = staticSamplers.data();
+	rootsignatureDesc.Flags = CreateRootSignatureFlag();
+
+	ComPtr<ID3D12Blob> signatureBlob{};
+	ComPtr<ID3D12Blob> errorBlob{};
+
+	auto hr = ::D3D12SerializeRootSignature(&rootsignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, signatureBlob.GetAddressOf(), errorBlob.GetAddressOf());
+	CrashExp(SUCCEEDED(hr), reinterpret_cast<const char*>(errorBlob->GetBufferPointer()));
+
+	CheckHR(device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&mRootSignature)));
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
+	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
+
+	auto inputLayout = CreateInputLayout();
+
+	psoDesc.InputLayout = { inputLayout.InputElements.data(), inputLayout.ElementCount };
+	psoDesc.pRootSignature = mRootSignature.Get();
+	psoDesc.VS = CreateVertexShader();
+	psoDesc.PS = CreatePixelShader();
+	psoDesc.GS = CreateGeometryShader();
+	psoDesc.HS = CreateHullShader();
+	psoDesc.DS = CreateDomainShader();
+	psoDesc.RasterizerState = CreateRasterizerState();
+	psoDesc.BlendState = CreateBlendState();
+	psoDesc.DepthStencilState = CreateDepthStencilState();
+	psoDesc.SampleMask = UINT_MAX;
+	psoDesc.PrimitiveTopologyType = CreatePrimitiveTopologyType();
+	psoDesc.NumRenderTargets = CreateNumOfRenderTarget();
+	CreateRTVFormat(std::span<DXGI_FORMAT>(psoDesc.RTVFormats, 8));
+	psoDesc.SampleDesc.Count = 1;
+	psoDesc.SampleDesc.Quality = 0;
+	psoDesc.DSVFormat = CreateDSVFormat();
+	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+
+	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPipelineState)));
+}
+
 UINT GraphicsShaderBase::GetShaderID() const {
 	return std::numeric_limits<UINT>::max();
 }
@@ -377,4 +384,71 @@ UINT GraphicsShaderBase::GetShaderID() const {
 void GraphicsShaderBase::SetShader(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	commandList->SetPipelineState(mPipelineState.Get());
 	commandList->SetGraphicsRootSignature(mRootSignature.Get());
+}
+
+
+
+
+
+StandardShader::StandardShader(){
+}
+
+void StandardShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+}
+
+GraphicsShaderBase::InputLayout StandardShader::CreateInputLayout() {
+	GraphicsShaderBase::InputLayout inputLayout{};
+
+	inputLayout.ElementCount = 3;
+
+	inputLayout.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[1] = { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[2] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	return inputLayout;
+}
+
+GraphicsShaderBase::RootParameters StandardShader::CreateRootParameters() {
+	GraphicsShaderBase::RootParameters params{};
+
+	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	params.Parameters[0].Descriptor.ShaderRegister = 0;
+	params.Parameters[0].Descriptor.RegisterSpace = 0;
+	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[1].Descriptor.ShaderRegister = 0;
+	params.Parameters[1].Descriptor.RegisterSpace = 0;
+	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[2].Descriptor.ShaderRegister = 1;
+	params.Parameters[2].Descriptor.RegisterSpace = 0;
+	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	params.Ranges[0].NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
+	params.Ranges[0].BaseShaderRegister = 2;
+	params.Ranges[0].RegisterSpace = 0;
+	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[3].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
+	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.ParameterCount = 4; 
+
+	return params;
+}
+
+D3D12_SHADER_BYTECODE StandardShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("Standard", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE StandardShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("Standard", ShaderType::PixelShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }

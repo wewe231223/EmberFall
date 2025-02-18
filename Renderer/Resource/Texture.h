@@ -22,6 +22,8 @@ public:
 public:
 	ComPtr<ID3D12Resource> GetResource();
 	ID3D12Resource** GetAddressOf();
+
+	void Transition(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
 private:
 	void LoadDefaultTexture(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
 private:

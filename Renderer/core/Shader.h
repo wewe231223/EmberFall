@@ -2,6 +2,7 @@
 #include <array>
 #include <string>
 #include <filesystem>
+#include <span>
 #include "../Utility/DirectXInclude.h"
 
 enum ShaderType : BYTE {
@@ -52,9 +53,11 @@ protected:
 	struct RootParameters {
 		std::array<D3D12_ROOT_PARAMETER, 16> Parameters{};
 		UINT ParameterCount{ 0 };
+
+		std::array<D3D12_DESCRIPTOR_RANGE, 16> Ranges{};
 	};
 public:
-	GraphicsShaderBase(ComPtr<ID3D12Device> device); 
+	GraphicsShaderBase(); 
 	virtual ~GraphicsShaderBase(); 
 
 	GraphicsShaderBase(const GraphicsShaderBase&) = default;
@@ -64,9 +67,12 @@ public:
 	GraphicsShaderBase& operator=(GraphicsShaderBase&&) = default;
 
 public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device);
+
 	virtual UINT GetShaderID() const; 
 	void SetShader(ComPtr<ID3D12GraphicsCommandList> commandList);
 protected:
+
 	virtual InputLayout CreateInputLayout();
 	virtual D3D12_RASTERIZER_DESC CreateRasterizerState();
 	virtual D3D12_BLEND_DESC CreateBlendState();
@@ -75,7 +81,7 @@ protected:
 	virtual D3D12_ROOT_SIGNATURE_FLAGS CreateRootSignatureFlag(); 
 	virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE CreatePrimitiveTopologyType();
 	virtual UINT CreateNumOfRenderTarget(); 
-	virtual void CreateRTVFormat(DXGI_FORMAT* formats);
+	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&);
 	virtual DXGI_FORMAT CreateDSVFormat();
 
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader();
@@ -91,5 +97,14 @@ private:
 
 class StandardShader : public GraphicsShaderBase {
 public:
+	StandardShader();
+	virtual ~StandardShader() = default;
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+protected:
+	virtual InputLayout CreateInputLayout() override;
+	virtual RootParameters CreateRootParameters() override;
 
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
 };

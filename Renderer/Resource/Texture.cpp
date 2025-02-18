@@ -30,6 +30,8 @@ Texture::Texture(ComPtr<ID3D12Device> device, DXGI_FORMAT format, UINT64 width, 
 		nullptr,
 		IID_PPV_ARGS(mResource.GetAddressOf())
 	));
+
+	mResource->SetName(L"Non Image Texture - Default");
 }
 
 
@@ -61,12 +63,12 @@ Texture::Texture(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> 
 				IID_PPV_ARGS(mUploadbuffer.GetAddressOf())
 			));
 
-			CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ) };
+			CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mResource.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST) };
 			commandList->ResourceBarrier(1, &barrier);
 
 			UpdateSubresources(commandList.Get(), mResource.Get(), mUploadbuffer.Get(), 0, 0, static_cast<UINT>(subresources.size()), subresources.data());
 
-			barrier = CD3DX12_RESOURCE_BARRIER::Transition(mResource.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_GENERIC_READ);
+			barrier = CD3DX12_RESOURCE_BARRIER::Transition(mResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
 			commandList->ResourceBarrier(1, &barrier);
 		}
 		else {
@@ -86,13 +88,12 @@ Texture::Texture(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> 
 				nullptr,
 				IID_PPV_ARGS(mUploadbuffer.GetAddressOf())
 			));
-
-			CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ) };
+			CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mResource.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST) };
 			commandList->ResourceBarrier(1, &barrier);
 
 			UpdateSubresources(commandList.Get(), mResource.Get(), mUploadbuffer.Get(), 0, 0, 1, &subresource);
 
-			barrier = CD3DX12_RESOURCE_BARRIER::Transition(mResource.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_GENERIC_READ);
+			barrier = CD3DX12_RESOURCE_BARRIER::Transition(mResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
 			commandList->ResourceBarrier(1, &barrier);
 		}
 
@@ -104,35 +105,26 @@ Texture::Texture(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> 
 
 Texture::Texture(const Texture& other) {
 	mResource = other.mResource;
-	if (nullptr != other.mUploadbuffer) {
-		mUploadbuffer = other.mUploadbuffer;
-	}
+	mUploadbuffer = other.mUploadbuffer;
 }
 
 Texture& Texture::operator=(const Texture& other) {
 	if (this != &other) {
 		mResource = other.mResource;
-		if (nullptr != other.mUploadbuffer) {
-			mUploadbuffer = other.mUploadbuffer;
-		}
+		mUploadbuffer = other.mUploadbuffer;
 	}
 	return *this;
 }
 
 Texture::Texture(Texture&& other) noexcept {
 	mResource = std::move(other.mResource);
-	
-	if (nullptr != mUploadbuffer) {
-		mUploadbuffer = std::move(other.mUploadbuffer);
-	}
+	mUploadbuffer = std::move(other.mUploadbuffer);
 }
 
 Texture& Texture::operator=(Texture&& other) noexcept {
 	if (this != &other) {
 		mResource = std::move(other.mResource);
-		if (nullptr != mUploadbuffer) {
-			mUploadbuffer = std::move(other.mUploadbuffer);
-		}
+		mUploadbuffer = std::move(other.mUploadbuffer);
 	}
 
 	return *this;
@@ -146,8 +138,13 @@ ID3D12Resource** Texture::GetAddressOf() {
 	return mResource.GetAddressOf();
 }
 
+void Texture::Transition(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
+	CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mResource.Get(), before, after) };
+	commandList->ResourceBarrier(1, &barrier);
+}
+
 void Texture::LoadDefaultTexture(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
-	std::wstring filePath = L"Resources/Textures/DefaultTexture.png";
+	std::wstring filePath = L"Resources/Image/DefaultTexture.png";
 	std::unique_ptr<uint8_t[]> data{ nullptr };
 
 	D3D12_SUBRESOURCE_DATA subresource{};
@@ -167,11 +164,14 @@ void Texture::LoadDefaultTexture(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graph
 		IID_PPV_ARGS(mUploadbuffer.GetAddressOf())
 	));
 
-	CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ) };
+	mUploadbuffer->SetName(L"Upload - Texture");
+	mResource->SetName(L"Default - Texture");
+
+	CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mResource.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST) };
 	commandList->ResourceBarrier(1, &barrier);
 
 	UpdateSubresources(commandList.Get(), mResource.Get(), mUploadbuffer.Get(), 0, 0, 1, &subresource);
 
-	barrier = CD3DX12_RESOURCE_BARRIER::Transition(mResource.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_GENERIC_READ);
+	barrier = CD3DX12_RESOURCE_BARRIER::Transition(mResource.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
 	commandList->ResourceBarrier(1, &barrier);
 }

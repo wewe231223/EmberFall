@@ -14,3 +14,7 @@ struct PlainModelContext {
 	MaterialIndex material;
 };
 
+template<typename T>
+constexpr size_t GetCBVSize() {
+	return (sizeof(T) + 255) & ~255;
+}

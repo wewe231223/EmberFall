@@ -6,9 +6,9 @@
 PlainMesh::PlainMesh() {
 }
 
-PlainMesh::PlainMesh(ComPtr<ID3D12Device> device, EmbeddedMeshType type, UINT size) {
-	
-	std::vector<SimpleMath::Vector3> positions; 
+PlainMesh::PlainMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, EmbeddedMeshType type, UINT size) {
+
+	std::vector<SimpleMath::Vector3> positions;
 	std::vector<SimpleMath::Vector3> normals;
 	std::vector<SimpleMath::Vector2> texcoords;
 
@@ -44,7 +44,7 @@ PlainMesh::PlainMesh(ComPtr<ID3D12Device> device, EmbeddedMeshType type, UINT si
 
 		mPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	}
-		break;
+	break;
 	case EmbeddedMeshType::Cube:
 	{
 		float halfSize = size * 0.5f;
@@ -100,26 +100,29 @@ PlainMesh::PlainMesh(ComPtr<ID3D12Device> device, EmbeddedMeshType type, UINT si
 				texcoords.push_back(cubeTexcoords[3]);
 			}
 		}
+
+		mIndexed = false;
+		mUnitCount = static_cast<UINT>(positions.size());
 	}
-		break;
+	break;
 	case EmbeddedMeshType::Sphere:
 	{
-		constexpr size_t tessellation = 16;
+		constexpr UINT tessellation = 16;
 
-		const size_t verticalSegments = tessellation;	
-		const size_t horizontalSegments = tessellation * 2;
+		const UINT verticalSegments = tessellation;
+		const UINT horizontalSegments = tessellation * 2;
 
 		const float radius = size * 0.5f;
 
-		for (size_t i = 0; i <= verticalSegments; ++i) {
+		for (UINT i = 0; i <= verticalSegments; ++i) {
 			float v = 1 - (float)i / verticalSegments;
 
 			float latitude = ((float)i * DirectX::XM_PI / verticalSegments) - DirectX::XM_PIDIV2;
 			float dy, dxz;
-			
+
 			DirectX::XMScalarSinCos(&dy, &dxz, latitude);
 
-			for (size_t j = 0; j <= horizontalSegments; ++j) {
+			for (UINT j = 0; j <= horizontalSegments; ++j) {
 				float u = (float)j / horizontalSegments;
 
 				float longitude = j * DirectX::XM_2PI / horizontalSegments;
@@ -137,10 +140,69 @@ PlainMesh::PlainMesh(ComPtr<ID3D12Device> device, EmbeddedMeshType type, UINT si
 				texcoords.push_back({ u, v });
 			}
 		}
+
+		const UINT stride = horizontalSegments + 1;
+
+		for (UINT i = 0; i < verticalSegments; ++i) {
+			for (UINT j = 0; j <= horizontalSegments; ++j) {
+				UINT nextI = i + 1;
+				UINT nextJ = (j + 1) % stride;
+
+				// 와인딩 순서를 반대로 변경 (CW → CCW)
+				indices.push_back(i * stride + j);
+				indices.push_back(i * stride + nextJ);
+				indices.push_back(nextI * stride + j);
+
+				indices.push_back(i * stride + nextJ);
+				indices.push_back(nextI * stride + nextJ);
+				indices.push_back(nextI * stride + j);
+			}
+		}
+
+
+		mIndexed = true;
+		mUnitCount = static_cast<UINT>(indices.size());
 	}
-		break;
+	break;
 	default:
 		break;
+	}
+
+	if (mIndexed) {
+		mIndexBuffer = DefaultBuffer(device, commandList, sizeof(UINT), indices.size(), indices.data());
+		mIndexBufferView.BufferLocation = *mIndexBuffer.GPUBegin();
+		mIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
+		mIndexBufferView.SizeInBytes = static_cast<UINT>(indices.size()) * sizeof(UINT);
+	}
+
+	{
+		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector3), positions.size(), positions.data());
+
+		D3D12_VERTEX_BUFFER_VIEW view{};
+		view.BufferLocation = *buffer.GPUBegin();
+		view.StrideInBytes = sizeof(SimpleMath::Vector3);
+		view.SizeInBytes = static_cast<UINT>(positions.size()) * sizeof(SimpleMath::Vector3);
+		mVertexBufferViews.emplace_back(view);
+	}
+	
+	{
+		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector3), normals.size(), normals.data());
+
+		D3D12_VERTEX_BUFFER_VIEW view{};
+		view.BufferLocation = *buffer.GPUBegin();
+		view.StrideInBytes = sizeof(SimpleMath::Vector3);
+		view.SizeInBytes = static_cast<UINT>(normals.size()) * sizeof(SimpleMath::Vector3);
+		mVertexBufferViews.emplace_back(view);
+	}
+
+	{
+		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector2), texcoords.size(), texcoords.data());
+
+		D3D12_VERTEX_BUFFER_VIEW view{};
+		view.BufferLocation = *buffer.GPUBegin();
+		view.StrideInBytes = sizeof(SimpleMath::Vector2);
+		view.SizeInBytes = static_cast<UINT>(texcoords.size()) * sizeof(SimpleMath::Vector2);
+		mVertexBufferViews.emplace_back(view);
 	}
 }
 
@@ -182,6 +244,7 @@ PlainMesh::PlainMesh(PlainMesh&& other) noexcept {
 		mIndexBufferView = other.mIndexBufferView;
 		mPrimitiveTopology = other.mPrimitiveTopology;
 		mIndexed = other.mIndexed;
+		mUnitCount = other.mUnitCount;
 	}
 }
 
@@ -193,13 +256,14 @@ PlainMesh& PlainMesh::operator=(PlainMesh&& other) noexcept {
 		mIndexBufferView = other.mIndexBufferView;
 		mPrimitiveTopology = other.mPrimitiveTopology;
 		mIndexed = other.mIndexed;
+		mUnitCount = other.mUnitCount;
 	}
 	return *this;
 }
 
 void PlainMesh::Bind(ComPtr<ID3D12GraphicsCommandList> commandList) const {
 	commandList->IASetPrimitiveTopology(mPrimitiveTopology);
-	commandList->IASetVertexBuffers(0,static_cast<UINT>(mVertexBufferViews.size()), mVertexBufferViews.data());
+	commandList->IASetVertexBuffers(0, static_cast<UINT>(mVertexBufferViews.size()), mVertexBufferViews.data());
 	if (mIndexed) {
 		commandList->IASetIndexBuffer(&mIndexBufferView);
 	}

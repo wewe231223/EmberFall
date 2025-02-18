@@ -12,7 +12,7 @@ class PlainMesh {
 public:
 	PlainMesh(); 
 	// Other Ctors... 
-	PlainMesh(ComPtr<ID3D12Device> device, EmbeddedMeshType type, UINT size = 1);
+	PlainMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, EmbeddedMeshType type, UINT size = 1);
 	~PlainMesh();
 
 	PlainMesh(const PlainMesh& other);

@@ -22,10 +22,11 @@ public:
 public:
 	void AppendPlaneMeshContext(GraphicsShaderBase* shader, PlainMesh* mesh, const PlainModelContext& world);
 
+	void PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList);
 	void Render(ComPtr<ID3D12GraphicsCommandList> commandList); 
 	void Reset(); 
 private:
-	DefaultBuffer mPlaneMeshBuffer{};
+	DefaultBuffer mPlainMeshBuffer{};
 	// DefaultBuffer mBonedMeshBuffer{};
 
 	std::unordered_map<GraphicsShaderBase* ,std::unordered_map<PlainMesh*, std::vector<PlainModelContext>>> mPlainMeshContexts{};

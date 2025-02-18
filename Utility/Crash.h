@@ -12,7 +12,7 @@
 #pragma region MACRO_CRASH
 #define CrashExpRelease(expression, cause)  \
 {                                           \
-    if (false == expression) {              \
+    if (false == (expression)) {              \
         int* p = nullptr;                   \
         __analysis_assume(p != nullptr);    \
         * p = expression;                   \
@@ -23,14 +23,14 @@
 {                                           \
     int* p = nullptr;                       \
     __analysis_assume(p != nullptr);        \
-    *p = expression;                        \
+                                            \
 }
 
 #if defined(_DEBUG) || defined(DEBUG)
 #define Crash(cause) assert(false && cause)
 #define CrashExp(expression, cause) if (false == (expression)) assert(false && cause)
 #else
-#define Crash(cause) CrashRelease(cause)
+#define Crash(cause) CrashRelease((cause))
 #define CrashExp(expression, cause) CrashExpRelease(expression, cause)
 #endif
 

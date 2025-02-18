@@ -9,6 +9,9 @@
 #include "../Utility/Serializer.h"
 #include "../Renderer/core/Shader.h"
 #include "../Manager/MeshRenderManager.h"
+#include "../Manager/TextureManager.h"
+
+#include "../Resource/PlainMesh.h"
 
 struct Renderer::DirectXImpl {
 	ComPtr<IDXGIFactory6> mFactory{ nullptr };
@@ -33,16 +36,37 @@ struct Renderer::DirectXImpl {
 	std::array<Texture, Config::BACKBUFFER_COUNT<UINT>> mRenderTargets{};
 	UINT mRTIndex{ 0 };
 
+	/*
+	1. pixel의 World Space좌표
+	2. pixel의 diffuse color
+	3. pixel의 normal값
+	*/
+	std::array<Texture, 3> mGBuffers{};
+	ComPtr<ID3D12DescriptorHeap> mGBufferHeap{ nullptr };
+
 	ComPtr<ID3D12DescriptorHeap> mDSHeap{ nullptr };
 	Texture mDepthStencilBuffer{};
 
+	TextureManager mTextureManager{};
+	MaterialManager mMaterialManager{};
 	MeshRenderManager mMeshRenderManager{};
+
+	DefaultBuffer mCameraBuffer{};
+	GraphicsShaderBase* mShader{ nullptr };
+	PlainMesh mMesh{};
 };
 
-Renderer::Renderer(HWND rendererWindowHandle) 
+struct CameraConstants {
+	SimpleMath::Matrix view;
+	SimpleMath::Matrix proj;
+	SimpleMath::Matrix viewProj;
+	SimpleMath::Vector3 cameraPosition;
+};
+
+Renderer::Renderer(HWND rendererWindowHandle)
 	: mRendererWindow(rendererWindowHandle) {
 	mDirectXImpl = std::make_unique<DirectXImpl>();
-	
+
 	// 셰이더 매니저 테스트용.. 
 	gShaderManager.Test();
 
@@ -55,14 +79,37 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitRenderTargets();
 	Renderer::InitDepthStencilBuffer();
 
-	mDirectXImpl->mMeshRenderManager = MeshRenderManager(mDirectXImpl->mDevice);
+	Renderer::ResetCommandList();
 
+	mDirectXImpl->mMeshRenderManager = MeshRenderManager(mDirectXImpl->mDevice);
+	mDirectXImpl->mTextureManager = TextureManager(mDirectXImpl->mDevice, mDirectXImpl->mCommandList);
+	mDirectXImpl->mMaterialManager = MaterialManager();
+
+	mDirectXImpl->mCameraBuffer = DefaultBuffer(mDirectXImpl->mDevice, mDirectXImpl->mCommandList, GetCBVSize<CameraConstants>(), 1);
+
+	mDirectXImpl->mMesh = PlainMesh(mDirectXImpl->mDevice, mDirectXImpl->mCommandList, EmbeddedMeshType::Sphere, 1);
+	mDirectXImpl->mShader = new StandardShader{};
+	mDirectXImpl->mShader->CreateShader(mDirectXImpl->mDevice);
+
+	MaterialConstants material{};
+	material.mDiffuseColor = SimpleMath::Color(1.f, 1.f, 1.f, 1.f);
+	
+	mDirectXImpl->mMaterialManager.CreateMaterial("DefaultMaterial", material);
+	mDirectXImpl->mMaterialManager.UploadMaterial(mDirectXImpl->mDevice, mDirectXImpl->mCommandList);
+
+
+
+	CheckHR(mDirectXImpl->mCommandList->Close());
+	
+	ID3D12CommandList* commandLists[] = { mDirectXImpl->mCommandList.Get() };
+	mDirectXImpl->mCommandQueue->ExecuteCommandLists(1, commandLists);
 	Renderer::FlushCommandQueue();
 
 	Console.Log("Renderer 초기화가 완료되었습니다.", LogType::Info);
 }
 
 Renderer::~Renderer() {
+	delete mDirectXImpl->mShader;
 }
 
 void Renderer::Update() {
@@ -106,10 +153,36 @@ void Renderer::Render() {
 
 	// Rendering... 
 
+	SimpleMath::Vector3 pos{ 0.f,0.f,0.f };
+
+	PlainModelContext context{};
+	context.world = SimpleMath::Matrix::CreateScale(1.f) * SimpleMath::Matrix::CreateTranslation(pos).Transpose();
+	context.material = mDirectXImpl->mMaterialManager.GetMaterial("DefaultMaterial");
+
+	mDirectXImpl->mMeshRenderManager.AppendPlaneMeshContext(mDirectXImpl->mShader, &mDirectXImpl->mMesh, context);
+
+	CameraConstants camera{};
+	camera.view = SimpleMath::Matrix::CreateLookAt(SimpleMath::Vector3(0.f, 0.f, 10.f), SimpleMath::Vector3(0.f, 0.f, 0.f), SimpleMath::Vector3(0.f, 1.f, 0.f)).Transpose();
+	camera.proj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(DirectX::XMConvertToRadians(60.f), Config::WINDOW_WIDTH<float> / Config::WINDOW_HEIGHT<float>, 0.1f, 1000.f).Transpose();
+	camera.viewProj = camera.proj * camera.view;
+	camera.cameraPosition = SimpleMath::Vector3(0.f, 0.f, -100.f);
 
 
-	barrier = CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.GetResource().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-	mDirectXImpl->mCommandList->ResourceBarrier(1, &barrier);
+	::memcpy(mDirectXImpl->mCameraBuffer.Data(), &camera, sizeof(CameraConstants));
+	mDirectXImpl->mCameraBuffer.Upload(mDirectXImpl->mCommandList);
+
+	mDirectXImpl->mMeshRenderManager.PrepareRender(mDirectXImpl->mCommandList);
+
+	mDirectXImpl->mTextureManager.Bind(mDirectXImpl->mCommandList);
+	mDirectXImpl->mMaterialManager.Bind(mDirectXImpl->mCommandList);
+	mDirectXImpl->mCommandList->SetGraphicsRootConstantBufferView(0, *mDirectXImpl->mCameraBuffer.GPUBegin());
+
+	mDirectXImpl->mMeshRenderManager.Render(mDirectXImpl->mCommandList);
+
+	mDirectXImpl->mMeshRenderManager.Reset();
+
+
+	currentBackBuffer.Transition(mDirectXImpl->mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
 	CheckHR(mDirectXImpl->mCommandList->Close());
 	ID3D12CommandList* commandLists[] = { mDirectXImpl->mCommandList.Get() };
@@ -190,7 +263,10 @@ void Renderer::InitCommandList() {
 	CheckHR(mDirectXImpl->mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&mDirectXImpl->mAllocator)));
 	CheckHR(mDirectXImpl->mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mDirectXImpl->mAllocator.Get(), nullptr, IID_PPV_ARGS(&mDirectXImpl->mCommandList)));
 
-	mDirectXImpl->mCommandList->Close();
+	mDirectXImpl->mCommandList->SetName(L"Main Command List");
+	mDirectXImpl->mAllocator->SetName(L"Main Command Allocator");
+
+	CheckHR(mDirectXImpl->mCommandList->Close());
 }
 
 void Renderer::InitRenderTargets() {
@@ -212,6 +288,25 @@ void Renderer::InitRenderTargets() {
 		mDirectXImpl->mDevice->CreateRenderTargetView(renderTarget.GetResource().Get(), nullptr, handle);
 		handle.ptr += rtvDescriptorSize;
 	}
+
+	//D3D12_DESCRIPTOR_HEAP_DESC gBufferDesc{};
+	//gBufferDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	//gBufferDesc.NumDescriptors = 3;
+	//gBufferDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+	//CheckHR(mDirectXImpl->mDevice->CreateDescriptorHeap(&gBufferDesc, IID_PPV_ARGS(mDirectXImpl->mGBufferHeap.GetAddressOf())));
+
+	//mDirectXImpl->mGBuffers[0] = Texture(mDirectXImpl->mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
+	//mDirectXImpl->mGBuffers[1] = Texture(mDirectXImpl->mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
+	//mDirectXImpl->mGBuffers[2] = Texture(mDirectXImpl->mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
+
+	//D3D12_CPU_DESCRIPTOR_HANDLE gBufferHandle{ mDirectXImpl->mGBufferHeap->GetCPUDescriptorHandleForHeapStart() };
+
+	//mDirectXImpl->mDevice->CreateRenderTargetView(mDirectXImpl->mGBuffers[0].GetResource().Get(), nullptr, gBufferHandle);
+	//gBufferHandle.ptr += rtvDescriptorSize;
+	//mDirectXImpl->mDevice->CreateRenderTargetView(mDirectXImpl->mGBuffers[1].GetResource().Get(), nullptr, gBufferHandle);
+	//gBufferHandle.ptr += rtvDescriptorSize;
+	//mDirectXImpl->mDevice->CreateRenderTargetView(mDirectXImpl->mGBuffers[2].GetResource().Get(), nullptr, gBufferHandle);
 }
 
 void Renderer::InitDepthStencilBuffer() {
@@ -222,11 +317,11 @@ void Renderer::InitDepthStencilBuffer() {
 
 	CheckHR(mDirectXImpl->mDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(mDirectXImpl->mDSHeap.GetAddressOf())));
 
-	CD3DX12_CLEAR_VALUE clearValue{ DXGI_FORMAT_D32_FLOAT, 1.0f, 0 };
+	CD3DX12_CLEAR_VALUE clearValue{ DXGI_FORMAT_D24_UNORM_S8_UINT, 1.0f, 0 };
 	auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 
 	auto resourceDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-		DXGI_FORMAT_D32_FLOAT,
+		DXGI_FORMAT_D24_UNORM_S8_UINT,
 		Config::WINDOW_WIDTH<UINT64>, 
 		Config::WINDOW_HEIGHT<UINT>, 
 		1, 0, 1, 0, 
@@ -256,7 +351,7 @@ void Renderer::FlushCommandQueue() {
 
 	if (mDirectXImpl->mFence->GetCompletedValue() < mDirectXImpl->mFenceValue) {
 		HANDLE eventHandle = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-		CrashExp(eventHandle != nullptr, "Event can not be nullptr");
+		CrashExp((eventHandle != nullptr), "Event can not be nullptr");
 
 		mDirectXImpl->mFence->SetEventOnCompletion(mDirectXImpl->mFenceValue, eventHandle);
 		::WaitForSingleObject(eventHandle, INFINITE);

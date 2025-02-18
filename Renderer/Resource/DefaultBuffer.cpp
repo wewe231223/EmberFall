@@ -36,7 +36,7 @@ DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 		subresourceData.RowPitch = mSize;
 		subresourceData.SlicePitch = mSize;
 
-		D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
+		D3D12_RESOURCE_BARRIER barrier = CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST);
 		commandList->ResourceBarrier(1, &barrier);
 
 		UpdateSubresources(commandList.Get(), mBuffer.Get(), mUploadBuffer.Get(), 0, 0, 1, &subresourceData);
@@ -44,6 +44,12 @@ DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 		barrier = CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
 		commandList->ResourceBarrier(1, &barrier);
 	}
+
+	std::wstring name{ L"Upload Size - " + std::to_wstring(mSize) };
+	std::wstring name2{ L"Default Size - " + std::to_wstring(mSize) };
+	
+	mUploadBuffer->SetName(name.c_str());
+	mBuffer->SetName(name2.c_str());
 }
 
 DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, size_t unitSize, size_t numofElement){
@@ -74,6 +80,12 @@ DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, size_t unitSize, size_
 	));
 
 	CheckHR(mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mBufferPtr)));
+
+	std::wstring name{ L"Upload Size - " + std::to_wstring(mSize) };
+	std::wstring name2{ L"Default Size - " + std::to_wstring(mSize) };
+
+	mUploadBuffer->SetName(name.c_str());
+	mBuffer->SetName(name2.c_str());
 }
 
 DefaultBuffer::~DefaultBuffer() {
@@ -87,6 +99,7 @@ DefaultBuffer::DefaultBuffer(const DefaultBuffer& other) {
 	mUploadBuffer = other.mUploadBuffer;
 	mElementSize = other.mElementSize;
 	mSize = other.mSize;
+	mBufferPtr = other.mBufferPtr;
 }
 
 DefaultBuffer& DefaultBuffer::operator=(const DefaultBuffer& other) {
@@ -95,6 +108,7 @@ DefaultBuffer& DefaultBuffer::operator=(const DefaultBuffer& other) {
 		mUploadBuffer = other.mUploadBuffer;
 		mElementSize = other.mElementSize;
 		mSize = other.mSize;
+		mBufferPtr = other.mBufferPtr;
 	}
 	return *this;
 }
@@ -105,6 +119,7 @@ DefaultBuffer::DefaultBuffer(DefaultBuffer&& other) noexcept {
 		mUploadBuffer = std::move(other.mUploadBuffer);
 		mElementSize = other.mElementSize;
 		mSize = other.mSize;
+		mBufferPtr = other.mBufferPtr;
 	}
 }
 
@@ -114,6 +129,7 @@ DefaultBuffer& DefaultBuffer::operator=(DefaultBuffer&& other) noexcept {
 		mUploadBuffer = std::move(other.mUploadBuffer);
 		mElementSize = other.mElementSize;
 		mSize = other.mSize;
+		mBufferPtr = other.mBufferPtr;
 	}
 	return *this;
 }
@@ -127,7 +143,7 @@ BYTE* DefaultBuffer::Data() {
 }
 
 void DefaultBuffer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList) {
-	D3D12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST) };
+	D3D12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST) };
 	commandList->ResourceBarrier(1, &barrier);
 
 	commandList->CopyResource(mBuffer.Get(), mUploadBuffer.Get());

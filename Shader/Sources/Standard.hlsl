@@ -55,17 +55,21 @@ SamplerState anisotropicClampSampler : register(s5);
 
 Standard_VOUT Standard_VS(Standard_VIN input) {
     ModelContext modelContext = modelContexts[input.instanceID];
-    MaterialConstants material = materialConstants[modelContext.material];
-    
+
     Standard_VOUT output;
-    output.position = mul(float4(input.position, 1.0f), mul(modelContext.world, viewProjection));
+    output.position = mul(float4(input.position, 1.f), modelContext.world);
+    //output.position = mul(output.position, view);
+    //output.position = mul(output.position, projection);
+    output.position = mul(output.position, viewProjection);
+    
     output.normal = mul(input.normal, (float3x3)modelContext.world);
     output.texcoord = input.texcoord;
+    output.material = modelContext.material;
     
     return output;
 }
 
 float4 Standard_PS(Standard_VOUT input) : SV_TARGET {
-    float4 color = materialConstants[input.material].diffuse;
+    float4 color = float4(1.f, 1.f, 1.f, 1.f);
     return color;
 }

@@ -21,11 +21,12 @@ public:
 
 	void SetActiveState(bool state); 
 	void ToggleActiveState();
-private:
+public:
 	PlainMesh* mMesh{ nullptr };
 	GraphicsShaderBase* mShader{ nullptr };
 	MaterialIndex mMaterial{ 0 };
 
+private:
 	Transform mTransform{};
 	Collider mCollider{};
 

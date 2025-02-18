@@ -46,7 +46,10 @@ struct Config {
 	constexpr static T LOG_FILE_COUNT_LIMIT{ static_cast<T>(10) };
 
 	template<typename T = int> 
-	constexpr static T BACKBUFFER_COUNT{ 3 };
+	constexpr static T BACKBUFFER_COUNT{ static_cast<T>(3) };
+
+	template<typename T = UINT> 
+	constexpr static T MAX_TEXTURE_COUNT{ static_cast<T>(1024) };
 
 	constexpr static bool ALLOW_TEARING{ false };
 	constexpr static D3D_FEATURE_LEVEL DIRECTX_FEATURE_LEVEL{ D3D_FEATURE_LEVEL_11_0 };

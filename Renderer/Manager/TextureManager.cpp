@@ -1,10 +1,11 @@
 #include "pch.h"
 #include "TextureManager.h"
 #include "../Utility/Crash.h"
+#include "../Config/Config.h"
 
 TextureManager::TextureManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
     D3D12_DESCRIPTOR_HEAP_DESC desc{};
-	desc.NumDescriptors = MAX_TEXTURE_COUNT<UINT>;
+	desc.NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
 	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	desc.NodeMask = 0;
@@ -15,7 +16,7 @@ TextureManager::TextureManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graphic
 
 
 	UINT count{ 0 };
-	auto pair = std::make_pair(count++, Texture(device, commandList, "Resources/Image/Default.png"));
+	auto pair = std::make_pair(count++, Texture(device, commandList, "Resources/Image/DefaultTexture.png"));
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -26,12 +27,16 @@ TextureManager::TextureManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graphic
 	CD3DX12_CPU_DESCRIPTOR_HANDLE handle{ mTextureHeap->GetCPUDescriptorHandleForHeapStart() };
 	device->CreateShaderResourceView(pair.second.GetResource().Get(), &srvDesc, handle);
 
-	mTextures["Default"] = std::move(pair);
+	mTextures["DefaultTexture"] = std::move(pair);
 
 	auto increasement = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	for (const auto& entry : std::filesystem::directory_iterator(TextureManager::IMAGE_DIRECTORY)) {
 		auto& path = entry.path();
 		auto name = path.stem().string();
+
+		if (mTextures.find(name) != mTextures.end()) {
+			continue;
+		}
 		
 		pair = std::make_pair(count++, Texture(device, commandList, path));
 
@@ -52,7 +57,8 @@ UINT TextureManager::GetTexture(const std::string& name) {
 }
 
 void TextureManager::Bind(ComPtr<ID3D12GraphicsCommandList> commandList) {
-	commandList->SetGraphicsRootDescriptorTable(0, mTextureHeap->GetGPUDescriptorHandleForHeapStart());
+	commandList->SetDescriptorHeaps(1, mTextureHeap.GetAddressOf());
+	commandList->SetGraphicsRootDescriptorTable(3, mTextureHeap->GetGPUDescriptorHandleForHeapStart());
 }
 
 void MaterialManager::CreateMaterial(const std::string& name, const MaterialConstants& material) {
@@ -75,6 +81,10 @@ void MaterialManager::UploadMaterial(ComPtr<ID3D12Device> device, ComPtr<ID3D12G
 	mMaterialBuffer.Upload(commandList);
 }
 
+MaterialIndex MaterialManager::GetMaterial(const std::string& name) {
+	return mMaterials[name];
+}
+
 void MaterialManager::Bind(ComPtr<ID3D12GraphicsCommandList> commandList) {
-	commandList->SetGraphicsRootShaderResourceView(1, *mMaterialBuffer.GPUBegin());
+	commandList->SetGraphicsRootShaderResourceView(2, *mMaterialBuffer.GPUBegin());
 }

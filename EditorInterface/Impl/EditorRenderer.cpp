@@ -9,7 +9,6 @@
 #include "../External/Include/ImGui/imgui_impl_win32.h"
 #include "../External/Include/ImGui/imgui_internal.h"
 #include "../Utility/Crash.h"
-
 #include "../EditorInterface/Console/Console.h"
 
 EditorRenderer::EditorRenderer() {
@@ -177,6 +176,7 @@ void EditorRenderer::InitRenderTargets() {
 	for (auto& renderTarget : mRenderTargets) {
 		mDevice->CreateRenderTargetView(renderTarget.Get(), nullptr, handle);
 		handle.ptr += rtvDescriptorSize;
+		renderTarget->SetName(L"Render Target - Default");
 	}
 }
 

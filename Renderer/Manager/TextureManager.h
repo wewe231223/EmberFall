@@ -6,9 +6,6 @@
 #include "../Renderer/Resource/DefaultBuffer.h"
 #include "../Renderer/Resource/Texture.h"
 class TextureManager {
-	template<typename T> 
-	static constexpr T MAX_TEXTURE_COUNT = 2048;
-
 	static constexpr const char* IMAGE_DIRECTORY = "Resources/Image";
 public:
 	TextureManager() = default;
@@ -57,6 +54,8 @@ public:
 	void CreateMaterial(const std::string& name, UINT diffuseTexture);
 
 	void UploadMaterial(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList); 
+
+	MaterialIndex GetMaterial(const std::string& name);
 
 	void Bind(ComPtr<ID3D12GraphicsCommandList> commandList);
 private:

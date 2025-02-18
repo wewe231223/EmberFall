@@ -23,8 +23,9 @@ inline std::optional<std::wstring> CheckHR(const HRESULT& hr, const std::source_
 
 	if (FAILED(hr)) {
 		_com_error err{ hr };
-		result = std::format(L"Error Location : {}\n{} \n\n Error : \n{}",
+		result = std::format(L"Error Location : {} : {}\n{} \n\n Error : \n{}",
 			to_wstring(location.file_name()),
+			location.line(),
 			to_wstring(location.function_name()),
 			err.ErrorMessage());
 		::MessageBoxW(nullptr, result.value().c_str(), L"Error", 0x00000010L | 0x00000000L);

@@ -11,9 +11,19 @@
 #include "framework.h"
 #include "EmberFall.h"
 #include "EditorInterface/Impl/EditorDevice.h"
-#pragma comment(lib,"out/debug/EditorInterface.lib")
+#include "EditorInterface/Console/Console.h"
 #include "Renderer/core/Renderer.h"
+#include "Game/System/Timer.h"
+
+#ifdef _DEBUG
+#pragma comment(lib,"out/debug/EditorInterface.lib")
 #pragma comment(lib,"out/debug/Renderer.lib")
+#pragma comment(lib,"out/debug/Game.lib")
+#else 
+#pragma comment(lib,"out/release/EditorInterface.lib")
+#pragma comment(lib,"out/release/Renderer.lib")
+#pragma comment(lib,"out/release/Game.lib")
+#endif
 
 #include "Config/Config.h"
 
@@ -52,6 +62,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	Renderer renderer{ hWnd };
 
+	Time.AddEvent(1s, []() {
+        Console.Log("FrameRate : {:.5f}", LogType::Info, 1.f / Time.GetDeltaTime<float>());
+        return true;
+		});
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
     MSG msg{};
@@ -62,6 +76,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             TranslateMessage(&msg);
             DispatchMessage(&msg);
 		}
+        Time.AdvanceTime();
         renderer.Render();
         // 게임 루프... 
     }
@@ -200,7 +215,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
-   gDevice.Initialize(hWnd);
+   // gDevice.Initialize(hWnd);
 
    return TRUE;
 }
