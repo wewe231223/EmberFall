@@ -63,7 +63,7 @@ void TextureManager::Bind(ComPtr<ID3D12GraphicsCommandList> commandList) {
 
 void MaterialManager::CreateMaterial(const std::string& name, const MaterialConstants& material) {
 	mMaterialData.emplace_back(material);
-	mMaterials[name] = mMaterialData.size() - 1;
+	mMaterials[name] = static_cast<UINT>(mMaterialData.size() - 1);
 }
 
 void MaterialManager::CreateMaterial(const std::string& name, UINT diffuseTexture) {

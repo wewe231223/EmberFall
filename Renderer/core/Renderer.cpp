@@ -92,7 +92,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	mDirectXImpl->mShader->CreateShader(mDirectXImpl->mDevice);
 
 	MaterialConstants material{};
-	material.mDiffuseColor = SimpleMath::Color(1.f, 1.f, 1.f, 1.f);
+	material.mDiffuseColor = SimpleMath::Color(1.f, 0.f, 1.f, 1.f);
 	
 	mDirectXImpl->mMaterialManager.CreateMaterial("DefaultMaterial", material);
 	mDirectXImpl->mMaterialManager.UploadMaterial(mDirectXImpl->mDevice, mDirectXImpl->mCommandList);
@@ -111,6 +111,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 Renderer::~Renderer() {
 	delete mDirectXImpl->mShader;
 }
+
 
 void Renderer::Update() {
 	// Update... 
@@ -155,14 +156,21 @@ void Renderer::Render() {
 
 	SimpleMath::Vector3 pos{ 0.f,0.f,0.f };
 
-	PlainModelContext context{};
-	context.world = SimpleMath::Matrix::CreateScale(1.f) * SimpleMath::Matrix::CreateTranslation(pos).Transpose();
-	context.material = mDirectXImpl->mMaterialManager.GetMaterial("DefaultMaterial");
 
-	mDirectXImpl->mMeshRenderManager.AppendPlaneMeshContext(mDirectXImpl->mShader, &mDirectXImpl->mMesh, context);
+
+	for (int x = -10; x < 10; x++) {
+		for (int y = -10; y < 10; y++) {
+			for (int z = -10; z < 10; z++) {
+				PlainModelContext context{};
+				context.world = (SimpleMath::Matrix::CreateScale(1.f).Transpose() * SimpleMath::Matrix::CreateTranslation(SimpleMath::Vector3(x * 3.f, y * 3.f, z * 3.f)).Transpose());
+				context.material = mDirectXImpl->mMaterialManager.GetMaterial("DefaultMaterial");
+				mDirectXImpl->mMeshRenderManager.AppendPlaneMeshContext(mDirectXImpl->mShader, &mDirectXImpl->mMesh, context);
+			}
+		}
+	}
 
 	CameraConstants camera{};
-	camera.view = SimpleMath::Matrix::CreateLookAt(SimpleMath::Vector3(0.f, 0.f, 10.f), SimpleMath::Vector3(0.f, 0.f, 0.f), SimpleMath::Vector3(0.f, 1.f, 0.f)).Transpose();
+	camera.view = SimpleMath::Matrix::CreateLookAt(SimpleMath::Vector3(100.f, 100.f, 100.f), SimpleMath::Vector3(0.f, 0.f, 0.f), SimpleMath::Vector3(0.f, 1.f, 0.f)).Transpose();
 	camera.proj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(DirectX::XMConvertToRadians(60.f), Config::WINDOW_WIDTH<float> / Config::WINDOW_HEIGHT<float>, 0.1f, 1000.f).Transpose();
 	camera.viewProj = camera.proj * camera.view;
 	camera.cameraPosition = SimpleMath::Vector3(0.f, 0.f, -100.f);

@@ -12,6 +12,7 @@
 
 #include <Windows.h>
 #include <memory>
+#include "../Manager/SceneManager.h"
 
 class Renderer {
 public:
@@ -24,6 +25,8 @@ public:
 	Renderer(Renderer&& other) = delete;
 	Renderer& operator=(Renderer&& other) = delete;
 public:
+	SceneManager CreateSceneManager();
+
 	void Update();
 	void Render();
 private:

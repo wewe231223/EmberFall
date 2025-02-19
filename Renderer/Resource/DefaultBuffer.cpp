@@ -28,7 +28,7 @@ DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 		IID_PPV_ARGS(&mUploadBuffer)
 	));
 
-	CheckHR(mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mBufferPtr)));
+	mData = std::make_shared<BYTE[]>(mSize);
 
 	if (initialData != nullptr) {
 		D3D12_SUBRESOURCE_DATA subresourceData = {};
@@ -60,6 +60,7 @@ DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, size_t unitSize, size_
 
 	D3D12_HEAP_PROPERTIES heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 	D3D12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(mSize);
+
 	CheckHR(device->CreateCommittedResource(
 		&heapProperties,
 		D3D12_HEAP_FLAG_NONE,
@@ -79,7 +80,7 @@ DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, size_t unitSize, size_
 		IID_PPV_ARGS(&mUploadBuffer)
 	));
 
-	CheckHR(mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mBufferPtr)));
+	mData = std::make_shared<BYTE[]>(mSize);
 
 	std::wstring name{ L"Upload Size - " + std::to_wstring(mSize) };
 	std::wstring name2{ L"Default Size - " + std::to_wstring(mSize) };
@@ -99,7 +100,7 @@ DefaultBuffer::DefaultBuffer(const DefaultBuffer& other) {
 	mUploadBuffer = other.mUploadBuffer;
 	mElementSize = other.mElementSize;
 	mSize = other.mSize;
-	mBufferPtr = other.mBufferPtr;
+	mData = other.mData;
 }
 
 DefaultBuffer& DefaultBuffer::operator=(const DefaultBuffer& other) {
@@ -108,7 +109,7 @@ DefaultBuffer& DefaultBuffer::operator=(const DefaultBuffer& other) {
 		mUploadBuffer = other.mUploadBuffer;
 		mElementSize = other.mElementSize;
 		mSize = other.mSize;
-		mBufferPtr = other.mBufferPtr;
+		mData = other.mData;
 	}
 	return *this;
 }
@@ -119,7 +120,7 @@ DefaultBuffer::DefaultBuffer(DefaultBuffer&& other) noexcept {
 		mUploadBuffer = std::move(other.mUploadBuffer);
 		mElementSize = other.mElementSize;
 		mSize = other.mSize;
-		mBufferPtr = other.mBufferPtr;
+		mData = std::move(other.mData);
 	}
 }
 
@@ -129,7 +130,7 @@ DefaultBuffer& DefaultBuffer::operator=(DefaultBuffer&& other) noexcept {
 		mUploadBuffer = std::move(other.mUploadBuffer);
 		mElementSize = other.mElementSize;
 		mSize = other.mSize;
-		mBufferPtr = other.mBufferPtr;
+		mData = std::move(other.mData);
 	}
 	return *this;
 }
@@ -139,14 +140,23 @@ bool DefaultBuffer::Empty() const {
 }
 
 BYTE* DefaultBuffer::Data() {
-	return mBufferPtr;
+	return mData.get();
 }
 
 void DefaultBuffer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	D3D12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST) };
 	commandList->ResourceBarrier(1, &barrier);
 
-	commandList->CopyResource(mBuffer.Get(), mUploadBuffer.Get());
+	// 애를 64KB Alignment 로 하면서 copyBufferRegion 을 활용하도록 하는 방법을 생각해보자. 
+	// commandList->CopyResource(mBuffer.Get(), mUploadBuffer.Get());
+
+	D3D12_SUBRESOURCE_DATA subresourceData{};
+	subresourceData.pData = mData.get();
+	subresourceData.RowPitch = mSize;
+	subresourceData.SlicePitch = mSize;
+
+	::UpdateSubresources(commandList.Get(), mBuffer.Get(), mUploadBuffer.Get(), 0, 0, 1, &subresourceData);
+	
 
 	barrier = CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
 	commandList->ResourceBarrier(1, &barrier);

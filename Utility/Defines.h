@@ -7,11 +7,11 @@ concept HasIndex = requires {
 	{ T::index } -> std::convertible_to<size_t>;
 };
 
-using MaterialIndex = size_t;
+using MaterialIndex = UINT;
 
 struct PlainModelContext {
 	SimpleMath::Matrix world;
-	MaterialIndex material;
+	UINT material;
 };
 
 template<typename T>

@@ -62,9 +62,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	Renderer renderer{ hWnd };
 
-	Time.AddEvent(1s, []() {
+	/*Time.AddEvent(1s, []() {
         Console.Log("FrameRate : {:.5f}", LogType::Info, 1.f / Time.GetDeltaTime<float>());
         return true;
+		});*/
+	size_t frameCount = 0;
+
+	Time.AddEvent(1s, [&frameCount]() {
+        std::string title = "FPS : " + std::to_string(frameCount);
+		SetWindowTextA(hWnd, title.c_str());
+        frameCount = 0;
+		return true;
 		});
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
@@ -79,6 +87,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         Time.AdvanceTime();
         renderer.Render();
         // 게임 루프... 
+        frameCount++;
     }
 
 	::DestroyWindow(hWnd);

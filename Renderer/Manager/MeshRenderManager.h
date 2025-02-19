@@ -8,7 +8,7 @@
 
 class MeshRenderManager {
 	template<typename T>
-	static constexpr T MAX_INSTANCE_COUNT = static_cast<T>(4096);
+	static constexpr T MAX_INSTANCE_COUNT = static_cast<T>(65535);
 public:
 	MeshRenderManager() = default;
 	MeshRenderManager(ComPtr<ID3D12Device> device);

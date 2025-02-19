@@ -39,8 +39,6 @@ void MeshRenderManager::Render(ComPtr<ID3D12GraphicsCommandList> commandList) {
 		commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
 
 		if (mesh->GetIndexed()) {
-			auto unitCount = mesh->GetUnitCount();
-			auto instanceCount = static_cast<UINT>(worlds.size());
 			commandList->DrawIndexedInstanced(mesh->GetUnitCount(), static_cast<UINT>(worlds.size()), 0, 0, 0);
 		}
 		else {

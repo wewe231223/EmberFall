@@ -174,8 +174,8 @@ public:
 public:
 	bool Empty() const; 
 
-	DefaultBufferCPUIterator CPUBegin() { return DefaultBufferCPUIterator(mBufferPtr, mElementSize); }
-	DefaultBufferCPUIterator CPUEnd() { return DefaultBufferCPUIterator(mBufferPtr + mSize, mElementSize); }
+	DefaultBufferCPUIterator CPUBegin() { return DefaultBufferCPUIterator(mData.get(), mElementSize); }
+	DefaultBufferCPUIterator CPUEnd() { return DefaultBufferCPUIterator(mData.get() + mSize, mElementSize); }
 
 	DefaultBufferGPUIterator GPUBegin() { return DefaultBufferGPUIterator(mBuffer->GetGPUVirtualAddress(), mElementSize); }
 	DefaultBufferGPUIterator GPUEnd() { return DefaultBufferGPUIterator(mBuffer->GetGPUVirtualAddress() + mSize, mElementSize); }
@@ -183,11 +183,12 @@ public:
 	BYTE* Data(); 
 
 	void Upload(ComPtr<ID3D12GraphicsCommandList> commandList);
+	
 private:
 	ComPtr<ID3D12Resource> mBuffer{ nullptr };
 	ComPtr<ID3D12Resource> mUploadBuffer{ nullptr };
 
-	BYTE* mBufferPtr{ nullptr };
+	std::shared_ptr<BYTE[]> mData{ nullptr };
 
 	size_t mSize{ 0 };
 	size_t mElementSize{ 0 };
