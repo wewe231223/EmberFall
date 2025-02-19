@@ -5,6 +5,7 @@
 #include "Collider.h"
 #include "Input.h"
 #include "PlayerScript.h"
+#include "MonsterScript.h"
 
 IServerGameScene::IServerGameScene() { }
 
@@ -93,6 +94,7 @@ PlayScene::PlayScene() {
         ++id;
 
         object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
+        object->CreateComponent<MonsterScript>(object);
         object->SetColor(Random::GetRandomColor());
         object->GetTransform()->Translate(Random::GetRandomVec3(-500.0f, 500.0f));
         object->GetTransform()->Scale(SimpleMath::Vector3{ 10.0f });

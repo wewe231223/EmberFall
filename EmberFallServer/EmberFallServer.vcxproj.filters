@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Frame">
-      <UniqueIdentifier>{1b56ccde-0c63-4997-a348-2d312d8cdd67}</UniqueIdentifier>
-    </Filter>
     <Filter Include="pch">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
@@ -17,14 +14,17 @@
     <Filter Include="Component">
       <UniqueIdentifier>{382a9043-5187-43b0-8898-fc3fb22c595e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Script">
-      <UniqueIdentifier>{8ffa7fd5-09b9-4c09-98bb-37e62f49b8a1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Utils">
       <UniqueIdentifier>{8389f802-350b-4427-bf5b-bc265ed71c1b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Scene">
       <UniqueIdentifier>{5367a523-1d53-4f63-b084-8ade79c3e76a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Frame">
+      <UniqueIdentifier>{1b56ccde-0c63-4997-a348-2d312d8cdd67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script">
+      <UniqueIdentifier>{8ffa7fd5-09b9-4c09-98bb-37e62f49b8a1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -91,6 +91,9 @@
     <ClCompile Include="GridWorld.cpp">
       <Filter>Collision</Filter>
     </ClCompile>
+    <ClCompile Include="MonsterScript.cpp">
+      <Filter>Script</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -149,6 +152,9 @@
     </ClInclude>
     <ClInclude Include="GridWorld.h">
       <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterScript.h">
+      <Filter>Script</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

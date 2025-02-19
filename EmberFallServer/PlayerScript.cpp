@@ -55,6 +55,13 @@ void PlayerScript::Update(const float deltaTime) {
         physics->mFactor.acceleration += 1.0f;
     }
 
+    if (Key::DOWN == mInput->GetState(VK_SHIFT)) {
+        physics->mFactor.maxMoveSpeed = 50.0f;
+    }
+    else {
+        physics->mFactor.maxMoveSpeed = DEFAULT_MAX_MOVE_SPEED;
+    }
+
     moveDir.Normalize();
     physics->Acceleration(moveDir, deltaTime);
 }

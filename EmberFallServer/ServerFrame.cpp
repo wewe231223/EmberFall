@@ -17,7 +17,7 @@ ServerFrame::ServerFrame() {
 
     mTimer = std::make_shared<GameTimer>();
 
-    mServerCore->Start("127.0.0.1", SERVER_PORT);
+    mServerCore->Start("", SERVER_PORT);
     auto sessionManager = mServerCore->GetSessionManager();
     sessionManager->RegisterOnSessionConnect(std::bind_front(&ServerFrame::OnPlayerConnect, this));
     sessionManager->RegisterOnSessionDisconnect(std::bind_front(&ServerFrame::OnPlayerDisconnect, this));
@@ -32,7 +32,7 @@ void ServerFrame::InitGameScenes() {
     mGameScenes.emplace_back(std::make_shared<PlayScene>());
 
     mCurrentScene = mGameScenes.front();
-    mTimer->Sync(0);
+    mTimer->Sync(30);
 }
 
 void ServerFrame::GameLoop() {

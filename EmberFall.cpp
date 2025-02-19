@@ -11,9 +11,14 @@
 #include "framework.h"
 #include "EmberFall.h"
 #include "EditorInterface/Impl/EditorDevice.h"
-
-#pragma comment(lib,"out/debug/EditorInterface.lib")
 #include "Config/Config.h"
+//#include "Renderer/core/Renderer.h"
+
+#ifdef _DEBUG
+#pragma comment(lib,"out/debug/EditorInterface.lib")
+#else 
+#pragma comment(lib,"out/release/EditorInterface.lib")
+#endif
 
 #define MAX_LOADSTRING 100
 // 전역 변수:

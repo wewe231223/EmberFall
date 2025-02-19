@@ -48,6 +48,7 @@ void Physics::Jump(const float deltaTime) {
     }
 
     mOnGround = false;
+    mOnOtherObject = false;
     mVelocity.y = (mFactor.jumpForce / mFactor.mass) * deltaTime; // v = F / mess * time (m/s)
 }
 

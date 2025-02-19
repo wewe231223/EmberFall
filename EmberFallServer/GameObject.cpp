@@ -127,5 +127,5 @@ void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<Ga
 }
 
 void GameObject::OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { 
-    //mPhysics->SetOnOtherObject(false);
+    mPhysics->SetOnOtherObject(false);
 }

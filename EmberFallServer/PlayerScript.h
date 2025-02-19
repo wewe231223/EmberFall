@@ -31,7 +31,7 @@ public:
     void ResetGameScene(std::shared_ptr<IServerGameScene> gameScene);
     std::shared_ptr<IServerGameScene> GetCurrentScene() const;
 
-    virtual void Update(const float deltaTime);
+    virtual void Update(const float deltaTime) override;
 
     virtual void OnHandleCollisionEnter(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) override;
     virtual void OnHandleCollisionStay(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) override;

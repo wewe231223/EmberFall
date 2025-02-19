@@ -14,6 +14,10 @@ GridWorld::GridWorld(float cellWidth, float cellHeight, float mapWidth, float ma
             mGrid.emplace_back(mapLT + gridPos, cellWidth, cellHeight);
         }
     }
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GridMap Generated!");
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Grid Width, Height: ({}, {})", cellWidth, cellHeight);
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Map Size: ({}, {})", mWidth, mHeight);
 }
 
 GridWorld::~GridWorld() { }
@@ -25,17 +29,17 @@ void GridWorld::Update(const std::vector<std::shared_ptr<class GameObject>>& obj
 
     for (auto& object : objects) {
         decltype(auto) obb = std::static_pointer_cast<OrientedBoxCollider>(object->GetCollider())->GetBoundingBox();
-        auto aabbMin = obb.Center - (SimpleMath::Vector3{ obb.Extents } * 1.415);
+        auto aabbMin = obb.Center - (SimpleMath::Vector3{ obb.Extents } * 1.415); // root 2 (OBB를 감싸는 최소한의 AABB)
         auto aabbMax = obb.Center + (SimpleMath::Vector3{ obb.Extents } * 1.415);
 
-        INT32 x1 = std::max(static_cast<INT32>(aabbMin.x / mGridWidth), 0);
-        INT32 x2 = std::min(static_cast<INT32>(aabbMax.x / mGridWidth), mWidth);
-        INT32 y1 = std::max(static_cast<INT32>(aabbMin.y / mHeight), 0);
-        INT32 y2 = std::min(static_cast<INT32>(aabbMax.y / mHeight), mHeight);
+        INT32 minX = std::max(static_cast<INT32>(aabbMin.x / mGridWidth), 0);
+        INT32 maxX = std::min(static_cast<INT32>(aabbMax.x / mGridWidth), mWidth);
+        INT32 minZ = std::max(static_cast<INT32>(aabbMin.z / mGridHeight), 0);
+        INT32 maxZ = std::min(static_cast<INT32>(aabbMax.z / mGridHeight), mHeight);
 
-        for (INT32 y = y1; y <= y2; ++y) {
-            for (INT32 x = x1; x <= x2; ++x) {
-                mGrid[y * mGridHeight + x].AddObject(object);
+        for (INT32 z = minZ; z <= maxZ; ++z) {
+            for (INT32 x = minX; x <= maxX; ++x) {
+                mGrid[z * mHeight + x].AddObject(object);
             }
         }
     }

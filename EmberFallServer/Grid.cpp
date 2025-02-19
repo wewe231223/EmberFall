@@ -30,6 +30,8 @@ void Grid::HandleCollision() {
             obj1->OnCollision("", obj2, impulse);
             obj2->OnCollision("", obj1, -impulse);
         }
+
+        ++next;
     }
 }
 
@@ -37,9 +39,6 @@ void Grid::Clear() {
     mObjects.clear();
 }
 
-// update 200 ?
-// grid is 100
-// 200 * 100 = 2000
 bool Grid::Intersects(const std::shared_ptr<Collider>& collider) {
     auto oriented = std::static_pointer_cast<OrientedBoxCollider>(collider);
     decltype(auto) box = oriented->GetBoundingBox();
