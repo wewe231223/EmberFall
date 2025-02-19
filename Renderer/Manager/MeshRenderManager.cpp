@@ -21,7 +21,7 @@ void MeshRenderManager::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandL
 		}
 	}
 
-	mPlainMeshBuffer.Upload(commandList);
+	mPlainMeshBuffer.Upload(commandList, mPlainMeshBuffer.CPUBegin(), it);
 
 	auto& [shader, meshContexts] = *mPlainMeshContexts.begin();
 	shader->SetShader(commandList);

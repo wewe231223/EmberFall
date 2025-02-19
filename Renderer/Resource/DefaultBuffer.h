@@ -183,6 +183,7 @@ public:
 	BYTE* Data(); 
 
 	void Upload(ComPtr<ID3D12GraphicsCommandList> commandList);
+	void Upload(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator begin, DefaultBufferCPUIterator end, size_t dstBegin = 0);
 	
 private:
 	ComPtr<ID3D12Resource> mBuffer{ nullptr };

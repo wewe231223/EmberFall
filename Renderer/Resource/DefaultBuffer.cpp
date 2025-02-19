@@ -162,3 +162,21 @@ void DefaultBuffer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	commandList->ResourceBarrier(1, &barrier);
 }
 
+void DefaultBuffer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator begin, DefaultBufferCPUIterator end, size_t dstBegin) {
+	D3D12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST) };
+	commandList->ResourceBarrier(1, &barrier);
+
+	auto size = end - begin;
+	auto offset = begin - CPUBegin();
+
+	BYTE* data{ nullptr };
+	CheckHR(mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&data)));
+	std::memcpy(data, *begin, size);
+	mUploadBuffer->Unmap(0, nullptr);
+
+	commandList->CopyBufferRegion(mBuffer.Get(), dstBegin, mUploadBuffer.Get(), offset , size);
+
+	barrier = CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
+	commandList->ResourceBarrier(1, &barrier);
+}
+
