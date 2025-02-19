@@ -6,6 +6,8 @@
 #include <map>
 #include <deque>
 
+#include <queue>
+
 #include "../ServerLib/pch.h"
 #include "../ServerLib/NetworkCore.h"
 

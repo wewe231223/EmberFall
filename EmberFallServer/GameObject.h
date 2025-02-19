@@ -21,9 +21,6 @@ enum class ObjectTag {
     OBJECT,
 };
 
-inline constexpr BYTE MAX_INPUT_STORED = 100;
-inline constexpr float TEMP_SPEED = 20.0f;
-
 class GameObject : public std::enable_shared_from_this<GameObject> {
 public:
     GameObject();
@@ -91,6 +88,6 @@ private:
 
     std::shared_ptr<Transform> mTransform{ };                           // Transform
     std::shared_ptr<class Physics> mPhysics{ };                         // Physics Test
-    std::vector<std::shared_ptr<GameObjectComponent>> mComponents{ };   // Components
     std::shared_ptr<Collider> mCollider{ nullptr };                     // 
+    std::vector<std::shared_ptr<GameObjectComponent>> mComponents{ };   // Components
 };

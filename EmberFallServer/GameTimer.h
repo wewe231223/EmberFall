@@ -6,30 +6,33 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class TimerEvent {
-public:
-    using ExecutionFn = std::function<void()>;
-
-public:
-    TimerEvent();
-    ~TimerEvent();
-
-    TimerEvent(const TimerEvent& other);
-    TimerEvent(TimerEvent&& other) noexcept;
-    TimerEvent& operator=(const TimerEvent& other);
-    TimerEvent& operator=(TimerEvent&& other) noexcept;
-
-private:
-    std::atomic_bool mExecuting{ };
-    ExecutionFn mFunction{ };
-};
-
-class GameTimer { 
+class GameTimer {
 public:
     using Clock = std::chrono::high_resolution_clock;
     using TimePeriod = std::milli;
     using Duration = std::chrono::duration<float, TimePeriod>;
-    using TimePoint = std::chrono::high_resolution_clock::time_point;
+    using TimePoint = Clock::time_point;
+    using EventCallBack = std::function<void()>;
+
+public:
+    class TimerEvent {
+    public:
+        TimerEvent(EventCallBack&& callback, std::chrono::time_point<Clock> time);
+        ~TimerEvent();
+
+        TimerEvent(const TimerEvent& other);
+        TimerEvent(TimerEvent&& other) noexcept;
+        TimerEvent& operator=(const TimerEvent& other);
+        TimerEvent& operator=(TimerEvent&& other) noexcept;
+
+    public:
+        bool operator<(const TimerEvent& right) const;
+
+    private:
+        EventCallBack mFunction{ };
+        TimePoint mTimeRegistered{ };
+        bool mLoop{ false };
+    };
 
 public:
     GameTimer();
@@ -38,9 +41,16 @@ public:
 public:
     UINT32 GetFps() const;
     float GetDeltaTime() const;
+    float GetTimeFromStart() const;
 
-    void Sync(INT32 syncFrame=0);
+    void Sync(INT32 syncFrame = 0);
     void Update();
+
+public:
+    static void PushTimerEvent(EventCallBack&& callback, Duration time);
+
+private:
+    inline static std::priority_queue<TimerEvent> mEventQueue{ };
 
 private:
     float mSyncRatio{ };
@@ -50,6 +60,7 @@ private:
     UINT32 mFps{ };
 
     TimePoint mPrevPoint{ };
-
-    Concurrency::concurrent_queue<TimerEvent> mEventQueue{ };
+    TimePoint mPointSinceStart{ };
 };
+
+using TimerEvent = GameTimer::TimerEvent;

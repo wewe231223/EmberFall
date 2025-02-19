@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "GameTimer.h"
 
-TimerEvent::TimerEvent() { }
+GameTimer::TimerEvent::TimerEvent(EventCallBack&& callback, std::chrono::time_point<Clock> time) 
+    : mFunction{ callback }, mTimeRegistered{ time } { }
 
 TimerEvent::~TimerEvent() { }
 
@@ -17,8 +18,12 @@ TimerEvent& TimerEvent::operator=(TimerEvent&& other) noexcept {
     return *this;
 }
 
+bool TimerEvent::operator<(const TimerEvent& right) const {
+    return mTimeRegistered < right.mTimeRegistered;
+}
+
 GameTimer::GameTimer()
-    : mPrevPoint{ Clock::now() } { }
+    : mPrevPoint{ Clock::now() }, mPointSinceStart{ Clock::now()} { }
 
 GameTimer::~GameTimer() { }
 
@@ -28,6 +33,10 @@ UINT32 GameTimer::GetFps() const {
 
 float GameTimer::GetDeltaTime() const {
     return mDeltaTime;
+}
+
+float GameTimer::GetTimeFromStart() const{
+    return std::chrono::duration_cast<Duration>(Clock::now() - mPointSinceStart).count() / 1000.0f;
 }
 
 void GameTimer::Sync(INT32 syncFrame) {
@@ -61,4 +70,8 @@ void GameTimer::Update() {
         std::this_thread::sleep_for(sleepMilliSec);
         mDeltaTime = mSyncRatio;
     }
+}
+
+void GameTimer::PushTimerEvent(EventCallBack&& callback, Duration time) {
+    mEventQueue.emplace(std::move(callback), Clock::now() + std::chrono::duration_cast<Clock::duration>(time));
 }

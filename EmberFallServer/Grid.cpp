@@ -39,21 +39,6 @@ void Grid::Clear() {
     mObjects.clear();
 }
 
-bool Grid::Intersects(const std::shared_ptr<Collider>& collider) {
-    auto oriented = std::static_pointer_cast<OrientedBoxCollider>(collider);
-    decltype(auto) box = oriented->GetBoundingBox();
-   
-    SimpleMath::Vector2 extents = SimpleMath::Vector2{ box.Extents.x, box.Extents.z } * 1.415;
-    SimpleMath::Vector2 cellLB = mCellPosition - mCellSize / 2.0f;
-    SimpleMath::Vector2 cellRT = mCellPosition + mCellSize / 2.0f;
-    if (extents.x < cellLB.x or cellRT.x > -extents.x
-        or extents.y < cellLB.y or cellRT.y > -extents.y) {
-        return false;
-    }
-
-    return true;
-}
-
 void Grid::AddObject(const std::shared_ptr<class GameObject>& object) {
     mObjects.push_back(object);
 }
