@@ -4,10 +4,8 @@
 #include "../Game/GameObject/GameObject.h"
 
 class Scene {
-	// TEMP
-	friend class Renderer;
 public:
-	Scene(); 
+	Scene(std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers); 
 	~Scene() = default;
 public:
 	void Update(); 

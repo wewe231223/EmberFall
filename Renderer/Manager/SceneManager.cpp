@@ -1,6 +1,3 @@
 #include "pch.h"
 #include "SceneManager.h"
-
-struct SceneManager::SceneManagerImpl {
-	int a;
-};
+#include "../Renderer/Core/Renderer.h"

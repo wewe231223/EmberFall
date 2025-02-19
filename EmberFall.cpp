@@ -61,6 +61,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
 	Renderer renderer{ hWnd };
+    renderer.UploadResource();
+
 
 	/*Time.AddEvent(1s, []() {
         Console.Log("FrameRate : {:.5f}", LogType::Info, 1.f / Time.GetDeltaTime<float>());

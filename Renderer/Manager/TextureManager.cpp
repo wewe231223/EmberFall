@@ -4,7 +4,7 @@
 #include "../Config/Config.h"
 
 TextureManager::TextureManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
-    D3D12_DESCRIPTOR_HEAP_DESC desc{};
+	D3D12_DESCRIPTOR_HEAP_DESC desc{};
 	desc.NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
 	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
@@ -37,7 +37,7 @@ TextureManager::TextureManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graphic
 		if (mTextures.find(name) != mTextures.end()) {
 			continue;
 		}
-		
+
 		pair = std::make_pair(count++, Texture(device, commandList, path));
 
 		srvDesc.Format = pair.second.GetResource()->GetDesc().Format;

@@ -9,10 +9,14 @@
 #ifndef win32_lean_and_mean
 #define win32_lean_and_mean
 #endif
-
 #include <Windows.h>
-#include <memory>
-#include "../Manager/SceneManager.h"
+#include <array>
+#include "../Config/Config.h"
+#include "../Resource/Texture.h"
+#include "../Renderer/core/Shader.h"
+#include "../Manager/MeshRenderManager.h"
+#include "../Manager/TextureManager.h"
+#include "../Resource/PlainMesh.h"
 
 class Renderer {
 public:
@@ -25,7 +29,8 @@ public:
 	Renderer(Renderer&& other) = delete;
 	Renderer& operator=(Renderer&& other) = delete;
 public:
-	SceneManager CreateSceneManager();
+	std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> GetManagers();
+	void UploadResource();
 
 	void Update();
 	void Render();
@@ -44,6 +49,44 @@ private:
 private:
 	HWND mRendererWindow{ nullptr };
 
-	struct DirectXImpl;
-	std::unique_ptr<DirectXImpl> mDirectXImpl{ nullptr };
+	ComPtr<IDXGIFactory6> mFactory{ nullptr };
+
+#ifdef _DEBUG
+	ComPtr<ID3D12Debug6> mDebugController{ nullptr };
+	ComPtr<IDXGIDebug1> mDXGIDebug{ nullptr };
+#endif 
+	ComPtr<ID3D12Device> mDevice{ nullptr };
+
+	ComPtr<ID3D12CommandQueue> mCommandQueue{ nullptr };
+
+	UINT64 mFenceValue{ 0 };
+	ComPtr<ID3D12Fence> mFence{ nullptr };
+
+	ComPtr<IDXGISwapChain1> mSwapChain{ nullptr };
+
+	ComPtr<ID3D12CommandAllocator> mAllocator{ nullptr };
+	ComPtr<ID3D12GraphicsCommandList> mCommandList{ nullptr };
+
+	ComPtr<ID3D12DescriptorHeap> mRTVHeap{ nullptr };
+	std::array<Texture, Config::BACKBUFFER_COUNT<UINT>> mRenderTargets{};
+	UINT mRTIndex{ 0 };
+
+	/*
+	1. pixel의 World Space좌표
+	2. pixel의 diffuse color
+	3. pixel의 normal값
+	*/
+	std::array<Texture, 3> mGBuffers{};
+	ComPtr<ID3D12DescriptorHeap> mGBufferHeap{ nullptr };
+
+	ComPtr<ID3D12DescriptorHeap> mDSHeap{ nullptr };
+	Texture mDepthStencilBuffer{};
+
+	std::shared_ptr<TextureManager> mTextureManager{};
+	std::shared_ptr<MaterialManager> mMaterialManager{};
+	std::shared_ptr<MeshRenderManager> mMeshRenderManager{};
+
+	DefaultBuffer mCameraBuffer{};
+	GraphicsShaderBase* mShader{ nullptr };
+	PlainMesh mMesh{};
 };
