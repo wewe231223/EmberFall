@@ -8,7 +8,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mTextureManager = std::get<1>(managers);
 	mMaterialManager = std::get<2>(managers);
 
-	auto& object = mGameObjects.emplace_back();
 
 	mMeshMap["Cube"] = std::make_unique<PlainMesh>(device, commandList, EmbeddedMeshType::Sphere, 1);
 
@@ -22,14 +21,21 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	mMaterialManager->CreateMaterial("CubeMaterial", material);
 
-	object.mShader = mShaderMap["StandardShader"].get();
-	object.mMesh = mMeshMap["Cube"].get();
-	object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
 
-	auto& transform = object.GetTransform();
-	transform.GetPosition() = { 0.f, 0.f, 0.f };
-	transform.GetScale() = { 1.f, 1.f, 1.f };
+	for (auto x = 0; x < 20; ++x) {
+		for (auto z = 0; z < 20; ++z) {
+			for (auto y = 0; y < 20; ++y) {
+				auto& object = mGameObjects.emplace_back();
+				object.mShader = mShaderMap["StandardShader"].get();
+				object.mMesh = mMeshMap["Cube"].get();
+				object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
 
+				auto& transform = object.GetTransform();
+				transform.GetPosition() = { x * 2.f, y * 2.f, z * 2.f };
+				transform.GetScale() = { 1.f, 1.f, 1.f };
+			}
+		}
+	}
 
 	mCamera = Camera(device);
 	

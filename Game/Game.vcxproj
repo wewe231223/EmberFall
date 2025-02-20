@@ -152,6 +152,7 @@
     </ClCompile>
     <ClCompile Include="Scene\Camera.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
+    <ClCompile Include="System\Input.cpp" />
     <ClCompile Include="System\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -161,6 +162,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Scene\Camera.h" />
     <ClInclude Include="Scene\Scene.h" />
+    <ClInclude Include="System\Input.h" />
     <ClInclude Include="System\Timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -95,6 +95,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         renderer.PrepareRender();
         scene.PrepareRender(renderer.GetCommandList());
         renderer.Render();
+
         // 게임 루프... 
         frameCount++;
     }
