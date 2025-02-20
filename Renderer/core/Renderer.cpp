@@ -34,27 +34,10 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	mMeshRenderManager = std::make_shared<MeshRenderManager>(mDevice);
 	mTextureManager = std::make_shared<TextureManager>(mDevice, mCommandList);
 	mMaterialManager = std::make_shared<MaterialManager>();
-
-
-
-	//// 여기서 
-	//mCameraBuffer = DefaultBuffer(mDevice, mCommandList, GetCBVSize<CameraConstants>(), 1);
-
-	//mMesh = PlainMesh(mDevice, mCommandList, EmbeddedMeshType::Sphere, 1);
-	//mShader = new StandardShader{};
-	//mShader->CreateShader(mDevice);
-
-	//MaterialConstants material{};
-	//material.mDiffuseColor = SimpleMath::Color(1.f, 0.f, 1.f, 1.f);
-	//
-	//mMaterialManager->CreateMaterial("DefaultMaterial", material);
-	//// 여기까지 Scene 에서 할 일
-
-
 }
 
 Renderer::~Renderer() {
-	delete mShader;
+
 }
 
 
@@ -121,31 +104,6 @@ void Renderer::PrepareRender() {
 	mCommandList->RSSetViewports(1, &viewport);
 	mCommandList->RSSetScissorRects(1, &scissorRect);
 
-	// Rendering... 
-
-	//SimpleMath::Vector3 pos{ 0.f,0.f,0.f };
-
-	//for (int x = -10; x < 10; x++) {
-	//	for (int y = -10; y < 10; y++) {
-	//		for (int z = -10; z < 10; z++) {
-	//			PlainModelContext context{};
-	//			context.world = (SimpleMath::Matrix::CreateScale(1.f).Transpose() * SimpleMath::Matrix::CreateTranslation(SimpleMath::Vector3(x * 3.f, y * 3.f, z * 3.f)).Transpose());
-	//			context.material = mMaterialManager->GetMaterial("DefaultMaterial");
-	//			mMeshRenderManager->AppendPlaneMeshContext(mShader, &mMesh, context);
-	//		}
-	//	}
-	//}
-
-	//CameraConstants camera{};
-	//camera.view = SimpleMath::Matrix::CreateLookAt(SimpleMath::Vector3(100.f, 100.f, 100.f), SimpleMath::Vector3(0.f, 0.f, 0.f), SimpleMath::Vector3(0.f, 1.f, 0.f)).Transpose();
-	//camera.proj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(DirectX::XMConvertToRadians(60.f), Config::WINDOW_WIDTH<float> / Config::WINDOW_HEIGHT<float>, 0.1f, 1000.f).Transpose();
-	//camera.viewProj = camera.proj * camera.view;
-	//camera.cameraPosition = SimpleMath::Vector3(0.f, 0.f, -100.f);
-
-
-	//::memcpy(mCameraBuffer.Data(), &camera, sizeof(CameraConstants));
-	//mCameraBuffer.Upload(mCommandList);
-
 	mMeshRenderManager->PrepareRender(mCommandList);
 }
 
@@ -155,7 +113,6 @@ void Renderer::Render() {
 	mTextureManager->Bind(mCommandList);
 	mMaterialManager->Bind(mCommandList);
 	
-	// mCommandList->SetGraphicsRootConstantBufferView(0, *mCameraBuffer.GPUBegin());
 
 	mMeshRenderManager->Render(mCommandList);
 

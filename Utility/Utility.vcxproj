@@ -136,6 +136,8 @@
     <ClInclude Include="Exceptions.h" />
     <ClInclude Include="CircularBuffer.h" />
     <ClInclude Include="FlatMap.h" />
+    <ClInclude Include="NonReplacementSampler.h" />
+    <ClInclude Include="RandomEngine.h" />
     <ClInclude Include="Serializer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

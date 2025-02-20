@@ -42,9 +42,14 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	auto& cameraTransform = mCamera.GetTransform();
 	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
 	cameraTransform.Look({ 0.f,0.f,0.f });
+
+	mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+	mCameraMode->Enter();
 }
 
 void Scene::Update() {
+	mCameraMode->Update();
+
 	for (auto& gameObject : mGameObjects) {
 		if (gameObject) {
 			auto& transform = gameObject.GetTransform();

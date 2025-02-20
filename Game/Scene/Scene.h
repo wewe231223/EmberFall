@@ -20,5 +20,7 @@ private:
 	std::unordered_map<std::string, std::unique_ptr<GraphicsShaderBase>> mShaderMap{};
 
 	Camera mCamera{};
+	std::unique_ptr<CameraMode> mCameraMode{ nullptr };
+
 	std::vector<GameObject> mGameObjects{};
 };

@@ -32,3 +32,35 @@ private:
 	CameraConstant mCameraConstant{};
 	Transform mTransform{};
 };
+
+enum class ECameraMode : BYTE {
+	Free,
+	Follow,
+};
+
+class CameraMode {
+public:
+	CameraMode(Camera* camera); 
+	virtual ~CameraMode() = default;
+public:
+	virtual void Enter() PURE;
+	virtual void Exit() PURE;
+	virtual void Update() PURE;
+
+	virtual ECameraMode GetMode() const PURE; 
+protected:
+	Camera* mCamera{ nullptr };
+	int mInputCallBackSign{ -1 };
+};
+
+class FreeCameraMode : public CameraMode {
+public:
+	FreeCameraMode(Camera* camera);
+	virtual ~FreeCameraMode() = default;
+public:
+	virtual void Enter() override;
+	virtual void Exit() override;
+	virtual void Update() override;
+	
+	virtual ECameraMode GetMode() const override { return ECameraMode::Free; }
+};

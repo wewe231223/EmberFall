@@ -30,5 +30,11 @@
     <ClInclude Include="FlatMap.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="NonReplacementSampler.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="RandomEngine.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
