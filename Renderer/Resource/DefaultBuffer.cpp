@@ -1,14 +1,17 @@
 #include "pch.h"
 #include "DefaultBuffer.h"
+#include "../Utility/Defines.h"
 
-DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, size_t unitSize, size_t numofElement, void* initialData) {
+DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, size_t unitSize, size_t numofElement, void* initialData, bool constant) {
 	CrashExp(unitSize * numofElement > 0, "Size must be greater than 0");
 
 	mElementSize = unitSize;
 	mSize = unitSize * numofElement;
+	size_t allocSize = constant ? GetCBVSize(mSize) : mSize;
+
 
 	D3D12_HEAP_PROPERTIES heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-	D3D12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(mSize);
+	D3D12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(allocSize);
 	CheckHR(device->CreateCommittedResource(
 		&heapProperties,
 		D3D12_HEAP_FLAG_NONE,
@@ -52,14 +55,15 @@ DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 	mBuffer->SetName(name2.c_str());
 }
 
-DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, size_t unitSize, size_t numofElement){
+DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, size_t unitSize, size_t numofElement, bool constant){
 	CrashExp(unitSize * numofElement > 0, "Size must be greater than 0");
 
 	mElementSize = unitSize;
 	mSize = unitSize * numofElement;
+	size_t allocSize = constant ? GetCBVSize(mSize) : mSize;
 
 	D3D12_HEAP_PROPERTIES heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
-	D3D12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(mSize);
+	D3D12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(allocSize);
 
 	CheckHR(device->CreateCommittedResource(
 		&heapProperties,
@@ -90,9 +94,7 @@ DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, size_t unitSize, size_
 }
 
 DefaultBuffer::~DefaultBuffer() {
-	if (mBuffer != nullptr) {
-		mUploadBuffer->Unmap(0, nullptr);
-	}
+
 }
 
 DefaultBuffer::DefaultBuffer(const DefaultBuffer& other) {

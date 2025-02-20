@@ -18,3 +18,7 @@ template<typename T>
 constexpr size_t GetCBVSize() {
 	return (sizeof(T) + 255) & ~255;
 }
+
+constexpr size_t GetCBVSize(size_t size) {
+	return (size + 255) & ~255;
+}

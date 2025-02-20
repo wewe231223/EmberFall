@@ -37,18 +37,18 @@ Renderer::Renderer(HWND rendererWindowHandle)
 
 
 
-	// 여기서 
-	mCameraBuffer = DefaultBuffer(mDevice, mCommandList, GetCBVSize<CameraConstants>(), 1);
+	//// 여기서 
+	//mCameraBuffer = DefaultBuffer(mDevice, mCommandList, GetCBVSize<CameraConstants>(), 1);
 
-	mMesh = PlainMesh(mDevice, mCommandList, EmbeddedMeshType::Sphere, 1);
-	mShader = new StandardShader{};
-	mShader->CreateShader(mDevice);
+	//mMesh = PlainMesh(mDevice, mCommandList, EmbeddedMeshType::Sphere, 1);
+	//mShader = new StandardShader{};
+	//mShader->CreateShader(mDevice);
 
-	MaterialConstants material{};
-	material.mDiffuseColor = SimpleMath::Color(1.f, 0.f, 1.f, 1.f);
-	
-	mMaterialManager->CreateMaterial("DefaultMaterial", material);
-	// 여기까지 Scene 에서 할 일
+	//MaterialConstants material{};
+	//material.mDiffuseColor = SimpleMath::Color(1.f, 0.f, 1.f, 1.f);
+	//
+	//mMaterialManager->CreateMaterial("DefaultMaterial", material);
+	//// 여기까지 Scene 에서 할 일
 
 
 }
@@ -60,6 +60,14 @@ Renderer::~Renderer() {
 
 std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> Renderer::GetManagers() {
 	return std::make_tuple(mMeshRenderManager, mTextureManager, mMaterialManager);
+}
+
+ComPtr<ID3D12Device> Renderer::GetDevice() {
+	return mDevice;
+}
+
+ComPtr<ID3D12GraphicsCommandList> Renderer::GetCommandList() {
+	return mCommandList;
 }
 
 void Renderer::UploadResource(){
@@ -78,12 +86,12 @@ void Renderer::Update() {
 	// Update... 
 }
 
-void Renderer::Render() {
+void Renderer::PrepareRender() {
 	Renderer::ResetCommandList();
 
 	auto& currentBackBuffer = mRenderTargets[mRTIndex];
 
-	CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.GetResource().Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET)};
+	CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.GetResource().Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET) };
 
 	mCommandList->ResourceBarrier(1, &barrier);
 
@@ -91,7 +99,7 @@ void Renderer::Render() {
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mRTIndex), rtvDescriptorSize };
 	auto dsvHandle = mDSHeap->GetCPUDescriptorHandleForHeapStart();
-	
+
 	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
 	mCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
@@ -115,40 +123,45 @@ void Renderer::Render() {
 
 	// Rendering... 
 
-	SimpleMath::Vector3 pos{ 0.f,0.f,0.f };
+	//SimpleMath::Vector3 pos{ 0.f,0.f,0.f };
+
+	//for (int x = -10; x < 10; x++) {
+	//	for (int y = -10; y < 10; y++) {
+	//		for (int z = -10; z < 10; z++) {
+	//			PlainModelContext context{};
+	//			context.world = (SimpleMath::Matrix::CreateScale(1.f).Transpose() * SimpleMath::Matrix::CreateTranslation(SimpleMath::Vector3(x * 3.f, y * 3.f, z * 3.f)).Transpose());
+	//			context.material = mMaterialManager->GetMaterial("DefaultMaterial");
+	//			mMeshRenderManager->AppendPlaneMeshContext(mShader, &mMesh, context);
+	//		}
+	//	}
+	//}
+
+	//CameraConstants camera{};
+	//camera.view = SimpleMath::Matrix::CreateLookAt(SimpleMath::Vector3(100.f, 100.f, 100.f), SimpleMath::Vector3(0.f, 0.f, 0.f), SimpleMath::Vector3(0.f, 1.f, 0.f)).Transpose();
+	//camera.proj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(DirectX::XMConvertToRadians(60.f), Config::WINDOW_WIDTH<float> / Config::WINDOW_HEIGHT<float>, 0.1f, 1000.f).Transpose();
+	//camera.viewProj = camera.proj * camera.view;
+	//camera.cameraPosition = SimpleMath::Vector3(0.f, 0.f, -100.f);
 
 
-
-	for (int x = -10; x < 10; x++) {
-		for (int y = -10; y < 10; y++) {
-			for (int z = -10; z < 10; z++) {
-				PlainModelContext context{};
-				context.world = (SimpleMath::Matrix::CreateScale(1.f).Transpose() * SimpleMath::Matrix::CreateTranslation(SimpleMath::Vector3(x * 3.f, y * 3.f, z * 3.f)).Transpose());
-				context.material = mMaterialManager->GetMaterial("DefaultMaterial");
-				mMeshRenderManager->AppendPlaneMeshContext(mShader, &mMesh, context);
-			}
-		}
-	}
-
-	CameraConstants camera{};
-	camera.view = SimpleMath::Matrix::CreateLookAt(SimpleMath::Vector3(100.f, 100.f, 100.f), SimpleMath::Vector3(0.f, 0.f, 0.f), SimpleMath::Vector3(0.f, 1.f, 0.f)).Transpose();
-	camera.proj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(DirectX::XMConvertToRadians(60.f), Config::WINDOW_WIDTH<float> / Config::WINDOW_HEIGHT<float>, 0.1f, 1000.f).Transpose();
-	camera.viewProj = camera.proj * camera.view;
-	camera.cameraPosition = SimpleMath::Vector3(0.f, 0.f, -100.f);
-
-
-	::memcpy(mCameraBuffer.Data(), &camera, sizeof(CameraConstants));
-	mCameraBuffer.Upload(mCommandList);
+	//::memcpy(mCameraBuffer.Data(), &camera, sizeof(CameraConstants));
+	//mCameraBuffer.Upload(mCommandList);
 
 	mMeshRenderManager->PrepareRender(mCommandList);
+}
+
+void Renderer::Render() {
+	auto& currentBackBuffer = mRenderTargets[mRTIndex];
 
 	mTextureManager->Bind(mCommandList);
 	mMaterialManager->Bind(mCommandList);
-	mCommandList->SetGraphicsRootConstantBufferView(0, *mCameraBuffer.GPUBegin());
+	
+	// mCommandList->SetGraphicsRootConstantBufferView(0, *mCameraBuffer.GPUBegin());
 
 	mMeshRenderManager->Render(mCommandList);
 
 	mMeshRenderManager->Reset();
+
+	// Rendering End
 
 
 	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);

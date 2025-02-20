@@ -14,6 +14,7 @@
 #include "EditorInterface/Console/Console.h"
 #include "Renderer/core/Renderer.h"
 #include "Game/System/Timer.h"
+#include "Game/Scene/Scene.h"
 
 #ifdef _DEBUG
 #pragma comment(lib,"out/debug/EditorInterface.lib")
@@ -61,6 +62,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
 	Renderer renderer{ hWnd };
+
+	Scene scene{ renderer.GetDevice(), renderer.GetCommandList(), renderer.GetManagers() };
+
     renderer.UploadResource();
 
 
@@ -87,6 +91,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             DispatchMessage(&msg);
 		}
         Time.AdvanceTime();
+        scene.Update();
+        renderer.PrepareRender();
+        scene.PrepareRender(renderer.GetCommandList());
         renderer.Render();
         // 게임 루프... 
         frameCount++;

@@ -6,7 +6,7 @@ GameObject::operator bool() const {
 }
 
 std::tuple<PlainMesh*, GraphicsShaderBase*, PlainModelContext> GameObject::GetRenderData() const {
-	return std::make_tuple(mMesh, mShader, PlainModelContext{ mTransform.GetWorldMatrix(), mMaterial });
+	return std::make_tuple(mMesh, mShader, PlainModelContext{ mTransform.GetWorldMatrix().Transpose(), mMaterial});
 }
 
 const Transform& GameObject::GetTransform() const {
@@ -23,4 +23,8 @@ void GameObject::SetActiveState(bool state) {
 
 void GameObject::ToggleActiveState() {
 	mActiveState = !mActiveState;
+}
+
+void GameObject::UpdateShaderVariables(){
+	mModelContext.world = mTransform.GetWorldMatrix();
 }

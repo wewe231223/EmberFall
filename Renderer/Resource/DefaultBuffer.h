@@ -14,7 +14,6 @@ class DefaultBufferCPUIterator {
 public:
 	using value_type = BYTE*;
 	using difference_type = std::ptrdiff_t;
-	using pointer = BYTE**;
 public:
 	DefaultBufferCPUIterator() = default;
 	explicit DefaultBufferCPUIterator(BYTE* ptr, size_t increasement) : mPtr(ptr), mIncreasement(increasement) {};
@@ -88,7 +87,6 @@ class DefaultBufferGPUIterator {
 public:
 	using value_type = D3D12_GPU_VIRTUAL_ADDRESS;
 	using difference_type = std::ptrdiff_t;
-	using pointer = D3D12_GPU_VIRTUAL_ADDRESS*;
 public:
 	DefaultBufferGPUIterator() = default;
 	explicit DefaultBufferGPUIterator(D3D12_GPU_VIRTUAL_ADDRESS ptr, size_t increasement) : mPtr(ptr), mIncreasement(increasement) {};
@@ -161,8 +159,8 @@ private:
 class DefaultBuffer {
 public:
 	DefaultBuffer() = default;
-	DefaultBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, size_t unitSize, size_t numofElement, void* initialData = nullptr);
-	DefaultBuffer(ComPtr<ID3D12Device> device, size_t unitSize, size_t numofElement);
+	DefaultBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, size_t unitSize, size_t numofElement, void* initialData = nullptr, bool constant = false);
+	DefaultBuffer(ComPtr<ID3D12Device> device, size_t unitSize, size_t numofElement, bool constant = false);
 	~DefaultBuffer();
 
 	DefaultBuffer(const DefaultBuffer& other);

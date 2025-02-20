@@ -105,5 +105,5 @@ Transform Transform::CreateChild(const SimpleMath::Vector3& localPosition, const
 }
 
 void Transform::UpdateWorldMatrix() {
-
+	mWorldMatrix = SimpleMath::Matrix::CreateScale(mScale) * SimpleMath::Matrix::CreateFromQuaternion(mRotation) * SimpleMath::Matrix::CreateTranslation(mPosition);
 }

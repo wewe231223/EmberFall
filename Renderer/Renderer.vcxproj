@@ -155,6 +155,7 @@
     <ClCompile Include="Resource\DefaultBuffer.cpp" />
     <ClCompile Include="Resource\PlainMesh.cpp" />
     <ClCompile Include="Resource\Texture.cpp" />
+    <ClCompile Include="Resource\UploadBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Core\Renderer.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="Resource\DefaultBuffer.h" />
     <ClInclude Include="Resource\PlainMesh.h" />
     <ClInclude Include="Resource\Texture.h" />
+    <ClInclude Include="Resource\UploadBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shader\Sources\Standard.hlsl">

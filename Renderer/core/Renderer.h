@@ -30,9 +30,15 @@ public:
 	Renderer& operator=(Renderer&& other) = delete;
 public:
 	std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> GetManagers();
+	
+	ComPtr<ID3D12Device> GetDevice();
+	ComPtr<ID3D12GraphicsCommandList> GetCommandList();
+
 	void UploadResource();
 
 	void Update();
+
+	void PrepareRender();
 	void Render();
 private:
 	void InitFactory();

@@ -54,6 +54,9 @@
     <ClCompile Include="Manager\SceneManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
+    <ClCompile Include="Resource\UploadBuffer.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -82,6 +85,9 @@
     </ClInclude>
     <ClInclude Include="Manager\SceneManager.h">
       <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource\UploadBuffer.h">
+      <Filter>Resource</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

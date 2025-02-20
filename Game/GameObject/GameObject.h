@@ -21,16 +21,19 @@ public:
 
 	void SetActiveState(bool state); 
 	void ToggleActiveState();
+	void UpdateShaderVariables(); 
 public:
 	PlainMesh* mMesh{ nullptr };
 	GraphicsShaderBase* mShader{ nullptr };
 	MaterialIndex mMaterial{ 0 };
 
 private:
+	PlainModelContext mModelContext{};
+
 	Transform mTransform{};
 	Collider mCollider{};
 
-	bool mActiveState{};
+	bool mActiveState{ true };
 };
 #else 
 
