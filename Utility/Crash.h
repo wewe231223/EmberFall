@@ -15,7 +15,6 @@
     if (false == (expression)) {              \
         int* p = nullptr;                   \
         __analysis_assume(p != nullptr);    \
-        * p = expression;                   \
     }                                       \
 }
 

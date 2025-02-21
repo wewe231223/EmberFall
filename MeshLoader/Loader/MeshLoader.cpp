@@ -5,52 +5,73 @@
 #include "../Utility/Crash.h"
 #include "../EditorInterface/Console/Console.h"
 
+
+// 파일에 기록하고 읽는 거 만들기. 
+
 MeshData MeshLoader::Load(const std::filesystem::path& path) {
 	MeshData meshData{};
 
 	const aiScene* scene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights | aiProcess_MakeLeftHanded);
 
-	CrashExp((!scene or scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE or !scene->mRootNode), std::string{ "Failed to load model : " + path.string() }.c_str());
+	CrashExp(scene != nullptr, "Failed To Load Model!");
+	CrashExp((!(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)), "Failed To Load Model!");
+	CrashExp((scene->mRootNode != nullptr), "Failed To Load Model!");
+
 
 	for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
 		aiMesh* mesh = scene->mMeshes[i];
 
-		
 		if (mesh->HasPositions()) {
-			meshData.position.resize(mesh->mNumVertices);
+			meshData.position.reserve(mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
 				meshData.position.emplace_back(mesh->mVertices[vertex].x, mesh->mVertices[vertex].y, mesh->mVertices[vertex].z);
 			}
+			meshData.vertexAttribute.set(0);
 		}
 
 		if (mesh->HasNormals()) {
-			meshData.normal.resize(mesh->mNumVertices);
+			meshData.normal.reserve(mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
 				meshData.normal.emplace_back(mesh->mNormals[vertex].x, mesh->mNormals[vertex].y, mesh->mNormals[vertex].z);
 			}
+			meshData.vertexAttribute.set(1);
 		}
 
 		if (mesh->HasTextureCoords(0)) {
-			meshData.texCoord.resize(mesh->mNumVertices);
+			meshData.texCoord.reserve(mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
 				meshData.texCoord.emplace_back(mesh->mTextureCoords[0][vertex].x, mesh->mTextureCoords[0][vertex].y);
 			}
+			meshData.vertexAttribute.set(2);
 		}
 
 		if (mesh->HasTangentsAndBitangents()) {
-			meshData.tangent.resize(mesh->mNumVertices);
-			meshData.bitangent.resize(mesh->mNumVertices);
+			meshData.tangent.reserve(mesh->mNumVertices);
+			meshData.bitangent.reserve(mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
 				meshData.tangent.emplace_back(mesh->mTangents[vertex].x, mesh->mTangents[vertex].y, mesh->mTangents[vertex].z);
 				meshData.bitangent.emplace_back(mesh->mBitangents[vertex].x, mesh->mBitangents[vertex].y, mesh->mBitangents[vertex].z);
 			}
+			meshData.vertexAttribute.set(3);
+			meshData.vertexAttribute.set(4);
 		}
-	
+	    
+		if (mesh->HasFaces()) {
+			meshData.index.reserve(mesh->mNumFaces * 3);
+			for (unsigned int face = 0; face < mesh->mNumFaces; ++face) {
+				meshData.index.emplace_back(mesh->mFaces[face].mIndices[0]);
+				meshData.index.emplace_back(mesh->mFaces[face].mIndices[1]);
+				meshData.index.emplace_back(mesh->mFaces[face].mIndices[2]);
+			}
+			meshData.indexed = true;
+		}
+		else {
+			meshData.indexed = false;
+		}
         
         meshData.boneID.resize(mesh->mNumVertices, { 0, 0, 0, 0 });
         meshData.boneWeight.resize(mesh->mNumVertices, { 0.0f, 0.0f, 0.0f, 0.0f });
 
-        
         if (mesh->HasBones()) {
             std::vector<std::vector<std::pair<int, float>>> vertexBoneInfo(mesh->mNumVertices);
 
@@ -82,16 +103,15 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
                     return a.second > b.second;
                     });
 
-                auto boneView = bones
-                    | std::views::take(4) // 앞에서 4개의 pair 선택
-                    | std::views::transform([](const std::pair<int, float>& p) { 
-                    return p.second;
-                        });
+				auto boneView = bones | std::views::take(4);  
 
+				auto boneIDView = boneView | std::views::transform([](const auto& bone) { return bone.first; });
+				auto boneWeightView = boneView | std::views::transform([](const auto& bone) { return bone.second; });
 				
-                std::ranges::copy(boneView, meshData.boneWeight[vertex].begin());
+				std::ranges::copy(boneIDView, meshData.boneID[vertex].begin());
+                std::ranges::copy(boneWeightView, meshData.boneWeight[vertex].begin());
 
-                float totalWeight{ std::accumulate(boneView.begin(), boneView.end(),0.f) };
+                float totalWeight{ std::accumulate(boneWeightView.begin(), boneWeightView.end(),0.f) };
 
                 if (totalWeight > 0.0f) {
                     for (size_t j = 0; j < 4; ++j) {
@@ -99,6 +119,8 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
                     }
                 }
             }
+			meshData.vertexAttribute.set(5);
+			meshData.vertexAttribute.set(6);
         }
 
 	}

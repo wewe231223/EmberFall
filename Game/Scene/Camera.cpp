@@ -74,7 +74,7 @@ void FreeCameraMode::Update() {
 
 	mCamera->GetTransform().GetRotation() = DirectX::SimpleMath::Quaternion::Identity;
 
-	Console.Log("x : {} , y : {} ", LogType::Info, Input.GetDeltaMouseX(), Input.GetDeltaMouseY());
+//	Console.Log("x : {} , y : {} ", LogType::Info, Input.GetDeltaMouseX(), Input.GetDeltaMouseY());
 
 
 	static float yaw = 0.f;

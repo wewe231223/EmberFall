@@ -17,15 +17,18 @@
 #include "Game/System/Input.h"
 #include "Game/Scene/Scene.h"
 #include "Utility/NonReplacementSampler.h"
+#include "MeshLoader/Loader/MeshLoader.h"
 
 #ifdef _DEBUG
 #pragma comment(lib,"out/debug/EditorInterface.lib")
 #pragma comment(lib,"out/debug/Renderer.lib")
 #pragma comment(lib,"out/debug/Game.lib")
+#pragma comment(lib,"out/debug/MeshLoader.lib")
 #else 
 #pragma comment(lib,"out/release/EditorInterface.lib")
 #pragma comment(lib,"out/release/Renderer.lib")
 #pragma comment(lib,"out/release/Game.lib")
+#pragma comment(lib,"out/release/MeshLoader.lib")
 #endif
 
 #include "Config/Config.h"
@@ -76,6 +79,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		PostQuitMessage(0);
 		});
 
+	MeshLoader loader{};
+    auto res = loader.Load("Resources/Assets/T_Pose.gltf");
 
 	/*Time.AddEvent(1s, []() {
         Console.Log("FrameRate : {:.5f}", LogType::Info, 1.f / Time.GetDeltaTime<float>());
