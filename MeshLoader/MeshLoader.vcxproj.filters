@@ -21,18 +21,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Loader\PlaneMeshLoader.cpp">
+    <ClCompile Include="Loader\MeshLoader.cpp">
       <Filter>Loader</Filter>
     </ClCompile>
-    <ClCompile Include="Base\MeshBase.cpp">
+    <ClCompile Include="Base\MeshData.cpp">
       <Filter>Base</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Loader\PlaneMeshLoader.h">
+    <ClInclude Include="Loader\MeshLoader.h">
       <Filter>Loader</Filter>
     </ClInclude>
-    <ClInclude Include="Base\MeshBase.h">
+    <ClInclude Include="Base\MeshData.h">
       <Filter>Base</Filter>
     </ClInclude>
   </ItemGroup>

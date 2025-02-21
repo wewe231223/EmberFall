@@ -76,7 +76,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)\out\release\</OutDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\MeshLoader\;</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\MeshLoader\;$(SolutionDir)\External\Include\;</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -138,12 +138,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Base\MeshBase.cpp" />
-    <ClCompile Include="Loader\PlaneMeshLoader.cpp" />
+    <ClCompile Include="Base\MeshData.cpp" />
+    <ClCompile Include="Loader\MeshLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Base\MeshBase.h" />
-    <ClInclude Include="Loader\PlaneMeshLoader.h" />
+    <ClInclude Include="Base\MeshData.h" />
+    <ClInclude Include="Loader\MeshLoader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

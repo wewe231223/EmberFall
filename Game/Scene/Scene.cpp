@@ -9,7 +9,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mMaterialManager = std::get<2>(managers);
 
 
-	mMeshMap["Cube"] = std::make_unique<PlainMesh>(device, commandList, EmbeddedMeshType::Sphere, 1);
+	mMeshMap["Cube"] = std::make_unique<PlainMesh>(device, commandList, EmbeddedMeshType::Sphere, 5);
 
 	std::unique_ptr<GraphicsShaderBase> shader = std::make_unique<StandardShader>();
 	shader->CreateShader(device);
@@ -31,7 +31,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 				object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
 
 				auto& transform = object.GetTransform();
-				transform.GetPosition() = { x * 2.f, y * 2.f, z * 2.f };
+				transform.GetPosition() = { x * 10.f, y * 10.f, z * 10.f };
 				transform.GetScale() = { 1.f, 1.f, 1.f };
 			}
 		}
