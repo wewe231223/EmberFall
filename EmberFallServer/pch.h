@@ -19,3 +19,5 @@
 
 #include "Events.h"
 #include "GameRandom.h"
+
+extern std::shared_ptr<class GameEventManager> gEventManager;

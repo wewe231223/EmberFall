@@ -4,6 +4,7 @@
 
 #include "GameObject.h"
 #include "ServerGameScene.h"
+#include "GameEventManager.h"
 
 PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input, std::shared_ptr<SessionManager> sessionManager)
     : Script{ owner }, mInput{ input }, mViewList{ static_cast<SessionIdType>(owner->GetId()), sessionManager } {}
@@ -62,6 +63,16 @@ void PlayerScript::Update(const float deltaTime) {
         physics->mFactor.maxMoveSpeed = DEFAULT_MAX_MOVE_SPEED;
     }
 
+    if (Key::DOWN == mInput->GetState(VK_F1)) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Push GameEvent: Attack All Monster");
+
+        auto event = std::make_shared<AttackEvent>();
+        event->type = GameEventType::ATTACK_EVENT;
+        event->sender = GetOwner()->GetId();
+        event->damage = 10.0f;
+        gEventManager->PushEvent(event);
+    }
+
     moveDir.Normalize();
     physics->Acceleration(moveDir, deltaTime);
 }
@@ -71,3 +82,5 @@ void PlayerScript::OnHandleCollisionEnter(const std::string& groupTag, const std
 void PlayerScript::OnHandleCollisionStay(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) { }
 
 void PlayerScript::OnHandleCollisionExit(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) { }
+
+void PlayerScript::DispatchGameEvent(GameEvent* event) { }

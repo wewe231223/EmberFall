@@ -59,16 +59,20 @@ void GameObject::SetColor(const SimpleMath::Vector3& color) {
 }
 
 SimpleMath::Vector3 GameObject::GetColor() const {
-    //if (mCollider->IsColliding()) { // 디버깅을 위한 색상 변경
-    //    return SimpleMath::Vector3{ 1.0f, 0.0f, 0.0f }; // RED
-    //}
+    if (mCollider->IsColliding()) { // 디버깅을 위한 색상 변경
+        return SimpleMath::Vector3{ 1.0f, 0.0f, 0.0f }; // RED
+    }
     return mColor;
 }
 
 void GameObject::Update(const float deltaTime) {
+    if (not IsActive()) {
+        return;
+    }
+
     for (auto& component : mComponents) {
         component->Update(deltaTime);
-    }
+    } 
 
     mPhysics->Update(deltaTime);
     mTransform->Update();
@@ -100,6 +104,12 @@ void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameOb
 
 void GameObject::OnCollisionTerrain(const float height) {
     mTransform->SetY(height);
+}
+
+void GameObject::DispatchGameEvent(GameEvent* event) {
+    for (auto& component : mComponents) {
+        component->DispatchGameEvent(event);
+    }
 }
 
 void GameObject::OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent) { }

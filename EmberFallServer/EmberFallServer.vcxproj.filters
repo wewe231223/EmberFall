@@ -94,6 +94,9 @@
     <ClCompile Include="MonsterScript.cpp">
       <Filter>Script</Filter>
     </ClCompile>
+    <ClCompile Include="GameEventManager.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -155,6 +158,9 @@
     </ClInclude>
     <ClInclude Include="MonsterScript.h">
       <Filter>Script</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEventManager.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

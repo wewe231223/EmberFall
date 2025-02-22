@@ -15,6 +15,8 @@ public:
 
     virtual void Update(const float deltaTime) abstract;
 
+    virtual void DispatchGameEvent(class GameEvent* event) abstract;
+
 private:
     std::weak_ptr<Physics> mPhysics{ };
     std::weak_ptr<Transform> mTransform{ };

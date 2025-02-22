@@ -37,6 +37,13 @@ public:
     virtual void OnHandleCollisionStay(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) override;
     virtual void OnHandleCollisionExit(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) override;
 
+    virtual void DispatchGameEvent(class GameEvent* event) override;
+
+private:
+    std::shared_ptr<GameObject> GetNearlestObject() {
+
+    }
+
 private:
     std::shared_ptr<Input> mInput{ };
     std::shared_ptr<IServerGameScene> mGameScene{ };

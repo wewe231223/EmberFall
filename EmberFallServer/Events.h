@@ -11,24 +11,15 @@
 //                      해당 플레이어의 접속/퇴장 정보를 줌.
 // 
 //        02 - 13 : GameEvent 작성 중... 어떻게 처리할 지도 생각해보자.
-//                 
-//        02 - 18 : GameObject들은 보통 키입력, 충돌처리에서 이벤트를 발생시킨다.
-//                  
-//                  
+//                
+//        02 - 21 : GameEvent 처리는 Object에 위임하고 EventManager를 만들어 놓자.
+//                  전역 변수를 쓰기는 싫었지만 이경우에는 써야할거 같다...
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 enum class GameEventType : UINT16 {
-
+    ATTACK_EVENT,
 };
-
-//struct TimerEvent {
-//    using EventFn = std::function<bool(const float)>;
-//
-//    float delay;
-//    float timeCount;
-//    EventFn fn;
-//};
 
 struct PlayerEvent {
     enum class EventType {
@@ -42,27 +33,11 @@ struct PlayerEvent {
     std::shared_ptr<class GameObject> player;
 };
 
-//struct CollisionContact {
-//    std::shared_ptr<GameObject> objectA;
-//    std::shared_ptr<GameObject> objectB;
-//    SimpleMath::Vector3 minTrans;          // 침투 벡터
-//    SimpleMath::Vector3 contactNormal;     // 충돌 법선 벡터
-//    float penetrationDepth;                // 침투 깊이
-//    SimpleMath::Vector3 accumulatedImpulse; // 이전 프레임의 임펄스 (Contact Warming)
-//};
-
 struct GameEvent {
     GameEventType type;
-    NetworkObjectIdType receiver;
     NetworkObjectIdType sender;
 };
 
-struct AttackEvent : public GameEvent { 
+struct AttackEvent : public GameEvent {
     float damage;
-    float duration;
-    float attackDelay;
-};
-
-struct EventBus {
-    std::deque<GameEvent> events{ };
 };

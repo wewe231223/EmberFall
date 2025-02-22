@@ -75,6 +75,8 @@ public:
     void OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
     void OnCollisionTerrain(const float height);
 
+    virtual void DispatchGameEvent(GameEvent* event);
+
 private:
     void OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
     void OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);

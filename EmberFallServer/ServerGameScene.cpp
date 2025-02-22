@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ServerGameScene.h"
 #include "GameObject.h"
+#include "GameEventManager.h"
 #include "Terrain.h"
 #include "Collider.h"
 #include "Input.h"
@@ -108,6 +109,8 @@ PlayScene::PlayScene() {
         mCollisionWorld.AddCollisionPair("Player-Object", nullptr, object);
         mCollisionWorld.AddCollisionObject("Object", object);
         mCollisionWorld.AddObjectInTerrainGroup(object);
+
+        gEventManager->AddListener(object);
     }
 }
 
@@ -166,10 +169,12 @@ void PlayScene::Update(const float deltaTime) {
         object->Update(deltaTime);
     }
 
-    mGridWorld.Update(mObjects);
 
     mCollisionWorld.HandleTerrainCollision();
     //mCollisionWorld.HandleCollision();
+    mGridWorld.Update(mObjects);
+
+    gEventManager->Update();
 }
 
 void PlayScene::LateUpdate(const float deltaTime) { 
@@ -185,6 +190,8 @@ void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerOb
     mCollisionWorld.AddCollisionObject("Player", playerObject);
     mCollisionWorld.AddCollisionPair("Player-Object", playerObject);
     mCollisionWorld.AddObjectInTerrainGroup(playerObject);
+
+    gEventManager->AddListener(playerObject);
 }
 
 void PlayScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
@@ -201,5 +208,6 @@ void PlayScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerO
     mCollisionWorld.RemoveObjectFromGroup("Player-Object", playerObject);
     mCollisionWorld.RemoveObjectFromTerrainGroup(playerObject);
 
+    gEventManager->RemoveListener(playerObject);
     mPlayers.erase(it);
 }

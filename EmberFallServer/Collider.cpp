@@ -57,6 +57,7 @@ void Collider::UpdateState(bool collisionResult, NetworkObjectIdType objId) {
         switch (state) {
         case CollisionState::NONE:
         case CollisionState::EXIT:
+            ++mCollisionCount;
             state = CollisionState::ENTER;
             break;
 
@@ -85,6 +86,7 @@ void Collider::UpdateState(bool collisionResult, NetworkObjectIdType objId) {
             break;
 
         default:        // NONE인 경우 Map에서 삭제
+            --mCollisionCount;
             mStates.erase(objId);
             break;
         }

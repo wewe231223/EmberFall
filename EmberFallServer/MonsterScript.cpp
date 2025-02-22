@@ -14,14 +14,15 @@ void MonsterScript::Update(const float deltaTime) {
         GetOwner()->SetActive(false);
     }
 
-    int rand = Random::GetRandom<INT32>(0, 1000);
-    if (0 == rand % 100) {
-        mMoveDir = Random::GetRandomDirVec3();
-        mMoveDir.y = 0.0f;
-    }
+    // 02-22 움직임 잠시 비활성화
+    //int rand = Random::GetRandom<INT32>(0, 1000);
+    //if (0 == rand % 100) {
+    //    mMoveDir = Random::GetRandomDirVec3();
+    //    mMoveDir.y = 0.0f;
+    //}
 
-    auto physics = GetOwner()->GetPhysics();
-    physics->Acceleration(mMoveDir, deltaTime);
+    //auto physics = GetOwner()->GetPhysics();
+    //physics->Acceleration(mMoveDir, deltaTime);
 }
 
 void MonsterScript::OnHandleCollisionEnter(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) { }
@@ -29,3 +30,16 @@ void MonsterScript::OnHandleCollisionEnter(const std::string& groupTag, const st
 void MonsterScript::OnHandleCollisionStay(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) { }
 
 void MonsterScript::OnHandleCollisionExit(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) { }
+
+void MonsterScript::DispatchGameEvent(GameEvent* event) { 
+    switch (event->type) {
+    case GameEventType::ATTACK_EVENT:
+        mHp -= static_cast<AttackEvent*>(event)->damage;
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster [{}] Handling AttackEvent, HP: {}",
+                                                        GetOwner()->GetId() - OBJECT_ID_START, mHp);
+        break;
+
+    default:
+        break;
+    }
+}
