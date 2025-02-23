@@ -21,8 +21,10 @@ public:
 	void Initialize(HWND);
 	void Update();
 
+	void ToggleVirtualMouse();
 	void DisableVirtualMouse();
 	void EnableVirtualMouse();
+
 	void UpdateFocus(UINT msg);
 	void UpdateWindowCenter();
 

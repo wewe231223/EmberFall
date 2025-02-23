@@ -5,6 +5,10 @@
 #include "../Utility/Defines.h"
 #include "../Renderer/Resource/DefaultBuffer.h"
 #include "../Renderer/Resource/Texture.h"
+
+#ifdef max
+#undef max
+#endif
 class TextureManager {
 	static constexpr const char* IMAGE_DIRECTORY = "Resources/Image";
 public:

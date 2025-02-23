@@ -16,7 +16,7 @@ TextureManager::TextureManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graphic
 
 
 	UINT count{ 0 };
-	auto pair = std::make_pair(count++, Texture(device, commandList, "Resources/Image/DefaultTexture.png"));
+	auto pair = std::make_pair(count, Texture(device, commandList, "Resources/Image/DefaultTexture.png"));
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
@@ -38,11 +38,14 @@ TextureManager::TextureManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graphic
 			continue;
 		}
 
-		pair = std::make_pair(count++, Texture(device, commandList, path));
+
+		pair = std::make_pair(++count, Texture(device, commandList, path));
 
 		srvDesc.Format = pair.second.GetResource()->GetDesc().Format;
 		handle = mTextureHeap->GetCPUDescriptorHandleForHeapStart();
 		handle.Offset(count, increasement);
+
+		device->CreateShaderResourceView(pair.second.GetResource().Get(), &srvDesc, handle);
 
 		mTextures[name] = std::move(pair);
 	}

@@ -33,7 +33,7 @@ struct Config {
 	constexpr static T WINDOW_HEIGHT{ static_cast<T>(720) };
 #endif
 	template<typename T = int> 
-	constexpr static T EDITOR_WINDOW_WIDTH{ static_cast<T>(Config::WINDOW_WIDTH<T> / 3) };
+	constexpr static T EDITOR_WINDOW_WIDTH{ static_cast<T>(Config::WINDOW_WIDTH<T> / 2) };
 
 	template<typename T = int>
 	constexpr static T EDITOR_WINDOW_HEIGHT{ Config::WINDOW_HEIGHT<T> };

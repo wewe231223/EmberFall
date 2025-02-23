@@ -79,6 +79,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		PostQuitMessage(0);
 		});
 
+    Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::F2, n, []() {Input.ToggleVirtualMouse(); });
+
 	/*Time.AddEvent(1s, []() {
         Console.Log("FrameRate : {:.5f}", LogType::Info, 1.f / Time.GetDeltaTime<float>());
         return true;
@@ -308,7 +310,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
-   //gDevice.Initialize(hWnd);
+  // gDevice.Initialize(hWnd);
 
    return TRUE;
 }

@@ -14,7 +14,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mMaterialManager = std::get<2>(managers);
 
 	MeshLoader loader{};
-	auto meshData = loader.Load("Resources/Assets/T_Pose.gltf");
+	auto meshData = loader.Load("Resources/Assets/monster.gltf");
 
 	mMeshMap["Cube"] = std::make_unique<PlainMesh>(device, commandList, EmbeddedMeshType::Sphere, 5);
 	mMeshMap["T_Pose"] = std::make_unique<PlainMesh>(device, commandList, meshData);
@@ -27,6 +27,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	MaterialConstants material{};
 	material.mDiffuseColor = { 1.f, 0.f, 1.0f, 1.0f };
+	material.mDiffuseTexture[0] = mTextureManager->GetTexture("Creep_BaseColor");
 
 	mMaterialManager->CreateMaterial("CubeMaterial", material);
 
@@ -34,7 +35,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	object.mShader = mShaderMap["StandardShader"].get();
 	object.mMesh = mMeshMap["T_Pose"].get();
 	object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-	object.GetTransform().Scaling(10.f, 10.f, 10.f);
+	object.GetTransform().Scaling(100.f, 100.f, 100.f);
 
 	mCamera = Camera(device);
 	

@@ -11,11 +11,17 @@
 MeshData MeshLoader::Load(const std::filesystem::path& path) {
 	MeshData meshData{};
 
-	const aiScene* scene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights | aiProcess_MakeLeftHanded);
+	const aiScene* scene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights | aiProcess_ConvertToLeftHanded );
 
 	CrashExp(scene != nullptr, "Failed To Load Model!");
 	CrashExp((!(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)), "Failed To Load Model!");
 	CrashExp((scene->mRootNode != nullptr), "Failed To Load Model!");
+
+	if (!scene or scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE or !scene->mRootNode) {
+		Console.Log("ModelLoad Failed : {}",LogType::Error, mImporter.GetErrorString());
+		Crash("ModelLoad Failed");
+	}
+
 
 	for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
 		aiMesh* mesh = scene->mMeshes[i];

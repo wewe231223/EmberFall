@@ -63,6 +63,17 @@ void GInput::Update()
 
 }
 
+void GInput::ToggleVirtualMouse() {
+#ifdef VIRTUAL_MOUSE
+	if (mVirtualMouse) {
+		DisableVirtualMouse();
+	}
+	else {
+		EnableVirtualMouse();
+	}
+#endif
+}
+
 void GInput::DisableVirtualMouse()
 {
 #ifdef VIRTUAL_MOUSE

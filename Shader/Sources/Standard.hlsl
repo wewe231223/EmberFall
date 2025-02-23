@@ -44,7 +44,7 @@ struct Standard_VOUT
 
 StructuredBuffer<ModelContext> modelContexts : register(t0);
 StructuredBuffer<MaterialConstants> materialConstants : register(t1);
-Texture2D textures[2048] : register(t2);
+Texture2D textures[1024] : register(t2);
 
 SamplerState pointWrapSampler : register(s0);
 SamplerState pointClampSampler : register(s1);
@@ -70,6 +70,7 @@ Standard_VOUT Standard_VS(Standard_VIN input) {
 }
 
 float4 Standard_PS(Standard_VOUT input) : SV_TARGET {
-    float4 color = materialConstants[input.material].diffuse;
+    float4 color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(pointClampSampler, input.texcoord);
+    // color += materialConstants[input.material].diffuse;
     return color;
 }
