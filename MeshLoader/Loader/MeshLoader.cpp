@@ -17,7 +17,6 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
 	CrashExp((!(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)), "Failed To Load Model!");
 	CrashExp((scene->mRootNode != nullptr), "Failed To Load Model!");
 
-
 	for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
 		aiMesh* mesh = scene->mMeshes[i];
 
@@ -64,9 +63,11 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
 				meshData.index.emplace_back(mesh->mFaces[face].mIndices[2]);
 			}
 			meshData.indexed = true;
+			meshData.unitCount = static_cast<unsigned int>(meshData.index.size());
 		}
 		else {
 			meshData.indexed = false;
+			meshData.unitCount = mesh->mNumVertices;
 		}
         
         meshData.boneID.resize(mesh->mNumVertices, { 0, 0, 0, 0 });

@@ -34,7 +34,7 @@ void MeshRenderManager::Render(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	auto& [shader, meshContexts] = *mPlainMeshContexts.begin();
 
 	for (auto& [mesh, worlds] : meshContexts) {
-		mesh->Bind(commandList);
+		mesh->Bind(commandList, shader->GetAttribute());
 
 		commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
 
@@ -52,7 +52,7 @@ void MeshRenderManager::Render(ComPtr<ID3D12GraphicsCommandList> commandList) {
 		shader->SetShader(commandList);
 		for (auto& [mesh, worlds] : meshContexts) {
 			
-			mesh->Bind(commandList);
+			mesh->Bind(commandList, shader->GetAttribute());
 
 			commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
 

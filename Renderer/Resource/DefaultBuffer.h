@@ -159,7 +159,7 @@ private:
 class DefaultBuffer {
 public:
 	DefaultBuffer() = default;
-	DefaultBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, size_t unitSize, size_t numofElement, void* initialData = nullptr, bool constant = false);
+	DefaultBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, size_t unitSize, size_t numofElement, const void* initialData = nullptr, bool constant = false);
 	DefaultBuffer(ComPtr<ID3D12Device> device, size_t unitSize, size_t numofElement, bool constant = false);
 	~DefaultBuffer();
 

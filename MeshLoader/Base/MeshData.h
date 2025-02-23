@@ -17,5 +17,7 @@ struct MeshData {
 	std::vector<unsigned int> index{};
 
 	std::bitset<7> vertexAttribute{};
+	unsigned int unitCount{ 0 };
+
 	bool indexed{ false };
 };

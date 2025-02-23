@@ -80,8 +80,8 @@ void FreeCameraMode::Update() {
 	static float yaw = 0.f;
 	static float pitch = 0.f;
 
-	yaw += Input.GetDeltaMouseX() * Time.GetDeltaTime<float>() * 0.7f;
-	pitch += Input.GetDeltaMouseY() * Time.GetDeltaTime<float>() * 0.7f;
+	yaw += Input.GetDeltaMouseX() * Time.GetSmoothDeltaTime<float>() * 0.7f;
+	pitch += Input.GetDeltaMouseY() * Time.GetSmoothDeltaTime<float>() * 0.7f;
 
 	if (pitch > DirectX::XMConvertToRadians(80.f)) {
 		pitch = DirectX::XMConvertToRadians(80.f);

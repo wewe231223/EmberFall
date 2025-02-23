@@ -1,15 +1,24 @@
 #include "pch.h"
 #include "Scene.h"
 #include "../Renderer/Core/Renderer.h"
-
+#include "../MeshLoader/Loader/MeshLoader.h"
+#ifdef _DEBUG
+#pragma comment(lib,"out/debug/MeshLoader.lib")
+#else 
+#pragma comment(lib,"out/release/MeshLoader.lib")
+#endif
 
 Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers) {
 	mMeshRenderManager = std::get<0>(managers);
 	mTextureManager = std::get<1>(managers);
 	mMaterialManager = std::get<2>(managers);
 
+	MeshLoader loader{};
+	auto meshData = loader.Load("Resources/Assets/T_Pose.gltf");
 
 	mMeshMap["Cube"] = std::make_unique<PlainMesh>(device, commandList, EmbeddedMeshType::Sphere, 5);
+	mMeshMap["T_Pose"] = std::make_unique<PlainMesh>(device, commandList, meshData);
+
 
 	std::unique_ptr<GraphicsShaderBase> shader = std::make_unique<StandardShader>();
 	shader->CreateShader(device);
@@ -21,21 +30,11 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	mMaterialManager->CreateMaterial("CubeMaterial", material);
 
-
-	for (auto x = 0; x < 20; ++x) {
-		for (auto z = 0; z < 20; ++z) {
-			for (auto y = 0; y < 20; ++y) {
-				auto& object = mGameObjects.emplace_back();
-				object.mShader = mShaderMap["StandardShader"].get();
-				object.mMesh = mMeshMap["Cube"].get();
-				object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-
-				auto& transform = object.GetTransform();
-				transform.GetPosition() = { x * 10.f, y * 10.f, z * 10.f };
-				transform.GetScale() = { 1.f, 1.f, 1.f };
-			}
-		}
-	}
+	auto& object = mGameObjects.emplace_back();
+	object.mShader = mShaderMap["StandardShader"].get();
+	object.mMesh = mMeshMap["T_Pose"].get();
+	object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+	object.GetTransform().Scaling(10.f, 10.f, 10.f);
 
 	mCamera = Camera(device);
 	

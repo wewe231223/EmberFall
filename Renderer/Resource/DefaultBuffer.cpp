@@ -2,7 +2,7 @@
 #include "DefaultBuffer.h"
 #include "../Utility/Defines.h"
 
-DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, size_t unitSize, size_t numofElement, void* initialData, bool constant) {
+DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, size_t unitSize, size_t numofElement, const void* initialData, bool constant) {
 	CrashExp(unitSize * numofElement > 0, "Size must be greater than 0");
 
 	mElementSize = unitSize;

@@ -79,9 +79,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		PostQuitMessage(0);
 		});
 
-	MeshLoader loader{};
-    auto res = loader.Load("Resources/Assets/T_Pose.gltf");
-
 	/*Time.AddEvent(1s, []() {
         Console.Log("FrameRate : {:.5f}", LogType::Info, 1.f / Time.GetDeltaTime<float>());
         return true;
@@ -311,7 +308,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
-   gDevice.Initialize(hWnd);
+   //gDevice.Initialize(hWnd);
 
    return TRUE;
 }

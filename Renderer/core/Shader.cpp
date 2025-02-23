@@ -381,6 +381,10 @@ UINT GraphicsShaderBase::GetShaderID() const {
 	return std::numeric_limits<UINT>::max();
 }
 
+const std::bitset<7>& GraphicsShaderBase::GetAttribute() const {
+	return mAttribute;
+}
+
 void GraphicsShaderBase::SetShader(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	commandList->SetPipelineState(mPipelineState.Get());
 	commandList->SetGraphicsRootSignature(mRootSignature.Get());
@@ -395,6 +399,7 @@ StandardShader::StandardShader(){
 
 void StandardShader::CreateShader(ComPtr<ID3D12Device> device) {
 	GraphicsShaderBase::CreateShader(device);
+	mAttribute = std::bitset<7>{ "1110000" };
 }
 
 GraphicsShaderBase::InputLayout StandardShader::CreateInputLayout() {

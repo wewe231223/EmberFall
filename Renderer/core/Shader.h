@@ -3,6 +3,7 @@
 #include <string>
 #include <filesystem>
 #include <span>
+#include <bitset>
 #include "../Utility/DirectXInclude.h"
 
 enum ShaderType : BYTE {
@@ -69,7 +70,8 @@ public:
 public:
 	virtual void CreateShader(ComPtr<ID3D12Device> device);
 
-	virtual UINT GetShaderID() const; 
+	virtual UINT GetShaderID() const;
+	const std::bitset<7>& GetAttribute() const;
 	void SetShader(ComPtr<ID3D12GraphicsCommandList> commandList);
 protected:
 
@@ -89,6 +91,8 @@ protected:
 	virtual D3D12_SHADER_BYTECODE CreateGeometryShader();
 	virtual D3D12_SHADER_BYTECODE CreateHullShader();
 	virtual D3D12_SHADER_BYTECODE CreateDomainShader();
+protected:
+	std::bitset<7> mAttribute{ 0b0000000 };
 private:
 	ComPtr<ID3D12RootSignature> mRootSignature{};
 	ComPtr<ID3D12PipelineState> mPipelineState{};

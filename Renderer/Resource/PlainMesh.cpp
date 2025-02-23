@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "PlainMesh.h"
-#include "../External/Include/DirectXTK12/GeometricPrimitive.h"
-
+#include "../Utility/Defines.h"
 
 PlainMesh::PlainMesh() {
 }
@@ -182,7 +181,7 @@ PlainMesh::PlainMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandLi
 		view.BufferLocation = *buffer.GPUBegin();
 		view.StrideInBytes = sizeof(SimpleMath::Vector3);
 		view.SizeInBytes = static_cast<UINT>(positions.size()) * sizeof(SimpleMath::Vector3);
-		mVertexBufferViews.emplace_back(view);
+		mVertexBufferViews[0] = view;
 	}
 	
 	{
@@ -192,7 +191,7 @@ PlainMesh::PlainMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandLi
 		view.BufferLocation = *buffer.GPUBegin();
 		view.StrideInBytes = sizeof(SimpleMath::Vector3);
 		view.SizeInBytes = static_cast<UINT>(normals.size()) * sizeof(SimpleMath::Vector3);
-		mVertexBufferViews.emplace_back(view);
+		mVertexBufferViews[1] = view;
 	}
 
 	{
@@ -202,8 +201,96 @@ PlainMesh::PlainMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandLi
 		view.BufferLocation = *buffer.GPUBegin();
 		view.StrideInBytes = sizeof(SimpleMath::Vector2);
 		view.SizeInBytes = static_cast<UINT>(texcoords.size()) * sizeof(SimpleMath::Vector2);
-		mVertexBufferViews.emplace_back(view);
+		mVertexBufferViews[2] = view;
 	}
+
+	// position, normal, texcoord
+	mAttribute = std::bitset<7>{ "1110000" };
+}
+
+PlainMesh::PlainMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const MeshData& meshData) {
+	mAttribute = meshData.vertexAttribute;
+
+	if (meshData.vertexAttribute[6] == 1) {
+		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector3), meshData.position.size(), meshData.position.data());
+
+		D3D12_VERTEX_BUFFER_VIEW view{};
+		view.BufferLocation = *buffer.GPUBegin();
+		view.StrideInBytes = sizeof(SimpleMath::Vector3);
+		view.SizeInBytes = static_cast<UINT>(meshData.position.size()) * sizeof(SimpleMath::Vector3);
+		mVertexBufferViews[0] = view;
+	}
+
+	if (meshData.vertexAttribute[5] == 1) {
+		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector3), meshData.normal.size(), meshData.normal.data());
+
+		D3D12_VERTEX_BUFFER_VIEW view{};
+		view.BufferLocation = *buffer.GPUBegin();
+		view.StrideInBytes = sizeof(SimpleMath::Vector3);
+		view.SizeInBytes = static_cast<UINT>(meshData.normal.size()) * sizeof(SimpleMath::Vector3);
+		mVertexBufferViews[1] = view;
+	}
+
+	if (meshData.vertexAttribute[4] == 1) {
+		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector2), meshData.texCoord.size(), meshData.texCoord.data());
+
+		D3D12_VERTEX_BUFFER_VIEW view{};
+		view.BufferLocation = *buffer.GPUBegin();
+		view.StrideInBytes = sizeof(SimpleMath::Vector2);
+		view.SizeInBytes = static_cast<UINT>(meshData.texCoord.size()) * sizeof(SimpleMath::Vector2);
+		mVertexBufferViews[2] = view;
+	}
+
+	if (meshData.vertexAttribute[3] == 1) {
+		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector3), meshData.tangent.size(), meshData.tangent.data());
+
+		D3D12_VERTEX_BUFFER_VIEW view{};
+		view.BufferLocation = *buffer.GPUBegin();
+		view.StrideInBytes = sizeof(SimpleMath::Vector3);
+		view.SizeInBytes = static_cast<UINT>(meshData.tangent.size()) * sizeof(SimpleMath::Vector3);
+		mVertexBufferViews[3] = view;
+	}
+
+	if (meshData.vertexAttribute[2] == 1) {
+		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector3), meshData.bitangent.size(), meshData.bitangent.data());
+
+		D3D12_VERTEX_BUFFER_VIEW view{};
+		view.BufferLocation = *buffer.GPUBegin();
+		view.StrideInBytes = sizeof(SimpleMath::Vector3);
+		view.SizeInBytes = static_cast<UINT>(meshData.bitangent.size()) * sizeof(SimpleMath::Vector3);
+		mVertexBufferViews[4] = view;
+	}
+
+	if (meshData.vertexAttribute[1] == 1) {
+		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector4), meshData.boneID.size(), meshData.boneID.data());
+
+		D3D12_VERTEX_BUFFER_VIEW view{};
+		view.BufferLocation = *buffer.GPUBegin();
+		view.StrideInBytes = sizeof(unsigned int) * 4;
+		view.SizeInBytes = static_cast<UINT>(meshData.boneID.size()) * sizeof(unsigned int) * 4;
+		mVertexBufferViews[5] = view;
+	}
+
+	if (meshData.vertexAttribute[0] == 1) {
+		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector4), meshData.boneWeight.size(), meshData.boneWeight.data());
+
+		D3D12_VERTEX_BUFFER_VIEW view{};
+		view.BufferLocation = *buffer.GPUBegin();
+		view.StrideInBytes = sizeof(float) * 4;
+		view.SizeInBytes = static_cast<UINT>(meshData.boneWeight.size()) * sizeof(float) * 4;
+		mVertexBufferViews[6] = view;
+	}
+
+	if (meshData.indexed) {
+		mIndexBuffer = DefaultBuffer{ device, commandList, sizeof(unsigned int), meshData.index.size(), meshData.index.data() };
+		mIndexBufferView.BufferLocation = *mIndexBuffer.GPUBegin();
+		mIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
+		mIndexBufferView.SizeInBytes = static_cast<UINT>(meshData.index.size()) * sizeof(UINT);
+		
+		mIndexed = true;
+	}
+	mUnitCount = meshData.unitCount;
+
 }
 
 PlainMesh::~PlainMesh() {
@@ -261,9 +348,17 @@ PlainMesh& PlainMesh::operator=(PlainMesh&& other) noexcept {
 	return *this;
 }
 
-void PlainMesh::Bind(ComPtr<ID3D12GraphicsCommandList> commandList) const {
+void PlainMesh::Bind(ComPtr<ID3D12GraphicsCommandList> commandList, const std::bitset<7>& shaderAttribute) const {
+	
+	CrashExp(IsSubSet(mAttribute, shaderAttribute), "Attribute is not subset of PlainMesh attribute");
+
 	commandList->IASetPrimitiveTopology(mPrimitiveTopology);
-	commandList->IASetVertexBuffers(0, static_cast<UINT>(mVertexBufferViews.size()), mVertexBufferViews.data());
+	for (auto i = 6; i >= 0; --i) {
+		if (mAttribute[i] == 1) {
+			commandList->IASetVertexBuffers(6 - i, 1, &mVertexBufferViews[6 - i]);
+		}
+	}
+
 	if (mIndexed) {
 		commandList->IASetIndexBuffer(&mIndexBufferView);
 	}
