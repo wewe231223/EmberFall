@@ -44,16 +44,16 @@ void PlayerScript::Update(const float deltaTime) {
         moveDir.z += 1.0f;
     }
 
-    if (mInput->IsDown(VK_SPACE)) {
+    if (mInput->IsActiveKey(VK_SPACE)) {
         physics->Jump(deltaTime);
     }
 
     if (mInput->IsDown(VK_F1)) {
-        physics->mFactor.mass += 10.0f;
+        physics->mFactor.mass += 10.0kg;
     }
 
     if (mInput->IsDown(VK_F2)) {
-        physics->mFactor.acceleration += 1.0f;
+        physics->mFactor.acceleration += 1.0mps2;
     }
 
     if (mInput->IsDown(VK_SHIFT)) {
@@ -61,14 +61,14 @@ void PlayerScript::Update(const float deltaTime) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h",
             GetOwner()->GetId(),
             maxSpeed.Count());
-        physics->mFactor.maxMoveSpeed = maxSpeed.Count();
+        physics->mFactor.maxMoveSpeed = maxSpeed;
     }
     else if (mInput->IsUp(VK_SHIFT)) {
         auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(5.0mps);
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h", 
             GetOwner()->GetId(),
             maxSpeed.Count());
-        physics->mFactor.maxMoveSpeed = maxSpeed.Count();
+        physics->mFactor.maxMoveSpeed = maxSpeed;
     }
 
     if (mInput->IsUp(VK_F1)) {

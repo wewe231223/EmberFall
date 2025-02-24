@@ -135,8 +135,8 @@ void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<Ga
     auto obb1 = std::static_pointer_cast<OrientedBoxCollider>(mCollider)->GetBoundingBox();
     auto obb2 = std::static_pointer_cast<OrientedBoxCollider>(opponent->mCollider)->GetBoundingBox();
 
-    float myMass = mPhysics->mFactor.mass;
-    float opponentMass = opponent->mPhysics->mFactor.mass;
+    float myMass = mPhysics->mFactor.mass.Count();
+    float opponentMass = opponent->mPhysics->mFactor.mass.Count();
     // 내가 무거울 수록 덜 밀려나는 구조.
     float coefficient = opponentMass / (myMass + opponentMass); // 0.0f ~ 1.0f 사이 값.
     auto repulsiveVec = impulse;

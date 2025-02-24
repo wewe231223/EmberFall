@@ -189,6 +189,18 @@ namespace GameUnits {
         }
 
         // operator
+        template <typename T> requires std::is_arithmetic_v<T>
+        constexpr auto operator*(T scalar) {
+            mRep = Count() * scalar;
+            return *this;
+        }
+
+        template <typename T> requires std::is_arithmetic_v<T>
+        constexpr auto operator/(T scalar) {
+            mRep = Count() / scalar;
+            return *this;
+        }
+    
         template <typename RightUnitType> requires IsUnitType<RightUnitType>
         constexpr auto operator*(GameUnit<RightUnitType> right) {
             if constexpr (IsConvertibleUnit<GameUnit, RightUnitType>) {
@@ -208,6 +220,18 @@ namespace GameUnits {
                 auto time = UnitCast<StandardTime>(*this).Count();
                 auto speed = UnitCast<StandardSpeed>(right).Count();
                 return GameUnit<StandardLength>(speed * time);
+            }
+            else if constexpr (IsAccelUnit<Unit> and IsTimeUnit<RightUnitType>) {
+                // 가속력 X 시간 인 경우 -> 반환은 속력
+                auto accel = UnitCast<StandardAccel>(*this).Count();
+                auto time = UnitCast<StandardTime>(right).Count();
+                return GameUnit<StandardSpeed>(accel * time);
+            }
+            else if constexpr (IsTimeUnit<Unit> and IsAccelUnit<RightUnitType>) {
+                // 가속력 X 시간 인 경우 -> 반환은 속력
+                auto time = UnitCast<StandardTime>(*this).Count();
+                auto accel = UnitCast<StandardAccel>(right).Count();
+                return GameUnit<StandardSpeed>(accel * time);
             }
             else if constexpr (IsMassUnit<Unit> and IsAccelUnit<RightUnitType>) {
                 // 질량 X 가속도인 경우 -> 반환은 힘
@@ -260,7 +284,8 @@ namespace GameUnits {
             }
             else if constexpr (IsForceUnit<Unit> and IsMassUnit<RightUnitType>) {
                 // 힘 / 질량 인 경우 -> 반환은 가속력
-                auto force = UnitCast<StandardForce>(*this).Count();
+                //auto force = UnitCast<StandardForce>(*this).Count();
+                auto force = Count();
                 auto mass = UnitCast<StandardMass>(right).Count();
                 return GameUnit<StandardAccel>(force / mass);
             }
@@ -335,6 +360,37 @@ namespace GameUnits {
         }
     }
 
+    template <typename UnitType>
+    auto ToUnit(float unit) {
+        if constexpr (IsSpeedUnit<UnitType>) {
+            return GameUnit<StandardSpeed>(unit);
+        }
+        else if constexpr (IsLengthUnit<UnitType>) {
+            return GameUnit<StandardLength>(unit);
+        }
+        else if constexpr (IsMassUnit<UnitType>) {
+            return GameUnit<StandardMass>(unit);
+        }
+        else if constexpr (IsTimeUnit<UnitType>) {
+            return GameUnit<StandardTime>(unit);
+        }
+        else if constexpr (IsForceUnit<UnitType>) {
+            return GameUnit<StandardForce>(unit);
+        }
+    }
+
+    // Speed To Velocity
+    template <typename UnitType> requires IsSpeedUnit<UnitType>
+    SimpleMath::Vector3 ToVelocity(const SimpleMath::Vector3& dir, GameUnit<UnitType> speed) {
+        return dir * speed.Count();
+    }
+
+    // Force with Direction
+    template <typename UnitType> requires IsForceUnit<UnitType>
+    SimpleMath::Vector3 ToDirForce(const SimpleMath::Vector3& dir, GameUnit<UnitType> magnitute) {
+        return dir * magnitute.Count();
+    }
+
 #define IF_UNIT_RETURN_SUFFIX_ELSE(_TYPE, _SUFFIX)         \
     if constexpr (std::is_same_v<_Unit, _TYPE>) {        \
         if constexpr (std::is_same_v<_CharT, char>) {   \
@@ -384,6 +440,10 @@ namespace GameUnitLiterals {
         return GameUnits::GameUnit<GameUnits::KilloMeterPerHour>(kmph);
     }
 
+    constexpr GameUnits::GameUnit<GameUnits::MeterPerSec2> operator""mps2(long double mps2) {
+        return GameUnits::GameUnit<GameUnits::MeterPerSec2>(mps2);
+    }
+
     // length
     constexpr GameUnits::GameUnit<GameUnits::CentiMeter> operator""cm(long double centimeter) {
         return GameUnits::GameUnit<GameUnits::CentiMeter>(centimeter);
@@ -413,5 +473,10 @@ namespace GameUnitLiterals {
 
     constexpr GameUnits::GameUnit<GameUnits::MeterPerSec2> operator""G(long double gravity) {
         return GameUnits::GameUnit<GameUnits::MeterPerSec2>(gravity * 9.8);
+    }
+
+    // force
+    constexpr GameUnits::GameUnit<GameUnits::Newton> operator""N(long double newton) {
+        return GameUnits::GameUnit<GameUnits::Newton>(newton);
     }
 }

@@ -9,22 +9,22 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "Transform.h"
-
-inline static constexpr float GRAVITY_ACCELERATION = 10.0f M_PER_SEC2;     // gravity (10.0 m/s^2)
-inline static constexpr float DEFAULT_ACCELERATION = 20.0f M_PER_SEC2;
-inline static constexpr float DEFAULT_MASS = 70.0f;       // kg
-inline static constexpr float DEFAULT_MAX_MOVE_SPEED = 5.0f M_PER_SEC; // m/s
-inline static constexpr float DEFAULT_JUMP_FORCE = 20000.0f; // N = F = Mess * accel = kg * m / s^2
-inline static constexpr float DEFAULT_JUMP_TIEM = 0.2f;
+inline static auto GRAVITY_ACCELERATION = 1.0G;
+inline static auto DEFAULT_ACCELERATION = 20.0mps2;
+inline static auto DEFAULT_MASS = 70.0kg;       // kg
+inline static auto DEFAULT_MAX_MOVE_SPEED = 5.0mps; // m/s
+inline static auto DEFAULT_JUMP_FORCE = 20000.0N; // N = F = Mess * accel = kg * m / s^2
+inline static auto DEFAULT_JUMP_TIME = 0.2sec;
 
 struct PhysicsFactor {
-    float acceleration{ DEFAULT_ACCELERATION };
-    float mass{ DEFAULT_MASS };
-    float jumpForce{ DEFAULT_JUMP_FORCE };
+    GameUnits::GameUnit<GameUnits::StandardAccel> acceleration{ DEFAULT_ACCELERATION };
+    GameUnits::GameUnit<GameUnits::StandardForce> jumpForce{ DEFAULT_JUMP_FORCE };
+    GameUnits::GameUnit<GameUnits::StandardSpeed> maxMoveSpeed{ DEFAULT_MAX_MOVE_SPEED };
+    GameUnits::GameUnit<GameUnits::StandardTime> jumpTime{ DEFAULT_JUMP_TIME };
+    GameUnits::GameUnit<GameUnits::StandardMass> mass{ DEFAULT_MASS };
+
     float dragCoeffi{ 0.1f };
-    float maxMoveSpeed{ DEFAULT_MAX_MOVE_SPEED };
     float friction{ 1.0f };
-    float jumpTime{ 0.2f };
 };
 
 // Physics Base
