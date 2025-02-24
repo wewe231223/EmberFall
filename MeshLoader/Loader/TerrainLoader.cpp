@@ -35,7 +35,7 @@ MeshData TerrainLoader::Load(const std::filesystem::path& path, bool patch) {
 		auto filter = std::views::filter([=](int x) noexcept {return (x % PATCH_LENGTH) == 0; });
 
 		for (const auto& pz : std::views::iota(PATCH_LENGTH, mLength) | std::views::reverse ) {
-			if (pz % PATCH_LENGTH == 0) continue;
+			if (pz % PATCH_LENGTH != 0) continue;
 			for (const auto& px : std::views::iota(0, mLength - PATCH_LENGTH) | filter) {
 				CreatePatch(meshData, pz, pz - PATCH_LENGTH, px, px + PATCH_LENGTH);
 			}

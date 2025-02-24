@@ -93,7 +93,8 @@ float GetTessFactor(float4 center)
     float fDistToCamera = distance(center.xyz, cameraPosition);
     float s = saturate((fDistToCamera - 10.0f) / (30.0f - 10.0f));
 
-    return (lerp(64.0f, 1.0f, s));
+    return (lerp(32.0f, 1.0f, s));
+
 }
 
 PatchTessFactor Constant_HS(InputPatch<Terrain_HIN, 25> patch, uint patchID : SV_PrimitiveID)
