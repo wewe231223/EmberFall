@@ -5,8 +5,10 @@
 #include "Terrain.h"
 #include "Collider.h"
 #include "Input.h"
+
 #include "PlayerScript.h"
 #include "MonsterScript.h"
+#include "CorruptedGem.h"
 
 IServerGameScene::IServerGameScene() { }
 
@@ -88,16 +90,16 @@ PlayScene::PlayScene() {
     mTerrain = std::make_shared<Terrain>("../Resources/HeightMap.raw");
     mCollisionWorld.AddTerrain(mTerrain);
 
-    mObjects.resize(MAX_OBJECT);
+    mObjects.resize(5);
     for (size_t id{ 0 }; auto & object : mObjects) {
         object = std::make_shared<GameObject>();
         object->InitId(OBJECT_ID_START + id);
         ++id;
 
         object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
-        object->CreateComponent<MonsterScript>(object);
+        object->CreateComponent<CorruptedGemScript>(object);
         object->SetColor(Random::GetRandomColor());
-        object->GetTransform()->Translate(Random::GetRandomVec3(-500.0f, 500.0f));
+        object->GetTransform()->Translate(Random::GetRandomVec3(-50.0f, 50.0f));
         object->GetTransform()->Scale(SimpleMath::Vector3{ 10.0f });
         object->GetTransform()->SetY(Random::GetRandom<float>(0.0f, 100.0f));
 

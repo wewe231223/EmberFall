@@ -27,6 +27,8 @@ public:
     void AddInRange(std::shared_ptr<class GameObject> obj);
     bool EraseFromRange(std::shared_ptr<class GameObject> obj);
 
+    std::set<std::shared_ptr<class GameObject>>& GetInRangeObjects();
+
 public:
     float mViewRange{ 100.0f };
     SimpleMath::Vector3 mPosition{ };

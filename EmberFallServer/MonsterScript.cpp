@@ -10,10 +10,6 @@ MonsterScript::MonsterScript(std::shared_ptr<class GameObject> owner)
 MonsterScript::~MonsterScript() { }
 
 void MonsterScript::Update(const float deltaTime) {
-    if (mHp < 0.0f) {
-        GetOwner()->SetActive(false);
-    }
-
     // 02-22 움직임 잠시 비활성화
     //int rand = Random::GetRandom<INT32>(0, 1000);
     //if (0 == rand % 100) {
@@ -25,7 +21,11 @@ void MonsterScript::Update(const float deltaTime) {
     //physics->Acceleration(mMoveDir, deltaTime);
 }
 
-void MonsterScript::LateUpdate(const float deltaTime) { }
+void MonsterScript::LateUpdate(const float deltaTime) { 
+    if (mHp <= MathUtil::EPSILON) {
+        GetOwner()->SetActive(false);
+    }
+}
 
 void MonsterScript::OnHandleCollisionEnter(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) { }
 

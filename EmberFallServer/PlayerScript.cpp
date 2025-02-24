@@ -21,6 +21,8 @@ std::shared_ptr<IServerGameScene> PlayerScript::GetCurrentScene() const {
 }
 
 void PlayerScript::Update(const float deltaTime) {
+    static std::shared_ptr<GameObject> prevNearestObj; // test
+    static SimpleMath::Vector3 prevColor;              // test
     mViewList.mPosition = GetOwner()->GetPosition();
     mViewList.Update();
     mViewList.Send();
@@ -81,6 +83,33 @@ void PlayerScript::Update(const float deltaTime) {
         gEventManager->PushEvent(event);
     }
 
+    if (mInput->IsDown('F')) {
+        auto nearestObj = GetNearestObject();
+        if (nearestObj) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Push GameEvent: Start Distroy Gem");
+            prevNearestObj = nearestObj; // test
+            prevColor = nearestObj->GetColor(); // test
+            nearestObj->SetColor(SimpleMath::Vector3::Zero);
+        }
+        else {
+            if (prevNearestObj) {
+                prevNearestObj->SetColor(prevColor);
+            }
+            prevNearestObj = nullptr;
+        }
+    }
+    else if (mInput->IsPressed('F')) {
+        if (prevNearestObj) {
+            prevNearestObj->SetColor(SimpleMath::Vector3::Zero);
+        }
+    }
+    else if (mInput->IsInactiveKey('F')) {
+        if (prevNearestObj) {
+            prevNearestObj->SetColor(prevColor);
+        }
+        prevNearestObj = nullptr;
+    }
+
     moveDir.Normalize();
     physics->Acceleration(moveDir, deltaTime);
 }
@@ -96,3 +125,30 @@ void PlayerScript::OnHandleCollisionStay(const std::string& groupTag, const std:
 void PlayerScript::OnHandleCollisionExit(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) { }
 
 void PlayerScript::DispatchGameEvent(GameEvent* event) { }
+
+std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
+    decltype(auto) inRangeObjects = mViewList.GetInRangeObjects();
+    if (inRangeObjects.empty()) {
+        return nullptr;
+    }
+
+    auto owner = GetOwner();
+    auto ownerPos = owner->GetPosition();
+    auto nearestObj = *std::min_element(inRangeObjects.begin(), inRangeObjects.end(), // 가장 가까운 오브젝트 구하기 O(N)
+        [=](const std::shared_ptr<GameObject>& obj1, const std::shared_ptr<GameObject>& obj2) {
+            if (owner == obj1 or owner == obj2) {
+                return false;
+            }
+
+            return SimpleMath::Vector3::DistanceSquared(ownerPos, obj1->GetPosition()) < SimpleMath::Vector3::DistanceSquared(ownerPos, obj2->GetPosition());
+        }
+    );
+
+    auto distance = SimpleMath::Vector3::DistanceSquared(nearestObj->GetPosition(), ownerPos);
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GetNearestObject Distance: {}", distance);
+    if (100.0f > distance) {
+        return nearestObj;
+    }
+
+    return nullptr;
+}

@@ -144,6 +144,7 @@
     <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="CollisionWorld.cpp" />
+    <ClCompile Include="CorruptedGem.cpp" />
     <ClCompile Include="EmberFallServer.cpp" />
     <ClCompile Include="Events.cpp" />
     <ClCompile Include="GameEventManager.cpp" />
@@ -171,6 +172,7 @@
   <ItemGroup>
     <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionWorld.h" />
+    <ClInclude Include="CorruptedGem.h" />
     <ClInclude Include="Events.h" />
     <ClInclude Include="GameEventManager.h" />
     <ClInclude Include="GameObject.h" />

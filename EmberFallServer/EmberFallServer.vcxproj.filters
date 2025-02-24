@@ -97,6 +97,9 @@
     <ClCompile Include="GameEventManager.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="CorruptedGem.cpp">
+      <Filter>Script</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -161,6 +164,9 @@
     </ClInclude>
     <ClInclude Include="GameEventManager.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="CorruptedGem.h">
+      <Filter>Script</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

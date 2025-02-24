@@ -19,6 +19,7 @@
 
 enum class GameEventType : UINT16 {
     ATTACK_EVENT,
+    DESTROY_GEM_EVENT,
 };
 
 struct PlayerEvent {
@@ -40,4 +41,8 @@ struct GameEvent {
 
 struct AttackEvent : public GameEvent {
     float damage;
+};
+
+struct GemDestroyEvent : public GameEvent {
+    float startTime;
 };

@@ -79,9 +79,9 @@ public:
     virtual void DispatchGameEvent(GameEvent* event);
 
 private:
-    void OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
+    void OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
     void OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
-    void OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent);
+    void OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
 
 private:
     bool mActive{ true };

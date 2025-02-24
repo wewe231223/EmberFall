@@ -41,9 +41,7 @@ public:
     virtual void DispatchGameEvent(class GameEvent* event) override;
 
 private:
-    std::shared_ptr<GameObject> GetNearlestObject() {
-
-    }
+    std::shared_ptr<GameObject> GetNearestObject();
 
 private:
     std::shared_ptr<Input> mInput{ };
