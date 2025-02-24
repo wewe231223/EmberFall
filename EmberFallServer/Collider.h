@@ -49,6 +49,7 @@ public:
     CollisionState GetState(NetworkObjectIdType id) const;
 
     virtual void Update() abstract;
+    virtual void LateUpdate() abstract;
     virtual bool CheckCollision(const std::shared_ptr<Collider>& other) abstract;
 
     void UpdateState(bool collisionResult, NetworkObjectIdType objId);
@@ -73,6 +74,7 @@ public:
     DirectX::BoundingBox& GetBoundingBox();
 
     virtual void Update() override;
+    virtual void LateUpdate() override;
     virtual bool CheckCollision(const std::shared_ptr<Collider>& other) override;
 
 private:
@@ -90,6 +92,7 @@ public:
     DirectX::BoundingSphere& GetBoundingSphere();
 
     virtual void Update() override;
+    virtual void LateUpdate() override;
     virtual bool CheckCollision(const std::shared_ptr<Collider>& other) override;
 
 private:
@@ -107,6 +110,7 @@ public:
     DirectX::BoundingOrientedBox& GetBoundingBox();
 
     virtual void Update() override;
+    virtual void LateUpdate() override;
     virtual bool CheckCollision(const std::shared_ptr<Collider>& other) override;
 
 private:

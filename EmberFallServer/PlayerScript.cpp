@@ -28,42 +28,50 @@ void PlayerScript::Update(const float deltaTime) {
     auto physics = GetPhysics();
 
     SimpleMath::Vector3 moveDir{ SimpleMath::Vector3::Zero };
-    if (Key::DOWN == mInput->GetState('A')) {
+    if (mInput->IsActiveKey('A')) {
         moveDir.x -= 1.0f;
     }
 
-    if (Key::DOWN == mInput->GetState('D')) {
+    if (mInput->IsActiveKey('D')) {
         moveDir.x += 1.0f;
     }
 
-    if (Key::DOWN == mInput->GetState('W')) {
+    if (mInput->IsActiveKey('W')) {
         moveDir.z -= 1.0f;
     }
 
-    if (Key::DOWN == mInput->GetState('S')) {
+    if (mInput->IsActiveKey('S')) {
         moveDir.z += 1.0f;
     }
 
-    if (Key::DOWN == mInput->GetState(VK_SPACE)) {
+    if (mInput->IsDown(VK_SPACE)) {
         physics->Jump(deltaTime);
     }
 
-    if (Key::DOWN == mInput->GetState(VK_F1)) {
+    if (mInput->IsDown(VK_F1)) {
         physics->mFactor.mass += 10.0f;
     }
 
-    if (Key::DOWN == mInput->GetState(VK_F2)) {
+    if (mInput->IsDown(VK_F2)) {
         physics->mFactor.acceleration += 1.0f;
     }
 
-    if (Key::DOWN == mInput->GetState(VK_SHIFT)) {
-        physics->mFactor.maxMoveSpeed = 50.0f;
+    if (mInput->IsDown(VK_SHIFT)) {
+        auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(50.0mps);
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h",
+            GetOwner()->GetId(),
+            maxSpeed.Count());
+        physics->mFactor.maxMoveSpeed = maxSpeed.Count();
     }
-    else {
-        physics->mFactor.maxMoveSpeed = DEFAULT_MAX_MOVE_SPEED;
+    else if (mInput->IsUp(VK_SHIFT)) {
+        auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(5.0mps);
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h", 
+            GetOwner()->GetId(),
+            maxSpeed.Count());
+        physics->mFactor.maxMoveSpeed = maxSpeed.Count();
     }
 
-    if (Key::DOWN == mInput->GetState(VK_F1)) {
+    if (mInput->IsUp(VK_F1)) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Push GameEvent: Attack All Monster");
 
         auto event = std::make_shared<AttackEvent>();
@@ -75,6 +83,10 @@ void PlayerScript::Update(const float deltaTime) {
 
     moveDir.Normalize();
     physics->Acceleration(moveDir, deltaTime);
+}
+
+void PlayerScript::LateUpdate(const float deltaTime) {
+    mInput->Update();
 }
 
 void PlayerScript::OnHandleCollisionEnter(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) { }

@@ -14,6 +14,7 @@ Listener::Listener(const UINT16 port, std::shared_ptr<INetworkCore> coreService)
 
     sockaddr_in sockAddr{ };
     NetworkUtil::InitSockAddr(sockAddr, port);
+    NetworkUtil::SetSocketOpt(mListenSocket, SOL_SOCKET, SO_REUSEADDR, 1);
 
     if (SOCKET_ERROR == ::bind(mListenSocket, reinterpret_cast<sockaddr*>(&sockAddr), sizeof(sockAddr))) {
         gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "::bind Error: {}", NetworkUtil::WSAErrorMessage());

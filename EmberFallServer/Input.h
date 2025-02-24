@@ -11,15 +11,20 @@
 // 
 //                    PlayerScript를 생성할때 인자로 Input을 받고 생성하게 하자.
 // 
+//        02 - 24    : input의 상태를 세분화할 필요성이 있어보인다...
+//                     처음에는 DOWN, UP으로 전부 처리하려 했지만 만들어 놨던 KeyState를 다시 써야할거 같다.
+//                     처음으로 키가 눌렸을 때 해야하는 행동을 Input에서가 아닌 다른 클래스에서 처리하려하면
+//                     너무 복잡해진다.
+// 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "GameObjectComponent.h"
 
 enum class KeyState : BYTE {
+    RELEASE,
+    UP,
     DOWN,
     PRESS,
-    UP,
-    RELEASE,
 };
 
 class Input {
@@ -30,10 +35,23 @@ public:
 public:
     void UpdateInput(Key key);
     void UpdateInput(BYTE key, bool state);
-    bool GetState(BYTE key) const;
+
+    KeyState GetState(BYTE key) const;
+
+    void Update();
+
+    bool IsDown(BYTE key) const;
+    bool IsReleased(BYTE key) const;
+    bool IsUp(BYTE key) const;
+    bool IsPressed(BYTE key) const;
+
+    // if KeyState::DOWN or KeyState::PRESS Return True
+    bool IsActiveKey(BYTE key);
+    // if KeyState::UP or KeyState::RELEASE Return True
+    bool IsInactiveKey(BYTE key) const;
 
 private:
-    std::array<bool, MAX_KEY_SIZE> mKeys{ };
+    std::array<KeyState, MAX_KEY_SIZE> mKeys{ };
 };
 
 class InputManager { // PlayerLock으로 동기화

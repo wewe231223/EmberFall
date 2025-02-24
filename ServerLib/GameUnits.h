@@ -110,7 +110,7 @@ namespace GameUnits {
 
 namespace GameUnits { // concept 들 정의
     template <typename T, typename... Types>
-    inline constexpr bool IsAnyOf = (std::is_same_v<T, Types> || ...);
+    inline constexpr bool IsAnyOf = (std::is_same_v<T, Types> or ...);
 
     template <typename T, typename... Types>
     inline constexpr bool IsAllOf = (std::is_same_v<T, Types> and ...);
@@ -180,12 +180,12 @@ namespace GameUnits {
 
         template <typename UnitType2> requires IsUnitType<UnitType2>
         constexpr GameUnit operator+(GameUnit<UnitType2> right) {
-
+            return GameUnit(Count() + UnitCast<Unit>(right).Count());
         }
 
         template <typename UnitType2> requires IsUnitType<UnitType2>
         void operator+=(GameUnit<UnitType2> right) {
-
+            mRep += UnitCast<Unit>(right).Count();
         }
 
         // operator
@@ -273,7 +273,7 @@ namespace GameUnits {
         }
 
         friend std::ostream& operator<<(std::ostream& os, GameUnit unit) {
-            std::cout << unit.Count() << GetLiteralUnitSuffix<char, GameUnit>();
+            std::cout << std::format("{} {}", unit.Count(), GetLiteralUnitSuffix<char, GameUnit>());
             return os;
         }
 
@@ -285,11 +285,11 @@ namespace GameUnits {
     template <typename To, typename UnitType>
         requires IsUnitType<UnitType> and IsUnitType<To> and IsConvertibleUnit<GameUnit<UnitType>, GameUnit<To>>
     constexpr GameUnit<To> UnitCast(GameUnit<UnitType> unit) noexcept {
-        using ConversionFactor = std::ratio_divide<typename To::UnitRatio, typename UnitType::UnitRatio>;
+        using ConversionFactor = std::ratio_divide<typename UnitType::UnitRatio, typename To::UnitRatio>;
         using CommonRep = std::common_type_t<float, intmax_t>;
 
-        constexpr bool ratioDenIsOne = ConversionFactor::den == 1;
-        constexpr bool ratioNumIsOne = ConversionFactor::num == 1;
+        constexpr bool ratioDenIsOne = 1 == ConversionFactor::den;
+        constexpr bool ratioNumIsOne = 1 == ConversionFactor::num;
 
         if constexpr (ratioDenIsOne) {
             if constexpr (ratioNumIsOne) {
@@ -297,20 +297,20 @@ namespace GameUnits {
             }
             else {
                 return GameUnit<To>(
-                    static_cast<float>(static_cast<CommonRep>(unit.Count()) * static_cast<CommonRep>(ConversionFactor::num))
+                    static_cast<CommonRep>(unit.Count()) * static_cast<CommonRep>(ConversionFactor::num)
                 );
             }
         }
         else {
             if constexpr (ratioNumIsOne) {
                 return GameUnit<To>(
-                    static_cast<float>(static_cast<CommonRep>(unit.Count()) / static_cast<CommonRep>(ConversionFactor::den))
+                    static_cast<CommonRep>(unit.Count()) / static_cast<CommonRep>(ConversionFactor::den)
                 );
             }
             else {
                 return GameUnit<To>(
-                    static_cast<float>(static_cast<CommonRep>(unit.Count()) *
-                        static_cast<CommonRep>(ConversionFactor::num) / static_cast<CommonRep>(ConversionFactor::den))
+                    static_cast<CommonRep>(unit.Count()) *
+                    static_cast<CommonRep>(ConversionFactor::num) / static_cast<CommonRep>(ConversionFactor::den)
                 );
             }
         }
@@ -318,7 +318,6 @@ namespace GameUnits {
 
     template <typename UnitType>
     constexpr auto ToStandard(GameUnit<UnitType> unit) {
-        using MyUnit = GameUnit<UnitType>;
         if constexpr (IsSpeedUnit<UnitType>) {
             return UnitCast<StandardSpeed>(unit);
         }
@@ -332,7 +331,7 @@ namespace GameUnits {
             return UnitCast<StandardTime>(unit);
         }
         else if constexpr (IsForceUnit<UnitType>) {
-            return UnitCast<StandardForce<UnitType>>(unit);
+            return UnitCast<StandardForce>(unit);
         }
     }
 
@@ -356,6 +355,8 @@ namespace GameUnits {
             IF_UNIT_RETURN_SUFFIX_ELSE(GameUnit<KilloMeterPerHour>, "km/h")
             IF_UNIT_RETURN_SUFFIX_ELSE(GameUnit<MeterPerSec2>, "m/s^2")
             IF_UNIT_RETURN_SUFFIX_ELSE(GameUnit<Newton>, "N")
+            IF_UNIT_RETURN_SUFFIX_ELSE(GameUnit<Second>, "sec")
+            IF_UNIT_RETURN_SUFFIX_ELSE(GameUnit<Hour>, "hour")
         {
             return nullptr;
         }

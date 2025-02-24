@@ -82,6 +82,23 @@ void GameObject::Update(const float deltaTime) {
     }
 }
 
+void GameObject::LateUpdate(const float deltaTime) {
+    if (not IsActive()) {
+        return;
+    }
+
+    for (auto& component : mComponents) {
+        component->LateUpdate(deltaTime);
+    }
+
+    mPhysics->LateUpdate(deltaTime);
+    mTransform->LateUpdate(deltaTime);
+
+    if (nullptr != mCollider) {
+        mCollider->LateUpdate();
+    }
+}
+
 void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
     auto state = mCollider->GetState(opponent->GetId());
     switch (state) {

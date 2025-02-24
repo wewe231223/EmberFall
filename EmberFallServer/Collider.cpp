@@ -113,6 +113,8 @@ void BoxCollider::Update() {
     mLocalBox.Transform(mBoundingBox, mTransform.lock()->GetWorld());
 }
 
+void BoxCollider::LateUpdate() { }
+
 bool BoxCollider::CheckCollision(const std::shared_ptr<Collider>& other) {
     if (false == mEnable or false == other->IsEnable()) {
         return false;
@@ -162,6 +164,8 @@ void SphereCollider::Update() {
     mLocalSphere.Transform(mBoundingSphere, mTransform.lock()->GetWorld());
 }
 
+void SphereCollider::LateUpdate() { }
+
 bool SphereCollider::CheckCollision(const std::shared_ptr<Collider>& other) {
     if (false == mEnable or false == other->IsEnable()) {
         return false;
@@ -210,6 +214,8 @@ void OrientedBoxCollider::Update() {
 
     mLocalBox.Transform(mBoundingBox, mTransform.lock()->GetWorld());
 }
+
+void OrientedBoxCollider::LateUpdate() { }
 
 bool OrientedBoxCollider::CheckCollision(const std::shared_ptr<Collider>& other) {
     if (false == mEnable or false == other->IsEnable()) {

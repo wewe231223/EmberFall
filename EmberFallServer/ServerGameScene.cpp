@@ -106,10 +106,7 @@ PlayScene::PlayScene() {
         auto& factors = object->GetPhysics()->mFactor;
         factors.mass = 10.0f;
 
-        mCollisionWorld.AddCollisionPair("Player-Object", nullptr, object);
-        mCollisionWorld.AddCollisionObject("Object", object);
         mCollisionWorld.AddObjectInTerrainGroup(object);
-
         gEventManager->AddListener(object);
     }
 }
@@ -169,7 +166,6 @@ void PlayScene::Update(const float deltaTime) {
         object->Update(deltaTime);
     }
 
-
     mCollisionWorld.HandleTerrainCollision();
     //mCollisionWorld.HandleCollision();
     mGridWorld.Update(mObjects);
@@ -178,6 +174,13 @@ void PlayScene::Update(const float deltaTime) {
 }
 
 void PlayScene::LateUpdate(const float deltaTime) { 
+    for (auto& [id, obj] : mPlayers) {
+        obj->LateUpdate(deltaTime);
+    }
+
+    for (auto& object : mObjects) {
+        object->LateUpdate(deltaTime);
+    }
 }
 
 void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
@@ -187,8 +190,6 @@ void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerOb
     playerObject->GetComponent<PlayerScript>()->ResetGameScene(shared_from_this());
     playerObject->GetTransform()->Translate(Random::GetRandomVec3(-100.0f, 100.0f));
 
-    mCollisionWorld.AddCollisionObject("Player", playerObject);
-    mCollisionWorld.AddCollisionPair("Player-Object", playerObject);
     mCollisionWorld.AddObjectInTerrainGroup(playerObject);
 
     gEventManager->AddListener(playerObject);
@@ -204,8 +205,6 @@ void PlayScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerO
     std::swap(*objSearch, mPlayerList.back());
     mPlayerList.pop_back();
 
-    mCollisionWorld.RemoveObjectFromGroup("Player", playerObject);
-    mCollisionWorld.RemoveObjectFromGroup("Player-Object", playerObject);
     mCollisionWorld.RemoveObjectFromTerrainGroup(playerObject);
 
     gEventManager->RemoveListener(playerObject);

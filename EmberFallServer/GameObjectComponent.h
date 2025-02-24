@@ -14,6 +14,7 @@ public:
     std::shared_ptr<Transform> GetTransform() const;
 
     virtual void Update(const float deltaTime) abstract;
+    virtual void LateUpdate(const float deltaTime) abstract;
 
     virtual void DispatchGameEvent(class GameEvent* event) abstract;
 

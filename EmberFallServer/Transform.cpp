@@ -107,3 +107,5 @@ void Transform::Update() {
         * SimpleMath::Matrix::CreateFromQuaternion(mRotation)
         * SimpleMath::Matrix::CreateTranslation(mPosition);
 }
+
+void Transform::LateUpdate(const float deltaTime) { }

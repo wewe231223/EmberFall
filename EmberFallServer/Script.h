@@ -22,6 +22,7 @@ public:
     std::shared_ptr<GameObject> GetOwner() const;
 
     virtual void Update(const float deltaTime) abstract;
+    virtual void LateUpdate(const float deltaTime) abstract;
 
     virtual void OnHandleCollisionEnter(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) abstract;
     virtual void OnHandleCollisionStay(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) abstract;

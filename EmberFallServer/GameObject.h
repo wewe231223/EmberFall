@@ -71,6 +71,7 @@ public:
     }
 
     void Update(const float deltaTime);
+    void LateUpdate(const float deltaTime);
 
     void OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
     void OnCollisionTerrain(const float height);

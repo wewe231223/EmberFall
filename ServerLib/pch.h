@@ -61,3 +61,4 @@ namespace SimpleMath = DirectX::SimpleMath;
 #include "NetworkUtils.h"
 
 #include "GameUnits.h"
+#include "GameMath.h"

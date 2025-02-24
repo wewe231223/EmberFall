@@ -50,6 +50,7 @@ public:
     void AddVelocity(const SimpleMath::Vector3& velocity, const float deltaTime);
     void AddForce(const SimpleMath::Vector3& force, const float deltaTime);
     void Update(const float deltaTime);
+    void LateUpdate(const float deltaTime);
 
 private:
     void ClampVelocity();

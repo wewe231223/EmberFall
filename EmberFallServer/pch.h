@@ -20,4 +20,6 @@
 #include "Events.h"
 #include "GameRandom.h"
 
+using namespace GameUnitLiterals;
+
 extern std::shared_ptr<class GameEventManager> gEventManager;

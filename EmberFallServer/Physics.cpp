@@ -92,6 +92,8 @@ void Physics::Update(const float deltaTime) {
     transform->Move(mVelocity * deltaTime);
 }
 
+void Physics::LateUpdate(const float deltaTime) { }
+
 void Physics::ClampVelocity() {
     SimpleMath::Vector3 velocityXZ = mVelocity;
     velocityXZ.y = 0.0f;

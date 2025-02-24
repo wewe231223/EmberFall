@@ -25,6 +25,8 @@ void MonsterScript::Update(const float deltaTime) {
     //physics->Acceleration(mMoveDir, deltaTime);
 }
 
+void MonsterScript::LateUpdate(const float deltaTime) { }
+
 void MonsterScript::OnHandleCollisionEnter(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) { }
 
 void MonsterScript::OnHandleCollisionStay(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) { }
