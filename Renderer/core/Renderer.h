@@ -91,8 +91,4 @@ private:
 	std::shared_ptr<TextureManager> mTextureManager{};
 	std::shared_ptr<MaterialManager> mMaterialManager{};
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{};
-
-	DefaultBuffer mCameraBuffer{};
-	GraphicsShaderBase* mShader{ nullptr };
-	PlainMesh mMesh{};
 };

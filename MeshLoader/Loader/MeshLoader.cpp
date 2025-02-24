@@ -43,11 +43,19 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
 		}
 
 		if (mesh->HasTextureCoords(0)) {
-			meshData.texCoord.reserve(mesh->mNumVertices);
+			meshData.texCoord1.reserve(mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
-				meshData.texCoord.emplace_back(mesh->mTextureCoords[0][vertex].x, mesh->mTextureCoords[0][vertex].y);
+				meshData.texCoord1.emplace_back(mesh->mTextureCoords[0][vertex].x, mesh->mTextureCoords[0][vertex].y);
 			}
 			meshData.vertexAttribute.set(2);
+		}
+
+		if (mesh->HasTextureCoords(1)) {
+			meshData.texCoord2.reserve(mesh->mNumVertices);
+			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
+				meshData.texCoord2.emplace_back(mesh->mTextureCoords[1][vertex].x, mesh->mTextureCoords[1][vertex].y);
+			}
+			meshData.vertexAttribute.set(3);
 		}
 
 		if (mesh->HasTangentsAndBitangents()) {
@@ -57,8 +65,8 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
 				meshData.tangent.emplace_back(mesh->mTangents[vertex].x, mesh->mTangents[vertex].y, mesh->mTangents[vertex].z);
 				meshData.bitangent.emplace_back(mesh->mBitangents[vertex].x, mesh->mBitangents[vertex].y, mesh->mBitangents[vertex].z);
 			}
-			meshData.vertexAttribute.set(3);
 			meshData.vertexAttribute.set(4);
+			meshData.vertexAttribute.set(5);
 		}
 	    
 		if (mesh->HasFaces()) {
@@ -126,8 +134,8 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
                     }
                 }
             }
-			meshData.vertexAttribute.set(5);
 			meshData.vertexAttribute.set(6);
+			meshData.vertexAttribute.set(7);
         }
 
 	}

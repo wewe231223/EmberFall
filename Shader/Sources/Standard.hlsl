@@ -70,7 +70,7 @@ Standard_VOUT Standard_VS(Standard_VIN input) {
 }
 
 float4 Standard_PS(Standard_VOUT input) : SV_TARGET {
-    float4 color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(pointClampSampler, input.texcoord);
+    float4 color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord);
     // color += materialConstants[input.material].diffuse;
     return color;
 }

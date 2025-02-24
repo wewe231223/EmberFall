@@ -27,6 +27,9 @@
     <ClCompile Include="Base\MeshData.cpp">
       <Filter>Base</Filter>
     </ClCompile>
+    <ClCompile Include="Loader\TerrainLoader.cpp">
+      <Filter>Loader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Loader\MeshLoader.h">
@@ -34,6 +37,9 @@
     </ClInclude>
     <ClInclude Include="Base\MeshData.h">
       <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader\TerrainLoader.h">
+      <Filter>Loader</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

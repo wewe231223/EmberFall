@@ -81,10 +81,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::F2, n, []() {Input.ToggleVirtualMouse(); });
 
-	/*Time.AddEvent(1s, []() {
-        Console.Log("FrameRate : {:.5f}", LogType::Info, 1.f / Time.GetDeltaTime<float>());
-        return true;
-		});*/
 	size_t frameCount = 0;
 
 	Time.AddEvent(1s, [&frameCount]() {
@@ -99,22 +95,28 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     
 
     // 기본 메시지 루프입니다:
-    while (msg.message != WM_QUIT) {
-		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-		}
+    while (true) {
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			if (msg.message == WM_QUIT) break;
+			if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) {
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			
+        }
+        else {
 
-        Time.AdvanceTime();
-        Input.Update();
+            Time.AdvanceTime();
+            Input.Update();
 
-        scene.Update();
-        renderer.PrepareRender();
-        scene.PrepareRender(renderer.GetCommandList());
-        renderer.Render();
+            scene.Update();
+            renderer.PrepareRender();
+            scene.PrepareRender(renderer.GetCommandList());
+            renderer.Render();
 
-        // 게임 루프... 
-        frameCount++;
+            // 게임 루프... 
+            frameCount++;
+        }
     }
 
 	::DestroyWindow(hWnd);

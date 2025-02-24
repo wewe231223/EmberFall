@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include "../Renderer/Core/Renderer.h"
 #include "../MeshLoader/Loader/MeshLoader.h"
+#include "../MeshLoader/Loader/TerrainLoader.h"
 #ifdef _DEBUG
 #pragma comment(lib,"out/debug/MeshLoader.lib")
 #else 
@@ -22,7 +23,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	std::unique_ptr<GraphicsShaderBase> shader = std::make_unique<StandardShader>();
 	shader->CreateShader(device);
-
 	mShaderMap["StandardShader"] = std::move(shader);
 
 	MaterialConstants material{};
@@ -42,6 +42,24 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	auto& cameraTransform = mCamera.GetTransform();
 	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
 	cameraTransform.Look({ 0.f,0.f,0.f });
+
+
+
+
+	TerrainLoader terrainLoader{};
+	auto terrainData = terrainLoader.Load("Resources/Binarys/Terrain/HeightMap.raw", true);
+	mMeshMap["Terrain"] = std::make_unique<PlainMesh>(device, commandList, terrainData);
+
+	shader = std::make_unique<TerrainShader>();
+	shader->CreateShader(device);
+	mShaderMap["TerrainShader"] = std::move(shader);
+
+	auto& obejct = mGameObjects.emplace_back();
+	obejct.mShader = mShaderMap["TerrainShader"].get();
+	obejct.mMesh = mMeshMap["Terrain"].get();
+	obejct.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+	obejct.GetTransform().GetPosition() = { 100.f, 0.f, 100.f };
+	object.GetTransform().Scaling(10.f, 1.f, 10.f);
 
 	mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 	mCameraMode->Enter();

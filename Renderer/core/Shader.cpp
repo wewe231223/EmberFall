@@ -143,6 +143,11 @@ void ShaderFileManager::ReCompile(const std::filesystem::path& source, const std
 	
 	auto hr = ::D3DCompileFromFile(source.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entry.c_str(), model.c_str(), 0, 0, &shaderBlob, &errorBlob);
 
+	if (FAILED(hr)) {
+		OutputDebugStringA(reinterpret_cast<const char*>(errorBlob->GetBufferPointer()));
+	}
+
+
 	std::string binaryFileName{ source.stem().string() + "_" + type + ".bin" };
 	std::filesystem::path binaryPath{ "Shader/Binarys/" + binaryFileName };
 
@@ -381,7 +386,7 @@ UINT GraphicsShaderBase::GetShaderID() const {
 	return std::numeric_limits<UINT>::max();
 }
 
-const std::bitset<7>& GraphicsShaderBase::GetAttribute() const {
+const std::bitset<8>& GraphicsShaderBase::GetAttribute() const {
 	return mAttribute;
 }
 
@@ -399,7 +404,9 @@ StandardShader::StandardShader(){
 
 void StandardShader::CreateShader(ComPtr<ID3D12Device> device) {
 	GraphicsShaderBase::CreateShader(device);
-	mAttribute = std::bitset<7>{ "1110000" };
+	mAttribute.set(0);
+	mAttribute.set(1);
+	mAttribute.set(2);
 }
 
 GraphicsShaderBase::InputLayout StandardShader::CreateInputLayout() {
@@ -456,4 +463,105 @@ D3D12_SHADER_BYTECODE StandardShader::CreateVertexShader() {
 D3D12_SHADER_BYTECODE StandardShader::CreatePixelShader() {
 	auto& blob = gShaderManager.GetShaderBlob("Standard", ShaderType::PixelShader);
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+TerrainShader::TerrainShader() {
+
+}
+
+void TerrainShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+	mAttribute.set(0);
+	mAttribute.set(2);
+	mAttribute.set(3);
+}
+
+GraphicsShaderBase::InputLayout TerrainShader::CreateInputLayout() {
+	GraphicsShaderBase::InputLayout inputLayout{};
+
+	inputLayout.ElementCount = 3;
+
+	inputLayout.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[1] = { "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[2] = { "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	return inputLayout;
+}
+
+GraphicsShaderBase::RootParameters TerrainShader::CreateRootParameters() {
+	GraphicsShaderBase::RootParameters params{};
+
+	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	params.Parameters[0].Descriptor.ShaderRegister = 0;
+	params.Parameters[0].Descriptor.RegisterSpace = 0;
+	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[1].Descriptor.ShaderRegister = 0;
+	params.Parameters[1].Descriptor.RegisterSpace = 0;
+	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[2].Descriptor.ShaderRegister = 1;
+	params.Parameters[2].Descriptor.RegisterSpace = 0;
+	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	params.Ranges[0].NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
+	params.Ranges[0].BaseShaderRegister = 2;
+	params.Ranges[0].RegisterSpace = 0;
+	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[3].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
+	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.ParameterCount = 4;
+
+	return params;
+}
+
+D3D12_RASTERIZER_DESC TerrainShader::CreateRasterizerState() {
+	D3D12_RASTERIZER_DESC rasterizerDesc;
+	::ZeroMemory(&rasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
+
+	rasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	// rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+	rasterizerDesc.FrontCounterClockwise = FALSE;
+	rasterizerDesc.DepthBias = 0;
+	rasterizerDesc.DepthBiasClamp = 0.0f;
+	rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+	rasterizerDesc.DepthClipEnable = TRUE;
+	rasterizerDesc.MultisampleEnable = FALSE;
+	rasterizerDesc.AntialiasedLineEnable = FALSE;
+	rasterizerDesc.ForcedSampleCount = 0;
+	rasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	return rasterizerDesc;
+}
+
+D3D12_SHADER_BYTECODE TerrainShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("TerrainTessellation", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE TerrainShader::CreateHullShader() {
+	auto& blob = gShaderManager.GetShaderBlob("TerrainTessellation", ShaderType::HullShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE TerrainShader::CreateDomainShader() {
+	auto& blob = gShaderManager.GetShaderBlob("TerrainTessellation", ShaderType::DomainShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE TerrainShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("TerrainTessellation", ShaderType::PixelShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_PRIMITIVE_TOPOLOGY_TYPE TerrainShader::CreatePrimitiveTopologyType() {
+	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
 }

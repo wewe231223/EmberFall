@@ -142,10 +142,12 @@
   <ItemGroup>
     <ClCompile Include="Base\MeshData.cpp" />
     <ClCompile Include="Loader\MeshLoader.cpp" />
+    <ClCompile Include="Loader\TerrainLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base\MeshData.h" />
     <ClInclude Include="Loader\MeshLoader.h" />
+    <ClInclude Include="Loader\TerrainLoader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

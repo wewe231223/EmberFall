@@ -71,7 +71,7 @@ public:
 	virtual void CreateShader(ComPtr<ID3D12Device> device);
 
 	virtual UINT GetShaderID() const;
-	const std::bitset<7>& GetAttribute() const;
+	const std::bitset<8>& GetAttribute() const;
 	void SetShader(ComPtr<ID3D12GraphicsCommandList> commandList);
 protected:
 
@@ -92,7 +92,7 @@ protected:
 	virtual D3D12_SHADER_BYTECODE CreateHullShader();
 	virtual D3D12_SHADER_BYTECODE CreateDomainShader();
 protected:
-	std::bitset<7> mAttribute{ 0b0000000 };
+	std::bitset<8> mAttribute{ 0b0000000 };
 private:
 	ComPtr<ID3D12RootSignature> mRootSignature{};
 	ComPtr<ID3D12PipelineState> mPipelineState{};
@@ -111,4 +111,26 @@ protected:
 
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
+};
+
+
+class TerrainShader : public GraphicsShaderBase {
+public:
+	TerrainShader();
+	virtual ~TerrainShader() = default;
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+protected:
+	virtual InputLayout CreateInputLayout() override;
+	virtual RootParameters CreateRootParameters() override;
+
+	virtual D3D12_RASTERIZER_DESC CreateRasterizerState() override;
+
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
+	virtual D3D12_SHADER_BYTECODE CreateHullShader() override;
+	virtual D3D12_SHADER_BYTECODE CreateDomainShader() override;
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
+
+	virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE CreatePrimitiveTopologyType() override;
+
 };
