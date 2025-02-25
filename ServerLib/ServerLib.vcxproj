@@ -154,6 +154,7 @@
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Crash.h" />
     <ClInclude Include="GameMath.h" />
+    <ClInclude Include="GameProtocol.h" />
     <ClInclude Include="LogConsole.h" />
     <ClInclude Include="NetworkCore.h" />
     <ClInclude Include="INetworkObject.h" />
@@ -176,6 +177,7 @@
   <ItemGroup>
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="GameMath.cpp" />
+    <ClCompile Include="GameProtocol.cpp" />
     <ClCompile Include="LogConsole.cpp" />
     <ClCompile Include="NetworkCore.cpp" />
     <ClCompile Include="INetworkObject.cpp" />

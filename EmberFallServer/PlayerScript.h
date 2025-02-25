@@ -42,10 +42,13 @@ public:
 
 private:
     std::shared_ptr<GameObject> GetNearestObject();
+    void DestroyGem(const float deltaTime);
 
 private:
     std::shared_ptr<Input> mInput{ };
     std::shared_ptr<IServerGameScene> mGameScene{ };
     ViewList mViewList;
+
+    NetworkObjectIdType mInterationObj{ };
 };
 

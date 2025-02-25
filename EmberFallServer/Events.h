@@ -20,6 +20,7 @@
 enum class GameEventType : UINT16 {
     ATTACK_EVENT,
     DESTROY_GEM_EVENT,
+    DESTROY_GEM_COMPLETE,
 };
 
 struct PlayerEvent {
@@ -44,5 +45,6 @@ struct AttackEvent : public GameEvent {
 };
 
 struct GemDestroyEvent : public GameEvent {
-    float startTime;
+    NetworkObjectIdType target; // 상호작용 대상
+    float holdTime; // 키 입력 유지시간.
 };

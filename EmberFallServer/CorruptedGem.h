@@ -18,6 +18,10 @@ public:
     virtual void DispatchGameEvent(class GameEvent* event) override;
 
 private:
+    void OnDestroy(class GemDestroyEvent* event);
+
+private:
+    float mDesytoyingTime{ 5.0f };
     SimpleMath::Vector3 mOriginColor{ };
 };
 

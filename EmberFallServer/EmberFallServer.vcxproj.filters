@@ -26,6 +26,12 @@
     <Filter Include="Script">
       <UniqueIdentifier>{8ffa7fd5-09b9-4c09-98bb-37e62f49b8a1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Collision\CollisionCheck">
+      <UniqueIdentifier>{c4b819e4-01ff-406c-8624-db4874c2c8b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collision\Collider">
+      <UniqueIdentifier>{cef0a9ff-4a48-455b-bdae-f0e889a147b7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -49,14 +55,8 @@
     <ClCompile Include="Terrain.cpp">
       <Filter>Object</Filter>
     </ClCompile>
-    <ClCompile Include="Collider.cpp">
-      <Filter>Collision</Filter>
-    </ClCompile>
     <ClCompile Include="Transform.cpp">
       <Filter>Component</Filter>
-    </ClCompile>
-    <ClCompile Include="CollisionWorld.cpp">
-      <Filter>Collision</Filter>
     </ClCompile>
     <ClCompile Include="Physics.cpp">
       <Filter>Component</Filter>
@@ -79,17 +79,8 @@
     <ClCompile Include="Input.cpp">
       <Filter>Frame</Filter>
     </ClCompile>
-    <ClCompile Include="ViewList.cpp">
-      <Filter>pch</Filter>
-    </ClCompile>
     <ClCompile Include="ServerGameScene.cpp">
       <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Grid.cpp">
-      <Filter>Collision</Filter>
-    </ClCompile>
-    <ClCompile Include="GridWorld.cpp">
-      <Filter>Collision</Filter>
     </ClCompile>
     <ClCompile Include="MonsterScript.cpp">
       <Filter>Script</Filter>
@@ -98,6 +89,21 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="CorruptedGem.cpp">
+      <Filter>Script</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionWorld.cpp">
+      <Filter>Collision\CollisionCheck</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid.cpp">
+      <Filter>Collision\CollisionCheck</Filter>
+    </ClCompile>
+    <ClCompile Include="GridWorld.cpp">
+      <Filter>Collision\CollisionCheck</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>Collision\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="ViewList.cpp">
       <Filter>Script</Filter>
     </ClCompile>
   </ItemGroup>
@@ -114,14 +120,8 @@
     <ClInclude Include="Terrain.h">
       <Filter>Object</Filter>
     </ClInclude>
-    <ClInclude Include="Collider.h">
-      <Filter>Collision</Filter>
-    </ClInclude>
     <ClInclude Include="Transform.h">
       <Filter>Component</Filter>
-    </ClInclude>
-    <ClInclude Include="CollisionWorld.h">
-      <Filter>Collision</Filter>
     </ClInclude>
     <ClInclude Include="Physics.h">
       <Filter>Component</Filter>
@@ -147,17 +147,8 @@
     <ClInclude Include="Input.h">
       <Filter>Frame</Filter>
     </ClInclude>
-    <ClInclude Include="ViewList.h">
-      <Filter>pch</Filter>
-    </ClInclude>
     <ClInclude Include="ServerGameScene.h">
       <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Grid.h">
-      <Filter>Collision</Filter>
-    </ClInclude>
-    <ClInclude Include="GridWorld.h">
-      <Filter>Collision</Filter>
     </ClInclude>
     <ClInclude Include="MonsterScript.h">
       <Filter>Script</Filter>
@@ -166,6 +157,21 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="CorruptedGem.h">
+      <Filter>Script</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionWorld.h">
+      <Filter>Collision\CollisionCheck</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid.h">
+      <Filter>Collision\CollisionCheck</Filter>
+    </ClInclude>
+    <ClInclude Include="GridWorld.h">
+      <Filter>Collision\CollisionCheck</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider.h">
+      <Filter>Collision\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewList.h">
       <Filter>Script</Filter>
     </ClInclude>
   </ItemGroup>

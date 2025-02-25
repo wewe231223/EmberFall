@@ -82,6 +82,9 @@
     <ClCompile Include="GameMath.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="GameProtocol.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkUtils.h">
@@ -146,6 +149,9 @@
     </ClInclude>
     <ClInclude Include="GameMath.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="GameProtocol.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

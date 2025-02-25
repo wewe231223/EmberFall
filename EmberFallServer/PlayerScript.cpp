@@ -21,8 +21,6 @@ std::shared_ptr<IServerGameScene> PlayerScript::GetCurrentScene() const {
 }
 
 void PlayerScript::Update(const float deltaTime) {
-    static std::shared_ptr<GameObject> prevNearestObj; // test
-    static SimpleMath::Vector3 prevColor;              // test
     mViewList.mPosition = GetOwner()->GetPosition();
     mViewList.Update();
     mViewList.Send();
@@ -83,31 +81,11 @@ void PlayerScript::Update(const float deltaTime) {
         gEventManager->PushEvent(event);
     }
 
-    if (mInput->IsDown('F')) {
-        auto nearestObj = GetNearestObject();
-        if (nearestObj) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Push GameEvent: Start Distroy Gem");
-            prevNearestObj = nearestObj; // test
-            prevColor = nearestObj->GetColor(); // test
-            nearestObj->SetColor(SimpleMath::Vector3::Zero);
-        }
-        else {
-            if (prevNearestObj) {
-                prevNearestObj->SetColor(prevColor);
-            }
-            prevNearestObj = nullptr;
-        }
-    }
-    else if (mInput->IsPressed('F')) {
-        if (prevNearestObj) {
-            prevNearestObj->SetColor(SimpleMath::Vector3::Zero);
-        }
+    if (mInput->IsActiveKey('F')) {
+        DestroyGem(deltaTime);
     }
     else if (mInput->IsInactiveKey('F')) {
-        if (prevNearestObj) {
-            prevNearestObj->SetColor(prevColor);
-        }
-        prevNearestObj = nullptr;
+        mInterationObj = NULL;
     }
 
     moveDir.Normalize();
@@ -151,4 +129,27 @@ std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
     }
 
     return nullptr;
+}
+
+void PlayerScript::DestroyGem(const float deltaTime) {
+    static float holdStart = 0.0f; // test
+
+    auto nearestObj = GetNearestObject();
+    if (nullptr == nearestObj) {
+        holdStart = 0.0f;
+        return;
+    }
+    
+    auto nearestObjId = nearestObj->GetId();
+    if (mInterationObj != nearestObjId) {
+        mInterationObj = nearestObjId;
+        holdStart = 0.0f;
+    }
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Push GameEvent: Start Distroy Gem");
+    std::shared_ptr<GemDestroyEvent> event = std::make_shared<GemDestroyEvent>();
+    event->type = GameEventType::DESTROY_GEM_EVENT;
+    event->target = nearestObj->GetId();
+    event->holdTime = holdStart += deltaTime;
+    gEventManager->PushEvent(event);
 }

@@ -68,7 +68,7 @@ class BoxCollider : public Collider {
 public:
     BoxCollider();
     BoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents);
-    ~BoxCollider();
+    virtual ~BoxCollider();
 
 public:
     DirectX::BoundingBox& GetBoundingBox();
@@ -86,7 +86,7 @@ class SphereCollider : public Collider {
 public:
     SphereCollider();
     SphereCollider(const SimpleMath::Vector3& center, const float radius);
-    ~SphereCollider();
+    virtual ~SphereCollider();
 
 public:
     DirectX::BoundingSphere& GetBoundingSphere();
@@ -104,7 +104,7 @@ class OrientedBoxCollider : public Collider {
 public:
     OrientedBoxCollider();
     OrientedBoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents);
-    ~OrientedBoxCollider();
+    virtual ~OrientedBoxCollider();
 
 public:
     DirectX::BoundingOrientedBox& GetBoundingBox();

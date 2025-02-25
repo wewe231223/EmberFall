@@ -28,8 +28,6 @@ void GameEventManager::Update() {
             object->DispatchGameEvent(event.get());
         }
 
-        EventLog(event.get());
-
         mEvents.pop();
     }
 }

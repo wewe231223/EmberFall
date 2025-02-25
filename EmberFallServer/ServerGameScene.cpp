@@ -100,7 +100,7 @@ PlayScene::PlayScene() {
         object->CreateComponent<CorruptedGemScript>(object);
         object->SetColor(Random::GetRandomColor());
         object->GetTransform()->Translate(Random::GetRandomVec3(-50.0f, 50.0f));
-        object->GetTransform()->Scale(SimpleMath::Vector3{ 10.0f });
+        object->GetTransform()->Scale(SimpleMath::Vector3{ 1.0f });
         object->GetTransform()->SetY(Random::GetRandom<float>(0.0f, 100.0f));
 
         object->SetActive(true);

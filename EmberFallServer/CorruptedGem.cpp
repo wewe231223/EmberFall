@@ -4,14 +4,11 @@
 
 CorruptedGemScript::CorruptedGemScript(std::shared_ptr<GameObject> owner) 
     : Script{ owner } { 
-    //mOriginColor = owner->GetColor();
 }
 
 CorruptedGemScript::~CorruptedGemScript() { }
 
-void CorruptedGemScript::Update(const float deltaTime) { 
-    //GetOwner()->SetColor(mOriginColor);
-}
+void CorruptedGemScript::Update(const float deltaTime) { }
 
 void CorruptedGemScript::LateUpdate(const float deltaTime) { }
 
@@ -22,13 +19,27 @@ void CorruptedGemScript::OnHandleCollisionStay(const std::string& groupTag, cons
 void CorruptedGemScript::OnHandleCollisionExit(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) { }
 
 void CorruptedGemScript::DispatchGameEvent(GameEvent* event) { 
-    //switch (event->type) {
-    //case GameEventType::DESTROY_GEM_EVENT:
-    //    mOriginColor = GetOwner()->GetColor();
-    //    GetOwner()->SetColor(SimpleMath::Vector3::Zero);
-    //    break;
+    switch (event->type) {
+    case GameEventType::DESTROY_GEM_EVENT:
+        OnDestroy(reinterpret_cast<GemDestroyEvent*>(event));
+        break;
 
-    //default:
-    //    break;
-    //}
+    default:
+        break;
+    }
+}
+
+void CorruptedGemScript::OnDestroy(GemDestroyEvent* event) {
+    if (event->target != GetOwner()->GetId()) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Pass Event My: {}, Taget: {}", GetOwner()->GetId(), event->target);
+        return;
+    }
+
+    auto owner = GetOwner();
+    mOriginColor = GetOwner()->GetColor();
+    owner->SetColor(SimpleMath::Vector3{ event->holdTime / mDesytoyingTime });
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "SetColor {}", event->holdTime / mDesytoyingTime);
+    if (event->holdTime > mDesytoyingTime) {
+        owner->SetActive(false);
+    }
 }
