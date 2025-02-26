@@ -482,8 +482,8 @@ GraphicsShaderBase::InputLayout TerrainShader::CreateInputLayout() {
 	inputLayout.ElementCount = 3;
 
 	inputLayout.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	inputLayout.InputElements[1] = { "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	inputLayout.InputElements[2] = { "TEXCOORD", 2, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[1] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[2] = { "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
 	return inputLayout;
 }
@@ -526,8 +526,8 @@ D3D12_RASTERIZER_DESC TerrainShader::CreateRasterizerState() {
 	D3D12_RASTERIZER_DESC rasterizerDesc;
 	::ZeroMemory(&rasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
 
-	rasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
-	// rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	// rasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	 rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	rasterizerDesc.FrontCounterClockwise = FALSE;
 	rasterizerDesc.DepthBias = 0;

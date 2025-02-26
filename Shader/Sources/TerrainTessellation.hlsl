@@ -29,24 +29,24 @@ struct MaterialConstants
 struct Terrain_VIN
 {
     float3 position : POSITION;
-    float2 texcoord1 : TEXCOORD1;
-    float2 texcoord2 : TEXCOORD2;
+    float2 texcoord1 : TEXCOORD0;
+    float2 texcoord2 : TEXCOORD1;
     uint instanceID : SV_INSTANCEID;
 };
 
 struct Terrain_HIN
 {
     float4 position : POSITION;
-    float2 texcoord1 : TEXCOORD1;
-    float2 texcoord2 : TEXCOORD2;
+    float2 texcoord1 : TEXCOORD0;
+    float2 texcoord2 : TEXCOORD1;
     uint instanceID : INSTANCEID;
 };
 
 struct Terrain_DIN
 {
     float4 position : POSITION;
-    float2 texcoord1 : TEXCOORD1;
-    float2 texcoord2 : TEXCOORD2;
+    float2 texcoord1 : TEXCOORD0;
+    float2 texcoord2 : TEXCOORD1;
     uint instanceID : INSTANCEID;
 };
 
@@ -54,8 +54,8 @@ struct Terrain_DIN
 struct Terrain_PIN
 {
     float4 position : SV_POSITION;
-    float2 texcoord1 : TEXCOORD1;
-    float2 texcoord2 : TEXCOORD2;
+    float2 texcoord1 : TEXCOORD0;
+    float2 texcoord2 : TEXCOORD1;
     uint material : MATERIALID;
 };
 
@@ -91,10 +91,12 @@ struct PatchTessFactor
 float GetTessFactor(float4 center)
 {
     float fDistToCamera = distance(center.xyz, cameraPosition);
-    float s = saturate((fDistToCamera - 10.0f) / (30.0f - 10.0f));
-
-    return (lerp(32.0f, 1.0f, s));
-
+    float s = saturate((fDistToCamera - 80.0f) / (100.0f - 80.0f));
+    
+    
+    
+    
+    return (pow(2, lerp(5.0f, 2.f, s))) ;
 }
 
 PatchTessFactor Constant_HS(InputPatch<Terrain_HIN, 25> patch, uint patchID : SV_PrimitiveID)
@@ -102,14 +104,19 @@ PatchTessFactor Constant_HS(InputPatch<Terrain_HIN, 25> patch, uint patchID : SV
     PatchTessFactor tess;
     
     matrix world = modelContexts[patch[0].instanceID].world;
+
     
     tess.EdgeTess[0] = GetTessFactor(0.5f * mul((patch[0].position + patch[4].position), world));
     tess.EdgeTess[1] = GetTessFactor(0.5f * mul((patch[0].position + patch[20].position), world));
     tess.EdgeTess[2] = GetTessFactor(0.5f * mul((patch[4].position + patch[24].position), world));
     tess.EdgeTess[3] = GetTessFactor(0.5f * mul((patch[20].position + patch[24].position), world));
     
-    tess.InsideTess[0] = GetTessFactor(0.25f * mul((patch[0].position + patch[4].position + patch[20].position + patch[24].position), world));
-    tess.InsideTess[1] = tess.InsideTess[0];
+    
+    float3 sum = float3(0.0f, 0.0f, 0.0f);
+    for (int i = 0; i < 25; i++)
+        sum += mul(patch[i].position, world).xyz;
+    float3 center = sum / 25.0f;
+    tess.InsideTess[0] = tess.InsideTess[1] = GetTessFactor(float4(center, 1.0f));
     
     return tess;
 }
@@ -119,7 +126,7 @@ PatchTessFactor Constant_HS(InputPatch<Terrain_HIN, 25> patch, uint patchID : SV
 [outputtopology("triangle_cw")]
 [outputcontrolpoints(25)]
 [patchconstantfunc("Constant_HS")]
-[maxtessfactor(64.f)]
+[maxtessfactor(16.f)]
 Terrain_DIN Terrain_HS(InputPatch<Terrain_HIN, 25> patch, uint pointID : SV_OutputControlPointID, uint patchID : SV_PrimitiveID)
 {
     Terrain_DIN output;
@@ -143,25 +150,16 @@ void BernsteinBasis(float t, out float basis[5])
     basis[4] = t * t * t * t;
 }
 
-float3 LineBezierSum(OutputPatch<Terrain_DIN, 25> patch, uint index[5], float basis[5])
-{
-    float3 sum = float3(0.f, 0.f, 0.f);
-    for (int i = 0; i < 5; ++i)
-    {
-        sum += basis[i] * patch[index[i]].position.xyz;
-    }
-    return sum;
-}
-
-
 float3 CubicBezierSum(OutputPatch<Terrain_DIN, 25> patch, float basisU[5], float basisV[5])
 {
-    float3 sum = float3(0.f, 0.f, 0.f);
-    for (int i = 0; i < 5; ++i)
-    {
-        uint index[5] = { i * 5, i * 5 + 1, i * 5 + 2, i * 5 + 3, i * 5 + 4 };
-        sum += basisV[i] * LineBezierSum(patch, index, basisU);
-    }
+    float3 sum = float3(0.0f, 0.0f, 0.0f);
+    
+    sum = basisV[0] * (basisU[0] * patch[0].position + basisU[1] * patch[1].position + basisU[2] * patch[2].position + basisU[3] * patch[3].position + basisU[4] * patch[4].position);
+    sum += basisV[1] * (basisU[0] * patch[5].position + basisU[1] * patch[6].position + basisU[2] * patch[7].position + basisU[3] * patch[8].position + basisU[4] * patch[9].position);
+    sum += basisV[2] * (basisU[0] * patch[10].position + basisU[1] * patch[11].position + basisU[2] * patch[12].position + basisU[3] * patch[13].position + basisU[4] * patch[14].position);
+    sum += basisV[3] * (basisU[0] * patch[15].position + basisU[1] * patch[16].position + basisU[2] * patch[17].position + basisU[3] * patch[18].position + basisU[4] * patch[19].position);
+    sum += basisV[4] * (basisU[0] * patch[20].position + basisU[1] * patch[21].position + basisU[2] * patch[22].position + basisU[3] * patch[23].position + basisU[4] * patch[24].position);
+
     return sum;
 }
 
@@ -182,7 +180,7 @@ Terrain_PIN Terrain_DS(PatchTessFactor patchTess, float2 uv : SV_DomainLocation,
     output.position = float4(CubicBezierSum(patch, basisU, basisV), 1.f);
     output.position = mul(output.position, world);
     output.position = mul(output.position, viewProjection);
-    output.material = patch[0].instanceID;
+    output.material = material;
     
     output.texcoord1 = lerp(
     lerp(patch[0].texcoord1, patch[4].texcoord1, uv.x),
@@ -201,5 +199,14 @@ Terrain_PIN Terrain_DS(PatchTessFactor patchTess, float2 uv : SV_DomainLocation,
 
 float4 Terrain_PS(Terrain_PIN input) : SV_TARGET
 {
-    return float4(1.f, 1.f, 1.f, 1.f);
+    float4 Color = float4(1.f, 1.f, 1.f, 1.f);
+    
+    float4 BaseColor = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord1);
+    float4 DetailColor = textures[materialConstants[input.material].diffuseTexture[1]].Sample(linearWrapSampler, input.texcoord2);
+    
+    Color = saturate(BaseColor * 0.5f + DetailColor * 0.5f);
+    return Color;
+    
+    // return float4(1.f, 1.f, 1.f, 1.f);
 }
+

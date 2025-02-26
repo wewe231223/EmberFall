@@ -368,10 +368,18 @@ void PlainMesh::Bind(ComPtr<ID3D12GraphicsCommandList> commandList, const std::b
 	
 	CrashExp(IsSubSet(mAttribute, shaderAttribute), "Attribute is not subset of PlainMesh attribute");
 
+	const static D3D12_VERTEX_BUFFER_VIEW clearViews[8]{};
+	commandList->IASetVertexBuffers(0, 8, clearViews);
+
+	const static D3D12_INDEX_BUFFER_VIEW clearIndexView{};
+	commandList->IASetIndexBuffer(&clearIndexView);
+	
+
 	commandList->IASetPrimitiveTopology(mPrimitiveTopology);
+	size_t slot{ 0 };
 	for (auto i = 0; i < 8; ++i) {
 		if (shaderAttribute[i] == 1) {
-			commandList->IASetVertexBuffers(i, 1, &mVertexBufferViews[i]);
+			commandList->IASetVertexBuffers(slot++, 1, &mVertexBufferViews[i]);
 		}
 	}
 

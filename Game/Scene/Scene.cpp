@@ -26,24 +26,29 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mShaderMap["StandardShader"] = std::move(shader);
 
 	MaterialConstants material{};
-	material.mDiffuseColor = { 1.f, 0.f, 1.0f, 1.0f };
 	material.mDiffuseTexture[0] = mTextureManager->GetTexture("Creep_BaseColor");
 
 	mMaterialManager->CreateMaterial("CubeMaterial", material);
 
-	auto& object = mGameObjects.emplace_back();
-	object.mShader = mShaderMap["StandardShader"].get();
-	object.mMesh = mMeshMap["T_Pose"].get();
-	object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-	object.GetTransform().Scaling(100.f, 100.f, 100.f);
+
+	material.mDiffuseTexture[0] = mTextureManager->GetTexture("Base_Texture");
+	material.mDiffuseTexture[1] = mTextureManager->GetTexture("Detail_Texture_7");
+
+	mMaterialManager->CreateMaterial("TerrainMaterial", material);
+
+	{
+		auto& object = mGameObjects.emplace_back();
+		object.mShader = mShaderMap["StandardShader"].get();
+		object.mMesh = mMeshMap["T_Pose"].get();
+		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+		object.GetTransform().Scaling(100.f, 100.f, 100.f);
+	}
 
 	mCamera = Camera(device);
 	
 	auto& cameraTransform = mCamera.GetTransform();
 	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
 	cameraTransform.Look({ 0.f,0.f,0.f });
-
-
 
 
 	TerrainLoader terrainLoader{};
@@ -54,12 +59,17 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	shader->CreateShader(device);
 	mShaderMap["TerrainShader"] = std::move(shader);
 
-	auto& obejct = mGameObjects.emplace_back();
-	obejct.mShader = mShaderMap["TerrainShader"].get();
-	obejct.mMesh = mMeshMap["Terrain"].get();
-	obejct.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-	obejct.GetTransform().GetPosition() = { 100.f, 0.f, 100.f };
-	object.GetTransform().Scaling(10.f, 1.f, 10.f);
+	{
+		auto& object = mGameObjects.emplace_back();
+		object.mShader = mShaderMap["TerrainShader"].get();
+		object.mMesh = mMeshMap["Terrain"].get();
+		object.mMaterial = mMaterialManager->GetMaterial("TerrainMaterial");
+		
+		object.GetTransform().GetPosition() = { 100.f, 0.f, 100.f };
+		object.GetTransform().Scaling(5.f, 1.f, 5.f);
+
+	}
+
 
 	mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 	mCameraMode->Enter();
