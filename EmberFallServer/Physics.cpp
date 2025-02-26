@@ -54,6 +54,17 @@ void Physics::Jump(const float deltaTime) {
     mVelocity.y = (accel * GameUnits::ToUnit<GameUnits::StandardTime>(deltaTime)).Count(); 
 }
 
+void Physics::ResizeVelocity(float speed) {
+    SimpleMath::Vector3 velocityXZ = mVelocity;
+    velocityXZ.y = 0.0f;
+
+    velocityXZ.Normalize();
+    velocityXZ *= speed;
+
+    mVelocity.x = velocityXZ.x;
+    mVelocity.z = velocityXZ.z;
+}
+
 void Physics::Acceleration(const SimpleMath::Vector3& dir, const float acceleration, const float deltaTime) {
     mVelocity += dir * acceleration * deltaTime;
 

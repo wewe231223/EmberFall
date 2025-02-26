@@ -20,6 +20,8 @@ std::shared_ptr<IServerGameScene> PlayerScript::GetCurrentScene() const {
     return mGameScene;
 }
 
+void PlayerScript::Init() { }
+
 void PlayerScript::Update(const float deltaTime) {
     mViewList.mPosition = GetOwner()->GetPosition();
     mViewList.Update();

@@ -23,6 +23,7 @@ namespace MathUtil {
     inline constexpr float SYSTEM_EPSILON = std::numeric_limits<float>::epsilon();
     inline constexpr float EPSILON = 1.0e-06f;
     inline constexpr SimpleMath::Vector3 EPSILON_VEC3 = SimpleMath::Vector3{ EPSILON };
+    inline constexpr SimpleMath::Vector2 EPSILON_VEC2 = SimpleMath::Vector2{ EPSILON };
 
     // Absolute
     inline SimpleMath::Vector3 AbsVector(const SimpleMath::Vector3& v)
@@ -42,6 +43,14 @@ namespace MathUtil {
     inline bool IsEqualVector(const SimpleMath::Vector3& v1, const SimpleMath::Vector3& v2)
     {
         return DirectX::XMVector3NearEqual(v1, v2, EPSILON_VEC3);
+    }
+
+    // Compare v1, v2 ignore Y
+    inline bool IsEqualVectorXZ(const SimpleMath::Vector3& v1, const SimpleMath::Vector3& v2)
+    {
+        SimpleMath::Vector2 xz1{ v1.x, v1.z };
+        SimpleMath::Vector2 xz2{ v2.x, v2.z };
+        return DirectX::XMVector2NearEqual(xz1, xz2, EPSILON_VEC2);
     }
 
     // Compare Zero or Epsilon

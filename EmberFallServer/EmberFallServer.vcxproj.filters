@@ -32,6 +32,12 @@
     <Filter Include="Collision\Collider">
       <UniqueIdentifier>{cef0a9ff-4a48-455b-bdae-f0e889a147b7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="BehaviorTree">
+      <UniqueIdentifier>{95ed22be-e650-4d9c-81d8-f9f77195b696}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BehaviorTree\TestMonster">
+      <UniqueIdentifier>{1b526a72-8971-4d1e-8236-7986ba6ffdd1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -106,6 +112,12 @@
     <ClCompile Include="ViewList.cpp">
       <Filter>Script</Filter>
     </ClCompile>
+    <ClCompile Include="BehaviorTreeBase.cpp">
+      <Filter>BehaviorTree</Filter>
+    </ClCompile>
+    <ClCompile Include="BehaviorTreeMonster.cpp">
+      <Filter>BehaviorTree\TestMonster</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -134,9 +146,6 @@
     </ClInclude>
     <ClInclude Include="PlayerScript.h">
       <Filter>Script</Filter>
-    </ClInclude>
-    <ClInclude Include="ServerFrame.h">
-      <Filter>Frame</Filter>
     </ClInclude>
     <ClInclude Include="GameRandom.h">
       <Filter>Utils</Filter>
@@ -173,6 +182,15 @@
     </ClInclude>
     <ClInclude Include="ViewList.h">
       <Filter>Script</Filter>
+    </ClInclude>
+    <ClInclude Include="BehaviorTreeBase.h">
+      <Filter>BehaviorTree</Filter>
+    </ClInclude>
+    <ClInclude Include="BehaviorTreeMonster.h">
+      <Filter>BehaviorTree\TestMonster</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerFrame.h">
+      <Filter>Frame</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -65,6 +65,12 @@ SimpleMath::Vector3 GameObject::GetColor() const {
     return mColor;
 }
 
+void GameObject::Init() {
+    for (auto& component : mComponents) {
+        component->Init();
+    }
+}
+
 void GameObject::Update(const float deltaTime) {
     if (not IsActive()) {
         return;

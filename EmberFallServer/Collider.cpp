@@ -32,7 +32,7 @@ bool Collider::IsEnable() const {
 }
 
 bool Collider::IsColliding() const {
-    return 0 != mCollisionCount;
+    return not mStates.empty();
 }
 
 void Collider::SetTransform(const std::shared_ptr<Transform>& transform) {
@@ -57,7 +57,6 @@ void Collider::UpdateState(bool collisionResult, NetworkObjectIdType objId) {
         switch (state) {
         case CollisionState::NONE:
         case CollisionState::EXIT:
-            ++mCollisionCount;
             state = CollisionState::ENTER;
             break;
 
@@ -86,7 +85,6 @@ void Collider::UpdateState(bool collisionResult, NetworkObjectIdType objId) {
             break;
 
         default:        // NONE인 경우 Map에서 삭제
-            --mCollisionCount;
             mStates.erase(objId);
             break;
         }

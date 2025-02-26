@@ -70,6 +70,8 @@ public:
         return nullptr;
     }
 
+    void Init();
+
     void Update(const float deltaTime);
     void LateUpdate(const float deltaTime);
 
@@ -90,7 +92,7 @@ private:
     SimpleMath::Vector3 mColor{ SimpleMath::Vector3::One };             // for detecting collision
 
     std::shared_ptr<Transform> mTransform{ };                           // Transform
-    std::shared_ptr<class Physics> mPhysics{ };                         // Physics Test
+    std::shared_ptr<class Physics> mPhysics{ };                         // Physics
     std::shared_ptr<Collider> mCollider{ nullptr };                     // 
     std::vector<std::shared_ptr<GameObjectComponent>> mComponents{ };   // Components
 };

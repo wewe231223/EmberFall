@@ -21,6 +21,8 @@ public:
 public:
     std::shared_ptr<GameObject> GetOwner() const;
 
+    virtual void Init() abstract;
+
     virtual void Update(const float deltaTime) abstract;
     virtual void LateUpdate(const float deltaTime) abstract;
 
@@ -28,7 +30,7 @@ public:
     virtual void OnHandleCollisionStay(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) abstract;
     virtual void OnHandleCollisionExit(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) abstract;
 
-    virtual void DispatchGameEvent(class GameEvent* event) abstract;
+    virtual void DispatchGameEvent(struct GameEvent* event) abstract;
     
 private:
     std::weak_ptr<GameObject> mOwner;

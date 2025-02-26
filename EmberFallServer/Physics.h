@@ -45,6 +45,7 @@ public:
 
     void Jump(const float deltaTime);
 
+    void ResizeVelocity(float speed);
     void Acceleration(const SimpleMath::Vector3& dir, const float acceleration, const float deltaTime);
     void Acceleration(const SimpleMath::Vector3& dir, const float deltaTime);
     void AddVelocity(const SimpleMath::Vector3& velocity, const float deltaTime);

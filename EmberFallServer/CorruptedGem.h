@@ -8,6 +8,8 @@ public:
     virtual ~CorruptedGemScript();
 
 public:
+    virtual void Init() override;
+
     virtual void Update(const float deltaTime) override;
     virtual void LateUpdate(const float deltaTime) override;
 
@@ -15,10 +17,10 @@ public:
     virtual void OnHandleCollisionStay(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) override;
     virtual void OnHandleCollisionExit(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) override;
 
-    virtual void DispatchGameEvent(class GameEvent* event) override;
+    virtual void DispatchGameEvent(struct GameEvent* event) override;
 
 private:
-    void OnDestroy(class GemDestroyEvent* event);
+    void OnDestroy(struct GemDestroyEvent* event);
 
 private:
     float mDesytoyingTime{ 5.0f };

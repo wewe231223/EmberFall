@@ -97,7 +97,7 @@ PlayScene::PlayScene() {
         ++id;
 
         object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
-        object->CreateComponent<CorruptedGemScript>(object);
+        object->CreateComponent<MonsterScript>(object);
         object->SetColor(Random::GetRandomColor());
         object->GetTransform()->Translate(Random::GetRandomVec3(-50.0f, 50.0f));
         object->GetTransform()->Scale(SimpleMath::Vector3{ 1.0f });
@@ -110,6 +110,8 @@ PlayScene::PlayScene() {
 
         mCollisionWorld.AddObjectInTerrainGroup(object);
         gEventManager->AddListener(object);
+
+        object->Init();
     }
 }
 
@@ -195,6 +197,8 @@ void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerOb
     mCollisionWorld.AddObjectInTerrainGroup(playerObject);
 
     gEventManager->AddListener(playerObject);
+
+    playerObject->Init();
 }
 
 void PlayScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {

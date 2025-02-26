@@ -76,6 +76,31 @@ void Transform::Move(const SimpleMath::Vector3& moveVec) {
     Translate(SimpleMath::Vector3::Transform(xzMove, mRotation));
 }
 
+void Transform::LookAt(const SimpleMath::Vector3& target) {
+    DirectX::SimpleMath::Vector3 direction = target - mPosition;
+    direction.Normalize();
+
+    auto look = DirectX::SimpleMath::Quaternion::FromToRotation(Forward(), direction);
+    look.Normalize();
+    mRotation = DirectX::SimpleMath::Quaternion::Concatenate(look, mRotation);
+
+    mRotation.Normalize();
+}
+
+void Transform::LookAtSmoothly(const SimpleMath::Vector3& target, float lerpFactor) {
+    DirectX::SimpleMath::Vector3 direction = target - mPosition;
+    direction.Normalize();
+
+    auto look = DirectX::SimpleMath::Quaternion::FromToRotation(Forward(), direction);
+    look.Normalize();
+
+    auto newRotation = DirectX::SimpleMath::Quaternion::Slerp(mRotation, look, lerpFactor);
+    newRotation.Normalize();
+
+    mRotation = mRotation.Concatenate(mRotation, newRotation);
+    mRotation.Normalize();
+}
+
 void Transform::Rotation(const SimpleMath::Quaternion& quat) {
     mRotation = quat;
 }
@@ -94,8 +119,11 @@ void Transform::Rotate(const SimpleMath::Quaternion& quat) {
     mRotation = SimpleMath::Quaternion::Concatenate(quat, mRotation);
 }
 
-void Transform::RotateSmoothly(const SimpleMath::Quaternion& quat) {
-
+void Transform::RotateSmoothly(const SimpleMath::Quaternion& quat, float lerpFactor) {
+    auto newRotation = DirectX::SimpleMath::Quaternion::Slerp(mRotation, quat, lerpFactor);
+    newRotation.Normalize();
+    mRotation = mRotation.Concatenate(mRotation, newRotation);
+    mRotation.Normalize();
 }
 
 void Transform::Scale(const SimpleMath::Vector3& v) {

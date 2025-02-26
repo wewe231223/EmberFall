@@ -3,10 +3,11 @@
 #include "GameObject.h"
 
 CorruptedGemScript::CorruptedGemScript(std::shared_ptr<GameObject> owner) 
-    : Script{ owner } { 
-}
+    : Script{ owner } { }
 
 CorruptedGemScript::~CorruptedGemScript() { }
+
+void CorruptedGemScript::Init() { }
 
 void CorruptedGemScript::Update(const float deltaTime) { }
 
@@ -31,14 +32,12 @@ void CorruptedGemScript::DispatchGameEvent(GameEvent* event) {
 
 void CorruptedGemScript::OnDestroy(GemDestroyEvent* event) {
     if (event->target != GetOwner()->GetId()) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Pass Event My: {}, Taget: {}", GetOwner()->GetId(), event->target);
         return;
     }
 
     auto owner = GetOwner();
     mOriginColor = GetOwner()->GetColor();
     owner->SetColor(SimpleMath::Vector3{ event->holdTime / mDesytoyingTime });
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "SetColor {}", event->holdTime / mDesytoyingTime);
     if (event->holdTime > mDesytoyingTime) {
         owner->SetActive(false);
     }
