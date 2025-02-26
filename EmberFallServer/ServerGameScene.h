@@ -34,7 +34,7 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "CollisionWorld.h"
+#include "TerrainCollider.h"
 #include "GridWorld.h"
 
 class GameObject;
@@ -103,6 +103,6 @@ private:
     std::vector<std::shared_ptr<class GameObject>> mObjects{ };
 
     std::shared_ptr<class Terrain> mTerrain{ };
-    CollisionWorld mCollisionWorld{ };
+    TerrainCollider mTerrainCollider{ };
     GridWorld mGridWorld{ 50.0f, 50.0f, 1000.0f, 1000.0f };
 };

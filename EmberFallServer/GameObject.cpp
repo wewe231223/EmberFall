@@ -105,19 +105,19 @@ void GameObject::LateUpdate(const float deltaTime) {
     }
 }
 
-void GameObject::OnCollision(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+void GameObject::OnCollision(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
     auto state = mCollider->GetState(opponent->GetId());
     switch (state) {
     case CollisionState::ENTER:
-        OnCollisionEnter(groupTag, opponent, impulse);
+        OnCollisionEnter(opponent, impulse);
         break;
 
     case CollisionState::STAY:
-        OnCollisionStay(groupTag, opponent, impulse);
+        OnCollisionStay(opponent, impulse);
         break;
 
     case CollisionState::EXIT:
-        OnCollisionExit(groupTag, opponent, impulse);
+        OnCollisionExit(opponent, impulse);
         break;
 
     default:
@@ -135,9 +135,9 @@ void GameObject::DispatchGameEvent(GameEvent* event) {
     }
 }
 
-void GameObject::OnCollisionEnter(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
+void GameObject::OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
-void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+void GameObject::OnCollisionStay(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
     auto obb1 = std::static_pointer_cast<OrientedBoxCollider>(mCollider)->GetBoundingBox();
     auto obb2 = std::static_pointer_cast<OrientedBoxCollider>(opponent->mCollider)->GetBoundingBox();
 
@@ -159,6 +159,6 @@ void GameObject::OnCollisionStay(const std::string& groupTag, std::shared_ptr<Ga
     mPhysics->SetOnOtherObject(onOtherObject);
 }
 
-void GameObject::OnCollisionExit(const std::string& groupTag, std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+void GameObject::OnCollisionExit(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
     mPhysics->SetOnOtherObject(false);
 }

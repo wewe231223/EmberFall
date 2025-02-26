@@ -97,9 +97,6 @@
     <ClCompile Include="CorruptedGem.cpp">
       <Filter>Script</Filter>
     </ClCompile>
-    <ClCompile Include="CollisionWorld.cpp">
-      <Filter>Collision\CollisionCheck</Filter>
-    </ClCompile>
     <ClCompile Include="Grid.cpp">
       <Filter>Collision\CollisionCheck</Filter>
     </ClCompile>
@@ -117,6 +114,9 @@
     </ClCompile>
     <ClCompile Include="BehaviorTreeMonster.cpp">
       <Filter>BehaviorTree\TestMonster</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainCollider.cpp">
+      <Filter>Collision\Collider</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -168,9 +168,6 @@
     <ClInclude Include="CorruptedGem.h">
       <Filter>Script</Filter>
     </ClInclude>
-    <ClInclude Include="CollisionWorld.h">
-      <Filter>Collision\CollisionCheck</Filter>
-    </ClInclude>
     <ClInclude Include="Grid.h">
       <Filter>Collision\CollisionCheck</Filter>
     </ClInclude>
@@ -191,6 +188,9 @@
     </ClInclude>
     <ClInclude Include="ServerFrame.h">
       <Filter>Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainCollider.h">
+      <Filter>Collision\Collider</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

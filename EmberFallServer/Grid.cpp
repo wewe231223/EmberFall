@@ -27,8 +27,8 @@ void Grid::HandleCollision() {
                 );
             }
 
-            obj1->OnCollision("", obj2, impulse);
-            obj2->OnCollision("", obj1, -impulse);
+            obj1->OnCollision(obj2, impulse);
+            obj2->OnCollision(obj1, -impulse);
         }
 
         ++next;

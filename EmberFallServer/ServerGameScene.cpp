@@ -88,7 +88,7 @@ void EchoTestScene::LateUpdate(const float deltaTime) { }
 
 PlayScene::PlayScene() {
     mTerrain = std::make_shared<Terrain>("../Resources/HeightMap.raw");
-    mCollisionWorld.AddTerrain(mTerrain);
+    mTerrainCollider.SetTerrain(mTerrain);
 
     mObjects.resize(5);
     for (size_t id{ 0 }; auto & object : mObjects) {
@@ -108,7 +108,7 @@ PlayScene::PlayScene() {
         auto& factors = object->GetPhysics()->mFactor;
         factors.mass = 10.0f;
 
-        mCollisionWorld.AddObjectInTerrainGroup(object);
+        mTerrainCollider.AddObjectInTerrainGroup(object);
         gEventManager->AddListener(object);
 
         object->Init();
@@ -170,8 +170,7 @@ void PlayScene::Update(const float deltaTime) {
         object->Update(deltaTime);
     }
 
-    mCollisionWorld.HandleTerrainCollision();
-    //mCollisionWorld.HandleCollision();
+    mTerrainCollider.HandleTerrainCollision();
     mGridWorld.Update(mObjects);
 
     gEventManager->Update();
@@ -194,7 +193,7 @@ void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerOb
     playerObject->GetComponent<PlayerScript>()->ResetGameScene(shared_from_this());
     playerObject->GetTransform()->Translate(Random::GetRandomVec3(-100.0f, 100.0f));
 
-    mCollisionWorld.AddObjectInTerrainGroup(playerObject);
+    mTerrainCollider.AddObjectInTerrainGroup(playerObject);
 
     gEventManager->AddListener(playerObject);
 
@@ -211,7 +210,7 @@ void PlayScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerO
     std::swap(*objSearch, mPlayerList.back());
     mPlayerList.pop_back();
 
-    mCollisionWorld.RemoveObjectFromTerrainGroup(playerObject);
+    mTerrainCollider.RemoveObjectFromTerrainGroup(playerObject);
 
     gEventManager->RemoveListener(playerObject);
     mPlayers.erase(it);

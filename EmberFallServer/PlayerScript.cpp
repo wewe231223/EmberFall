@@ -98,11 +98,11 @@ void PlayerScript::LateUpdate(const float deltaTime) {
     mInput->Update();
 }
 
-void PlayerScript::OnHandleCollisionEnter(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) { }
+void PlayerScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent) { }
 
-void PlayerScript::OnHandleCollisionStay(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) { }
+void PlayerScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent) { }
 
-void PlayerScript::OnHandleCollisionExit(const std::string& groupTag, const std::shared_ptr<GameObject>& opponent) { }
+void PlayerScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent) { }
 
 void PlayerScript::DispatchGameEvent(GameEvent* event) { }
 
@@ -125,7 +125,6 @@ std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
     );
 
     auto distance = SimpleMath::Vector3::DistanceSquared(nearestObj->GetPosition(), ownerPos);
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GetNearestObject Distance: {}", distance);
     if (100.0f > distance) {
         return nearestObj;
     }
@@ -148,7 +147,6 @@ void PlayerScript::DestroyGem(const float deltaTime) {
         holdStart = 0.0f;
     }
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Push GameEvent: Start Distroy Gem");
     std::shared_ptr<GemDestroyEvent> event = std::make_shared<GemDestroyEvent>();
     event->type = GameEventType::DESTROY_GEM_EVENT;
     event->target = nearestObj->GetId();
