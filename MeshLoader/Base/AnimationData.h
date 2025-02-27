@@ -5,25 +5,19 @@
 #include <string>
 #include <memory>
 #include <unordered_map>
-
-struct BoneKeyFrame {
-    float time;
-    DirectX::XMFLOAT3 position;
-    DirectX::XMFLOAT4 rotation;
-    DirectX::XMFLOAT3 scaling;
-};
+#include "../Utility/DirectXInclude.h"
 
 struct BoneAnimation {
     std::string boneName;
 
-    std::vector<std::pair<double, DirectX::XMFLOAT3>> positionKey{};
-	std::vector<std::pair<double, DirectX::XMFLOAT4>> rotationKey{};
-	std::vector<std::pair<double, DirectX::XMFLOAT3>> scalingKey{};
+    std::vector<std::pair<double, SimpleMath::Vector3>> positionKey{};
+	std::vector<std::pair<double, SimpleMath::Quaternion>> rotationKey{};
+	std::vector<std::pair<double, SimpleMath::Vector3>> scalingKey{};
 };
 
 struct BoneNode {
     std::string name; // <-----------------------------------------------  1) 이 이름을 활용해서 
-    DirectX::XMFLOAT4X4 transformation;
+    SimpleMath::Matrix transformation;
     std::vector<std::shared_ptr<BoneNode>> children;
 };
 
@@ -31,7 +25,9 @@ struct AnimationClip {
     float duration{ 0.0 };
     float ticksPerSecond{ 0.f };
 
-    std::vector<DirectX::XMFLOAT4X4> boneOffsetMatrices{};
+	DirectX::SimpleMath::Matrix globalInverseTransform;
+
+    std::vector<SimpleMath::Matrix> boneOffsetMatrices{};
     std::unordered_map<std::string, UINT> boneIndexMap{};           // 2) 여기서 index 를 통해 boneoffset matrix 를 얻는다. 
 	std::unordered_map<std::string, BoneAnimation> boneAnimations{};// 3) 이 이름을 활용해서 bone animation 을 얻는다.
 

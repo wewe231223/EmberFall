@@ -8,7 +8,12 @@ public:
 	~Animator() = default;
 public:
 private:
-	void ReadNodeHeirarchy(double AnimationTime, BoneNode* pNode, const DirectX::XMFLOAT4X4& ParentTransform, const AnimationClip& animation, std::vector<DirectX::XMFLOAT4X4>& boneTransforms);
+	void ReadNodeHeirarchy(double AnimationTime, BoneNode* pNode,const SimpleMath::Matrix& ParentTransform,const AnimationClip& animation, std::vector<SimpleMath::Matrix>& boneTransforms);
+
+	SimpleMath::Vector3 InterpolatePosition(double AnimationTime, const BoneAnimation& boneAnim);
+	SimpleMath::Quaternion InterpolateRotation(double AnimationTime, const BoneAnimation& boneAnim);
+	SimpleMath::Vector3 InterpolateScaling(double AnimationTime, const BoneAnimation& boneAnim);
+
 private:
 	AnimationClip mClip{};
 

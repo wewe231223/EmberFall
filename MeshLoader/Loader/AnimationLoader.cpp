@@ -41,7 +41,7 @@ AnimationClip AnimationLoader::Load(const std::filesystem::path& path, UINT anim
 				boneMap[boneName] = boneIndex;
 
 				clip.boneOffsetMatrices.emplace_back();
-				clip.boneOffsetMatrices[boneIndex] = DirectX::XMFLOAT4X4{
+				clip.boneOffsetMatrices[boneIndex] = SimpleMath::Matrix{
 					mesh->mBones[j]->mOffsetMatrix.a1, mesh->mBones[j]->mOffsetMatrix.a2, mesh->mBones[j]->mOffsetMatrix.a3, mesh->mBones[j]->mOffsetMatrix.a4,
 					mesh->mBones[j]->mOffsetMatrix.b1, mesh->mBones[j]->mOffsetMatrix.b2, mesh->mBones[j]->mOffsetMatrix.b3, mesh->mBones[j]->mOffsetMatrix.b4,
 					mesh->mBones[j]->mOffsetMatrix.c1, mesh->mBones[j]->mOffsetMatrix.c2, mesh->mBones[j]->mOffsetMatrix.c3, mesh->mBones[j]->mOffsetMatrix.c4,
@@ -69,21 +69,28 @@ AnimationClip AnimationLoader::Load(const std::filesystem::path& path, UINT anim
         boneAnim.boneName = nodeAnim->mNodeName.data;
        
 		for (UINT j = 0; j < nodeAnim->mNumPositionKeys; ++j) {
-			boneAnim.positionKey.emplace_back(nodeAnim->mPositionKeys[j].mTime, DirectX::XMFLOAT3(nodeAnim->mPositionKeys[j].mValue.x, nodeAnim->mPositionKeys[j].mValue.y, nodeAnim->mPositionKeys[j].mValue.z));
+			boneAnim.positionKey.emplace_back(nodeAnim->mPositionKeys[j].mTime, SimpleMath::Vector3(nodeAnim->mPositionKeys[j].mValue.x, nodeAnim->mPositionKeys[j].mValue.y, nodeAnim->mPositionKeys[j].mValue.z));
 		}
 
 		for (UINT j = 0; j < nodeAnim->mNumRotationKeys; ++j) {
-			boneAnim.rotationKey.emplace_back(nodeAnim->mRotationKeys[j].mTime, DirectX::XMFLOAT4(nodeAnim->mRotationKeys[j].mValue.x, nodeAnim->mRotationKeys[j].mValue.y, nodeAnim->mRotationKeys[j].mValue.z, nodeAnim->mRotationKeys[j].mValue.w));
+			boneAnim.rotationKey.emplace_back(nodeAnim->mRotationKeys[j].mTime, SimpleMath::Quaternion(nodeAnim->mRotationKeys[j].mValue.x, nodeAnim->mRotationKeys[j].mValue.y, nodeAnim->mRotationKeys[j].mValue.z, nodeAnim->mRotationKeys[j].mValue.w));
 		}
 
 		for (UINT j = 0; j < nodeAnim->mNumScalingKeys; ++j) {
-			boneAnim.scalingKey.emplace_back(nodeAnim->mScalingKeys[j].mTime, DirectX::XMFLOAT3(nodeAnim->mScalingKeys[j].mValue.x, nodeAnim->mScalingKeys[j].mValue.y, nodeAnim->mScalingKeys[j].mValue.z));
+			boneAnim.scalingKey.emplace_back(nodeAnim->mScalingKeys[j].mTime, SimpleMath::Vector3(nodeAnim->mScalingKeys[j].mValue.x, nodeAnim->mScalingKeys[j].mValue.y, nodeAnim->mScalingKeys[j].mValue.z));
 		}
 
         clip.boneAnimations[boneAnim.boneName] = boneAnim;
     }
 
+	auto giTransform = scene->mRootNode->mTransformation.Inverse();
 
+	clip.globalInverseTransform = SimpleMath::Matrix{
+		giTransform.a1, giTransform.a2, giTransform.a3, giTransform.a4,
+		giTransform.b1, giTransform.b2, giTransform.b3, giTransform.b4,
+		giTransform.c1, giTransform.c2, giTransform.c3, giTransform.c4,
+		giTransform.d1, giTransform.d2, giTransform.d3, giTransform.d4
+	};
 
 
     return clip;
@@ -95,6 +102,13 @@ std::shared_ptr<BoneNode> AnimationLoader::buildHierarchy(const aiNode* node) {
 
 	newNode->name = node->mName.C_Str();
 	XMStoreFloat4x4(&newNode->transformation, DirectX::XMLoadFloat4x4(reinterpret_cast<const DirectX::XMFLOAT4X4*>(&node->mTransformation)));
+
+	newNode->transformation = SimpleMath::Matrix{
+		node->mTransformation.a1, node->mTransformation.a2, node->mTransformation.a3, node->mTransformation.a4,
+		node->mTransformation.b1, node->mTransformation.b2, node->mTransformation.b3, node->mTransformation.b4,
+		node->mTransformation.c1, node->mTransformation.c2, node->mTransformation.c3, node->mTransformation.c4,
+		node->mTransformation.d1, node->mTransformation.d2, node->mTransformation.d3, node->mTransformation.d4
+	};
 
 	for (UINT i = 0; i < node->mNumChildren; ++i) {
 		std::shared_ptr<BoneNode> child = buildHierarchy(node->mChildren[i]);

@@ -1,29 +1,33 @@
 #include "pch.h"
 #include "Animator.h"
 
-void Animator::ReadNodeHeirarchy(double AnimationTime, BoneNode* node, const DirectX::XMFLOAT4X4& ParentTransform, const AnimationClip& animation, std::vector<DirectX::XMFLOAT4X4>& boneTransforms) {
-   /* if (!node) return;
+void Animator::ReadNodeHeirarchy(double AnimationTime, BoneNode* node,const SimpleMath::Matrix& ParentTransform,const AnimationClip& animation, std::vector<SimpleMath::Matrix>& boneTransforms) {
+    if (!node) return;
 
-    DirectX::XMMATRIX nodeTransform = DirectX::XMLoadFloat4x4(&node->transformation);
+    SimpleMath::Matrix nodeTransform{ node->transformation };
 
     auto animIt = animation.boneAnimations.find(node->name);
     if (animIt != animation.boneAnimations.end()) {
         const BoneAnimation& boneAnim = animIt->second;
-        DirectX::XMFLOAT3 position = InterpolatePosition(AnimationTime, boneAnim);
-        DirectX::XMFLOAT4 rotation = InterpolateRotation(AnimationTime, boneAnim);
-        DirectX::XMFLOAT3 scaling = InterpolateScaling(AnimationTime, boneAnim);
 
-        DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(scaling.x, scaling.y, scaling.z);
-        DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationQuaternion(XMLoadFloat4(&rotation));
-        DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+        //DirectX::XMFLOAT3 position = InterpolatePosition(AnimationTime, boneAnim);
+        //DirectX::XMFLOAT4 rotation = InterpolateRotation(AnimationTime, boneAnim);
+        //DirectX::XMFLOAT3 scaling = InterpolateScaling(AnimationTime, boneAnim);
 
-        nodeTransform = scaleMatrix * rotationMatrix * translationMatrix;
+        //DirectX::XMMATRIX scaleMatrix = DirectX::XMMatrixScaling(scaling.x, scaling.y, scaling.z);
+        //DirectX::XMMATRIX rotationMatrix = DirectX::XMMatrixRotationQuaternion(XMLoadFloat4(&rotation));
+        //DirectX::XMMATRIX translationMatrix = DirectX::XMMatrixTranslation(position.x, position.y, position.z);
+
+        //nodeTransform = scaleMatrix * rotationMatrix * translationMatrix;
     }
 
-    DirectX::XMMATRIX globalTransform = DirectX::XMLoadFloat4x4(&ParentTransform) * nodeTransform;
-    DirectX::XMStoreFloat4x4(&boneTransforms[std::distance(animation.hierarchy.begin(), animation.hierarchy.find(node->name))], globalTransform);
+    SimpleMath::Matrix globalTransform = ParentTransform * nodeTransform;
 
-    for (BoneNode* child : node->children) {
-        ReadNodeHeirarchy(AnimationTime, child, globalTransform, animation, boneTransforms);
-    }*/
+	UINT index = animation.boneIndexMap.at(node->name);
+
+	boneTransforms[index] = animation.globalInverseTransform * globalTransform * animation.boneOffsetMatrices[index];
+
+    for (auto& child : node->children) {
+        ReadNodeHeirarchy(AnimationTime, child.get(), globalTransform, animation, boneTransforms);
+    }
 }
