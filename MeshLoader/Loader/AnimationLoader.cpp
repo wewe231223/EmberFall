@@ -26,22 +26,40 @@ AnimationClip AnimationLoader::Load(const std::filesystem::path& path, UINT anim
     clip.duration = static_cast<float>(aiAnim->mDuration);
     clip.ticksPerSecond = aiAnim->mTicksPerSecond != 0 ? static_cast<float>(aiAnim->mTicksPerSecond) : 25.0f;
 
-    std::unordered_map<std::string, BoneNode*> nodeMap;
-   
-    std::function<BoneNode* (const aiNode*)> buildHierarchy = [&](const aiNode* node) -> BoneNode* {
-        BoneNode* newNode = new BoneNode();
-        newNode->name = node->mName.C_Str();
-        XMStoreFloat4x4(&newNode->transformation, DirectX::XMLoadFloat4x4(reinterpret_cast<const DirectX::XMFLOAT4X4*>(&node->mTransformation)));
-        nodeMap[newNode->name] = newNode;
-        for (UINT i = 0; i < node->mNumChildren; ++i) {
-            BoneNode* child = buildHierarchy(node->mChildren[i]);
-            child->parent = newNode;
-            newNode->children.push_back(child);
-        }
-        return newNode;
-        };
+	std::unordered_map<std::string, UINT> boneMap{};
 
+	UINT boneIndex{ 0 };
+	UINT boneNumbers{ 0 };
+
+	for (UINT i = 0; i < scene->mNumMeshes; ++i) {
+		auto mesh = scene->mMeshes[i];
+		for (UINT j = 0; j < mesh->mNumBones; ++j) {
+			std::string boneName = mesh->mBones[j]->mName.C_Str();
+			if (boneMap.find(boneName) == boneMap.end()) {
+				boneIndex = boneNumbers;
+				boneNumbers++;
+				boneMap[boneName] = boneIndex;
+
+				clip.boneOffsetMatrices.emplace_back();
+				clip.boneOffsetMatrices[boneIndex] = DirectX::XMFLOAT4X4{
+					mesh->mBones[j]->mOffsetMatrix.a1, mesh->mBones[j]->mOffsetMatrix.a2, mesh->mBones[j]->mOffsetMatrix.a3, mesh->mBones[j]->mOffsetMatrix.a4,
+					mesh->mBones[j]->mOffsetMatrix.b1, mesh->mBones[j]->mOffsetMatrix.b2, mesh->mBones[j]->mOffsetMatrix.b3, mesh->mBones[j]->mOffsetMatrix.b4,
+					mesh->mBones[j]->mOffsetMatrix.c1, mesh->mBones[j]->mOffsetMatrix.c2, mesh->mBones[j]->mOffsetMatrix.c3, mesh->mBones[j]->mOffsetMatrix.c4,
+					mesh->mBones[j]->mOffsetMatrix.d1, mesh->mBones[j]->mOffsetMatrix.d2, mesh->mBones[j]->mOffsetMatrix.d3, mesh->mBones[j]->mOffsetMatrix.d4
+				};
+			}
+			else {
+				boneIndex = boneMap[boneName];
+			}
+
+		}
+	}
+
+	clip.boneIndexMap = boneMap;
 	clip.root = buildHierarchy(rootNode);
+
+
+
 
     for (UINT i = 0; i < aiAnim->mNumChannels; ++i) {
         const aiNodeAnim* nodeAnim = aiAnim->mChannels[i];
@@ -65,7 +83,22 @@ AnimationClip AnimationLoader::Load(const std::filesystem::path& path, UINT anim
         clip.boneAnimations[boneAnim.boneName] = boneAnim;
     }
 
+
+
+
     return clip;
 
 }
 
+std::shared_ptr<BoneNode> AnimationLoader::buildHierarchy(const aiNode* node) {
+	std::shared_ptr<BoneNode> newNode{ std::make_shared<BoneNode>() };
+
+	newNode->name = node->mName.C_Str();
+	XMStoreFloat4x4(&newNode->transformation, DirectX::XMLoadFloat4x4(reinterpret_cast<const DirectX::XMFLOAT4X4*>(&node->mTransformation)));
+
+	for (UINT i = 0; i < node->mNumChildren; ++i) {
+		std::shared_ptr<BoneNode> child = buildHierarchy(node->mChildren[i]);
+		newNode->children.emplace_back(child);
+	}
+	return newNode;
+}

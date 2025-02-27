@@ -18,7 +18,7 @@ public:
 public:
 	AnimationClip Load(const std::filesystem::path& path, UINT animIndex = 0);
 private:
-	void DFS(const aiNode* node, int& res);
+	std::shared_ptr<BoneNode> buildHierarchy(const aiNode* node);
 private:
 	Assimp::Importer mImporter{};
 };
