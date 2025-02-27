@@ -16,42 +16,58 @@
 #include "Collider.h"
 #include "GameObjectComponent.h"
 
+class IServerGameScene;
+
 enum class ObjectTag {
     PLAYER, 
-    OBJECT,
+    MONSTER,
+    CORRUPTED_GEM,
+    NONE,
 };
 
 class GameObject : public std::enable_shared_from_this<GameObject> {
 public:
-    GameObject();
+    GameObject(std::shared_ptr<IServerGameScene> gameScene);
     ~GameObject();
     
 public:
     bool IsActive() const;
-    void SetActive(bool active);
-
-    void InitId(NetworkObjectIdType id);
     NetworkObjectIdType GetId() const;
 
     std::shared_ptr<Transform> GetTransform() const;
     std::shared_ptr<Physics> GetPhysics() const;
     std::shared_ptr<Collider> GetCollider() const;
 
+    std::shared_ptr<IServerGameScene> GetOwnGameScene() const;
+
     SimpleMath::Vector3 GetPosition() const;
     SimpleMath::Quaternion GetRotation() const;
     SimpleMath::Vector3 GetScale() const;
     SimpleMath::Matrix GetWorld() const;
-
-    void SetColor(const SimpleMath::Vector3& color);
+    ObjectTag GetTag() const;
     SimpleMath::Vector3 GetColor() const;
 
-    template <typename ColliderType, typename... Args> 
+    void InitId(NetworkObjectIdType id);
+    void SetActive(bool active);
+    void SetColor(const SimpleMath::Vector3& color);
+
+    void Init();
+
+    void Update(const float deltaTime);
+    void LateUpdate(const float deltaTime);
+
+    void OnCollision(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
+    void OnCollisionTerrain(const float height);
+
+    virtual void DispatchGameEvent(GameEvent* event);
+
+    template <typename ColliderType, typename... Args>
         requires std::derived_from<ColliderType, Collider> and std::is_constructible_v<ColliderType, Args...>
     void CreateCollider(Args&&... args) {
         mCollider = std::make_shared<ColliderType>(args...);
         mCollider->SetTransform(mTransform);
     }
-    
+
     template <typename ComponentType, typename... Args>
         requires std::derived_from<ComponentType, GameObjectComponent>
     void CreateComponent(Args&&... args) {
@@ -70,16 +86,6 @@ public:
         return nullptr;
     }
 
-    void Init();
-
-    void Update(const float deltaTime);
-    void LateUpdate(const float deltaTime);
-
-    void OnCollision(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
-    void OnCollisionTerrain(const float height);
-
-    virtual void DispatchGameEvent(GameEvent* event);
-
 private:
     void OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
     void OnCollisionStay(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
@@ -87,6 +93,7 @@ private:
 
 private:
     bool mActive{ true };
+    ObjectTag mTag{ ObjectTag::NONE };
 
     NetworkObjectIdType mId{ INVALID_SESSION_ID };                      // network id
     SimpleMath::Vector3 mColor{ SimpleMath::Vector3::One };             // for detecting collision
@@ -95,4 +102,6 @@ private:
     std::shared_ptr<class Physics> mPhysics{ };                         // Physics
     std::shared_ptr<Collider> mCollider{ nullptr };                     // 
     std::vector<std::shared_ptr<GameObjectComponent>> mComponents{ };   // Components
+
+    std::shared_ptr<IServerGameScene> mGameScene{ };
 };

@@ -49,8 +49,11 @@ public:
     virtual ~IServerGameScene();
 
 public:
-    std::vector<std::shared_ptr<class GameObject>>& GetPlayers();
-    virtual std::vector<std::shared_ptr<class GameObject>>& GetObjects() abstract;
+    std::vector<std::shared_ptr<GameObject>>& GetPlayers();
+    virtual std::vector<std::shared_ptr<GameObject>>& GetObjects() abstract;
+    virtual std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) abstract;
+
+    virtual void Init() abstract;
 
     virtual void DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerEvent>& eventQueue);
 
@@ -62,8 +65,8 @@ public:
     virtual void ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject);
 
 protected:
-    std::vector<std::shared_ptr<class GameObject>> mPlayerList{ };
-    std::unordered_map<SessionIdType, std::shared_ptr<class GameObject>> mPlayers{ };
+    std::vector<std::shared_ptr<GameObject>> mPlayerList{ };
+    std::unordered_map<SessionIdType, std::shared_ptr<GameObject>> mPlayers{ };
 };
 
 class EchoTestScene : public IServerGameScene {
@@ -72,14 +75,17 @@ public:
     ~EchoTestScene();
 
 public:
-    virtual std::vector<std::shared_ptr<class GameObject>>& GetObjects() override { return mObjects; }
+    virtual void Init() override { } 
+
+    virtual std::vector<std::shared_ptr<GameObject>>& GetObjects() override { return mObjects; }
+    virtual std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) override { return nullptr; }
 
     virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) override;
     virtual void Update(const float deltaTime) override;
     virtual void LateUpdate(const float deltaTime) override;
 
 private:
-    std::vector<std::shared_ptr<class GameObject>> mObjects{ };
+    std::vector<std::shared_ptr<GameObject>> mObjects{ };
 };
 
 class PlayScene : public IServerGameScene {
@@ -90,8 +96,11 @@ public:
     ~PlayScene();
 
 public:
-    virtual std::vector<std::shared_ptr<class GameObject>>& GetObjects() override;
-     
+    virtual std::vector<std::shared_ptr<GameObject>>& GetObjects() override;
+    virtual std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) override;
+
+    virtual void Init() override;
+
     virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) override;
     virtual void Update(const float deltaTime) override;
     virtual void LateUpdate(const float deltaTime) override;
@@ -100,7 +109,7 @@ public:
     virtual void ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) override;
 
 private:
-    std::vector<std::shared_ptr<class GameObject>> mObjects{ };
+    std::vector<std::shared_ptr<GameObject>> mObjects{ };
 
     std::shared_ptr<class Terrain> mTerrain{ };
     TerrainCollider mTerrainCollider{ };

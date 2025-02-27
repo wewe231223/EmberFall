@@ -21,7 +21,7 @@ namespace BT {
         RUNNING,
     }; 
 
-    using BTUpdateFn = std::function<NodeStatus(const float deltaTime)>;
+    using BTUpdateFn = std::function<NodeStatus(const float)>;
     using HandlingEventFn = std::function<void(GameEvent*)>;
 
     class Node abstract {
@@ -53,6 +53,10 @@ namespace BT {
             mChildren.emplace_back(std::make_unique<NodeType>(args...));
         }
 
+        void AddChild(NodePtr&& node) {
+            mChildren.emplace_back(std::move(node));
+        }
+
     private:
         std::vector<NodePtr> mChildren;
         size_t mCurrentNode{ 0 };
@@ -72,6 +76,10 @@ namespace BT {
             requires std::derived_from<NodeType, Node> and std::is_constructible_v<NodeType, Args...>
         void AddChild(Args&&... args) {
             mChildren.emplace_back(std::make_unique<NodeType>(args...));
+        }
+
+        void AddChild(NodePtr&& node) {
+            mChildren.emplace_back(std::move(node));
         }
 
     private:

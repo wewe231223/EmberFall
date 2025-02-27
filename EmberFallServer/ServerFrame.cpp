@@ -7,8 +7,6 @@
 
 #include "PlayerScript.h"
 
-#define RAND_COLOR static_cast<float>(rand()) / static_cast<float>(RAND_MAX) // TEST
-
 ServerFrame::ServerFrame() {
     mServerCore = std::make_shared<ServerCore>();
     mServerCore->Init();
@@ -32,7 +30,8 @@ void ServerFrame::InitGameScenes() {
     mGameScenes.emplace_back(std::make_shared<PlayScene>());
 
     mCurrentScene = mGameScenes.front();
-    mTimer->Sync(30);
+    mCurrentScene->Init();
+    mTimer->Sync(0);
 }
 
 void ServerFrame::GameLoop() {
@@ -48,13 +47,13 @@ void ServerFrame::GameLoop() {
 }
 
 void ServerFrame::OnPlayerConnect(SessionIdType id) {
-    auto object = std::make_shared<GameObject>();
+    auto object = std::make_shared<GameObject>(mCurrentScene);
     
     object->InitId(id);
     object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
     object->CreateComponent<PlayerScript>(object, mInputManager->GetInput(id), mServerCore->GetSessionManager());
-    object->GetTransform()->Scale(SimpleMath::Vector3{ 0.5f });
-    object->SetColor(SimpleMath::Vector3{ RAND_COLOR, RAND_COLOR, RAND_COLOR });
+    object->GetTransform()->Scale(SimpleMath::Vector3{ 1.4f });
+    object->SetColor(Random::GetRandomColor());
 
     Lock::SRWLockGuard playersGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mPlayersLock };
     mPlayers[id] = object;

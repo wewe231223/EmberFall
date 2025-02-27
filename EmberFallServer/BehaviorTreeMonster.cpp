@@ -4,10 +4,18 @@
 
 void BT::BehaviorTreeMonster::Build(const std::shared_ptr<Script>& ownerScript) {
     auto owner = std::static_pointer_cast<MonsterScript>(ownerScript);
-    auto sequenceNode = std::make_unique<SequenceNode>();
+    auto sequenceChase = std::make_unique<SequenceNode>();
 
-    sequenceNode->AddChild<ActionNode>(std::bind_front(&MonsterScript::SetRandomTargetLocation, owner.get()));
-    sequenceNode->AddChild<ActionNode>(std::bind_front(&MonsterScript::MoveTo, owner.get()));
+    sequenceChase->AddChild<ActionNode>(std::bind_front(&MonsterScript::DetectPlayerInRange, owner.get()));
+    sequenceChase->AddChild<ActionNode>(std::bind_front(&MonsterScript::ChaseDetectedPlayer, owner.get()));
 
-    SetRoot(std::move(sequenceNode));
+    auto sequenceMoveRandomLoc = std::make_unique<SequenceNode>();
+    sequenceMoveRandomLoc->AddChild<ActionNode>(std::bind_front(&MonsterScript::SetRandomTargetLocation, owner.get()));
+    sequenceMoveRandomLoc->AddChild<ActionNode>(std::bind_front(&MonsterScript::MoveTo, owner.get()));
+
+    auto selectorNode = std::make_unique<SelectorNode>();
+    selectorNode->AddChild(std::move(sequenceChase));
+    selectorNode->AddChild(std::move(sequenceMoveRandomLoc));
+
+    SetRoot(std::move(selectorNode));
 }

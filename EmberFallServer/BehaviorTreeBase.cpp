@@ -23,6 +23,10 @@ NodeStatus SequenceNode::Update(const float deltaTime) {
         ++mCurrentNode;
         return NodeStatus::RUNNING;
     }
+    else if (NodeStatus::FAIL == updateResult) {
+        mCurrentNode = 0;
+        return NodeStatus::FAIL;
+    }
 
     return updateResult;
 }
@@ -51,6 +55,10 @@ NodeStatus SelectorNode::Update(const float deltaTime) {
     if (NodeStatus::FAIL == updateResult) {
         ++mCurrentNode;
         return NodeStatus::RUNNING;
+    }
+    else if (NodeStatus::SUCCESS == updateResult) {
+        mCurrentNode = 0;
+        return NodeStatus::SUCCESS;
     }
 
     return updateResult;

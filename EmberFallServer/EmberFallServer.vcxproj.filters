@@ -38,6 +38,9 @@
     <Filter Include="BehaviorTree\TestMonster">
       <UniqueIdentifier>{1b526a72-8971-4d1e-8236-7986ba6ffdd1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="FSM">
+      <UniqueIdentifier>{4f6537ae-aee4-4530-b3b8-d84bab739a03}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

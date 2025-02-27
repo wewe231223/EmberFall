@@ -2,6 +2,8 @@
 
 #include <filesystem>
 
+#include <type_traits>
+
 #include <random>
 #include <map>
 #include <deque>

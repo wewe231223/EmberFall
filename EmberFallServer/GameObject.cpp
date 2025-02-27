@@ -3,8 +3,10 @@
 #include "Physics.h"
 #include "Input.h"
 
-GameObject::GameObject() 
-    : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() } {
+#include "ServerGameScene.h"
+
+GameObject::GameObject(std::shared_ptr<IServerGameScene> gameScene)
+    : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mGameScene{ gameScene } {
     mPhysics->SetTransform(mTransform);
 }
 
@@ -12,14 +14,6 @@ GameObject::~GameObject() { }
 
 bool GameObject::IsActive() const {
     return true == mActive;
-}
-
-void GameObject::SetActive(bool active) {
-    mActive = active;
-}
-
-void GameObject::InitId(NetworkObjectIdType id) {
-    mId = id;
 }
 
 NetworkObjectIdType GameObject::GetId() const {
@@ -42,6 +36,10 @@ std::shared_ptr<Collider> GameObject::GetCollider() const {
     return mCollider;
 }
 
+std::shared_ptr<IServerGameScene> GameObject::GetOwnGameScene() const {
+    return mGameScene;
+}
+
 SimpleMath::Vector3 GameObject::GetPosition() const {
     return mTransform->GetPosition();
 }
@@ -54,15 +52,27 @@ SimpleMath::Vector3 GameObject::GetScale() const {
     return mTransform->GetScale();
 }
 
-void GameObject::SetColor(const SimpleMath::Vector3& color) {
-    mColor = color;
-}
-
 SimpleMath::Vector3 GameObject::GetColor() const {
     if (mCollider->IsColliding()) { // 디버깅을 위한 색상 변경
         return SimpleMath::Vector3{ 1.0f, 0.0f, 0.0f }; // RED
     }
     return mColor;
+}
+
+ObjectTag GameObject::GetTag() const {
+    return mTag;
+}
+
+void GameObject::InitId(NetworkObjectIdType id) {
+    mId = id;
+}
+
+void GameObject::SetActive(bool active) {
+    mActive = active;
+}
+
+void GameObject::SetColor(const SimpleMath::Vector3& color) {
+    mColor = color;
 }
 
 void GameObject::Init() {

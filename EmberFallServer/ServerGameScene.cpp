@@ -86,13 +86,25 @@ void EchoTestScene::Update(const float deltaTime) { }
 
 void EchoTestScene::LateUpdate(const float deltaTime) { }
 
-PlayScene::PlayScene() {
+PlayScene::PlayScene() { }
+
+PlayScene::~PlayScene() { }
+
+std::vector<std::shared_ptr<class GameObject>>& PlayScene::GetObjects() {
+    return mObjects;
+}
+
+std::shared_ptr<GameObject> PlayScene::GetObjectFromId(NetworkObjectIdType id) {
+    return mObjects[id];
+}
+
+void PlayScene::Init() {
     mTerrain = std::make_shared<Terrain>("../Resources/HeightMap.raw");
     mTerrainCollider.SetTerrain(mTerrain);
 
-    mObjects.resize(5);
+    mObjects.resize(MAX_OBJECT);
     for (size_t id{ 0 }; auto & object : mObjects) {
-        object = std::make_shared<GameObject>();
+        object = std::make_shared<GameObject>(shared_from_this());
         object->InitId(OBJECT_ID_START + id);
         ++id;
 
@@ -113,12 +125,6 @@ PlayScene::PlayScene() {
 
         object->Init();
     }
-}
-
-PlayScene::~PlayScene() { }
-
-std::vector<std::shared_ptr<class GameObject>>& PlayScene::GetObjects() {
-    return mObjects;
 }
 
 void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<InputManager>& inputManager) {

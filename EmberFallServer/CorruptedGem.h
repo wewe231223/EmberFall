@@ -1,5 +1,13 @@
 #pragma once
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// CorruptedGem.h
+// 
+// 2025 - 02 - 10 : CorruptedGemScript
+// 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "Script.h"
 
 class CorruptedGemScript : public Script {
@@ -10,7 +18,7 @@ public:
 public:
     virtual void Init() override;
 
-    virtual void Update(const float deltaTime) override;
+    virtual void Update(const float deltaTime) override; 
     virtual void LateUpdate(const float deltaTime) override;
 
     virtual void OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent) override;
