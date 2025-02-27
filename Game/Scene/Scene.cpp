@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include "../Renderer/Core/Renderer.h"
 #include "../MeshLoader/Loader/MeshLoader.h"
+#include "../MeshLoader/Loader/AnimationLoader.h"
 #include "../MeshLoader/Loader/TerrainLoader.h"
 #ifdef _DEBUG
 #pragma comment(lib,"out/debug/MeshLoader.lib")
@@ -14,8 +15,22 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mTextureManager = std::get<1>(managers);
 	mMaterialManager = std::get<2>(managers);
 
+	std::filesystem::path ZombiePath = "Resources/Assets/zombie/scene.gltf";
+	std::filesystem::path CreepPath = "Resources/Assets/CreepMonster/Creep_mesh.gltf";
+	std::filesystem::path assetPath = CreepPath;
+
 	MeshLoader loader{};
-	auto meshData = loader.Load("Resources/Assets/monster.gltf");
+	auto meshData = loader.Load(assetPath);
+
+	UINT max = 0;
+	for (auto& ids : meshData.boneID) {
+		UINT m{ 0 };
+		m = *std::max_element(ids.begin(), ids.end());
+		if (m > max) max = m;
+	}
+
+	std::vector<int>as(max);
+
 
 	mMeshMap["Cube"] = std::make_unique<PlainMesh>(device, commandList, EmbeddedMeshType::Sphere, 5);
 	mMeshMap["T_Pose"] = std::make_unique<PlainMesh>(device, commandList, meshData);
@@ -41,7 +56,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["StandardShader"].get();
 		object.mMesh = mMeshMap["T_Pose"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.GetTransform().Scaling(100.f, 100.f, 100.f);
+		object.GetTransform().Scaling(10000.f, 10000.f, 10000.f);
 	}
 
 	mCamera = Camera(device);
@@ -69,6 +84,10 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.GetTransform().Scaling(5.f, 1.f, 5.f);
 
 	}
+
+
+	AnimationLoader Animloader{};
+	auto animationData = Animloader.Load(assetPath);
 
 
 	mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);

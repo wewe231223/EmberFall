@@ -1,4 +1,5 @@
 #include <ranges>
+#include <unordered_map>
 #include <algorithm>
 #include <numeric>
 #include "MeshLoader.h"
@@ -11,7 +12,7 @@
 MeshData MeshLoader::Load(const std::filesystem::path& path) {
 	MeshData meshData{};
 
-	const aiScene* scene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights | aiProcess_ConvertToLeftHanded );
+	const aiScene* scene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights | aiProcess_ConvertToLeftHanded  );
 
 	CrashExp(scene != nullptr, "Failed To Load Model!");
 	CrashExp((!(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)), "Failed To Load Model!");
@@ -22,12 +23,13 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
 		Crash("ModelLoad Failed");
 	}
 
+	UINT vertexOffset{ 0 };
 
 	for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
 		aiMesh* mesh = scene->mMeshes[i];
-
+		
 		if (mesh->HasPositions()) {
-			meshData.position.reserve(mesh->mNumVertices);
+			//meshData.position.reserve(meshData.position.size() + mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
 				meshData.position.emplace_back(mesh->mVertices[vertex].x, mesh->mVertices[vertex].y, mesh->mVertices[vertex].z);
 			}
@@ -35,7 +37,7 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
 		}
 
 		if (mesh->HasNormals()) {
-			meshData.normal.reserve(mesh->mNumVertices);
+			meshData.normal.reserve(meshData.normal.size() + mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
 				meshData.normal.emplace_back(mesh->mNormals[vertex].x, mesh->mNormals[vertex].y, mesh->mNormals[vertex].z);
 			}
@@ -43,7 +45,7 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
 		}
 
 		if (mesh->HasTextureCoords(0)) {
-			meshData.texCoord1.reserve(mesh->mNumVertices);
+			meshData.texCoord1.reserve(meshData.texCoord1.size() + mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
 				meshData.texCoord1.emplace_back(mesh->mTextureCoords[0][vertex].x, mesh->mTextureCoords[0][vertex].y);
 			}
@@ -51,7 +53,7 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
 		}
 
 		if (mesh->HasTextureCoords(1)) {
-			meshData.texCoord2.reserve(mesh->mNumVertices);
+			meshData.texCoord2.reserve(meshData.texCoord2.size() + mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
 				meshData.texCoord2.emplace_back(mesh->mTextureCoords[1][vertex].x, mesh->mTextureCoords[1][vertex].y);
 			}
@@ -59,8 +61,8 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
 		}
 
 		if (mesh->HasTangentsAndBitangents()) {
-			meshData.tangent.reserve(mesh->mNumVertices);
-			meshData.bitangent.reserve(mesh->mNumVertices);
+			meshData.tangent.reserve(meshData.tangent.size() + mesh->mNumVertices);
+			meshData.bitangent.reserve(meshData.bitangent.size() + mesh->mNumVertices);
 			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
 				meshData.tangent.emplace_back(mesh->mTangents[vertex].x, mesh->mTangents[vertex].y, mesh->mTangents[vertex].z);
 				meshData.bitangent.emplace_back(mesh->mBitangents[vertex].x, mesh->mBitangents[vertex].y, mesh->mBitangents[vertex].z);
@@ -70,12 +72,15 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
 		}
 	    
 		if (mesh->HasFaces()) {
-			meshData.index.reserve(mesh->mNumFaces * 3);
+		
 			for (unsigned int face = 0; face < mesh->mNumFaces; ++face) {
-				meshData.index.emplace_back(mesh->mFaces[face].mIndices[0]);
-				meshData.index.emplace_back(mesh->mFaces[face].mIndices[1]);
-				meshData.index.emplace_back(mesh->mFaces[face].mIndices[2]);
+				meshData.index.emplace_back(vertexOffset + mesh->mFaces[face].mIndices[0]);
+				meshData.index.emplace_back(vertexOffset + mesh->mFaces[face].mIndices[1]);
+				meshData.index.emplace_back(vertexOffset + mesh->mFaces[face].mIndices[2]);
 			}
+
+			vertexOffset += mesh->mNumVertices;
+
 			meshData.indexed = true;
 			meshData.unitCount = static_cast<unsigned int>(meshData.index.size());
 		}
@@ -83,57 +88,50 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
 			meshData.indexed = false;
 			meshData.unitCount = mesh->mNumVertices;
 		}
-        
-        meshData.boneID.resize(mesh->mNumVertices, { 0, 0, 0, 0 });
-        meshData.boneWeight.resize(mesh->mNumVertices, { 0.0f, 0.0f, 0.0f, 0.0f });
 
         if (mesh->HasBones()) {
-            std::vector<std::vector<std::pair<int, float>>> vertexBoneInfo(mesh->mNumVertices);
+			meshData.boneID.resize(meshData.boneID.size() + mesh->mNumVertices);
+			meshData.boneWeight.resize(meshData.boneWeight.size() + mesh->mNumVertices);
 
-            
-            for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex) {
-                aiBone* bone = mesh->mBones[boneIndex];
+			std::unordered_map<std::string, UINT> boneMap{};
 
-                // Bone Weight 순회
-                for (unsigned int weightIndex = 0; weightIndex < bone->mNumWeights; ++weightIndex) {
-                    aiVertexWeight& vertexWeight = bone->mWeights[weightIndex];
+			UINT boneIndex{ 0 };
+			UINT boneNumbers{ 0 };
+			
+			for (UINT i = 0; i < mesh->mNumBones; ++i) {
+				std::string boneName = mesh->mBones[i]->mName.C_Str();
+				if (boneMap.find(boneName) == boneMap.end()) {
+					boneIndex = boneNumbers;
+					boneNumbers++;
+					boneMap[boneName] = boneIndex;
+				}
+				else {
+					boneIndex = boneMap[boneName];
+				}
 
-                    int vertexID = vertexWeight.mVertexId;
-                    float weight = vertexWeight.mWeight;
 
-                    vertexBoneInfo[vertexID].emplace_back(boneIndex, weight);
-                }
-            }
+				for (UINT j = 0; j < mesh->mBones[i]->mNumWeights; ++j) {
+					UINT vertexID = mesh->mBones[i]->mWeights[j].mVertexId;
+					float weight = mesh->mBones[i]->mWeights[j].mWeight;
+					
+					for (auto& id : meshData.boneID[vertexID]) {
+						if (id == 0) {
+							id = boneIndex;
+							break;
+						}
+					}
 
-            // 이하의 과정은 반드시 필요한 것은 아니다. 
-            // 하지만 Assimp 에 aiProcess_LimitBoneWeights 옵션을 적용시켰다고 하더라도, 이가 포맷에 따라 완전히 지원하지 않는다는 보고가 있다. 
-            // 이는 런타임에 진행되는 과정이 아니므로, 다소 비효율적일 수 있더라도, 확실히 후처리를 한 뒤 진행한다. 
-            // 1. 가장 큰 가중치 4개만을 선택한다 ( 정렬 후 선택 ) 
-			// 2. 선택된 가중치들의 합이 1이 되도록 조정한다.
-           
-            for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
-                auto& bones = vertexBoneInfo[vertex];
+					for (auto& w : meshData.boneWeight[vertexID]) {
+						if (w == 0.0f) {
+							w = weight;
+							break;
+						}
+					}
 
-                std::sort(bones.begin(), bones.end(), [](const auto& a, const auto& b) {
-                    return a.second > b.second;
-                    });
+				}
 
-				auto boneView = bones | std::views::take(4);  
+			}
 
-				auto boneIDView = boneView | std::views::transform([](const auto& bone) { return bone.first; });
-				auto boneWeightView = boneView | std::views::transform([](const auto& bone) { return bone.second; });
-				
-				std::ranges::copy(boneIDView, meshData.boneID[vertex].begin());
-                std::ranges::copy(boneWeightView, meshData.boneWeight[vertex].begin());
-
-                float totalWeight{ std::accumulate(boneWeightView.begin(), boneWeightView.end(),0.f) };
-
-                if (totalWeight > 0.0f) {
-                    for (size_t j = 0; j < 4; ++j) {
-                        meshData.boneWeight[vertex][j] /= totalWeight;
-                    }
-                }
-            }
 			meshData.vertexAttribute.set(6);
 			meshData.vertexAttribute.set(7);
         }

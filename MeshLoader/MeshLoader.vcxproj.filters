@@ -30,6 +30,12 @@
     <ClCompile Include="Loader\TerrainLoader.cpp">
       <Filter>Loader</Filter>
     </ClCompile>
+    <ClCompile Include="Loader\AnimationLoader.cpp">
+      <Filter>Loader</Filter>
+    </ClCompile>
+    <ClCompile Include="Base\AnimationData.cpp">
+      <Filter>Base</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Loader\MeshLoader.h">
@@ -40,6 +46,12 @@
     </ClInclude>
     <ClInclude Include="Loader\TerrainLoader.h">
       <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader\AnimationLoader.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Base\AnimationData.h">
+      <Filter>Base</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

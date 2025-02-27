@@ -140,12 +140,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Base\AnimationData.cpp" />
     <ClCompile Include="Base\MeshData.cpp" />
+    <ClCompile Include="Loader\AnimationLoader.cpp" />
     <ClCompile Include="Loader\MeshLoader.cpp" />
     <ClCompile Include="Loader\TerrainLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Base\AnimationData.h" />
     <ClInclude Include="Base\MeshData.h" />
+    <ClInclude Include="Loader\AnimationLoader.h" />
     <ClInclude Include="Loader\MeshLoader.h" />
     <ClInclude Include="Loader\TerrainLoader.h" />
   </ItemGroup>
