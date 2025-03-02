@@ -114,3 +114,29 @@ void BT::BehaviorTree::Update(float deltaTime) {
 void BT::BehaviorTree::SetRoot(NodePtr&& rootNode) {
     mRoot = std::move(rootNode);
 }
+
+void BT::BehaviorTree::SetOtherTree(BehaviorTree& tree) {
+    auto sequence = dynamic_cast<SequenceNode*>(mRoot.get());
+    auto selector = dynamic_cast<SelectorNode*>(mRoot.get());
+    assert(sequence or selector);
+
+    if (sequence) {
+        sequence->AddChild(std::move(tree.mRoot));
+    } 
+    else {
+        selector->AddChild(std::move(tree.mRoot));
+    }
+}
+
+void BT::BehaviorTree::SetChild(NodePtr&& node) {
+    auto sequence = dynamic_cast<SequenceNode*>(mRoot.get());
+    auto selector = dynamic_cast<SelectorNode*>(mRoot.get());
+    assert(sequence or selector);
+
+    if (sequence) {
+        sequence->AddChild(std::move(node));
+    }
+    else {
+        selector->AddChild(std::move(node));
+    }
+}

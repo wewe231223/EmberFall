@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Physics.h"
+#include "GameObject.h"
 
 Physics::Physics() { }
 
@@ -107,6 +108,27 @@ void Physics::Update(const float deltaTime) {
 }
 
 void Physics::LateUpdate(const float deltaTime) { }
+
+void Physics::SolvePenetration(const SimpleMath::Vector3& penetrationVec, const std::shared_ptr<GameObject>& opponent) {
+    auto transform = mTransform.lock();
+
+    float myMass = mFactor.mass.Count();
+    float opponentMass = opponent->GetPhysics()->mFactor.mass.Count();
+    // 내가 무거울 수록 덜 밀려나는 구조.
+    float coefficient = opponentMass / (myMass + opponentMass); // 0.0f ~ 1.0f 사이 값.
+    auto repulsiveVec = penetrationVec;
+    transform->Translate(repulsiveVec);
+
+    bool onOtherObject{ false };
+    bool amIOnGround = IsOnGround() or IsOnOtherObject();
+    bool isOpponentOnGround = opponent->GetPhysics()->IsOnGround() or opponent->GetPhysics()->IsOnOtherObject();
+
+    //if (not amIOnGround and (transform->GetPrevPosition().y > (obb2.Center.y + obb2.Extents.y))) {
+    //    onOtherObject = true;
+    //    transform->SetY(obb1.Extents.y + obb2.Center.y + obb2.Extents.y);
+    //}
+    SetOnOtherObject(onOtherObject);
+}
 
 void Physics::ClampVelocity() {
     SimpleMath::Vector3 velocityXZ = mVelocity;

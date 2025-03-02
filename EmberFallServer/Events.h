@@ -15,6 +15,9 @@
 //        02 - 21 : GameEvent 처리는 Object에 위임하고 EventManager를 만들어 놓자.
 //                  전역 변수를 쓰기는 싫었지만 이경우에는 써야할거 같다...
 // 
+//        02 - 27 : GameEvent를 매번 모든 오브젝트에게 보내는 건 너무 낭비가 심하다.
+//                  차라리 Sender, Receiver를 같이 기억하게 하고 Receiver만 처리하게 하자
+// 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 enum class GameEventType : UINT16 {
@@ -38,6 +41,7 @@ struct PlayerEvent {
 struct GameEvent {
     GameEventType type;
     NetworkObjectIdType sender;
+    NetworkObjectIdType receiver;
 };
 
 struct AttackEvent : public GameEvent {
@@ -45,6 +49,5 @@ struct AttackEvent : public GameEvent {
 };
 
 struct GemDestroyEvent : public GameEvent {
-    NetworkObjectIdType target; // 상호작용 대상
     float holdTime; // 키 입력 유지시간.
 };

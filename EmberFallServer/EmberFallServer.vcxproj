@@ -144,6 +144,7 @@
     <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp" />
     <ClCompile Include="BehaviorTreeBase.cpp" />
     <ClCompile Include="BehaviorTreeMonster.cpp" />
+    <ClCompile Include="BT_MonsterChase.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="TerrainCollider.cpp" />
     <ClCompile Include="CorruptedGem.cpp" />
@@ -174,6 +175,7 @@
   <ItemGroup>
     <ClInclude Include="BehaviorTreeBase.h" />
     <ClInclude Include="BehaviorTreeMonster.h" />
+    <ClInclude Include="BT_MonsterChase.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="TerrainCollider.h" />
     <ClInclude Include="CorruptedGem.h" />

@@ -53,6 +53,8 @@ public:
     void Update(const float deltaTime);
     void LateUpdate(const float deltaTime);
 
+    void SolvePenetration(const SimpleMath::Vector3& penetrationVec, const std::shared_ptr<class GameObject>& opponent);
+
 private:
     void ClampVelocity();
     void UpdateFriction(const float deltaTime, const SimpleMath::Vector3& moveDir, const float speed);

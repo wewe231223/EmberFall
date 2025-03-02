@@ -145,30 +145,20 @@ void GameObject::DispatchGameEvent(GameEvent* event) {
     }
 }
 
-void GameObject::OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
+void GameObject::OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 
+    //for (auto& component : mComponents) {
+    //    component->OnCollisionEnter(opponent, impulse);
+    //}
+}
 
-void GameObject::OnCollisionStay(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    auto obb1 = std::static_pointer_cast<OrientedBoxCollider>(mCollider)->GetBoundingBox();
-    auto obb2 = std::static_pointer_cast<OrientedBoxCollider>(opponent->mCollider)->GetBoundingBox();
-
-    float myMass = mPhysics->mFactor.mass.Count();
-    float opponentMass = opponent->mPhysics->mFactor.mass.Count();
-    // 내가 무거울 수록 덜 밀려나는 구조.
-    float coefficient = opponentMass / (myMass + opponentMass); // 0.0f ~ 1.0f 사이 값.
-    auto repulsiveVec = impulse;
-    mTransform->Translate(repulsiveVec);
-
-    bool onOtherObject{ false };
-    bool amIOnGround = mPhysics->IsOnGround() or mPhysics->IsOnOtherObject();
-    bool isOpponentOnGround = opponent->mPhysics->IsOnGround() or opponent->mPhysics->IsOnOtherObject();
-
-    if (not amIOnGround and (mTransform->GetPrevPosition().y > (obb2.Center.y + obb2.Extents.y))) {
-        onOtherObject = true;
-        mTransform->SetY(obb1.Extents.y + obb2.Center.y + obb2.Extents.y);
-    }
-    mPhysics->SetOnOtherObject(onOtherObject);
+void GameObject::OnCollisionStay(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 
+    //for (auto& component : mComponents) {
+    //    component->OnCollisionStay(opponent, impulse);
+    //}
 }
 
 void GameObject::OnCollisionExit(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    mPhysics->SetOnOtherObject(false);
+    //for (auto& component : mComponents) {
+    //    component->OnCollisionExit(opponent, impulse);
+    //}
 }

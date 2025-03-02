@@ -149,7 +149,7 @@ void PlayerScript::DestroyGem(const float deltaTime) {
 
     std::shared_ptr<GemDestroyEvent> event = std::make_shared<GemDestroyEvent>();
     event->type = GameEventType::DESTROY_GEM_EVENT;
-    event->target = nearestObj->GetId();
+    event->receiver = nearestObj->GetId();
     event->holdTime = holdStart += deltaTime;
     gEventManager->PushEvent(event);
 }

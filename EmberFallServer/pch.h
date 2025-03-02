@@ -1,15 +1,17 @@
 #pragma once
 
+// Cpp Util
 #include <filesystem>
 
-#include <type_traits>
-
 #include <random>
+
+// Cpp Container
 #include <map>
 #include <deque>
-
 #include <queue>
+#include <unordered_set>
 
+// Server Library
 #include "../ServerLib/pch.h"
 #include "../ServerLib/NetworkCore.h"
 
@@ -19,7 +21,9 @@
 #pragma comment(lib, "../out/Release/ServerLib.lib")
 #endif
 
+// Util & Global Include
 #include "Events.h"
 #include "GameRandom.h"
 
+// Global Instance
 extern std::shared_ptr<class GameEventManager> gEventManager;

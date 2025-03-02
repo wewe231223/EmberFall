@@ -95,7 +95,12 @@ std::vector<std::shared_ptr<class GameObject>>& PlayScene::GetObjects() {
 }
 
 std::shared_ptr<GameObject> PlayScene::GetObjectFromId(NetworkObjectIdType id) {
-    return mObjects[id];
+    if (id >= OBJECT_ID_START) {
+        return mObjects[id];
+    }
+    else {
+        return mPlayers[static_cast<SessionIdType>(id)];
+    }
 }
 
 void PlayScene::Init() {
@@ -121,7 +126,6 @@ void PlayScene::Init() {
         factors.mass = 10.0f;
 
         mTerrainCollider.AddObjectInTerrainGroup(object);
-        gEventManager->AddListener(object);
 
         object->Init();
     }
@@ -201,8 +205,6 @@ void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerOb
 
     mTerrainCollider.AddObjectInTerrainGroup(playerObject);
 
-    gEventManager->AddListener(playerObject);
-
     playerObject->Init();
 }
 
@@ -217,7 +219,5 @@ void PlayScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerO
     mPlayerList.pop_back();
 
     mTerrainCollider.RemoveObjectFromTerrainGroup(playerObject);
-
-    gEventManager->RemoveListener(playerObject);
     mPlayers.erase(it);
 }

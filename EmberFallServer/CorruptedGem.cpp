@@ -31,7 +31,7 @@ void CorruptedGemScript::DispatchGameEvent(GameEvent* event) {
 }
 
 void CorruptedGemScript::OnDestroy(GemDestroyEvent* event) {
-    if (event->target != GetOwner()->GetId()) {
+    if (event->receiver != GetOwner()->GetId()) {
         return;
     }
 

@@ -31,7 +31,7 @@ void ServerFrame::InitGameScenes() {
 
     mCurrentScene = mGameScenes.front();
     mCurrentScene->Init();
-    mTimer->Sync(0);
+    mTimer->Sync(30);
 }
 
 void ServerFrame::GameLoop() {
