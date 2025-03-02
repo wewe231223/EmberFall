@@ -31,7 +31,7 @@ struct AnimationClip {
     std::unordered_map<std::string, UINT> boneIndexMap{};           // 2) 여기서 index 를 통해 boneoffset matrix 를 얻는다. 
 	std::unordered_map<std::string, BoneAnimation> boneAnimations{};// 3) 이 이름을 활용해서 bone animation 을 얻는다.
 
-    std::shared_ptr<BoneNode> root{ nullptr };
+    std::shared_ptr<BoneNode> root{ nullptr }; 
 };
 
 
