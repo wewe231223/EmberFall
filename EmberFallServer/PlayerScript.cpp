@@ -98,11 +98,11 @@ void PlayerScript::LateUpdate(const float deltaTime) {
     mInput->Update();
 }
 
-void PlayerScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent) { }
+void PlayerScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
-void PlayerScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent) { }
+void PlayerScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
-void PlayerScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent) { }
+void PlayerScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
 void PlayerScript::DispatchGameEvent(GameEvent* event) { }
 

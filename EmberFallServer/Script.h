@@ -26,9 +26,9 @@ public:
     virtual void Update(const float deltaTime) abstract;
     virtual void LateUpdate(const float deltaTime) abstract;
 
-    virtual void OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent) abstract;
-    virtual void OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent) abstract;
-    virtual void OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent) abstract;
+    virtual void OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) abstract;
+    virtual void OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) abstract;
+    virtual void OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) abstract;
 
     virtual void DispatchGameEvent(struct GameEvent* event) abstract;
     

@@ -13,11 +13,11 @@ void CorruptedGemScript::Update(const float deltaTime) { }
 
 void CorruptedGemScript::LateUpdate(const float deltaTime) { }
 
-void CorruptedGemScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent) { }
+void CorruptedGemScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
-void CorruptedGemScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent) { }
+void CorruptedGemScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
-void CorruptedGemScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent) { }
+void CorruptedGemScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
 void CorruptedGemScript::DispatchGameEvent(GameEvent* event) { 
     switch (event->type) {

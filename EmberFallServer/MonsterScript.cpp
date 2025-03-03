@@ -26,11 +26,11 @@ void MonsterScript::LateUpdate(const float deltaTime) {
     }
 }
 
-void MonsterScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent) { }
+void MonsterScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
-void MonsterScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent) { }
+void MonsterScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
-void MonsterScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent) { }
+void MonsterScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
 void MonsterScript::DispatchGameEvent(GameEvent* event) { 
     switch (event->type) {

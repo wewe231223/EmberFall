@@ -423,6 +423,7 @@ namespace GameUnits {
 }
 
 namespace GameUnitLiterals {
+#pragma warning(disable: 4455)
     // speed
     constexpr GameUnits::GameUnit<GameUnits::MeterPerSec> operator""mps(long double mps) {
         return GameUnits::GameUnit<GameUnits::MeterPerSec>(mps);
