@@ -30,7 +30,7 @@ public:
     std::set<std::shared_ptr<class GameObject>>& GetInRangeObjects();
 
 public:
-    float mViewRange{ 100.0f };
+    GameUnits::GameUnit<GameUnits::Meter> mViewRange{ 100.0m };
     SimpleMath::Vector3 mPosition{ };
     std::shared_ptr<class IServerGameScene> mCurrentScene{ };
 

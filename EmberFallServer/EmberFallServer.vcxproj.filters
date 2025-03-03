@@ -38,6 +38,9 @@
     <Filter Include="BehaviorTree\TestMonster">
       <UniqueIdentifier>{1b526a72-8971-4d1e-8236-7986ba6ffdd1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PathFinding">
+      <UniqueIdentifier>{d73b7875-f5ee-4c83-bf48-22772279a75c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -121,6 +124,12 @@
     <ClCompile Include="BT_MonsterChase.cpp">
       <Filter>BehaviorTree\TestMonster</Filter>
     </ClCompile>
+    <ClCompile Include="PathFinder.cpp">
+      <Filter>PathFinding</Filter>
+    </ClCompile>
+    <ClCompile Include="TileMap.cpp">
+      <Filter>PathFinding</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -197,6 +206,12 @@
     </ClInclude>
     <ClInclude Include="BT_MonsterChase.h">
       <Filter>BehaviorTree\TestMonster</Filter>
+    </ClInclude>
+    <ClInclude Include="PathFinder.h">
+      <Filter>PathFinding</Filter>
+    </ClInclude>
+    <ClInclude Include="TileMap.h">
+      <Filter>PathFinding</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

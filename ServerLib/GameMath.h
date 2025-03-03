@@ -77,6 +77,11 @@ namespace MathUtil {
         return point.LengthSquared() < (radius * radius);
     }
 
+    inline bool IsInRange(GameUnits::GameUnit<GameUnits::Meter> radius, const SimpleMath::Vector3& point)
+    {
+        return point.LengthSquared() < (radius * radius).Count();
+    }
+
     inline float VectorLengthSq(const SimpleMath::Vector3& v1, const SimpleMath::Vector3& v2)
     {
         auto sub = v1 - v2;
@@ -92,6 +97,11 @@ namespace MathUtil {
     inline bool IsInRange(const SimpleMath::Vector3& center, float radius, const SimpleMath::Vector3& point)
     {
         return VectorLengthSq(center, point) < (radius * radius);
+    }
+
+    inline bool IsInRange(const SimpleMath::Vector3& center, GameUnits::GameUnit<GameUnits::Meter> radius, const SimpleMath::Vector3& point)
+    {
+        return VectorLengthSq(center, point) < (radius * radius).Count();
     }
 
     // Convert Vector3 to Vector2 , Ignore Y

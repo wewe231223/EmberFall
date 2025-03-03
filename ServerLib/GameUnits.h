@@ -200,6 +200,11 @@ namespace GameUnits {
             mRep = Count() / scalar;
             return *this;
         }
+
+        constexpr auto operator*(GameUnit<Unit> right) {
+            mRep = Count() * right.Count();
+            return *this;
+        }
     
         template <typename RightUnitType> requires IsUnitType<RightUnitType>
         constexpr auto operator*(GameUnit<RightUnitType> right) {
@@ -248,6 +253,11 @@ namespace GameUnits {
             else {
                 static_assert(false);
             }
+        }
+
+        constexpr auto operator/(GameUnit<Unit> right) {
+            mRep = Count() / right.Count();
+            return *this;
         }
 
         template <typename RightUnitType> requires IsUnitType<RightUnitType>
