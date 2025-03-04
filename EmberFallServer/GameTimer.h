@@ -63,4 +63,19 @@ private:
     TimePoint mPointSinceStart{ };
 };
 
+class StaticTimer {
+public:
+    static UINT32 GetFps();
+    static float GetDeltaTime();
+    static float GetTimeFromStart();
+
+    static void Update();
+
+    static void PushTimerEvent(EventCallBack&& callback, Duration time);
+
+private:
+    inline static GameTimer mTimer{ };
+    inline static std::priority_queue<TimerEvent> mEventQueue{ };
+};
+
 using TimerEvent = GameTimer::TimerEvent;

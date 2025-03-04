@@ -36,6 +36,7 @@ void ServerFrame::InitGameScenes() {
 
 void ServerFrame::GameLoop() {
     while (true) {
+        StaticTimer::Update();
         mTimer->Update();
         const float deltaTime = mTimer->GetDeltaTime();
 

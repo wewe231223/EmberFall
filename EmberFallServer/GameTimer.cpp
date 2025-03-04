@@ -75,3 +75,19 @@ void GameTimer::Update() {
 void GameTimer::PushTimerEvent(EventCallBack&& callback, Duration time) {
     mEventQueue.emplace(std::move(callback), Clock::now() + std::chrono::duration_cast<Clock::duration>(time));
 }
+
+UINT32 StaticTimer::GetFps() {
+    return mTimer.GetFps();
+}
+
+float StaticTimer::GetDeltaTime() {
+    return mTimer.GetDeltaTime();
+}
+
+float StaticTimer::GetTimeFromStart() {
+    return mTimer.GetTimeFromStart();
+}
+
+void StaticTimer::Update() {
+    mTimer.Update();
+}
