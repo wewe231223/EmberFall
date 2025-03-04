@@ -8,7 +8,7 @@
 #include "ServerGameScene.h"
 
 MonsterScript::MonsterScript(std::shared_ptr<class GameObject> owner)
-    : Script{ owner } { }
+    : Script{ owner, ObjectTag::MONSTER } { }
 
 MonsterScript::~MonsterScript() { }
 
@@ -28,7 +28,19 @@ void MonsterScript::LateUpdate(const float deltaTime) {
 
 void MonsterScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
-void MonsterScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
+void MonsterScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+    switch (opponent->GetTag()) {
+    case ObjectTag::MONSTER:
+        GetOwner()->GetPhysics()->SolvePenetration(impulse, opponent);
+        break;
+
+    case ObjectTag::PLAYER:
+        break;
+
+    default:
+        break;
+    }
+}
 
 void MonsterScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 

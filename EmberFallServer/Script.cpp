@@ -1,8 +1,10 @@
 #include "pch.h"
 #include "Script.h"
 
-Script::Script(std::shared_ptr<class GameObject> owner) 
-    : GameObjectComponent{ owner }, mOwner { owner } { }
+Script::Script(std::shared_ptr<GameObject> owner, ObjectTag tag) 
+    : GameObjectComponent{ owner }, mOwner { owner } { 
+    mOwner.lock()->SetTag(tag);
+}
 
 Script::~Script() { }
 

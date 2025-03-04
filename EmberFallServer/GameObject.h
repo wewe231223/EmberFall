@@ -50,6 +50,7 @@ public:
     void InitId(NetworkObjectIdType id);
     void SetActive(bool active);
     void SetColor(const SimpleMath::Vector3& color);
+    void SetTag(ObjectTag tag);
 
     void Init();
 

@@ -140,7 +140,7 @@ namespace BT {
         void SetRoot(NodePtr&& rootNode);
         void SetOtherTree(BehaviorTree& tree);
         void SetChild(NodePtr&& node);
-            
+
     private:
         NodePtr mRoot{ nullptr };
     };

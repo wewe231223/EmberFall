@@ -3,7 +3,7 @@
 #include "GameObject.h"
 
 CorruptedGemScript::CorruptedGemScript(std::shared_ptr<GameObject> owner) 
-    : Script{ owner } { }
+    : Script{ owner, ObjectTag::NONE } { }
 
 CorruptedGemScript::~CorruptedGemScript() { }
 

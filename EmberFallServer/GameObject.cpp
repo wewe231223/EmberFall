@@ -75,6 +75,10 @@ void GameObject::SetColor(const SimpleMath::Vector3& color) {
     mColor = color;
 }
 
+void GameObject::SetTag(ObjectTag tag) {
+    mTag = tag;
+}
+
 void GameObject::Init() {
     for (auto& component : mComponents) {
         component->Init();
@@ -146,19 +150,19 @@ void GameObject::DispatchGameEvent(GameEvent* event) {
 }
 
 void GameObject::OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 
-    //for (auto& component : mComponents) {
-    //    component->OnCollisionEnter(opponent, impulse);
-    //}
+    for (auto& component : mComponents) {
+        component->OnHandleCollisionEnter(opponent, impulse);
+    }
 }
 
 void GameObject::OnCollisionStay(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 
-    //for (auto& component : mComponents) {
-    //    component->OnCollisionStay(opponent, impulse);
-    //}
+    for (auto& component : mComponents) {
+        component->OnHandleCollisionStay(opponent, impulse);
+    }
 }
 
 void GameObject::OnCollisionExit(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    //for (auto& component : mComponents) {
-    //    component->OnCollisionExit(opponent, impulse);
-    //}
+    for (auto& component : mComponents) {
+        component->OnHandleCollisionExit(opponent, impulse);
+    }
 }

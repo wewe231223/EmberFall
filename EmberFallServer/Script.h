@@ -9,13 +9,14 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "GameObject.h"
 #include "GameObjectComponent.h"
 
 class GameObject;
 
 class Script abstract : public GameObjectComponent {
 public:
-    Script(std::shared_ptr<GameObject> owner);
+    Script(std::shared_ptr<GameObject> owner, ObjectTag tag);
     virtual ~Script();
 
 public:

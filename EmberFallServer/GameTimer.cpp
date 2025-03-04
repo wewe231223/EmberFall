@@ -89,5 +89,6 @@ float StaticTimer::GetTimeFromStart() {
 }
 
 void StaticTimer::Update() {
+    mTimer.Sync(0);
     mTimer.Update();
 }

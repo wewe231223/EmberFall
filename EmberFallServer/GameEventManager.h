@@ -34,8 +34,6 @@ public:
 
     void Update();
 
-    void EventLog(GameEvent* event);
-
 private:
     std::queue<std::shared_ptr<GameEvent>> mEvents{ };
     std::shared_ptr<class IServerGameScene> mCurrentScene{ };

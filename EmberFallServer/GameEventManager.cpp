@@ -25,7 +25,3 @@ void GameEventManager::Update() {
         mEvents.pop();
     }
 }
-
-void GameEventManager::EventLog(GameEvent* event) {
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Handle Event {}", typeid(static_cast<AttackEvent*>(event)).name());
-}
