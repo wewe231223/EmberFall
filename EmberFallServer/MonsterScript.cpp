@@ -36,8 +36,6 @@ void MonsterScript::DispatchGameEvent(GameEvent* event) {
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
         mHp -= static_cast<AttackEvent*>(event)->damage;
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster [{}] Handling AttackEvent, HP: {}",
-                                                        GetOwner()->GetId() - OBJECT_ID_START, mHp);
         break;
 
     default:
@@ -46,7 +44,6 @@ void MonsterScript::DispatchGameEvent(GameEvent* event) {
 }
 
 BT::NodeStatus MonsterScript::SetRandomTargetLocation(const float deltaTime) {
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "[BehaviorTree Log]: Monster[{}]: Get New Random Target Location", GetOwner()->GetId() - OBJECT_ID_START);
     mTargetPos = Random::GetRandomVec3(SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f }, SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f });
     return BT::NodeStatus::SUCCESS;
 }
@@ -60,7 +57,6 @@ BT::NodeStatus MonsterScript::MoveTo(const float deltaTime) {
     auto compareXZ = owner->GetPosition();
     compareXZ.y = 0.0f;
     if (SimpleMath::Vector3::DistanceSquared(mTargetPos, compareXZ) < 0.5f * 0.5f) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "[BehaviorTree Log]: Monster[{}]'s BT: MoveTo Success...", owner->GetId() - OBJECT_ID_START);
         return BT::NodeStatus::SUCCESS;
     }
 
@@ -80,16 +76,12 @@ BT::NodeStatus MonsterScript::DetectPlayerInRange(const float deltaTime) {
     for (const auto& player : playerList) {
         auto distance = SimpleMath::Vector3::Distance(player->GetPosition(), owner->GetPosition());
         if (distance < mPlayerDetectRange.Count()) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_INFO, 
-                "[BehaviorTree Log]: Monster[{}]'s BT: Start Chase Player[{}]!!!", owner->GetId(), player->GetId());
             mChaseTarget = player;
             return BT::NodeStatus::SUCCESS;
         }
     }
 
     mChaseTarget = nullptr;
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO,
-        "[BehaviorTree Log]: Monster[{}]'s BT: Detect Player Failure", owner->GetId());
     return BT::NodeStatus::FAIL;
 }
 
@@ -100,14 +92,13 @@ BT::NodeStatus MonsterScript::ChaseDetectedPlayer(const float deltaTime) {
     moveDir.y = 0.0f;
     moveDir.Normalize();
 
+    targetPos.y = 0.0f;
     auto compareXZ = owner->GetPosition();
     compareXZ.y = 0.0f;
     if (SimpleMath::Vector3::DistanceSquared(targetPos, compareXZ) < 0.5f * 0.5f) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "[BehaviorTree Log]: Monster[{}]'s BT: Chase Success...", owner->GetId() - OBJECT_ID_START);
         return BT::NodeStatus::SUCCESS;
     }
     else if (SimpleMath::Vector3::DistanceSquared(targetPos, compareXZ) > mPlayerDetectRange.Count() * mPlayerDetectRange.Count()) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "[BehaviorTree Log]: Monster[{}]'s BT: Chase Failure...", owner->GetId() - OBJECT_ID_START);
         return BT::NodeStatus::FAIL;
     }
 

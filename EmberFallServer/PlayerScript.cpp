@@ -114,7 +114,7 @@ std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
 
     auto owner = GetOwner();
     auto ownerPos = owner->GetPosition();
-    auto nearestObj = *std::min_element(inRangeObjects.begin(), inRangeObjects.end(), // 가장 가까운 오브젝트 구하기 O(N)
+    decltype(auto) nearestObj = *std::min_element(inRangeObjects.begin(), inRangeObjects.end(), // 가장 가까운 오브젝트 구하기 O(N)
         [=](const std::shared_ptr<GameObject>& obj1, const std::shared_ptr<GameObject>& obj2) {
             if (owner == obj1 or owner == obj2) {
                 return false;
