@@ -41,6 +41,15 @@
     <Filter Include="PathFinding">
       <UniqueIdentifier>{d73b7875-f5ee-4c83-bf48-22772279a75c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Graph">
+      <UniqueIdentifier>{1b284061-0b82-4ed7-a035-c59ee0553925}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graph\GraphSearch">
+      <UniqueIdentifier>{ea01f14d-fee2-497c-925e-18449b5c8052}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Graph\GraphBase">
+      <UniqueIdentifier>{46614c48-9d7a-484a-a51f-64d9233bd237}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -130,6 +139,12 @@
     <ClCompile Include="TileMap.cpp">
       <Filter>PathFinding</Filter>
     </ClCompile>
+    <ClCompile Include="GraphEdge.cpp">
+      <Filter>Graph\GraphBase</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphSearch.cpp">
+      <Filter>Graph\GraphSearch</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -212,6 +227,12 @@
     </ClInclude>
     <ClInclude Include="TileMap.h">
       <Filter>PathFinding</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphEdge.h">
+      <Filter>Graph\GraphBase</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphSearch.h">
+      <Filter>Graph\GraphSearch</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
