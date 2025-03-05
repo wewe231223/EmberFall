@@ -149,9 +149,6 @@ void DefaultBuffer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	D3D12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST) };
 	commandList->ResourceBarrier(1, &barrier);
 
-	// 애를 64KB Alignment 로 하면서 copyBufferRegion 을 활용하도록 하는 방법을 생각해보자. 
-	// commandList->CopyResource(mBuffer.Get(), mUploadBuffer.Get());
-
 	D3D12_SUBRESOURCE_DATA subresourceData{};
 	subresourceData.pData = mData.get();
 	subresourceData.RowPitch = mSize;
@@ -159,10 +156,10 @@ void DefaultBuffer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList) {
 
 	::UpdateSubresources(commandList.Get(), mBuffer.Get(), mUploadBuffer.Get(), 0, 0, 1, &subresourceData);
 	
-
 	barrier = CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
 	commandList->ResourceBarrier(1, &barrier);
 }
+
 
 void DefaultBuffer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator begin, DefaultBufferCPUIterator end, size_t dstBegin) {
 	D3D12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST) };

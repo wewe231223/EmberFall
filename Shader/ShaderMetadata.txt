@@ -1,2 +1,3 @@
 Standard.hlsl { vs vs_5_1 Standard_VS ps ps_5_1 Standard_PS }
 TerrainTessellation.hlsl { vs vs_5_1 Terrain_VS hs hs_5_1 Terrain_HS ds ds_5_1 Terrain_DS ps ps_5_1 Terrain_PS }
+StandardAnimation.hlsl { vs vs_5_1 StandardAnimation_VS ps ps_5_1 StandardAnimation_PS }  

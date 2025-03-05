@@ -3,6 +3,7 @@
 #include "../Renderer/Manager/MeshRenderManager.h"
 #include "../Game/GameObject/GameObject.h"
 #include "../Game/Scene/Camera.h"
+#include "../Game/GameObject/Animator.h"
 
 class Scene {
 public:
@@ -16,11 +17,15 @@ private:
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{ nullptr };
 	std::shared_ptr<MaterialManager> mMaterialManager{ nullptr };
 
-	std::unordered_map<std::string, std::unique_ptr<PlainMesh>> mMeshMap{};
+	std::unordered_map<std::string, std::unique_ptr<Mesh>> mMeshMap{};
 	std::unordered_map<std::string, std::unique_ptr<GraphicsShaderBase>> mShaderMap{};
 
 	Camera mCamera{};
 	std::unique_ptr<CameraMode> mCameraMode{ nullptr };
 
 	std::vector<GameObject> mGameObjects{};
+
+	Animator testAnimator{};
+
+
 };

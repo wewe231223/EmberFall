@@ -1,6 +1,6 @@
 #pragma once 
 #include <tuple> 
-#include "../Renderer/Resource/PlainMesh.h"
+#include "../Renderer/Resource/Mesh.h"
 #include "../Renderer/Core/Shader.h"
 #include "../Utility/Defines.h"
 #include "../Game/GameObject/Transform.h"
@@ -14,7 +14,7 @@ public:
 public:
 	operator bool() const;
 
-	std::tuple<PlainMesh*, GraphicsShaderBase*, PlainModelContext> GetRenderData() const;
+	std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GetRenderData() const;
 
 	const Transform& GetTransform() const;
 	Transform& GetTransform();
@@ -23,12 +23,12 @@ public:
 	void ToggleActiveState();
 	void UpdateShaderVariables(); 
 public:
-	PlainMesh* mMesh{ nullptr };
+	Mesh* mMesh{ nullptr };
 	GraphicsShaderBase* mShader{ nullptr };
 	MaterialIndex mMaterial{ 0 };
 
 private:
-	PlainModelContext mModelContext{};
+	ModelContext mModelContext{};
 
 	Transform mTransform{};
 	Collider mCollider{};

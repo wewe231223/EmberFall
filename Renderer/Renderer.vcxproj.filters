@@ -42,7 +42,7 @@
     <ClCompile Include="core\Shader.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Resource\PlainMesh.cpp">
+    <ClCompile Include="Resource\Mesh.cpp">
       <Filter>Resource</Filter>
     </ClCompile>
     <ClCompile Include="Manager\MeshRenderManager.cpp">
@@ -74,7 +74,7 @@
     <ClInclude Include="core\Shader.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Resource\PlainMesh.h">
+    <ClInclude Include="Resource\Mesh.h">
       <Filter>Resource</Filter>
     </ClInclude>
     <ClInclude Include="Manager\TextureManager.h">
@@ -95,6 +95,9 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="..\Shader\Sources\TerrainTessellation.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\StandardAnimation.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>

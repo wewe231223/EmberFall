@@ -10,6 +10,9 @@
 #pragma comment(lib,"out/release/MeshLoader.lib")
 #endif
 
+#include <ranges>
+#include "../Game/System/Timer.h"
+
 Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers) {
 	mMeshRenderManager = std::get<0>(managers);
 	mTextureManager = std::get<1>(managers);
@@ -22,18 +25,9 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	MeshLoader loader{};
 	auto meshData = loader.Load(assetPath);
 
-	UINT max = 0;
-	for (auto& ids : meshData.boneID) {
-		UINT m{ 0 };
-		m = *std::max_element(ids.begin(), ids.end());
-		if (m > max) max = m;
-	}
 
-	std::vector<int>as(max);
-
-
-	mMeshMap["Cube"] = std::make_unique<PlainMesh>(device, commandList, EmbeddedMeshType::Sphere, 5);
-	mMeshMap["T_Pose"] = std::make_unique<PlainMesh>(device, commandList, meshData);
+	mMeshMap["Cube"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Sphere, 5);
+	mMeshMap["T_Pose"] = std::make_unique<Mesh>(device, commandList, meshData);
 
 
 	std::unique_ptr<GraphicsShaderBase> shader = std::make_unique<StandardShader>();
@@ -56,7 +50,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["StandardShader"].get();
 		object.mMesh = mMeshMap["T_Pose"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.GetTransform().Scaling(10000.f, 10000.f, 10000.f);
+		// object.GetTransform().Scaling(10000.f, 10000.f, 10000.f);
 	}
 
 	mCamera = Camera(device);
@@ -68,7 +62,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	TerrainLoader terrainLoader{};
 	auto terrainData = terrainLoader.Load("Resources/Binarys/Terrain/HeightMap.raw", true);
-	mMeshMap["Terrain"] = std::make_unique<PlainMesh>(device, commandList, terrainData);
+	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, terrainData);
 
 	shader = std::make_unique<TerrainShader>();
 	shader->CreateShader(device);
@@ -82,12 +76,28 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		
 		object.GetTransform().GetPosition() = { 100.f, 0.f, 100.f };
 		object.GetTransform().Scaling(5.f, 1.f, 5.f);
-
 	}
 
 
+	shader = std::make_unique<SkinnedShader>();
+	shader->CreateShader(device);
+	mShaderMap["SkinnedShader"] = std::move(shader);
+
+
+
+
 	AnimationLoader Animloader{};
-	auto animationData = Animloader.Load(assetPath);
+	auto animationData = Animloader.Load(assetPath,10);
+	testAnimator = Animator(animationData);
+
+	{
+		auto& object = mGameObjects.emplace_back();
+		object.mShader = mShaderMap["SkinnedShader"].get();
+		object.mMesh = mMeshMap["T_Pose"].get();
+		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+		//object.GetTransform().Rotate(0.f, 0.f, -DirectX::XM_PI);
+		object.GetTransform().Scaling(10.f, 10.f, 10.f);
+	}
 
 
 	mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
@@ -96,8 +106,8 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 void Scene::Update() {
 	mCameraMode->Update();
-
-	for (auto& gameObject : mGameObjects) {
+	
+	for (auto& gameObject : mGameObjects | std::views::take(2) ) {
 		if (gameObject) {
 			auto& transform = gameObject.GetTransform();
 			transform.UpdateWorldMatrix();
@@ -106,6 +116,24 @@ void Scene::Update() {
 			mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
 		}
 	}
+
+
+
+	static double counter = 0.0;
+
+	counter += 0.001;
+	std::vector<SimpleMath::Matrix> boneTransforms{};
+	testAnimator.UpdateBoneTransform(counter, boneTransforms);
+
+	auto& object = mGameObjects.back();
+	auto& transform = object.GetTransform();
+	transform.UpdateWorldMatrix();
+
+	auto [mesh, shader, modelContext] = object.GetRenderData();
+
+	mMeshRenderManager->AppendBonedMeshContext(shader, mesh, modelContext, boneTransforms);
+
+
 }
 
 void Scene::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList) {

@@ -5,8 +5,8 @@ GameObject::operator bool() const {
 	return mActiveState;
 }
 
-std::tuple<PlainMesh*, GraphicsShaderBase*, PlainModelContext> GameObject::GetRenderData() const {
-	return std::make_tuple(mMesh, mShader, PlainModelContext{ mTransform.GetWorldMatrix().Transpose(), mMaterial});
+std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GameObject::GetRenderData() const {
+	return std::make_tuple(mMesh, mShader, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mMaterial});
 }
 
 const Transform& GameObject::GetTransform() const {

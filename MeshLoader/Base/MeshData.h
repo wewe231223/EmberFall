@@ -13,7 +13,7 @@ struct MeshData {
 	std::vector<DirectX::XMFLOAT2> texCoord2{};
 	std::vector<DirectX::XMFLOAT3> tangent{};
 	std::vector<DirectX::XMFLOAT3> bitangent{};
-	std::vector<std::array<unsigned int, 4>> boneID{};
+	std::vector<std::array<int, 4>> boneID{};
 	std::vector<std::array<float, 4>> boneWeight{};
 
 	std::vector<unsigned int> index{};

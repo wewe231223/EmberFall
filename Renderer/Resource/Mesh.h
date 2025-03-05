@@ -10,20 +10,20 @@ enum class EmbeddedMeshType : BYTE {
 };
 
 
-class PlainMesh {
+class Mesh {
 public:
-	PlainMesh(); 
+	Mesh(); 
 	// Other Ctors... 
-	PlainMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, EmbeddedMeshType type, UINT size = 1);
-	PlainMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const MeshData& meshData);
-	PlainMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const std::filesystem::path& binPath);
-	~PlainMesh();
+	Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, EmbeddedMeshType type, UINT size = 1);
+	Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const MeshData& meshData);
+	Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const std::filesystem::path& binPath);
+	~Mesh();
 
-	PlainMesh(const PlainMesh& other);
-	PlainMesh& operator=(const PlainMesh& other);
+	Mesh(const Mesh& other);
+	Mesh& operator=(const Mesh& other);
 
-	PlainMesh(PlainMesh&& other) noexcept;
-	PlainMesh& operator=(PlainMesh&& other) noexcept;
+	Mesh(Mesh&& other) noexcept;
+	Mesh& operator=(Mesh&& other) noexcept;
 public:
 	void Bind(ComPtr<ID3D12GraphicsCommandList> commandList,const std::bitset<8>& attribute) const;
 	bool GetIndexed() const;

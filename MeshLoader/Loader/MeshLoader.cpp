@@ -12,7 +12,7 @@
 MeshData MeshLoader::Load(const std::filesystem::path& path) {
 	MeshData meshData{};
 
-	const aiScene* scene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcess_LimitBoneWeights | aiProcess_ConvertToLeftHanded  );
+	const aiScene* scene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcess_ConvertToLeftHanded  );
 
 	CrashExp(scene != nullptr, "Failed To Load Model!");
 	CrashExp((!(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)), "Failed To Load Model!");
@@ -95,11 +95,12 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
 
 			std::unordered_map<std::string, UINT> boneMap{};
 
-			UINT boneIndex{ 0 };
 			UINT boneNumbers{ 0 };
 			
-			for (UINT i = 0; i < mesh->mNumBones; ++i) {
-				std::string boneName = mesh->mBones[i]->mName.C_Str();
+			for (UINT b = 0; b < mesh->mNumBones; ++b) {
+				UINT boneIndex{ 0 };
+				std::string boneName = mesh->mBones[b]->mName.C_Str();
+				
 				if (boneMap.find(boneName) == boneMap.end()) {
 					boneIndex = boneNumbers;
 					boneNumbers++;
@@ -109,25 +110,19 @@ MeshData MeshLoader::Load(const std::filesystem::path& path) {
 					boneIndex = boneMap[boneName];
 				}
 
-
-				for (UINT j = 0; j < mesh->mBones[i]->mNumWeights; ++j) {
-					UINT vertexID = mesh->mBones[i]->mWeights[j].mVertexId;
-					float weight = mesh->mBones[i]->mWeights[j].mWeight;
 					
-					for (auto& id : meshData.boneID[vertexID]) {
-						if (id == 0) {
-							id = boneIndex;
+				for (UINT j = 0; j < mesh->mBones[b]->mNumWeights; ++j) {
+					int vertexID = static_cast<int>(mesh->mBones[b]->mWeights[j].mVertexId);
+					float weight = mesh->mBones[b]->mWeights[j].mWeight;
+
+					for (auto k = 0; k < 4; ++k) {
+						if (meshData.boneWeight[vertexID][k] == 0.0f) {
+							meshData.boneID[vertexID][k] = boneIndex;
+							meshData.boneWeight[vertexID][k] = weight;
 							break;
 						}
 					}
-
-					for (auto& w : meshData.boneWeight[vertexID]) {
-						if (w == 0.0f) {
-							w = weight;
-							break;
-						}
-					}
-
+					
 				}
 
 			}

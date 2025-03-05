@@ -1,11 +1,11 @@
 #include "pch.h"
-#include "PlainMesh.h"
+#include "Mesh.h"
 #include "../Utility/Defines.h"
 
-PlainMesh::PlainMesh() {
+Mesh::Mesh() {
 }
 
-PlainMesh::PlainMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, EmbeddedMeshType type, UINT size) {
+Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, EmbeddedMeshType type, UINT size) {
 
 	std::vector<SimpleMath::Vector3> positions;
 	std::vector<SimpleMath::Vector3> normals;
@@ -210,7 +210,7 @@ PlainMesh::PlainMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandLi
 	mAttribute.set(2);
 }
 
-PlainMesh::PlainMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const MeshData& meshData) {
+Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const MeshData& meshData) {
 	mAttribute = meshData.vertexAttribute;
 
 	if (meshData.vertexAttribute[0] == 1) {
@@ -305,14 +305,14 @@ PlainMesh::PlainMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandLi
 	mPrimitiveTopology = meshData.primitiveTopology;
 }
 
-PlainMesh::PlainMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const std::filesystem::path& binPath) {
+Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const std::filesystem::path& binPath) {
 
 }
 
-PlainMesh::~PlainMesh() {
+Mesh::~Mesh() {
 }
 
-PlainMesh::PlainMesh(const PlainMesh& other) {
+Mesh::Mesh(const Mesh& other) {
 	mVertexBuffers = other.mVertexBuffers;
 	mIndexBuffer = other.mIndexBuffer;
 
@@ -324,7 +324,7 @@ PlainMesh::PlainMesh(const PlainMesh& other) {
 	mUnitCount = other.mUnitCount;
 }
 
-PlainMesh& PlainMesh::operator=(const PlainMesh& other) {
+Mesh& Mesh::operator=(const Mesh& other) {
 	if (this != &other) {
 		mVertexBuffers = other.mVertexBuffers;
 		mIndexBuffer = other.mIndexBuffer;
@@ -339,7 +339,7 @@ PlainMesh& PlainMesh::operator=(const PlainMesh& other) {
 	return *this;
 }
 
-PlainMesh::PlainMesh(PlainMesh&& other) noexcept {
+Mesh::Mesh(Mesh&& other) noexcept {
 	if (this != &other) {
 		mVertexBuffers = std::move(other.mVertexBuffers);
 		mIndexBuffer = std::move(other.mIndexBuffer);
@@ -351,7 +351,7 @@ PlainMesh::PlainMesh(PlainMesh&& other) noexcept {
 	}
 }
 
-PlainMesh& PlainMesh::operator=(PlainMesh&& other) noexcept {
+Mesh& Mesh::operator=(Mesh&& other) noexcept {
 	if (this != &other) {
 		mVertexBuffers = std::move(other.mVertexBuffers);
 		mIndexBuffer = std::move(other.mIndexBuffer);
@@ -364,7 +364,7 @@ PlainMesh& PlainMesh::operator=(PlainMesh&& other) noexcept {
 	return *this;
 }
 
-void PlainMesh::Bind(ComPtr<ID3D12GraphicsCommandList> commandList, const std::bitset<8>& shaderAttribute) const {
+void Mesh::Bind(ComPtr<ID3D12GraphicsCommandList> commandList, const std::bitset<8>& shaderAttribute) const {
 	
 	CrashExp(IsSubSet(mAttribute, shaderAttribute), "Attribute is not subset of PlainMesh attribute");
 
@@ -376,7 +376,7 @@ void PlainMesh::Bind(ComPtr<ID3D12GraphicsCommandList> commandList, const std::b
 	
 
 	commandList->IASetPrimitiveTopology(mPrimitiveTopology);
-	size_t slot{ 0 };
+	UINT slot{ 0 };
 	for (auto i = 0; i < 8; ++i) {
 		if (shaderAttribute[i] == 1) {
 			commandList->IASetVertexBuffers(slot++, 1, &mVertexBufferViews[i]);
@@ -388,10 +388,10 @@ void PlainMesh::Bind(ComPtr<ID3D12GraphicsCommandList> commandList, const std::b
 	}
 }
 
-bool PlainMesh::GetIndexed() const {
+bool Mesh::GetIndexed() const {
 	return mIndexed;
 }
 
-UINT PlainMesh::GetUnitCount() const {
+UINT Mesh::GetUnitCount() const {
 	return mUnitCount;
 }

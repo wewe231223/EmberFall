@@ -134,3 +134,18 @@ protected:
 	virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE CreatePrimitiveTopologyType() override;
 
 };
+
+
+class SkinnedShader : public GraphicsShaderBase {
+public:
+	SkinnedShader();
+	virtual ~SkinnedShader() = default;
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+protected:
+	virtual InputLayout CreateInputLayout() override;
+	virtual RootParameters CreateRootParameters() override;
+
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
+};

@@ -10,9 +10,15 @@ concept HasIndex = requires {
 
 using MaterialIndex = UINT;
 
-struct PlainModelContext {
+struct ModelContext {
 	SimpleMath::Matrix world;
 	UINT material;
+};
+
+struct AnimationModelContext {
+	SimpleMath::Matrix world;
+	UINT material;
+	UINT boneIndexStart{ 0 };
 };
 
 template<typename T>

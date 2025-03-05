@@ -112,9 +112,8 @@ void Renderer::Render() {
 
 	mTextureManager->Bind(mCommandList);
 	mMaterialManager->Bind(mCommandList);
-	
-
 	mMeshRenderManager->Render(mCommandList);
+
 
 	mMeshRenderManager->Reset();
 

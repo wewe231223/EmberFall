@@ -17,6 +17,21 @@ public:
 public:
 	DefaultBufferCPUIterator() = default;
 	explicit DefaultBufferCPUIterator(BYTE* ptr, size_t increasement) : mPtr(ptr), mIncreasement(increasement) {};
+
+	DefaultBufferCPUIterator(const DefaultBufferCPUIterator& other) = default;
+	DefaultBufferCPUIterator& operator=(const DefaultBufferCPUIterator& other) = default;
+
+	DefaultBufferCPUIterator(DefaultBufferCPUIterator&& other) noexcept : mPtr(other.mPtr), mIncreasement(other.mIncreasement) {
+		other.mPtr = nullptr;
+	}
+	DefaultBufferCPUIterator& operator=(DefaultBufferCPUIterator&& other) noexcept {
+		if (this == &other) return *this;
+		mPtr = other.mPtr;
+		mIncreasement = other.mIncreasement;
+		other.mPtr = nullptr;
+		return *this;
+	}
+
 public:
 	DefaultBufferCPUIterator& operator++() { 
 		mPtr += mIncreasement; 
@@ -80,7 +95,7 @@ public:
 
 private:
 	BYTE* mPtr{ nullptr };
-	const size_t mIncreasement;
+	size_t mIncreasement;
 };
 
 class DefaultBufferGPUIterator {
@@ -90,6 +105,22 @@ public:
 public:
 	DefaultBufferGPUIterator() = default;
 	explicit DefaultBufferGPUIterator(D3D12_GPU_VIRTUAL_ADDRESS ptr, size_t increasement) : mPtr(ptr), mIncreasement(increasement) {};
+
+	DefaultBufferGPUIterator(const DefaultBufferGPUIterator& other) = default;
+	DefaultBufferGPUIterator& operator=(const DefaultBufferGPUIterator& other) = default;
+
+	DefaultBufferGPUIterator(DefaultBufferGPUIterator&& other) noexcept : mPtr(other.mPtr), mIncreasement(other.mIncreasement) {
+		other.mPtr = 0;
+	}
+
+	DefaultBufferGPUIterator& operator=(DefaultBufferGPUIterator&& other) noexcept {
+		if (this == &other) return *this;
+		mPtr = other.mPtr;
+		mIncreasement = other.mIncreasement;
+		other.mPtr = 0;
+		return *this;
+	}
+
 public:
 	DefaultBufferGPUIterator& operator++() {
 		mPtr += mIncreasement;
@@ -152,7 +183,7 @@ public:
 	}
 private:
 	D3D12_GPU_VIRTUAL_ADDRESS mPtr{ 0 };
-	const size_t mIncreasement;
+	size_t mIncreasement;
 };
 
 

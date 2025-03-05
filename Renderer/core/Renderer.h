@@ -16,7 +16,7 @@
 #include "../Renderer/core/Shader.h"
 #include "../Manager/MeshRenderManager.h"
 #include "../Manager/TextureManager.h"
-#include "../Resource/PlainMesh.h"
+#include "../Resource/Mesh.h"
 
 class Renderer {
 public:
