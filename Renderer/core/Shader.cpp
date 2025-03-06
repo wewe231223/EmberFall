@@ -660,16 +660,18 @@ SkyBoxShader::SkyBoxShader() {
 void SkyBoxShader::CreateShader(ComPtr<ID3D12Device> device) {
 	GraphicsShaderBase::CreateShader(device);
 	mAttribute.set(0);
+	mAttribute.set(1);
 	mAttribute.set(2);
 }
 
 GraphicsShaderBase::InputLayout SkyBoxShader::CreateInputLayout() {
 	GraphicsShaderBase::InputLayout inputLayout{};
 
-	inputLayout.ElementCount = 2;
+	inputLayout.ElementCount = 3;
 
 	inputLayout.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	inputLayout.InputElements[1] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[1] = { "TEXINDEX", 0, DXGI_FORMAT_R32_UINT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[2] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
 	return inputLayout;
 }
@@ -706,6 +708,28 @@ GraphicsShaderBase::RootParameters SkyBoxShader::CreateRootParameters() {
 	params.ParameterCount = 4;
 
 	return params;
+}
+
+D3D12_DEPTH_STENCIL_DESC SkyBoxShader::CreateDepthStencilState() {
+	D3D12_DEPTH_STENCIL_DESC depthStencilState;
+	::ZeroMemory(&depthStencilState, sizeof(D3D12_DEPTH_STENCIL_DESC));
+
+	depthStencilState.DepthEnable = FALSE;
+	depthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	depthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_NEVER;
+	depthStencilState.StencilEnable = FALSE;
+	depthStencilState.StencilReadMask = 0x00;
+	depthStencilState.StencilWriteMask = 0x00;
+	depthStencilState.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+	depthStencilState.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+
+	return depthStencilState;
 }
 
 D3D12_SHADER_BYTECODE SkyBoxShader::CreateVertexShader() {

@@ -162,6 +162,8 @@ protected:
 	virtual InputLayout CreateInputLayout() override;
 	virtual RootParameters CreateRootParameters() override;
 
+	virtual D3D12_DEPTH_STENCIL_DESC CreateDepthStencilState() override;
+
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
 };

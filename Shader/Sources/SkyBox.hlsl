@@ -18,26 +18,28 @@ struct MaterialConstants
     float4 specular;
     float4 emissive;
     
-    uint diffuseTexture[3];
-    uint specularTexture[3];
-    uint metalicTexture[3];
-    uint emissiveTexture[3];
-    uint normalTexture[3];
-    uint alphaTexture[3];
+    uint diffuseTexture[8];
+    uint specularTexture[8];
+    uint metalicTexture[8];
+    uint emissiveTexture[8];
+    uint normalTexture[8];
+    uint alphaTexture[8];
 };
 
-struct Standard_VIN
+struct SkyBox_VIN
 {
     float3 position : POSITION;
+    uint texIndex   : TEXINDEX;
     float2 texcoord : TEXCOORD;
     uint instanceID : SV_INSTANCEID;
 };
 
-struct Standard_VOUT
+struct SkyBox_VOUT
 {
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD;
     uint material : MATERIALID;
+    uint imageID : IMAGEID;
 };
 
 StructuredBuffer<ModelContext> modelContexts : register(t0);
@@ -51,24 +53,24 @@ SamplerState linearClampSampler : register(s3);
 SamplerState anisotropicWrapSampler : register(s4);
 SamplerState anisotropicClampSampler : register(s5);
 
-Standard_VOUT Standard_VS(Standard_VIN input)
+SkyBox_VOUT SkyBox_VS(SkyBox_VIN input)
 {
     // SkyBox is Unique Entity
     ModelContext modelContext = modelContexts[0];
 
-    Standard_VOUT output;
+    SkyBox_VOUT output;
     output.position = mul(float4(input.position, 1.f), modelContext.world);
     output.position = mul(output.position, viewProjection);
     
     output.texcoord = input.texcoord;
     output.material = modelContext.material;
+    output.imageID = materialConstants[modelContext.material].diffuseTexture[input.texIndex];
     
     return output;
 }
 
-float4 Standard_PS(Standard_VOUT input) : SV_TARGET
+float4 SkyBox_PS(SkyBox_VOUT input) : SV_TARGET
 {
-    float4 color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord);
-    // color += materialConstants[input.material].diffuse;
+    float4 color = textures[input.imageID].Sample(pointWrapSampler, input.texcoord);
     return color;
 }

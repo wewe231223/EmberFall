@@ -310,6 +310,165 @@ Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comman
 	}
 }
 
+Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, float size) {
+	std::vector<SimpleMath::Vector3> positions;
+	std::vector<UINT> texIndices;
+	std::vector<SimpleMath::Vector2> texcoords;
+
+	std::vector<UINT> indices;
+
+	float boxSize = size / 2.f;
+
+	SimpleMath::Vector3 boxPositions[] = {
+		// Front face
+		{-boxSize, -boxSize, -boxSize},
+		{-boxSize,  boxSize, -boxSize},
+		{ boxSize,  boxSize, -boxSize},
+		{ boxSize, -boxSize, -boxSize},
+
+		// Back face
+		{ boxSize, -boxSize,  boxSize},
+		{ boxSize,  boxSize,  boxSize},
+		{-boxSize,  boxSize,  boxSize},
+		{-boxSize, -boxSize,  boxSize},
+
+		// Top face
+		{-boxSize,  boxSize, -boxSize},
+		{-boxSize,  boxSize,  boxSize},
+		{ boxSize,  boxSize,  boxSize},
+		{ boxSize,  boxSize, -boxSize},
+
+		// Bottom face
+		{-boxSize, -boxSize,  boxSize},
+		{-boxSize, -boxSize, -boxSize},
+		{ boxSize, -boxSize, -boxSize},
+		{ boxSize, -boxSize,  boxSize},
+
+		// Left face
+		{-boxSize, -boxSize,  boxSize},
+		{-boxSize,  boxSize,  boxSize},
+		{-boxSize,  boxSize, -boxSize},
+		{-boxSize, -boxSize, -boxSize},
+
+		// Right face
+		{ boxSize, -boxSize, -boxSize},
+		{ boxSize,  boxSize, -boxSize},
+		{ boxSize,  boxSize,  boxSize},
+		{ boxSize, -boxSize,  boxSize},
+	};
+
+	SimpleMath::Vector2 boxUvs[] = {
+		// Front face
+		{0.0f, 1.0f},
+		{0.0f, 0.0f},
+		{1.0f, 0.0f},
+		{1.0f, 1.0f},
+
+		// Back face
+		{0.0f, 1.0f},
+		{0.0f, 0.0f},
+		{1.0f, 0.0f},
+		{1.0f, 1.0f},
+
+		// Top face
+		{0.0f, 1.0f},
+		{0.0f, 0.0f},
+		{1.0f, 0.0f},
+		{1.0f, 1.0f},
+
+		// Bottom face
+		{0.0f, 1.0f},
+		{0.0f, 0.0f},
+		{1.0f, 0.0f},
+		{1.0f, 1.0f},
+
+		// Left face
+		{0.0f, 1.0f},
+		{0.0f, 0.0f},
+		{1.0f, 0.0f},
+		{1.0f, 1.0f},
+
+		// Right face
+		{0.0f, 1.0f},
+		{0.0f, 0.0f},
+		{1.0f, 0.0f},
+		{1.0f, 1.0f},
+	};
+
+	UINT texIndex[] = {
+		0, 0, 0, 0,
+		1, 1, 1, 1,
+		2, 2, 2, 2,
+		3, 3, 3, 3,
+		4, 4, 4, 4,
+		5, 5, 5, 5,
+	};
+
+	UINT boxIndices[] = {
+		// Front face
+		0, 2, 1, 0, 3, 2,
+		// Back face
+		4, 6, 5, 4, 7, 6,
+		// Top face
+		8, 10, 9, 8, 11, 10,
+		// Bottom face
+		12, 14, 13, 12, 15, 14,
+		// Left face
+		16, 18, 17, 16, 19, 18,
+		// Right face
+		20, 22, 21, 20, 23, 22,
+	};
+
+	positions.insert(positions.end(), std::begin(boxPositions), std::end(boxPositions));
+	texIndices.insert(texIndices.end(), std::begin(texIndex), std::end(texIndex));
+	texcoords.insert(texcoords.end(), std::begin(boxUvs), std::end(boxUvs));
+
+	indices.insert(indices.end(), std::begin(boxIndices), std::end(boxIndices));
+
+	{
+		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector3), positions.size(), positions.data());
+
+		D3D12_VERTEX_BUFFER_VIEW view{};
+		view.BufferLocation = *buffer.GPUBegin();
+		view.StrideInBytes = sizeof(SimpleMath::Vector3);
+		view.SizeInBytes = static_cast<UINT>(positions.size()) * sizeof(SimpleMath::Vector3);
+		mVertexBufferViews[0] = view;
+		mAttribute.set(0);
+	}
+
+	{
+		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(UINT), texIndices.size(), texIndices.data());
+
+		D3D12_VERTEX_BUFFER_VIEW view{};
+		view.BufferLocation = *buffer.GPUBegin();
+		view.StrideInBytes = sizeof(UINT);
+		view.SizeInBytes = static_cast<UINT>(texIndices.size()) * sizeof(UINT);
+		mVertexBufferViews[1] = view;
+		mAttribute.set(1);
+	}
+
+	{
+		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector2), texcoords.size(), texcoords.data());
+
+		D3D12_VERTEX_BUFFER_VIEW view{};
+		view.BufferLocation = *buffer.GPUBegin();
+		view.StrideInBytes = sizeof(SimpleMath::Vector2);
+		view.SizeInBytes = static_cast<UINT>(texcoords.size()) * sizeof(SimpleMath::Vector2);
+		mVertexBufferViews[2] = view;
+		mAttribute.set(2);
+	}
+
+
+	mIndexBuffer = DefaultBuffer{ device, commandList, sizeof(UINT), indices.size(), indices.data() };
+	mIndexBufferView.BufferLocation = *mIndexBuffer.GPUBegin();
+	mIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	mIndexBufferView.SizeInBytes = static_cast<UINT>(indices.size()) * sizeof(UINT);
+
+	mUnitCount = static_cast<UINT>(indices.size());
+	mIndexed = true;
+	mPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+}
+
 Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const MeshData& meshData) {
 	mAttribute = meshData.vertexAttribute;
 
@@ -401,12 +560,13 @@ Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comman
 		
 		mIndexed = true;
 	}
+
 	mUnitCount = meshData.unitCount;
 	mPrimitiveTopology = meshData.primitiveTopology;
 }
 
 Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const std::filesystem::path& binPath) {
-
+	
 }
 
 Mesh::~Mesh() {

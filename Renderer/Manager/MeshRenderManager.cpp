@@ -80,6 +80,7 @@ void MeshRenderManager::Reset(){
 	mReservedSlotCounter = 0;
 	mBoneTransforms.clear();
 	mBonedMeshContexts.clear();
+	mPlainMeshReserved.clear();
 	mPlainMeshContexts.clear(); 
 }
 

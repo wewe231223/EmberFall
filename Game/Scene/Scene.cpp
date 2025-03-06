@@ -101,6 +101,30 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	}
 
 
+
+	MaterialConstants skyBoxMaterial{};
+	skyBoxMaterial.mDiffuseTexture[0] = mTextureManager->GetTexture("SkyBox_Front_0");
+	skyBoxMaterial.mDiffuseTexture[1] = mTextureManager->GetTexture("SkyBox_Back_0");
+	skyBoxMaterial.mDiffuseTexture[2] = mTextureManager->GetTexture("SkyBox_Top_0");
+	skyBoxMaterial.mDiffuseTexture[3] = mTextureManager->GetTexture("SkyBox_Bottom_0");
+	skyBoxMaterial.mDiffuseTexture[4] = mTextureManager->GetTexture("SkyBox_Left_0");
+	skyBoxMaterial.mDiffuseTexture[5] = mTextureManager->GetTexture("SkyBox_Right_0");
+
+	mMaterialManager->CreateMaterial("SkyBoxMaterial", skyBoxMaterial);
+
+	mMeshMap["SkyBox"] = std::make_unique<Mesh>(device, commandList, 900.f);
+
+	shader = std::make_unique<SkyBoxShader>();
+	shader->CreateShader(device);
+
+	mShaderMap["SkyBoxShader"] = std::move(shader);
+
+	{
+		mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
+		mSkyBox.mMesh = mMeshMap["SkyBox"].get();
+		mSkyBox.mMaterial = mMaterialManager->GetMaterial("SkyBoxMaterial");
+	}
+
 	mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 	mCameraMode->Enter();
 }
@@ -133,6 +157,12 @@ void Scene::Update() {
 	auto [mesh, shader, modelContext] = object.GetRenderData();
 
 	mMeshRenderManager->AppendBonedMeshContext(shader, mesh, modelContext, boneTransforms);
+
+	mSkyBox.GetTransform().GetPosition() = mCamera.GetTransform().GetPosition();
+	mSkyBox.UpdateShaderVariables();
+
+	auto [skyBoxMesh, skyBoxShader, skyBoxModelContext] = mSkyBox.GetRenderData();
+	mMeshRenderManager->AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);
 
 	mCamera.UpdateBuffer(); 
 }

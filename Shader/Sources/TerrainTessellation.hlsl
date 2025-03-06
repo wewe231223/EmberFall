@@ -18,12 +18,12 @@ struct MaterialConstants
     float4 specular;
     float4 emissive;
     
-    uint diffuseTexture[3];
-    uint specularTexture[3];
-    uint metalicTexture[3];
-    uint emissiveTexture[3];
-    uint normalTexture[3];
-    uint alphaTexture[3];
+    uint diffuseTexture[8];
+    uint specularTexture[8];
+    uint metalicTexture[8];
+    uint emissiveTexture[8];
+    uint normalTexture[8];
+    uint alphaTexture[8];
 };
 
 struct Terrain_VIN

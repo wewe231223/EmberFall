@@ -18,12 +18,12 @@ struct MaterialConstants
     float4 specular;
     float4 emissive;
     
-    uint diffuseTexture[3];
-    uint specularTexture[3];
-    uint metalicTexture[3];
-    uint emissiveTexture[3];
-    uint normalTexture[3];
-    uint alphaTexture[3];
+    uint diffuseTexture[8];
+    uint specularTexture[8];
+    uint metalicTexture[8];
+    uint emissiveTexture[8];
+    uint normalTexture[8];
+    uint alphaTexture[8];
 };
 
 struct Standard_VIN
@@ -70,7 +70,7 @@ Standard_VOUT Standard_VS(Standard_VIN input) {
 }
 
 float4 Standard_PS(Standard_VOUT input) : SV_TARGET {
-    float4 color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord);
+    float4 color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearClampSampler, input.texcoord);
     // color += materialConstants[input.material].diffuse;
     return color;
 }

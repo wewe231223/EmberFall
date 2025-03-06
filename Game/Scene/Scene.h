@@ -26,5 +26,5 @@ private:
 
 	Animator testAnimator{};
 
-
+	GameObject mSkyBox{}; 
 };

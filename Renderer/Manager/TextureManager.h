@@ -37,12 +37,12 @@ struct MaterialConstants {
 	SimpleMath::Color mSpecularColor{};
 	SimpleMath::Color mEmissiveColor{};
 
-	UINT mDiffuseTexture[3]{};
-	UINT mSpecularTexture[3]{};
-	UINT mMetalicTexture[3]{};
-	UINT mEmissiveTexture[3]{};
-	UINT mNormalTexture[3]{};
-	UINT mAlphaTexture[3]{};
+	UINT mDiffuseTexture[8]{};
+	UINT mSpecularTexture[8]{};
+	UINT mMetalicTexture[8]{};
+	UINT mEmissiveTexture[8]{};
+	UINT mNormalTexture[8]{};
+	UINT mAlphaTexture[8]{};
 };
 
 class MaterialManager {

@@ -26,5 +26,6 @@ void GameObject::ToggleActiveState() {
 }
 
 void GameObject::UpdateShaderVariables(){
+	mTransform.UpdateWorldMatrix();
 	mModelContext.world = mTransform.GetWorldMatrix();
 }
