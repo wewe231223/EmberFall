@@ -30,7 +30,8 @@ public:
 	Renderer& operator=(Renderer&& other) = delete;
 public:
 	std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> GetManagers();
-	
+	DefaultBufferCPUIterator GetMainCameraBuffer();
+
 	ComPtr<ID3D12Device> GetDevice();
 	ComPtr<ID3D12GraphicsCommandList> GetCommandList();
 
@@ -49,6 +50,7 @@ private:
 	void InitCommandList();
 	void InitRenderTargets();
 	void InitDepthStencilBuffer();
+	void InitCoreResources(); 
 
 	void ResetCommandList();
 	void FlushCommandQueue();
@@ -91,4 +93,6 @@ private:
 	std::shared_ptr<TextureManager> mTextureManager{};
 	std::shared_ptr<MaterialManager> mMaterialManager{};
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{};
+
+	DefaultBuffer mMainCameraBuffer{};
 };

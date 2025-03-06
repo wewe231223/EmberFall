@@ -20,15 +20,16 @@ struct CameraConstant {
 class Camera {
 public:
 	Camera() = default;
-	Camera(ComPtr<ID3D12Device> device);
+	Camera(DefaultBufferCPUIterator bufferLocation);
 	~Camera() = default;
 public:
-	void Bind(ComPtr<ID3D12GraphicsCommandList> commandList);
+	void UpdateBuffer();
 	Transform& GetTransform() { return mTransform; }
 public:
 	CameraParameter CameraParam{};
 private:
-	DefaultBuffer mCameraBuffer{};
+	DefaultBufferCPUIterator mCameraBufferCPU{};
+
 	CameraConstant mCameraConstant{};
 	Transform mTransform{};
 };

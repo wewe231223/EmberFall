@@ -3,6 +3,7 @@
 #include "../EditorInterface/Console/Console.h"
 #include <ranges>
 
+#pragma region Legacy 
 namespace Legacy {
     void Animator::UpdateBoneTransform(double time, std::vector<SimpleMath::Matrix>& boneTransforms) {
         DirectX::SimpleMath::Matrix identity{ DirectX::SimpleMath::Matrix::Identity };
@@ -140,7 +141,7 @@ namespace Legacy {
         return start + factor * delta;
     }
 }
-
+#pragma endregion
 
 void Animator::UpdateBoneTransform(double time, std::vector<SimpleMath::Matrix>& boneTransforms) {
     DirectX::SimpleMath::Matrix identity{ DirectX::SimpleMath::Matrix::Identity };

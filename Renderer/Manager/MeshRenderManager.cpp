@@ -50,18 +50,12 @@ void MeshRenderManager::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandL
 	std::memcpy(*it, mBoneTransforms.data(), mBoneTransforms.size() * sizeof(SimpleMath::Matrix));
 	it += mBoneTransforms.size();
 	mAnimationBuffer.Upload(commandList, mAnimationBuffer.CPUBegin(), it);
-
-	auto& [shader, meshContexts] = *mBonedMeshContexts.begin();
-	shader->SetShader(commandList);
-
-	//auto& [shader, meshContexts] = *mPlainMeshContexts.begin();
-	//shader->SetShader(commandList);
 }
 
 // 복사 2 
-void MeshRenderManager::Render(ComPtr<ID3D12GraphicsCommandList> commandList) {
-	 //MeshRenderManager::RenderPlainMesh(commandList);
-	MeshRenderManager::RenderBonedMesh(commandList);
+void MeshRenderManager::Render(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
+	MeshRenderManager::RenderPlainMesh(commandList,tex,mat,camera);
+	MeshRenderManager::RenderBonedMesh(commandList,tex,mat,camera);
 }
 
 void MeshRenderManager::Reset(){
@@ -71,28 +65,15 @@ void MeshRenderManager::Reset(){
 	mPlainMeshContexts.clear(); 
 }
 
-void MeshRenderManager::RenderPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList) {
+void MeshRenderManager::RenderPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
 	DefaultBufferGPUIterator gpuIt{ mPlainMeshBuffer.GPUBegin() };
 
-	auto& [shader, meshContexts] = *mPlainMeshContexts.begin();
-
-	for (auto& [mesh, worlds] : meshContexts) {
-		mesh->Bind(commandList, shader->GetAttribute());
-
-		commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
-
-		if (mesh->GetIndexed()) {
-			commandList->DrawIndexedInstanced(mesh->GetUnitCount(), static_cast<UINT>(worlds.size()), 0, 0, 0);
-		}
-		else {
-			commandList->DrawInstanced(mesh->GetUnitCount(), static_cast<UINT>(worlds.size()), 0, 0);
-		}
-
-		gpuIt += worlds.size();
-	}
-
-	for (auto& [shader, meshContexts] : mPlainMeshContexts | std::views::drop(1)) {
+	for (auto& [shader, meshContexts] : mPlainMeshContexts) {
 		shader->SetShader(commandList);
+		commandList->SetGraphicsRootConstantBufferView(0, camera); 
+		commandList->SetGraphicsRootShaderResourceView(2, mat);
+		commandList->SetGraphicsRootDescriptorTable(3, tex);
+
 		for (auto& [mesh, worlds] : meshContexts) {
 
 			mesh->Bind(commandList, shader->GetAttribute());
@@ -111,35 +92,20 @@ void MeshRenderManager::RenderPlainMesh(ComPtr<ID3D12GraphicsCommandList> comman
 	}
 }
 
-void MeshRenderManager::RenderBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList) {
-
-	auto& [shader, meshContexts] = *mBonedMeshContexts.begin();
-	shader->SetShader(commandList);
+void MeshRenderManager::RenderBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
 
 	DefaultBufferGPUIterator boneIt{ mAnimationBuffer.GPUBegin() };
-	// Animation Buffer Set
-	commandList->SetGraphicsRootShaderResourceView(4, *boneIt);
-
-
 	DefaultBufferGPUIterator gpuIt{ mBonedMeshBuffer.GPUBegin() };
 
-	for (auto& [mesh, worlds] : meshContexts) {
-		mesh->Bind(commandList, shader->GetAttribute());
+	for (auto& [shader, meshContexts] : mBonedMeshContexts) {
 
-		commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
-
-		if (mesh->GetIndexed()) {
-			commandList->DrawIndexedInstanced(mesh->GetUnitCount(), static_cast<UINT>(worlds.size()), 0, 0, 0);
-		}
-		else {
-			commandList->DrawInstanced(mesh->GetUnitCount(), static_cast<UINT>(worlds.size()), 0, 0);
-		}
-
-		gpuIt += worlds.size();
-	}
-
-	for (auto& [shader, meshContexts] : mBonedMeshContexts | std::views::drop(1)) {
 		shader->SetShader(commandList);
+
+		commandList->SetGraphicsRootConstantBufferView(0, camera);
+		commandList->SetGraphicsRootShaderResourceView(2, mat);
+		commandList->SetGraphicsRootDescriptorTable(3, tex);
+		commandList->SetGraphicsRootShaderResourceView(4, *boneIt);
+
 		for (auto& [mesh, worlds] : meshContexts) {
 			mesh->Bind(commandList, shader->GetAttribute());
 

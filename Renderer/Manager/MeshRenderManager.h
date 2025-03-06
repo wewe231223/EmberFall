@@ -27,11 +27,11 @@ public:
 	void AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, std::vector<SimpleMath::Matrix>& boneTransform);
 
 	void PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList);
-	void Render(ComPtr<ID3D12GraphicsCommandList> commandList); 
+	void Render(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 	void Reset(); 
 private:
-	void RenderPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList);
-	void RenderBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList);
+	void RenderPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
+	void RenderBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 private:
 	DefaultBuffer mPlainMeshBuffer{};
 

@@ -3,6 +3,7 @@
 #include "../Utility/Crash.h"
 #include "../EditorInterface/Console/Console.h"
 
+#pragma region Legacy
 namespace Legacy {
     AnimationClip AnimationLoader::Load(const std::filesystem::path& path, UINT animIndex) {
         Assimp::Importer importer{};
@@ -120,18 +121,18 @@ namespace Legacy {
         return newNode;
     }
 }
-
+#pragma endregion
 
 AnimationClip AnimationLoader::Load(const std::filesystem::path& path, UINT animIndex) {
     Assimp::Importer importer{};
     const aiScene* scene = importer.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
 
-    CrashExp(scene != nullptr, "Failed To Load Animation!");
-    CrashExp((!(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)), "Failed To Load Animation!");
-    CrashExp((scene->mRootNode != nullptr), "Failed To Load Animation!");
-
     if (!scene or scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE or !scene->mRootNode) {
-        Console.Log("Animation Load Failed : {}", LogType::Error, mImporter.GetErrorString());
+        // Console.Log("Animation Load Failed : {}", LogType::Error, mImporter.GetErrorString());
+		OutputDebugStringA("Animation Load Failed : ");
+		OutputDebugStringA(importer.GetErrorString());
+		OutputDebugStringA("\n");
+
         Crash("Animation Load Failed");
     }
 

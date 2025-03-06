@@ -69,7 +69,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	Renderer renderer{ hWnd };
 	Input.Initialize(hWnd);
 
-	Scene scene{ renderer.GetDevice(), renderer.GetCommandList(), renderer.GetManagers() };
+	Scene scene{ renderer.GetDevice(), renderer.GetCommandList(), renderer.GetManagers(), renderer.GetMainCameraBuffer() };
 
     renderer.UploadResource();
 
@@ -111,7 +111,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
             scene.Update();
             renderer.PrepareRender();
-            scene.PrepareRender(renderer.GetCommandList());
             renderer.Render();
 
             // 게임 루프... 

@@ -13,17 +13,18 @@
 #include <ranges>
 #include "../Game/System/Timer.h"
 
-Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers) {
+Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
 	mMeshRenderManager = std::get<0>(managers);
 	mTextureManager = std::get<1>(managers);
 	mMaterialManager = std::get<2>(managers);
 
 	std::filesystem::path ZombiePath = "Resources/Assets/zombie/scene.gltf";
 	std::filesystem::path CreepPath = "Resources/Assets/CreepMonster/Creep_mesh.gltf";
+	
 	std::filesystem::path assetPath = CreepPath;
 
 	MeshLoader loader{};
-	auto meshData = loader.Load(assetPath);
+	auto meshData = loader.Load(CreepPath);
 
 
 	mMeshMap["Cube"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Sphere, 5);
@@ -53,7 +54,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		// object.GetTransform().Scaling(10000.f, 10000.f, 10000.f);
 	}
 
-	mCamera = Camera(device);
+	mCamera = Camera(mainCameraBufferLocation);
 	
 	auto& cameraTransform = mCamera.GetTransform();
 	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
@@ -84,10 +85,10 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mShaderMap["SkinnedShader"] = std::move(shader);
 
 
-
-
+ 
 	AnimationLoader Animloader{};
-	auto animationData = Animloader.Load(assetPath,10);
+	// auto animationData = Animloader.Load(assetPath,10);
+	auto animationData = Animloader.Load(CreepPath);
 	testAnimator = Animator(animationData);
 
 	{
@@ -96,7 +97,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mMesh = mMeshMap["T_Pose"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
 		//object.GetTransform().Rotate(0.f, 0.f, -DirectX::XM_PI);
-		object.GetTransform().Scaling(10.f, 10.f, 10.f);
+		//object.GetTransform().Scaling(10.f, 10.f, 10.f);
 	}
 
 
@@ -133,9 +134,7 @@ void Scene::Update() {
 
 	mMeshRenderManager->AppendBonedMeshContext(shader, mesh, modelContext, boneTransforms);
 
-
+	mCamera.UpdateBuffer(); 
 }
 
-void Scene::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList) {
-	mCamera.Bind(commandList);
-}
+

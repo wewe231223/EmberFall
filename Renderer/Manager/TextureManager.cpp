@@ -61,7 +61,10 @@ UINT TextureManager::GetTexture(const std::string& name) {
 
 void TextureManager::Bind(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	commandList->SetDescriptorHeaps(1, mTextureHeap.GetAddressOf());
-	commandList->SetGraphicsRootDescriptorTable(3, mTextureHeap->GetGPUDescriptorHandleForHeapStart());
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetTextureHeapAddress() {
+	return mTextureHeap->GetGPUDescriptorHandleForHeapStart();
 }
 
 void MaterialManager::CreateMaterial(const std::string& name, const MaterialConstants& material) {
@@ -90,4 +93,8 @@ MaterialIndex MaterialManager::GetMaterial(const std::string& name) {
 
 void MaterialManager::Bind(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	commandList->SetGraphicsRootShaderResourceView(2, *mMaterialBuffer.GPUBegin());
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS MaterialManager::GetMaterialBufferAddress() {
+	return *mMaterialBuffer.GPUBegin(); 
 }

@@ -25,6 +25,8 @@ public:
 	UINT GetTexture(const std::string& name);
 
 	void Bind(ComPtr<ID3D12GraphicsCommandList> commandList); 
+
+	D3D12_GPU_DESCRIPTOR_HANDLE GetTextureHeapAddress();
 private:
 	ComPtr<ID3D12DescriptorHeap> mTextureHeap{ nullptr };
 	std::unordered_map<std::string, std::pair<UINT,Texture>> mTextures{};
@@ -62,6 +64,8 @@ public:
 	MaterialIndex GetMaterial(const std::string& name);
 
 	void Bind(ComPtr<ID3D12GraphicsCommandList> commandList);
+
+	D3D12_GPU_VIRTUAL_ADDRESS GetMaterialBufferAddress();
 private:
 	DefaultBuffer mMaterialBuffer{};
 	std::vector<MaterialConstants> mMaterialData{};

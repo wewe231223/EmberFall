@@ -31,9 +31,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 
 	Renderer::ResetCommandList();
 
-	mMeshRenderManager = std::make_shared<MeshRenderManager>(mDevice);
-	mTextureManager = std::make_shared<TextureManager>(mDevice, mCommandList);
-	mMaterialManager = std::make_shared<MaterialManager>();
+	Renderer::InitCoreResources(); 
 }
 
 Renderer::~Renderer() {
@@ -43,6 +41,10 @@ Renderer::~Renderer() {
 
 std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> Renderer::GetManagers() {
 	return std::make_tuple(mMeshRenderManager, mTextureManager, mMaterialManager);
+}
+
+DefaultBufferCPUIterator Renderer::GetMainCameraBuffer() {
+	return mMainCameraBuffer.CPUBegin();
 }
 
 ComPtr<ID3D12Device> Renderer::GetDevice() {
@@ -104,6 +106,8 @@ void Renderer::PrepareRender() {
 	mCommandList->RSSetViewports(1, &viewport);
 	mCommandList->RSSetScissorRects(1, &scissorRect);
 
+
+	mMainCameraBuffer.Upload(mCommandList); 
 	mMeshRenderManager->PrepareRender(mCommandList);
 }
 
@@ -111,10 +115,7 @@ void Renderer::Render() {
 	auto& currentBackBuffer = mRenderTargets[mRTIndex];
 
 	mTextureManager->Bind(mCommandList);
-	mMaterialManager->Bind(mCommandList);
-	mMeshRenderManager->Render(mCommandList);
-
-
+	mMeshRenderManager->Render(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin() );
 	mMeshRenderManager->Reset();
 
 	// Rendering End
@@ -276,6 +277,15 @@ void Renderer::InitDepthStencilBuffer() {
 	);
 
 	mDevice->CreateDepthStencilView(mDepthStencilBuffer.GetResource().Get(), nullptr, mDSHeap->GetCPUDescriptorHandleForHeapStart());
+}
+
+void Renderer::InitCoreResources() {
+	mMeshRenderManager = std::make_shared<MeshRenderManager>(mDevice);
+	mTextureManager = std::make_shared<TextureManager>(mDevice, mCommandList);
+	mMaterialManager = std::make_shared<MaterialManager>();
+
+	mMainCameraBuffer = DefaultBuffer(mDevice, sizeof(CameraConstants), 1, true);
+
 }
 
 void Renderer::ResetCommandList() {
