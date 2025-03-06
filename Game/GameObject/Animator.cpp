@@ -3,6 +3,10 @@
 #include "../EditorInterface/Console/Console.h"
 #include <ranges>
 
+#ifdef max 
+#undef max
+#endif
+
 #pragma region Legacy 
 namespace Legacy {
     void Animator::UpdateBoneTransform(double time, std::vector<SimpleMath::Matrix>& boneTransforms) {
@@ -176,7 +180,7 @@ void Animator::ReadNodeHeirarchy(double AnimationTime, BoneNode* node, const Sim
 
     SimpleMath::Matrix globalTransform = nodeTransform * ParentTransform;
 
-    if (node->index != UINT_MAX) {
+    if (node->index != std::numeric_limits<UINT>::max()) {
         auto result = animation.boneOffsetMatrices[node->index] * globalTransform * animation.globalInverseTransform;
         boneTransforms[node->index] = result.Transpose();
     }

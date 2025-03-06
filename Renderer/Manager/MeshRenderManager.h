@@ -6,12 +6,18 @@
 #include "../Core/Shader.h"
 #include "../Utility/Defines.h"
 
+#ifdef max 
+#undef max
+#endif
+
 class MeshRenderManager {
 	template<typename T>
 	static constexpr T MAX_INSTANCE_COUNT = static_cast<T>(65535);
 
 	template<typename T> 
 	static constexpr T MAX_BONE_COUNT = static_cast<T>(MAX_INSTANCE_COUNT<T> * 100);
+
+	static constexpr UINT RESERVED_CONTEXT_SLOT = 8;
 public:
 	MeshRenderManager() = default;
 	MeshRenderManager(ComPtr<ID3D12Device> device);
@@ -23,7 +29,7 @@ public:
 	MeshRenderManager(MeshRenderManager&& other) = default;
 	MeshRenderManager& operator=(MeshRenderManager&& other) = default;
 public:
-	void AppendPlaneMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world);
+	void AppendPlaneMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, UINT reservedSlot = std::numeric_limits<UINT>::max() );
 	void AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, std::vector<SimpleMath::Matrix>& boneTransform);
 
 	void PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList);
@@ -39,10 +45,11 @@ private:
 	DefaultBuffer mAnimationBuffer{};
 
 	UINT mBoneCounter{ 0 };
+	UINT mReservedSlotCounter{ 0 };
 
 	std::vector<SimpleMath::Matrix> mBoneTransforms{};
 	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<AnimationModelContext>>> mBonedMeshContexts{};
 	
-
+	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<ModelContext>>> mPlainMeshReserved{};
 	std::unordered_map<GraphicsShaderBase* ,std::unordered_map<Mesh*, std::vector<ModelContext>>> mPlainMeshContexts{};
 };

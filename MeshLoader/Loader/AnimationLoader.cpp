@@ -3,6 +3,10 @@
 #include "../Utility/Crash.h"
 #include "../EditorInterface/Console/Console.h"
 
+#ifdef max 
+#undef max 
+#endif
+
 #pragma region Legacy
 namespace Legacy {
     AnimationClip AnimationLoader::Load(const std::filesystem::path& path, UINT animIndex) {
@@ -235,7 +239,7 @@ std::shared_ptr<BoneNode> AnimationLoader::BuildNode(const aiNode* node, const s
 
     auto it = boneMap.find(node->mName.data);
 
-    newNode->index = (it != boneMap.end()) ? it->second : UINT_MAX;
+    newNode->index = (it != boneMap.end()) ? it->second : std::numeric_limits<UINT>::max();
 
     newNode->transformation = SimpleMath::Matrix{
         node->mTransformation.a1, node->mTransformation.a2, node->mTransformation.a3, node->mTransformation.a4,

@@ -163,6 +163,108 @@ Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comman
 		mUnitCount = static_cast<UINT>(indices.size());
 	}
 	break;
+	case EmbeddedMeshType::SkyBox:
+	{
+		float boxSize = size / 2.f;
+
+		SimpleMath::Vector3 boxPositions[] = {
+			// Front face
+			{-boxSize, -boxSize, -boxSize},
+			{-boxSize,  boxSize, -boxSize},
+			{ boxSize,  boxSize, -boxSize},
+			{ boxSize, -boxSize, -boxSize},
+
+			// Back face
+			{ boxSize, -boxSize,  boxSize},
+			{ boxSize,  boxSize,  boxSize},
+			{-boxSize,  boxSize,  boxSize},
+			{-boxSize, -boxSize,  boxSize},
+
+			// Top face
+			{-boxSize,  boxSize, -boxSize},
+			{-boxSize,  boxSize,  boxSize},
+			{ boxSize,  boxSize,  boxSize},
+			{ boxSize,  boxSize, -boxSize},
+
+			// Bottom face
+			{-boxSize, -boxSize,  boxSize},
+			{-boxSize, -boxSize, -boxSize},
+			{ boxSize, -boxSize, -boxSize},
+			{ boxSize, -boxSize,  boxSize},
+
+			// Left face
+			{-boxSize, -boxSize,  boxSize},
+			{-boxSize,  boxSize,  boxSize},
+			{-boxSize,  boxSize, -boxSize},
+			{-boxSize, -boxSize, -boxSize},
+
+			// Right face
+			{ boxSize, -boxSize, -boxSize},
+			{ boxSize,  boxSize, -boxSize},
+			{ boxSize,  boxSize,  boxSize},
+			{ boxSize, -boxSize,  boxSize},
+		};
+
+		SimpleMath::Vector2 boxUvs[] = {
+			// Front face
+			{0.0f, 1.0f},
+			{0.0f, 0.0f},
+			{1.0f, 0.0f},
+			{1.0f, 1.0f},
+
+			// Back face
+			{0.0f, 1.0f},
+			{0.0f, 0.0f},
+			{1.0f, 0.0f},
+			{1.0f, 1.0f},
+
+			// Top face
+			{0.0f, 1.0f},
+			{0.0f, 0.0f},
+			{1.0f, 0.0f},
+			{1.0f, 1.0f},
+
+			// Bottom face
+			{0.0f, 1.0f},
+			{0.0f, 0.0f},
+			{1.0f, 0.0f},
+			{1.0f, 1.0f},
+
+			// Left face
+			{0.0f, 1.0f},
+			{0.0f, 0.0f},
+			{1.0f, 0.0f},
+			{1.0f, 1.0f},
+
+			// Right face
+			{0.0f, 1.0f},
+			{0.0f, 0.0f},
+			{1.0f, 0.0f},
+			{1.0f, 1.0f},
+		};
+
+		UINT boxIndices[] = {
+			// Front face
+			0, 2, 1, 0, 3, 2,
+			// Back face
+			4, 6, 5, 4, 7, 6,
+			// Top face
+			8, 10, 9, 8, 11, 10,
+			// Bottom face
+			12, 14, 13, 12, 15, 14,
+			// Left face
+			16, 18, 17, 16, 19, 18,
+			// Right face
+			20, 22, 21, 20, 23, 22,
+		};
+
+		positions.insert(positions.end(), std::begin(boxPositions), std::end(boxPositions));
+		texcoords.insert(texcoords.end(), std::begin(boxUvs), std::end(boxUvs));
+		indices.insert(indices.end(), std::begin(boxIndices), std::end(boxIndices));
+
+		mIndexed = true;
+	}
+		break;
 	default:
 		break;
 	}
@@ -174,7 +276,7 @@ Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comman
 		mIndexBufferView.SizeInBytes = static_cast<UINT>(indices.size()) * sizeof(UINT);
 	}
 
-	{
+	if(!positions.empty()){
 		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector3), positions.size(), positions.data());
 
 		D3D12_VERTEX_BUFFER_VIEW view{};
@@ -182,9 +284,10 @@ Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comman
 		view.StrideInBytes = sizeof(SimpleMath::Vector3);
 		view.SizeInBytes = static_cast<UINT>(positions.size()) * sizeof(SimpleMath::Vector3);
 		mVertexBufferViews[0] = view;
+		mAttribute.set(0);
 	}
 	
-	{
+	if(!normals.empty()) {
 		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector3), normals.size(), normals.data());
 
 		D3D12_VERTEX_BUFFER_VIEW view{};
@@ -192,9 +295,10 @@ Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comman
 		view.StrideInBytes = sizeof(SimpleMath::Vector3);
 		view.SizeInBytes = static_cast<UINT>(normals.size()) * sizeof(SimpleMath::Vector3);
 		mVertexBufferViews[1] = view;
+		mAttribute.set(1);
 	}
 
-	{
+	if(!texcoords.empty()){
 		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector2), texcoords.size(), texcoords.data());
 
 		D3D12_VERTEX_BUFFER_VIEW view{};
@@ -202,12 +306,8 @@ Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comman
 		view.StrideInBytes = sizeof(SimpleMath::Vector2);
 		view.SizeInBytes = static_cast<UINT>(texcoords.size()) * sizeof(SimpleMath::Vector2);
 		mVertexBufferViews[2] = view;
+		mAttribute.set(2);
 	}
-
-	// position, normal, texcoord
-	mAttribute.set(0);
-	mAttribute.set(1);
-	mAttribute.set(2);
 }
 
 Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const MeshData& meshData) {

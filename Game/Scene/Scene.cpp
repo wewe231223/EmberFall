@@ -51,7 +51,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["StandardShader"].get();
 		object.mMesh = mMeshMap["T_Pose"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		// object.GetTransform().Scaling(10000.f, 10000.f, 10000.f);
+		object.GetTransform().Scaling(10000.f, 10000.f, 10000.f);
 	}
 
 	mCamera = Camera(mainCameraBufferLocation);
@@ -75,7 +75,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mMesh = mMeshMap["Terrain"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("TerrainMaterial");
 		
-		object.GetTransform().GetPosition() = { 100.f, 0.f, 100.f };
+		object.GetTransform().GetPosition() = { 0.f, 0.f, 0.f };
 		object.GetTransform().Scaling(5.f, 1.f, 5.f);
 	}
 
@@ -96,7 +96,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["SkinnedShader"].get();
 		object.mMesh = mMeshMap["T_Pose"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		//object.GetTransform().Rotate(0.f, 0.f, -DirectX::XM_PI);
+		object.GetTransform().Translate({ 0.f,80.f,0.f });
 		//object.GetTransform().Scaling(10.f, 10.f, 10.f);
 	}
 
@@ -108,7 +108,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 void Scene::Update() {
 	mCameraMode->Update();
 	
-	for (auto& gameObject : mGameObjects | std::views::take(2) ) {
+	for (auto& gameObject : mGameObjects | std::views::take(2)) {
 		if (gameObject) {
 			auto& transform = gameObject.GetTransform();
 			transform.UpdateWorldMatrix();
