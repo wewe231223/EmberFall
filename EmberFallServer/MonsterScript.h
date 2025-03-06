@@ -35,6 +35,7 @@ public:
     virtual void DispatchGameEvent(struct GameEvent* event) override;
 
 public:
+    // 행동트리 관련 함수들 return NodeStatus
     BT::NodeStatus SetRandomTargetLocation(const float deltaTime);
     BT::NodeStatus MoveTo(const float deltaTime);
 

@@ -41,14 +41,17 @@
     <Filter Include="PathFinding">
       <UniqueIdentifier>{d73b7875-f5ee-4c83-bf48-22772279a75c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Graph">
+    <Filter Include="PathFinding\Graph">
       <UniqueIdentifier>{1b284061-0b82-4ed7-a035-c59ee0553925}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Graph\GraphSearch">
+    <Filter Include="PathFinding\Graph\GraphSearch">
       <UniqueIdentifier>{ea01f14d-fee2-497c-925e-18449b5c8052}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Graph\GraphBase">
+    <Filter Include="PathFinding\Graph\GraphBase">
       <UniqueIdentifier>{46614c48-9d7a-484a-a51f-64d9233bd237}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PathFinding\Graph\PriorityQueue">
+      <UniqueIdentifier>{72e3f717-ae76-4796-9986-87783ddff148}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -140,10 +143,10 @@
       <Filter>PathFinding</Filter>
     </ClCompile>
     <ClCompile Include="GraphEdge.cpp">
-      <Filter>Graph\GraphBase</Filter>
+      <Filter>PathFinding\Graph\GraphBase</Filter>
     </ClCompile>
     <ClCompile Include="GraphSearch.cpp">
-      <Filter>Graph\GraphSearch</Filter>
+      <Filter>PathFinding\Graph\GraphSearch</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -229,10 +232,13 @@
       <Filter>PathFinding</Filter>
     </ClInclude>
     <ClInclude Include="GraphEdge.h">
-      <Filter>Graph\GraphBase</Filter>
+      <Filter>PathFinding\Graph\GraphBase</Filter>
     </ClInclude>
     <ClInclude Include="GraphSearch.h">
-      <Filter>Graph\GraphSearch</Filter>
+      <Filter>PathFinding\Graph\GraphSearch</Filter>
+    </ClInclude>
+    <ClInclude Include="IndexedPriorityQueue.h">
+      <Filter>PathFinding\Graph\PriorityQueue</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

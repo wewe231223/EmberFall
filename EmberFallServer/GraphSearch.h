@@ -1,6 +1,15 @@
 #pragma once
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// GraphSearch.h
+// 
+// 2025 - 03 - 05 : 그래프 탐색 알고리즘 구현
+// 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #include "GraphEdge.h"
+#include "IndexedPriorityQueue.h"
 
 namespace Graphs {
     namespace Search {
@@ -39,6 +48,9 @@ namespace Graphs {
             virtual std::list<int> GetShortestPath() abstract;
 
         protected:
+            virtual SearchState CycleOnce() abstract;
+
+        protected:
             Graphs::Graph& mGraph;
         };
 
@@ -59,10 +71,13 @@ namespace Graphs {
             float GetTotalCostToTarget();
 
         private:
+            virtual SearchState CycleOnce() override;
+
+        private:
             IndexType mSourceNode{ };
             IndexType mDestNode{ };
 
-            std::priority_queue<NodeCost> mPriorityQueue;
+            IndexedPriorityQueue<IndexType, float> mPriorityQueue;
 
             std::vector<float> mCosts;
             std::vector<float> mDepthCosts;
@@ -86,12 +101,15 @@ namespace Graphs {
 
         // Search Cycle
         template<typename Heuristic>
-        inline void GraphSearchAStar<Heuristic>::Search(float timeSlice) {
-            if (mPriorityQueue.empty()) {
+        inline void GraphSearchAStar<Heuristic>::Search(float timeSlice) { }
+
+        template<typename Heuristic>
+        inline SearchState GraphSearchAStar<Heuristic>::CycleOnce() {
+            if (mPriorityQueue.Empty()) {
                 return SearchState::TARGET_NOT_FOUND;
             }
 
-            auto nextClosestNode = mPriorityQueue.pop();
+            auto nextClosestNode = mPriorityQueue.Pop();
 
             if (nextClosestNode == mDestNode) {
                 return SearchState::COMPLETE;
@@ -101,7 +119,7 @@ namespace Graphs {
 
             auto edgeIter = mGraph.EdgeListBegin(nextClosestNode);
             for (; edgeIter != mGraph.EdgeListEnd(); ++edgeIter) {
-                auto heuristicCost = Heuristic::Calculate(mGraph, mDestnode, edgeIter->to);
+                auto heuristicCost = Heuristic::Calculate(mGraph, mDestNode, edgeIter->to);
                 auto depthCost = mDepthCosts[edgeIter->from] + 1.0f; // 가중치 X
 
                 auto frontierNode = mSearchFrontier[edgeIter->to];
@@ -109,18 +127,22 @@ namespace Graphs {
                     mCosts[edgeIter->to] = depthCost + heuristicCost;
                     mDepthCosts[edgeIter->to] = depthCost;
 
-                    mPriorityQueue.emplace(edgeIter->to, mCosts[edgeIter->to]);
+                    mPriorityQueue.Insert(edgeIter->to, mCosts[edgeIter->to]);
 
                     mSearchFrontier[edgeIter->to] = &(*edgeIter);
                 }
-                else if (depthCost < mDepthCosts[edgeIter->to] and nullptr == mShortestPathTree[edgeIter->to]) { 
+                else if (depthCost < mDepthCosts[edgeIter->to] and nullptr == mShortestPathTree[edgeIter->to]) {
                     // 방문은 했으나 더 좋은 경로 발견 시
                     mCosts[edgeIter->to] = depthCost + heuristicCost;
                     mDepthCosts[edgeIter->to] = depthCost;
 
+                    mPriorityQueue.ChangeKeyVal(edgeIter->to, mCosts[edgeIter->to]);
+
                     mSearchFrontier[edgeIter->to] = &(*edgeIter);
                 }
             }
+
+            return SearchState::INCOMPLETE;
         }
     }
 }
