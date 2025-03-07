@@ -9,18 +9,9 @@ Texture::Texture() {
 
 }
 
-Texture::Texture(ComPtr<ID3D12Device> device, DXGI_FORMAT format, UINT64 width, UINT height, D3D12_HEAP_FLAGS heapFlag, D3D12_RESOURCE_FLAGS resourceFlag) {
+Texture::Texture(ComPtr<ID3D12Device> device, DXGI_FORMAT format, UINT64 width, UINT height, D3D12_HEAP_FLAGS heapFlag, D3D12_RESOURCE_FLAGS resourceFlag, D3D12_RESOURCE_STATES resourceState) {
 	D3D12_RESOURCE_DESC desc{ CD3DX12_RESOURCE_DESC::Tex2D(format, width, height, 1, 1, 1, 0, resourceFlag) };
 	D3D12_HEAP_PROPERTIES heapProperties{ CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT) };
-
-	D3D12_RESOURCE_STATES resourceState = D3D12_RESOURCE_STATE_COMMON;
-
-	if (resourceFlag & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) {
-		resourceState = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	}
-	else if (resourceFlag & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL) {
-		resourceState = D3D12_RESOURCE_STATE_DEPTH_WRITE;
-	}
 
 	CheckHR(device->CreateCommittedResource(
 		&heapProperties,

@@ -742,3 +742,49 @@ D3D12_SHADER_BYTECODE SkyBoxShader::CreatePixelShader() {
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }
 
+DefferedShader::DefferedShader() {
+}
+
+void DefferedShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+}
+
+GraphicsShaderBase::InputLayout DefferedShader::CreateInputLayout() {
+	GraphicsShaderBase::InputLayout inputLayout{};
+
+	inputLayout.ElementCount = 2;
+
+	inputLayout.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[1] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	return inputLayout;
+}
+
+GraphicsShaderBase::RootParameters DefferedShader::CreateRootParameters() {
+	GraphicsShaderBase::RootParameters params{};
+
+	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	params.Ranges[0].NumDescriptors = Config::GBUFFER_COUNT<UINT>;
+	params.Ranges[0].BaseShaderRegister = 0;
+	params.Ranges[0].RegisterSpace = 0;
+	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[0].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[0].DescriptorTable.pDescriptorRanges = params.Ranges.data();
+	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.ParameterCount = 1;
+
+	return params;
+}
+
+D3D12_SHADER_BYTECODE DefferedShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("Deffered", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE DefferedShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("Deffered", ShaderType::PixelShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}

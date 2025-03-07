@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Core\DefferedRenderer.cpp" />
     <ClCompile Include="Core\Renderer.cpp" />
     <ClCompile Include="core\Shader.cpp" />
     <ClCompile Include="Manager\MeshRenderManager.cpp" />
@@ -158,6 +159,7 @@
     <ClCompile Include="Resource\UploadBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Core\DefferedRenderer.h" />
     <ClInclude Include="Core\Renderer.h" />
     <ClInclude Include="core\Shader.h" />
     <ClInclude Include="Manager\MeshRenderManager.h" />
@@ -170,6 +172,10 @@
     <ClInclude Include="Resource\UploadBuffer.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="..\Shader\Sources\Deffered.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="..\Shader\Sources\SkyBox.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

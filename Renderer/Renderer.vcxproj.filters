@@ -57,6 +57,9 @@
     <ClCompile Include="Resource\UploadBuffer.cpp">
       <Filter>Resource</Filter>
     </ClCompile>
+    <ClCompile Include="Core\DefferedRenderer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -89,6 +92,9 @@
     <ClInclude Include="Resource\UploadBuffer.h">
       <Filter>Resource</Filter>
     </ClInclude>
+    <ClInclude Include="Core\DefferedRenderer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shader\Sources\Standard.hlsl">
@@ -101,6 +107,9 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="..\Shader\Sources\SkyBox.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\Deffered.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>

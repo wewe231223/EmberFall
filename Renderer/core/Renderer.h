@@ -14,6 +14,7 @@
 #include "../Config/Config.h"
 #include "../Resource/Texture.h"
 #include "../Renderer/core/Shader.h"
+#include "../Renderer/Core/DefferedRenderer.h"
 #include "../Manager/MeshRenderManager.h"
 #include "../Manager/TextureManager.h"
 #include "../Resource/Mesh.h"
@@ -51,6 +52,9 @@ private:
 	void InitRenderTargets();
 	void InitDepthStencilBuffer();
 	void InitCoreResources(); 
+	void InitDefferedRenderer();
+
+	void TransitionGBuffers(D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState);
 
 	void ResetCommandList();
 	void FlushCommandQueue();
@@ -86,6 +90,8 @@ private:
 	*/
 	std::array<Texture, 3> mGBuffers{};
 	ComPtr<ID3D12DescriptorHeap> mGBufferHeap{ nullptr };
+
+	DefferedRenderer mDefferedRenderer{};
 
 	ComPtr<ID3D12DescriptorHeap> mDSHeap{ nullptr };
 	Texture mDepthStencilBuffer{};

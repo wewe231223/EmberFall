@@ -6,7 +6,6 @@
 #include "../Utility/Exceptions.h"
 #include "../Utility/Crash.h"
 
-
 struct CameraConstants {
 	SimpleMath::Matrix view;
 	SimpleMath::Matrix proj;
@@ -32,6 +31,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::ResetCommandList();
 
 	Renderer::InitCoreResources(); 
+	Renderer::InitDefferedRenderer();
 }
 
 Renderer::~Renderer() {
@@ -73,20 +73,32 @@ void Renderer::Update() {
 
 void Renderer::PrepareRender() {
 	Renderer::ResetCommandList();
-
-	auto& currentBackBuffer = mRenderTargets[mRTIndex];
-
-	CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.GetResource().Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET) };
-
-	mCommandList->ResourceBarrier(1, &barrier);
-
 	auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mRTIndex), rtvDescriptorSize };
-	auto dsvHandle = mDSHeap->GetCPUDescriptorHandleForHeapStart();
+	auto& currentBackBuffer = mRenderTargets[mRTIndex];
+	CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.GetResource().Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET) };
+	mCommandList->ResourceBarrier(1, &barrier);
 
-	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
+	auto dsvHandle = mDSHeap->GetCPUDescriptorHandleForHeapStart();
 	mCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+	// deffered 
+	//Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	//CD3DX12_CPU_DESCRIPTOR_HANDLE gBufferHandle{ mGBufferHeap->GetCPUDescriptorHandleForHeapStart() };
+	//D3D12_CPU_DESCRIPTOR_HANDLE gBufferHandles[] = {
+	//	gBufferHandle,
+	//	gBufferHandle.Offset(1, rtvDescriptorSize),
+	//	gBufferHandle.Offset(1, rtvDescriptorSize)
+	//};
+	//mCommandList->ClearRenderTargetView(gBufferHandles[0], DirectX::Colors::Black, 0, nullptr);
+	//mCommandList->ClearRenderTargetView(gBufferHandles[1], DirectX::Colors::Black, 0, nullptr);
+	//mCommandList->ClearRenderTargetView(gBufferHandles[2], DirectX::Colors::Black, 0, nullptr);
+
+	//mCommandList->OMSetRenderTargets(3, gBufferHandles, FALSE, &dsvHandle);
+
+	// forward 
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mRTIndex), rtvDescriptorSize };
+	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 
 	D3D12_VIEWPORT viewport{};
@@ -120,8 +132,13 @@ void Renderer::Render() {
 
 	// Rendering End
 
-
 	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	
+
+
+
+
+
 
 	CheckHR(mCommandList->Close());
 	ID3D12CommandList* commandLists[] = { mCommandList.Get() };
@@ -228,24 +245,24 @@ void Renderer::InitRenderTargets() {
 		handle.ptr += rtvDescriptorSize;
 	}
 
-	//D3D12_DESCRIPTOR_HEAP_DESC gBufferDesc{};
-	//gBufferDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-	//gBufferDesc.NumDescriptors = 3;
-	//gBufferDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	D3D12_DESCRIPTOR_HEAP_DESC gBufferDesc{};
+	gBufferDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	gBufferDesc.NumDescriptors = 3;
+	gBufferDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
-	//CheckHR(mDevice->CreateDescriptorHeap(&gBufferDesc, IID_PPV_ARGS(mGBufferHeap.GetAddressOf())));
+	CheckHR(mDevice->CreateDescriptorHeap(&gBufferDesc, IID_PPV_ARGS(mGBufferHeap.GetAddressOf())));
 
-	//mGBuffers[0] = Texture(mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
-	//mGBuffers[1] = Texture(mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
-	//mGBuffers[2] = Texture(mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET);
+	mGBuffers[0] = Texture(mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+	mGBuffers[1] = Texture(mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+	mGBuffers[2] = Texture(mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
-	//D3D12_CPU_DESCRIPTOR_HANDLE gBufferHandle{ mGBufferHeap->GetCPUDescriptorHandleForHeapStart() };
+	D3D12_CPU_DESCRIPTOR_HANDLE gBufferHandle{ mGBufferHeap->GetCPUDescriptorHandleForHeapStart() };
 
-	//mDevice->CreateRenderTargetView(mGBuffers[0].GetResource().Get(), nullptr, gBufferHandle);
-	//gBufferHandle.ptr += rtvDescriptorSize;
-	//mDevice->CreateRenderTargetView(mGBuffers[1].GetResource().Get(), nullptr, gBufferHandle);
-	//gBufferHandle.ptr += rtvDescriptorSize;
-	//mDevice->CreateRenderTargetView(mGBuffers[2].GetResource().Get(), nullptr, gBufferHandle);
+	mDevice->CreateRenderTargetView(mGBuffers[0].GetResource().Get(), nullptr, gBufferHandle);
+	gBufferHandle.ptr += rtvDescriptorSize;
+	mDevice->CreateRenderTargetView(mGBuffers[1].GetResource().Get(), nullptr, gBufferHandle);
+	gBufferHandle.ptr += rtvDescriptorSize;
+	mDevice->CreateRenderTargetView(mGBuffers[2].GetResource().Get(), nullptr, gBufferHandle);
 }
 
 void Renderer::InitDepthStencilBuffer() {
@@ -286,6 +303,20 @@ void Renderer::InitCoreResources() {
 
 	mMainCameraBuffer = DefaultBuffer(mDevice, sizeof(CameraConstants), 1, true);
 
+}
+
+void Renderer::InitDefferedRenderer() {
+	mDefferedRenderer = DefferedRenderer(mDevice, mCommandList);
+}
+
+void Renderer::TransitionGBuffers(D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState) {
+	D3D12_RESOURCE_BARRIER barriers[]{
+		CD3DX12_RESOURCE_BARRIER::Transition(mGBuffers[0].GetResource().Get(), beforeState, afterState),
+		CD3DX12_RESOURCE_BARRIER::Transition(mGBuffers[1].GetResource().Get(), beforeState, afterState),
+		CD3DX12_RESOURCE_BARRIER::Transition(mGBuffers[2].GetResource().Get(), beforeState, afterState)
+	};
+
+	mCommandList->ResourceBarrier(3, barriers);
 }
 
 void Renderer::ResetCommandList() {
