@@ -42,6 +42,14 @@ struct SkyBox_VOUT
     uint imageID : IMAGEID;
 };
 
+struct Deffered_POUT
+{
+    float4 diffuse : SV_TARGET0;
+    float4 normal : SV_TARGET1;
+    float4 position : SV_TARGET2;
+};
+
+
 StructuredBuffer<ModelContext> modelContexts : register(t0);
 StructuredBuffer<MaterialConstants> materialConstants : register(t1);
 Texture2D textures[1024] : register(t2);
@@ -69,8 +77,9 @@ SkyBox_VOUT SkyBox_VS(SkyBox_VIN input)
     return output;
 }
 
-float4 SkyBox_PS(SkyBox_VOUT input) : SV_TARGET
+Deffered_POUT SkyBox_PS(SkyBox_VOUT input)
 {
-    float4 color = textures[input.imageID].Sample(pointWrapSampler, input.texcoord);
-    return color;
+    Deffered_POUT output = (Deffered_POUT)0;
+    output.diffuse = textures[input.imageID].Sample(pointWrapSampler, input.texcoord);
+    return output;
 }

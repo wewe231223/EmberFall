@@ -460,6 +460,16 @@ GraphicsShaderBase::RootParameters StandardShader::CreateRootParameters() {
 	return params;
 }
 
+UINT StandardShader::CreateNumOfRenderTarget() {
+	return Config::GBUFFER_COUNT<UINT>;
+}
+
+void StandardShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
+	formats[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+}
+
 D3D12_SHADER_BYTECODE StandardShader::CreateVertexShader() {
 	auto& blob = gShaderManager.GetShaderBlob("Standard", ShaderType::VertexShader);
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
@@ -545,6 +555,16 @@ D3D12_RASTERIZER_DESC TerrainShader::CreateRasterizerState() {
 	rasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
 
 	return rasterizerDesc;
+}
+
+UINT TerrainShader::CreateNumOfRenderTarget() {
+	return Config::GBUFFER_COUNT<UINT>;
+}
+
+void TerrainShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
+	formats[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE TerrainShader::CreateVertexShader() {
@@ -637,6 +657,16 @@ GraphicsShaderBase::RootParameters SkinnedShader::CreateRootParameters() {
 	params.ParameterCount = 5;
 
 	return params;
+}
+
+UINT SkinnedShader::CreateNumOfRenderTarget() {
+	return Config::GBUFFER_COUNT<UINT>;
+}
+
+void SkinnedShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
+	formats[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE SkinnedShader::CreateVertexShader() {
@@ -732,6 +762,16 @@ D3D12_DEPTH_STENCIL_DESC SkyBoxShader::CreateDepthStencilState() {
 	return depthStencilState;
 }
 
+UINT SkyBoxShader::CreateNumOfRenderTarget() {
+	return Config::GBUFFER_COUNT<UINT>;
+}
+
+void SkyBoxShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
+	formats[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+}
+
 D3D12_SHADER_BYTECODE SkyBoxShader::CreateVertexShader() {
 	auto& blob = gShaderManager.GetShaderBlob("SkyBox", ShaderType::VertexShader);
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
@@ -777,6 +817,52 @@ GraphicsShaderBase::RootParameters DefferedShader::CreateRootParameters() {
 	params.ParameterCount = 1;
 
 	return params;
+}
+
+D3D12_DEPTH_STENCIL_DESC DefferedShader::CreateDepthStencilState() {
+	D3D12_DEPTH_STENCIL_DESC depthStencilState;
+	::ZeroMemory(&depthStencilState, sizeof(D3D12_DEPTH_STENCIL_DESC));
+
+	depthStencilState.DepthEnable = FALSE;
+	depthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	depthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_NEVER;
+	depthStencilState.StencilEnable = FALSE;
+	depthStencilState.StencilReadMask = 0x00;
+	depthStencilState.StencilWriteMask = 0x00;
+	depthStencilState.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+	depthStencilState.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+
+	return depthStencilState;
+}
+
+DXGI_FORMAT DefferedShader::CreateDSVFormat() {
+	return DXGI_FORMAT_UNKNOWN;
+}
+
+D3D12_RASTERIZER_DESC DefferedShader::CreateRasterizerState() {
+	D3D12_RASTERIZER_DESC rasterizerDesc;
+	::ZeroMemory(&rasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
+
+	// rasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+	rasterizerDesc.FrontCounterClockwise = FALSE;
+	rasterizerDesc.DepthBias = 0;
+	rasterizerDesc.DepthBiasClamp = 0.0f;
+	rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+	rasterizerDesc.DepthClipEnable = TRUE;
+	rasterizerDesc.MultisampleEnable = FALSE;
+	rasterizerDesc.AntialiasedLineEnable = FALSE;
+	rasterizerDesc.ForcedSampleCount = 0;
+	rasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	return rasterizerDesc;
 }
 
 D3D12_SHADER_BYTECODE DefferedShader::CreateVertexShader() {

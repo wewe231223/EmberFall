@@ -13,14 +13,37 @@ Texture::Texture(ComPtr<ID3D12Device> device, DXGI_FORMAT format, UINT64 width, 
 	D3D12_RESOURCE_DESC desc{ CD3DX12_RESOURCE_DESC::Tex2D(format, width, height, 1, 1, 1, 0, resourceFlag) };
 	D3D12_HEAP_PROPERTIES heapProperties{ CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT) };
 
-	CheckHR(device->CreateCommittedResource(
-		&heapProperties,
-		heapFlag,
-		&desc,
-		resourceState,
-		nullptr,
-		IID_PPV_ARGS(mResource.GetAddressOf())
-	));
+	if (resourceFlag & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) {
+		D3D12_CLEAR_VALUE clearValue{};
+		clearValue.Format = format;
+		clearValue.Color[0] = 0.0f;
+		clearValue.Color[1] = 0.0f;
+		clearValue.Color[2] = 0.0f;
+		clearValue.Color[3] = 1.0f;
+
+		CheckHR(device->CreateCommittedResource(
+			&heapProperties,
+			heapFlag,
+			&desc,
+			resourceState,
+			&clearValue,
+			IID_PPV_ARGS(mResource.GetAddressOf())
+		));
+
+	}
+	else {
+		CheckHR(device->CreateCommittedResource(
+			&heapProperties,
+			heapFlag,
+			&desc,
+			resourceState,
+			nullptr,
+			IID_PPV_ARGS(mResource.GetAddressOf())
+		));
+
+	}
+
+
 
 	mResource->SetName(L"Non Image Texture - Default");
 }

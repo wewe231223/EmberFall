@@ -45,6 +45,14 @@ struct StandardAnimation_PIN
     uint material : MATERIALID;
 };
 
+struct Deffered_POUT
+{
+    float4 diffuse : SV_TARGET0;
+    float4 normal : SV_TARGET1;
+    float4 position : SV_TARGET2;
+};
+
+
 StructuredBuffer<ModelContext> modelContexts : register(t0);
 StructuredBuffer<MaterialConstants> materialConstants : register(t1);
 Texture2D textures[1024] : register(t2, space0);
@@ -82,8 +90,13 @@ StandardAnimation_PIN StandardAnimation_VS(StandardAnimation_VIN input) {
     return output;
 }
 
-float4 StandardAnimation_PS(StandardAnimation_PIN input) : SV_TARGET {
-    float4 color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord);
+Deffered_POUT StandardAnimation_PS(StandardAnimation_PIN input) {
+    
+    Deffered_POUT output = (Deffered_POUT)0;
+    
+    output.diffuse = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord);
     // color += materialConstants[input.material].diffuse;
-    return color;
+    
+    
+    return output;
 }

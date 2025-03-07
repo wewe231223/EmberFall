@@ -109,6 +109,9 @@ protected:
 	virtual InputLayout CreateInputLayout() override;
 	virtual RootParameters CreateRootParameters() override;
 
+	virtual UINT CreateNumOfRenderTarget() override;
+	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&) override;
+
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
 };
@@ -125,6 +128,9 @@ protected:
 	virtual RootParameters CreateRootParameters() override;
 
 	virtual D3D12_RASTERIZER_DESC CreateRasterizerState() override;
+
+	virtual UINT CreateNumOfRenderTarget() override;
+	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&) override;
 
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
 	virtual D3D12_SHADER_BYTECODE CreateHullShader() override;
@@ -146,6 +152,9 @@ protected:
 	virtual InputLayout CreateInputLayout() override;
 	virtual RootParameters CreateRootParameters() override;
 
+	virtual UINT CreateNumOfRenderTarget() override;
+	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&) override;
+
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
 };
@@ -164,6 +173,9 @@ protected:
 
 	virtual D3D12_DEPTH_STENCIL_DESC CreateDepthStencilState() override;
 
+	virtual UINT CreateNumOfRenderTarget() override;
+	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&) override;
+
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
 };
@@ -178,6 +190,11 @@ public:
 protected:
 	virtual InputLayout CreateInputLayout() override;
 	virtual RootParameters CreateRootParameters() override;
+
+	virtual D3D12_DEPTH_STENCIL_DESC CreateDepthStencilState() override;
+	virtual DXGI_FORMAT CreateDSVFormat() override;
+	virtual D3D12_RASTERIZER_DESC CreateRasterizerState() override;
+
 
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;

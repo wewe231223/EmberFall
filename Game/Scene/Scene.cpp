@@ -20,11 +20,11 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	std::filesystem::path ZombiePath = "Resources/Assets/zombie/scene.gltf";
 	std::filesystem::path CreepPath = "Resources/Assets/CreepMonster/Creep_mesh.gltf";
-	
-	std::filesystem::path assetPath = CreepPath;
+	std::filesystem::path ManPath = "Resources/Assets/Man/man.gltf";
+	std::filesystem::path assetPath = ManPath;
 
 	MeshLoader loader{};
-	auto meshData = loader.Load(CreepPath);
+	auto meshData = loader.Load(assetPath);
 
 
 	mMeshMap["Cube"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Sphere, 5);
@@ -36,30 +36,9 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mShaderMap["StandardShader"] = std::move(shader);
 
 	MaterialConstants material{};
-	material.mDiffuseTexture[0] = mTextureManager->GetTexture("Creep_BaseColor");
-
-	mMaterialManager->CreateMaterial("CubeMaterial", material);
-
-
 	material.mDiffuseTexture[0] = mTextureManager->GetTexture("Base_Texture");
 	material.mDiffuseTexture[1] = mTextureManager->GetTexture("Detail_Texture_7");
-
 	mMaterialManager->CreateMaterial("TerrainMaterial", material);
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["T_Pose"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.GetTransform().Scaling(10000.f, 10000.f, 10000.f);
-	}
-
-	mCamera = Camera(mainCameraBufferLocation);
-	
-	auto& cameraTransform = mCamera.GetTransform();
-	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
-	cameraTransform.Look({ 0.f,0.f,0.f });
-
 
 	TerrainLoader terrainLoader{};
 	auto terrainData = terrainLoader.Load("Resources/Binarys/Terrain/HeightMap.raw", true);
@@ -80,25 +59,9 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	}
 
 
-	shader = std::make_unique<SkinnedShader>();
-	shader->CreateShader(device);
-	mShaderMap["SkinnedShader"] = std::move(shader);
 
 
  
-	AnimationLoader Animloader{};
-	// auto animationData = Animloader.Load(assetPath,10);
-	auto animationData = Animloader.Load(CreepPath);
-	testAnimator = Animator(animationData);
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["SkinnedShader"].get();
-		object.mMesh = mMeshMap["T_Pose"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.GetTransform().Translate({ 0.f,80.f,0.f });
-		//object.GetTransform().Scaling(10.f, 10.f, 10.f);
-	}
 
 
 
@@ -125,6 +88,40 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		mSkyBox.mMaterial = mMaterialManager->GetMaterial("SkyBoxMaterial");
 	}
 
+
+	material.mDiffuseTexture[0] = mTextureManager->GetTexture("Ganfaul_diffuse");
+	mMaterialManager->CreateMaterial("CubeMaterial", material);
+
+
+	shader = std::make_unique<SkinnedShader>();
+	shader->CreateShader(device);
+	mShaderMap["SkinnedShader"] = std::move(shader);
+
+	AnimationLoader Animloader{};
+	// auto animationData = Animloader.Load(assetPath,10);
+	auto animationData = Animloader.Load(assetPath);
+
+	testAnimator = Animator(animationData);
+
+	{
+		auto& object = mGameObjects.emplace_back();
+		object.mShader = mShaderMap["SkinnedShader"].get();
+		object.mMesh = mMeshMap["T_Pose"].get();
+		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+		object.GetTransform().Translate({ 0.f,85.f,0.f });
+		//object.GetTransform().Scaling(10.f, 10.f, 10.f);
+	}
+
+
+
+
+
+	mCamera = Camera(mainCameraBufferLocation);
+	
+	auto& cameraTransform = mCamera.GetTransform();
+	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
+	cameraTransform.Look({ 0.f,0.f,0.f });
+
 	mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 	mCameraMode->Enter();
 }
@@ -132,7 +129,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 void Scene::Update() {
 	mCameraMode->Update();
 	
-	for (auto& gameObject : mGameObjects | std::views::take(2)) {
+	for (auto& gameObject : mGameObjects | std::views::take(1)) {
 		if (gameObject) {
 			auto& transform = gameObject.GetTransform();
 			transform.UpdateWorldMatrix();

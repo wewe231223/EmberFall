@@ -75,31 +75,31 @@ void Renderer::PrepareRender() {
 	Renderer::ResetCommandList();
 	auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-	auto& currentBackBuffer = mRenderTargets[mRTIndex];
-	CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.GetResource().Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET) };
-	mCommandList->ResourceBarrier(1, &barrier);
+	//auto& currentBackBuffer = mRenderTargets[mRTIndex];
+	//CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.GetResource().Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET) };
+	//mCommandList->ResourceBarrier(1, &barrier);
 
 	auto dsvHandle = mDSHeap->GetCPUDescriptorHandleForHeapStart();
 	mCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 	// deffered 
-	//Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	//CD3DX12_CPU_DESCRIPTOR_HANDLE gBufferHandle{ mGBufferHeap->GetCPUDescriptorHandleForHeapStart() };
-	//D3D12_CPU_DESCRIPTOR_HANDLE gBufferHandles[] = {
-	//	gBufferHandle,
-	//	gBufferHandle.Offset(1, rtvDescriptorSize),
-	//	gBufferHandle.Offset(1, rtvDescriptorSize)
-	//};
-	//mCommandList->ClearRenderTargetView(gBufferHandles[0], DirectX::Colors::Black, 0, nullptr);
-	//mCommandList->ClearRenderTargetView(gBufferHandles[1], DirectX::Colors::Black, 0, nullptr);
-	//mCommandList->ClearRenderTargetView(gBufferHandles[2], DirectX::Colors::Black, 0, nullptr);
+	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE gBufferHandle{ mGBufferHeap->GetCPUDescriptorHandleForHeapStart() };
+	D3D12_CPU_DESCRIPTOR_HANDLE gBufferHandles[] = {
+		gBufferHandle,
+		gBufferHandle.Offset(1, rtvDescriptorSize),
+		gBufferHandle.Offset(1, rtvDescriptorSize)
+	};
+	mCommandList->ClearRenderTargetView(gBufferHandles[0], DirectX::Colors::Black, 0, nullptr);
+	mCommandList->ClearRenderTargetView(gBufferHandles[1], DirectX::Colors::Black, 0, nullptr);
+	mCommandList->ClearRenderTargetView(gBufferHandles[2], DirectX::Colors::Black, 0, nullptr);
 
-	//mCommandList->OMSetRenderTargets(3, gBufferHandles, FALSE, &dsvHandle);
+	mCommandList->OMSetRenderTargets(3, gBufferHandles, FALSE, &dsvHandle);
 
 	// forward 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mRTIndex), rtvDescriptorSize };
-	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
-	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mRTIndex), rtvDescriptorSize };
+	//mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
+	//mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 
 	D3D12_VIEWPORT viewport{};
 	viewport.TopLeftX = 0;
@@ -131,14 +131,22 @@ void Renderer::Render() {
 	mMeshRenderManager->Reset();
 
 	// Rendering End
-
-	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+//	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 	
 
+	// Deffered Rendering
+	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
+	auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mRTIndex), rtvDescriptorSize };
+	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
+	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
+	mDefferedRenderer.Render(mCommandList);
 
+	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
 	CheckHR(mCommandList->Close());
 	ID3D12CommandList* commandLists[] = { mCommandList.Get() };
@@ -307,6 +315,9 @@ void Renderer::InitCoreResources() {
 
 void Renderer::InitDefferedRenderer() {
 	mDefferedRenderer = DefferedRenderer(mDevice, mCommandList);
+
+	mDefferedRenderer.RegisterGBufferTexture(mDevice, mGBuffers);
+
 }
 
 void Renderer::TransitionGBuffers(D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState) {

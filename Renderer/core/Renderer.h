@@ -84,9 +84,9 @@ private:
 	UINT mRTIndex{ 0 };
 
 	/*
-	1. pixel의 World Space좌표
-	2. pixel의 diffuse color
-	3. pixel의 normal값
+	1. diffuse 
+	2. normal
+	3. position 
 	*/
 	std::array<Texture, 3> mGBuffers{};
 	ComPtr<ID3D12DescriptorHeap> mGBufferHeap{ nullptr };

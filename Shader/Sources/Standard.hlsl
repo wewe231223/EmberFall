@@ -42,6 +42,14 @@ struct Standard_VOUT
     uint material : MATERIALID;
 };
 
+struct Deffered_POUT
+{
+    float4 diffuse : SV_TARGET0;
+    float4 normal : SV_TARGET1;
+    float4 position : SV_TARGET2;
+};
+
+
 StructuredBuffer<ModelContext> modelContexts : register(t0);
 StructuredBuffer<MaterialConstants> materialConstants : register(t1);
 Texture2D textures[1024] : register(t2);
@@ -69,8 +77,10 @@ Standard_VOUT Standard_VS(Standard_VIN input) {
     return output;
 }
 
-float4 Standard_PS(Standard_VOUT input) : SV_TARGET {
-    float4 color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearClampSampler, input.texcoord);
+float4 Standard_PS(Standard_VOUT input) {
+    Deffered_POUT output = (Deffered_POUT) 0;
+    
+    output.diffuse = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearClampSampler, input.texcoord);
     // color += materialConstants[input.material].diffuse;
-    return color;
+    return output;
 }

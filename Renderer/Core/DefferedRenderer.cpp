@@ -33,6 +33,19 @@ void DefferedRenderer::RegisterGBufferTexture(ComPtr<ID3D12Device> device, const
 
 }
 
+void DefferedRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList) {
+	mDefferedShader.SetShader(commandList);
+
+	commandList->SetDescriptorHeaps(1, mGBufferSRVHeap.GetAddressOf());
+
+	commandList->IASetVertexBuffers(0, 2, mLightPassMeshView.data());
+	commandList->IASetIndexBuffer(&mLightPassMeshIndexView);
+
+	commandList->SetGraphicsRootDescriptorTable(0, mGBufferSRVHeap->GetGPUDescriptorHandleForHeapStart());
+
+	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+}
+
 void DefferedRenderer::BuildShader(ComPtr<ID3D12Device> device) {
 	mDefferedShader.CreateShader(device);
 }

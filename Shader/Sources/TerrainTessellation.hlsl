@@ -59,6 +59,13 @@ struct Terrain_PIN
     uint material : MATERIALID;
 };
 
+struct Deffered_POUT
+{
+    float4 diffuse : SV_TARGET0;
+    float4 normal : SV_TARGET1;
+    float4 position : SV_TARGET2;
+};
+
 StructuredBuffer<ModelContext> modelContexts : register(t0);
 StructuredBuffer<MaterialConstants> materialConstants : register(t1);
 Texture2D textures[1024] : register(t2);
@@ -197,15 +204,21 @@ Terrain_PIN Terrain_DS(PatchTessFactor patchTess, float2 uv : SV_DomainLocation,
 }
 
 
-float4 Terrain_PS(Terrain_PIN input) : SV_TARGET
+Deffered_POUT Terrain_PS(Terrain_PIN input) 
 {
+    Deffered_POUT output = (Deffered_POUT)0;
+    
     float4 Color = float4(1.f, 1.f, 1.f, 1.f);
     
     float4 BaseColor = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord1);
     float4 DetailColor = textures[materialConstants[input.material].diffuseTexture[1]].Sample(linearWrapSampler, input.texcoord2);
     
     Color = saturate(BaseColor * 0.5f + DetailColor * 0.5f);
-    return Color;
+    
+    
+    output.diffuse = Color;
+    
+    return output;
     
     // return float4(1.f, 1.f, 1.f, 1.f);
 }
