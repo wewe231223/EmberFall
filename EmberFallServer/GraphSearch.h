@@ -8,7 +8,7 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "GraphEdge.h"
+#include "GraphBase.h"
 #include "IndexedPriorityQueue.h"
 
 namespace Graphs {
@@ -25,17 +25,6 @@ namespace Graphs {
             using Edge = Graph::Edge;
             using IndexType = Graph::IndexType;
 
-            struct NodeCost {
-                IndexType nodeIdx;
-                float cost;
-
-                NodeCost(IndexType idx, float cost) : nodeIdx{ idx }, cost{ cost } { }
-
-                bool operator<(const NodeCost& right) {
-                    return cost < right.cost;
-                }
-            };
-
         public:
             GraphSearch(Graph& graph) : mGraph{ graph } { }
             virtual ~GraphSearch() { }
@@ -45,7 +34,7 @@ namespace Graphs {
             virtual void Search(GameUnits::GameUnit<GameUnits::Second> timeSlice) abstract;
             virtual void Search(std::chrono::milliseconds timeSlice) abstract;
 
-            virtual std::list<int> GetShortestPath() abstract;
+            virtual std::list<IndexType> GetShortestPath() abstract;
 
         protected:
             virtual SearchState CycleOnce() abstract;
@@ -65,9 +54,9 @@ namespace Graphs {
             virtual void Search(GameUnits::GameUnit<GameUnits::Second> timeSlice) override;
             virtual void Search(std::chrono::milliseconds timeSlice) override;
 
-            virtual std::list<int> GetShortestPath() override;
+            virtual std::list<IndexType> GetShortestPath() override;
 
-            std::vector<int> GetShortestPathTree();
+            std::vector<IndexType> GetShortestPathTree();
             float GetTotalCostToTarget();
 
         private:
@@ -90,6 +79,8 @@ namespace Graphs {
 // 구현부분 (너무 길어서 분리함
 namespace Graphs {
     namespace Search {
+        using IndexType = GraphSearch::IndexType;
+
         template<typename Heuristic>
         inline GraphSearchAStar<Heuristic>::GraphSearchAStar(Graph& graph, IndexType source, IndexType dest)
             : GraphSearch{ graph }, mSourceNode{source}, mDestNode{dest}, mPriorityQueue{ } {
@@ -101,7 +92,45 @@ namespace Graphs {
 
         // Search Cycle
         template<typename Heuristic>
-        inline void GraphSearchAStar<Heuristic>::Search(float timeSlice) { }
+        inline void GraphSearchAStar<Heuristic>::Search(float timeSlice) { 
+            
+        }
+
+        template<typename Heuristic>
+        inline void GraphSearchAStar<Heuristic>::Search(GameUnits::GameUnit<GameUnits::Second> timeSlice) {
+        }
+
+        template<typename Heuristic>
+        inline void GraphSearchAStar<Heuristic>::Search(std::chrono::milliseconds timeSlice) {
+        }
+
+        template<typename Heuristic>
+        inline std::list<IndexType> GraphSearchAStar<Heuristic>::GetShortestPath() {
+            std::list<IndexType> path;
+
+            if (mShortestPathTree.empty()) {
+                return path;
+            }
+
+            IndexType nodeIdx = mDestNode;
+            path.push_front(nodeIdx);
+            while (nodeIdx != mSourceNode and nullptr != mShortestPathTree[nodeIdx]) {
+                nodeIdx = mShortestPathTree[nodeIdx]->from();
+                path.push_front(nodeIdx);
+            }
+
+            return path;
+        }
+
+        template<typename Heuristic>
+        inline std::vector<IndexType> GraphSearchAStar<Heuristic>::GetShortestPathTree() {
+            return mShortestPathTree;
+        }
+
+        template<typename Heuristic>
+        inline float GraphSearchAStar<Heuristic>::GetTotalCostToTarget() {
+            return 0.0f;
+        }
 
         template<typename Heuristic>
         inline SearchState GraphSearchAStar<Heuristic>::CycleOnce() {

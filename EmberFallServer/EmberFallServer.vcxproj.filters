@@ -142,11 +142,14 @@
     <ClCompile Include="TileMap.cpp">
       <Filter>PathFinding</Filter>
     </ClCompile>
-    <ClCompile Include="GraphEdge.cpp">
+    <ClCompile Include="GraphBase.cpp">
       <Filter>PathFinding\Graph\GraphBase</Filter>
     </ClCompile>
     <ClCompile Include="GraphSearch.cpp">
       <Filter>PathFinding\Graph\GraphSearch</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphMap.cpp">
+      <Filter>PathFinding\Graph\GraphBase</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -231,7 +234,7 @@
     <ClInclude Include="TileMap.h">
       <Filter>PathFinding</Filter>
     </ClInclude>
-    <ClInclude Include="GraphEdge.h">
+    <ClInclude Include="GraphBase.h">
       <Filter>PathFinding\Graph\GraphBase</Filter>
     </ClInclude>
     <ClInclude Include="GraphSearch.h">
@@ -239,6 +242,9 @@
     </ClInclude>
     <ClInclude Include="IndexedPriorityQueue.h">
       <Filter>PathFinding\Graph\PriorityQueue</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphMap.h">
+      <Filter>PathFinding\Graph\GraphBase</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

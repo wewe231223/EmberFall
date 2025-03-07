@@ -1,7 +1,12 @@
 #include "pch.h"
-#include "GraphEdge.h"
+#include "GraphBase.h"
 
 using namespace Graphs;
+
+void Graphs::Graph::Reserve(size_t nodeSize) {
+    mNodes.reserve(nodeSize);
+    mAdjacencyList.reserve(nodeSize);
+}
 
 Graph::EdgeList::iterator Graphs::Graph::EdgeListBegin(IndexType idx) {
     return mAdjacencyList[idx].begin();
@@ -62,10 +67,16 @@ void Graph::AddNode(Node node) {
 }
 
 void Graph::RemoveNode(IndexType node) {
-
 }
 
 void Graph::AddEdge(Edge edge) {
+    mAdjacencyList[edge.from].push_back(edge);
+    mAdjacencyList[edge.to].emplace_back(edge.to, edge.from);
+}
+
+void Graphs::Graph::AddEdge(IndexType from, IndexType to) {
+    mAdjacencyList[from].emplace_back(from, to);
+    mAdjacencyList[to].emplace_back(to, from);
 }
 
 void Graph::RemoveEdge(IndexType from, IndexType to) {

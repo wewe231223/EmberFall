@@ -58,6 +58,7 @@ public:
 
     SimpleMath::Vector2 GetMapSize() const;
     std::pair<SimpleMath::Vector2, SimpleMath::Vector2> GetArea() const;
+    SimpleMath::Vector2 GetMapLeftBottom() const;
 
     float GetHeight(const SimpleMath::Vector2& pos, float offset = 0.0f) const;
     float GetHeight(const SimpleMath::Vector3& pos, float offset = 0.0f) const;

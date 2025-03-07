@@ -146,7 +146,8 @@
     <ClCompile Include="BehaviorTreeMonster.cpp" />
     <ClCompile Include="BT_MonsterChase.cpp" />
     <ClCompile Include="Collider.cpp" />
-    <ClCompile Include="GraphEdge.cpp" />
+    <ClCompile Include="GraphBase.cpp" />
+    <ClCompile Include="GraphMap.cpp" />
     <ClCompile Include="GraphSearch.cpp" />
     <ClCompile Include="PathFinder.cpp" />
     <ClCompile Include="TerrainCollider.cpp" />
@@ -181,7 +182,8 @@
     <ClInclude Include="BehaviorTreeMonster.h" />
     <ClInclude Include="BT_MonsterChase.h" />
     <ClInclude Include="Collider.h" />
-    <ClInclude Include="GraphEdge.h" />
+    <ClInclude Include="GraphBase.h" />
+    <ClInclude Include="GraphMap.h" />
     <ClInclude Include="GraphSearch.h" />
     <ClInclude Include="IndexedPriorityQueue.h" />
     <ClInclude Include="PathFinder.h" />

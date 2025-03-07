@@ -149,6 +149,10 @@ std::pair<SimpleMath::Vector2, SimpleMath::Vector2> Terrain::GetArea() const {
     return std::make_pair(mLeftBottom, mLeftBottom + mMapSize);
 }
 
+SimpleMath::Vector2 Terrain::GetMapLeftBottom() const {
+    return mLeftBottom;
+}
+
 std::shared_ptr<HeightMap> Terrain::GetHeightMap() const {
     return mHeightMap;
 }

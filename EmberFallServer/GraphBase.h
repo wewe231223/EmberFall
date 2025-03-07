@@ -12,12 +12,18 @@ namespace Graphs {
     template <typename IndexT> requires std::is_arithmetic_v<IndexT>
     struct GraphNode {
         IndexT index;
+
+        GraphNode() { }
+        GraphNode(IndexT index) : index{ index } { }
     };
 
     template <typename IndexT> requires std::is_arithmetic_v<IndexT>
     struct GraphEdge {
         IndexT from;
         IndexT to;
+        
+        GraphEdge() { }
+        GraphEdge(IndexT from, IndexT to) : from{ from }, to{ to } { }
     };
 
     template <typename IndexT, typename WeightT = double> requires std::is_arithmetic_v<IndexT>
@@ -25,12 +31,6 @@ namespace Graphs {
         IndexT from;
         IndexT to;
         WeightT weight;
-    };
-
-    struct PathEdge {
-        SimpleMath::Vector2 source;
-        SimpleMath::Vector2 dest;
-        float dist;
     };
 
     class Graph {
@@ -45,6 +45,15 @@ namespace Graphs {
         using AdjacencyList = std::vector<EdgeList>;
 
     public:
+        static constexpr IndexType INVALID_NODE = -1;
+
+    public:
+        Graph() = default;
+        ~Graph() = default;
+
+    public:
+        void Reserve(size_t nodeSize);
+
         EdgeList::iterator EdgeListBegin(IndexType idx);
         EdgeList::iterator EdgeListEnd(IndexType idx);
 
@@ -61,23 +70,11 @@ namespace Graphs {
         void RemoveNode(IndexType node);
 
         void AddEdge(Edge edge);
+        void AddEdge(IndexType from, IndexType to);
         void RemoveEdge(IndexType from, IndexType to);
             
     private:
         NodeVector mNodes;
         AdjacencyList mAdjacencyList; // 인접 리스트
-    };
-
-    class GraphMap {
-    public:
-        GameUnits::GameUnit<GameUnits::Meter> DEFAULT_CELL_SIZE = 0.5f;
-
-    public:
-        GraphMap(const std::shared_ptr<class Terrain> terrain);
-
-        size_t ConvertPositionToIndex(const SimpleMath::Vector3& pos);
-
-    private:
-        Graph mGraph;
     };
 }

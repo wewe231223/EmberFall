@@ -1,9 +1,7 @@
 #pragma once
 
 #include "GameObjectComponent.h"
-
-class Terrain;
-class TileMap;
+#include "GraphMap.h"
 
 class GameObject;
 
@@ -13,8 +11,8 @@ namespace Path {
     template <typename PathFindAlgorithm>
     class PathFinder : public GameObjectComponent {
     public:
-        PathFinder(std::shared_ptr<TileMap> tileMap, std::shared_ptr<GameObject> owner);
-        PathFinder(std::shared_ptr<Terrain> gameMap, GameUnits::GameUnit<GameUnits::Meter> tileSize, std::shared_ptr<GameObject> owner);
+        PathFinder(std::shared_ptr<Graphs::GraphMap> graphMap, std::shared_ptr<GameObject> owner);
+        PathFinder(std::shared_ptr<Terrain> terrain, std::shared_ptr<GameObject> owner);
         virtual ~PathFinder();
 
     public:
@@ -28,7 +26,23 @@ namespace Path {
         float mMaxFindTime{ };
         // 길찾기 알고리즘
         PathFindAlgorithm mAlgorithm;
-        std::shared_ptr<TileMap> mTileMap;
+        std::shared_ptr<Graphs::GraphMap> mTileMap;
         std::shared_ptr<GameObject> mOwner;
     };
+
+    template<typename PathFindAlgorithm>
+    inline PathFinder<PathFindAlgorithm>::PathFinder(std::shared_ptr<Graphs::GraphMap> graphMap, std::shared_ptr<GameObject> owner)
+        : mTileMap{ graphMap }, mOwner{ owner } { }
+
+    template<typename PathFindAlgorithm>
+    inline PathFinder<PathFindAlgorithm>::PathFinder(std::shared_ptr<Terrain> terrain, std::shared_ptr<GameObject> owner) 
+        : mTileMap{ std::make_shared<GraphMap>(terrain) }, mOwner{owner} { }
+
+    template<typename PathFindAlgorithm>
+    inline PathFinder<PathFindAlgorithm>::~PathFinder() { }
+
+    template<typename PathFindAlgorithm>
+    inline void PathFinder<PathFindAlgorithm>::Find() {
+        mAlgorithm.CycleOnce();
+    }
 }
