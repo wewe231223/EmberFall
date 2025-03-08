@@ -127,24 +127,12 @@ namespace Legacy {
 }
 #pragma endregion
 
-AnimationClip AnimationLoader::Load(const std::filesystem::path& path, UINT animIndex) {
-    Assimp::Importer importer{};
-    const aiScene* scene = importer.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
+AnimationClip AnimationLoader::LoadClip(UINT animIndex) {
+    //mScene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
+    CrashExp((animIndex < mScene->mNumAnimations), "Invalid Animation Index");
 
-    if (!scene or scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE or !scene->mRootNode) {
-        // Console.Log("Animation Load Failed : {}", LogType::Error, mImporter.GetErrorString());
-		OutputDebugStringA("Animation Load Failed : ");
-		OutputDebugStringA(importer.GetErrorString());
-		OutputDebugStringA("\n");
-
-        Crash("Animation Load Failed");
-    }
-
-    CrashExp(scene->mNumAnimations != 0, "Any Animation Data not Found");
-    CrashExp(animIndex < scene->mNumAnimations, "Invalid Animation Index");
-
-    aiAnimation* aiAnim = scene->mAnimations[animIndex];
-    aiNode* rootNode = scene->mRootNode;
+    aiAnimation* aiAnim = mScene->mAnimations[animIndex];
+    aiNode* rootNode = mScene->mRootNode;
 
     AnimationClip clip{};
     clip.duration = static_cast<float>(aiAnim->mDuration);
@@ -153,8 +141,8 @@ AnimationClip AnimationLoader::Load(const std::filesystem::path& path, UINT anim
     std::unordered_map<std::string, UINT> boneMap{};
     UINT boneNumbers{ 0 };
 
-    for (UINT i = 0; i < scene->mNumMeshes; ++i) {
-        auto mesh = scene->mMeshes[i];
+    for (UINT i = 0; i < mScene->mNumMeshes; ++i) {
+        auto mesh = mScene->mMeshes[i];
         for (UINT j = 0; j < mesh->mNumBones; ++j) {
             UINT boneIndex{ 0 };
             std::string boneName = mesh->mBones[j]->mName.C_Str();
@@ -222,7 +210,7 @@ AnimationClip AnimationLoader::Load(const std::filesystem::path& path, UINT anim
 
     clip.root = BuildNode(rootNode, boneMap);
         
-    auto giTransform = scene->mRootNode->mTransformation.Inverse();
+    auto giTransform = mScene->mRootNode->mTransformation.Inverse();
     clip.globalInverseTransform = SimpleMath::Matrix{
         giTransform.a1, giTransform.a2, giTransform.a3, giTransform.a4,
         giTransform.b1, giTransform.b2, giTransform.b3, giTransform.b4,
@@ -232,6 +220,25 @@ AnimationClip AnimationLoader::Load(const std::filesystem::path& path, UINT anim
 
         
     return clip;
+}
+
+void AnimationLoader::Load(const std::filesystem::path& path) {
+	mScene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
+
+    if (!mScene or mScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE or !mScene->mRootNode) {
+        // Console.Log("Animation Load Failed : {}", LogType::Error, mImporter.GetErrorString());
+        OutputDebugStringA("Animation Load Failed : ");
+        OutputDebugStringA(mImporter.GetErrorString());
+        OutputDebugStringA("\n");
+
+        Crash("Animation Load Failed");
+    }
+
+    CrashExp(mScene->mNumAnimations != 0, "Any Animation Data not Found");
+}
+
+AnimationClip* AnimationLoader::GetClip(UINT index) {
+    return std::addressof(mClips[index]);
 }
 
 std::shared_ptr<BoneNode> AnimationLoader::BuildNode(const aiNode* node, const std::unordered_map<std::string, UINT>& boneMap) {

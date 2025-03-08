@@ -33,9 +33,15 @@ public:
 	AnimationLoader() = default;
 	~AnimationLoader() = default;
 public:
-	AnimationClip Load(const std::filesystem::path& path, UINT animIndex = 0);
+	void Load(const std::filesystem::path& path);
+	AnimationClip LoadClip(UINT animIndex = 0);
+	
+	AnimationClip* GetClip(UINT index);
 private:
 	std::shared_ptr<BoneNode> BuildNode(const aiNode* node, const std::unordered_map<std::string, UINT>& boneMap);
 private:
+	std::vector<AnimationClip> mClips{};
+
 	Assimp::Importer mImporter{};
+	const aiScene* mScene{}; 
 };
