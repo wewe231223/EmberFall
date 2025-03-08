@@ -173,8 +173,54 @@ void Renderer::InitFactory() {
 #endif
 }
 
+ComPtr<IDXGIAdapter1> Renderer::GetBestAdapter() {
+	OutputDebugString(L"\n\n====================Selecting Adapter====================\n\n");
+
+	ComPtr<IDXGIAdapter1> bestAdapter;
+	size_t maxVRAM = 0;
+
+	std::wstring message{};
+
+	for (UINT i = 0; ; i++) {
+		ComPtr<IDXGIAdapter1> adapter;
+		if (mFactory->EnumAdapters1(i, &adapter) == DXGI_ERROR_NOT_FOUND) {
+			break;
+		}
+
+		DXGI_ADAPTER_DESC1 desc;
+		adapter->GetDesc1(&desc);
+
+		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) continue;
+		message = std::format(L"Adapter: {} | VRAM: {} MB\n",desc.Description, desc.DedicatedVideoMemory / (1024 * 1024));
+		OutputDebugString(message.c_str());
+
+		if (desc.DedicatedVideoMemory > maxVRAM) {
+			maxVRAM = desc.DedicatedVideoMemory;
+			bestAdapter = adapter;
+		}
+	}
+
+	if (bestAdapter) {
+		DXGI_ADAPTER_DESC1 bestDesc;
+		bestAdapter->GetDesc1(&bestDesc);
+
+		message = std::format(L"Selected Adapter: {} | VRAM: {} MB\n", bestDesc.Description, bestDesc.DedicatedVideoMemory / (1024 * 1024));
+		OutputDebugString(message.c_str());
+	}
+	else {
+		OutputDebugStringA("No suitable GPU found.\n");
+	}
+	OutputDebugString(L"\n=========================================================\n\n");
+
+	return bestAdapter;
+}
+
 void Renderer::InitDevice() {
-	auto hr = ::D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice));
+	ComPtr<IDXGIAdapter1> adapter = GetBestAdapter();
+
+	CrashExp(adapter != nullptr, "No suitable GPU found.");
+
+	auto hr = ::D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice));
 
 	if (FAILED(hr)) {
 		ComPtr<IDXGIAdapter> warpAdapter{ nullptr };

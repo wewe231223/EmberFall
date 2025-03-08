@@ -41,6 +41,8 @@ void DefferedRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	commandList->IASetVertexBuffers(0, 2, mLightPassMeshView.data());
 	commandList->IASetIndexBuffer(&mLightPassMeshIndexView);
 
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 	commandList->SetGraphicsRootDescriptorTable(0, mGBufferSRVHeap->GetGPUDescriptorHandleForHeapStart());
 
 	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);

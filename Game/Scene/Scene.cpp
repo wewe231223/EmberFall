@@ -91,58 +91,58 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	shader->CreateShader(device);
 	mShaderMap["SkinnedShader"] = std::move(shader);
 
-	AnimationLoader Animloader{};
-	Animloader.Load(assetPath);
+	//AnimationLoader Animloader{};
+	//Animloader.Load(assetPath);
 
 
-	auto animationData = Animloader.LoadClip(2);
+	//auto animationData = Animloader.LoadClip(2);
 
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["SkinnedShader"].get();
-		object.mMesh = mMeshMap["T_Pose"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.GetTransform().Translate({ 0.f,85.f,0.f });
-		object.GetTransform().Scaling(10.f, 10.f, 10.f);
-		object.mAnimator = Animator(animationData);
-	}
+	//{
+	//	auto& object = mGameObjects.emplace_back();
+	//	object.mShader = mShaderMap["SkinnedShader"].get();
+	//	object.mMesh = mMeshMap["T_Pose"].get();
+	//	object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+	//	object.GetTransform().Translate({ 0.f,85.f,0.f });
+	//	object.GetTransform().Scaling(10.f, 10.f, 10.f);
+	//	object.mAnimator = Animator(animationData);
+	//}
 
 
-	animationData = Animloader.LoadClip(3);
+	//animationData = Animloader.LoadClip(3);
 
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["SkinnedShader"].get();
-		object.mMesh = mMeshMap["T_Pose"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.GetTransform().Translate({ 40.f,85.f,0.f });
-		object.GetTransform().Scaling(10.f, 10.f, 10.f);
-		object.mAnimator = Animator(animationData);
-	}
+	//{
+	//	auto& object = mGameObjects.emplace_back();
+	//	object.mShader = mShaderMap["SkinnedShader"].get();
+	//	object.mMesh = mMeshMap["T_Pose"].get();
+	//	object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+	//	object.GetTransform().Translate({ 40.f,85.f,0.f });
+	//	object.GetTransform().Scaling(10.f, 10.f, 10.f);
+	//	object.mAnimator = Animator(animationData);
+	//}
 
-	animationData = Animloader.LoadClip(4);
+	//animationData = Animloader.LoadClip(4);
 
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["SkinnedShader"].get();
-		object.mMesh = mMeshMap["T_Pose"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.GetTransform().Translate({ 80.f,85.f,0.f });
-		object.GetTransform().Scaling(10.f, 10.f, 10.f);
-		object.mAnimator = Animator(animationData);
-	}
+	//{
+	//	auto& object = mGameObjects.emplace_back();
+	//	object.mShader = mShaderMap["SkinnedShader"].get();
+	//	object.mMesh = mMeshMap["T_Pose"].get();
+	//	object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+	//	object.GetTransform().Translate({ 80.f,85.f,0.f });
+	//	object.GetTransform().Scaling(10.f, 10.f, 10.f);
+	//	object.mAnimator = Animator(animationData);
+	//}
 
-	animationData = Animloader.LoadClip(5);
+	//animationData = Animloader.LoadClip(5);
 
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["SkinnedShader"].get();
-		object.mMesh = mMeshMap["T_Pose"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.GetTransform().Translate({ 120.f,85.f,0.f });
-		object.GetTransform().Scaling(10.f, 10.f, 10.f);
-		object.mAnimator = Animator(animationData);
-	}
+	//{
+	//	auto& object = mGameObjects.emplace_back();
+	//	object.mShader = mShaderMap["SkinnedShader"].get();
+	//	object.mMesh = mMeshMap["T_Pose"].get();
+	//	object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+	//	object.GetTransform().Translate({ 120.f,85.f,0.f });
+	//	object.GetTransform().Scaling(10.f, 10.f, 10.f);
+	//	object.mAnimator = Animator(animationData);
+	//}
 
 
 	mCamera = Camera(mainCameraBufferLocation);

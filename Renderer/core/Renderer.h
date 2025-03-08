@@ -44,6 +44,7 @@ public:
 	void Render();
 private:
 	void InitFactory();
+	ComPtr<IDXGIAdapter1> GetBestAdapter();
 	void InitDevice();
 	void InitCommandQueue();
 	void InitFence();
