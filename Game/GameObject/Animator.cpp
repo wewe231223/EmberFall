@@ -149,28 +149,28 @@ namespace Legacy {
 #pragma endregion
 
 bool Animator::GetActivated() const {
-    return mClip.root != nullptr;
+    return mClip != nullptr;
 }
 
 void Animator::UpdateBoneTransform(double time, BoneTransformBuffer& boneTransforms) {
     DirectX::SimpleMath::Matrix identity{ DirectX::SimpleMath::Matrix::Identity };
 
-    double tick{ time * mClip.ticksPerSecond };
-    double animationTime{ std::fmod(tick, mClip.duration) };
+    double tick{ time * mClip->ticksPerSecond };
+    double animationTime{ std::fmod(tick, mClip->duration) };
 
 	std::fill(std::begin(boneTransforms.boneTransforms), std::end(boneTransforms.boneTransforms), DirectX::SimpleMath::Matrix::Identity);
 
-    Animator::ReadNodeHeirarchy(animationTime, mClip.root.get(), identity, mClip, boneTransforms.boneTransforms);
-	boneTransforms.boneCount = static_cast<UINT>(mClip.boneOffsetMatrices.size());
+    Animator::ReadNodeHeirarchy(animationTime, mClip->root.get(), identity, boneTransforms.boneTransforms);
+	boneTransforms.boneCount = static_cast<UINT>(mClip->boneOffsetMatrices.size());
 }
 
-void Animator::ReadNodeHeirarchy(double AnimationTime, BoneNode* node, const SimpleMath::Matrix& ParentTransform, const AnimationClip& animation, std::array<SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<>>& boneTransforms) {
+void Animator::ReadNodeHeirarchy(double AnimationTime, BoneNode* node, const SimpleMath::Matrix& ParentTransform, std::array<SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<>>& boneTransforms) {
     if (!node) return;
 
     SimpleMath::Matrix nodeTransform{ node->transformation };
 
-    auto animIt = animation.boneAnimations.find(node->index);
-    if (animIt != animation.boneAnimations.end()) {
+    auto animIt = mClip->boneAnimations.find(node->index);
+    if (animIt != mClip->boneAnimations.end()) {
         const BoneAnimation& boneAnim = animIt->second;
 
         SimpleMath::Vector3 position = InterpolatePosition(AnimationTime, boneAnim);
@@ -187,12 +187,12 @@ void Animator::ReadNodeHeirarchy(double AnimationTime, BoneNode* node, const Sim
     SimpleMath::Matrix globalTransform = nodeTransform * ParentTransform;
 
     if (node->index != std::numeric_limits<UINT>::max()) {
-        auto result = animation.boneOffsetMatrices[node->index] * globalTransform * animation.globalInverseTransform;
+        auto result = mClip->boneOffsetMatrices[node->index] * globalTransform * mClip->globalInverseTransform;
         boneTransforms[node->index] = result.Transpose();
     }
 
     for (auto& child : node->children) {
-        ReadNodeHeirarchy(AnimationTime, child.get(), globalTransform, animation, boneTransforms);
+        ReadNodeHeirarchy(AnimationTime, child.get(), globalTransform, boneTransforms);
     }
 }
 

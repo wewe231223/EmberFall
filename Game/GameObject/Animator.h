@@ -31,13 +31,13 @@ namespace Legacy {
 class Animator {
 public:
 	Animator() = default;
-	Animator(const AnimationClip& clip) : mClip(clip) {}
+	Animator(const AnimationClip* clip) : mClip(clip) {}
 	~Animator() = default;
 public:
 	bool GetActivated() const; 
 	void UpdateBoneTransform(double time, BoneTransformBuffer& boneTransforms);
 private:
-	void ReadNodeHeirarchy(double AnimationTime, BoneNode* pNode, const SimpleMath::Matrix& ParentTransform, const AnimationClip& animation, std::array<SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<>>& boneTransforms);
+	void ReadNodeHeirarchy(double AnimationTime, BoneNode* pNode, const SimpleMath::Matrix& ParentTransform, std::array<SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<>>& boneTransforms);
 
 	UINT FindPosition(double AnimationTime, const BoneAnimation& boneAnim);
 	UINT FindRotation(double AnimationTime, const BoneAnimation& boneAnim);
@@ -49,5 +49,5 @@ private:
 private:
 	double mCounter{ 0.0 };
 
-	AnimationClip mClip{};
+	const AnimationClip* mClip{ nullptr };
 };

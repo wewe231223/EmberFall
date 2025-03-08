@@ -22,7 +22,7 @@ void MeshRenderManager::AppendPlaneMeshContext(GraphicsShaderBase* shader, Mesh*
 
 void MeshRenderManager::AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms) {
 
-	AnimationModelContext context{ world.world, world.material, mBoneCounter };	
+	AnimationModelContext context{ world.world, world.BBextents, world.material, mBoneCounter };	
 	mBonedMeshContexts[shader][mesh].emplace_back(context);
 	mBoneCounter += boneTransforms.boneCount; 
 

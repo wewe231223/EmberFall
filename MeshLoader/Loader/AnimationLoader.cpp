@@ -128,7 +128,6 @@ namespace Legacy {
 #pragma endregion
 
 AnimationClip AnimationLoader::LoadClip(UINT animIndex) {
-    //mScene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
     CrashExp((animIndex < mScene->mNumAnimations), "Invalid Animation Index");
 
     aiAnimation* aiAnim = mScene->mAnimations[animIndex];
@@ -223,22 +222,41 @@ AnimationClip AnimationLoader::LoadClip(UINT animIndex) {
 }
 
 void AnimationLoader::Load(const std::filesystem::path& path) {
-	mScene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
-
-    if (!mScene or mScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE or !mScene->mRootNode) {
-        // Console.Log("Animation Load Failed : {}", LogType::Error, mImporter.GetErrorString());
-        OutputDebugStringA("Animation Load Failed : ");
-        OutputDebugStringA(mImporter.GetErrorString());
-        OutputDebugStringA("\n");
-
-        Crash("Animation Load Failed");
+    if (AnimationLoader::CheckBinary(path)) {
+		AnimationDeserializer deserializer{ std::filesystem::path(BINARY_PATH) / (path.filename().stem().string() + ".bin") };
+		mClips = deserializer.Deserialize();
     }
+    else {
+        mScene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
 
-    CrashExp(mScene->mNumAnimations != 0, "Any Animation Data not Found");
+        if (!mScene or mScene->mFlags & AI_SCENE_FLAGS_INCOMPLETE or !mScene->mRootNode) {
+            // Console.Log("Animation Load Failed : {}", LogType::Error, mImporter.GetErrorString());
+            OutputDebugStringA("Animation Load Failed : ");
+            OutputDebugStringA(mImporter.GetErrorString());
+            OutputDebugStringA("\n");
+
+            Crash("Animation Load Failed");
+        }
+
+        CrashExp(mScene->mNumAnimations != 0, "Any Animation Data not Found");
+
+        for (UINT i = 0; i < mScene->mNumAnimations; ++i) {
+            mClips.emplace_back(LoadClip(i));
+        }
+
+        std::filesystem::path binaryPath = std::filesystem::path(BINARY_PATH) / (path.filename().stem().string() + ".bin");
+        AnimationSerializer serializer{ binaryPath };
+		serializer.Serialze(mClips);
+    }
 }
 
 AnimationClip* AnimationLoader::GetClip(UINT index) {
     return std::addressof(mClips[index]);
+}
+
+bool AnimationLoader::CheckBinary(const std::filesystem::path& path) {
+    std::filesystem::path binaryPath = std::filesystem::path(BINARY_PATH) / (path.filename().stem().string() + ".bin" );
+    return std::filesystem::exists(binaryPath);
 }
 
 std::shared_ptr<BoneNode> AnimationLoader::BuildNode(const aiNode* node, const std::unordered_map<std::string, UINT>& boneMap) {
@@ -263,3 +281,204 @@ std::shared_ptr<BoneNode> AnimationLoader::BuildNode(const aiNode* node, const s
 }
 
 
+#pragma region AnimationSerializer
+void AnimationSerializer::Serialze(const std::vector<AnimationClip>& clips) {
+	size_t size = clips.size();
+	mFile.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
+
+    for (const auto& clip : clips) {
+        SerializeClip(clip);
+    }
+}
+
+void AnimationSerializer::SerializeClip(const AnimationClip& clip) {
+    Write(clip.duration);
+    Write(clip.ticksPerSecond);
+    Write(clip.globalInverseTransform);
+
+    WriteVector(clip.boneOffsetMatrices);
+    WriteMap(clip.boneAnimations);
+    WriteBoneNode(clip.root);
+}
+
+void AnimationSerializer::Write(const float& value) {
+	mFile.write(reinterpret_cast<const char*>(&value), sizeof(float));
+}
+
+void AnimationSerializer::Write(const double& value) {
+	mFile.write(reinterpret_cast<const char*>(&value), sizeof(double));
+}
+
+void AnimationSerializer::Write(const DirectX::SimpleMath::Matrix& value) {
+	mFile.write(reinterpret_cast<const char*>(&value), sizeof(DirectX::SimpleMath::Matrix));
+}
+
+void AnimationSerializer::Write(const UINT& value) {
+	mFile.write(reinterpret_cast<const char*>(&value), sizeof(UINT));
+}
+
+void AnimationSerializer::Write(const std::string& value) {
+    size_t size = value.size();
+    mFile.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
+    mFile.write(value.data(), size);
+}
+
+void AnimationSerializer::WriteVector3List(const std::vector<std::pair<double, DirectX::SimpleMath::Vector3>>& value) {
+    size_t size = value.size();
+    mFile.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
+    for (const auto& [time, value] : value) {
+        Write(time);
+        mFile.write(reinterpret_cast<const char*>(&value), sizeof(SimpleMath::Vector3));
+    }
+}
+
+void AnimationSerializer::WriteQuaternionList(const std::vector<std::pair<double, DirectX::SimpleMath::Quaternion>>& value) {
+	size_t size = value.size();
+	mFile.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
+	for (const auto& [time, value] : value) {
+		Write(time);
+		mFile.write(reinterpret_cast<const char*>(&value), sizeof(SimpleMath::Quaternion));
+	}
+}
+
+void AnimationSerializer::WriteMap(const std::unordered_map<UINT, BoneAnimation>& value) {
+	size_t size = value.size();
+	mFile.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
+	for (const auto& [key, value] : value) {
+		Write(key);
+		Write(value.boneName);
+		WriteVector3List(value.positionKey);
+		WriteQuaternionList(value.rotationKey);
+		WriteVector3List(value.scalingKey);
+	}
+}
+
+void AnimationSerializer::WriteBoneNode(const std::shared_ptr<BoneNode>& node) {
+    if (!node) {
+        UINT nullMarker = UINT_MAX - 1;
+        Write(nullMarker);
+        return;
+    }
+
+    Write(node->index);
+    Write(node->transformation);
+
+    UINT numChildren = static_cast<UINT>(node->children.size());
+    Write(numChildren);
+
+    for (const auto& child : node->children) {
+        WriteBoneNode(child);
+    }
+}
+#pragma endregion 
+
+
+#pragma region AnimationDeserializer
+std::vector<AnimationClip> AnimationDeserializer::Deserialize() {
+    std::vector<AnimationClip> clips{};
+
+	size_t size{};
+	mFile.read(reinterpret_cast<char*>(&size), sizeof(size_t));
+
+	for (size_t i = 0; i < size; ++i) {
+		clips.emplace_back(DeserializeClip());
+	}
+
+    return clips;
+}
+AnimationClip AnimationDeserializer::DeserializeClip() {
+    AnimationClip clip;
+
+    Read(clip.duration);
+    Read(clip.ticksPerSecond);
+    Read(clip.globalInverseTransform);
+
+    ReadVector(clip.boneOffsetMatrices);
+    ReadMap(clip.boneAnimations);
+    clip.root = ReadBoneNode();
+
+    return clip;
+}
+
+void AnimationDeserializer::Read(float& value) {
+	mFile.read(reinterpret_cast<char*>(&value), sizeof(float));
+}
+
+void AnimationDeserializer::Read(double& value) {
+	mFile.read(reinterpret_cast<char*>(&value), sizeof(double));
+}
+
+void AnimationDeserializer::Read(DirectX::SimpleMath::Matrix& value) {
+	mFile.read(reinterpret_cast<char*>(&value), sizeof(DirectX::SimpleMath::Matrix));
+}
+
+void AnimationDeserializer::Read(UINT& value) {
+	mFile.read(reinterpret_cast<char*>(&value), sizeof(UINT));
+}
+
+void AnimationDeserializer::Read(std::string& value) {
+	size_t size{};
+	mFile.read(reinterpret_cast<char*>(&size), sizeof(size_t));
+	value.resize(size);
+	mFile.read(value.data(), size);
+}
+
+void AnimationDeserializer::ReadVector3List(std::vector<std::pair<double, DirectX::SimpleMath::Vector3>>& value) {
+	size_t size{};
+	mFile.read(reinterpret_cast<char*>(&size), sizeof(size_t));
+	value.resize(size);
+	for (auto& [time, vec] : value) {
+		Read(time);
+		mFile.read(reinterpret_cast<char*>(&vec), sizeof(DirectX::SimpleMath::Vector3));
+	}
+}
+
+void AnimationDeserializer::ReadQuaternionList(std::vector<std::pair<double, DirectX::SimpleMath::Quaternion>>& value) {
+	size_t size{};
+	mFile.read(reinterpret_cast<char*>(&size), sizeof(size_t));
+	value.resize(size);
+	for (auto& [time, quat] : value) {
+		Read(time);
+		mFile.read(reinterpret_cast<char*>(&quat), sizeof(DirectX::SimpleMath::Quaternion));
+	}
+}
+
+void AnimationDeserializer::ReadMap(std::unordered_map<UINT, BoneAnimation>& value) {
+	size_t size{};
+	mFile.read(reinterpret_cast<char*>(&size), sizeof(size_t));
+	for (size_t i = 0; i < size; ++i) {
+		UINT key{};
+		Read(key);
+		
+        BoneAnimation boneAnim;
+		Read(boneAnim.boneName);
+		
+        ReadVector3List(boneAnim.positionKey);
+		ReadQuaternionList(boneAnim.rotationKey);
+		ReadVector3List(boneAnim.scalingKey);
+		
+        value[key] = boneAnim;
+	}
+}
+
+std::shared_ptr<BoneNode> AnimationDeserializer::ReadBoneNode() {
+	UINT index{};
+	Read(index);
+
+    if (index == UINT_MAX - 1) return nullptr;
+
+	auto node = std::make_shared<BoneNode>();
+	node->index = index;
+
+	Read(node->transformation);
+
+	UINT numChildren{};
+	Read(numChildren);
+
+	for (UINT i = 0; i < numChildren; ++i) {
+		node->children.emplace_back(ReadBoneNode());
+	}
+
+    return node;
+}
+#pragma endregion

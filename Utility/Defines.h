@@ -13,11 +13,13 @@ using MaterialIndex = UINT;
 
 struct ModelContext {
 	SimpleMath::Matrix world;
+	SimpleMath::Vector3 BBextents{};
 	UINT material;
 };
 
 struct AnimationModelContext {
 	SimpleMath::Matrix world;
+	SimpleMath::Vector3 BBextents{};
 	UINT material;
 	UINT boneIndexStart{ 0 };
 };

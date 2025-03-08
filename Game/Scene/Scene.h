@@ -18,12 +18,12 @@ private:
 
 	std::unordered_map<std::string, std::unique_ptr<Mesh>> mMeshMap{};
 	std::unordered_map<std::string, std::unique_ptr<GraphicsShaderBase>> mShaderMap{};
+	std::unordered_map<std::string, AnimationLoader> mAnimationMap{};
 
 	Camera mCamera{};
 	std::unique_ptr<CameraMode> mCameraMode{ nullptr };
 
 	std::vector<GameObject> mGameObjects{};
-
 
 	GameObject mSkyBox{}; 
 };
