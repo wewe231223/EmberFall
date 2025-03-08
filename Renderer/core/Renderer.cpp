@@ -191,7 +191,7 @@ ComPtr<IDXGIAdapter1> Renderer::GetBestAdapter() {
 		adapter->GetDesc1(&desc);
 
 		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) continue;
-		message = std::format(L"Adapter: {} | VRAM: {} MB\n",desc.Description, desc.DedicatedVideoMemory / (1024 * 1024));
+		message = std::format(L"Adapter{:^3} : {} | VRAM: {} MB\n", i, desc.Description, desc.DedicatedVideoMemory / (1024 * 1024));
 		OutputDebugString(message.c_str());
 
 		if (desc.DedicatedVideoMemory > maxVRAM) {
