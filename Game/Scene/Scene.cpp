@@ -59,12 +59,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	}
 
 
-
-
- 
-
-
-
 	MaterialConstants skyBoxMaterial{};
 	skyBoxMaterial.mDiffuseTexture[0] = mTextureManager->GetTexture("SkyBox_Front_0");
 	skyBoxMaterial.mDiffuseTexture[1] = mTextureManager->GetTexture("SkyBox_Back_0");
@@ -99,7 +93,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	AnimationLoader Animloader{};
 	// auto animationData = Animloader.Load(assetPath,10);
-	auto animationData = Animloader.Load(assetPath);
+	auto animationData = Animloader.Load(assetPath,2);
 
 	testAnimator = Animator(animationData);
 
@@ -109,7 +103,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mMesh = mMeshMap["T_Pose"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
 		object.GetTransform().Translate({ 0.f,85.f,0.f });
-		//object.GetTransform().Scaling(10.f, 10.f, 10.f);
+		object.GetTransform().Scaling(10.f, 10.f, 10.f);
 	}
 
 
@@ -120,7 +114,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	
 	auto& cameraTransform = mCamera.GetTransform();
 	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
-	cameraTransform.Look({ 0.f,0.f,0.f });
+	cameraTransform.Look({ 0.f,85.f,0.f });
 
 	mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 	mCameraMode->Enter();
