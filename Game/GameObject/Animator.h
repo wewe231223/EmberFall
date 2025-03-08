@@ -32,6 +32,7 @@ public:
 	Animator(const AnimationClip& clip) : mClip(clip) {}
 	~Animator() = default;
 public:
+	bool GetActivated() const; 
 	void UpdateBoneTransform(double time, std::vector<SimpleMath::Matrix>& boneTransforms);
 private:
 	void ReadNodeHeirarchy(double AnimationTime, BoneNode* pNode, const SimpleMath::Matrix& ParentTransform, const AnimationClip& animation, std::vector<SimpleMath::Matrix>& boneTransforms);
@@ -44,5 +45,7 @@ private:
 	SimpleMath::Quaternion InterpolateRotation(double AnimationTime, const BoneAnimation& boneAnim);
 	SimpleMath::Vector3 InterpolateScaling(double AnimationTime, const BoneAnimation& boneAnim);
 private:
+	double mCounter{ 0.0 };
+
 	AnimationClip mClip{};
 };

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "GameObject.h"
+#include "../Game/System/Timer.h"
 
 GameObject::operator bool() const {
 	return mActiveState;
@@ -25,7 +26,18 @@ void GameObject::ToggleActiveState() {
 	mActiveState = !mActiveState;
 }
 
-void GameObject::UpdateShaderVariables(){
+void GameObject::UpdateShaderVariables(std::vector<SimpleMath::Matrix>& boneTransforms){
+	static double counter{ 0.0 };
+	counter += 0.0001;
+
+	if (mAnimator.GetActivated()) {
+		mAnimator.UpdateBoneTransform(counter, boneTransforms);
+	}
+
 	mTransform.UpdateWorldMatrix();
 	mModelContext.world = mTransform.GetWorldMatrix();
+}
+
+bool GameObject::GetAnimatorState() const {
+	return mAnimator.GetActivated();
 }

@@ -24,7 +24,6 @@ private:
 
 	std::vector<GameObject> mGameObjects{};
 
-	Animator testAnimator{};
 
 	GameObject mSkyBox{}; 
 };

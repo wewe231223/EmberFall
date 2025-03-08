@@ -92,10 +92,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mShaderMap["SkinnedShader"] = std::move(shader);
 
 	AnimationLoader Animloader{};
-	// auto animationData = Animloader.Load(assetPath,10);
 	auto animationData = Animloader.Load(assetPath,2);
-
-	testAnimator = Animator(animationData);
 
 	{
 		auto& object = mGameObjects.emplace_back();
@@ -104,10 +101,8 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
 		object.GetTransform().Translate({ 0.f,85.f,0.f });
 		object.GetTransform().Scaling(10.f, 10.f, 10.f);
+		object.mAnimator = Animator(animationData);
 	}
-
-
-
 
 
 	mCamera = Camera(mainCameraBufferLocation);
@@ -123,34 +118,27 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 void Scene::Update() {
 	mCameraMode->Update();
 	
-	for (auto& gameObject : mGameObjects | std::views::take(1)) {
+	std::vector<SimpleMath::Matrix> boneTransforms{};
+
+
+	for (auto& gameObject : mGameObjects) {
 		if (gameObject) {
-			auto& transform = gameObject.GetTransform();
-			transform.UpdateWorldMatrix();
+			gameObject.UpdateShaderVariables(boneTransforms);
 
 			auto [mesh, shader, modelContext] = gameObject.GetRenderData();
-			mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+
+			if (gameObject.GetAnimatorState()) {
+				mMeshRenderManager->AppendBonedMeshContext(shader, mesh, modelContext, boneTransforms);
+			}
+			else {
+				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+			}
+
 		}
 	}
 
-
-
-	static double counter = 0.0;
-
-	counter += 0.001;
-	std::vector<SimpleMath::Matrix> boneTransforms{};
-	testAnimator.UpdateBoneTransform(counter, boneTransforms);
-
-	auto& object = mGameObjects.back();
-	auto& transform = object.GetTransform();
-	transform.UpdateWorldMatrix();
-
-	auto [mesh, shader, modelContext] = object.GetRenderData();
-
-	mMeshRenderManager->AppendBonedMeshContext(shader, mesh, modelContext, boneTransforms);
-
 	mSkyBox.GetTransform().GetPosition() = mCamera.GetTransform().GetPosition();
-	mSkyBox.UpdateShaderVariables();
+	mSkyBox.UpdateShaderVariables(boneTransforms);
 
 	auto [skyBoxMesh, skyBoxShader, skyBoxModelContext] = mSkyBox.GetRenderData();
 	mMeshRenderManager->AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);

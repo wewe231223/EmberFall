@@ -147,6 +147,10 @@ namespace Legacy {
 }
 #pragma endregion
 
+bool Animator::GetActivated() const {
+    return mClip.root != nullptr;
+}
+
 void Animator::UpdateBoneTransform(double time, std::vector<SimpleMath::Matrix>& boneTransforms) {
     DirectX::SimpleMath::Matrix identity{ DirectX::SimpleMath::Matrix::Identity };
 
