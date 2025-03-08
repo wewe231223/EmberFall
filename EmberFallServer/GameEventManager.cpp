@@ -16,7 +16,7 @@ void GameEventManager::PushEvent(std::shared_ptr<GameEvent> event) {
 }
 
 void GameEventManager::Update() {
-    while (not mEvents.empty()) {
+    while (not mEvents.empty()) {        
         decltype(auto) event = mEvents.front();
 
         auto receiverObject = mCurrentScene->GetObjectFromId(event->receiver);

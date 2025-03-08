@@ -149,6 +149,7 @@
     <ClCompile Include="GraphBase.cpp" />
     <ClCompile Include="GraphMap.cpp" />
     <ClCompile Include="GraphSearch.cpp" />
+    <ClCompile Include="ItemScript.cpp" />
     <ClCompile Include="PathFinder.cpp" />
     <ClCompile Include="TerrainCollider.cpp" />
     <ClCompile Include="CorruptedGem.cpp" />
@@ -173,7 +174,6 @@
     <ClCompile Include="ServerFrame.cpp" />
     <ClCompile Include="ServerGameScene.cpp" />
     <ClCompile Include="Terrain.cpp" />
-    <ClCompile Include="TileMap.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="ViewList.cpp" />
   </ItemGroup>
@@ -186,6 +186,7 @@
     <ClInclude Include="GraphMap.h" />
     <ClInclude Include="GraphSearch.h" />
     <ClInclude Include="IndexedPriorityQueue.h" />
+    <ClInclude Include="ItemScript.h" />
     <ClInclude Include="PathFinder.h" />
     <ClInclude Include="TerrainCollider.h" />
     <ClInclude Include="CorruptedGem.h" />
@@ -206,7 +207,6 @@
     <ClInclude Include="ServerFrame.h" />
     <ClInclude Include="ServerGameScene.h" />
     <ClInclude Include="Terrain.h" />
-    <ClInclude Include="TileMap.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="ViewList.h" />
   </ItemGroup>

@@ -37,7 +37,7 @@ namespace Graphs {
             virtual std::list<IndexType> GetShortestPath() abstract;
 
         protected:
-            virtual SearchState CycleOnce() abstract;
+            virtual SearchState TrySearch() abstract;
 
         protected:
             Graphs::Graph& mGraph;
@@ -60,7 +60,7 @@ namespace Graphs {
             float GetTotalCostToTarget();
 
         private:
-            virtual SearchState CycleOnce() override;
+            virtual SearchState TrySearch() override;
 
         private:
             IndexType mSourceNode{ };
@@ -133,7 +133,7 @@ namespace Graphs {
         }
 
         template<typename Heuristic>
-        inline SearchState GraphSearchAStar<Heuristic>::CycleOnce() {
+        inline SearchState GraphSearchAStar<Heuristic>::TrySearch() {
             if (mPriorityQueue.Empty()) {
                 return SearchState::TARGET_NOT_FOUND;
             }

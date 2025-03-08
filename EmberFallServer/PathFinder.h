@@ -2,6 +2,7 @@
 
 #include "GameObjectComponent.h"
 #include "GraphMap.h"
+#include "GraphSearch.h"
 
 class GameObject;
 
@@ -16,8 +17,6 @@ namespace Path {
         virtual ~PathFinder();
 
     public:
-        void SetMaxFindTime(const float maxTime);
-        //void SetWorldMap();
         void Find();
 
     private:
@@ -36,13 +35,13 @@ namespace Path {
 
     template<typename PathFindAlgorithm>
     inline PathFinder<PathFindAlgorithm>::PathFinder(std::shared_ptr<Terrain> terrain, std::shared_ptr<GameObject> owner) 
-        : mTileMap{ std::make_shared<GraphMap>(terrain) }, mOwner{owner} { }
+        : mTileMap{ std::make_shared<Graphs::GraphMap>(terrain) }, mOwner{owner} { }
 
     template<typename PathFindAlgorithm>
     inline PathFinder<PathFindAlgorithm>::~PathFinder() { }
 
     template<typename PathFindAlgorithm>
     inline void PathFinder<PathFindAlgorithm>::Find() {
-        mAlgorithm.CycleOnce();
+        Graphs::Search::SearchState state = mAlgorithm.CycleOnce();
     }
 }
