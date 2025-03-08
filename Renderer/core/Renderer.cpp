@@ -1,42 +1,24 @@
 #include "pch.h"
 #include "Renderer.h"
+#include "../EditorInterface/Console/Console.h"
+#include "../Utility/Enumerate.h"
+#include "../Utility/Serializer.h"
 #include "../Utility/Exceptions.h"
 #include "../Utility/Crash.h"
-#include "../Utility/Enumerate.h"
-#include "../Config/Config.h"
-#include "../EditorInterface/Console/Console.h"
 
-struct Renderer::DirectXImpl {
-	ComPtr<IDXGIFactory6> mFactory{ nullptr };
-
-#ifdef _DEBUG
-	ComPtr<ID3D12Debug6> mDebugController{ nullptr };
-	ComPtr<IDXGIDebug1> mDXGIDebug{ nullptr };
-#endif 
-	ComPtr<ID3D12Device> mDevice{ nullptr };
-
-	ComPtr<ID3D12CommandQueue> mCommandQueue{ nullptr };
-
-	UINT64 mFenceValue{ 0 };
-	ComPtr<ID3D12Fence> mFence{ nullptr };
-
-	ComPtr<IDXGISwapChain1> mSwapChain{ nullptr };
-
-	ComPtr<ID3D12CommandAllocator> mAllocator{ nullptr };
-	ComPtr<ID3D12GraphicsCommandList> mCommandList{ nullptr };
-
-	ComPtr<ID3D12DescriptorHeap> mRTVHeap{ nullptr };
-	std::array<ComPtr<ID3D12Resource>, Config::BACKBUFFER_COUNT<UINT>> mRenderTargets{ nullptr };
-	UINT mRTIndex{ 0 };
-
-	ComPtr<ID3D12DescriptorHeap> mDSHeap{ nullptr };
-	ComPtr<ID3D12Resource> mDepthStencilBuffer{ nullptr };
+struct CameraConstants {
+	SimpleMath::Matrix view;
+	SimpleMath::Matrix proj;
+	SimpleMath::Matrix viewProj;
+	SimpleMath::Vector3 cameraPosition;
 };
 
-Renderer::Renderer(HWND rendererWindowHandle) 
+Renderer::Renderer(HWND rendererWindowHandle)
 	: mRendererWindow(rendererWindowHandle) {
-	mDirectXImpl = std::make_unique<DirectXImpl>();
-	
+
+	// 셰이더 매니저 테스트용.. 
+	gShaderManager.Test();
+
 	Renderer::InitFactory();
 	Renderer::InitDevice();
 	Renderer::InitCommandQueue();
@@ -46,35 +28,78 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitRenderTargets();
 	Renderer::InitDepthStencilBuffer();
 
-	Renderer::FlushCommandQueue();
+	Renderer::ResetCommandList();
 
-	Console.Log("Renderer 초기화가 완료되었습니다.", LogType::Info);
+	Renderer::InitCoreResources(); 
+	Renderer::InitDefferedRenderer();
 }
 
 Renderer::~Renderer() {
+
+}
+
+
+std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> Renderer::GetManagers() {
+	return std::make_tuple(mMeshRenderManager, mTextureManager, mMaterialManager);
+}
+
+DefaultBufferCPUIterator Renderer::GetMainCameraBuffer() {
+	return mMainCameraBuffer.CPUBegin();
+}
+
+ComPtr<ID3D12Device> Renderer::GetDevice() {
+	return mDevice;
+}
+
+ComPtr<ID3D12GraphicsCommandList> Renderer::GetCommandList() {
+	return mCommandList;
+}
+
+void Renderer::UploadResource(){
+	mMaterialManager->UploadMaterial(mDevice, mCommandList);
+
+	CheckHR(mCommandList->Close());
+
+	ID3D12CommandList* commandLists[] = { mCommandList.Get() };
+	mCommandQueue->ExecuteCommandLists(1, commandLists);
+	Renderer::FlushCommandQueue();
+
+	Console.Log("Renderer 초기화가 완료되었습니다.", LogType::Info);
 }
 
 void Renderer::Update() {
 	// Update... 
 }
 
-void Renderer::Render() {
+void Renderer::PrepareRender() {
 	Renderer::ResetCommandList();
+	auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-	auto& currentBackBuffer = mDirectXImpl->mRenderTargets[mDirectXImpl->mRTIndex];
+	//auto& currentBackBuffer = mRenderTargets[mRTIndex];
+	//CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.GetResource().Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET) };
+	//mCommandList->ResourceBarrier(1, &barrier);
 
-	CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET) };
+	auto dsvHandle = mDSHeap->GetCPUDescriptorHandleForHeapStart();
+	mCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-	mDirectXImpl->mCommandList->ResourceBarrier(1, &barrier);
+	// deffered 
+	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	CD3DX12_CPU_DESCRIPTOR_HANDLE gBufferHandle{ mGBufferHeap->GetCPUDescriptorHandleForHeapStart() };
+	D3D12_CPU_DESCRIPTOR_HANDLE gBufferHandles[] = {
+		gBufferHandle,
+		gBufferHandle.Offset(1, rtvDescriptorSize),
+		gBufferHandle.Offset(1, rtvDescriptorSize)
+	};
+	mCommandList->ClearRenderTargetView(gBufferHandles[0], DirectX::Colors::Black, 0, nullptr);
+	mCommandList->ClearRenderTargetView(gBufferHandles[1], DirectX::Colors::Black, 0, nullptr);
+	mCommandList->ClearRenderTargetView(gBufferHandles[2], DirectX::Colors::Black, 0, nullptr);
 
-	auto rtvDescriptorSize = mDirectXImpl->mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	mCommandList->OMSetRenderTargets(3, gBufferHandles, FALSE, &dsvHandle);
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mDirectXImpl->mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mDirectXImpl->mRTIndex), rtvDescriptorSize };
-	auto dsvHandle = mDirectXImpl->mDSHeap->GetCPUDescriptorHandleForHeapStart();
-	
-	mDirectXImpl->mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::CornflowerBlue, 0, nullptr);
-	mDirectXImpl->mCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-	mDirectXImpl->mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+	// forward 
+	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mRTIndex), rtvDescriptorSize };
+	//mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
+	//mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
 
 	D3D12_VIEWPORT viewport{};
 	viewport.TopLeftX = 0;
@@ -90,47 +115,71 @@ void Renderer::Render() {
 	scissorRect.right = Config::WINDOW_WIDTH<LONG>;
 	scissorRect.bottom = Config::WINDOW_HEIGHT<LONG>;
 
-	mDirectXImpl->mCommandList->RSSetViewports(1, &viewport);
-	mDirectXImpl->mCommandList->RSSetScissorRects(1, &scissorRect);
+	mCommandList->RSSetViewports(1, &viewport);
+	mCommandList->RSSetScissorRects(1, &scissorRect);
 
 
-	// Rendering... 
+	mMainCameraBuffer.Upload(mCommandList); 
+	mMeshRenderManager->PrepareRender(mCommandList);
+}
 
-	barrier = CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-	mDirectXImpl->mCommandList->ResourceBarrier(1, &barrier);
+void Renderer::Render() {
+	auto& currentBackBuffer = mRenderTargets[mRTIndex];
 
-	CheckHR(mDirectXImpl->mCommandList->Close());
-	ID3D12CommandList* commandLists[] = { mDirectXImpl->mCommandList.Get() };
-	mDirectXImpl->mCommandQueue->ExecuteCommandLists(1, commandLists);
+	mTextureManager->Bind(mCommandList);
+	mMeshRenderManager->Render(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin() );
+	mMeshRenderManager->Reset();
 
-	CheckHR(mDirectXImpl->mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
+	// Rendering End
+//	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	
 
-	mDirectXImpl->mRTIndex = (mDirectXImpl->mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
+	// Deffered Rendering
+	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+
+	auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mRTIndex), rtvDescriptorSize };
+	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
+	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+
+	mDefferedRenderer.Render(mCommandList);
+
+	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+
+	CheckHR(mCommandList->Close());
+	ID3D12CommandList* commandLists[] = { mCommandList.Get() };
+	mCommandQueue->ExecuteCommandLists(1, commandLists);
+
+	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
+
+	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
 
 	Renderer::FlushCommandQueue();
 }
 
 void Renderer::InitFactory() {
-	CheckHR(CreateDXGIFactory1(IID_PPV_ARGS(&mDirectXImpl->mFactory)));
+	CheckHR(CreateDXGIFactory1(IID_PPV_ARGS(&mFactory)));
 #ifdef _DEBUG
-	CheckHR(D3D12GetDebugInterface(IID_PPV_ARGS(&mDirectXImpl->mDebugController)));
-	CheckHR(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&mDirectXImpl->mDXGIDebug)));
+	CheckHR(D3D12GetDebugInterface(IID_PPV_ARGS(&mDebugController)));
+	CheckHR(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&mDXGIDebug)));
 
-	mDirectXImpl->mDebugController->EnableDebugLayer();
-	mDirectXImpl->mDebugController->SetEnableGPUBasedValidation(true);
+	mDebugController->EnableDebugLayer();
+	mDebugController->SetEnableGPUBasedValidation(true);
 
-	mDirectXImpl->mDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
-	mDirectXImpl->mDXGIDebug->EnableLeakTrackingForThread();
+	mDXGIDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
+	mDXGIDebug->EnableLeakTrackingForThread();
 #endif
 }
 
 void Renderer::InitDevice() {
-	auto hr = ::D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDirectXImpl->mDevice));
+	auto hr = ::D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice));
 
 	if (FAILED(hr)) {
 		ComPtr<IDXGIAdapter> warpAdapter{ nullptr };
-		CheckHR(mDirectXImpl->mFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
-		CheckHR(::D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDirectXImpl->mDevice)));
+		CheckHR(mFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
+		CheckHR(::D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice)));
 	}
 }
 
@@ -138,11 +187,11 @@ void Renderer::InitCommandQueue() {
 	D3D12_COMMAND_QUEUE_DESC desc{};
 	desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-	CheckHR(mDirectXImpl->mDevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&mDirectXImpl->mCommandQueue)));
+	CheckHR(mDevice->CreateCommandQueue(&desc, IID_PPV_ARGS(&mCommandQueue)));
 }
 
 void Renderer::InitFence() {
-	CheckHR(mDirectXImpl->mDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mDirectXImpl->mFence)));
+	CheckHR(mDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&mFence)));
 }
 
 void Renderer::InitSwapChain() {
@@ -162,28 +211,31 @@ void Renderer::InitSwapChain() {
 
 
 	CheckHR(
-		mDirectXImpl->mFactory->CreateSwapChainForHwnd(
-			mDirectXImpl->mCommandQueue.Get(), 
+		mFactory->CreateSwapChainForHwnd(
+			mCommandQueue.Get(), 
 			mRendererWindow, 
 			&desc, 
 			nullptr, 
 			nullptr, 
-			mDirectXImpl->mSwapChain.GetAddressOf()
+			mSwapChain.GetAddressOf()
 		)
 	);
 
 }
 
 void Renderer::InitCommandList() {
-	CheckHR(mDirectXImpl->mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&mDirectXImpl->mAllocator)));
-	CheckHR(mDirectXImpl->mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mDirectXImpl->mAllocator.Get(), nullptr, IID_PPV_ARGS(&mDirectXImpl->mCommandList)));
+	CheckHR(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&mAllocator)));
+	CheckHR(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mAllocator.Get(), nullptr, IID_PPV_ARGS(&mCommandList)));
 
-	mDirectXImpl->mCommandList->Close();
+	mCommandList->SetName(L"Main Command List");
+	mAllocator->SetName(L"Main Command Allocator");
+
+	CheckHR(mCommandList->Close());
 }
 
 void Renderer::InitRenderTargets() {
-	for (const auto [index, renderTarget] : Enumerate(mDirectXImpl->mRenderTargets)) {
-		CheckHR(mDirectXImpl->mSwapChain->GetBuffer(static_cast<UINT>(index), IID_PPV_ARGS(renderTarget.GetAddressOf())));
+	for (const auto [index, renderTarget] : Enumerate(mRenderTargets)) {
+		CheckHR(mSwapChain->GetBuffer(static_cast<UINT>(index), IID_PPV_ARGS(renderTarget.GetAddressOf())));
 	}
 
 	D3D12_DESCRIPTOR_HEAP_DESC desc{};
@@ -191,15 +243,34 @@ void Renderer::InitRenderTargets() {
 	desc.NumDescriptors = Config::BACKBUFFER_COUNT<UINT>;
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
-	CheckHR(mDirectXImpl->mDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(mDirectXImpl->mRTVHeap.GetAddressOf())));
+	CheckHR(mDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(mRTVHeap.GetAddressOf())));
 
-	auto rtvDescriptorSize = mDirectXImpl->mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	D3D12_CPU_DESCRIPTOR_HANDLE handle{ mDirectXImpl->mRTVHeap->GetCPUDescriptorHandleForHeapStart() };
+	auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	D3D12_CPU_DESCRIPTOR_HANDLE handle{ mRTVHeap->GetCPUDescriptorHandleForHeapStart() };
 
-	for (auto& renderTarget : mDirectXImpl->mRenderTargets) {
-		mDirectXImpl->mDevice->CreateRenderTargetView(renderTarget.Get(), nullptr, handle);
+	for (auto& renderTarget : mRenderTargets) {
+		mDevice->CreateRenderTargetView(renderTarget.GetResource().Get(), nullptr, handle);
 		handle.ptr += rtvDescriptorSize;
 	}
+
+	D3D12_DESCRIPTOR_HEAP_DESC gBufferDesc{};
+	gBufferDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	gBufferDesc.NumDescriptors = 3;
+	gBufferDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+	CheckHR(mDevice->CreateDescriptorHeap(&gBufferDesc, IID_PPV_ARGS(mGBufferHeap.GetAddressOf())));
+
+	mGBuffers[0] = Texture(mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+	mGBuffers[1] = Texture(mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+	mGBuffers[2] = Texture(mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE gBufferHandle{ mGBufferHeap->GetCPUDescriptorHandleForHeapStart() };
+
+	mDevice->CreateRenderTargetView(mGBuffers[0].GetResource().Get(), nullptr, gBufferHandle);
+	gBufferHandle.ptr += rtvDescriptorSize;
+	mDevice->CreateRenderTargetView(mGBuffers[1].GetResource().Get(), nullptr, gBufferHandle);
+	gBufferHandle.ptr += rtvDescriptorSize;
+	mDevice->CreateRenderTargetView(mGBuffers[2].GetResource().Get(), nullptr, gBufferHandle);
 }
 
 void Renderer::InitDepthStencilBuffer() {
@@ -208,46 +279,72 @@ void Renderer::InitDepthStencilBuffer() {
 	desc.NumDescriptors = 1;
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 
-	CheckHR(mDirectXImpl->mDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(mDirectXImpl->mDSHeap.GetAddressOf())));
+	CheckHR(mDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(mDSHeap.GetAddressOf())));
 
-	CD3DX12_CLEAR_VALUE clearValue{ DXGI_FORMAT_D32_FLOAT, 1.0f, 0 };
+	CD3DX12_CLEAR_VALUE clearValue{ DXGI_FORMAT_D24_UNORM_S8_UINT, 1.0f, 0 };
 	auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 
 	auto resourceDesc = CD3DX12_RESOURCE_DESC::Tex2D(
-		DXGI_FORMAT_D32_FLOAT,
-		Config::WINDOW_WIDTH<UINT>, 
+		DXGI_FORMAT_D24_UNORM_S8_UINT,
+		Config::WINDOW_WIDTH<UINT64>, 
 		Config::WINDOW_HEIGHT<UINT>, 
 		1, 0, 1, 0, 
 		D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 
-	CheckHR(mDirectXImpl->mDevice->CreateCommittedResource(
+	CheckHR(mDevice->CreateCommittedResource(
 			&heapProperties,
 			D3D12_HEAP_FLAG_NONE,
 			&resourceDesc,
 			D3D12_RESOURCE_STATE_DEPTH_WRITE,
 			&clearValue,
-			IID_PPV_ARGS(mDirectXImpl->mDepthStencilBuffer.GetAddressOf())
+			IID_PPV_ARGS(mDepthStencilBuffer.GetAddressOf())
 		)
 	);
 
-	mDirectXImpl->mDevice->CreateDepthStencilView(mDirectXImpl->mDepthStencilBuffer.Get(), nullptr, mDirectXImpl->mDSHeap->GetCPUDescriptorHandleForHeapStart());
+	mDevice->CreateDepthStencilView(mDepthStencilBuffer.GetResource().Get(), nullptr, mDSHeap->GetCPUDescriptorHandleForHeapStart());
+}
+
+void Renderer::InitCoreResources() {
+	mMeshRenderManager = std::make_shared<MeshRenderManager>(mDevice);
+	mTextureManager = std::make_shared<TextureManager>(mDevice, mCommandList);
+	mMaterialManager = std::make_shared<MaterialManager>();
+
+	mMainCameraBuffer = DefaultBuffer(mDevice, sizeof(CameraConstants), 1, true);
+
+}
+
+void Renderer::InitDefferedRenderer() {
+	mDefferedRenderer = DefferedRenderer(mDevice, mCommandList);
+
+	mDefferedRenderer.RegisterGBufferTexture(mDevice, mGBuffers);
+
+}
+
+void Renderer::TransitionGBuffers(D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState) {
+	D3D12_RESOURCE_BARRIER barriers[]{
+		CD3DX12_RESOURCE_BARRIER::Transition(mGBuffers[0].GetResource().Get(), beforeState, afterState),
+		CD3DX12_RESOURCE_BARRIER::Transition(mGBuffers[1].GetResource().Get(), beforeState, afterState),
+		CD3DX12_RESOURCE_BARRIER::Transition(mGBuffers[2].GetResource().Get(), beforeState, afterState)
+	};
+
+	mCommandList->ResourceBarrier(3, barriers);
 }
 
 void Renderer::ResetCommandList() {
-	CheckHR(mDirectXImpl->mAllocator->Reset());
-	CheckHR(mDirectXImpl->mCommandList->Reset(mDirectXImpl->mAllocator.Get(), nullptr));
+	CheckHR(mAllocator->Reset());
+	CheckHR(mCommandList->Reset(mAllocator.Get(), nullptr));
 }
 
 void Renderer::FlushCommandQueue() {
-	mDirectXImpl->mFenceValue++;
-	CheckHR(mDirectXImpl->mCommandQueue->Signal(mDirectXImpl->mFence.Get(), mDirectXImpl->mFenceValue));
+	mFenceValue++;
+	CheckHR(mCommandQueue->Signal(mFence.Get(), mFenceValue));
 
-	if (mDirectXImpl->mFence->GetCompletedValue() < mDirectXImpl->mFenceValue) {
+	if (mFence->GetCompletedValue() < mFenceValue) {
 		HANDLE eventHandle = CreateEvent(nullptr, FALSE, FALSE, nullptr);
-		CrashExp(eventHandle != nullptr, "Event can not be nullptr");
+		CrashExp((eventHandle != nullptr), "Event can not be nullptr");
 
-		mDirectXImpl->mFence->SetEventOnCompletion(mDirectXImpl->mFenceValue, eventHandle);
-		WaitForSingleObject(eventHandle, INFINITE);
-		CloseHandle(eventHandle);
+		mFence->SetEventOnCompletion(mFenceValue, eventHandle);
+		::WaitForSingleObject(eventHandle, INFINITE);
+		::CloseHandle(eventHandle);
 	}
 }

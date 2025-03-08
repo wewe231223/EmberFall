@@ -55,13 +55,10 @@ ConsoleBase::~ConsoleBase() {
 }
 
 void ConsoleBase::Render() {
-	// 고정된 위치와 크기
-	ImVec2 fixedPos = ImVec2(0, 0);   // 창의 고정 위치
-	ImVec2 fixedSize = ImVec2(400, 300);  // 창의 고정 크기
 
 	// 창의 위치와 크기를 고정
 	ImGui::SetNextWindowPos(ImVec2{ 0, 0 });
-	ImGui::SetNextWindowSize(ImVec2{ Config::EDITOR_WINDOW_WIDTH<>,Config::EDITOR_WINDOW_HEIGHT<> / 3 });
+	ImGui::SetNextWindowSize(ImVec2{ Config::EDITOR_WINDOW_WIDTH<>,Config::EDITOR_WINDOW_HEIGHT<> / 2 });
 
 	ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
 

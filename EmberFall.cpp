@@ -11,17 +11,25 @@
 #include "framework.h"
 #include "EmberFall.h"
 #include "EditorInterface/Impl/EditorDevice.h"
-#include "Config/Config.h"
-//#include "Renderer/core/Renderer.h"
+#include "EditorInterface/Console/Console.h"
+#include "Renderer/core/Renderer.h"
+#include "Game/System/Timer.h"
+#include "Game/System/Input.h"
+#include "Game/Scene/Scene.h"
+#include "Utility/NonReplacementSampler.h"
+#include "MeshLoader/Loader/MeshLoader.h"
 
 #ifdef _DEBUG
 #pragma comment(lib,"out/debug/EditorInterface.lib")
+#pragma comment(lib,"out/debug/Renderer.lib")
+#pragma comment(lib,"out/debug/Game.lib")
+#pragma comment(lib,"out/debug/MeshLoader.lib")
 #else 
 #pragma comment(lib,"out/release/EditorInterface.lib")
+#pragma comment(lib,"out/release/Renderer.lib")
+#pragma comment(lib,"out/release/Game.lib")
+#pragma comment(lib,"out/release/MeshLoader.lib")
 #endif
-
-#include "Renderer/core/Renderer.h"
-#pragma comment(lib,"out/debug/Renderer.lib")
 
 #include "Config/Config.h"
 
@@ -61,19 +69,55 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
 	Renderer renderer{ hWnd };
+	Input.Initialize(hWnd);
 
+	Scene scene{ renderer.GetDevice(), renderer.GetCommandList(), renderer.GetManagers(), renderer.GetMainCameraBuffer() };
+
+    renderer.UploadResource();
+
+    int n = NonReplacementSampler::GetInstance().Sample();
+
+	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::Escape, n, []() {
+		PostQuitMessage(0);
+		});
+
+    Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::F2, n, []() {Input.ToggleVirtualMouse(); });
+
+	size_t frameCount = 0;
+
+	Time.AddEvent(1s, [&frameCount]() {
+        std::string title = "FPS : " + std::to_string(frameCount);
+		SetWindowTextA(hWnd, title.c_str());
+        frameCount = 0;
+		return true;
+		});
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
     MSG msg{};
     
+
     // 기본 메시지 루프입니다:
-    while (msg.message != WM_QUIT) {
-		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-		}
-        renderer.Render();
-        // 게임 루프... 
+    while (true) {
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+			if (msg.message == WM_QUIT) break;
+			if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) {
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+			
+        }
+        else {
+
+            Time.AdvanceTime();
+            Input.Update();
+
+            scene.Update();
+            renderer.PrepareRender();
+            renderer.Render();
+
+            // 게임 루프... 
+            frameCount++;
+        }
     }
 
 	::DestroyWindow(hWnd);
@@ -94,20 +138,79 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    switch (message)
-    {
-    case WM_PAINT:
-    {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(hWnd, &ps);
-        // TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
-        EndPaint(hWnd, &ps);
-    }
-    break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
+    constexpr UINT keyPressedCheckBitMask = 0x60000000;
+    constexpr UINT keyPressedAtTime = 0x20000000;
+
+    switch (message) {
+        /**
+        *	**아래의 WM_SYSKEYDOWN 메세지에 등장하는 KeyPressedBitMask, KeyPressedAtTime 값에 대한 설명입니다**
+        *
+        *	(lParam & 0x60000000) == 0x20000000 부분은 키보드 입력 메시지에서 lParam 값을 검사하여
+        *	키가 눌린 상태와 반복된 횟수를 확인하는 것입니다.
+        *	KeyPressedCheckBitMask 가 0x60000000, KeyPressedAtTime 이 0x20000000으로 정의되어 있습니다.
+        *
+        *	lParam 값은 키보드 메시지에서 다양한 정보를 담고 있는 32비트 값으로 구성되어 있습니다.
+        *	lParam의 각 비트의 의미를 설명하면 다음과 같습니다:
+        *
+        *	비트 0-15: 키가 눌려진 반복 횟수
+        *	비트 16-23: 키의 스캔 코드
+        *	비트 24: 확장 키 여부 (0: 일반 키, 1: 확장 키)
+        *	비트 25-28: 예약된 비트
+        *	비트 29: 이전 키 상태 (0: 이전에 눌리지 않았음, 1: 이전에 눌림)
+        *	비트 30: 키 상태 (0: 키가 눌렸음, 1: 키가 놓였음)
+        *	비트 31: 전송된 메시지의 종류 (0: WM_KEYDOWN, 1: WM_KEYUP)
+        *	이제 (lParam & 0x60000000) == 0x20000000의 의미를 해석해 보겠습니다:
+        *
+        *	0x60000000는 이진수로 01100000 00000000 00000000 00000000입니다.
+        *	0x20000000는 이진수로 00100000 00000000 00000000 00000000입니다.
+        *	이 조건문은 lParam 값의 비트 29와 비트 30을 확인하고 있습니다. 이를 비트별로 분석해보면:
+        *
+        *	(lParam & 0x60000000)은 lParam 값에서 비트 29와 비트 30을 추출합니다.
+        *	비트 29는 키가 이전에 눌렸는지 여부를 나타냅니다.
+        *	비트 30은 키가 현재 눌렸는지 여부를 나타냅니다.
+        *	== 0x20000000은 비트 29가 0이고 비트 30이 1인지를 확인합니다.
+        *
+        *	즉, (lParam & 0x60000000) == 0x20000000 조건은 키가 처음 눌렸을 때만 참이 됩니다.
+        *	키가 반복되거나 키가 놓였을 때는 이 조건이 거짓이 됩니다.
+        *	이 조건을 통해 키가 처음 눌렸을 때 ALT+ENTER 조합을 처리하는 것입니다.
+        *
+        **/
+    case WM_SYSKEYDOWN:
+        if (wParam == VK_RETURN && (lParam & keyPressedCheckBitMask) == keyPressedAtTime) {
+            // 여기에는 Alt + Enter 과 같은 경우에 대한 처리를 추가하면 됩니다. 
+
+        }
         break;
-    case WM_CLOSE:
+    case WM_KILLFOCUS:
+    case WM_SETFOCUS:
+        // Input.UpdateFocus(message);
+        break;
+
+        // 아래는 모든 입력을 Keyboard 에게 넘기는 부분입니다. 
+    case WM_ACTIVATEAPP:
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+    case WM_SYSKEYUP:
+        DirectX::Keyboard::ProcessMessage(message, wParam, lParam);
+        break;
+    case WM_MENUCHAR:
+        return MAKELRESULT(0, MNC_CLOSE);
+        // 아래는 모든 입력을 Mouse 에게 넘기는 부분입니다. 
+    case WM_INPUT:
+    case WM_MOUSEMOVE:
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONUP:
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONUP:
+    case WM_MBUTTONDOWN:
+    case WM_MBUTTONUP:
+    case WM_MOUSEWHEEL:
+    case WM_XBUTTONDOWN:
+    case WM_XBUTTONUP:
+    case WM_MOUSEHOVER:
+        DirectX::Mouse::ProcessMessage(message, wParam, lParam);
+        break;
+    case WM_DESTROY:
         PostQuitMessage(0);
         break;
     default:
@@ -210,7 +313,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
-   gDevice.Initialize(hWnd);
+  // gDevice.Initialize(hWnd);
 
    return TRUE;
 }

@@ -33,7 +33,7 @@ struct Config {
 	constexpr static T WINDOW_HEIGHT{ static_cast<T>(720) };
 #endif
 	template<typename T = int> 
-	constexpr static T EDITOR_WINDOW_WIDTH{ static_cast<T>(Config::WINDOW_WIDTH<T> / 3) };
+	constexpr static T EDITOR_WINDOW_WIDTH{ static_cast<T>(Config::WINDOW_WIDTH<T> / 2) };
 
 	template<typename T = int>
 	constexpr static T EDITOR_WINDOW_HEIGHT{ Config::WINDOW_HEIGHT<T> };
@@ -46,9 +46,15 @@ struct Config {
 	constexpr static T LOG_FILE_COUNT_LIMIT{ static_cast<T>(10) };
 
 	template<typename T = int> 
-	constexpr static T BACKBUFFER_COUNT{ 3 };
+	constexpr static T BACKBUFFER_COUNT{ static_cast<T>(3) };
 
-	constexpr static bool ALLOW_TEARING{ false };
+	template<typename T = UINT> 
+	constexpr static T MAX_TEXTURE_COUNT{ static_cast<T>(1024) };
+
+	template<typename T = size_t> 
+	constexpr static T GBUFFER_COUNT{ static_cast<T>(3) };
+
+	constexpr static bool ALLOW_TEARING{ true };
 	constexpr static D3D_FEATURE_LEVEL DIRECTX_FEATURE_LEVEL{ D3D_FEATURE_LEVEL_11_0 };
 	constexpr static DXGI_FORMAT RENDER_TARGET_FORMAT{ DXGI_FORMAT_R8G8B8A8_UNORM };
 
@@ -56,6 +62,8 @@ struct Config {
 	constexpr static bool IMGUI_KOREAN{ true };
 
 	constexpr static const char* IMGUI_KOREAN_FONT_PATH{ "Resources/Font/NotoSansKR-Regular-Hestia.otf" };
+
+	constexpr static bool DEFAULT_REVERSE_Z{ false };
 };
 
 

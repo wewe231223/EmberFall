@@ -1,4 +1,10 @@
 #pragma once 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Exeptions.h
+// 2025.01.05 김승범   - HRESULT 의 값을 토대로 에러 메세지를 얻어와 MessageBox 를 띄우는 함수를 정의함. 
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include <source_location>
 #include <optional>
 #include <string>
@@ -17,8 +23,9 @@ inline std::optional<std::wstring> CheckHR(const HRESULT& hr, const std::source_
 
 	if (FAILED(hr)) {
 		_com_error err{ hr };
-		result = std::format(L"Error Location : {}\n{} \n\n Error : \n{}",
+		result = std::format(L"Error Location : {} : {}\n{} \n\n Error : \n{}",
 			to_wstring(location.file_name()),
+			location.line(),
 			to_wstring(location.function_name()),
 			err.ErrorMessage());
 		::MessageBoxW(nullptr, result.value().c_str(), L"Error", 0x00000010L | 0x00000000L);

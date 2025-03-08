@@ -17,7 +17,7 @@
 #include <queue>
 #include "../Utility/CircularBuffer.h"
 
-enum class LogType {
+enum class LogType : unsigned char {
 	Info,
 	Warning,
 	Error,

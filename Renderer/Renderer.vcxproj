@@ -143,15 +143,61 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="core\Renderer.cpp" />
+    <ClCompile Include="Core\DefferedRenderer.cpp" />
+    <ClCompile Include="Core\Renderer.cpp" />
+    <ClCompile Include="core\Shader.cpp" />
+    <ClCompile Include="Manager\MeshRenderManager.cpp" />
+    <ClCompile Include="Manager\SceneManager.cpp" />
+    <ClCompile Include="Manager\TextureManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Resource\DefaultBuffer.cpp" />
+    <ClCompile Include="Resource\Mesh.cpp" />
+    <ClCompile Include="Resource\Texture.cpp" />
+    <ClCompile Include="Resource\UploadBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="core\Renderer.h" />
+    <ClInclude Include="Core\DefferedRenderer.h" />
+    <ClInclude Include="Core\Renderer.h" />
+    <ClInclude Include="core\Shader.h" />
+    <ClInclude Include="Manager\MeshRenderManager.h" />
+    <ClInclude Include="Manager\SceneManager.h" />
+    <ClInclude Include="Manager\TextureManager.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Resource\DefaultBuffer.h" />
+    <ClInclude Include="Resource\Mesh.h" />
+    <ClInclude Include="Resource\Texture.h" />
+    <ClInclude Include="Resource\UploadBuffer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Shader\Sources\Deffered.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\SkyBox.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\Standard.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\StandardAnimation.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\TerrainTessellation.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Shader\ShaderMetadata.txt">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </Text>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

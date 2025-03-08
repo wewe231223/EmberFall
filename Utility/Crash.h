@@ -7,6 +7,7 @@
 //     별다른 일은 하지 않으며 의도적으로 잘못된 메모리 접근을 일으켜 프로그램을 강제 종료함
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include <cassert>
 
 #pragma region MACRO_CRASH
 #define CrashExpRelease(expression, cause)  \
@@ -14,7 +15,7 @@
     if (false == (expression)) {              \
         int* p = nullptr;                   \
         __analysis_assume(p != nullptr);    \
-        * p = expression;                   \
+		*p = 0;                             \
     }                                       \
 }
 
@@ -22,14 +23,14 @@
 {                                           \
     int* p = nullptr;                       \
     __analysis_assume(p != nullptr);        \
-    *p = expression;                        \
+    *p = 0;                                 \
 }
 
 #if defined(_DEBUG) || defined(DEBUG)
 #define Crash(cause) assert(false && cause)
 #define CrashExp(expression, cause) if (false == (expression)) assert(false && cause)
 #else
-#define Crash(cause) CrashRelease(cause)
+#define Crash(cause) CrashRelease((cause))
 #define CrashExp(expression, cause) CrashExpRelease(expression, cause)
 #endif
 
