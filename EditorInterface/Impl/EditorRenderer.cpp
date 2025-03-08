@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "EditorRenderer.h"
-
 #include "../Utility/Exceptions.h"
 #include "../Utility/Enumerate.h"
 #include "../Config/Config.h"
@@ -10,8 +9,8 @@
 #include "../External/Include/ImGui/imgui_impl_win32.h"
 #include "../External/Include/ImGui/imgui_internal.h"
 #include "../Utility/Crash.h"
-#include <ranges>
-#include <vector>
+
+#include "../EditorInterface/Console/Console.h"
 
 EditorRenderer::EditorRenderer() {
 
@@ -33,11 +32,16 @@ void EditorRenderer::Initialize(HWND hWnd) {
 	EditorRenderer::InitRenderTargets();
 	EditorRenderer::InitCommandList();
 	EditorRenderer::InitIMGUI();
+
+	Console.Log("정보 메세지 예시입니다.", LogType::Info);
+	Console.Log("경고 메세지 예시입니다.", LogType::Warning);
+	Console.Log("에러 메세지 예시입니다.", LogType::Error);
+
 }
 
 void EditorRenderer::Render() {
 	EditorRenderer::ResetCommandList();
-	
+
 	auto currentBackBuffer = mRenderTargets[mRTIndex].Get();
 	CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET) };
 
@@ -70,7 +74,7 @@ void EditorRenderer::Render() {
 	ImGui::NewFrame();
 
 	// IMGUI 그리기... 
-
+	Console.Render();
 
 	ImGui::Render();
 	mCommandList->SetDescriptorHeaps(1, mIMGUIHeap.GetAddressOf());
@@ -231,19 +235,17 @@ void EditorRenderer::InitIMGUI() {
 
 }
 
-void EditorRenderer::ResetCommandList()
-{
+void EditorRenderer::ResetCommandList() {
 	CheckHR(mAllocator->Reset());
 	CheckHR(mCommandList->Reset(mAllocator.Get(), nullptr));
 }
 
-void EditorRenderer::FlushCommandQueue()
-{
+void EditorRenderer::FlushCommandQueue() {
 	++mFenceValue;
 	CheckHR(mCommandQueue->Signal(mFence.Get(), mFenceValue));
 
 	if (mFence->GetCompletedValue() < mFenceValue) {
-		HANDLE eventHandle = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
+		HANDLE eventHandle{ ::CreateEvent(nullptr, FALSE, FALSE, nullptr) };
 		CrashExp(eventHandle != nullptr, "Event can not be nullptr");
 
 		mFence->SetEventOnCompletion(mFenceValue, eventHandle);
@@ -253,8 +255,7 @@ void EditorRenderer::FlushCommandQueue()
 	}
 }
 
-void EditorRenderer::TerminateIMGUI()
-{
+void EditorRenderer::TerminateIMGUI() {
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();

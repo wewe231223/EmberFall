@@ -20,6 +20,13 @@
 #pragma comment(lib,"out/release/EditorInterface.lib")
 #endif
 
+#include "Renderer/core/Renderer.h"
+#pragma comment(lib,"out/debug/Renderer.lib")
+
+#include "Config/Config.h"
+
+
+
 #define MAX_LOADSTRING 100
 // 전역 변수:
 HINSTANCE hInst;                                // 현재 인스턴스입니다.
@@ -53,8 +60,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
+	Renderer renderer{ hWnd };
 
+
+    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
     MSG msg{};
     
     // 기본 메시지 루프입니다:
@@ -63,6 +72,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             TranslateMessage(&msg);
             DispatchMessage(&msg);
 		}
+        renderer.Render();
         // 게임 루프... 
     }
 
@@ -147,9 +157,51 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
    hInst = hInstance; // 인스턴스 핸들을 전역 변수에 저장합니다.
 
-   hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, CW_USEDEFAULT, Config::WINDOW_WIDTH<>, Config::WINDOW_HEIGHT<>, nullptr, nullptr, hInstance, nullptr);
 
+   if constexpr (Config::WINDOWED) {
+       DWORD style = WS_OVERLAPPEDWINDOW;
+       DWORD exStyle = WS_EX_OVERLAPPEDWINDOW;
+
+       int posX = (GetSystemMetrics(SM_CXSCREEN) / 2) - (Config::WINDOW_WIDTH<> / 2 + Config::EDITOR_WINDOW_WIDTH<> / 2);
+       int posY = (GetSystemMetrics(SM_CYSCREEN) / 2) - (Config::WINDOW_HEIGHT<> / 2);
+
+       RECT adjustedRect{ 0, 0, Config::WINDOW_WIDTH<long>, Config::WINDOW_HEIGHT<long> };
+       ::AdjustWindowRectEx(std::addressof(adjustedRect), style, FALSE, exStyle);
+
+       hWnd = CreateWindowEx(
+           exStyle,                                // 확장 스타일
+           szWindowClass,                          // 윈도우 클래스 이름
+           szTitle,                                // 윈도우 타이틀 
+           style,                                  // 윈도우 스타일
+           posX, posY,                             // 위치
+           adjustedRect.right - adjustedRect.left,
+           adjustedRect.bottom - adjustedRect.top, // 크기
+           nullptr,                                // 부모 윈도우
+           nullptr,                                // 메뉴
+           hInstance,                              // 인스턴스 핸들
+           nullptr                                 // 추가 매개변수
+       );
+   }
+   else {
+       DWORD style = WS_POPUP;
+       DWORD exStyle = NULL;
+
+	   int posX = (GetSystemMetrics(SM_CXSCREEN) / 2) - (Config::WINDOW_WIDTH<> / 2 + Config::EDITOR_WINDOW_WIDTH<> / 2);
+	   int posY = (GetSystemMetrics(SM_CYSCREEN) / 2) - (Config::WINDOW_HEIGHT<> / 2 );
+
+       hWnd = CreateWindowEx(
+           exStyle,                                // 확장 스타일
+           szWindowClass,                          // 윈도우 클래스 이름
+           szTitle,                                // 윈도우 타이틀 
+           style,                                  // 윈도우 스타일
+           posX, posY,                             // 위치 
+           Config::WINDOW_WIDTH<long>, Config::WINDOW_HEIGHT<long>, // 크기
+           nullptr,                                // 부모 윈도우
+           nullptr,                                // 메뉴
+           hInstance,                              // 인스턴스 핸들
+           nullptr                                 // 추가 매개변수
+       );
+   }
    if (!hWnd)
    {
       return FALSE;

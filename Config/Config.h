@@ -3,6 +3,7 @@
 //
 // Config.h
 // 2025.01.03 김승범   - 윈도우 창 크기 와 같은 프로그램의 상수를 저장할 장소를 생성함.  
+// 2025.01.05 김승범   - 한글 폰트 로딩을 위한 경로를 저장함. 
 //                      
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -11,7 +12,7 @@
 #include "IdentityConfig.h"
 
 #ifdef 김승범컴퓨터 
-#define FHD
+#define HD
 #elif defined(김성준컴퓨터) 
 #define HD
 #endif 
@@ -36,6 +37,13 @@ struct Config {
 
 	template<typename T = int>
 	constexpr static T EDITOR_WINDOW_HEIGHT{ Config::WINDOW_HEIGHT<T> };
+
+	constexpr static bool WINDOWED{ true };
+	constexpr static bool AUTOMATIC_CLOSE{ WINDOWED ? false : true };
+
+	constexpr static const char* LOG_FILE_PATH{ "Log/" };
+	template <typename T = int>
+	constexpr static T LOG_FILE_COUNT_LIMIT{ static_cast<T>(10) };
 
 	template<typename T = int> 
 	constexpr static T BACKBUFFER_COUNT{ 3 };

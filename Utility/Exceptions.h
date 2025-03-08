@@ -5,7 +5,7 @@
 #include <format>
 #include <comdef.h>
 
-std::wstring to_wstring(const std::string& str)
+inline std::wstring to_wstring(const std::string& str)
 {
 	return std::wstring{ str.begin(), str.end() };
 }
