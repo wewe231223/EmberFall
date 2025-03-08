@@ -1,0 +1,265 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="pch">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Object">
+      <UniqueIdentifier>{6c8effd1-71c6-45ff-9ef0-1dbefb68bd3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collision">
+      <UniqueIdentifier>{8d52854a-4d78-44c9-bd56-5e9f29d605bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Component">
+      <UniqueIdentifier>{382a9043-5187-43b0-8898-fc3fb22c595e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{8389f802-350b-4427-bf5b-bc265ed71c1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{5367a523-1d53-4f63-b084-8ade79c3e76a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Frame">
+      <UniqueIdentifier>{1b56ccde-0c63-4997-a348-2d312d8cdd67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script">
+      <UniqueIdentifier>{8ffa7fd5-09b9-4c09-98bb-37e62f49b8a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collision\CollisionCheck">
+      <UniqueIdentifier>{c4b819e4-01ff-406c-8624-db4874c2c8b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Collision\Collider">
+      <UniqueIdentifier>{cef0a9ff-4a48-455b-bdae-f0e889a147b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BehaviorTree">
+      <UniqueIdentifier>{95ed22be-e650-4d9c-81d8-f9f77195b696}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BehaviorTree\TestMonster">
+      <UniqueIdentifier>{1b526a72-8971-4d1e-8236-7986ba6ffdd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PathFinding">
+      <UniqueIdentifier>{d73b7875-f5ee-4c83-bf48-22772279a75c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PathFinding\Graph">
+      <UniqueIdentifier>{1b284061-0b82-4ed7-a035-c59ee0553925}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PathFinding\Graph\GraphSearch">
+      <UniqueIdentifier>{ea01f14d-fee2-497c-925e-18449b5c8052}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PathFinding\Graph\GraphBase">
+      <UniqueIdentifier>{46614c48-9d7a-484a-a51f-64d9233bd237}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PathFinding\Graph\PriorityQueue">
+      <UniqueIdentifier>{72e3f717-ae76-4796-9986-87783ddff148}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PathFinding\Map">
+      <UniqueIdentifier>{1938af07-f06e-4960-a6b9-02d3fe1874e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\Objects">
+      <UniqueIdentifier>{b4f2a0a4-c6a6-47cb-b111-e70911a3eab2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\Base">
+      <UniqueIdentifier>{24b3899b-1638-42aa-9efe-1a8f343a258f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\Player">
+      <UniqueIdentifier>{edce1043-2100-4a5b-98c3-5a3911cb9366}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\Item&amp;Skill">
+      <UniqueIdentifier>{f8c38d71-0788-4c68-a6b9-25fb1baa32d9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pch.cpp">
+      <Filter>pch</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerFrame.cpp">
+      <Filter>Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="EmberFallServer.cpp">
+      <Filter>Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="GameTimer.cpp">
+      <Filter>Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp">
+      <Filter>pch</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjectComponent.cpp">
+      <Filter>Component</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRandom.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Events.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerGameScene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEventManager.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid.cpp">
+      <Filter>Collision\CollisionCheck</Filter>
+    </ClCompile>
+    <ClCompile Include="GridWorld.cpp">
+      <Filter>Collision\CollisionCheck</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>Collision\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="BehaviorTreeBase.cpp">
+      <Filter>BehaviorTree</Filter>
+    </ClCompile>
+    <ClCompile Include="BehaviorTreeMonster.cpp">
+      <Filter>BehaviorTree\TestMonster</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainCollider.cpp">
+      <Filter>Collision\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="BT_MonsterChase.cpp">
+      <Filter>BehaviorTree\TestMonster</Filter>
+    </ClCompile>
+    <ClCompile Include="PathFinder.cpp">
+      <Filter>PathFinding</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphBase.cpp">
+      <Filter>PathFinding\Graph\GraphBase</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphSearch.cpp">
+      <Filter>PathFinding\Graph\GraphSearch</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphMap.cpp">
+      <Filter>PathFinding\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterScript.cpp">
+      <Filter>Script\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="CorruptedGem.cpp">
+      <Filter>Script\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Script.cpp">
+      <Filter>Script\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerScript.cpp">
+      <Filter>Script\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="ViewList.cpp">
+      <Filter>Script\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="ItemScript.cpp">
+      <Filter>Script\Item&amp;Skill</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h">
+      <Filter>pch</Filter>
+    </ClInclude>
+    <ClInclude Include="GameTimer.h">
+      <Filter>Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Terrain.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjectComponent.h">
+      <Filter>Component</Filter>
+    </ClInclude>
+    <ClInclude Include="GameRandom.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Events.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerGameScene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEventManager.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid.h">
+      <Filter>Collision\CollisionCheck</Filter>
+    </ClInclude>
+    <ClInclude Include="GridWorld.h">
+      <Filter>Collision\CollisionCheck</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider.h">
+      <Filter>Collision\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="BehaviorTreeBase.h">
+      <Filter>BehaviorTree</Filter>
+    </ClInclude>
+    <ClInclude Include="BehaviorTreeMonster.h">
+      <Filter>BehaviorTree\TestMonster</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerFrame.h">
+      <Filter>Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainCollider.h">
+      <Filter>Collision\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="BT_MonsterChase.h">
+      <Filter>BehaviorTree\TestMonster</Filter>
+    </ClInclude>
+    <ClInclude Include="PathFinder.h">
+      <Filter>PathFinding</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphBase.h">
+      <Filter>PathFinding\Graph\GraphBase</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphSearch.h">
+      <Filter>PathFinding\Graph\GraphSearch</Filter>
+    </ClInclude>
+    <ClInclude Include="IndexedPriorityQueue.h">
+      <Filter>PathFinding\Graph\PriorityQueue</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphMap.h">
+      <Filter>PathFinding\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterScript.h">
+      <Filter>Script\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="CorruptedGem.h">
+      <Filter>Script\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Script.h">
+      <Filter>Script\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerScript.h">
+      <Filter>Script\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewList.h">
+      <Filter>Script\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="ItemScript.h">
+      <Filter>Script\Item&amp;Skill</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

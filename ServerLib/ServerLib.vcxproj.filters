@@ -1,0 +1,157 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Pch">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{86b6a1e0-f710-422c-8e65-44e578fc0e92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Server">
+      <UniqueIdentifier>{cfab8d29-6f52-4915-81f1-01b64e7231fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{8eef7fb9-10b7-4f77-b858-a1eb2cd65150}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{841cdc65-b5b3-42f6-913a-5984ee91356e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Log">
+      <UniqueIdentifier>{de9f8042-7637-4ffc-be8c-5e47c53929b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Literals">
+      <UniqueIdentifier>{ca88efeb-3a56-4111-b747-bc44139a03a1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="NetworkUtils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Types.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Constants.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="INetworkObject.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="IOCPCore.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Pch</Filter>
+    </ClCompile>
+    <ClCompile Include="SessionManager.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Listener.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Lock.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketHandler.cpp">
+      <Filter>Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Session.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkCore.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Protocol.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlappedEx.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="SendBuffers.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryPool.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="LogConsole.cpp">
+      <Filter>Log</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectPool.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="GameMath.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="GameProtocol.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="NetworkUtils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Constants.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Crash.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="INetworkObject.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="IOCPCore.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionManager.h">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Listener.h">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Lock.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketHandler.h">
+      <Filter>Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkCore.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlappedEx.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="SendBuffers.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPool.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Pch</Filter>
+    </ClInclude>
+    <ClInclude Include="LogConsole.h">
+      <Filter>Log</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectPool.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="GameUnits.h">
+      <Filter>Literals</Filter>
+    </ClInclude>
+    <ClInclude Include="GameMath.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="GameProtocol.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
