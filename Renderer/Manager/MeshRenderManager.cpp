@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "MeshRenderManager.h"
+#include "../Utility/Defines.h"
 #include <ranges>
 
 MeshRenderManager::MeshRenderManager(ComPtr<ID3D12Device> device) {
@@ -19,13 +20,13 @@ void MeshRenderManager::AppendPlaneMeshContext(GraphicsShaderBase* shader, Mesh*
 	}
 }
 
-void MeshRenderManager::AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, std::vector<SimpleMath::Matrix>& boneTransform) {
+void MeshRenderManager::AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms) {
 
 	AnimationModelContext context{ world.world, world.material, mBoneCounter };	
 	mBonedMeshContexts[shader][mesh].emplace_back(context);
-	mBoneCounter += static_cast<UINT>(boneTransform.size());
+	mBoneCounter += boneTransforms.boneCount; 
 
-	mBoneTransforms.insert(mBoneTransforms.end(), std::make_move_iterator(boneTransform.begin()), std::make_move_iterator(boneTransform.end()));
+	mBoneTransforms.insert(mBoneTransforms.end(), std::make_move_iterator(boneTransforms.boneTransforms.begin()), std::make_move_iterator(boneTransforms.boneTransforms.begin() + boneTransforms.boneCount ));
 }
 
 void MeshRenderManager::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList) {

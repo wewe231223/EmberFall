@@ -2,6 +2,7 @@
 #include <type_traits>
 #include <tuple>
 #include <bitset>
+#include <array>
 #include "../Utility/DirectXInclude.h"
 template <typename T>
 concept HasIndex = requires {
@@ -19,6 +20,11 @@ struct AnimationModelContext {
 	SimpleMath::Matrix world;
 	UINT material;
 	UINT boneIndexStart{ 0 };
+};
+
+struct BoneTransformBuffer {
+	std::array<SimpleMath::Matrix, 150>	boneTransforms;
+	UINT boneCount;
 };
 
 template<typename T>

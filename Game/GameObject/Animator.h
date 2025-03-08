@@ -1,6 +1,8 @@
 #pragma once 
 #include "../MeshLoader/Base/AnimationData.h"
 #include "../MeshLoader/Loader/AnimationLoader.h"
+#include "../Config/Config.h"
+#include "../Utility/Defines.h"
 
 namespace Legacy {
 	class Animator {
@@ -33,9 +35,9 @@ public:
 	~Animator() = default;
 public:
 	bool GetActivated() const; 
-	void UpdateBoneTransform(double time, std::vector<SimpleMath::Matrix>& boneTransforms);
+	void UpdateBoneTransform(double time, BoneTransformBuffer& boneTransforms);
 private:
-	void ReadNodeHeirarchy(double AnimationTime, BoneNode* pNode, const SimpleMath::Matrix& ParentTransform, const AnimationClip& animation, std::vector<SimpleMath::Matrix>& boneTransforms);
+	void ReadNodeHeirarchy(double AnimationTime, BoneNode* pNode, const SimpleMath::Matrix& ParentTransform, const AnimationClip& animation, std::array<SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<>>& boneTransforms);
 
 	UINT FindPosition(double AnimationTime, const BoneAnimation& boneAnim);
 	UINT FindRotation(double AnimationTime, const BoneAnimation& boneAnim);

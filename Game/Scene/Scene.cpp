@@ -105,6 +105,21 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	}
 
 
+	animationData = Animloader.Load(assetPath, 3);
+
+	{
+		auto& object = mGameObjects.emplace_back();
+		object.mShader = mShaderMap["SkinnedShader"].get();
+		object.mMesh = mMeshMap["T_Pose"].get();
+		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+		object.GetTransform().Translate({ 40.f,85.f,0.f });
+		object.GetTransform().Scaling(10.f, 10.f, 10.f);
+		object.mAnimator = Animator(animationData);
+	}
+
+
+
+
 	mCamera = Camera(mainCameraBufferLocation);
 	
 	auto& cameraTransform = mCamera.GetTransform();
@@ -118,7 +133,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 void Scene::Update() {
 	mCameraMode->Update();
 	
-	std::vector<SimpleMath::Matrix> boneTransforms{};
+	static BoneTransformBuffer boneTransforms{};
 
 
 	for (auto& gameObject : mGameObjects) {
@@ -133,7 +148,6 @@ void Scene::Update() {
 			else {
 				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
 			}
-
 		}
 	}
 

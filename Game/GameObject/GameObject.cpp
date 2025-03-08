@@ -26,12 +26,12 @@ void GameObject::ToggleActiveState() {
 	mActiveState = !mActiveState;
 }
 
-void GameObject::UpdateShaderVariables(std::vector<SimpleMath::Matrix>& boneTransforms){
+void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransform){
 	static double counter{ 0.0 };
 	counter += 0.0001;
 
 	if (mAnimator.GetActivated()) {
-		mAnimator.UpdateBoneTransform(counter, boneTransforms);
+		mAnimator.UpdateBoneTransform(counter, boneTransform);
 	}
 
 	mTransform.UpdateWorldMatrix();

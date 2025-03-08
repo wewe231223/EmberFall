@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Animator.h"
 #include "../EditorInterface/Console/Console.h"
+#include "../Utility/Defines.h"
 #include <ranges>
 
 #ifdef max 
@@ -151,18 +152,19 @@ bool Animator::GetActivated() const {
     return mClip.root != nullptr;
 }
 
-void Animator::UpdateBoneTransform(double time, std::vector<SimpleMath::Matrix>& boneTransforms) {
+void Animator::UpdateBoneTransform(double time, BoneTransformBuffer& boneTransforms) {
     DirectX::SimpleMath::Matrix identity{ DirectX::SimpleMath::Matrix::Identity };
 
     double tick{ time * mClip.ticksPerSecond };
     double animationTime{ std::fmod(tick, mClip.duration) };
 
-    boneTransforms.resize(mClip.boneOffsetMatrices.size(), DirectX::SimpleMath::Matrix::Identity);
+	std::fill(std::begin(boneTransforms.boneTransforms), std::end(boneTransforms.boneTransforms), DirectX::SimpleMath::Matrix::Identity);
 
-    Animator::ReadNodeHeirarchy(animationTime, mClip.root.get(), identity, mClip, boneTransforms);
+    Animator::ReadNodeHeirarchy(animationTime, mClip.root.get(), identity, mClip, boneTransforms.boneTransforms);
+	boneTransforms.boneCount = static_cast<UINT>(mClip.boneOffsetMatrices.size());
 }
 
-void Animator::ReadNodeHeirarchy(double AnimationTime, BoneNode* node, const SimpleMath::Matrix& ParentTransform, const AnimationClip& animation, std::vector<SimpleMath::Matrix>& boneTransforms) {
+void Animator::ReadNodeHeirarchy(double AnimationTime, BoneNode* node, const SimpleMath::Matrix& ParentTransform, const AnimationClip& animation, std::array<SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<>>& boneTransforms) {
     if (!node) return;
 
     SimpleMath::Matrix nodeTransform{ node->transformation };

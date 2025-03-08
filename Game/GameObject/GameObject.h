@@ -24,7 +24,7 @@ public:
 	void SetActiveState(bool state); 
 	void ToggleActiveState();
 
-	void UpdateShaderVariables(std::vector<SimpleMath::Matrix>& boneTransforms); 
+	void UpdateShaderVariables(BoneTransformBuffer& boneTransform); 
 	bool GetAnimatorState() const;
 public:
 	Mesh* mMesh{ nullptr };
