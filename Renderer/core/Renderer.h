@@ -53,7 +53,9 @@ private:
 	void InitCommandList();
 	void InitRenderTargets();
 	void InitDepthStencilBuffer();
+
 	void InitStringRenderer(); 
+	void InitFonts(); 
 
 	void InitCoreResources(); 
 	void InitDefferedRenderer();

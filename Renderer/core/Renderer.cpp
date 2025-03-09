@@ -17,6 +17,11 @@ struct CameraConstants {
 Renderer::Renderer(HWND rendererWindowHandle)
 	: mRendererWindow(rendererWindowHandle) {
 
+
+	//temp 
+	static auto text = TextBlockManager::GetInstance().CreateTextBlock(L"Hello, World!", { 10, 10, 100, 100 }, StringColor::Black, "NotoSansKR");
+
+
 	// 셰이더 매니저 테스트용.. 
 	gShaderManager.Test();
 
@@ -34,10 +39,14 @@ Renderer::Renderer(HWND rendererWindowHandle)
 
 	Renderer::InitCoreResources(); 
 	Renderer::InitDefferedRenderer();
+
+
+
+	static auto text1 = TextBlockManager::GetInstance().CreateTextBlock(L"Hello, World!", { 50, 50, 140, 140 }, StringColor::Seashell, "NotoSansKR");
 }
 
 Renderer::~Renderer() {
-
+	Renderer::FlushCommandQueue(); 
 }
 
 
@@ -163,12 +172,9 @@ void Renderer::Render() {
 	mCommandQueue->ExecuteCommandLists(1, commandLists);
 	Renderer::FlushCommandQueue();
 
-	mStringRenderer.Render(L"Hello, World!");
+	mStringRenderer.Render();
+
 	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
-
-	Renderer::FlushCommandQueue();
-
-
 	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
 #endif
 }
@@ -366,6 +372,12 @@ void Renderer::InitDepthStencilBuffer() {
 
 void Renderer::InitStringRenderer() {
 	mStringRenderer.Initialize(mDevice, mCommandQueue, mRenderTargets);
+	Renderer::InitFonts(); 
+	TextBlockManager::GetInstance().Initialize(&mStringRenderer);
+}
+
+void Renderer::InitFonts() {
+	mStringRenderer.LoadExternalFont("NotoSansKR", "Resources/Font/NotoSansKR-Regular-Hestia.otf", L"Noto Sans KR", L"ko-kr");
 }
 
 void Renderer::InitCoreResources() {
