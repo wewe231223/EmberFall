@@ -159,10 +159,7 @@ AnimationClip AnimationLoader::LoadClip(UINT animIndex) {
                     mesh->mBones[j]->mOffsetMatrix.d1, mesh->mBones[j]->mOffsetMatrix.d2, mesh->mBones[j]->mOffsetMatrix.d3, mesh->mBones[j]->mOffsetMatrix.d4
                 }.Transpose();
                 clip.boneOffsetMatrices[boneIndex] = offset;
-            }
-            else {
-                boneIndex = boneMap[boneName];
-            }
+            }        
         }
     }
 

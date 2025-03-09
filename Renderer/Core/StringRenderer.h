@@ -22,9 +22,9 @@ public:
 public:
 	void SetRenderer(StringRenderer* stringRenderer);
 
-	const std::wstring& GetText() const;
-	const D2D1_RECT_F& GetRect() const;
-	const StringColor& GetColor() const;
+	std::wstring& GetText();
+	D2D1_RECT_F& GetRect();
+	StringColor& GetColor();
 	IDWriteTextFormat* GetFont() const;
 
 	// 일반적인 상황에서 호출하지 말 것. 

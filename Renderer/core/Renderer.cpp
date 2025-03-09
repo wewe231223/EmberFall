@@ -18,8 +18,6 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	: mRendererWindow(rendererWindowHandle) {
 
 
-	//temp 
-	static auto text = TextBlockManager::GetInstance().CreateTextBlock(L"Hello, World!", { 10, 10, 100, 100 }, StringColor::Black, "NotoSansKR");
 
 
 	// 셰이더 매니저 테스트용.. 
@@ -41,8 +39,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitDefferedRenderer();
 
 
-
-	static auto text1 = TextBlockManager::GetInstance().CreateTextBlock(L"Hello, World!", { 50, 50, 140, 140 }, StringColor::Seashell, "NotoSansKR");
+	static auto text = TextBlockManager::GetInstance().CreateTextBlock(L"Hello, World!", { 50, 50, 140, 140 }, StringColor::Seashell, "NotoSansKR");
 }
 
 Renderer::~Renderer() {

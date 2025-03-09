@@ -1,10 +1,10 @@
 #pragma once 
 #include "../Renderer/Manager/TextureManager.h"
 #include "../Renderer/Manager/MeshRenderManager.h"
+#include "../Renderer/Core/StringRenderer.h"
 #include "../Game/GameObject/GameObject.h"
 #include "../Game/Scene/Camera.h"
 #include "../Game/GameObject/Animator.h"
-
 class Scene {
 public:
 	Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList ,std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation); 
@@ -26,4 +26,6 @@ private:
 	std::vector<GameObject> mGameObjects{};
 
 	GameObject mSkyBox{}; 
+
+	TextBlock* mPickedObjectText{ TextBlockManager::GetInstance().CreateTextBlock(L"",D2D1_RECT_F{100.f,0.f,800.f,100.f},StringColor::Black, "NotoSansKR") };
 };

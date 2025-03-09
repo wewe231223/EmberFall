@@ -1201,15 +1201,15 @@ void TextBlock::SetRenderer(StringRenderer* stringRenderer) {
     }
 }
 
-const std::wstring& TextBlock::GetText() const {
+std::wstring& TextBlock::GetText() {
 	return mText;
 }
 
-const D2D1_RECT_F& TextBlock::GetRect() const {
+D2D1_RECT_F& TextBlock::GetRect() {
 	return mRect;
 }
 
-const StringColor& TextBlock::GetColor() const {
+StringColor& TextBlock::GetColor() {
 	return mColor;
 }
 

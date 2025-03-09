@@ -25,7 +25,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	MeshLoader loader{};
 	auto meshData = loader.Load(assetPath);
-
+	auto meshCollider = Collider(meshData.position);
 
 	mMeshMap["Cube"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Sphere, 5);
 	mMeshMap["T_Pose"] = std::make_unique<Mesh>(device, commandList, meshData);
@@ -101,6 +101,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["SkinnedShader"].get();
 		object.mMesh = mMeshMap["T_Pose"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+		object.mCollider = meshCollider;
 		object.GetTransform().Translate({ 0.f,85.f,0.f });
 		object.GetTransform().Scaling(10.f, 10.f, 10.f);
 		object.mAnimator = Animator(animationData);
@@ -114,6 +115,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["SkinnedShader"].get();
 		object.mMesh = mMeshMap["T_Pose"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+		object.mCollider = meshCollider;
 		object.GetTransform().Translate({ 40.f,85.f,0.f });
 		object.GetTransform().Scaling(10.f, 10.f, 10.f);
 		object.mAnimator = Animator(animationData);
@@ -126,6 +128,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["SkinnedShader"].get();
 		object.mMesh = mMeshMap["T_Pose"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+		object.mCollider = meshCollider;
 		object.GetTransform().Translate({ 80.f,85.f,0.f });
 		object.GetTransform().Scaling(10.f, 10.f, 10.f);
 		object.mAnimator = Animator(animationData);
@@ -138,6 +141,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["SkinnedShader"].get();
 		object.mMesh = mMeshMap["T_Pose"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+		object.mCollider = meshCollider;
 		object.GetTransform().Translate({ 120.f,85.f,0.f });
 		object.GetTransform().Scaling(10.f, 10.f, 10.f);
 		object.mAnimator = Animator(animationData);
@@ -152,6 +156,8 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 	mCameraMode->Enter();
+
+	mPickedObjectText->GetText() = L"Picked Object : None";
 }
 
 void Scene::Update() {

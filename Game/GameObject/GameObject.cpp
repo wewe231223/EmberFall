@@ -7,7 +7,7 @@ GameObject::operator bool() const {
 }
 
 std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GameObject::GetRenderData() const {
-	return std::make_tuple(mMesh, mShader, ModelContext{ mTransform.GetWorldMatrix().Transpose(), SimpleMath::Vector3::Zero ,mMaterial });
+	return std::make_tuple(mMesh, mShader, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mCollider.GetExtents() ,mMaterial});
 }
 
 const Transform& GameObject::GetTransform() const {
@@ -26,12 +26,16 @@ void GameObject::ToggleActiveState() {
 	mActiveState = !mActiveState;
 }
 
-void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransform){
+void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransform) {
 	static double counter{ 0.0 };
 	counter += 0.0001;
 
 	if (mAnimator.GetActivated()) {
 		mAnimator.UpdateBoneTransform(counter, boneTransform);
+	}
+
+	if (mCollider.GetActiveState()) {
+		mCollider.UpdateBox(mTransform.GetWorldMatrix());
 	}
 
 	mTransform.UpdateWorldMatrix();

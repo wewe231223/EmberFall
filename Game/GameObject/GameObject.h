@@ -32,12 +32,11 @@ public:
 	MaterialIndex mMaterial{ 0 };
 
 	Animator mAnimator{};
+	Collider mCollider{};
 private:
 	ModelContext mModelContext{};
 
 	Transform mTransform{};
-	Collider mCollider{};
-
 
 	bool mActiveState{ true };
 };
