@@ -6,7 +6,7 @@
 #include "../Utility/Crash.h"
 #include "../EditorInterface/Console/Console.h"
 
-
+Assimp::Importer MeshLoader::mImporter{};
 // 파일에 기록하고 읽는 거 만들기. 
 
 MeshData MeshLoader::Load(const std::filesystem::path& path) {

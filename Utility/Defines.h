@@ -46,3 +46,8 @@ template<size_t N>
 bool IsSubSet(const std::bitset<N>& a, const std::bitset<N>& b) {
 	return (a & b) == b;
 }
+
+
+enum class StringColor : DWORD{
+	red, green, blue, yellow, white, black, END
+};

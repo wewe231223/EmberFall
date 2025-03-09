@@ -146,6 +146,7 @@
     <ClCompile Include="Core\DefferedRenderer.cpp" />
     <ClCompile Include="Core\Renderer.cpp" />
     <ClCompile Include="core\Shader.cpp" />
+    <ClCompile Include="Core\StringRenderer.cpp" />
     <ClCompile Include="Manager\MeshRenderManager.cpp" />
     <ClCompile Include="Manager\SceneManager.cpp" />
     <ClCompile Include="Manager\TextureManager.cpp" />
@@ -162,6 +163,7 @@
     <ClInclude Include="Core\DefferedRenderer.h" />
     <ClInclude Include="Core\Renderer.h" />
     <ClInclude Include="core\Shader.h" />
+    <ClInclude Include="Core\StringRenderer.h" />
     <ClInclude Include="Manager\MeshRenderManager.h" />
     <ClInclude Include="Manager\SceneManager.h" />
     <ClInclude Include="Manager\TextureManager.h" />

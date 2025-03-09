@@ -78,7 +78,7 @@ Standard_VOUT Standard_VS(Standard_VIN input) {
     return output;
 }
 
-float4 Standard_PS(Standard_VOUT input) {
+Deffered_POUT Standard_PS(Standard_VOUT input) {
     Deffered_POUT output = (Deffered_POUT) 0;
     
     output.diffuse = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearClampSampler, input.texcoord);

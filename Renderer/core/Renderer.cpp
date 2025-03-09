@@ -5,6 +5,7 @@
 #include "../Utility/Serializer.h"
 #include "../Utility/Exceptions.h"
 #include "../Utility/Crash.h"
+#define DIRECTWRITE
 
 struct CameraConstants {
 	SimpleMath::Matrix view;
@@ -27,6 +28,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitCommandList();
 	Renderer::InitRenderTargets();
 	Renderer::InitDepthStencilBuffer();
+	Renderer::InitStringRenderer();
 
 	Renderer::ResetCommandList();
 
@@ -145,18 +147,30 @@ void Renderer::Render() {
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
 	mDefferedRenderer.Render(mCommandList);
-
+#ifndef DIRECTWRITE 
 	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
 	CheckHR(mCommandList->Close());
 	ID3D12CommandList* commandLists[] = { mCommandList.Get() };
 	mCommandQueue->ExecuteCommandLists(1, commandLists);
+	Renderer::FlushCommandQueue();
 
 	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
-
 	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
+#else 
+	CheckHR(mCommandList->Close());
+	ID3D12CommandList* commandLists[] = { mCommandList.Get() };
+	mCommandQueue->ExecuteCommandLists(1, commandLists);
+	Renderer::FlushCommandQueue();
+
+	mStringRenderer.Render(L"Hello, World!");
+	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
 
 	Renderer::FlushCommandQueue();
+
+
+	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
+#endif
 }
 
 void Renderer::InitFactory() {
@@ -348,6 +362,10 @@ void Renderer::InitDepthStencilBuffer() {
 	);
 
 	mDevice->CreateDepthStencilView(mDepthStencilBuffer.GetResource().Get(), nullptr, mDSHeap->GetCPUDescriptorHandleForHeapStart());
+}
+
+void Renderer::InitStringRenderer() {
+	mStringRenderer.Initialize(mDevice, mCommandQueue, mRenderTargets);
 }
 
 void Renderer::InitCoreResources() {

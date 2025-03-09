@@ -18,6 +18,6 @@ public:
 public:
 	MeshData Load(const std::filesystem::path& path);
 private:
-	Assimp::Importer mImporter{};
+	static Assimp::Importer mImporter;
 };
 
