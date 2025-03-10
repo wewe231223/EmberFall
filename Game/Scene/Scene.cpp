@@ -36,12 +36,12 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mShaderMap["StandardShader"] = std::move(shader);
 
 	MaterialConstants material{};
-	material.mDiffuseTexture[0] = mTextureManager->GetTexture("Base_Texture");
+	material.mDiffuseTexture[0] = mTextureManager->GetTexture("Rolling Hills");
 	material.mDiffuseTexture[1] = mTextureManager->GetTexture("Detail_Texture_7");
 	mMaterialManager->CreateMaterial("TerrainMaterial", material);
 
 	TerrainLoader terrainLoader{};
-	auto terrainData = terrainLoader.Load("Resources/Binarys/Terrain/HeightMap.raw", true);
+	auto terrainData = terrainLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, terrainData);
 
 	shader = std::make_unique<TerrainShader>();
@@ -55,7 +55,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mMaterial = mMaterialManager->GetMaterial("TerrainMaterial");
 		
 		object.GetTransform().GetPosition() = { 0.f, 0.f, 0.f };
-		object.GetTransform().Scaling(5.f, 1.f, 5.f);
+		object.GetTransform().Scaling(1.f, 1.f, 1.f);
 	}
 
 
@@ -69,7 +69,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	mMaterialManager->CreateMaterial("SkyBoxMaterial", skyBoxMaterial);
 
-	mMeshMap["SkyBox"] = std::make_unique<Mesh>(device, commandList, 900.f);
+	mMeshMap["SkyBox"] = std::make_unique<Mesh>(device, commandList, 100.f);
 
 	shader = std::make_unique<SkyBoxShader>();
 	shader->CreateShader(device);
@@ -102,8 +102,8 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mMesh = mMeshMap["T_Pose"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
 		object.mCollider = meshCollider;
-		object.GetTransform().Translate({ 0.f,85.f,0.f });
-		object.GetTransform().Scaling(10.f, 10.f, 10.f);
+		object.GetTransform().Translate({ 0.f,20.f,0.f });
+		//object.GetTransform().Scaling(10.f, 10.f, 10.f);
 		object.mAnimator = Animator(animationData);
 	}
 

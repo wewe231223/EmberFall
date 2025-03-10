@@ -7,7 +7,7 @@ struct CameraParameter {
 	float aspect{Config::WINDOW_WIDTH<float> / Config::WINDOW_HEIGHT<float> };
 	float fov{ DirectX::XMConvertToRadians(60.f) };
 	float nearZ{ 0.1f };
-	float farZ{ 5000.f };
+	float farZ{ 2000.f };
 };
 
 struct CameraConstant {

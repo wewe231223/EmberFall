@@ -542,7 +542,7 @@ D3D12_RASTERIZER_DESC TerrainShader::CreateRasterizerState() {
 	::ZeroMemory(&rasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
 
 	// rasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
-	 rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	rasterizerDesc.FrontCounterClockwise = FALSE;
 	rasterizerDesc.DepthBias = 0;

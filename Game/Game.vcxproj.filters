@@ -51,6 +51,9 @@
     <ClCompile Include="GameObject\Animator.cpp">
       <Filter>GameObject</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\TreePainter.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -79,6 +82,9 @@
     </ClInclude>
     <ClInclude Include="GameObject\Animator.h">
       <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\TreePainter.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
