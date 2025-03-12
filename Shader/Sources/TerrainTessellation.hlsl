@@ -146,7 +146,7 @@ PatchTessFactor Constant_HS(InputPatch<Terrain_HIN, 25> patch, uint patchID : SV
 [outputtopology("triangle_cw")]
 [outputcontrolpoints(25)]
 [patchconstantfunc("Constant_HS")]
-[maxtessfactor(16.f)]
+[maxtessfactor(64.f)]
 Terrain_DIN Terrain_HS(InputPatch<Terrain_HIN, 25> patch, uint pointID : SV_OutputControlPointID, uint patchID : SV_PrimitiveID)
 {
     Terrain_DIN output;
@@ -216,21 +216,6 @@ Terrain_PIN Terrain_DS(PatchTessFactor patchTess, float2 uv : SV_DomainLocation,
     return output;
 }
 
-float BlendFactor(float2 uv)
-{
-    float2 f = frac(uv);
-    return smoothstep(0.2, 0.8, f.x) * smoothstep(0.2, 0.8, f.y);
-}
-
-float4 GetBlendedDetail(Texture2D tex, SamplerState samp, float2 uv, float tileScale)
-{
-    uv *= tileScale;
-    float4 tex1 = tex.Sample(samp, frac(uv));
-    float4 tex2 = tex.Sample(samp, frac(uv + float2(0.5, 0.5))); // 주변 샘플 추가
-
-    float blend = BlendFactor(uv);
-    return lerp(tex1, tex2, blend);
-}
 
 
 Deffered_POUT Terrain_PS(Terrain_PIN input) 

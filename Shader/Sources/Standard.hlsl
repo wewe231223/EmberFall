@@ -81,7 +81,14 @@ Standard_VOUT Standard_VS(Standard_VIN input) {
 Deffered_POUT Standard_PS(Standard_VOUT input) {
     Deffered_POUT output = (Deffered_POUT) 0;
     
-    output.diffuse = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearClampSampler, input.texcoord);
+    float4 color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(anisotropicWrapSampler, input.texcoord);
     // color += materialConstants[input.material].diffuse;
+    
+    if (color.a < 0.1f)
+    {
+        discard;
+    }
+    
+    output.diffuse = color;
     return output;
 }

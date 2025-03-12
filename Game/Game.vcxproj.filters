@@ -51,8 +51,8 @@
     <ClCompile Include="GameObject\Animator.cpp">
       <Filter>GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\TreePainter.cpp">
-      <Filter>Scene</Filter>
+    <ClCompile Include="GameObject\TerrainCollider.cpp">
+      <Filter>GameObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -83,8 +83,8 @@
     <ClInclude Include="GameObject\Animator.h">
       <Filter>GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="Scene\TreePainter.h">
-      <Filter>Scene</Filter>
+    <ClInclude Include="GameObject\TerrainCollider.h">
+      <Filter>GameObject</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -3,14 +3,13 @@
 #include "../Renderer/Core/Renderer.h"
 #include "../MeshLoader/Loader/MeshLoader.h"
 #include "../MeshLoader/Loader/AnimationLoader.h"
-#include "../MeshLoader/Loader/TerrainLoader.h"
 #ifdef _DEBUG
 #pragma comment(lib,"out/debug/MeshLoader.lib")
 #else 
 #pragma comment(lib,"out/release/MeshLoader.lib")
 #endif
-
 #include <ranges>
+#include <random>
 #include "../Game/System/Timer.h"
 
 Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
@@ -18,36 +17,26 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mTextureManager = std::get<1>(managers);
 	mMaterialManager = std::get<2>(managers);
 
-	std::filesystem::path ZombiePath = "Resources/Assets/zombie/scene.gltf";
-	std::filesystem::path CreepPath = "Resources/Assets/CreepMonster/Creep_mesh.gltf";
-	std::filesystem::path ManPath = "Resources/Assets/Man/man.gltf";
-	std::filesystem::path assetPath = ManPath;
-
-	MeshLoader loader{};
-	auto meshData = loader.Load(assetPath);
-	auto meshCollider = Collider(meshData.position);
-
-	mMeshMap["Cube"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Sphere, 5);
-	mMeshMap["T_Pose"] = std::make_unique<Mesh>(device, commandList, meshData);
+	Scene::BuildShader(device); 
+	Scene::BuildMesh(device, commandList);
+	Scene::BuildMaterial();
+	Scene::PaintTree(100); 
 
 
-	std::unique_ptr<GraphicsShaderBase> shader = std::make_unique<StandardShader>();
-	shader->CreateShader(device);
-	mShaderMap["StandardShader"] = std::move(shader);
+	mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
+	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
+	mSkyBox.mMaterial = mMaterialManager->GetMaterial("SkyBoxMaterial");
 
-	MaterialConstants material{};
-	material.mDiffuseTexture[0] = mTextureManager->GetTexture("Rolling Hills");
-	material.mDiffuseTexture[1] = mTextureManager->GetTexture("Detail_Texture_7");
-	mMaterialManager->CreateMaterial("TerrainMaterial", material);
+	//{
+	//	auto& object = mGameObjects.emplace_back();
+	//	object.mShader = mShaderMap["StandardShader"].get();
+	//	object.mMesh = mMeshMap["Cube"].get();
+	//	object.mMaterial = mMaterialManager->GetMaterial("AreaMat");
+	//	object.GetTransform().GetPosition() = { 0.f,0.f,0.f };
+	//	object.GetTransform().Scaling(500.f, 500.f, 500.f);
+	//}
 
-	TerrainLoader terrainLoader{};
-	auto terrainData = terrainLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
-	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, terrainData);
-
-	shader = std::make_unique<TerrainShader>();
-	shader->CreateShader(device);
-	mShaderMap["TerrainShader"] = std::move(shader);
-
+	
 	{
 		auto& object = mGameObjects.emplace_back();
 		object.mShader = mShaderMap["TerrainShader"].get();
@@ -56,44 +45,10 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		
 		object.GetTransform().GetPosition() = { 0.f, 0.f, 0.f };
 		object.GetTransform().Scaling(1.f, 1.f, 1.f);
+	//	object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(180.f), 0.f);
 	}
 
-
-	MaterialConstants skyBoxMaterial{};
-	skyBoxMaterial.mDiffuseTexture[0] = mTextureManager->GetTexture("SkyBox_Front_0");
-	skyBoxMaterial.mDiffuseTexture[1] = mTextureManager->GetTexture("SkyBox_Back_0");
-	skyBoxMaterial.mDiffuseTexture[2] = mTextureManager->GetTexture("SkyBox_Top_0");
-	skyBoxMaterial.mDiffuseTexture[3] = mTextureManager->GetTexture("SkyBox_Bottom_0");
-	skyBoxMaterial.mDiffuseTexture[4] = mTextureManager->GetTexture("SkyBox_Left_0");
-	skyBoxMaterial.mDiffuseTexture[5] = mTextureManager->GetTexture("SkyBox_Right_0");
-
-	mMaterialManager->CreateMaterial("SkyBoxMaterial", skyBoxMaterial);
-
-	mMeshMap["SkyBox"] = std::make_unique<Mesh>(device, commandList, 100.f);
-
-	shader = std::make_unique<SkyBoxShader>();
-	shader->CreateShader(device);
-
-	mShaderMap["SkyBoxShader"] = std::move(shader);
-
-	{
-		mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
-		mSkyBox.mMesh = mMeshMap["SkyBox"].get();
-		mSkyBox.mMaterial = mMaterialManager->GetMaterial("SkyBoxMaterial");
-	}
-
-
-	material.mDiffuseTexture[0] = mTextureManager->GetTexture("Ganfaul_diffuse");
-	mMaterialManager->CreateMaterial("CubeMaterial", material);
-
-
-	shader = std::make_unique<SkinnedShader>();
-	shader->CreateShader(device);
-	mShaderMap["SkinnedShader"] = std::move(shader);
-
-	mAnimationMap["Man"].Load(assetPath);
-
-
+	mAnimationMap["Man"].Load("Resources/Assets/Man/man.gltf");
 	auto animationData = mAnimationMap["Man"].GetClip(2);
 
 	{
@@ -101,7 +56,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["SkinnedShader"].get();
 		object.mMesh = mMeshMap["T_Pose"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.mCollider = meshCollider;
 		object.GetTransform().Translate({ 0.f,20.f,0.f });
 		//object.GetTransform().Scaling(10.f, 10.f, 10.f);
 		object.mAnimator = Animator(animationData);
@@ -115,7 +69,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["SkinnedShader"].get();
 		object.mMesh = mMeshMap["T_Pose"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.mCollider = meshCollider;
 		object.GetTransform().Translate({ 40.f,85.f,0.f });
 		object.GetTransform().Scaling(10.f, 10.f, 10.f);
 		object.mAnimator = Animator(animationData);
@@ -128,7 +81,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["SkinnedShader"].get();
 		object.mMesh = mMeshMap["T_Pose"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.mCollider = meshCollider;
 		object.GetTransform().Translate({ 80.f,85.f,0.f });
 		object.GetTransform().Scaling(10.f, 10.f, 10.f);
 		object.mAnimator = Animator(animationData);
@@ -141,7 +93,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["SkinnedShader"].get();
 		object.mMesh = mMeshMap["T_Pose"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.mCollider = meshCollider;
 		object.GetTransform().Translate({ 120.f,85.f,0.f });
 		object.GetTransform().Scaling(10.f, 10.f, 10.f);
 		object.mAnimator = Animator(animationData);
@@ -187,6 +138,140 @@ void Scene::Update() {
 	mMeshRenderManager->AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);
 
 	mCamera.UpdateBuffer(); 
+}
+
+void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+	MeshLoader Loader{};
+	MeshData data{}; 
+
+	data = Loader.Load("Resources/Assets/Tree/stem/Ash1.gltf");
+	mMeshMap["Tree_Stem"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Tree/leaves1/Ash1.gltf");
+	mMeshMap["Tree_Leaves"] = std::make_unique<Mesh>(device, commandList, data);
+
+	mMeshMap["Cube"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Cube, 1);
+
+	data = Loader.Load("Resources/Assets/Man/man.gltf");
+	mMeshMap["T_Pose"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Stone/Stone1.gltf");
+	mMeshMap["Stone1"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Stone/Stone2.gltf");
+	mMeshMap["Stone2"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Stone/Stone3.gltf");
+	mMeshMap["Stone3"] = std::make_unique<Mesh>(device, commandList, data);
+
+
+	
+	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
+	// terrainLoader.ExportTessellatedMesh("Resources/Binarys/Terrain/TerrainBaked.bin", 16.f);
+
+	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, data);
+	mMeshMap["SkyBox"] = std::make_unique<Mesh>(device, commandList, 100.f);
+
+}
+
+void Scene::BuildMaterial() {
+	MaterialConstants mat{};
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Ash_BarkM");
+	mMaterialManager->CreateMaterial("TreeMaterial", mat);
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Leaf_2");
+	mMaterialManager->CreateMaterial("TreeLeavesMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Rolling Hills");
+	mat.mDiffuseTexture[1] = mTextureManager->GetTexture("Detail_Texture_7");
+	mMaterialManager->CreateMaterial("TerrainMaterial", mat);
+
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("SkyBox_Front_0");
+	mat.mDiffuseTexture[1] = mTextureManager->GetTexture("SkyBox_Back_0");
+	mat.mDiffuseTexture[2] = mTextureManager->GetTexture("SkyBox_Top_0");
+	mat.mDiffuseTexture[3] = mTextureManager->GetTexture("SkyBox_Bottom_0");
+	mat.mDiffuseTexture[4] = mTextureManager->GetTexture("SkyBox_Left_0");
+	mat.mDiffuseTexture[5] = mTextureManager->GetTexture("SkyBox_Right_0");
+	mMaterialManager->CreateMaterial("SkyBoxMaterial", mat);
+
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Ganfaul_diffuse");
+	mMaterialManager->CreateMaterial("CubeMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("blue");
+	mMaterialManager->CreateMaterial("AreaMat", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Big_02___Default_color");
+	mMaterialManager->CreateMaterial("StoneMaterial", mat);
+}
+
+void Scene::BuildShader(ComPtr<ID3D12Device> device) {
+	std::unique_ptr<GraphicsShaderBase> shader = std::make_unique<StandardShader>();
+	shader->CreateShader(device);
+	mShaderMap["StandardShader"] = std::move(shader);
+
+	shader = std::make_unique<TerrainShader>();
+	shader->CreateShader(device);
+	mShaderMap["TerrainShader"] = std::move(shader);
+
+	shader = std::make_unique<SkyBoxShader>();
+	shader->CreateShader(device);
+	mShaderMap["SkyBoxShader"] = std::move(shader);
+
+	shader = std::make_unique<SkinnedShader>();
+	shader->CreateShader(device);
+	mShaderMap["SkinnedShader"] = std::move(shader);
+}
+
+void Scene::PaintTree(size_t treeCount) {
+	size_t mapSize = std::filesystem::file_size("Resources/Binarys/Terrain/Tree.raw");
+	int dimension = static_cast<int>(std::sqrt(mapSize)); // 가로, 세로 길이
+
+	std::unique_ptr<BYTE[]> treeMap{ std::make_unique<BYTE[]>(mapSize) };
+	std::ifstream in{ "Resources/Binarys/Terrain/Tree.raw", std::ios::binary };
+	in.read(reinterpret_cast<char*>(treeMap.get()), mapSize);
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<int> dist(0, dimension - 1);
+	std::uniform_int_distribution<int> stonedist(0, 2);
+
+	GameObject stone{}; 
+	stone.mShader = mShaderMap["StandardShader"].get();
+	stone.mMesh = mMeshMap["Stone1"].get();
+	stone.mMaterial = mMaterialManager->GetMaterial("StoneMaterial");
+	// stone.GetTransform().Scaling(10.f, 10.f, 10.f);
+
+	while (mGameObjects.size() < treeCount) {
+		int x = dist(gen);
+		int z = dist(gen);
+
+		if (treeMap[x + z * dimension] != 0) {
+			float centeredX = static_cast<float>(x - dimension / 2);
+			float centeredZ = static_cast<float>(z - dimension / 2);
+
+			stone.GetTransform().GetPosition() = { centeredX, 20.f, centeredZ };
+
+			switch (stonedist(gen)) {
+			case 0:
+				stone.mMesh = mMeshMap["Stone1"].get();
+				break;
+			case 1:
+				stone.mMesh = mMeshMap["Stone2"].get();
+				break;
+			case 2:
+				stone.mMesh = mMeshMap["Stone3"].get();
+				break;
+			}
+
+			stone.GetTransform().GetPosition().y = tLoader.GetHeightAt(centeredX, centeredZ);
+
+			mGameObjects.emplace_back(stone);
+
+		}
+	}
+
 }
 
 
