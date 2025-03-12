@@ -85,6 +85,86 @@ float TerrainLoader::BezierSum(float t, float p0, float p1, float p2, float p3) 
 }
 
 
+float TerrainLoader::GetHeightAtL(float x, float z) const {
+    //if (mHeight.empty()) return 0.0f;
+
+    //// Height map 중심이 (0,0) 이므로 변환
+    //float halfLength = static_cast<float>(mLength) / 2.0f;
+    //float fx = x + halfLength;
+    //float fz = z + halfLength;
+
+    //// 정수 좌표 계산
+    //int x0 = static_cast<int>(std::floor(fx));
+    //int x1 = x0 + 1;
+    //int z0 = static_cast<int>(std::floor(fz));
+    //int z1 = z0 + 1;
+
+    //// 범위 검사: 하나라도 범위를 벗어나면 0 리턴
+    //if (x0 < 0 || x1 >= mLength || z0 < 0 || z1 >= mLength)
+    //    return 0.0f;
+
+    //// 네 개의 높이값 가져오기
+    //float h00 = mHeight[z0][x0];  // 좌상
+    //float h10 = mHeight[z0][x1];  // 우상
+    //float h01 = mHeight[z1][x0];  // 좌하
+    //float h11 = mHeight[z1][x1];  // 우하
+
+    //// 보간 가중치 계산
+    //float sx = fx - x0;
+    //float sz = fz - z0;
+
+    //// X 방향 보간
+    //float h0 = h00 * (1 - sx) + h10 * sx;
+    //float h1 = h01 * (1 - sx) + h11 * sx;
+
+    //// Z 방향 보간
+    //return h0 * (1 - sz) + h1 * sz;
+    if (mHeight.empty()) return 0.0f;
+
+    float halfLength = static_cast<float>(mLength) / 2.0f;
+    float fx = x + halfLength;
+    float fz = z + halfLength;
+
+    int baseX = static_cast<int>(std::floor(fx)) - 1;
+    int baseZ = static_cast<int>(std::floor(fz)) - 1;
+
+    // 범위 검사
+    if (baseX < 0 || baseX + 3 >= mLength || baseZ < 0 || baseZ + 3 >= mLength)
+        return 0.0f;
+
+    // 4x4 제어점 가져오기
+    float controlPoints[4][4];
+    for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+            controlPoints[i][j] = mHeight[baseZ + i][baseX + j];
+        }
+    }
+
+    // Bézier 보간 함수
+    auto Bezier = [](float t, float p0, float p1, float p2, float p3) -> float {
+        float u = 1 - t;
+        return p0 * (u * u * u) +
+            p1 * (3 * u * u * t) +
+            p2 * (3 * u * t * t) +
+            p3 * (t * t * t);
+        };
+
+    // (x, z) 좌표의 상대적 위치
+    float u = fx - (baseX + 1);
+    float v = fz - (baseZ + 1);
+
+    // Z 방향으로 4개의 Bézier 곡선 평가
+    float bezierZ[4];
+    for (int i = 0; i < 4; ++i) {
+        bezierZ[i] = Bezier(u, controlPoints[i][0], controlPoints[i][1], controlPoints[i][2], controlPoints[i][3]);
+    }
+
+    // X 방향으로 최종 Bézier 평가
+    return Bezier(v, bezierZ[0], bezierZ[1], bezierZ[2], bezierZ[3]);
+}
+
+
+
 float TerrainLoader::GetHeightAt(float x, float z) const {
     int half = mLength / 2;
 

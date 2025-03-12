@@ -89,4 +89,28 @@ void FreeCameraMode::Update() {
 	mCamera->GetTransform().Rotate(pitch, yaw, 0.f);
 }
 
+TPPCameraMode::TPPCameraMode(Camera* camera, Transform& transform, const DirectX::SimpleMath::Vector3& offset) : CameraMode(camera), mOffset(offset), mTargetTransform(transform) {
+}
 
+TPPCameraMode::~TPPCameraMode() {
+}
+
+void TPPCameraMode::Enter() {
+}
+
+void TPPCameraMode::Exit() {
+}
+
+void TPPCameraMode::Update() {
+	auto forward = mTargetTransform.GetForward();
+	auto right = mTargetTransform.GetRight();
+	auto up = mTargetTransform.GetUp();
+
+	//	mCamera->GetTransform().ResetRotation();
+	mCamera->GetTransform().SetPosition(mTargetTransform.GetPosition() + DirectX::SimpleMath::Vector3{ mOffset.x * right + mOffset.y * up + mOffset.z * forward });
+	mCamera->GetTransform().Look(mTargetTransform);
+}
+
+ECameraMode TPPCameraMode::GetMode() const {
+	return ECameraMode();
+}

@@ -51,9 +51,6 @@
     <ClCompile Include="GameObject\Animator.cpp">
       <Filter>GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="GameObject\TerrainCollider.cpp">
-      <Filter>GameObject</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -81,9 +78,6 @@
       <Filter>System</Filter>
     </ClInclude>
     <ClInclude Include="GameObject\Animator.h">
-      <Filter>GameObject</Filter>
-    </ClInclude>
-    <ClInclude Include="GameObject\TerrainCollider.h">
       <Filter>GameObject</Filter>
     </ClInclude>
   </ItemGroup>

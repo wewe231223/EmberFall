@@ -11,6 +11,8 @@
 #include <ranges>
 #include <random>
 #include "../Game/System/Timer.h"
+#include "../Game/System/Input.h"
+#include "../Utility/NonReplacementSampler.h"
 
 Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
 	mMeshRenderManager = std::get<0>(managers);
@@ -27,14 +29,14 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
 	mSkyBox.mMaterial = mMaterialManager->GetMaterial("SkyBoxMaterial");
 
-	//{
-	//	auto& object = mGameObjects.emplace_back();
-	//	object.mShader = mShaderMap["StandardShader"].get();
-	//	object.mMesh = mMeshMap["Cube"].get();
-	//	object.mMaterial = mMaterialManager->GetMaterial("AreaMat");
-	//	object.GetTransform().GetPosition() = { 0.f,0.f,0.f };
-	//	object.GetTransform().Scaling(500.f, 500.f, 500.f);
-	//}
+	{
+		auto& object = mGameObjects.emplace_back();
+		object.mShader = mShaderMap["StandardShader"].get();
+		object.mMesh = mMeshMap["Cube"].get();
+		object.mMaterial = mMaterialManager->GetMaterial("AreaMat");
+		object.GetTransform().GetPosition() = { 0.f,0.f,0.f };
+		object.GetTransform().Scaling(500.f, 500.f, 500.f);
+	}
 
 	
 	{
@@ -45,58 +47,52 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		
 		object.GetTransform().GetPosition() = { 0.f, 0.f, 0.f };
 		object.GetTransform().Scaling(1.f, 1.f, 1.f);
-	//	object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(180.f), 0.f);
 	}
+
+
+	{
+		auto& object = mGameObjects.emplace_back(); 
+		object.mShader = mShaderMap["StandardShader"].get();
+		object.mMesh = mMeshMap["Mountain"].get();
+		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
+
+		object.GetTransform().GetPosition() = { 370.f,tLoader.GetHeightAt(370.f, 300.f) - 10.f ,300.f };
+		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(-35.f), 0.f);
+	}
+
+
 
 	mAnimationMap["Man"].Load("Resources/Assets/Man/man.gltf");
 	auto animationData = mAnimationMap["Man"].GetClip(2);
 
 	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["SkinnedShader"].get();
-		object.mMesh = mMeshMap["T_Pose"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.GetTransform().Translate({ 0.f,20.f,0.f });
-		//object.GetTransform().Scaling(10.f, 10.f, 10.f);
-		object.mAnimator = Animator(animationData);
+		mPlayer.mShader = mShaderMap["SkinnedShader"].get();
+		mPlayer.mMesh = mMeshMap["T_Pose"].get();
+		mPlayer.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+		mPlayer.GetTransform().Translate({ 0.f,20.f,0.f });
+		mPlayer.mAnimator = Animator(animationData);
+
+
+		int sign = NonReplacementSampler::GetInstance().Sample();
+
+		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, sign, [this]() {
+			mPlayer.GetTransform().Translate({ 0.f, 0.f, -0.01f });
+			});
+
+		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::S, sign, [this]() {
+			mPlayer.GetTransform().Translate({ 0.f, 0.f, 0.01f });
+			});
+
+		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, sign, [this]() {
+			mPlayer.GetTransform().Translate({ 0.01f, 0.f, 0.f });
+			});
+
+		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, sign, [this]() {
+			mPlayer.GetTransform().Translate({ -0.01f, 0.f, 0.f });
+			});
 	}
 
 
-	animationData = mAnimationMap["Man"].GetClip(3);
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["SkinnedShader"].get();
-		object.mMesh = mMeshMap["T_Pose"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.GetTransform().Translate({ 40.f,85.f,0.f });
-		object.GetTransform().Scaling(10.f, 10.f, 10.f);
-		object.mAnimator = Animator(animationData);
-	}
-
-	animationData = mAnimationMap["Man"].GetClip(4);
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["SkinnedShader"].get();
-		object.mMesh = mMeshMap["T_Pose"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.GetTransform().Translate({ 80.f,85.f,0.f });
-		object.GetTransform().Scaling(10.f, 10.f, 10.f);
-		object.mAnimator = Animator(animationData);
-	}
-
-	animationData = mAnimationMap["Man"].GetClip(5);
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["SkinnedShader"].get();
-		object.mMesh = mMeshMap["T_Pose"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-		object.GetTransform().Translate({ 120.f,85.f,0.f });
-		object.GetTransform().Scaling(10.f, 10.f, 10.f);
-		object.mAnimator = Animator(animationData);
-	}
 
 
 	mCamera = Camera(mainCameraBufferLocation);
@@ -105,13 +101,14 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
 	cameraTransform.Look({ 0.f,85.f,0.f });
 
-	mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+	mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mPlayer.GetTransform(), SimpleMath::Vector3{0.f,2.f,5.f});
 	mCameraMode->Enter();
 
 	mPickedObjectText->GetText() = L"Picked Object : None";
 }
 
 void Scene::Update() {
+	mPlayer.GetTransform().GetPosition().y = tLoader.GetHeightAt(mPlayer.GetTransform().GetPosition().x, mPlayer.GetTransform().GetPosition().z);
 	mCameraMode->Update();
 	
 	static BoneTransformBuffer boneTransforms{};
@@ -130,6 +127,11 @@ void Scene::Update() {
 			}
 		}
 	}
+
+	mPlayer.UpdateShaderVariables(boneTransforms);
+	auto [mesh, shader, modelContext] = mPlayer.GetRenderData();
+	mMeshRenderManager->AppendBonedMeshContext(shader, mesh, modelContext, boneTransforms);
+
 
 	mSkyBox.GetTransform().GetPosition() = mCamera.GetTransform().GetPosition();
 	mSkyBox.UpdateShaderVariables(boneTransforms);
@@ -164,7 +166,8 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	data = Loader.Load("Resources/Assets/Stone/Stone3.gltf");
 	mMeshMap["Stone3"] = std::make_unique<Mesh>(device, commandList, data);
 
-
+	data = Loader.Load("Resources/Assets/Mountain/Mountain.gltf");
+	mMeshMap["Mountain"] = std::make_unique<Mesh>(device, commandList, data);
 	
 	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 	// terrainLoader.ExportTessellatedMesh("Resources/Binarys/Terrain/TerrainBaked.bin", 16.f);
@@ -204,6 +207,9 @@ void Scene::BuildMaterial() {
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Big_02___Default_color");
 	mMaterialManager->CreateMaterial("StoneMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Default_OBJ_baseColor");
+	mMaterialManager->CreateMaterial("MountainMaterial", mat);
 }
 
 void Scene::BuildShader(ComPtr<ID3D12Device> device) {

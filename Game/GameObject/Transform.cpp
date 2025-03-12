@@ -70,6 +70,10 @@ void Transform::Translate(const SimpleMath::Vector3& offset) {
     mPosition += offset;
 }
 
+void Transform::SetPosition(const SimpleMath::Vector3& pos) {
+	mPosition = pos;
+}
+
 void Transform::Scaling(const SimpleMath::Vector3& scale) {
 	mScale *= scale;
 }
@@ -86,7 +90,14 @@ void Transform::Rotate(float pitch, float yaw, float roll) {
 }
 
 void Transform::Look(const Transform& target) {
+	DirectX::SimpleMath::Vector3 direction = target.GetPosition() - mPosition;
+	direction.Normalize();
 
+	auto look = DirectX::SimpleMath::Quaternion::FromToRotation(Transform::GetForward(), direction);
+	look.Normalize();
+	mRotation = DirectX::SimpleMath::Quaternion::Concatenate(look, mRotation);
+
+	mRotation.Normalize();
 }
 
 void Transform::Look(const SimpleMath::Vector3& target) {

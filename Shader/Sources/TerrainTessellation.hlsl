@@ -229,7 +229,7 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
     
     // DetailColor = GetBlendedDetail(textures[materialConstants[input.material].diffuseTexture[1]], linearWrapSampler, input.texcoord1, 10.f);
     
-    Color = saturate(BaseColor * 0.5f + DetailColor * 0.5f);
+    Color = saturate(BaseColor * 0.6f + DetailColor * 0.4f);
     
     output.diffuse = Color;
     

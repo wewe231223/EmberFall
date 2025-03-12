@@ -157,6 +157,7 @@ void Animator::UpdateBoneTransform(double time, BoneTransformBuffer& boneTransfo
 
     double tick{ time * mClip->ticksPerSecond };
     double animationTime{ std::fmod(tick, mClip->duration) };
+	animationTime = std::clamp(tick, 0.0, static_cast<double>(mClip->duration));
 
 	std::fill(std::begin(boneTransforms.boneTransforms), std::end(boneTransforms.boneTransforms), DirectX::SimpleMath::Matrix::Identity);
 
@@ -202,9 +203,7 @@ UINT Animator::FindPosition(double AnimationTime, const BoneAnimation& boneAnim)
             return i;
         }
     }
-    Console.Log("Error - Animator::FindPosition ", LogType::Error);
-    Crash(false);
-    return 0;
+    return static_cast<UINT>(boneAnim.positionKey.size() - 2);
 }
 
 UINT Animator::FindRotation(double AnimationTime, const BoneAnimation& boneAnim) {
@@ -214,9 +213,7 @@ UINT Animator::FindRotation(double AnimationTime, const BoneAnimation& boneAnim)
         }
     }
 
-    Console.Log("Error - Animator::FindRotation ", LogType::Error);
-    Crash(false);
-    return 0;
+    return static_cast<UINT>(boneAnim.rotationKey.size() - 2);
 }
 
 UINT Animator::FindScaling(double AnimationTime, const BoneAnimation& boneAnim) {
@@ -226,9 +223,7 @@ UINT Animator::FindScaling(double AnimationTime, const BoneAnimation& boneAnim) 
         }
     }
 
-    Console.Log("Error - Animator::FindScaling ", LogType::Error);
-    Crash(false);
-    return 0;
+    return static_cast<UINT>(boneAnim.scalingKey.size() - 2);
 }
 
 SimpleMath::Vector3 Animator::InterpolatePosition(double AnimationTime, const BoneAnimation& boneAnim) {

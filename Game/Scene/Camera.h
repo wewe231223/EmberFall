@@ -65,3 +65,18 @@ public:
 	
 	virtual ECameraMode GetMode() const override { return ECameraMode::Free; }
 };
+
+class TPPCameraMode : public CameraMode {
+public:
+	TPPCameraMode(Camera* camera, Transform& transform, const DirectX::SimpleMath::Vector3& offset);
+	virtual ~TPPCameraMode();
+public:
+	virtual void Enter() override;
+	virtual void Exit() override;
+	virtual void Update() override;
+	virtual ECameraMode GetMode() const;
+private:
+	Transform& mTargetTransform;
+	DirectX::SimpleMath::Vector3 mOffset{ DirectX::SimpleMath::Vector3::Zero };
+};
+

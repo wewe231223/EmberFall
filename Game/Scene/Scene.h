@@ -33,6 +33,8 @@ private:
 
 	std::vector<GameObject> mGameObjects{};
 
+	GameObject mPlayer{}; 
+
 	GameObject mSkyBox{}; 
 
 	TerrainLoader tLoader{}; 

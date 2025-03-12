@@ -12,7 +12,7 @@
 #include "IdentityConfig.h"
 
 #ifdef 김승범컴퓨터 
-#define HD
+#define FHD
 #elif defined(김성준컴퓨터) 
 #define HD
 #endif 

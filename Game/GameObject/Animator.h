@@ -51,3 +51,15 @@ private:
 
 	const AnimationClip* mClip{ nullptr };
 };
+
+namespace AnimatorGraph {
+	struct AnimationNode {
+		
+	};
+	
+	class Animator {
+	public:
+		std::unordered_map<std::string, const AnimationClip*> mAnimations{};
+
+	};
+};

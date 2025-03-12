@@ -146,7 +146,6 @@
     <ClCompile Include="GameObject\Animator.cpp" />
     <ClCompile Include="GameObject\Collider.cpp" />
     <ClCompile Include="GameObject\GameObject.cpp" />
-    <ClCompile Include="GameObject\TerrainCollider.cpp" />
     <ClCompile Include="GameObject\Transform.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -161,7 +160,6 @@
     <ClInclude Include="GameObject\Animator.h" />
     <ClInclude Include="GameObject\Collider.h" />
     <ClInclude Include="GameObject\GameObject.h" />
-    <ClInclude Include="GameObject\TerrainCollider.h" />
     <ClInclude Include="GameObject\Transform.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Scene\Camera.h" />
