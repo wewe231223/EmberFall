@@ -84,10 +84,14 @@ void PlayerScript::Update(const float deltaTime) {
     }
 
     if (mInput->IsActiveKey('F')) {
-        DestroyGem(deltaTime);
+        Interaction(deltaTime, GetNearestObject());
     }
     else if (mInput->IsInactiveKey('F')) {
-        mInterationObj = NULL;
+        mInteractionObj = NULL;
+    }
+
+    if (mInput->IsUp('U')) {
+        UseItem();
     }
 
     moveDir.Normalize();
@@ -132,24 +136,47 @@ std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
     return nullptr;
 }
 
-void PlayerScript::DestroyGem(const float deltaTime) {
-    static float holdStart = 0.0f; // test
-
-    auto nearestObj = GetNearestObject();
-    if (nullptr == nearestObj) {
-        holdStart = 0.0f;
+void PlayerScript::Interaction(const float deltaTime, const std::shared_ptr<GameObject>& target) {
+    if (nullptr == target) {
         return;
     }
-    
-    auto nearestObjId = nearestObj->GetId();
-    if (mInterationObj != nearestObjId) {
-        mInterationObj = nearestObjId;
+
+    mInteractionObj = target->GetId();
+    switch (target->GetTag()) {
+    case ObjectTag::CORRUPTED_GEM:
+        DestroyGem(deltaTime, target);
+        break;
+
+    case ObjectTag::ITEM:
+        AcquireItem(deltaTime, target);
+        break;
+
+    default:
+        break;
+    }
+}
+
+void PlayerScript::DestroyGem(const float deltaTime, const std::shared_ptr<GameObject>& gem) {
+    static float holdStart = 0.0f; // test
+
+    auto gemId = gem->GetId();
+    if (mInteractionObj != gemId) {
+        mInteractionObj = gemId;
         holdStart = 0.0f;
     }
 
     std::shared_ptr<GemDestroyEvent> event = std::make_shared<GemDestroyEvent>();
     event->type = GameEventType::DESTROY_GEM_EVENT;
-    event->receiver = nearestObj->GetId();
+    event->receiver = gem->GetId();
     event->holdTime = holdStart += deltaTime;
     gEventManager->PushEvent(event);
 }
+
+void PlayerScript::AcquireItem(const float deltaTime, const std::shared_ptr<GameObject>& item) {
+    item->GetTag();
+}
+
+void PlayerScript::UseItem() {
+
+}
+

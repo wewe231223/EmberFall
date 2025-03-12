@@ -79,6 +79,22 @@ void GameObject::SetTag(ObjectTag tag) {
     mTag = tag;
 }
 
+void GameObject::ReduceHealth(float hp) {
+    mHP -= hp;
+}
+
+void GameObject::RestoreHealth(float hp) {
+    mHP += hp;
+}
+
+void GameObject::ReduceMagicPoint(float mp) {
+    mMP -= mp;
+}
+
+void GameObject::RestoreMagicPoint(float mp) {
+    mMP += mp;
+}
+
 void GameObject::Init() {
     for (auto& component : mComponents) {
         component->Init();

@@ -68,6 +68,9 @@
     <Filter Include="Script\Item&amp;Skill">
       <UniqueIdentifier>{f8c38d71-0788-4c68-a6b9-25fb1baa32d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameEvent">
+      <UniqueIdentifier>{149a7731-ffbf-4ec3-9a90-4cc613b668e4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -103,17 +106,11 @@
     <ClCompile Include="GameRandom.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Events.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="Input.cpp">
       <Filter>Frame</Filter>
     </ClCompile>
     <ClCompile Include="ServerGameScene.cpp">
       <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="GameEventManager.cpp">
-      <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="Grid.cpp">
       <Filter>Collision\CollisionCheck</Filter>
@@ -163,7 +160,16 @@
     <ClCompile Include="ViewList.cpp">
       <Filter>Script\Player</Filter>
     </ClCompile>
+    <ClCompile Include="Events.cpp">
+      <Filter>GameEvent</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEventManager.cpp">
+      <Filter>GameEvent</Filter>
+    </ClCompile>
     <ClCompile Include="ItemScript.cpp">
+      <Filter>Script\Item&amp;Skill</Filter>
+    </ClCompile>
+    <ClCompile Include="Item.cpp">
       <Filter>Script\Item&amp;Skill</Filter>
     </ClCompile>
   </ItemGroup>
@@ -192,17 +198,11 @@
     <ClInclude Include="GameRandom.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Events.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="Input.h">
       <Filter>Frame</Filter>
     </ClInclude>
     <ClInclude Include="ServerGameScene.h">
       <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="GameEventManager.h">
-      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Grid.h">
       <Filter>Collision\CollisionCheck</Filter>
@@ -258,7 +258,16 @@
     <ClInclude Include="ViewList.h">
       <Filter>Script\Player</Filter>
     </ClInclude>
+    <ClInclude Include="Events.h">
+      <Filter>GameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEventManager.h">
+      <Filter>GameEvent</Filter>
+    </ClInclude>
     <ClInclude Include="ItemScript.h">
+      <Filter>Script\Item&amp;Skill</Filter>
+    </ClInclude>
+    <ClInclude Include="Item.h">
       <Filter>Script\Item&amp;Skill</Filter>
     </ClInclude>
   </ItemGroup>

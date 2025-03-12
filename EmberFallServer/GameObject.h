@@ -22,7 +22,13 @@ enum class ObjectTag {
     PLAYER, 
     MONSTER,
     CORRUPTED_GEM,
+    ITEM,
     NONE,
+};
+
+struct ObjectInfo {
+    float HP;
+    float MP;
 };
 
 class GameObject : public std::enable_shared_from_this<GameObject> {
@@ -51,6 +57,11 @@ public:
     void SetActive(bool active);
     void SetColor(const SimpleMath::Vector3& color);
     void SetTag(ObjectTag tag);
+
+    void ReduceHealth(float hp);
+    void RestoreHealth(float hp);
+    void ReduceMagicPoint(float mp);
+    void RestoreMagicPoint(float mp);
 
     void Init();
 
@@ -98,6 +109,9 @@ private:
 
     NetworkObjectIdType mId{ INVALID_SESSION_ID };                      // network id
     SimpleMath::Vector3 mColor{ SimpleMath::Vector3::One };             // for detecting collision
+
+    float mHP{ GameProtocol::Logic::DEFAULT_PLAYER_HP };
+    float mMP{ GameProtocol::Logic::DEFAULT_PLAYER_MP };
 
     std::shared_ptr<Transform> mTransform{ };                           // Transform
     std::shared_ptr<class Physics> mPhysics{ };                         // Physics

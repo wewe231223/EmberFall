@@ -149,6 +149,7 @@
     <ClCompile Include="GraphBase.cpp" />
     <ClCompile Include="GraphMap.cpp" />
     <ClCompile Include="GraphSearch.cpp" />
+    <ClCompile Include="Item.cpp" />
     <ClCompile Include="ItemScript.cpp" />
     <ClCompile Include="PathFinder.cpp" />
     <ClCompile Include="TerrainCollider.cpp" />
@@ -186,6 +187,7 @@
     <ClInclude Include="GraphMap.h" />
     <ClInclude Include="GraphSearch.h" />
     <ClInclude Include="IndexedPriorityQueue.h" />
+    <ClInclude Include="Item.h" />
     <ClInclude Include="ItemScript.h" />
     <ClInclude Include="PathFinder.h" />
     <ClInclude Include="TerrainCollider.h" />

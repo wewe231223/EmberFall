@@ -17,6 +17,7 @@
 
 #include "Script.h"
 #include "ViewList.h"
+#include "Item.h"
 
 class GameObject;
 class Input;
@@ -44,13 +45,16 @@ public:
 
 private:
     std::shared_ptr<GameObject> GetNearestObject();
-    void DestroyGem(const float deltaTime);
+    void Interaction(const float deltaTime, const std::shared_ptr<GameObject>& target);
+    void DestroyGem(const float deltaTime, const std::shared_ptr<GameObject>& gem);
+    void AcquireItem(const float deltaTime, const std::shared_ptr<GameObject>& item);
+    void UseItem();
 
 private:
     std::shared_ptr<Input> mInput{ };
     std::shared_ptr<IServerGameScene> mGameScene{ };
     ViewList mViewList;
 
-    NetworkObjectIdType mInterationObj{ };
+    NetworkObjectIdType mInteractionObj{ };
 };
 

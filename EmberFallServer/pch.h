@@ -25,5 +25,7 @@
 #include "Events.h"
 #include "GameRandom.h"
 
+#include "../ServerLib/GameProtocol.h"
+
 // Global Instance
 extern std::shared_ptr<class GameEventManager> gEventManager;
