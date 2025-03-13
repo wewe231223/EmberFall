@@ -13,8 +13,14 @@
 #include "../Game/System/Timer.h"
 #include "../Game/System/Input.h"
 #include "../Utility/NonReplacementSampler.h"
+#include "../MeshLoader/Loader/TerrainBaker.h"
 
 Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
+
+//	SimulateTessellationAndWriteFile("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", "Resources/Binarys/Terrain/TerrainBaked.bin");
+	tCollider.LoadFromFile("Resources/Binarys/Terrain/TerrainBaked.bin");
+
+
 	mMeshRenderManager = std::get<0>(managers);
 	mTextureManager = std::get<1>(managers);
 	mMaterialManager = std::get<2>(managers);
@@ -56,7 +62,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mMesh = mMeshMap["Mountain"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
 
-		object.GetTransform().GetPosition() = { 370.f,tLoader.GetHeightAt(370.f, 300.f) - 10.f ,300.f };
+		object.GetTransform().GetPosition() = { 370.f,tCollider.GetHeight(370.f, 300.f) - 10.f ,300.f };
 		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(-35.f), 0.f);
 	}
 
@@ -76,19 +82,19 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		int sign = NonReplacementSampler::GetInstance().Sample();
 
 		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, sign, [this]() {
-			mPlayer.GetTransform().Translate({ 0.f, 0.f, -0.01f });
+			mPlayer.GetTransform().Translate({ 0.f, 0.f, -0.1f });
 			});
 
 		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::S, sign, [this]() {
-			mPlayer.GetTransform().Translate({ 0.f, 0.f, 0.01f });
+			mPlayer.GetTransform().Translate({ 0.f, 0.f, 0.1f });
 			});
 
 		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, sign, [this]() {
-			mPlayer.GetTransform().Translate({ 0.01f, 0.f, 0.f });
+			mPlayer.GetTransform().Translate({ 0.1f, 0.f, 0.f });
 			});
 
 		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, sign, [this]() {
-			mPlayer.GetTransform().Translate({ -0.01f, 0.f, 0.f });
+			mPlayer.GetTransform().Translate({ -0.1f, 0.f, 0.f });
 			});
 	}
 
@@ -102,13 +108,15 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	cameraTransform.Look({ 0.f,85.f,0.f });
 
 	mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mPlayer.GetTransform(), SimpleMath::Vector3{0.f,2.f,5.f});
+	// mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+
 	mCameraMode->Enter();
 
 	mPickedObjectText->GetText() = L"Picked Object : None";
 }
 
 void Scene::Update() {
-	mPlayer.GetTransform().GetPosition().y = tLoader.GetHeightAt(mPlayer.GetTransform().GetPosition().x, mPlayer.GetTransform().GetPosition().z);
+	mPlayer.GetTransform().GetPosition().y = tCollider.GetHeight(mPlayer.GetTransform().GetPosition().x, mPlayer.GetTransform().GetPosition().z);
 	mCameraMode->Update();
 	
 	static BoneTransformBuffer boneTransforms{};
@@ -271,7 +279,7 @@ void Scene::PaintTree(size_t treeCount) {
 				break;
 			}
 
-			stone.GetTransform().GetPosition().y = tLoader.GetHeightAt(centeredX, centeredZ);
+			stone.GetTransform().GetPosition().y = tCollider.GetHeight(centeredX, centeredZ);
 
 			mGameObjects.emplace_back(stone);
 

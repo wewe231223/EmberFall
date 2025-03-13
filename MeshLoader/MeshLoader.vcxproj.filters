@@ -39,6 +39,9 @@
     <ClCompile Include="Loader\ColliderLoader.cpp">
       <Filter>Loader</Filter>
     </ClCompile>
+    <ClCompile Include="Loader\TerrainBaker.cpp">
+      <Filter>Loader</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Loader\MeshLoader.h">
@@ -57,6 +60,9 @@
       <Filter>Base</Filter>
     </ClInclude>
     <ClInclude Include="Loader\ColliderLoader.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader\TerrainBaker.h">
       <Filter>Loader</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,26 +5,44 @@
 #include "../Utility/DirectXInclude.h"
 #include <vector>
 
-struct TessellatedVertex {
-	DirectX::XMFLOAT3 position;
-	DirectX::XMFLOAT3 normal;
-};
-
 class TerrainLoader {
 	static constexpr int PATCH_LENGTH = 4;
-	static constexpr int PATCH_SCALE = 1;
+	static constexpr int PATCH_SCALE = 8;
 public:
 	TerrainLoader() = default;
 	~TerrainLoader() = default;
 public:
 	MeshData Load(const std::filesystem::path& path, bool patch);
-	float GetHeightAt(float x, float z) const;
-	float GetHeightAtL(float x, float z) const;
 private:
 	void CreatePatch(MeshData& data, int zStart, int zEnd, int xStart, int xEnd);
-	float BezierSum(float t, float p0, float p1, float p2, float p3) const;
 private:
 	std::vector<std::vector<float>> mHeight{};
-	std::vector<DirectX::XMFLOAT3> mControlPoints{};
 	int mLength{};
+};
+
+
+struct TessellatedPatchHeader {
+	int gridWidth;    // 예: 17
+	int gridHeight;   // 예: 17
+	float gridSpacing; // 예: 1.0f
+	float minX;       // 패치의 좌측 하단 x (이미 (0,0)이 지형 중앙인 좌표계)
+	float minZ;       // 패치의 좌측 하단 z
+};
+
+struct TessellatedPatch {
+	TessellatedPatchHeader header;
+	std::vector<SimpleMath::Vector3> vertices; 
+};
+
+
+class TerrainCollider {
+public:
+	TerrainCollider() = default;
+	~TerrainCollider() = default;
+public:
+	bool LoadFromFile(const ::std::filesystem::path& filePath);
+	float GetHeight(float x, float z) const;
+
+private:
+	std::vector<TessellatedPatch> mPatches;
 };
