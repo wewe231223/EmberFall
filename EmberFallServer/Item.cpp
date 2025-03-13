@@ -2,22 +2,18 @@
 #include "Item.h"
 #include "GameObject.h"
 
-Item::Item() { }
+void Item::UseItem(ItemTag tag, const std::shared_ptr<class GameObject>& obj) {
 
-Item::~Item() { }
-
-bool Item::IsActive() const {
-    return mActive;
 }
-
-void Item::SetActive(bool active) {
-    mActive = active;
-}
-
-Potion::Potion() { }
-
-Potion::~Potion() { }
 
 void Potion::UseItem(const std::shared_ptr<class GameObject>& obj) {
-    obj->RestoreHealth(10.0f);
+
+}
+
+void HolyWater::UseItem(const std::shared_ptr<class GameObject>& obj) {
+
+}
+
+void Cross::UseItem(const std::shared_ptr<class GameObject>& obj) {
+
 }

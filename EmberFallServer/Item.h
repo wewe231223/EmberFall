@@ -10,46 +10,31 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+enum class ItemTag : uint8_t {
+    ITEM_POTION,
+    ITEM_HOLYWATER,
+    ITEM_CROSS,
+    ITEM_NONE,
+};
+
 using ItemEffectFn = std::function<void(const std::shared_ptr<class GameObject>&)>;
 
 class Item abstract {
 public:
-    Item();
-    virtual ~Item();
-
-public:
-    bool IsActive() const;
-    void SetActive(bool active);
-
-    virtual void UseItem(const std::shared_ptr<class GameObject>& obj) abstract;
-
-private:
-    bool mActive{ false };
+    static void UseItem(ItemTag tag, const std::shared_ptr<class GameObject>& obj);
 };
 
 class Potion : public Item {
 public:
-    Potion();
-    virtual ~Potion();
-
-public:
-    virtual void UseItem(const std::shared_ptr<class GameObject>& obj) override;
+    static void UseItem(const std::shared_ptr<class GameObject>& obj);
 };
 
 class HolyWater : public Item {
 public:
-    HolyWater();
-    virtual ~HolyWater();
-
-public:
-    virtual void UseItem(const std::shared_ptr<class GameObject>& obj) override;
+    static void UseItem(const std::shared_ptr<class GameObject>& obj);
 };
 
 class Cross : public Item {
 public:
-    Cross();
-    virtual ~Cross();
-
-public:
-    virtual void UseItem(const std::shared_ptr<class GameObject>& obj) override;
+    static void UseItem(const std::shared_ptr<class GameObject>& obj);
 };

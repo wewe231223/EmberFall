@@ -13,7 +13,7 @@ ServerFrame::ServerFrame() {
 
     mInputManager = std::make_shared<InputManager>();
 
-    mTimer = std::make_shared<GameTimer>();
+    //mTimer = std::make_shared<GameTimer>();
 
     mServerCore->Start("", SERVER_PORT);
     auto sessionManager = mServerCore->GetSessionManager();
@@ -31,14 +31,16 @@ void ServerFrame::InitGameScenes() {
 
     mCurrentScene = mGameScenes.front();
     mCurrentScene->Init();
-    mTimer->Sync(30);
+    //mTimer->Sync(30);
+    StaticTimer::Sync(30);
 }
 
 void ServerFrame::GameLoop() {
     while (true) {
         StaticTimer::Update();
-        mTimer->Update();
-        const float deltaTime = mTimer->GetDeltaTime();
+        //mTimer->Update();
+        //const float deltaTime = mTimer->GetDeltaTime();
+        const float deltaTime = StaticTimer::GetDeltaTime();
 
         mCurrentScene->DispatchPlayerEvent(mPlayerEventQueue);
         mCurrentScene->ProcessPackets(mServerCore, mInputManager);

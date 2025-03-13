@@ -17,21 +17,31 @@ public:
 public:
     class TimerEvent {
     public:
-        TimerEvent(EventCallBack&& callback, std::chrono::time_point<Clock> time);
+        TimerEvent(EventCallBack&& callback, TimePoint timeRegistered, Duration time, int32_t loopCount);
         ~TimerEvent();
 
-        TimerEvent(const TimerEvent& other);
+        TimerEvent(const TimerEvent& other) = delete;
+        TimerEvent& operator=(const TimerEvent& other) = delete;
+
         TimerEvent(TimerEvent&& other) noexcept;
-        TimerEvent& operator=(const TimerEvent& other);
         TimerEvent& operator=(TimerEvent&& other) noexcept;
 
     public:
         bool operator<(const TimerEvent& right) const;
 
+    public:
+        EventCallBack GetFunction() const;
+        Duration GetDuration() const;
+        int32_t GetLoopCount() const;
+        bool IsTimeSinceResistered(std::chrono::time_point<Clock> time) const;
+
+        void Excute() const;
+
     private:
-        EventCallBack mFunction{ };
+        int32_t mLoopCount{ };
         TimePoint mTimeRegistered{ };
-        bool mLoop{ false };
+        Duration mDelay{ };
+        EventCallBack mFunction{ };
     };
 
 public:
@@ -45,34 +55,41 @@ public:
 
     void Sync(INT32 syncFrame = 0);
     void Update();
+    
+private:
+    void ProcessEvent();
 
 public:
-    static void PushTimerEvent(EventCallBack&& callback, Duration time);
+    void PushTimerEvent(EventCallBack&& callback, Duration time, int32_t loopCount);
 
 private:
-    inline static std::priority_queue<TimerEvent> mEventQueue{ };
+    std::priority_queue<TimerEvent> mEventQueue{ };
 
 private:
     float mSyncRatio{ };
     float mDeltaTime{ };
     float mTimeScale{ };
     float mFpsCounter{ };
+    UINT32 mFpsCount{ };
     UINT32 mFps{ };
 
     TimePoint mPrevPoint{ };
     TimePoint mPointSinceStart{ };
 };
 
+using TimerEvent = GameTimer::TimerEvent;
+
 class StaticTimer {
 public:
+    static void Sync(int32_t syncFrame = 0);
     static UINT32 GetFps();
     static float GetDeltaTime();
     static float GetTimeFromStart();
 
     static void Update();
 
+    static void PushTimerEvent(GameTimer::EventCallBack&& callback, GameTimer::Duration time, int32_t loopCount);
+
 private:
     inline static GameTimer mTimer{ };
 };
-
-using TimerEvent = GameTimer::TimerEvent;
