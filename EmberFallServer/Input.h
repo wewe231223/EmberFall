@@ -34,21 +34,21 @@ public:
 
 public:
     void UpdateInput(Key key);
-    void UpdateInput(BYTE key, bool state);
+    void UpdateInput(uint8_t key, bool state);
 
-    KeyState GetState(BYTE key) const;
+    KeyState GetState(uint8_t key) const;
 
     void Update();
 
-    bool IsDown(BYTE key) const;
-    bool IsReleased(BYTE key) const;
-    bool IsUp(BYTE key) const;
-    bool IsPressed(BYTE key) const;
+    bool IsDown(uint8_t key) const;
+    bool IsReleased(uint8_t key) const;
+    bool IsUp(uint8_t key) const;
+    bool IsPressed(uint8_t key) const;
 
     // if KeyState::DOWN or KeyState::PRESS Return True
-    bool IsActiveKey(BYTE key);
+    bool IsActiveKey(uint8_t key);
     // if KeyState::UP or KeyState::RELEASE Return True
-    bool IsInactiveKey(BYTE key) const;
+    bool IsInactiveKey(uint8_t key) const;
 
 private:
     std::array<KeyState, MAX_KEY_SIZE> mKeys{ };

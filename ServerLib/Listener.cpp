@@ -94,8 +94,13 @@ void Listener::ProcessAccept() {
         session->InitSessionNetAddress(mOverlappedAccept.buffer.data());
         auto [ip, port] = session->GetAddress();
         
-        PacketNotifyId notifyingId{ sizeof(PacketNotifyId), PacketType::PT_NOTIFYING_ID_SC, session->GetId() };
+        PacketSC::PacketNotifyId notifyingId{ 
+            sizeof(PacketSC::PacketNotifyId), PacketType::PACKET_NOTIFY_ID, session->GetId() 
+        };
         sessionManager->Send(session->GetId(), &notifyingId);
+
+        PacketProtocolVersion protocolVersion;
+        sessionManager->Send(session->GetId(), &protocolVersion);
 
         gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Client [IP: {}, PORT: {}] Connected", ip, port);
     }

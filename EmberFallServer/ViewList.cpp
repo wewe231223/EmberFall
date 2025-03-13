@@ -49,28 +49,26 @@ void ViewList::Update() {
 void ViewList::Send() {
     static size_t prevSendSize{ };
 
-    PacketPlayerInfoSC playerPacket{ sizeof(PacketPlayerInfoSC), PacketType::PT_PLAYER_INFO_SC };
-    PacketGameObject objPacket{ sizeof(PacketGameObject), PacketType::PT_GAME_OBJECT_SC };
+    PacketSC::PacketObject objectPacket{ 
+        sizeof(PacketSC::PacketObject), 
+        PacketType::PACKET_OBJECT,
+        mOwnerId
+    };
+
     NetworkObjectIdType objectId{ };
     for (const auto& object : mObjectInRange) {
         objectId = object->GetId();
+        objectPacket.position = object->GetPosition();
+        //objectPacket.rotationYaw = ;
+
         if (objectId < INVALID_SESSION_ID) {
-            playerPacket.id = static_cast<SessionIdType>(objectId);
-            playerPacket.color = object->GetColor();
-            playerPacket.position = object->GetPosition();
-            playerPacket.rotation = object->GetRotation();
-            playerPacket.scale = object->GetScale();
-            mSessionManager->Send(mOwnerId, &playerPacket);
+            objectPacket.objId = objectId;
         }
         else {
-            objPacket.objectId = objectId - OBJECT_ID_START;
-            objPacket.state = object->IsActive();
-            objPacket.color = object->GetColor();
-            objPacket.position = object->GetPosition();
-            objPacket.rotation = object->GetRotation();
-            objPacket.scale = object->GetScale();
-            mSessionManager->Send(mOwnerId, &objPacket);
+            objectPacket.objId = objectId - OBJECT_ID_START;
         }
+
+        mSessionManager->Send(mOwnerId, &objectPacket);
     }
 }
 

@@ -69,25 +69,6 @@ protected:
     std::unordered_map<SessionIdType, std::shared_ptr<GameObject>> mPlayers{ };
 };
 
-class EchoTestScene : public IServerGameScene {
-public:
-    EchoTestScene();
-    ~EchoTestScene();
-
-public:
-    virtual void Init() override { } 
-
-    virtual std::vector<std::shared_ptr<GameObject>>& GetObjects() override { return mObjects; }
-    virtual std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) override { return nullptr; }
-
-    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) override;
-    virtual void Update(const float deltaTime) override;
-    virtual void LateUpdate(const float deltaTime) override;
-
-private:
-    std::vector<std::shared_ptr<GameObject>> mObjects{ };
-};
-
 class PlayScene : public IServerGameScene {
     inline static constexpr size_t MAX_OBJECT = 5; // 최대 오브젝트 개수 제한.
 

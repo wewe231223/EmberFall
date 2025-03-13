@@ -59,33 +59,6 @@ void IServerGameScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> 
     mPlayers.erase(it);
 }
 
-EchoTestScene::EchoTestScene() { }
-
-EchoTestScene::~EchoTestScene() { }
-
-void EchoTestScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<InputManager>& inputManager) {
-    auto packetHandler = serverCore->GetPacketHandler();
-    auto& buffer = packetHandler->GetBuffer();
-    if (0 == buffer.Size()) {
-        return;
-    }
-
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Total RecvBytes: {}", buffer.Size());
-    PacketChat chat{ };
-    while (not buffer.IsReadEnd()) {
-        buffer.Read(chat);
-        chat.chatdata[chat.size] = '\0';
-        std::cout << chat.chatdata << std::endl;
-    }
-
-    auto sessionManager = serverCore->GetSessionManager();
-    sessionManager->SendAll(buffer.Data(), buffer.Size());
-}
-
-void EchoTestScene::Update(const float deltaTime) { }
-
-void EchoTestScene::LateUpdate(const float deltaTime) { }
-
 PlayScene::PlayScene() { }
 
 PlayScene::~PlayScene() { }
@@ -147,20 +120,20 @@ void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, st
         }
         
         switch (header.type) {
-        case PacketType::PT_INPUT_CS:
+        case PacketType::PACKET_KEYINPUT:
             {
-                PacketInput inputPacket;  
+                PacketCS::PacketKeyInput inputPacket;  
                 buffer.Read(inputPacket);
                 auto input = inputManager->GetInput(inputPacket.id);
-                input->UpdateInput(inputPacket.key);
+                input->UpdateInput(inputPacket.key, inputPacket.down);
             }
             break;
 
-        case PacketType::PT_PLAYER_INFO_CS:
+        case PacketType::PACKET_CAMERA:
             {
-                PacketPlayerInfoCS obj;
+                PacketCS::PacketCamera obj;
                 buffer.Read(obj);
-                mPlayers[obj.id]->GetTransform()->Rotation(obj.rotation);
+                mPlayers[obj.id]->GetTransform()->LookAt(obj.look);
             }
         break;
 
