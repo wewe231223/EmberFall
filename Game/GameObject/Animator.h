@@ -58,14 +58,12 @@ private:
 };
 
 namespace AnimatorGraph {
-    // 로컬 변환 구성요소를 보관하는 구조체
     struct TransformComponents {
         SimpleMath::Vector3 translation;
         SimpleMath::Quaternion rotation;
         SimpleMath::Vector3 scale;
     };
 
-    // (필요 시) 행렬을 구성요소로 분해하는 유틸리티 함수
     inline bool DecomposeMatrix(SimpleMath::Matrix& mat, TransformComponents& outComponents) {
         return mat.Decompose(outComponents.scale, outComponents.rotation, outComponents.translation);
     }
@@ -75,16 +73,22 @@ namespace AnimatorGraph {
         Animator() = default;
         Animator(const std::vector<const AnimationClip*>& clips)
             : mClips(clips), mCurrentClipIndex(0), mTargetClipIndex(0), mTransitioning(false),
-            mTransitionTime(0.0), mTransitionDuration(0.001), mCurrentTime(0.0) {}
+            mTransitionTime(0.0), mTransitionDuration(0.1), mCurrentTime(0.0) {}
 
-        // deltaTime: 프레임 간 경과 시간
+
         void UpdateBoneTransform(double deltaTime, BoneTransformBuffer& boneTransforms) {
+            const AnimationClip* clip = mClips[mCurrentClipIndex];
             if (mTransitioning) {
                 double blendFactor = mTransitionTime / mTransitionDuration;
-                // 전환 시 현재 클립은 현재 재생 시간, 대상 클립은 첫 키프레임(0.0)을 기준으로 보간
-                ReadNodeHeirarchyTransition(mCurrentTime, 0.0, blendFactor, mClips[mCurrentClipIndex]->root.get(),
-                    SimpleMath::Matrix::Identity, boneTransforms.boneTransforms);
-                boneTransforms.boneCount = static_cast<UINT>(mClips[mCurrentClipIndex]->boneOffsetMatrices.size());
+
+                double tick = mCurrentTime * clip->ticksPerSecond;
+                double normTime = std::fmod(tick / clip->duration, 1.0);
+                double currentAnimTime = normTime * clip->duration; 
+
+
+                ReadNodeHeirarchyTransition(currentAnimTime, 0.0, blendFactor,
+                    clip->root.get(), SimpleMath::Matrix::Identity, boneTransforms.boneTransforms);
+                boneTransforms.boneCount = static_cast<UINT>(clip->boneOffsetMatrices.size());
                 mTransitionTime += deltaTime;
 
                 if (mTransitionTime >= mTransitionDuration) {
@@ -94,17 +98,20 @@ namespace AnimatorGraph {
                 }
             }
             else {
-                const AnimationClip* clip = mClips[mCurrentClipIndex];
-                mCurrentTime += deltaTime * clip->ticksPerSecond;
-                ComputeBoneTransforms(clip, mCurrentTime, boneTransforms);
-                if (mCurrentTime * clip->ticksPerSecond >= clip->duration) {
-                    // 애니메이션 재생 종료 시 자동으로 0번 클립으로 전환
+                mCurrentTime += deltaTime;  
+
+                double tick = mCurrentTime * clip->ticksPerSecond;
+                double normTime = std::fmod(tick / clip->duration, 1.0);
+                double animationTime = normTime * clip->duration;  
+
+                if (normTime >= 0.99) {
                     TransitionToClip(0);
                 }
+                ComputeBoneTransforms(clip, animationTime, boneTransforms);
             }
         }
 
-        // 전환 요청 함수: 대상 클립 인덱스를 받아 전환 시작
+
         void TransitionToClip(size_t clipIndex) {
             if (clipIndex < mClips.size() && clipIndex != mCurrentClipIndex) {
                 mTargetClipIndex = clipIndex;
@@ -114,12 +121,9 @@ namespace AnimatorGraph {
         }
 
     private:
-        // 기존 애니메이션에 따른 bone transform 계산 함수
-        void ComputeBoneTransforms(const AnimationClip* clip, double time, BoneTransformBuffer& boneTransforms) {
+
+        void ComputeBoneTransforms(const AnimationClip* clip, double animationTime, BoneTransformBuffer& boneTransforms) {
             DirectX::SimpleMath::Matrix identity = DirectX::SimpleMath::Matrix::Identity;
-            double tick = time * clip->ticksPerSecond;
-            double animationTime = std::fmod(tick, clip->duration);
-            animationTime = std::clamp(tick, 0.0, static_cast<double>(clip->duration));
             std::fill(std::begin(boneTransforms.boneTransforms),
                 std::end(boneTransforms.boneTransforms),
                 DirectX::SimpleMath::Matrix::Identity);
@@ -127,7 +131,7 @@ namespace AnimatorGraph {
             boneTransforms.boneCount = static_cast<UINT>(clip->boneOffsetMatrices.size());
         }
 
-        // 기존 재귀 함수: 각 bone에 대해 키프레임을 보간하여 행렬 계산
+
         void ReadNodeHeirarchy(double AnimationTime, BoneNode* node, const SimpleMath::Matrix& ParentTransform,
             std::array<SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<>>& boneTransforms,
             const AnimationClip* clip) {
@@ -145,7 +149,9 @@ namespace AnimatorGraph {
             }
             SimpleMath::Matrix globalTransform = nodeTransform * ParentTransform;
             if (node->index != std::numeric_limits<UINT>::max()) {
-                auto result = clip->boneOffsetMatrices[node->index] * globalTransform * clip->globalInverseTransform;
+                auto result = clip->boneOffsetMatrices[node->index] *
+                    globalTransform *
+                    clip->globalInverseTransform;
                 boneTransforms[node->index] = result.Transpose();
             }
             for (auto& child : node->children) {
@@ -153,14 +159,12 @@ namespace AnimatorGraph {
             }
         }
 
-        // 전환 시, 현재 클립과 대상 클립의 로컬 Transform 구성요소를 보간하여 계산하는 함수
-        // 여기서는 대상 애니메이션의 첫 키프레임(시간 0.0)과 현재 애니메이션의 현재 키프레임을 블렌딩합니다.
         void ReadNodeHeirarchyTransition(double currentAnimTime, double targetAnimTime, double blendFactor,
             BoneNode* node, const SimpleMath::Matrix& ParentTransform,
             std::array<SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<>>& boneTransforms) {
             if (!node) return;
             TransformComponents currentComp, targetComp;
-            // 현재 클립에서의 구성요소 계산 (키 보간)
+
             auto itCurrent = mClips[mCurrentClipIndex]->boneAnimations.find(node->index);
             if (itCurrent != mClips[mCurrentClipIndex]->boneAnimations.end()) {
                 const BoneAnimation& currentBoneAnim = itCurrent->second;
@@ -171,7 +175,7 @@ namespace AnimatorGraph {
             else {
                 DecomposeMatrix(node->transformation, currentComp);
             }
-            // 대상 클립에서의 구성요소 계산 (항상 첫 키프레임, targetAnimTime = 0.0)
+
             auto itTarget = mClips[mTargetClipIndex]->boneAnimations.find(node->index);
             if (itTarget != mClips[mTargetClipIndex]->boneAnimations.end()) {
                 const BoneAnimation& targetBoneAnim = itTarget->second;
@@ -182,16 +186,15 @@ namespace AnimatorGraph {
             else {
                 DecomposeMatrix(node->transformation, targetComp);
             }
-            // 개별 구성요소 보간 (이동/스케일: Lerp, 회전: Slerp)
+
             SimpleMath::Vector3 blendedTranslation = SimpleMath::Vector3::Lerp(currentComp.translation, targetComp.translation, static_cast<float>(blendFactor));
             SimpleMath::Quaternion blendedRotation = SimpleMath::Quaternion::Slerp(currentComp.rotation, targetComp.rotation, static_cast<float>(blendFactor));
             SimpleMath::Vector3 blendedScale = SimpleMath::Vector3::Lerp(currentComp.scale, targetComp.scale, static_cast<float>(blendFactor));
-            // 보간된 구성요소로 로컬 행렬 재구성
+
             SimpleMath::Matrix blendedLocal = SimpleMath::Matrix::CreateScale(blendedScale) *
                 SimpleMath::Matrix::CreateFromQuaternion(blendedRotation) *
                 SimpleMath::Matrix::CreateTranslation(blendedTranslation);
             SimpleMath::Matrix globalTransform = blendedLocal * ParentTransform;
-            // 모든 클립에서 동일한 boneOffsetMatrices 와 globalInverseTransform 사용
             if (node->index != std::numeric_limits<UINT>::max()) {
                 auto result = mClips[mCurrentClipIndex]->boneOffsetMatrices[node->index] *
                     globalTransform *
@@ -203,7 +206,7 @@ namespace AnimatorGraph {
             }
         }
 
-        // 기존 키프레임 보간 함수들
+
         UINT FindPosition(double AnimationTime, const BoneAnimation& boneAnim) {
             for (UINT i = 0; i < boneAnim.positionKey.size() - 1; i++) {
                 if (AnimationTime < boneAnim.positionKey[i + 1].first)
@@ -273,6 +276,8 @@ namespace AnimatorGraph {
         double mTransitionDuration;
         double mCurrentTime;
     };
+
+
 
 
 

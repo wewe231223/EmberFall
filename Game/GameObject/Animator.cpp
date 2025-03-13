@@ -157,7 +157,7 @@ void Animator::UpdateBoneTransform(double time, BoneTransformBuffer& boneTransfo
 
     double tick{ time * mClip->ticksPerSecond };
     double animationTime{ std::fmod(tick, mClip->duration) };
-	animationTime = std::clamp(tick, 0.0, static_cast<double>(mClip->duration));
+	animationTime = std::clamp(animationTime, 0.0, static_cast<double>(mClip->duration));
 
 	std::fill(std::begin(boneTransforms.boneTransforms), std::end(boneTransforms.boneTransforms), DirectX::SimpleMath::Matrix::Identity);
 

@@ -68,7 +68,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 
 
-	mAnimationMap["Man"].Load("Resources/Assets/Man/man.gltf");
+	mAnimationMap["Man"].Load("Resources/Assets/Knight/Knight.gltf");
 	auto animationData = mAnimationMap["Man"].GetClip(1);
 
 	{
@@ -78,7 +78,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		mPlayer.GetTransform().Translate({ 0.f,20.f,0.f });
 		mPlayer.mAnimator = Animator(animationData);
 
-		std::vector<const AnimationClip*> clips{ mAnimationMap["Man"].GetClip(1), mAnimationMap["Man"].GetClip(4) };
+		std::vector<const AnimationClip*> clips{ mAnimationMap["Man"].GetClip(29), mAnimationMap["Man"].GetClip(13) };
 		mPlayer.mGraphAnimator = AnimatorGraph::Animator(clips);
 
 
@@ -173,7 +173,7 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 	mMeshMap["Cube"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Cube, 1);
 
-	data = Loader.Load("Resources/Assets/Man/man.gltf");
+	data = Loader.Load("Resources/Assets/Knight/Knight.gltf");
 	mMeshMap["T_Pose"] = std::make_unique<Mesh>(device, commandList, data);
 
 	data = Loader.Load("Resources/Assets/Stone/Stone1.gltf");
@@ -218,7 +218,7 @@ void Scene::BuildMaterial() {
 	mMaterialManager->CreateMaterial("SkyBoxMaterial", mat);
 
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Ganfaul_diffuse");
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Paladin_diffuse");
 	mMaterialManager->CreateMaterial("CubeMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("blue");
