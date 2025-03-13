@@ -185,6 +185,8 @@ void Animator::ReadNodeHeirarchy(double AnimationTime, BoneNode* node, const Sim
         nodeTransform = (scale * rotate * translate);
     }
 
+    
+
     SimpleMath::Matrix globalTransform = nodeTransform * ParentTransform;
 
     if (node->index != std::numeric_limits<UINT>::max()) {

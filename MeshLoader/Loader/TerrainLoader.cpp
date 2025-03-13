@@ -75,8 +75,8 @@ void TerrainLoader::CreatePatch(MeshData& data, int zStart, int zEnd, int xStart
     }
 }
 
-bool TerrainCollider::LoadFromFile(const::std::filesystem::path& filePath) {
-    std::ifstream file(filePath, ::std::ios::binary);
+bool TerrainCollider::LoadFromFile(const std::filesystem::path& filePath) {
+    std::ifstream file(filePath, std::ios::binary);
     
     if (!file) {
         return false;
@@ -84,7 +84,7 @@ bool TerrainCollider::LoadFromFile(const::std::filesystem::path& filePath) {
 
     int patchCount = 0;
     file.read(reinterpret_cast<char*>(&patchCount), sizeof(patchCount));
-    mPatches.resize(static_cast<::std::size_t>(patchCount));
+    mPatches.resize(static_cast<size_t>(patchCount));
 
     for (int i = 0; i < patchCount; ++i) {
         TessellatedPatchHeader header;
@@ -93,13 +93,13 @@ bool TerrainCollider::LoadFromFile(const::std::filesystem::path& filePath) {
         file.read(reinterpret_cast<char*>(&header.gridSpacing), sizeof(header.gridSpacing));
         file.read(reinterpret_cast<char*>(&header.minX), sizeof(header.minX));
         file.read(reinterpret_cast<char*>(&header.minZ), sizeof(header.minZ));
-        mPatches[static_cast<::std::size_t>(i)].header = header;
+        mPatches[static_cast<size_t>(i)].header = header;
     }
 
     for (int i = 0; i < patchCount; ++i) {
-        int count = mPatches[static_cast<::std::size_t>(i)].header.gridWidth * mPatches[static_cast<::std::size_t>(i)].header.gridHeight;
-        mPatches[static_cast<::std::size_t>(i)].vertices.resize(static_cast<::std::size_t>(count));
-        file.read(reinterpret_cast<char*>(mPatches[static_cast<::std::size_t>(i)].vertices.data()), count * sizeof(::DirectX::SimpleMath::Vector3));
+        int count = mPatches[static_cast<size_t>(i)].header.gridWidth * mPatches[static_cast<size_t>(i)].header.gridHeight;
+        mPatches[static_cast<size_t>(i)].vertices.resize(static_cast<size_t>(count));
+        file.read(reinterpret_cast<char*>(mPatches[static_cast<size_t>(i)].vertices.data()), count * sizeof(SimpleMath::Vector3));
     }
     return true;
 }
@@ -118,8 +118,8 @@ float TerrainCollider::GetHeight(float x, float z) const {
             float col = localX / patch.header.gridSpacing;
             float row = localZ / patch.header.gridSpacing;
             
-            int j = static_cast<int>(::std::floor(col));
-            int i = static_cast<int>(::std::floor(row));
+            int j = static_cast<int>(std::floor(col));
+            int i = static_cast<int>(std::floor(row));
             
             if (i < 0) i = 0;
             if (j < 0) j = 0;
@@ -129,14 +129,14 @@ float TerrainCollider::GetHeight(float x, float z) const {
             float t = col - static_cast<float>(j);
             float u = row - static_cast<float>(i);
 
-            const SimpleMath::Vector3& v00 = patch.vertices[static_cast<::std::size_t>(i) * patch.header.gridWidth + j];
-            const SimpleMath::Vector3& v10 = patch.vertices[static_cast<::std::size_t>(i) * patch.header.gridWidth + (j + 1)];
-            const SimpleMath::Vector3& v01 = patch.vertices[static_cast<::std::size_t>(i + 1) * patch.header.gridWidth + j];
-            const SimpleMath::Vector3& v11 = patch.vertices[static_cast<::std::size_t>(i + 1) * patch.header.gridWidth + (j + 1)];
+            const SimpleMath::Vector3& v00 = patch.vertices[static_cast<size_t>(i) * patch.header.gridWidth + j];
+            const SimpleMath::Vector3& v10 = patch.vertices[static_cast<size_t>(i) * patch.header.gridWidth + (j + 1)];
+            const SimpleMath::Vector3& v01 = patch.vertices[static_cast<size_t>(i + 1) * patch.header.gridWidth + j];
+            const SimpleMath::Vector3& v11 = patch.vertices[static_cast<size_t>(i + 1) * patch.header.gridWidth + (j + 1)];
 
             float y0 = v00.y * (1.0f - t) + v10.y * t;
             float y1 = v01.y * (1.0f - t) + v11.y * t;
-            return y0 * (1.0f - u) + y1 * u + 0.01f;
+            return y0 * (1.0f - u) + y1 * u;
         }
     }
     return 0.0f;

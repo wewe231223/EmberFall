@@ -35,14 +35,14 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
 	mSkyBox.mMaterial = mMaterialManager->GetMaterial("SkyBoxMaterial");
 
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Cube"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("AreaMat");
-		object.GetTransform().GetPosition() = { 0.f,0.f,0.f };
-		object.GetTransform().Scaling(500.f, 500.f, 500.f);
-	}
+	//{
+	//	auto& object = mGameObjects.emplace_back();
+	//	object.mShader = mShaderMap["StandardShader"].get();
+	//	object.mMesh = mMeshMap["Cube"].get();
+	//	object.mMaterial = mMaterialManager->GetMaterial("AreaMat");
+	//	object.GetTransform().GetPosition() = { 0.f,0.f,0.f };
+	//	object.GetTransform().Scaling(500.f, 500.f, 500.f);
+	//}
 
 	
 	{
@@ -69,7 +69,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 
 	mAnimationMap["Man"].Load("Resources/Assets/Man/man.gltf");
-	auto animationData = mAnimationMap["Man"].GetClip(2);
+	auto animationData = mAnimationMap["Man"].GetClip(1);
 
 	{
 		mPlayer.mShader = mShaderMap["SkinnedShader"].get();
@@ -77,6 +77,9 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		mPlayer.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
 		mPlayer.GetTransform().Translate({ 0.f,20.f,0.f });
 		mPlayer.mAnimator = Animator(animationData);
+
+		std::vector<const AnimationClip*> clips{ mAnimationMap["Man"].GetClip(1), mAnimationMap["Man"].GetClip(4) };
+		mPlayer.mGraphAnimator = AnimatorGraph::Animator(clips);
 
 
 		int sign = NonReplacementSampler::GetInstance().Sample();
@@ -95,6 +98,14 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, sign, [this]() {
 			mPlayer.GetTransform().Translate({ -0.1f, 0.f, 0.f });
+			});
+
+		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::Space, sign, [this]() {
+			mPlayer.mGraphAnimator.TransitionToClip(1);
+			});
+
+		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::T, sign, [this]() {
+			mPlayer.mGraphAnimator.TransitionToClip(0);
 			});
 	}
 
@@ -266,6 +277,7 @@ void Scene::PaintTree(size_t treeCount) {
 			float centeredZ = static_cast<float>(z - dimension / 2);
 
 			stone.GetTransform().GetPosition() = { centeredX, 20.f, centeredZ };
+			stone.GetTransform().Scaling(30.f, 30.f, 30.f);
 
 			switch (stonedist(gen)) {
 			case 0:

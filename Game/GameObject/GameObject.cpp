@@ -28,10 +28,11 @@ void GameObject::ToggleActiveState() {
 
 void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransform) {
 	static double counter{ 0.0 };
-	counter += 0.0001;
+	counter += 0.00000001;
 
 	if (mAnimator.GetActivated()) {
-		mAnimator.UpdateBoneTransform(counter, boneTransform);
+		// mAnimator.UpdateBoneTransform(counter, boneTransform);
+		mGraphAnimator.UpdateBoneTransform(0.00001 , boneTransform);
 	}
 
 	if (mCollider.GetActiveState()) {

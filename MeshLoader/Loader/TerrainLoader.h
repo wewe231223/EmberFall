@@ -22,10 +22,10 @@ private:
 
 
 struct TessellatedPatchHeader {
-	int gridWidth;    // 예: 17
-	int gridHeight;   // 예: 17
-	float gridSpacing; // 예: 1.0f
-	float minX;       // 패치의 좌측 하단 x (이미 (0,0)이 지형 중앙인 좌표계)
+	int gridWidth;    
+	int gridHeight;   
+	float gridSpacing; 
+	float minX;       // 패치의 좌측 하단 x 
 	float minZ;       // 패치의 좌측 하단 z
 };
 
@@ -40,7 +40,7 @@ public:
 	TerrainCollider() = default;
 	~TerrainCollider() = default;
 public:
-	bool LoadFromFile(const ::std::filesystem::path& filePath);
+	bool LoadFromFile(const std::filesystem::path& filePath);
 	float GetHeight(float x, float z) const;
 
 private:

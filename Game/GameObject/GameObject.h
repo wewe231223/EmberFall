@@ -32,6 +32,8 @@ public:
 	MaterialIndex mMaterial{ 0 };
 
 	Animator mAnimator{};
+	AnimatorGraph::Animator mGraphAnimator{}; 
+
 	Collider mCollider{};
 private:
 	ModelContext mModelContext{};

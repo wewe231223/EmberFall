@@ -134,8 +134,8 @@ AnimationClip AnimationLoader::LoadClip(UINT animIndex) {
     aiNode* rootNode = mScene->mRootNode;
 
     AnimationClip clip{};
-    clip.duration = static_cast<float>(aiAnim->mDuration);
-    clip.ticksPerSecond = static_cast<float>(aiAnim->mTicksPerSecond != 0 ? aiAnim->mTicksPerSecond : 25.0f);
+    clip.duration = aiAnim->mDuration;
+    clip.ticksPerSecond = aiAnim->mTicksPerSecond != 0 ? aiAnim->mTicksPerSecond : 25.0;
 
     std::unordered_map<std::string, UINT> boneMap{};
     UINT boneNumbers{ 0 };
