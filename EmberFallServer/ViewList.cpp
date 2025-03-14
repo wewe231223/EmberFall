@@ -49,6 +49,11 @@ void ViewList::Update() {
 void ViewList::Send() {
     static size_t prevSendSize{ };
 
+    PacketSC::PacketPlayer playerPacket{
+        sizeof(PacketSC::PacketPlayer),
+        PacketType::PACKET_PLAYER,
+    };
+
     PacketSC::PacketObject objectPacket{ 
         sizeof(PacketSC::PacketObject), 
         PacketType::PACKET_OBJECT,
@@ -58,17 +63,19 @@ void ViewList::Send() {
     NetworkObjectIdType objectId{ };
     for (const auto& object : mObjectInRange) {
         objectId = object->GetId();
-        objectPacket.position = object->GetPosition();
-        //objectPacket.rotationYaw = ;
-
         if (objectId < INVALID_SESSION_ID) {
-            objectPacket.objId = objectId;
+            playerPacket.id = objectId;
+            playerPacket.position = object->GetPosition();
+            //playerPacket.rotationYaw = ;
+            mSessionManager->Send(mOwnerId, &playerPacket);
         }
         else {
             objectPacket.objId = objectId - OBJECT_ID_START;
+            objectPacket.position = object->GetPosition();
+            //objectPacket.rotationYaw = ;
+            mSessionManager->Send(mOwnerId, &objectPacket);
         }
 
-        mSessionManager->Send(mOwnerId, &objectPacket);
     }
 }
 

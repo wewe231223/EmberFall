@@ -172,6 +172,9 @@
     <ClCompile Include="Item.cpp">
       <Filter>Script\Item&amp;Skill</Filter>
     </ClCompile>
+    <ClCompile Include="PacketProcessFunctions.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -269,6 +272,9 @@
     </ClInclude>
     <ClInclude Include="Item.h">
       <Filter>Script\Item&amp;Skill</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketProcessFunctions.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

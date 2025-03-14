@@ -5,27 +5,29 @@ using PacketTypeT = uint8_t;  // 255
 using SenderIdType = SessionIdType;
 
 // Protocol version - ver 1.0
-inline uint8_t PROTOCOL_VERSION_MAJOR = 1;
-inline uint8_t PROTOCOL_VERSION_MINOR = 0;
+inline constexpr uint8_t PROTOCOL_VERSION_MAJOR = 1;
+inline constexpr uint8_t PROTOCOL_VERSION_MINOR = 0;
+inline constexpr PacketTypeT PACKET_CS_START = 0x00;
+inline constexpr PacketTypeT PACKET_SC_START = 0x81;
 
 // 0x00 - Packet Protocol Version
 // 0x01 ~ Client To Server
 // 0x81 ~ Server To Client
 namespace PacketType {
-    enum PacketCommon : PacketTypeT {
-        PACKET_PROTOCOL_VERSION = 0x00
-    };
-
     enum PacketCS : PacketTypeT {
-        PACKET_KEYINPUT = 0x01,
+        PACKET_KEYINPUT = 0x00,
         PACKET_CAMERA,
         PACKET_REQUEST_ATTACK,
         PACKET_SELECT_ROLE,
         PACKET_SELECT_WEAPON,
+        PACKET_EXIT,
+        PACKET_CS_COUNT // Count Enum
     };
 
     enum PacketSC : PacketTypeT {
-        PACKET_NOTIFY_ID = 0x81,
+        PACKET_PROTOCOL_VERSION = 0x81,
+        PACKET_NOTIFY_ID,
+        PACKET_PLAYER,
         PACKET_OBJECT,
         PACKET_OBJECT_APPEARED,
         PACKET_OBJECT_DISAPPEARED,
@@ -34,6 +36,8 @@ namespace PacketType {
         PAKCET_ACQUIRED_ITEM,
         PACKET_USE_ITEM,
         PACKET_RESTORE_HEALTH,
+        PACKET_PLAYER_EXIT,
+        PACKET_SC_COUNT // Count Enum
     };
 }
 
@@ -47,14 +51,14 @@ enum Weapon : uint8_t {
 };
 
 enum EntityType : uint8_t {
-    Boss,
-    Player,
-    Monster1,
-    Monster2,
-    Monster3,
-    Item_HolyWater,
-    Item_Cross,
-    Item_Potion
+    BOSS,
+    PLAYER,
+    MONSTER1,
+    MONSTER2,
+    MONSTER3,
+    ITEM_HOLYWATER,
+    ITEM_CROSS,
+    ITEM_POTION
 };
 
 struct PacketHeader {
@@ -70,6 +74,11 @@ struct PacketProtocolVersion : public PacketHeader {
 
 namespace PacketSC { // Server To Client
     struct PacketNotifyId : public PacketHeader { };
+
+    struct PacketPlayer : public PacketHeader { 
+        float rotationYaw;
+        SimpleMath::Vector3 position;
+    };
 
     struct PacketObject : public PacketHeader {
         NetworkObjectIdType objId;
@@ -109,6 +118,9 @@ namespace PacketSC { // Server To Client
     struct PacketRestoreHP : public PacketHeader {
         float HP;
     };
+
+
+    struct PacketPlayerExit : public PacketHeader { };
 }
 
 namespace PacketCS { // Client To Server
@@ -133,5 +145,7 @@ namespace PacketCS { // Client To Server
     struct PacketSelectWeapon : public PacketHeader {
         Weapon weapon;
     };
+    
+    struct PacketExit : public PacketHeader { };
 }
 #pragma pack(pop)

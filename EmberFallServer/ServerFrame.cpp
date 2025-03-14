@@ -26,24 +26,26 @@ ServerFrame::~ServerFrame() {
     mServerCore->End();
 }
 
+std::shared_ptr<class InputManager> ServerFrame::GetInputManager() const {
+    return mInputManager;
+}
+
 void ServerFrame::InitGameScenes() {
     mGameScenes.emplace_back(std::make_shared<PlayScene>());
 
     mCurrentScene = mGameScenes.front();
     mCurrentScene->Init();
-    //mTimer->Sync(30);
+    mCurrentScene->RegisterPacketProcessFunctions();
     StaticTimer::Sync(30);
 }
 
 void ServerFrame::GameLoop() {
     while (true) {
         StaticTimer::Update();
-        //mTimer->Update();
-        //const float deltaTime = mTimer->GetDeltaTime();
         const float deltaTime = StaticTimer::GetDeltaTime();
 
         mCurrentScene->DispatchPlayerEvent(mPlayerEventQueue);
-        mCurrentScene->ProcessPackets(mServerCore, mInputManager);
+        mCurrentScene->ProcessPackets(mServerCore);
         mCurrentScene->Update(deltaTime);
         mCurrentScene->LateUpdate(deltaTime);
     }

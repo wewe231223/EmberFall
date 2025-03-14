@@ -28,4 +28,5 @@
 #include "../ServerLib/GameProtocol.h"
 
 // Global Instance
+extern std::unique_ptr<class ServerFrame> gServerFrame;
 extern std::shared_ptr<class GameEventManager> gEventManager;

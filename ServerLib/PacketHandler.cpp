@@ -62,6 +62,10 @@ void RecvBuffer::Reset() {
     mReadPos = 0;
 }
 
+PacketHeader* RecvBuffer::GetCurrPosToHeader() {
+    return reinterpret_cast<PacketHeader*>(&mBuffer[mReadPos]);
+}
+
 size_t RecvBuffer::Size() const {
     return mWritePos.load();
 }

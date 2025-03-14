@@ -19,6 +19,8 @@ public:
     ~ServerFrame();
 
 public:
+    std::shared_ptr<class InputManager> GetInputManager() const;
+
     void InitGameScenes();
     void GameLoop();
 
@@ -29,8 +31,7 @@ private:
 private:
     bool mDone{ };
     std::shared_ptr<class ServerCore> mServerCore{ nullptr };
-    //std::shared_ptr<class GameTimer> mTimer{ };
-
+    
     std::vector<std::shared_ptr<class IServerGameScene>> mGameScenes{ };
     std::shared_ptr<class IServerGameScene> mCurrentScene{ };
 

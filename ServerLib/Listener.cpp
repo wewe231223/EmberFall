@@ -99,7 +99,7 @@ void Listener::ProcessAccept() {
         };
         sessionManager->Send(session->GetId(), &notifyingId);
 
-        PacketProtocolVersion protocolVersion;
+        PacketProtocolVersion protocolVersion{ sizeof(PacketProtocolVersion), PacketType::PACKET_PROTOCOL_VERSION, { } };
         sessionManager->Send(session->GetId(), &protocolVersion);
 
         gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Client [IP: {}, PORT: {}] Connected", ip, port);

@@ -20,8 +20,8 @@ public:
         TimerEvent(EventCallBack&& callback, TimePoint timeRegistered, Duration time, int32_t loopCount);
         ~TimerEvent();
 
-        TimerEvent(const TimerEvent& other) = delete;
-        TimerEvent& operator=(const TimerEvent& other) = delete;
+        TimerEvent(const TimerEvent&) = delete;
+        TimerEvent& operator=(const TimerEvent&) = delete;
 
         TimerEvent(TimerEvent&& other) noexcept;
         TimerEvent& operator=(TimerEvent&& other) noexcept;

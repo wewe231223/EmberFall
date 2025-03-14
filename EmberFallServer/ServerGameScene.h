@@ -39,6 +39,11 @@
 
 class GameObject;
 
+using PlayerList = std::vector<std::shared_ptr<GameObject>>;
+using PlayerMap = std::unordered_map<SessionIdType, std::shared_ptr<GameObject>>;
+
+using ObjectList = std::vector<std::shared_ptr<GameObject>>;
+
 class IServerGameScene abstract : public std::enable_shared_from_this<IServerGameScene> {
 public:
     // ServerScene에서 한번에 처리할 수 있는 EVENT (5번의 try_pop)
@@ -49,24 +54,26 @@ public:
     virtual ~IServerGameScene();
 
 public:
-    std::vector<std::shared_ptr<GameObject>>& GetPlayers();
-    virtual std::vector<std::shared_ptr<GameObject>>& GetObjects() abstract;
+    PlayerList& GetPlayers();
+    virtual ObjectList& GetObjects() abstract;
     virtual std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) abstract;
 
     virtual void Init() abstract;
 
     virtual void DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerEvent>& eventQueue);
 
-    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) abstract;
+    virtual void RegisterPacketProcessFunctions() abstract;
+    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) abstract;
     virtual void Update(const float deltaTime) abstract;
     virtual void LateUpdate(const float deltaTime) abstract;
 
     virtual void AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject);
-    virtual void ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject);
+    virtual void ExitPlayer(SessionIdType id);
 
 protected:
-    std::vector<std::shared_ptr<GameObject>> mPlayerList{ };
-    std::unordered_map<SessionIdType, std::shared_ptr<GameObject>> mPlayers{ };
+    ServerPacketProcessor mPacketProcessor{ };
+    PlayerList mPlayerList{ };
+    PlayerMap mPlayers{ };
 };
 
 class PlayScene : public IServerGameScene {
@@ -77,20 +84,21 @@ public:
     ~PlayScene();
 
 public:
-    virtual std::vector<std::shared_ptr<GameObject>>& GetObjects() override;
+    virtual ObjectList& GetObjects() override;
     virtual std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) override;
 
     virtual void Init() override;
 
-    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) override;
+    virtual void RegisterPacketProcessFunctions() override;
+    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) override;
     virtual void Update(const float deltaTime) override;
     virtual void LateUpdate(const float deltaTime) override;
 
     virtual void AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) override;
-    virtual void ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) override;
+    virtual void ExitPlayer(SessionIdType id) override;
 
 private:
-    std::vector<std::shared_ptr<GameObject>> mObjects{ };
+    ObjectList mObjects{ };
 
     std::shared_ptr<class Terrain> mTerrain{ };
     TerrainCollider mTerrainCollider{ };

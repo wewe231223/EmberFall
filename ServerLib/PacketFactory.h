@@ -8,9 +8,11 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "MemoryPool.h"
+#include "SessionManager.h"
+
 class PacketFactory {
 public:
-    template <typename PacketType> requires std::derived_from<PacketType, PacketHeader>
-    static void SendPacket() {}
+
 };
 

@@ -9,12 +9,17 @@
 #include "PlayerScript.h"
 #include "MonsterScript.h"
 #include "CorruptedGem.h"
+#include "ServerFrame.h"
+
+#include "PacketProcessFunctions.h"
 
 IServerGameScene::IServerGameScene() { }
 
-IServerGameScene::~IServerGameScene() { }
+IServerGameScene::~IServerGameScene() { 
+    mPacketProcessor.Clear();
+}
 
-std::vector<std::shared_ptr<GameObject>>& IServerGameScene::GetPlayers() {
+PlayerList& IServerGameScene::GetPlayers() {
     return mPlayerList;
 }
 
@@ -31,7 +36,7 @@ void IServerGameScene::DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerE
             break;
 
         case PlayerEvent::EventType::DISCONNECT:
-            ExitPlayer(event.id, event.player);
+            ExitPlayer(event.id);
             break;
 
         default:
@@ -46,13 +51,13 @@ void IServerGameScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> p
     mPlayerList.push_back(playerObject);
 }
 
-void IServerGameScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
+void IServerGameScene::ExitPlayer(SessionIdType id) {
     auto it = mPlayers.find(id);
     if (it == mPlayers.end()) {
         return;
     }
 
-    auto objSearch = std::find(mPlayerList.begin(), mPlayerList.end(), playerObject);
+    auto objSearch = std::find(mPlayerList.begin(), mPlayerList.end(), it->second);
     std::swap(*objSearch, mPlayerList.back());
     mPlayerList.pop_back();
 
@@ -63,7 +68,7 @@ PlayScene::PlayScene() { }
 
 PlayScene::~PlayScene() { }
 
-std::vector<std::shared_ptr<class GameObject>>& PlayScene::GetObjects() {
+ObjectList& PlayScene::GetObjects() {
     return mObjects;
 }
 
@@ -81,7 +86,7 @@ void PlayScene::Init() {
     mTerrainCollider.SetTerrain(mTerrain);
 
     mObjects.resize(MAX_OBJECT);
-    for (size_t id{ 0 }; auto & object : mObjects) {
+    for (NetworkObjectIdType id{ 0 }; auto & object : mObjects) {
         object = std::make_shared<GameObject>(shared_from_this());
         object->InitId(OBJECT_ID_START + id);
         ++id;
@@ -104,44 +109,30 @@ void PlayScene::Init() {
     }
 }
 
-void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<InputManager>& inputManager) {
+void PlayScene::RegisterPacketProcessFunctions() {
+    mPacketProcessor.RegisterProcessFn(PacketType::PACKET_KEYINPUT,
+        [=](PacketHeader* header) { ProcessPacketKeyInput(header, gServerFrame->GetInputManager()); });
+
+    mPacketProcessor.RegisterProcessFn(PacketType::PACKET_CAMERA,
+        [=](PacketHeader* header) { ProcessPacketCamera(header, mPlayers); });
+
+    mPacketProcessor.RegisterProcessFn(PacketType::PACKET_EXIT,
+        [=](PacketHeader* header) { ProcessPacketCamera(header, mPlayers); });
+
+    mPacketProcessor.RegisterProcessFn(PacketType::PACKET_REQUEST_ATTACK,
+        [=](PacketHeader* header) { ProcessPacketCamera(header, mPlayers); });
+
+    mPacketProcessor.RegisterProcessFn(PacketType::PACKET_SELECT_ROLE,
+        [=](PacketHeader* header) { ProcessPacketCamera(header, mPlayers); });
+
+    mPacketProcessor.RegisterProcessFn(PacketType::PACKET_SELECT_WEAPON,
+        [=](PacketHeader* header) { ProcessPacketCamera(header, mPlayers); });
+}
+
+void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
     auto packetHandler = serverCore->GetPacketHandler();
     auto& buffer = packetHandler->GetBuffer();
-    if (0 == buffer.Size()) {
-        return;
-    }
-
-    PacketHeader header{ };
-    while (not buffer.IsReadEnd()) {
-        buffer.Read(header);
-        if (not mPlayers.contains(header.id)) {
-            buffer.AdvanceReadPos(header.size);
-            break;
-        }
-        
-        switch (header.type) {
-        case PacketType::PACKET_KEYINPUT:
-            {
-                PacketCS::PacketKeyInput inputPacket;  
-                buffer.Read(inputPacket);
-                auto input = inputManager->GetInput(inputPacket.id);
-                input->UpdateInput(inputPacket.key, inputPacket.down);
-            }
-            break;
-
-        case PacketType::PACKET_CAMERA:
-            {
-                PacketCS::PacketCamera obj;
-                buffer.Read(obj);
-                mPlayers[obj.id]->GetTransform()->LookAt(obj.look);
-            }
-        break;
-
-        default:
-            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "PacketError Size: {}, Type: {}", header.size, header.type);
-            break;
-        }
-    }
+    mPacketProcessor.ProcessPackets(buffer);
 }
 
 void PlayScene::Update(const float deltaTime) {
@@ -181,16 +172,16 @@ void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerOb
     playerObject->Init();
 }
 
-void PlayScene::ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
+void PlayScene::ExitPlayer(SessionIdType id) {
     auto it = mPlayers.find(id);
     if (it == mPlayers.end()) {
         return;
     }
 
-    auto objSearch = std::find(mPlayerList.begin(), mPlayerList.end(), playerObject);
+    auto objSearch = std::find(mPlayerList.begin(), mPlayerList.end(), it->second);
     std::swap(*objSearch, mPlayerList.back());
     mPlayerList.pop_back();
 
-    mTerrainCollider.RemoveObjectFromTerrainGroup(playerObject);
+    mTerrainCollider.RemoveObjectFromTerrainGroup(it->second);
     mPlayers.erase(it);
 }

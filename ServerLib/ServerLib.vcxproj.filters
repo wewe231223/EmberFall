@@ -88,6 +88,9 @@
     <ClCompile Include="PacketFactory.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="PacketProcessor.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkUtils.h">
@@ -157,6 +160,9 @@
       <Filter>Common</Filter>
     </ClInclude>
     <ClInclude Include="PacketFactory.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketProcessor.h">
       <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>

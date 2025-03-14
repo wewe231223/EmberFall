@@ -166,6 +166,7 @@
     <ClInclude Include="OverlappedEx.h" />
     <ClInclude Include="PacketFactory.h" />
     <ClInclude Include="PacketHandler.h" />
+    <ClInclude Include="PacketProcessor.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Protocol.h" />
     <ClInclude Include="SendBuffers.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="OverlappedEx.cpp" />
     <ClCompile Include="PacketFactory.cpp" />
     <ClCompile Include="PacketHandler.cpp" />
+    <ClCompile Include="PacketProcessor.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -33,6 +33,8 @@ public:
     void Move(const SimpleMath::Vector3& moveVec);
     //void Move(const SimpleMath::Vector3& dir, float force);
 
+    void SetLook(const SimpleMath::Vector3& lookVec);
+
     void LookAt(const SimpleMath::Vector3& target);
     void LookAtSmoothly(const SimpleMath::Vector3& target, float lerpFactor);
 
