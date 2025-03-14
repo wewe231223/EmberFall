@@ -78,10 +78,10 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		mPlayer.GetTransform().Translate({ 0.f,20.f,0.f });
 		mPlayer.mAnimator = Animator(animationData);
 
-		std::vector<const AnimationClip*> clips{ mAnimationMap["Man"].GetClip(29), mAnimationMap["Man"].GetClip(27) };
+		std::vector<const AnimationClip*> clips{ mAnimationMap["Man"].GetClip(29), mAnimationMap["Man"].GetClip(31) };
 		mPlayer.mGraphAnimator = AnimatorGraph::Animator(clips);
 
-
+		const size_t step = 0;
 		int sign = NonReplacementSampler::GetInstance().Sample();
 
 		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, sign, [this]() {
@@ -99,14 +99,50 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, sign, [this]() {
 			mPlayer.GetTransform().Translate({ -0.1f, 0.f, 0.f });
 			});
-
-		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::Space, sign, [this]() {
-			mPlayer.mGraphAnimator.TransitionToClip(1);
+	
+		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D1, sign, [this]() {
+			mPlayer.mGraphAnimator.TransitionToClip(step);
 			});
 
-		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::T, sign, [this]() {
-			mPlayer.mGraphAnimator.TransitionToClip(0);
+		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D2, sign, [this]() {
+			mPlayer.mGraphAnimator.TransitionToClip(step + 1);
 			});
+
+		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D3, sign, [this]() {
+			mPlayer.mGraphAnimator.TransitionToClip(step + 2);
+			});
+
+		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D4, sign, [this]() {
+			mPlayer.mGraphAnimator.TransitionToClip(step + 3);
+			});
+
+		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D5, sign, [this]() {
+			mPlayer.mGraphAnimator.TransitionToClip(step + 4);
+			});
+
+		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D6, sign, [this]() {
+			mPlayer.mGraphAnimator.TransitionToClip(step + 5);
+			});
+
+		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D7, sign, [this]() {
+			mPlayer.mGraphAnimator.TransitionToClip(step + 6);
+			});
+
+		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D8, sign, [this]() {
+			mPlayer.mGraphAnimator.TransitionToClip(step + 7);
+			});
+
+		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D9, sign, [this]() {
+			mPlayer.mGraphAnimator.TransitionToClip(step + 8);
+			});
+
+		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D0, sign, [this]() {
+			mPlayer.mGraphAnimator.TransitionToClip(step + 9);
+			});
+
+
+
+
 	}
 
 
