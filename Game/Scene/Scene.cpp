@@ -78,7 +78,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		mPlayer.GetTransform().Translate({ 0.f,20.f,0.f });
 		mPlayer.mAnimator = Animator(animationData);
 
-		std::vector<const AnimationClip*> clips{ mAnimationMap["Man"].GetClip(29), mAnimationMap["Man"].GetClip(13) };
+		std::vector<const AnimationClip*> clips{ mAnimationMap["Man"].GetClip(29), mAnimationMap["Man"].GetClip(27) };
 		mPlayer.mGraphAnimator = AnimatorGraph::Animator(clips);
 
 

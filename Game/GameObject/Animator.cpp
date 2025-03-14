@@ -279,3 +279,201 @@ SimpleMath::Vector3 Animator::InterpolateScaling(double AnimationTime, const Bon
     return start + factor * delta;
 }
 
+namespace AnimatorGraph {
+
+    Animator::Animator(const std::vector<const AnimationClip*>& clips) : mClips(clips) {}
+
+    void Animator::UpdateBoneTransform(double deltaTime, BoneTransformBuffer& boneTransforms) {
+        const AnimationClip* clip = mClips[mCurrentClipIndex];
+        if (mTransitioning) {
+            double blendFactor = mTransitionTime / mTransitionDuration;
+
+            double tick = mCurrentTime * clip->ticksPerSecond;
+            double normTime = std::fmod(tick / clip->duration, 1.0);
+            double currentAnimTime = normTime * clip->duration;
+
+            ReadNodeHeirarchyTransition(currentAnimTime, 0.0, blendFactor, clip->root.get(), DirectX::SimpleMath::Matrix::Identity, boneTransforms.boneTransforms);
+            boneTransforms.boneCount = static_cast<UINT>(clip->boneOffsetMatrices.size());
+            mTransitionTime += deltaTime;
+
+            if (mTransitionTime >= mTransitionDuration) {
+                mTransitioning = false;
+                mCurrentClipIndex = mTargetClipIndex;
+                mCurrentTime = 0.0;
+            }
+        }
+        else {
+            mCurrentTime += deltaTime;
+
+            double tick = mCurrentTime * clip->ticksPerSecond;
+            double normTime = std::fmod(tick / clip->duration, 1.0);
+            double animationTime = normTime * clip->duration;
+
+            if (normTime >= 0.99) {
+                TransitionToClip(0);
+            }
+            ComputeBoneTransforms(clip, animationTime, boneTransforms);
+        }
+    }
+
+    void Animator::TransitionToClip(size_t clipIndex) {
+        if (clipIndex < mClips.size() && clipIndex != mCurrentClipIndex) {
+            mTargetClipIndex = clipIndex;
+            mTransitioning = true;
+            mTransitionTime = 0.0;
+        }
+    }
+
+    void Animator::ComputeBoneTransforms(const AnimationClip* clip, double animationTime, BoneTransformBuffer& boneTransforms) {
+        DirectX::SimpleMath::Matrix identity = DirectX::SimpleMath::Matrix::Identity;
+        ReadNodeHeirarchy(animationTime, clip->root.get(), identity, boneTransforms.boneTransforms, clip);
+        boneTransforms.boneCount = static_cast<UINT>(clip->boneOffsetMatrices.size());
+    }
+
+    void Animator::ReadNodeHeirarchy(double AnimationTime, BoneNode* node, const DirectX::SimpleMath::Matrix& ParentTransform, std::array<DirectX::SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<>>& boneTransforms, const AnimationClip* clip) {
+        if (!node) return;
+        DirectX::SimpleMath::Matrix nodeTransform = node->transformation;
+
+        auto anim = clip->boneAnimations.find(node->index);
+        if (anim != clip->boneAnimations.end()) {
+            const BoneAnimation& boneAnim = anim->second;
+            DirectX::SimpleMath::Vector3 pos = InterpolatePosition(AnimationTime, boneAnim);
+            DirectX::SimpleMath::Quaternion rot = InterpolateRotation(AnimationTime, boneAnim);
+            DirectX::SimpleMath::Vector3 scale = InterpolateScaling(AnimationTime, boneAnim);
+            nodeTransform = DirectX::SimpleMath::Matrix::CreateScale(scale) * DirectX::SimpleMath::Matrix::CreateFromQuaternion(rot) * DirectX::SimpleMath::Matrix::CreateTranslation(pos);
+        }
+
+        DirectX::SimpleMath::Matrix globalTransform = nodeTransform * ParentTransform;
+
+        if (node->index != std::numeric_limits<UINT>::max()) {
+            auto result = clip->boneOffsetMatrices[node->index] * globalTransform * clip->globalInverseTransform;
+            boneTransforms[node->index] = result.Transpose();
+        }
+        for (auto& child : node->children) {
+            ReadNodeHeirarchy(AnimationTime, child.get(), globalTransform, boneTransforms, clip);
+        }
+    }
+
+    void Animator::ReadNodeHeirarchyTransition(double currentAnimTime, double targetAnimTime, double blendFactor, BoneNode* node, const DirectX::SimpleMath::Matrix& ParentTransform, std::array<DirectX::SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<>>& boneTransforms) {
+        if (!node) return;
+        TransformComponents currentComp{};
+        TransformComponents targetComp{};
+
+        auto current = mClips[mCurrentClipIndex]->boneAnimations.find(node->index);
+        if (current != mClips[mCurrentClipIndex]->boneAnimations.end()) {
+            const BoneAnimation& currentBoneAnim = current->second;
+            currentComp.translation = InterpolatePosition(currentAnimTime, currentBoneAnim);
+            currentComp.rotation = InterpolateRotation(currentAnimTime, currentBoneAnim);
+            currentComp.scale = InterpolateScaling(currentAnimTime, currentBoneAnim);
+        }
+        else {
+            DecomposeMatrix(node->transformation, currentComp);
+        }
+
+        auto target = mClips[mTargetClipIndex]->boneAnimations.find(node->index);
+        if (target != mClips[mTargetClipIndex]->boneAnimations.end()) {
+            const BoneAnimation& targetBoneAnim = target->second;
+            targetComp.translation = InterpolatePosition(targetAnimTime, targetBoneAnim);
+            targetComp.rotation = InterpolateRotation(targetAnimTime, targetBoneAnim);
+            targetComp.scale = InterpolateScaling(targetAnimTime, targetBoneAnim);
+        }
+        else {
+            DecomposeMatrix(node->transformation, targetComp);
+        }
+
+        DirectX::SimpleMath::Vector3 blendedTranslation = DirectX::SimpleMath::Vector3::Lerp(currentComp.translation, targetComp.translation, static_cast<float>(blendFactor));
+        DirectX::SimpleMath::Quaternion blendedRotation = DirectX::SimpleMath::Quaternion::Slerp(currentComp.rotation, targetComp.rotation, static_cast<float>(blendFactor));
+        DirectX::SimpleMath::Vector3 blendedScale = DirectX::SimpleMath::Vector3::Lerp(currentComp.scale, targetComp.scale, static_cast<float>(blendFactor));
+
+        DirectX::SimpleMath::Matrix blendednodeTransform = DirectX::SimpleMath::Matrix::CreateScale(blendedScale) * DirectX::SimpleMath::Matrix::CreateFromQuaternion(blendedRotation) * DirectX::SimpleMath::Matrix::CreateTranslation(blendedTranslation);
+        DirectX::SimpleMath::Matrix globalTransform = blendednodeTransform * ParentTransform;
+
+        if (node->index != std::numeric_limits<UINT>::max()) {
+            auto result = mClips[mCurrentClipIndex]->boneOffsetMatrices[node->index] * globalTransform * mClips[mCurrentClipIndex]->globalInverseTransform;
+            boneTransforms[node->index] = result.Transpose();
+        }
+
+        for (auto& child : node->children) {
+            ReadNodeHeirarchyTransition(currentAnimTime, targetAnimTime, blendFactor, child.get(), globalTransform, boneTransforms);
+        }
+    }
+
+    UINT Animator::FindPosition(double AnimationTime, const BoneAnimation& boneAnim) {
+        for (UINT i = 0; i < boneAnim.positionKey.size() - 1; i++) {
+            if (AnimationTime < boneAnim.positionKey[i + 1].first) {
+                return i;
+            }
+        }
+        return static_cast<UINT>(boneAnim.positionKey.size() - 2);
+    }
+
+    UINT Animator::FindRotation(double AnimationTime, const BoneAnimation& boneAnim) {
+        for (UINT i = 0; i < boneAnim.rotationKey.size() - 1; i++) {
+            if (AnimationTime < boneAnim.rotationKey[i + 1].first) {
+                return i;
+            }
+        }
+        return static_cast<UINT>(boneAnim.rotationKey.size() - 2);
+    }
+
+    UINT Animator::FindScaling(double AnimationTime, const BoneAnimation& boneAnim) {
+        for (UINT i = 0; i < boneAnim.scalingKey.size() - 1; i++) {
+            if (AnimationTime < boneAnim.scalingKey[i + 1].first) {
+                return i;
+            }
+        }
+        return static_cast<UINT>(boneAnim.scalingKey.size() - 2);
+    }
+
+    DirectX::SimpleMath::Vector3 Animator::InterpolatePosition(double AnimationTime, const BoneAnimation& boneAnim) {
+        if (boneAnim.positionKey.size() == 1) {
+            return boneAnim.positionKey[0].second;
+        }
+
+        UINT posIndex = FindPosition(AnimationTime, boneAnim);
+        UINT nextIndex = posIndex + 1;
+
+        float deltaTime = static_cast<float>(boneAnim.positionKey[nextIndex].first - boneAnim.positionKey[posIndex].first);
+        float factor = static_cast<float>(AnimationTime - boneAnim.positionKey[posIndex].first) / deltaTime;
+
+        DirectX::SimpleMath::Vector3 start = boneAnim.positionKey[posIndex].second;
+        DirectX::SimpleMath::Vector3 delta = boneAnim.positionKey[nextIndex].second - start;
+
+        return start + factor * delta;
+    }
+
+    DirectX::SimpleMath::Quaternion Animator::InterpolateRotation(double AnimationTime, const BoneAnimation& boneAnim) {
+        if (boneAnim.rotationKey.size() == 1) {
+            return boneAnim.rotationKey[0].second;
+        }
+
+        UINT rotIndex = FindRotation(AnimationTime, boneAnim);
+        UINT nextIndex = rotIndex + 1;
+
+        float deltaTime = static_cast<float>(boneAnim.rotationKey[nextIndex].first - boneAnim.rotationKey[rotIndex].first);
+        float factor = static_cast<float>(AnimationTime - boneAnim.rotationKey[rotIndex].first) / deltaTime;
+
+        DirectX::SimpleMath::Quaternion start = boneAnim.rotationKey[rotIndex].second;
+        DirectX::SimpleMath::Quaternion end = boneAnim.rotationKey[nextIndex].second;
+
+        return DirectX::SimpleMath::Quaternion::Slerp(start, end, factor);
+    }
+
+    DirectX::SimpleMath::Vector3 Animator::InterpolateScaling(double AnimationTime, const BoneAnimation& boneAnim) {
+        if (boneAnim.scalingKey.size() == 1) {
+            return boneAnim.scalingKey[0].second;
+        }
+
+        UINT scaleIndex = FindScaling(AnimationTime, boneAnim);
+        UINT nextIndex = scaleIndex + 1;
+
+        float deltaTime = static_cast<float>(boneAnim.scalingKey[nextIndex].first - boneAnim.scalingKey[scaleIndex].first);
+        float factor = static_cast<float>(AnimationTime - boneAnim.scalingKey[scaleIndex].first) / deltaTime;
+
+        DirectX::SimpleMath::Vector3 start = boneAnim.scalingKey[scaleIndex].second;
+        DirectX::SimpleMath::Vector3 delta = boneAnim.scalingKey[nextIndex].second - start;
+
+        return start + factor * delta;
+    }
+
+}
