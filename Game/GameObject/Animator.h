@@ -100,7 +100,7 @@ namespace AnimatorGraph {
 		bool mTransitioning{ false };
 
 		double mTransitionTime{ 0.0 };
-		double mTransitionDuration{ 0.09 };
+		double mTransitionDuration{ 0.09 }; // 애니메이션 전환 간격을 조정함
 		double mCurrentTime{ 0.0 };
 	};
 };
