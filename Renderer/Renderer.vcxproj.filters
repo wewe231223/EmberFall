@@ -118,6 +118,9 @@
     <FxCompile Include="..\Shader\Sources\Deffered.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="..\Shader\Sources\BoundingBoxRender.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\Shader\ShaderMetadata.txt">

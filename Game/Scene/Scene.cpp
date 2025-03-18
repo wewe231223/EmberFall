@@ -28,7 +28,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	Scene::BuildShader(device); 
 	Scene::BuildMesh(device, commandList);
 	Scene::BuildMaterial();
-	Scene::PaintTree(100); 
+
 
 
 	mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
@@ -68,88 +68,167 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 
 
-	mAnimationMap["Man"].Load("Resources/Assets/Knight/Knight.gltf");
-	auto animationData = mAnimationMap["Man"].GetClip(1);
+	mAnimationMap["Man"].Load("Resources/Assets/Knight/archer.gltf");
 
 	{
 		mPlayer.mShader = mShaderMap["SkinnedShader"].get();
 		mPlayer.mMesh = mMeshMap["T_Pose"].get();
 		mPlayer.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+		mPlayer.mAnimated = true;
 		mPlayer.GetTransform().Translate({ 0.f,20.f,0.f });
-		mPlayer.mAnimator = Animator(animationData);
 
-		// 0 부터 50 까지 존재
-		const UINT step = 30;
-		std::vector<const AnimationClip*> clips{ mAnimationMap["Man"].GetClip(29) };
-		for (UINT i = 0; i < 10; ++i) {
-			clips.push_back(mAnimationMap["Man"].GetClip(step + i));
+		std::vector<const AnimationClip*> clips{ mAnimationMap["Man"].GetClip(0), mAnimationMap["Man"].GetClip(1), mAnimationMap["Man"].GetClip(16), mAnimationMap["Man"].GetClip(3)};
+		
+
+		int sign = NonReplacementSampler::GetInstance().Sample();
+		static float speed = 0.01f;
+
+
+		std::vector<UINT> boneMask(69);
+		std::iota(boneMask.begin(), boneMask.begin() + 59, 0);
+		{
+			AnimatorGraph::BoneMaskAnimationState idleState{};
+			idleState.maskedClipIndex = 0;
+			idleState.nonMaskedClipIndex = 0;
+			idleState.name = "Idle";
+			
+			{
+				AnimatorGraph::AnimationTransition idleToRun{};
+				idleToRun.targetStateIndex = 1;
+				idleToRun.blendDuration = 0.09;
+				idleToRun.parameterName = "Run";
+				idleToRun.expectedValue = true;
+				idleToRun.triggerOnEnd = false;
+				idleState.transitions.emplace_back(idleToRun);
+			}
+
+			AnimatorGraph::BoneMaskAnimationState runState{};
+			runState.maskedClipIndex = 3;
+			runState.nonMaskedClipIndex = 3;
+			runState.name = "Run";
+
+			{
+				AnimatorGraph::AnimationTransition runToIdle{};
+				runToIdle.targetStateIndex = 0;
+				runToIdle.blendDuration = 0.09;
+				runToIdle.parameterName = "Run";
+				runToIdle.expectedValue = false;
+				runToIdle.triggerOnEnd = false;
+				runState.transitions.emplace_back(runToIdle);
+
+				AnimatorGraph::AnimationTransition runToAttack{};
+				runToAttack.targetStateIndex = 2;
+				runToAttack.blendDuration = 0.09;
+				runToAttack.parameterName = "Attack";
+				runToAttack.expectedValue = true;
+				runToAttack.triggerOnEnd = false;
+				runState.transitions.emplace_back(runToAttack);
+			}
+
+			AnimatorGraph::BoneMaskAnimationState runAttack{};
+			runAttack.maskedClipIndex = 2;
+			runAttack.nonMaskedClipIndex = 1;
+			runAttack.name = "Attack";
+
+			{
+				AnimatorGraph::AnimationTransition attackToRun{};
+				attackToRun.targetStateIndex = 1;
+				attackToRun.blendDuration = 0.3;
+				attackToRun.parameterName = "Run";
+				attackToRun.expectedValue = true;
+				attackToRun.triggerOnEnd = true;
+				runAttack.transitions.emplace_back(attackToRun);
+
+				AnimatorGraph::AnimationTransition attackToIdle{};
+				attackToIdle.targetStateIndex = 0;
+				attackToIdle.blendDuration = 0.2;
+				attackToIdle.parameterName = "Run";
+				attackToIdle.expectedValue = false;
+				attackToIdle.triggerOnEnd = true;
+				runAttack.transitions.emplace_back(attackToIdle);
+			}
+
+
+			
+
+
+			std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, runState,  runAttack };
+			mPlayer.mBoneMaskGraphController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
+			mPlayer.mBoneMaskGraphController.AddParameter("Run", AnimatorGraph::ParameterType::Bool);
+			mPlayer.mBoneMaskGraphController.AddParameter("Attack", AnimatorGraph::ParameterType::Trigger);
 		}
 
 
-		mPlayer.mGraphAnimator = AnimatorGraph::Animator(clips);
 
-		int sign = NonReplacementSampler::GetInstance().Sample();
+
+		AnimatorGraph::AnimationState idleState{}; 
+		idleState.stateIndex = 0;
+		idleState.name = "Idle";
+		idleState.clip = mAnimationMap["Man"].GetClip(0);
+		{
+			AnimatorGraph::AnimationTransition idleToRun{};
+			idleToRun.targetStateIndex = 1;
+			idleToRun.blendDuration = 0.09;
+			idleToRun.parameterName = "Speed";
+			idleToRun.expectedValue = true;
+			idleState.transitions.emplace_back(idleToRun);
+		}
+
+
+		AnimatorGraph::AnimationState stateRun;
+		stateRun.stateIndex = 1;
+		stateRun.name = "Run";
+		stateRun.clip = mAnimationMap["Man"].GetClip(3);
+		{
+			AnimatorGraph::AnimationTransition runToIdle;
+			runToIdle.targetStateIndex = 0;
+			runToIdle.blendDuration = 0.09;
+			runToIdle.parameterName = "Speed";
+			runToIdle.expectedValue = false;
+			stateRun.transitions.emplace_back(runToIdle);
+		}
+
+		std::vector<AnimatorGraph::AnimationState> states{ idleState, stateRun };
+
+
+		mPlayer.mGraphController = AnimatorGraph::AnimationGraphController(states);
+		mPlayer.mGraphController.AddParameter("Speed", AnimatorGraph::ParameterType::Bool);
+
+
 
 		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, sign, [this]() {
-			mPlayer.GetTransform().Translate({ 0.f, 0.f, -0.1f });
+			mPlayer.GetTransform().Translate({ 0.f, 0.f, -speed });
+			mPlayer.mGraphController.SetBool("Speed", true);
+			mPlayer.mBoneMaskGraphController.SetBool("Run", true);
+			});
+
+		Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::W, sign, [this]() {
+			mPlayer.mGraphController.SetBool("Speed", false);
+			mPlayer.mBoneMaskGraphController.SetBool("Run", false);
 			});
 
 		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::S, sign, [this]() {
-			mPlayer.GetTransform().Translate({ 0.f, 0.f, 0.1f });
+			mPlayer.GetTransform().Translate({ 0.f, 0.f, speed });
 			});
 
 		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, sign, [this]() {
-			mPlayer.GetTransform().Translate({ 0.1f, 0.f, 0.f });
+			mPlayer.GetTransform().Translate({ speed, 0.f, 0.f });
 			});
 
 		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, sign, [this]() {
-			mPlayer.GetTransform().Translate({ -0.1f, 0.f, 0.f });
+			mPlayer.GetTransform().Translate({ -speed, 0.f, 0.f });
 			});
 	
-		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D1, sign, [this]() {
-			mPlayer.mGraphAnimator.TransitionToClip(1);
+
+		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F, sign, [this]() {
+			mPlayer.mBoneMaskGraphController.SetTrigger("Attack");
+			speed = 0.005f;
 			});
 
-		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D2, sign, [this]() {
-			mPlayer.mGraphAnimator.TransitionToClip(2);
-			});
-
-		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D3, sign, [this]() {
-			mPlayer.mGraphAnimator.TransitionToClip(3);
-			});
-
-		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D4, sign, [this]() {
-			mPlayer.mGraphAnimator.TransitionToClip(4);
-			});
-
-		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D5, sign, [this]() {
-			mPlayer.mGraphAnimator.TransitionToClip(5);
-			});
-
-		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D6, sign, [this]() {
-			mPlayer.mGraphAnimator.TransitionToClip(6);
-			});
-
-		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D7, sign, [this]() {
-			mPlayer.mGraphAnimator.TransitionToClip(7);
-			});
-
-		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D8, sign, [this]() {
-			mPlayer.mGraphAnimator.TransitionToClip(8);
-			});
-
-		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D9, sign, [this]() {
-			mPlayer.mGraphAnimator.TransitionToClip(9);
-			});
-
-		Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D0, sign, [this]() {
-			mPlayer.mGraphAnimator.TransitionToClip(10);
-			});
-
-
-
-
+		Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::F, sign, [this]() { speed = 0.01f; });
 	}
+
+
 
 
 
@@ -215,8 +294,9 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 	mMeshMap["Cube"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Cube, 1);
 
-	data = Loader.Load("Resources/Assets/Knight/Knight.gltf");
+	data = Loader.Load("Resources/Assets/Knight/archer.gltf");
 	mMeshMap["T_Pose"] = std::make_unique<Mesh>(device, commandList, data);
+	mPlayer.mCollider = Collider{ data.position };
 
 	data = Loader.Load("Resources/Assets/Stone/Stone1.gltf");
 	mMeshMap["Stone1"] = std::make_unique<Mesh>(device, commandList, data);

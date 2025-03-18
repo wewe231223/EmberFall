@@ -1,4 +1,5 @@
 #pragma once 
+#include <variant>
 #include "../MeshLoader/Base/AnimationData.h"
 #include "../MeshLoader/Loader/AnimationLoader.h"
 #include "../Config/Config.h"
@@ -64,43 +65,193 @@ namespace AnimatorGraph {
         SimpleMath::Vector3 scale;
     };
 
+    enum class ParameterType {
+        Bool,
+        Int,
+        Float,
+        Trigger,
+        Always,
+    };
+
+    struct AnimationTransition {
+        size_t targetStateIndex;
+        double blendDuration;
+        std::string parameterName;
+        std::variant<bool, int, float> expectedValue;
+		bool triggerOnEnd{ false };
+    };
+
+    struct AnimationState {
+        size_t stateIndex;
+        std::string name;
+        const AnimationClip* clip;
+        std::vector<AnimationTransition> transitions;
+    };
+
+    class AnimationParameter {
+    public:
+        AnimationParameter(const std::string& name, ParameterType type);
+        AnimationParameter();
+
+        std::string name;
+        ParameterType type;
+
+        bool boolValue;
+        int intValue;
+        float floatValue;
+    };
+
+    struct BoneMaskAnimationState {
+        size_t maskedClipIndex;
+        size_t nonMaskedClipIndex;
+        std::string name;
+        std::vector<AnimationTransition> transitions;
+    };
+
     inline bool DecomposeMatrix(SimpleMath::Matrix& mat, TransformComponents& outComponents) {
         return mat.Decompose(outComponents.scale, outComponents.rotation, outComponents.translation);
     }
 
-	class Animator {
-	public:
-		Animator() = default;
-		Animator(const std::vector<const AnimationClip*>& clips);
-		~Animator() = default;
+    class Animator {
+    public:
+        Animator() = default;
+        Animator(const std::vector<const AnimationClip*>& clips);
+        ~Animator() = default;
 
-	public:
-		void UpdateBoneTransform(double deltaTime, BoneTransformBuffer& boneTransforms);
-		void TransitionToClip(size_t clipIndex);
+    public:
+        void UpdateBoneTransform(double deltaTime, BoneTransformBuffer& boneTransforms);
+        void TransitionToClip(size_t clipIndex);
 
-	private:
-		void ComputeBoneTransforms(const AnimationClip* clip, double animationTime, BoneTransformBuffer& boneTransforms);
-		void ReadNodeHeirarchy(double AnimationTime, BoneNode* node, const DirectX::SimpleMath::Matrix& ParentTransform, std::array<DirectX::SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<>>& boneTransforms, const AnimationClip* clip);
-		void ReadNodeHeirarchyTransition(double currentAnimTime, double targetAnimTime, double blendFactor, BoneNode* node, const DirectX::SimpleMath::Matrix& ParentTransform, std::array<DirectX::SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<>>& boneTransforms);
+		void SetTransitionDuration(double duration = 0.09);
+		double GetNormalizedTime();
+    private:
+        void ComputeBoneTransforms(const AnimationClip* clip, double animationTime, BoneTransformBuffer& boneTransforms);
+        void ReadNodeHeirarchy(double AnimationTime, BoneNode* node, const DirectX::SimpleMath::Matrix& ParentTransform, std::array<DirectX::SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<>>& boneTransforms, const AnimationClip* clip);
+        void ReadNodeHeirarchyTransition(double currentAnimTime, double targetAnimTime, double blendFactor, BoneNode* node, const DirectX::SimpleMath::Matrix& ParentTransform, std::array<DirectX::SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<>>& boneTransforms);
 
-		unsigned int FindPosition(double AnimationTime, const BoneAnimation& boneAnim);
-		unsigned int FindRotation(double AnimationTime, const BoneAnimation& boneAnim);
-		unsigned int FindScaling(double AnimationTime, const BoneAnimation& boneAnim);
+        unsigned int FindPosition(double AnimationTime, const BoneAnimation& boneAnim);
+        unsigned int FindRotation(double AnimationTime, const BoneAnimation& boneAnim);
+        unsigned int FindScaling(double AnimationTime, const BoneAnimation& boneAnim);
 
-		DirectX::SimpleMath::Vector3 InterpolatePosition(double AnimationTime, const BoneAnimation& boneAnim);
-		DirectX::SimpleMath::Quaternion InterpolateRotation(double AnimationTime, const BoneAnimation& boneAnim);
-		DirectX::SimpleMath::Vector3 InterpolateScaling(double AnimationTime, const BoneAnimation& boneAnim);
+        DirectX::SimpleMath::Vector3 InterpolatePosition(double AnimationTime, const BoneAnimation& boneAnim);
+        DirectX::SimpleMath::Quaternion InterpolateRotation(double AnimationTime, const BoneAnimation& boneAnim);
+        DirectX::SimpleMath::Vector3 InterpolateScaling(double AnimationTime, const BoneAnimation& boneAnim);
 
-	private:
-		std::vector<const AnimationClip*> mClips{};
+    private:
+        std::vector<const AnimationClip*> mClips{};
 
-		size_t mCurrentClipIndex{ 0 };
-		size_t mTargetClipIndex{ 0 };
+        size_t mCurrentClipIndex{ 0 };
+        size_t mTargetClipIndex{ 0 };
 
-		bool mTransitioning{ false };
+        bool mTransitioning{ false };
 
-		double mTransitionTime{ 0.0 };
-		double mTransitionDuration{ 0.09 }; // 애니메이션 전환 간격을 조정함
-		double mCurrentTime{ 0.0 };
-	};
+        double mTransitionTime{ 0.0 };
+        double mTransitionDuration{ 0.09 };
+        double mCurrentTime{ 0.0 };
+    };
+
+
+
+
+    class AnimationGraphController {
+    public:
+        AnimationGraphController() = default;
+        AnimationGraphController(const std::vector<AnimationState>& states);
+        ~AnimationGraphController() = default;
+
+        void Update(double deltaTime, BoneTransformBuffer& boneTransforms);
+
+        void AddParameter(const std::string& name, ParameterType type);
+
+        void SetBool(const std::string& name, bool value);
+        void SetInt(const std::string& name, int value);
+        void SetFloat(const std::string& name, float value);
+        void SetTrigger(const std::string& name);
+        void ResetTrigger(const std::string& name);
+
+        const AnimationParameter* GetParameter(const std::string& name) const;
+
+    private:
+        void EvaluateTransitions();
+
+        std::vector<AnimationState> mStates{};
+        std::unordered_map<std::string, AnimationParameter> mParameters{};
+        size_t mCurrentStateIndex{};
+        Animator mAnimator{};
+    };
+
+    class BoneMaskAnimator {
+    public:
+        BoneMaskAnimator();
+        BoneMaskAnimator(const std::vector<const AnimationClip*>& clips, const std::vector<unsigned int>& boneMask);
+    public:
+        void UpdateBoneTransforms(double deltaTime, BoneTransformBuffer& boneTransforms);
+        void TransitionMaskedToClip(size_t clipIndex);
+        void TransitionNonMaskedToClip(size_t clipIndex);
+        void SetTransitionDuration(double duration = 0.09);
+
+        double GetNormalizedTimeNonMasked();
+        double GetNormalizedTimeMasked();
+    private:
+        void ComputeBoneTransforms(double animTimeMasked, double animTimeNonMasked, BoneTransformBuffer& boneTransforms);
+        void ReadNodeHeirarchyTransition(double currentAnimTimeMasked, double currentAnimTimeNonMasked, double blendFactorMasked, double blendFactorNonMasked, BoneNode* node, const DirectX::SimpleMath::Matrix& parentTransform, BoneTransformBuffer& boneTransforms);
+
+        void ReadNodeHeirarchy(double animTimeMasked, double animTimeNonMasked, BoneNode* node, const DirectX::SimpleMath::Matrix& parentTransform, BoneTransformBuffer& boneTransforms);
+        unsigned int FindPosition(double AnimationTime, const BoneAnimation& boneAnim);
+        unsigned int FindRotation(double AnimationTime, const BoneAnimation& boneAnim);
+        unsigned int FindScaling(double AnimationTime, const BoneAnimation& boneAnim);
+
+        DirectX::SimpleMath::Vector3 InterpolatePosition(double AnimationTime, const BoneAnimation& boneAnim);
+        DirectX::SimpleMath::Quaternion InterpolateRotation(double AnimationTime, const BoneAnimation& boneAnim);
+        DirectX::SimpleMath::Vector3 InterpolateScaling(double AnimationTime, const BoneAnimation& boneAnim);
+    private:
+        std::vector<const AnimationClip*> mClips;
+        const AnimationClip* mDefaultClip;
+        const AnimationClip* mClipMasked;
+        const AnimationClip* mClipNonMasked;
+
+        bool mTransitioningMasked;
+        const AnimationClip* mTargetClipMasked;
+        double mTransitionTimeMaskedTransition;
+
+        bool mTransitioningNonMasked;
+        const AnimationClip* mTargetClipNonMasked;
+        double mTransitionTimeNonMaskedTransition;
+
+        double mTransitionDuration{ 0.09 };
+
+        std::unordered_set<unsigned int> mBoneMask;
+        std::shared_ptr<BoneNode> mRootNode;
+        double mCurrentTimeMasked{};
+        double mCurrentTimeNonMasked{};
+    };
+
+
+    class BoneMaskAnimationGraphController {
+    public:
+        BoneMaskAnimationGraphController() = default;
+        BoneMaskAnimationGraphController(const std::vector<const AnimationClip*>& clips,
+            const std::vector<UINT>& boneMask,
+            const std::vector<BoneMaskAnimationState>& states);
+        ~BoneMaskAnimationGraphController() = default;
+
+        void Update(double deltaTime, BoneTransformBuffer& boneTransforms);
+
+        void AddParameter(const std::string& name, ParameterType type);
+        void SetBool(const std::string& name, bool value);
+        void SetInt(const std::string& name, int value);
+        void SetFloat(const std::string& name, float value);
+        void SetTrigger(const std::string& name);
+        void ResetTrigger(const std::string& name);
+        const AnimationParameter* GetParameter(const std::string& name) const;
+
+    private:
+        void EvaluateTransitions();
+
+        BoneMaskAnimator mAnimator;
+        std::vector<BoneMaskAnimationState> mStates;
+        size_t mCurrentStateIndex;
+        std::unordered_map<std::string, AnimationParameter> mParameters;
+    };
+
 };

@@ -31,8 +31,9 @@ public:
 	GraphicsShaderBase* mShader{ nullptr };
 	MaterialIndex mMaterial{ 0 };
 
-	Animator mAnimator{};
-	AnimatorGraph::Animator mGraphAnimator{}; 
+	bool mAnimated{ false };
+	AnimatorGraph::AnimationGraphController mGraphController{};
+	AnimatorGraph::BoneMaskAnimationGraphController mBoneMaskGraphController{};
 
 	Collider mCollider{};
 private:

@@ -30,9 +30,9 @@ void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransform) {
 	static double counter{ 0.0 };
 	counter += 0.00000001;
 
-	if (mAnimator.GetActivated()) {
-		// mAnimator.UpdateBoneTransform(counter, boneTransform);
-		mGraphAnimator.UpdateBoneTransform(Time.GetDeltaTime(), boneTransform);
+	if (mAnimated) {
+		// mGraphController.Update(Time.GetDeltaTime(), boneTransform);
+		 mBoneMaskGraphController.Update(Time.GetDeltaTime(), boneTransform);
 	}
 
 	if (mCollider.GetActiveState()) {
@@ -44,5 +44,5 @@ void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransform) {
 }
 
 bool GameObject::GetAnimatorState() const {
-	return mAnimator.GetActivated();
+	return mAnimated; 
 }
