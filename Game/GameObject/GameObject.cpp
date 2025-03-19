@@ -26,20 +26,12 @@ void GameObject::ToggleActiveState() {
 	mActiveState = !mActiveState;
 }
 
-void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransform) {
-	static double counter{ 0.0 };
-	counter += 0.00000001;
-
-	if (mAnimated) {
-		// mGraphController.Update(Time.GetDeltaTime(), boneTransform);
-		 mBoneMaskGraphController.Update(Time.GetDeltaTime(), boneTransform);
-	}
+void GameObject::UpdateShaderVariables() {
+	mTransform.UpdateWorldMatrix();
 
 	if (mCollider.GetActiveState()) {
 		mCollider.UpdateBox(mTransform.GetWorldMatrix());
 	}
-
-	mTransform.UpdateWorldMatrix();
 	mModelContext.world = mTransform.GetWorldMatrix();
 }
 

@@ -70,9 +70,6 @@ void FreeCameraMode::Update() {
 
 	mCamera->GetTransform().GetRotation() = DirectX::SimpleMath::Quaternion::Identity;
 
-//	Console.Log("x : {} , y : {} ", LogType::Info, Input.GetDeltaMouseX(), Input.GetDeltaMouseY());
-
-
 	static float yaw = 0.f;
 	static float pitch = 0.f;
 
@@ -105,10 +102,31 @@ void TPPCameraMode::Update() {
 	auto forward = mTargetTransform.GetForward();
 	auto right = mTargetTransform.GetRight();
 	auto up = mTargetTransform.GetUp();
-
-	//	mCamera->GetTransform().ResetRotation();
 	mCamera->GetTransform().SetPosition(mTargetTransform.GetPosition() + DirectX::SimpleMath::Vector3{ mOffset.x * right + mOffset.y * up + mOffset.z * forward });
-	mCamera->GetTransform().Look(mTargetTransform);
+
+	mCamera->GetTransform().GetRotation() = DirectX::SimpleMath::Quaternion::Identity;
+
+	// 목표 방향 벡터 계산 (XZ 평면에서)
+	DirectX::SimpleMath::Vector3 direction = mTargetTransform.GetPosition() - mCamera->GetTransform().GetPosition();
+	direction.y = 0; // Y축 성분 제거하여 수평 회전만 고려
+	direction.Normalize();
+
+	// Yaw 회전 계산
+	float yaw = std::atan2(direction.x, direction.z);
+
+	static float pitch = 0.f;
+
+	pitch += Input.GetDeltaMouseY() * Time.GetSmoothDeltaTime<float>() * 0.7f;
+
+	if (pitch > DirectX::XMConvertToRadians(30.f)) {
+		pitch = DirectX::XMConvertToRadians(30.f);
+	}
+	if (pitch < DirectX::XMConvertToRadians(-30.f)) {
+		pitch = DirectX::XMConvertToRadians(-30.f);
+	}
+
+	mCamera->GetTransform().Rotate(pitch, yaw, 0.f);
+
 }
 
 ECameraMode TPPCameraMode::GetMode() const {

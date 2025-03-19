@@ -1,5 +1,7 @@
 #pragma once
 
+#ifndef Crash 
+
 #pragma region MACRO_CRASH
 #define CrashExp(expression, cause)         \
 {                                           \
@@ -16,5 +18,6 @@
     __analysis_assume(p != nullptr);        \
     *p = 0;                                 \
 }
+#endif 
 
 #pragma endregion

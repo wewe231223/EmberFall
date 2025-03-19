@@ -24,7 +24,7 @@ public:
 	void SetActiveState(bool state); 
 	void ToggleActiveState();
 
-	void UpdateShaderVariables(BoneTransformBuffer& boneTransform); 
+	void UpdateShaderVariables(); 
 	bool GetAnimatorState() const;
 public:
 	Mesh* mMesh{ nullptr };

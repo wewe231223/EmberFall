@@ -9,6 +9,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include <cassert>
 
+#ifndef Crash 
 #pragma region MACRO_CRASH
 #define CrashExpRelease(expression, cause)  \
 {                                           \
@@ -33,5 +34,6 @@
 #define Crash(cause) CrashRelease((cause))
 #define CrashExp(expression, cause) CrashExpRelease(expression, cause)
 #endif
+#endif 
 
 #pragma endregion
