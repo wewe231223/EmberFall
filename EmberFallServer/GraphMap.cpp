@@ -8,7 +8,7 @@ Graphs::GraphMap::GraphMap(const std::shared_ptr<Terrain>& terrain) {
     mMapLeftBottom = terrain->GetMapLeftBottom();
     size_t mapWidth = static_cast<size_t>(mMapSize.x);
     size_t mapHeight = static_cast<size_t>(mMapSize.y);
-    mMaxIdx = static_cast<NodeIdx>(mapWidth * mapHeight);
+    mMaxIdx = static_cast<Graph::IndexType>(mapWidth * mapHeight);
 
     // 방향 벡터 (상, 하, 좌, 우, 대각선)
     constexpr Graph::IndexType dx[8] = { 0,  0, -1,  1, -1, -1,  1,  1 };
@@ -20,11 +20,11 @@ Graphs::GraphMap::GraphMap(const std::shared_ptr<Terrain>& terrain) {
             Graph::IndexType currNode = static_cast<Graph::IndexType>(mapWidth * y + x);
 
             for (Graph::IndexType dir = 0; dir < 8; ++dir) {
-                int nx = static_cast<int>(x) + dx[dir];
-                int ny = static_cast<int>(y) + dy[dir];
+                int32_t nx = static_cast<int32_t>(x) + dx[dir];
+                int32_t ny = static_cast<int32_t>(y) + dy[dir];
 
-                if (nx >= 0 and nx < static_cast<int>(mapWidth)
-                    and ny >= 0 and ny < static_cast<int>(mapHeight)) {
+                if (nx >= 0 and nx < static_cast<int32_t>(mapWidth)
+                    and ny >= 0 and ny < static_cast<int32_t>(mapHeight)) {
 
                     size_t neighborNode = mapWidth * ny + nx;
                     mGraph.AddEdge(currNode, static_cast<Graph::IndexType>(neighborNode));
