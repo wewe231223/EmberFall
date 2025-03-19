@@ -6,7 +6,7 @@
 #include "../Game/Scene/Camera.h"
 #include "../Game/GameObject/Animator.h"
 #include "../MeshLoader/Loader/TerrainLoader.h"
-
+#include "../MeshLoader/Baker/ColliderBaker.h"
 
 class Scene {
 public:
@@ -34,11 +34,14 @@ private:
 	std::vector<GameObject> mGameObjects{};
 
 	GameObject mPlayer{}; 
+	GameObject mWeapon{}; 
 
 	GameObject mSkyBox{}; 
 
 	TerrainLoader tLoader{}; 
 	TerrainCollider tCollider{};
+
+	ColliderBaker mColliderBaker{}; 
 
 	TextBlock* mPickedObjectText{ TextBlockManager::GetInstance().CreateTextBlock(L"",D2D1_RECT_F{100.f,0.f,800.f,100.f},StringColor::Black, "NotoSansKR") };
 };

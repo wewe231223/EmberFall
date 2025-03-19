@@ -20,6 +20,12 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 //	SimulateTessellationAndWriteFile("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", "Resources/Binarys/Terrain/TerrainBaked.bin");
 	tCollider.LoadFromFile("Resources/Binarys/Terrain/TerrainBaked.bin");
 
+	//if (std::filesystem::exists("Resources/Binarys/Collider/Collider.bin")) {
+	//	auto size = std::filesystem::file_size("Resources/Binarys/Collider/Collider.bin");
+	//	::DebugBreak(); 
+	//}
+
+	//mColliderBaker.Load("Resources/Binarys/Collider/Collider.bin");
 
 	mMeshRenderManager = std::get<0>(managers);
 	mTextureManager = std::get<1>(managers);
@@ -35,14 +41,18 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
 	mSkyBox.mMaterial = mMaterialManager->GetMaterial("SkyBoxMaterial");
 
-	//{
-	//	auto& object = mGameObjects.emplace_back();
-	//	object.mShader = mShaderMap["StandardShader"].get();
-	//	object.mMesh = mMeshMap["Cube"].get();
-	//	object.mMaterial = mMaterialManager->GetMaterial("AreaMat");
-	//	object.GetTransform().GetPosition() = { 0.f,0.f,0.f };
-	//	object.GetTransform().Scaling(500.f, 500.f, 500.f);
-	//}
+	{
+		auto& object = mGameObjects.emplace_back();
+		object.mShader = mShaderMap["StandardShader"].get();
+		object.mMesh = mMeshMap["Cube"].get();
+		object.mMaterial = mMaterialManager->GetMaterial("AreaMat");
+		object.GetTransform().GetPosition() = { 0.f,20.f,0.f };
+
+		DirectX::BoundingBox box{};
+		box.Center = { 0.f,0.f,0.f };
+		box.Extents = { 0.5f, 0.5f, 0.5f };
+		object.mCollider = Collider{ box };
+	}
 
 	
 	{
@@ -66,7 +76,11 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(-35.f), 0.f);
 	}
 
-
+	mWeapon.mMesh = mMeshMap["Sword"].get();
+	mWeapon.mShader = mShaderMap["StandardShader"].get(); 
+	mWeapon.mMaterial = mMaterialManager->GetMaterial("SwordMaterial");
+	
+	mWeapon.GetTransform().GetPosition() = { 100.f,100.f,100.f };
 
 	mAnimationMap["Man"].Load("Resources/Assets/Knight/archer.gltf");
 
@@ -76,6 +90,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		mPlayer.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
 		mPlayer.mAnimated = true;
 		mPlayer.GetTransform().Translate({ 0.f,20.f,0.f });
+		// mPlayer.mCollider = Collider{ mColliderBaker.GetBox("Human") };
 
 		std::vector<const AnimationClip*> clips{ mAnimationMap["Man"].GetClip(0), mAnimationMap["Man"].GetClip(1), mAnimationMap["Man"].GetClip(16), mAnimationMap["Man"].GetClip(3)};
 		
@@ -193,6 +208,8 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 
 
+
+
 		Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, sign, [this]() {
 			mPlayer.GetTransform().Translate({ 0.f, 0.f, -speed });
 			mPlayer.mGraphController.SetBool("Speed", true);
@@ -236,12 +253,19 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
 	cameraTransform.Look({ 0.f,85.f,0.f });
 
-	mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mPlayer.GetTransform(), SimpleMath::Vector3{0.f,2.f,5.f});
+	 mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mPlayer.GetTransform(), SimpleMath::Vector3{0.f,5.f,15.f});
 	// mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 
 	mCameraMode->Enter();
 
 	mPickedObjectText->GetText() = L"Picked Object : None";
+
+	//DirectX::BoundingBox box{};
+	//box.Center = { 0.f,0.f,0.f };
+	//box.Extents = { 0.5f, 0.8f, 0.5f };
+	//mColliderBaker.CreateBox("Human", box);
+
+	//mColliderBaker.Bake();
 }
 
 void Scene::Update() {
@@ -263,6 +287,12 @@ void Scene::Update() {
 				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
 			}
 		}
+	}
+
+	{
+		mWeapon.UpdateShaderVariables(boneTransforms); 
+		auto [mesh, shader, ModelContext] = mWeapon.GetRenderData(); 
+		mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, ModelContext);
 	}
 
 	mPlayer.UpdateShaderVariables(boneTransforms);
@@ -293,7 +323,6 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 	data = Loader.Load("Resources/Assets/Knight/archer.gltf");
 	mMeshMap["T_Pose"] = std::make_unique<Mesh>(device, commandList, data);
-	mPlayer.mCollider = Collider{ data.position };
 
 	data = Loader.Load("Resources/Assets/Stone/Stone1.gltf");
 	mMeshMap["Stone1"] = std::make_unique<Mesh>(device, commandList, data);
@@ -307,6 +336,9 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	data = Loader.Load("Resources/Assets/Mountain/Mountain.gltf");
 	mMeshMap["Mountain"] = std::make_unique<Mesh>(device, commandList, data);
 	
+	data = Loader.Load("Resources/Assets/Weapon/sword/sword.gltf");
+	mMeshMap["Sword"] = std::make_unique<Mesh>(device, commandList, data);
+
 	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 	// terrainLoader.ExportTessellatedMesh("Resources/Binarys/Terrain/TerrainBaked.bin", 16.f);
 
@@ -348,6 +380,9 @@ void Scene::BuildMaterial() {
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Default_OBJ_baseColor");
 	mMaterialManager->CreateMaterial("MountainMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("M_LongSword_baseColor");
+	mMaterialManager->CreateMaterial("SwordMaterial", mat);
 }
 
 void Scene::BuildShader(ComPtr<ID3D12Device> device) {

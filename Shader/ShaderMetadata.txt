@@ -3,4 +3,5 @@ TerrainTessellation.hlsl { vs vs_5_1 Terrain_VS hs hs_5_1 Terrain_HS ds ds_5_1 T
 StandardAnimation.hlsl { vs vs_5_1 StandardAnimation_VS ps ps_5_1 StandardAnimation_PS } 
 SkyBox.hlsl { vs vs_5_1 SkyBox_VS ps ps_5_1 SkyBox_PS }
 Deffered.hlsl { vs vs_5_1 Deffered_VS ps ps_5_1 Deffered_PS }
-BoundingBoxRender.hlsl { vs vs_5_1 BB_VS gs gs_5_1 BB_GS ps ps_5_1 BB_PS }
+SkeletonBoundingBoxRender.hlsl { vs vs_5_1 BB_VS gs gs_5_1 BB_GS ps ps_5_1 BB_PS }
+StandardBoundingBoxRender.hlsl { vs vs_5_1 BB_VS gs gs_5_1 BB_GS ps ps_5_1 BB_PS }

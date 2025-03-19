@@ -178,10 +178,30 @@ protected:
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
 };
 
-class BBShader : public GraphicsShaderBase {
+class StandardBBShader : public GraphicsShaderBase {
 public:
-	BBShader();
-	virtual ~BBShader() = default;
+	StandardBBShader();
+	virtual ~StandardBBShader() = default;
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+protected:
+	virtual InputLayout CreateInputLayout() override;
+	virtual RootParameters CreateRootParameters() override;
+
+	virtual UINT CreateNumOfRenderTarget() override;
+	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&) override;
+
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
+	virtual D3D12_SHADER_BYTECODE CreateGeometryShader() override;
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
+
+	virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE CreatePrimitiveTopologyType() override;
+};
+
+class SkeletonBBShader : public GraphicsShaderBase {
+public:
+	SkeletonBBShader();
+	virtual ~SkeletonBBShader() = default;
 public:
 	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
 protected:

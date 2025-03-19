@@ -54,5 +54,6 @@ private:
 	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<ModelContext>>> mPlainMeshReserved{};
 	std::unordered_map<GraphicsShaderBase* ,std::unordered_map<Mesh*, std::vector<ModelContext>>> mPlainMeshContexts{};
 
-	std::unique_ptr<GraphicsShaderBase> mBoundingBoxRenderShader{};
+	std::unique_ptr<GraphicsShaderBase> mSkeletonBoundingboxRenderShader{};
+	std::unique_ptr<GraphicsShaderBase> mStandardBoundingBoxRenderShader{}; 
 };

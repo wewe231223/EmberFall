@@ -8,8 +8,11 @@ MeshRenderManager::MeshRenderManager(ComPtr<ID3D12Device> device) {
 	mBonedMeshBuffer = DefaultBuffer(device, sizeof(AnimationModelContext), MeshRenderManager::MAX_INSTANCE_COUNT<size_t>);
 	mAnimationBuffer = DefaultBuffer(device, sizeof(SimpleMath::Matrix), MeshRenderManager::MAX_BONE_COUNT<size_t>);
 
-	mBoundingBoxRenderShader = std::make_unique<BBShader>();
-	mBoundingBoxRenderShader->CreateShader(device);
+	mSkeletonBoundingboxRenderShader = std::make_unique<SkeletonBBShader>();
+	mSkeletonBoundingboxRenderShader->CreateShader(device);
+
+	mStandardBoundingBoxRenderShader = std::make_unique<StandardBBShader>();
+	mStandardBoundingBoxRenderShader->CreateShader(device);
 }
 
 
@@ -138,6 +141,28 @@ void MeshRenderManager::RenderPlainMesh(ComPtr<ID3D12GraphicsCommandList> comman
 			gpuIt += worlds.size();
 		}
 	}
+
+
+	gpuIt = mPlainMeshBuffer.GPUBegin() + static_cast<std::ptrdiff_t>(MeshRenderManager::RESERVED_CONTEXT_SLOT);
+
+
+	mStandardBoundingBoxRenderShader->SetShader(commandList);
+
+	commandList->IASetVertexBuffers(0, 0, nullptr);
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+	commandList->SetGraphicsRootConstantBufferView(0, camera);
+
+
+	for (auto& [shader, meshContexts] : mPlainMeshContexts) {
+		for (auto& [mesh, worlds] : meshContexts) {
+
+			commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
+			commandList->DrawInstanced(1, static_cast<UINT>(worlds.size()), 0, 0);
+
+			gpuIt += worlds.size();
+		}
+	}
+
 }
 
 void MeshRenderManager::RenderBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
@@ -173,7 +198,7 @@ void MeshRenderManager::RenderBonedMesh(ComPtr<ID3D12GraphicsCommandList> comman
 	gpuIt = mBonedMeshBuffer.GPUBegin(); 
 
 
-	mBoundingBoxRenderShader->SetShader(commandList);
+	mSkeletonBoundingboxRenderShader->SetShader(commandList);
 	
 	commandList->IASetVertexBuffers(0, 0, nullptr);
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST); 

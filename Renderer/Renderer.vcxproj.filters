@@ -118,7 +118,10 @@
     <FxCompile Include="..\Shader\Sources\Deffered.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="..\Shader\Sources\BoundingBoxRender.hlsl">
+    <FxCompile Include="..\Shader\Sources\SkeletonBoundingBoxRender.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\StandardBoundingBoxRender.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>

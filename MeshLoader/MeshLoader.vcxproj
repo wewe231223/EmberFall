@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Baker\ColliderBaker.cpp" />
     <ClCompile Include="Base\AnimationData.cpp" />
     <ClCompile Include="Base\MeshData.cpp" />
     <ClCompile Include="Loader\AnimationLoader.cpp" />
@@ -149,6 +150,7 @@
     <ClCompile Include="Loader\TerrainLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Baker\ColliderBaker.h" />
     <ClInclude Include="Base\AnimationData.h" />
     <ClInclude Include="Base\MeshData.h" />
     <ClInclude Include="Loader\AnimationLoader.h" />

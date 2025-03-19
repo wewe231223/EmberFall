@@ -7,6 +7,11 @@ Collider::Collider(std::vector<DirectX::XMFLOAT3>& positions) {
 	mActive = true;
 }
 
+Collider::Collider(DirectX::BoundingBox box) {
+	DirectX::BoundingOrientedBox::CreateFromBoundingBox(mOrigin, box);
+	mActive = true;
+}
+
 bool Collider::GetActiveState() const {
 	return mActive;
 }

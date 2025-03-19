@@ -8,6 +8,7 @@ class Collider {
 public:
 	Collider() = default;
 	Collider(std::vector<DirectX::XMFLOAT3>& positions);
+	Collider(DirectX::BoundingBox box);
 public:
 	bool GetActiveState() const;
 

@@ -875,18 +875,18 @@ D3D12_SHADER_BYTECODE DefferedShader::CreatePixelShader() {
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }
 
-BBShader::BBShader() {
+SkeletonBBShader::SkeletonBBShader() {
 }
 
-void BBShader::CreateShader(ComPtr<ID3D12Device> device) {
+void SkeletonBBShader::CreateShader(ComPtr<ID3D12Device> device) {
 	GraphicsShaderBase::CreateShader(device);
 }
 
-GraphicsShaderBase::InputLayout BBShader::CreateInputLayout() {
+GraphicsShaderBase::InputLayout SkeletonBBShader::CreateInputLayout() {
 	return InputLayout();
 }
 
-GraphicsShaderBase::RootParameters BBShader::CreateRootParameters() {
+GraphicsShaderBase::RootParameters SkeletonBBShader::CreateRootParameters() {
 	GraphicsShaderBase::RootParameters params{};
 
 	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -904,31 +904,92 @@ GraphicsShaderBase::RootParameters BBShader::CreateRootParameters() {
 	return params;
 }
 
-UINT BBShader::CreateNumOfRenderTarget() {
+UINT SkeletonBBShader::CreateNumOfRenderTarget() {
 	return Config::GBUFFER_COUNT<UINT>;
 }
 
-void BBShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
+void SkeletonBBShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
-D3D12_SHADER_BYTECODE BBShader::CreateVertexShader() {
-	auto& blob = gShaderManager.GetShaderBlob("BoundingBoxRender", ShaderType::VertexShader);
+D3D12_SHADER_BYTECODE SkeletonBBShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("SkeletonBoundingBoxRender", ShaderType::VertexShader);
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }
 
-D3D12_SHADER_BYTECODE BBShader::CreateGeometryShader() {
-	auto& blob = gShaderManager.GetShaderBlob("BoundingBoxRender", ShaderType::GeometryShader);
+D3D12_SHADER_BYTECODE SkeletonBBShader::CreateGeometryShader() {
+	auto& blob = gShaderManager.GetShaderBlob("SkeletonBoundingBoxRender", ShaderType::GeometryShader);
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }
 
-D3D12_SHADER_BYTECODE BBShader::CreatePixelShader() {
-	auto& blob = gShaderManager.GetShaderBlob("BoundingBoxRender", ShaderType::PixelShader);
+D3D12_SHADER_BYTECODE SkeletonBBShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("SkeletonBoundingBoxRender", ShaderType::PixelShader);
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }
 
-D3D12_PRIMITIVE_TOPOLOGY_TYPE BBShader::CreatePrimitiveTopologyType() {
+D3D12_PRIMITIVE_TOPOLOGY_TYPE SkeletonBBShader::CreatePrimitiveTopologyType() {
 	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
 }
+
+
+
+StandardBBShader::StandardBBShader() {
+}
+
+void StandardBBShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+}
+
+GraphicsShaderBase::InputLayout StandardBBShader::CreateInputLayout() {
+	return InputLayout();
+}
+
+GraphicsShaderBase::RootParameters StandardBBShader::CreateRootParameters() {
+	GraphicsShaderBase::RootParameters params{};
+
+	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	params.Parameters[0].Descriptor.ShaderRegister = 0;
+	params.Parameters[0].Descriptor.RegisterSpace = 0;
+	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[1].Descriptor.ShaderRegister = 0;
+	params.Parameters[1].Descriptor.RegisterSpace = 0;
+	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.ParameterCount = 2;
+
+	return params;
+}
+
+UINT StandardBBShader::CreateNumOfRenderTarget() {
+	return Config::GBUFFER_COUNT<UINT>;
+}
+
+void StandardBBShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
+	formats[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+}
+
+D3D12_SHADER_BYTECODE StandardBBShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("StandardBoundingBoxRender", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE StandardBBShader::CreateGeometryShader() {
+	auto& blob = gShaderManager.GetShaderBlob("StandardBoundingBoxRender", ShaderType::GeometryShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE StandardBBShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("StandardBoundingBoxRender", ShaderType::PixelShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_PRIMITIVE_TOPOLOGY_TYPE StandardBBShader::CreatePrimitiveTopologyType() {
+	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+}
+
