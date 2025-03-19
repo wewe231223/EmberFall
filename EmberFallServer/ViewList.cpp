@@ -22,7 +22,7 @@ void ViewList::Update() {
     }
 
     auto& playerList = mCurrentScene->GetPlayers();
-    for (const auto& player : playerList) {
+    for (const auto& player : playerList | std::views::filter([](const std::shared_ptr<GameObject>& object) { return object->IsActive(); })) {
         auto playerPos = player->GetPosition();
 
         if (MathUtil::IsInRange(mPosition, mViewRange, playerPos)) {
@@ -37,7 +37,7 @@ void ViewList::Update() {
     for (const auto& object : objectList) {
         auto objectPos = object->GetPosition();
 
-        if (MathUtil::IsInRange(mPosition, mViewRange, objectPos)) {
+        if (MathUtil::IsInRange(mPosition, mViewRange, objectPos) and object->IsActive()) {
             AddInRange(object);
         }
         else {
@@ -64,7 +64,7 @@ void ViewList::Send() {
     for (const auto& object : mObjectInRange) {
         objectId = object->GetId();
         if (objectId < INVALID_SESSION_ID) {
-            playerPacket.id = objectId;
+            playerPacket.id = static_cast<SessionIdType>(objectId);
             playerPacket.position = object->GetPosition();
             //playerPacket.rotationYaw = ;
             mSessionManager->Send(mOwnerId, &playerPacket);
@@ -81,6 +81,17 @@ void ViewList::Send() {
 
 void ViewList::AddInRange(std::shared_ptr<GameObject> obj) {
     mObjectInRange.insert(obj);
+
+    //PacketSC::PacketObjectAppeared objectPacket{
+    //    sizeof(PacketSC::PacketObject),
+    //    PacketType::PACKET_OBJECT,
+    //    mOwnerId
+    //};
+
+    //objectPacket.objId = obj->GetId() - OBJECT_ID_START;
+    //objectPacket.position = obj->GetPosition();
+    ////objectPacket.rotationYaw = ;
+    //mSessionManager->Send(mOwnerId, &objectPacket);
 }
 
 bool ViewList::EraseFromRange(std::shared_ptr<GameObject> obj) {
@@ -89,6 +100,16 @@ bool ViewList::EraseFromRange(std::shared_ptr<GameObject> obj) {
     }
    
     mObjectInRange.erase(obj);
+    //PacketSC::PacketObjectDisappeared objectPacket{
+    //    sizeof(PacketSC::PacketObject),
+    //    PacketType::PACKET_OBJECT,
+    //    mOwnerId
+    //};
+
+    //objectPacket.objId = obj->GetId() - OBJECT_ID_START;
+    ////objectPacket.rotationYaw = ;
+    //mSessionManager->Send(mOwnerId, &objectPacket);
+
     return true;
 }
 

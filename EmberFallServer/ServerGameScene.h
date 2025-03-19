@@ -36,8 +36,7 @@
 
 #include "TerrainCollider.h"
 #include "GridWorld.h"
-
-class GameObject;
+#include "GameObject.h"
 
 using PlayerList = std::vector<std::shared_ptr<GameObject>>;
 using PlayerMap = std::unordered_map<SessionIdType, std::shared_ptr<GameObject>>;
@@ -70,6 +69,10 @@ public:
     virtual void AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject);
     virtual void ExitPlayer(SessionIdType id);
 
+    virtual void SpawnObject(ObjectTag tag) abstract;
+    virtual void SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
+        const SimpleMath::Vector3& pos, const SimpleMath::Vector3& size, const SimpleMath::Vector3& dir) abstract;
+
 protected:
     ServerPacketProcessor mPacketProcessor{ };
     PlayerList mPlayerList{ };
@@ -77,7 +80,7 @@ protected:
 };
 
 class PlayScene : public IServerGameScene {
-    inline static constexpr size_t MAX_OBJECT = 5; // 최대 오브젝트 개수 제한.
+    inline static constexpr size_t MAX_OBJECT = 1000; // 최대 오브젝트 개수 제한.
 
 public: 
     PlayScene();
@@ -97,8 +100,13 @@ public:
     virtual void AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) override;
     virtual void ExitPlayer(SessionIdType id) override;
 
+    virtual void SpawnObject(ObjectTag tag) override;
+    virtual void SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
+        const SimpleMath::Vector3& pos, const SimpleMath::Vector3& size, const SimpleMath::Vector3& dir) override;
+
 private:
     ObjectList mObjects{ };
+    size_t mActiveObjectCount{ };
 
     std::shared_ptr<class Terrain> mTerrain{ };
     TerrainCollider mTerrainCollider{ };

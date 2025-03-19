@@ -196,8 +196,8 @@ bool SphereCollider::CheckCollision(const std::shared_ptr<Collider>& other) {
 OrientedBoxCollider::OrientedBoxCollider()
     : Collider{ ColliderType::ORIENTED_BOX } { }
 
-OrientedBoxCollider::OrientedBoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents)
-    : Collider{ ColliderType::ORIENTED_BOX }, mLocalBox{ center, extents, SimpleMath::Quaternion::Identity }, mBoundingBox{ } { }
+OrientedBoxCollider::OrientedBoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents, const SimpleMath::Quaternion& quat)
+    : Collider{ ColliderType::ORIENTED_BOX }, mLocalBox{ center, extents, quat }, mBoundingBox{ } { }
 
 OrientedBoxCollider::~OrientedBoxCollider() { }
 

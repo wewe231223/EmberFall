@@ -41,6 +41,7 @@ public:
         int32_t mLoopCount{ };
         TimePoint mTimeRegistered{ };
         Duration mDelay{ };
+        Duration mDelayOrigin{ };
         EventCallBack mFunction{ };
     };
 
@@ -89,6 +90,7 @@ public:
     static void Update();
 
     static void PushTimerEvent(GameTimer::EventCallBack&& callback, GameTimer::Duration time, int32_t loopCount);
+    static void PushTimerEvent(GameTimer::EventCallBack&& callback, float time, int32_t loopCount);
 
 private:
     inline static GameTimer mTimer{ };

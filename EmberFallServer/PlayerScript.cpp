@@ -30,6 +30,10 @@ void PlayerScript::Update(const float deltaTime) {
     auto physics = GetPhysics();
 
     SimpleMath::Vector3 moveDir{ SimpleMath::Vector3::Zero };
+    if (mInput->IsUp('P')) {
+        Attack(GetTransform()->Forward(), SimpleMath::Vector3{ 100.0f });
+    }
+
     if (mInput->IsActiveKey('A')) {
         moveDir.x -= 1.0f;
     }
@@ -108,7 +112,17 @@ void PlayerScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& oppo
 
 void PlayerScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
-void PlayerScript::DispatchGameEvent(GameEvent* event) { }
+void PlayerScript::DispatchGameEvent(GameEvent* event) { 
+    switch (event->type) {
+    case GameEventType::ATTACK_EVENT:
+        if (event->sender != event->receiver) {
+            auto attackEvent = reinterpret_cast<AttackEvent*>(event);
+            GetOwner()->ReduceHealth(attackEvent->damage);
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!", GetOwner()->GetId());
+        }
+        break;
+    }
+}
 
 std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
     decltype(auto) inRangeObjects = mViewList.GetInRangeObjects();
@@ -173,10 +187,16 @@ void PlayerScript::DestroyGem(const float deltaTime, const std::shared_ptr<GameO
 }
 
 void PlayerScript::AcquireItem(const float deltaTime, const std::shared_ptr<GameObject>& item) {
-    item->GetTag();
 }
 
 void PlayerScript::UseItem() {
 
+}
+
+void PlayerScript::Attack(const SimpleMath::Vector3& dir, const SimpleMath::Vector3& hitboxSize) {
+    std::shared_ptr<AttackEvent> attackEvent = std::make_shared<AttackEvent>();
+    attackEvent->damage = 10.0f;
+
+    mGameScene->SpawnTrigger(attackEvent, 5.0f, 1.0f, 5, SimpleMath::Vector3::Zero, hitboxSize, dir);
 }
 

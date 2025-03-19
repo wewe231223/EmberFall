@@ -10,8 +10,7 @@ inline constexpr uint8_t PROTOCOL_VERSION_MINOR = 0;
 inline constexpr PacketTypeT PACKET_CS_START = 0x00;
 inline constexpr PacketTypeT PACKET_SC_START = 0x81;
 
-// 0x00 - Packet Protocol Version
-// 0x01 ~ Client To Server
+// 0x00 ~ Client To Server
 // 0x81 ~ Server To Client
 namespace PacketType {
     enum PacketCS : PacketTypeT {
@@ -51,6 +50,7 @@ enum Weapon : uint8_t {
 };
 
 enum EntityType : uint8_t {
+    ENV,
     BOSS,
     PLAYER,
     MONSTER1,
@@ -118,7 +118,6 @@ namespace PacketSC { // Server To Client
     struct PacketRestoreHP : public PacketHeader {
         float HP;
     };
-
 
     struct PacketPlayerExit : public PacketHeader { };
 }

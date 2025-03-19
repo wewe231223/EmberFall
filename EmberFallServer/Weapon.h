@@ -1,0 +1,25 @@
+#pragma once
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Weapon.h
+// 
+// 2025 - 03 - 14 : 무기 관련 클래스
+// 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class IWeapon abstract {
+public:
+    IWeapon(Weapon tag);
+    virtual ~IWeapon();
+
+public:
+    virtual void Attack(const SimpleMath::Vector3& dir) abstract;
+
+protected:
+    float mDamage{ };
+
+private:
+    Weapon mWeaponTag;
+    std::shared_ptr<class Collider> mHitbox{ };
+};

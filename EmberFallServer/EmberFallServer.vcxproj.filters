@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="pch">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
     <Filter Include="Object">
       <UniqueIdentifier>{6c8effd1-71c6-45ff-9ef0-1dbefb68bd3c}</UniqueIdentifier>
     </Filter>
@@ -70,6 +66,19 @@
     </Filter>
     <Filter Include="GameEvent">
       <UniqueIdentifier>{149a7731-ffbf-4ec3-9a90-4cc613b668e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Weapon">
+      <UniqueIdentifier>{5bdb23f0-7f45-49b4-bdd9-2dd54094a7ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AttackSystem">
+      <UniqueIdentifier>{0ec17123-8f6e-4463-a8b6-70e1a3f77296}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\Trigger">
+      <UniqueIdentifier>{563c1ba7-e3f0-4d09-856a-ede8cdde952c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pch">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -175,6 +184,24 @@
     <ClCompile Include="PacketProcessFunctions.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="Inventory.cpp">
+      <Filter>Script\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="Weapon.cpp">
+      <Filter>Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="AttackSystem.cpp">
+      <Filter>AttackSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="Trigger.cpp">
+      <Filter>Script\Trigger</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectBuilder.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEventFactory.cpp">
+      <Filter>GameEvent</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -275,6 +302,24 @@
     </ClInclude>
     <ClInclude Include="PacketProcessFunctions.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Inventory.h">
+      <Filter>Script\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="Weapon.h">
+      <Filter>Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="AttackSystem.h">
+      <Filter>AttackSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="Trigger.h">
+      <Filter>Script\Trigger</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectBuilder.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEventFactory.h">
+      <Filter>GameEvent</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

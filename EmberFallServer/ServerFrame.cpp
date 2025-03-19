@@ -58,7 +58,6 @@ void ServerFrame::OnPlayerConnect(SessionIdType id) {
     object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
     object->CreateComponent<PlayerScript>(object, mInputManager->GetInput(id), mServerCore->GetSessionManager());
     object->GetTransform()->Scale(SimpleMath::Vector3{ 1.4f });
-    object->SetColor(Random::GetRandomColor());
 
     Lock::SRWLockGuard playersGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mPlayersLock };
     mPlayers[id] = object;

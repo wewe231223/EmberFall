@@ -36,8 +36,6 @@ void CorruptedGemScript::OnDestroy(GemDestroyEvent* event) {
     }
 
     auto owner = GetOwner();
-    mOriginColor = GetOwner()->GetColor();
-    owner->SetColor(SimpleMath::Vector3{ event->holdTime / mDesytoyingTime });
     if (event->holdTime > mDesytoyingTime) {
         owner->SetActive(false);
     }

@@ -1,17 +1,16 @@
 #include "pch.h"
 #include "ServerGameScene.h"
-#include "GameObject.h"
 #include "GameEventManager.h"
 #include "Terrain.h"
 #include "Collider.h"
 #include "Input.h"
 
 #include "PlayerScript.h"
-#include "MonsterScript.h"
-#include "CorruptedGem.h"
 #include "ServerFrame.h"
 
 #include "PacketProcessFunctions.h"
+
+#include "ObjectBuilder.h"
 
 IServerGameScene::IServerGameScene() { }
 
@@ -74,7 +73,7 @@ ObjectList& PlayScene::GetObjects() {
 
 std::shared_ptr<GameObject> PlayScene::GetObjectFromId(NetworkObjectIdType id) {
     if (id >= OBJECT_ID_START) {
-        return mObjects[id];
+        return mObjects[id - OBJECT_ID_START];
     }
     else {
         return mPlayers[static_cast<SessionIdType>(id)];
@@ -84,6 +83,7 @@ std::shared_ptr<GameObject> PlayScene::GetObjectFromId(NetworkObjectIdType id) {
 void PlayScene::Init() {
     mTerrain = std::make_shared<Terrain>("../Resources/HeightMap.raw");
     mTerrainCollider.SetTerrain(mTerrain);
+    gEventManager->SetCurrentGameScene(shared_from_this());
 
     mObjects.resize(MAX_OBJECT);
     for (NetworkObjectIdType id{ 0 }; auto & object : mObjects) {
@@ -91,21 +91,14 @@ void PlayScene::Init() {
         object->InitId(OBJECT_ID_START + id);
         ++id;
 
-        object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
-        object->CreateComponent<MonsterScript>(object);
-        object->SetColor(Random::GetRandomColor());
-        object->GetTransform()->Translate(Random::GetRandomVec3(-50.0f, 50.0f));
-        object->GetTransform()->Scale(SimpleMath::Vector3{ 1.0f });
-        object->GetTransform()->SetY(Random::GetRandom<float>(0.0f, 100.0f));
-
-        object->SetActive(true);
+        object->SetActive(false);
 
         auto& factors = object->GetPhysics()->mFactor;
         factors.mass = 10.0f;
+    }
 
-        mTerrainCollider.AddObjectInTerrainGroup(object);
-
-        object->Init();
+    for (int32_t i = 0; i < 3; ++i) {
+        SpawnObject(ObjectTag::MONSTER);
     }
 }
 
@@ -184,4 +177,23 @@ void PlayScene::ExitPlayer(SessionIdType id) {
 
     mTerrainCollider.RemoveObjectFromTerrainGroup(it->second);
     mPlayers.erase(it);
+}
+
+void PlayScene::SpawnObject(ObjectTag tag) { 
+    auto obj = *std::find_if(mObjects.begin(), mObjects.end(),
+        [](const std::shared_ptr<GameObject>& obj) { return not obj->IsActive(); });
+    ObjectBuilder::BuildObjectComponent(obj, tag);
+    mTerrainCollider.AddObjectInTerrainGroup(obj);
+
+    obj->SetActive(true);
+}
+
+void PlayScene::SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount, 
+    const SimpleMath::Vector3& pos, const SimpleMath::Vector3& size, const SimpleMath::Vector3& dir) {
+    auto obj = *std::find_if(mObjects.begin(), mObjects.end(),
+        [](const std::shared_ptr<GameObject>& obj) { return not obj->IsActive(); });
+
+    ObjectBuilder::BuildTrigger(obj, event, lifeTime, eventDelay, eventCount, pos, size, dir);
+
+    obj->SetActive(true);
 }

@@ -14,7 +14,7 @@ enum class ItemTag : uint8_t {
     ITEM_POTION,
     ITEM_HOLYWATER,
     ITEM_CROSS,
-    ITEM_NONE,
+    ITEM_TAG_COUNT
 };
 
 using ItemEffectFn = std::function<void(const std::shared_ptr<class GameObject>&)>;

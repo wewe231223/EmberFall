@@ -14,10 +14,9 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 #include "Script.h"
 #include "ViewList.h"
-#include "Item.h"
+#include "Inventory.h"
 
 class GameObject;
 class Input;
@@ -50,11 +49,14 @@ private:
     void AcquireItem(const float deltaTime, const std::shared_ptr<GameObject>& item);
     void UseItem();
 
+    void Attack(const SimpleMath::Vector3& dir, const SimpleMath::Vector3& hitboxSize);
+
 private:
     std::shared_ptr<Input> mInput{ };
-    std::shared_ptr<IServerGameScene> mGameScene{ };
-    ViewList mViewList;
-
+    Inventory mInventory{ };
     NetworkObjectIdType mInteractionObj{ };
+
+    ViewList mViewList;
+    std::shared_ptr<IServerGameScene> mGameScene{ };
 };
 
