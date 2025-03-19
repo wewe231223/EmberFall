@@ -28,6 +28,10 @@ void GridWorld::Update(const std::vector<std::shared_ptr<class GameObject>>& obj
     }
 
     for (auto& object : objects) {
+        if (not object->IsActive() or not object->IsCollidingObject()) {
+            continue;
+        }
+
         decltype(auto) obb = std::static_pointer_cast<OrientedBoxCollider>(object->GetCollider())->GetBoundingBox();
         auto aabbMin = obb.Center - (SimpleMath::Vector3{ obb.Extents } * 1.415f); // root 2 (OBB를 감싸는 최소한의 AABB)
         auto aabbMax = obb.Center + (SimpleMath::Vector3{ obb.Extents } * 1.415f);

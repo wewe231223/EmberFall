@@ -142,14 +142,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp" />
+    <ClCompile Include="AttackSystem.cpp" />
     <ClCompile Include="BehaviorTreeBase.cpp" />
     <ClCompile Include="BehaviorTreeMonster.cpp" />
     <ClCompile Include="BT_MonsterChase.cpp" />
     <ClCompile Include="Collider.cpp" />
+    <ClCompile Include="GameEventFactory.cpp" />
     <ClCompile Include="GraphBase.cpp" />
     <ClCompile Include="GraphMap.cpp" />
     <ClCompile Include="GraphSearch.cpp" />
+    <ClCompile Include="Inventory.cpp" />
+    <ClCompile Include="Item.cpp" />
     <ClCompile Include="ItemScript.cpp" />
+    <ClCompile Include="ObjectBuilder.cpp" />
+    <ClCompile Include="PacketProcessFunctions.cpp" />
     <ClCompile Include="PathFinder.cpp" />
     <ClCompile Include="TerrainCollider.cpp" />
     <ClCompile Include="CorruptedGem.cpp" />
@@ -175,18 +181,27 @@
     <ClCompile Include="ServerGameScene.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="Trigger.cpp" />
     <ClCompile Include="ViewList.cpp" />
+    <ClCompile Include="Weapon.cpp" />
+    <ClCompile Include="WeaponSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AttackSystem.h" />
     <ClInclude Include="BehaviorTreeBase.h" />
     <ClInclude Include="BehaviorTreeMonster.h" />
     <ClInclude Include="BT_MonsterChase.h" />
     <ClInclude Include="Collider.h" />
+    <ClInclude Include="GameEventFactory.h" />
     <ClInclude Include="GraphBase.h" />
     <ClInclude Include="GraphMap.h" />
     <ClInclude Include="GraphSearch.h" />
     <ClInclude Include="IndexedPriorityQueue.h" />
+    <ClInclude Include="Inventory.h" />
+    <ClInclude Include="Item.h" />
     <ClInclude Include="ItemScript.h" />
+    <ClInclude Include="ObjectBuilder.h" />
+    <ClInclude Include="PacketProcessFunctions.h" />
     <ClInclude Include="PathFinder.h" />
     <ClInclude Include="TerrainCollider.h" />
     <ClInclude Include="CorruptedGem.h" />
@@ -208,7 +223,10 @@
     <ClInclude Include="ServerGameScene.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="Trigger.h" />
     <ClInclude Include="ViewList.h" />
+    <ClInclude Include="Weapon.h" />
+    <ClInclude Include="WeaponSystem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

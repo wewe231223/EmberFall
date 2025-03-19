@@ -58,6 +58,7 @@ private:
 
 	void ResetCommandList();
 	void FlushCommandQueue();
+
 private:
 	HWND mRendererWindow{ nullptr };
 

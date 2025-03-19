@@ -110,12 +110,50 @@ namespace MathUtil {
         return SimpleMath::Vector2{ v.x, v.z };
     }
 
+    inline SimpleMath::Vector3 Normalize(const SimpleMath::Vector3& v)
+    {
+        SimpleMath::Vector3 ret{ v };
+        ret.Normalize();
+        return ret;
+    }
+
     // planeNormal은 Normalize된 벡터여야함.
     inline SimpleMath::Vector3 SlidingVector(const SimpleMath::Vector3& v, const SimpleMath::Vector3& planeNormal)
     {
         float projectionToNormal = v.Dot(planeNormal);
         SimpleMath::Vector3 slidingVec = v + (planeNormal * -projectionToNormal);
         return slidingVec;
+    }
+
+    inline float GetAngle(const SimpleMath::Vector3& v1, const SimpleMath::Vector3& v2)
+    {
+        return DirectX::XMVectorGetX(DirectX::XMVector3AngleBetweenNormals(v1, v2));
+    }
+
+    inline float GetAngleNormalized(const SimpleMath::Vector3& v1, const SimpleMath::Vector3& v2)
+    {
+        return DirectX::XMVectorGetX(DirectX::XMVector3AngleBetweenNormals(Normalize(v1), Normalize(v2)));
+    }
+
+    inline SimpleMath::Quaternion GetQuatBeetweenVectors(const SimpleMath::Vector3& v1, const SimpleMath::Vector3& v2)
+    {
+        auto normalizedV1 = Normalize(v1);
+        auto normalizedV2 = Normalize(v2);
+
+        if (IsEqualVector(normalizedV1, normalizedV2)) {
+            return SimpleMath::Quaternion::Identity;
+        }
+
+        auto angle = GetAngle(normalizedV1, normalizedV2);
+        auto rotationAxis = normalizedV1.Cross(normalizedV2);
+        rotationAxis.Normalize();
+
+        return SimpleMath::Quaternion::CreateFromAxisAngle(rotationAxis, angle);
+    }
+
+    inline SimpleMath::Quaternion GetQuatFromLook(const SimpleMath::Vector3& look)
+    {
+        return GetQuatBeetweenVectors(SimpleMath::Vector3::Forward, look);
     }
 }
 

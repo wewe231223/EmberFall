@@ -76,6 +76,32 @@ void Transform::Move(const SimpleMath::Vector3& moveVec) {
     Translate(SimpleMath::Vector3::Transform(xzMove, mRotation));
 }
 
+void Transform::SetLook(const SimpleMath::Vector3& lookVec) {
+    // 정규화된 look 벡터 생성
+    SimpleMath::Vector3 forward = -lookVec;
+    forward.Normalize();
+
+    // 기본 up 벡터 (필요하면 조정 가능)
+    SimpleMath::Vector3 up = SimpleMath::Vector3::Up;
+
+    // LookAt 행렬 대신 방향 벡터로 회전 행렬 직접 생성
+    SimpleMath::Vector3 right = up.Cross(forward);
+    right.Normalize();
+
+    up = forward.Cross(right);
+    up.Normalize();
+
+    SimpleMath::Matrix rotationMatrix(
+        right.x, right.y, right.z, 0,
+        up.x, up.y, up.z, 0,
+        forward.x, forward.y, forward.z, 0,
+        0, 0, 0, 1
+    );
+
+    // 회전 행렬에서 쿼터니언 생성
+    mRotation = SimpleMath::Quaternion::CreateFromRotationMatrix(rotationMatrix);
+}
+
 void Transform::LookAt(const SimpleMath::Vector3& target) {
     DirectX::SimpleMath::Vector3 direction = target - mPosition;
     direction.Normalize();

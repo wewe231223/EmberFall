@@ -18,10 +18,12 @@
 
 class IServerGameScene;
 
-enum class ObjectTag {
+enum class ObjectTag : uint8_t {
     PLAYER, 
     MONSTER,
     CORRUPTED_GEM,
+    ITEM,
+    TRIGGER,
     NONE,
 };
 
@@ -34,6 +36,8 @@ public:
     bool IsActive() const;
     NetworkObjectIdType GetId() const;
 
+    float HP() const;
+
     std::shared_ptr<Transform> GetTransform() const;
     std::shared_ptr<Physics> GetPhysics() const;
     std::shared_ptr<Collider> GetCollider() const;
@@ -45,12 +49,18 @@ public:
     SimpleMath::Vector3 GetScale() const;
     SimpleMath::Matrix GetWorld() const;
     ObjectTag GetTag() const;
-    SimpleMath::Vector3 GetColor() const;
+    EntityType GetEntityType() const;
+
+    bool IsCollidingObject() const;
 
     void InitId(NetworkObjectIdType id);
     void SetActive(bool active);
-    void SetColor(const SimpleMath::Vector3& color);
     void SetTag(ObjectTag tag);
+    void SetEntityType(EntityType type);
+    void SetCollider(std::shared_ptr<Collider> collider);
+
+    void ReduceHealth(float hp);
+    void RestoreHealth(float hp);
 
     void Init();
 
@@ -62,9 +72,15 @@ public:
 
     virtual void DispatchGameEvent(GameEvent* event);
 
+    void ClearComponents();
+
     template <typename ColliderType, typename... Args>
         requires std::derived_from<ColliderType, Collider> and std::is_constructible_v<ColliderType, Args...>
     void CreateCollider(Args&&... args) {
+        if (nullptr != mCollider) {
+            mCollider.reset();
+        }
+
         mCollider = std::make_shared<ColliderType>(args...);
         mCollider->SetTransform(mTransform);
     }
@@ -88,17 +104,19 @@ public:
     }
 
 private:
-    void OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
-    void OnCollisionStay(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
-    void OnCollisionExit(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
+    virtual void OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
+    virtual void OnCollisionStay(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
+    virtual void OnCollisionExit(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
 
 private:
     bool mActive{ true };
-    ObjectTag mTag{ ObjectTag::NONE };
+    EntityType mEntityType{ EntityType::ENV };
 
     NetworkObjectIdType mId{ INVALID_SESSION_ID };                      // network id
-    SimpleMath::Vector3 mColor{ SimpleMath::Vector3::One };             // for detecting collision
 
+    float mHP{ };
+
+    ObjectTag mTag{ ObjectTag::NONE };
     std::shared_ptr<Transform> mTransform{ };                           // Transform
     std::shared_ptr<class Physics> mPhysics{ };                         // Physics
     std::shared_ptr<Collider> mCollider{ nullptr };                     // 

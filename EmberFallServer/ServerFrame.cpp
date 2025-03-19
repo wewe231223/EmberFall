@@ -13,7 +13,7 @@ ServerFrame::ServerFrame() {
 
     mInputManager = std::make_shared<InputManager>();
 
-    mTimer = std::make_shared<GameTimer>();
+    //mTimer = std::make_shared<GameTimer>();
 
     mServerCore->Start("", SERVER_PORT);
     auto sessionManager = mServerCore->GetSessionManager();
@@ -26,22 +26,26 @@ ServerFrame::~ServerFrame() {
     mServerCore->End();
 }
 
+std::shared_ptr<class InputManager> ServerFrame::GetInputManager() const {
+    return mInputManager;
+}
+
 void ServerFrame::InitGameScenes() {
     mGameScenes.emplace_back(std::make_shared<PlayScene>());
 
     mCurrentScene = mGameScenes.front();
     mCurrentScene->Init();
-    mTimer->Sync(30);
+    mCurrentScene->RegisterPacketProcessFunctions();
+    StaticTimer::Sync(30);
 }
 
 void ServerFrame::GameLoop() {
     while (true) {
         StaticTimer::Update();
-        mTimer->Update();
-        const float deltaTime = mTimer->GetDeltaTime();
+        const float deltaTime = StaticTimer::GetDeltaTime();
 
         mCurrentScene->DispatchPlayerEvent(mPlayerEventQueue);
-        mCurrentScene->ProcessPackets(mServerCore, mInputManager);
+        mCurrentScene->ProcessPackets(mServerCore);
         mCurrentScene->Update(deltaTime);
         mCurrentScene->LateUpdate(deltaTime);
     }
@@ -54,7 +58,6 @@ void ServerFrame::OnPlayerConnect(SessionIdType id) {
     object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
     object->CreateComponent<PlayerScript>(object, mInputManager->GetInput(id), mServerCore->GetSessionManager());
     object->GetTransform()->Scale(SimpleMath::Vector3{ 1.4f });
-    object->SetColor(Random::GetRandomColor());
 
     Lock::SRWLockGuard playersGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mPlayersLock };
     mPlayers[id] = object;

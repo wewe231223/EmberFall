@@ -20,6 +20,10 @@ NetworkObjectIdType GameObject::GetId() const {
     return mId;
 }
 
+float GameObject::HP() const {
+    return mHP;
+}
+
 SimpleMath::Matrix GameObject::GetWorld() const {
     return mTransform->GetWorld();
 }
@@ -52,15 +56,16 @@ SimpleMath::Vector3 GameObject::GetScale() const {
     return mTransform->GetScale();
 }
 
-SimpleMath::Vector3 GameObject::GetColor() const {
-    if (mCollider->IsColliding()) { // 디버깅을 위한 색상 변경
-        return SimpleMath::Vector3{ 1.0f, 0.0f, 0.0f }; // RED
-    }
-    return mColor;
-}
-
 ObjectTag GameObject::GetTag() const {
     return mTag;
+}
+
+EntityType GameObject::GetEntityType() const {
+    return mEntityType;
+}
+
+bool GameObject::IsCollidingObject() const {
+    return nullptr != mCollider;
 }
 
 void GameObject::InitId(NetworkObjectIdType id) {
@@ -71,12 +76,24 @@ void GameObject::SetActive(bool active) {
     mActive = active;
 }
 
-void GameObject::SetColor(const SimpleMath::Vector3& color) {
-    mColor = color;
-}
-
 void GameObject::SetTag(ObjectTag tag) {
     mTag = tag;
+}
+
+void GameObject::SetEntityType(EntityType type) {
+    mEntityType = type;
+}
+
+void GameObject::SetCollider(std::shared_ptr<Collider> collider) {
+    mCollider = collider;
+}
+
+void GameObject::ReduceHealth(float hp) {
+    mHP -= hp;
+}
+
+void GameObject::RestoreHealth(float hp) {
+    mHP += hp;
 }
 
 void GameObject::Init() {
@@ -147,6 +164,10 @@ void GameObject::DispatchGameEvent(GameEvent* event) {
     for (auto& component : mComponents) {
         component->DispatchGameEvent(event);
     }
+}
+
+void GameObject::ClearComponents() {
+    mComponents.clear();
 }
 
 void GameObject::OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 

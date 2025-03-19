@@ -30,6 +30,10 @@ void PlayerScript::Update(const float deltaTime) {
     auto physics = GetPhysics();
 
     SimpleMath::Vector3 moveDir{ SimpleMath::Vector3::Zero };
+    if (mInput->IsUp('P')) {
+        Attack(GetTransform()->Forward(), SimpleMath::Vector3{ 100.0f });
+    }
+
     if (mInput->IsActiveKey('A')) {
         moveDir.x -= 1.0f;
     }
@@ -84,10 +88,14 @@ void PlayerScript::Update(const float deltaTime) {
     }
 
     if (mInput->IsActiveKey('F')) {
-        DestroyGem(deltaTime);
+        Interaction(deltaTime, GetNearestObject());
     }
     else if (mInput->IsInactiveKey('F')) {
-        mInterationObj = NULL;
+        mInteractionObj = NULL;
+    }
+
+    if (mInput->IsUp('U')) {
+        UseItem();
     }
 
     moveDir.Normalize();
@@ -104,7 +112,17 @@ void PlayerScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& oppo
 
 void PlayerScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
-void PlayerScript::DispatchGameEvent(GameEvent* event) { }
+void PlayerScript::DispatchGameEvent(GameEvent* event) { 
+    switch (event->type) {
+    case GameEventType::ATTACK_EVENT:
+        if (event->sender != event->receiver) {
+            auto attackEvent = reinterpret_cast<AttackEvent*>(event);
+            GetOwner()->ReduceHealth(attackEvent->damage);
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!", GetOwner()->GetId());
+        }
+        break;
+    }
+}
 
 std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
     decltype(auto) inRangeObjects = mViewList.GetInRangeObjects();
@@ -132,24 +150,53 @@ std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
     return nullptr;
 }
 
-void PlayerScript::DestroyGem(const float deltaTime) {
-    static float holdStart = 0.0f; // test
-
-    auto nearestObj = GetNearestObject();
-    if (nullptr == nearestObj) {
-        holdStart = 0.0f;
+void PlayerScript::Interaction(const float deltaTime, const std::shared_ptr<GameObject>& target) {
+    if (nullptr == target) {
         return;
     }
-    
-    auto nearestObjId = nearestObj->GetId();
-    if (mInterationObj != nearestObjId) {
-        mInterationObj = nearestObjId;
+
+    mInteractionObj = target->GetId();
+    switch (target->GetTag()) {
+    case ObjectTag::CORRUPTED_GEM:
+        DestroyGem(deltaTime, target);
+        break;
+
+    case ObjectTag::ITEM:
+        AcquireItem(deltaTime, target);
+        break;
+
+    default:
+        break;
+    }
+}
+
+void PlayerScript::DestroyGem(const float deltaTime, const std::shared_ptr<GameObject>& gem) {
+    static float holdStart = 0.0f; // test
+
+    auto gemId = gem->GetId();
+    if (mInteractionObj != gemId) {
+        mInteractionObj = gemId;
         holdStart = 0.0f;
     }
 
     std::shared_ptr<GemDestroyEvent> event = std::make_shared<GemDestroyEvent>();
     event->type = GameEventType::DESTROY_GEM_EVENT;
-    event->receiver = nearestObj->GetId();
+    event->receiver = gem->GetId();
     event->holdTime = holdStart += deltaTime;
     gEventManager->PushEvent(event);
 }
+
+void PlayerScript::AcquireItem(const float deltaTime, const std::shared_ptr<GameObject>& item) {
+}
+
+void PlayerScript::UseItem() {
+
+}
+
+void PlayerScript::Attack(const SimpleMath::Vector3& dir, const SimpleMath::Vector3& hitboxSize) {
+    std::shared_ptr<AttackEvent> attackEvent = std::make_shared<AttackEvent>();
+    attackEvent->damage = 10.0f;
+
+    mGameScene->SpawnTrigger(attackEvent, 5.0f, 1.0f, 5, SimpleMath::Vector3::Zero, hitboxSize, dir);
+}
+

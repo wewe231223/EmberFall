@@ -72,6 +72,8 @@ public:
         mReadPos += sizeof(T);
     }
 
+    PacketHeader* GetCurrPosToHeader();
+
 private:
     std::atomic_ullong mWritePos{ };
     size_t mReadPos{ };

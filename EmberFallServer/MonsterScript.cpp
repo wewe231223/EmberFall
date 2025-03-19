@@ -8,7 +8,9 @@
 #include "ServerGameScene.h"
 
 MonsterScript::MonsterScript(std::shared_ptr<class GameObject> owner)
-    : Script{ owner, ObjectTag::MONSTER } { }
+    : Script{ owner, ObjectTag::MONSTER } {
+    owner->RestoreHealth(1000.0f);
+}
 
 MonsterScript::~MonsterScript() { }
 
@@ -21,7 +23,7 @@ void MonsterScript::Update(const float deltaTime) {
 }
 
 void MonsterScript::LateUpdate(const float deltaTime) { 
-    if (mHp <= MathUtil::EPSILON) {
+    if (GetOwner()->HP() <= MathUtil::EPSILON) {
         GetOwner()->SetActive(false);
     }
 }
@@ -47,7 +49,11 @@ void MonsterScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opp
 void MonsterScript::DispatchGameEvent(GameEvent* event) { 
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
-        mHp -= static_cast<AttackEvent*>(event)->damage;
+        if (event->sender != event->receiver) {
+            auto attackEvent = reinterpret_cast<AttackEvent*>(event);
+            GetOwner()->ReduceHealth(attackEvent->damage);
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster [{}] Attacked!!, HP: {}", GetOwner()->GetId(), GetOwner()->HP());
+        }
         break;
 
     default:

@@ -102,7 +102,8 @@ private:
 class OrientedBoxCollider : public Collider {
 public:
     OrientedBoxCollider();
-    OrientedBoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents);
+    OrientedBoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents,
+        const SimpleMath::Quaternion& quat = SimpleMath::Quaternion::Identity);
     virtual ~OrientedBoxCollider();
 
 public:

@@ -22,7 +22,7 @@ void ViewList::Update() {
     }
 
     auto& playerList = mCurrentScene->GetPlayers();
-    for (const auto& player : playerList) {
+    for (const auto& player : playerList | std::views::filter([](const std::shared_ptr<GameObject>& object) { return object->IsActive(); })) {
         auto playerPos = player->GetPosition();
 
         if (MathUtil::IsInRange(mPosition, mViewRange, playerPos)) {
@@ -37,7 +37,7 @@ void ViewList::Update() {
     for (const auto& object : objectList) {
         auto objectPos = object->GetPosition();
 
-        if (MathUtil::IsInRange(mPosition, mViewRange, objectPos)) {
+        if (MathUtil::IsInRange(mPosition, mViewRange, objectPos) and object->IsActive()) {
             AddInRange(object);
         }
         else {
@@ -49,33 +49,49 @@ void ViewList::Update() {
 void ViewList::Send() {
     static size_t prevSendSize{ };
 
-    PacketPlayerInfoSC playerPacket{ sizeof(PacketPlayerInfoSC), PacketType::PT_PLAYER_INFO_SC };
-    PacketGameObject objPacket{ sizeof(PacketGameObject), PacketType::PT_GAME_OBJECT_SC };
+    PacketSC::PacketPlayer playerPacket{
+        sizeof(PacketSC::PacketPlayer),
+        PacketType::PACKET_PLAYER,
+    };
+
+    PacketSC::PacketObject objectPacket{ 
+        sizeof(PacketSC::PacketObject), 
+        PacketType::PACKET_OBJECT,
+        mOwnerId
+    };
+
     NetworkObjectIdType objectId{ };
     for (const auto& object : mObjectInRange) {
         objectId = object->GetId();
         if (objectId < INVALID_SESSION_ID) {
             playerPacket.id = static_cast<SessionIdType>(objectId);
-            playerPacket.color = object->GetColor();
             playerPacket.position = object->GetPosition();
-            playerPacket.rotation = object->GetRotation();
-            playerPacket.scale = object->GetScale();
+            //playerPacket.rotationYaw = ;
             mSessionManager->Send(mOwnerId, &playerPacket);
         }
         else {
-            objPacket.objectId = objectId - OBJECT_ID_START;
-            objPacket.state = object->IsActive();
-            objPacket.color = object->GetColor();
-            objPacket.position = object->GetPosition();
-            objPacket.rotation = object->GetRotation();
-            objPacket.scale = object->GetScale();
-            mSessionManager->Send(mOwnerId, &objPacket);
+            objectPacket.objId = objectId - OBJECT_ID_START;
+            objectPacket.position = object->GetPosition();
+            //objectPacket.rotationYaw = ;
+            mSessionManager->Send(mOwnerId, &objectPacket);
         }
+
     }
 }
 
 void ViewList::AddInRange(std::shared_ptr<GameObject> obj) {
     mObjectInRange.insert(obj);
+
+    //PacketSC::PacketObjectAppeared objectPacket{
+    //    sizeof(PacketSC::PacketObject),
+    //    PacketType::PACKET_OBJECT,
+    //    mOwnerId
+    //};
+
+    //objectPacket.objId = obj->GetId() - OBJECT_ID_START;
+    //objectPacket.position = obj->GetPosition();
+    ////objectPacket.rotationYaw = ;
+    //mSessionManager->Send(mOwnerId, &objectPacket);
 }
 
 bool ViewList::EraseFromRange(std::shared_ptr<GameObject> obj) {
@@ -84,6 +100,16 @@ bool ViewList::EraseFromRange(std::shared_ptr<GameObject> obj) {
     }
    
     mObjectInRange.erase(obj);
+    //PacketSC::PacketObjectDisappeared objectPacket{
+    //    sizeof(PacketSC::PacketObject),
+    //    PacketType::PACKET_OBJECT,
+    //    mOwnerId
+    //};
+
+    //objectPacket.objId = obj->GetId() - OBJECT_ID_START;
+    ////objectPacket.rotationYaw = ;
+    //mSessionManager->Send(mOwnerId, &objectPacket);
+
     return true;
 }
 

@@ -8,7 +8,7 @@ Graphs::GraphMap::GraphMap(const std::shared_ptr<Terrain>& terrain) {
     mMapLeftBottom = terrain->GetMapLeftBottom();
     size_t mapWidth = static_cast<size_t>(mMapSize.x);
     size_t mapHeight = static_cast<size_t>(mMapSize.y);
-    mMaxIdx = mapWidth * mapHeight;
+    mMaxIdx = static_cast<NodeIdx>(mapWidth * mapHeight);
 
     // 방향 벡터 (상, 하, 좌, 우, 대각선)
     constexpr Graph::IndexType dx[8] = { 0,  0, -1,  1, -1, -1,  1,  1 };
@@ -17,7 +17,7 @@ Graphs::GraphMap::GraphMap(const std::shared_ptr<Terrain>& terrain) {
     mGraph.Reserve(mapWidth * mapHeight);
     for (size_t y = 0; y < mapHeight; ++y) {
         for (size_t x = 0; x < mapWidth; ++x) {
-            Graph::IndexType currNode = mapWidth * y + x;
+            Graph::IndexType currNode = static_cast<Graph::IndexType>(mapWidth * y + x);
 
             for (Graph::IndexType dir = 0; dir < 8; ++dir) {
                 int nx = static_cast<int>(x) + dx[dir];
@@ -27,7 +27,7 @@ Graphs::GraphMap::GraphMap(const std::shared_ptr<Terrain>& terrain) {
                     and ny >= 0 and ny < static_cast<int>(mapHeight)) {
 
                     size_t neighborNode = mapWidth * ny + nx;
-                    mGraph.AddEdge(currNode, neighborNode);
+                    mGraph.AddEdge(currNode, static_cast<Graph::IndexType>(neighborNode));
                 }
             }
         }

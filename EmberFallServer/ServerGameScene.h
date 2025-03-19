@@ -36,8 +36,12 @@
 
 #include "TerrainCollider.h"
 #include "GridWorld.h"
+#include "GameObject.h"
 
-class GameObject;
+using PlayerList = std::vector<std::shared_ptr<GameObject>>;
+using PlayerMap = std::unordered_map<SessionIdType, std::shared_ptr<GameObject>>;
+
+using ObjectList = std::vector<std::shared_ptr<GameObject>>;
 
 class IServerGameScene abstract : public std::enable_shared_from_this<IServerGameScene> {
 public:
@@ -49,67 +53,60 @@ public:
     virtual ~IServerGameScene();
 
 public:
-    std::vector<std::shared_ptr<GameObject>>& GetPlayers();
-    virtual std::vector<std::shared_ptr<GameObject>>& GetObjects() abstract;
+    PlayerList& GetPlayers();
+    virtual ObjectList& GetObjects() abstract;
     virtual std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) abstract;
 
     virtual void Init() abstract;
 
     virtual void DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerEvent>& eventQueue);
 
-    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) abstract;
+    virtual void RegisterPacketProcessFunctions() abstract;
+    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) abstract;
     virtual void Update(const float deltaTime) abstract;
     virtual void LateUpdate(const float deltaTime) abstract;
 
     virtual void AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject);
-    virtual void ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject);
+    virtual void ExitPlayer(SessionIdType id);
+
+    virtual void SpawnObject(ObjectTag tag) abstract;
+    virtual void SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
+        const SimpleMath::Vector3& pos, const SimpleMath::Vector3& size, const SimpleMath::Vector3& dir) abstract;
 
 protected:
-    std::vector<std::shared_ptr<GameObject>> mPlayerList{ };
-    std::unordered_map<SessionIdType, std::shared_ptr<GameObject>> mPlayers{ };
-};
-
-class EchoTestScene : public IServerGameScene {
-public:
-    EchoTestScene();
-    ~EchoTestScene();
-
-public:
-    virtual void Init() override { } 
-
-    virtual std::vector<std::shared_ptr<GameObject>>& GetObjects() override { return mObjects; }
-    virtual std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) override { return nullptr; }
-
-    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) override;
-    virtual void Update(const float deltaTime) override;
-    virtual void LateUpdate(const float deltaTime) override;
-
-private:
-    std::vector<std::shared_ptr<GameObject>> mObjects{ };
+    ServerPacketProcessor mPacketProcessor{ };
+    PlayerList mPlayerList{ };
+    PlayerMap mPlayers{ };
 };
 
 class PlayScene : public IServerGameScene {
-    inline static constexpr size_t MAX_OBJECT = 5; // 최대 오브젝트 개수 제한.
+    inline static constexpr size_t MAX_OBJECT = 1000; // 최대 오브젝트 개수 제한.
 
 public: 
     PlayScene();
     ~PlayScene();
 
 public:
-    virtual std::vector<std::shared_ptr<GameObject>>& GetObjects() override;
+    virtual ObjectList& GetObjects() override;
     virtual std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) override;
 
     virtual void Init() override;
 
-    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore, std::shared_ptr<class InputManager>& inputManager) override;
+    virtual void RegisterPacketProcessFunctions() override;
+    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) override;
     virtual void Update(const float deltaTime) override;
     virtual void LateUpdate(const float deltaTime) override;
 
     virtual void AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) override;
-    virtual void ExitPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) override;
+    virtual void ExitPlayer(SessionIdType id) override;
+
+    virtual void SpawnObject(ObjectTag tag) override;
+    virtual void SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
+        const SimpleMath::Vector3& pos, const SimpleMath::Vector3& size, const SimpleMath::Vector3& dir) override;
 
 private:
-    std::vector<std::shared_ptr<GameObject>> mObjects{ };
+    ObjectList mObjects{ };
+    size_t mActiveObjectCount{ };
 
     std::shared_ptr<class Terrain> mTerrain{ };
     TerrainCollider mTerrainCollider{ };

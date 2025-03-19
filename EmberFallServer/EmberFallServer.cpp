@@ -7,15 +7,12 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "pch.h"
-
 #include "ServerFrame.h"
 
 int main()
 {
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Server Project Start");
 
-    ServerFrame server{ };
-
-    server.InitGameScenes();
-    server.GameLoop();
+    gServerFrame->InitGameScenes();
+    gServerFrame->GameLoop();
 }

@@ -43,7 +43,6 @@ public:
     BT::NodeStatus ChaseDetectedPlayer(const float deltaTime);
 
 private:
-    float mHp{ 100.0f };
     SimpleMath::Vector3 mMoveDir{ SimpleMath::Vector3::Zero };
     SimpleMath::Vector3 mTargetPos{ SimpleMath::Vector3::Zero }; // TestTargetPos....
 

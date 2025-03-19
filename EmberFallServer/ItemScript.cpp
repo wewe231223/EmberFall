@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "ItemScript.h"
 
-ItemScript::ItemScript(std::shared_ptr<GameObject> owner) 
-    : Script{ owner, ObjectTag::NONE } { }
+ItemScript::ItemScript(std::shared_ptr<GameObject> owner, ItemTag item) 
+    : Script{ owner, ObjectTag::ITEM }, mItemTag{ item } { }
 
 ItemScript::~ItemScript() { }
 
@@ -12,11 +12,7 @@ void ItemScript::Update(const float deltaTime) { }
 
 void ItemScript::LateUpdate(const float deltaTime) { }
 
-void ItemScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 
-    if (ObjectTag::PLAYER == opponent->GetTag()) {
-        
-    }
-}
+void ItemScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
 void ItemScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
