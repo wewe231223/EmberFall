@@ -10,8 +10,6 @@
 #else 
 #pragma comment(lib,"out/release/MeshLoader.lib")
 #endif
-#include "../Game/System/Timer.h"
-#include "../Game/System/Input.h"
 #include "../Utility/NonReplacementSampler.h"
 #include "../MeshLoader/Loader/TerrainBaker.h"
 
@@ -19,7 +17,12 @@
 #pragma region PacketProcessFn 
 void Scene::ProcessNotifyId(PacketHeader* header) {
 	gClientCore->InitSessionId(header->id);
-	mNetworkInfoText->GetText() = std::format(L"My Session ID : {}", header->id); 
+	mNetworkInfoText->GetText() = std::format(L"My Session ID : {}", header->id);
+	mMyPlayer = mHumanPlayers.begin() + header->id;
+	*mMyPlayer = Player(mMeshMap["T_Pose"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
+
+	mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,7.f });
+	mCameraMode->Enter();
 
 }
 
@@ -36,7 +39,15 @@ void Scene::ProcessPacketProtocolVersion(PacketHeader* header) {
 }
 
 void Scene::ProcessPlayerPacket(PacketHeader* header) {
+	auto packet = reinterpret_cast<PacketSC::PacketPlayer*>(header);
 
+	auto player = mHumanPlayers.begin() + header->id;
+
+	if (player->GetActiveState() == false) {
+		*player = Player(mMeshMap["T_Pose"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
+	}
+
+	player->GetTransform().GetPosition() = packet->position;
 }
 
 void Scene::ProcessObjectPacket(PacketHeader* header) {
@@ -80,6 +91,7 @@ void Scene::ProcessRestoreHP(PacketHeader* header) {
 Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
 	
 	mInputSign = NonReplacementSampler::GetInstance().Sample(); 
+	mNetworkSign = NonReplacementSampler::GetInstance().Sample();
 	
 	gClientCore->Init();
 	if (false == gClientCore->Start("127.0.0.1", 7777)) {
@@ -126,11 +138,11 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mAnimationMap["Man"].Load("Resources/Assets/Knight/archer.gltf");
 	Scene::BuildAniamtionController(); 
 
-
-	mHumanPlayers[0] = Player(mMeshMap["T_Pose"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
-
-	mMyPlayer = mHumanPlayers.begin();
 	Scene::SetInputArcherMode(); 
+
+
+	
+
 
 		//AnimatorGraph::AnimationState idleState{}; 
 		//idleState.stateIndex = 0;
@@ -212,10 +224,8 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
 	cameraTransform.Look({ 0.f,85.f,0.f });
 
-	 mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{0.f,2.5f,7.f});
 	// mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 
-	mCameraMode->Enter();
 
 
 }
@@ -253,6 +263,33 @@ void Scene::Update() {
 	mCamera.UpdateBuffer(); 
 }
 
+void Scene::SendNetwork() {
+	auto id = gClientCore->GetSessionId();
+	PacketCS::PacketKeyInput packetInput{ sizeof(PacketCS::PacketKeyInput), PacketType::PACKET_KEYINPUT, id};
+
+	auto& keyTracker = Input.GetKeyboardTracker();
+
+	for (const auto& key : std::views::iota(static_cast<uint8_t>(0), static_cast<uint8_t>(255))) {
+		if (keyTracker.IsKeyPressed(static_cast<DirectX::Keyboard::Keys>(key)) or keyTracker.IsKeyReleased(static_cast<DirectX::Keyboard::Keys>(key))) {
+			if (keyTracker.IsKeyPressed(static_cast<DirectX::Keyboard::Keys>(key))) {
+				packetInput.key = key;
+				packetInput.down = true;
+			}
+			else if (keyTracker.IsKeyReleased(static_cast<DirectX::Keyboard::Keys>(key))) {
+				packetInput.key = key;
+				packetInput.down = false;
+			}
+			gClientCore->Send(&packetInput); 
+		}
+	}
+
+	PacketCS::PacketCamera packetCamera{ sizeof(PacketCS::PacketCamera), PacketType::PACKET_CAMERA, id };
+	packetCamera.look = mCamera.GetTransform().GetForward();
+	packetCamera.position = mCamera.GetTransform().GetPosition();
+
+	gClientCore->Send(&packetCamera);
+}
+
 void Scene::BuildPacketProcessor() {
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_PROTOCOL_VERSION, [this](PacketHeader* header) { ProcessPacketProtocolVersion(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_NOTIFY_ID, [this](PacketHeader* header) { ProcessNotifyId(header); });
@@ -266,6 +303,13 @@ void Scene::BuildPacketProcessor() {
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_PLAYER_EXIT, [this](PacketHeader* header) { ProcessPlayerExit(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_ATTACKED, [this](PacketHeader* header) { ProcessObjectAttacked(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PAKCET_ACQUIRED_ITEM, [this](PacketHeader* header) { ProcessAcquiredItem(header); });
+}
+
+void Scene::BuildSendKeyList() {
+	mSendKeyList.emplace_back(DirectX::Keyboard::Keys::W);
+	mSendKeyList.emplace_back(DirectX::Keyboard::Keys::A);
+	mSendKeyList.emplace_back(DirectX::Keyboard::Keys::S);
+	mSendKeyList.emplace_back(DirectX::Keyboard::Keys::D);
 }
 
 void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {

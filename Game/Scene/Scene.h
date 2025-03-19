@@ -3,6 +3,8 @@
 #include "../Renderer/Manager/TextureManager.h"
 #include "../Renderer/Manager/MeshRenderManager.h"
 #include "../Renderer/Core/StringRenderer.h"
+#include "../Game/System/Input.h"
+#include "../Game/System/Timer.h"
 #include "../Game/GameObject/GameObject.h"
 #include "../Game/Scene/Camera.h"
 #include "../Game/GameObject/Animator.h"
@@ -10,7 +12,6 @@
 #include "../Game/Scene/Player.h"
 #include "../ServerLib/PacketProcessor.h"
 #include "../ServerLib/PacketHandler.h"
-
 class Scene {
 public:
 	Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList ,std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation); 
@@ -18,8 +19,10 @@ public:
 public:
 	void ProcessNetwork(); 
 	void Update();
-public:
+	void SendNetwork(); 
+private:
 	void BuildPacketProcessor(); 
+	void BuildSendKeyList(); 
 
 	void BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList); 
 	void BuildMaterial();
@@ -59,7 +62,11 @@ private:
 	std::vector<GameObject> mGameObjects{};
 
 	int mNetworkSign{};
+	std::vector<DirectX::Keyboard::Keys> mSendKeyList{};
+
+
 	int mInputSign{}; 
+
 	std::array<Player, 4> mHumanPlayers{};
 	std::array<Player, 4>::iterator mMyPlayer{}; 
 	

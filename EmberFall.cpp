@@ -113,7 +113,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
             scene.ProcessNetwork(); 
             scene.Update();
-            
+            scene.SendNetwork(); 
+
             renderer.PrepareRender();
             renderer.Render();
 
