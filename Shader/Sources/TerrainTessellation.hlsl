@@ -9,6 +9,7 @@ cbuffer Camera : register(b0)
 struct ModelContext
 {
     matrix world;
+    float3 BBExtents;
     uint material;
 };
 
@@ -97,13 +98,12 @@ struct PatchTessFactor
 
 float GetTessFactor(float4 center)
 {
+    return 16.f;
+    
     float fDistToCamera = distance(center.xyz, cameraPosition);
-    float s = saturate((fDistToCamera - 80.0f) / (100.0f - 80.0f));
-    
-    
-    
-    
-    return (pow(2, lerp(5.0f, 2.f, s))) ;
+    float s = saturate((fDistToCamera - 10.0f) / (500.0f - 10.0f));
+
+    return (lerp(64.0f, 1.0f, s));
 }
 
 PatchTessFactor Constant_HS(InputPatch<Terrain_HIN, 25> patch, uint patchID : SV_PrimitiveID)
@@ -113,17 +113,30 @@ PatchTessFactor Constant_HS(InputPatch<Terrain_HIN, 25> patch, uint patchID : SV
     matrix world = modelContexts[patch[0].instanceID].world;
 
     
-    tess.EdgeTess[0] = GetTessFactor(0.5f * mul((patch[0].position + patch[4].position), world));
-    tess.EdgeTess[1] = GetTessFactor(0.5f * mul((patch[0].position + patch[20].position), world));
-    tess.EdgeTess[2] = GetTessFactor(0.5f * mul((patch[4].position + patch[24].position), world));
-    tess.EdgeTess[3] = GetTessFactor(0.5f * mul((patch[20].position + patch[24].position), world));
+    //tess.EdgeTess[0] = GetTessFactor(0.5f * mul((patch[0].position + patch[4].position), world));
+    //tess.EdgeTess[1] = GetTessFactor(0.5f * mul((patch[0].position + patch[20].position), world));
+    //tess.EdgeTess[2] = GetTessFactor(0.5f * mul((patch[4].position + patch[24].position), world));
+    //tess.EdgeTess[3] = GetTessFactor(0.5f * mul((patch[20].position + patch[24].position), world));
     
+    
+    //float3 sum = float3(0.0f, 0.0f, 0.0f);
+    //for (int i = 0; i < 25; i++)
+    //    sum += mul(patch[i].position, world).xyz;
+    //float3 center = sum / 25.0f;
+    //tess.InsideTess[0] = tess.InsideTess[1] = GetTessFactor(float4(center, 1.0f));
     
     float3 sum = float3(0.0f, 0.0f, 0.0f);
+    [unroll] 
     for (int i = 0; i < 25; i++)
-        sum += mul(patch[i].position, world).xyz;
+    {
+        sum += mul(patch[i].position, modelContexts[patch[i].instanceID].world).xyz;
+    }
     float3 center = sum / 25.0f;
-    tess.InsideTess[0] = tess.InsideTess[1] = GetTessFactor(float4(center, 1.0f));
+    
+    tess.EdgeTess[0] = GetTessFactor(float4(center, 1.0f));
+    tess.EdgeTess[1] = tess.EdgeTess[2] = tess.EdgeTess[3] = tess.EdgeTess[0];
+    tess.InsideTess[0] = tess.InsideTess[1] = tess.EdgeTess[0];
+    
     
     return tess;
 }
@@ -133,7 +146,7 @@ PatchTessFactor Constant_HS(InputPatch<Terrain_HIN, 25> patch, uint patchID : SV
 [outputtopology("triangle_cw")]
 [outputcontrolpoints(25)]
 [patchconstantfunc("Constant_HS")]
-[maxtessfactor(16.f)]
+[maxtessfactor(64.f)]
 Terrain_DIN Terrain_HS(InputPatch<Terrain_HIN, 25> patch, uint pointID : SV_OutputControlPointID, uint patchID : SV_PrimitiveID)
 {
     Terrain_DIN output;
@@ -204,6 +217,7 @@ Terrain_PIN Terrain_DS(PatchTessFactor patchTess, float2 uv : SV_DomainLocation,
 }
 
 
+
 Deffered_POUT Terrain_PS(Terrain_PIN input) 
 {
     Deffered_POUT output = (Deffered_POUT)0;
@@ -213,8 +227,9 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
     float4 BaseColor = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord1);
     float4 DetailColor = textures[materialConstants[input.material].diffuseTexture[1]].Sample(linearWrapSampler, input.texcoord2);
     
-    Color = saturate(BaseColor * 0.5f + DetailColor * 0.5f);
+    // DetailColor = GetBlendedDetail(textures[materialConstants[input.material].diffuseTexture[1]], linearWrapSampler, input.texcoord1, 10.f);
     
+    Color = saturate(BaseColor * 0.6f + DetailColor * 0.4f);
     
     output.diffuse = Color;
     

@@ -9,6 +9,7 @@ cbuffer Camera : register(b0)
 struct ModelContext
 {
     matrix world;
+    float3 BBExtents;
     uint material;
 };
 

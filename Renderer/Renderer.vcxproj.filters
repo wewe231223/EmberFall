@@ -60,6 +60,9 @@
     <ClCompile Include="Core\DefferedRenderer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Core\StringRenderer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -95,6 +98,9 @@
     <ClInclude Include="Core\DefferedRenderer.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="Core\StringRenderer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shader\Sources\Standard.hlsl">
@@ -110,6 +116,12 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="..\Shader\Sources\Deffered.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\SkeletonBoundingBoxRender.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\StandardBoundingBoxRender.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>

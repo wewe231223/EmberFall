@@ -1,11 +1,18 @@
 #include "pch.h"
 #include "MeshRenderManager.h"
+#include "../Utility/Defines.h"
 #include <ranges>
 
 MeshRenderManager::MeshRenderManager(ComPtr<ID3D12Device> device) {
 	mPlainMeshBuffer = DefaultBuffer(device, sizeof(ModelContext), MeshRenderManager::MAX_INSTANCE_COUNT<size_t>);
 	mBonedMeshBuffer = DefaultBuffer(device, sizeof(AnimationModelContext), MeshRenderManager::MAX_INSTANCE_COUNT<size_t>);
 	mAnimationBuffer = DefaultBuffer(device, sizeof(SimpleMath::Matrix), MeshRenderManager::MAX_BONE_COUNT<size_t>);
+
+	mSkeletonBoundingboxRenderShader = std::make_unique<SkeletonBBShader>();
+	mSkeletonBoundingboxRenderShader->CreateShader(device);
+
+	mStandardBoundingBoxRenderShader = std::make_unique<StandardBBShader>();
+	mStandardBoundingBoxRenderShader->CreateShader(device);
 }
 
 
@@ -19,13 +26,13 @@ void MeshRenderManager::AppendPlaneMeshContext(GraphicsShaderBase* shader, Mesh*
 	}
 }
 
-void MeshRenderManager::AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, std::vector<SimpleMath::Matrix>& boneTransform) {
+void MeshRenderManager::AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms) {
 
-	AnimationModelContext context{ world.world, world.material, mBoneCounter };	
+	AnimationModelContext context{ world.world, world.BBextents, world.material, mBoneCounter };	
 	mBonedMeshContexts[shader][mesh].emplace_back(context);
-	mBoneCounter += static_cast<UINT>(boneTransform.size());
+	mBoneCounter += boneTransforms.boneCount; 
 
-	mBoneTransforms.insert(mBoneTransforms.end(), std::make_move_iterator(boneTransform.begin()), std::make_move_iterator(boneTransform.end()));
+	mBoneTransforms.insert(mBoneTransforms.end(), std::make_move_iterator(boneTransforms.boneTransforms.begin()), std::make_move_iterator(boneTransforms.boneTransforms.begin() + boneTransforms.boneCount ));
 }
 
 void MeshRenderManager::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList) {
@@ -134,6 +141,28 @@ void MeshRenderManager::RenderPlainMesh(ComPtr<ID3D12GraphicsCommandList> comman
 			gpuIt += worlds.size();
 		}
 	}
+
+
+	gpuIt = mPlainMeshBuffer.GPUBegin() + static_cast<std::ptrdiff_t>(MeshRenderManager::RESERVED_CONTEXT_SLOT);
+
+
+	mStandardBoundingBoxRenderShader->SetShader(commandList);
+
+	commandList->IASetVertexBuffers(0, 0, nullptr);
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+	commandList->SetGraphicsRootConstantBufferView(0, camera);
+
+
+	for (auto& [shader, meshContexts] : mPlainMeshContexts) {
+		for (auto& [mesh, worlds] : meshContexts) {
+
+			commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
+			commandList->DrawInstanced(1, static_cast<UINT>(worlds.size()), 0, 0);
+
+			gpuIt += worlds.size();
+		}
+	}
+
 }
 
 void MeshRenderManager::RenderBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
@@ -165,4 +194,25 @@ void MeshRenderManager::RenderBonedMesh(ComPtr<ID3D12GraphicsCommandList> comman
 			gpuIt += worlds.size();
 		}
 	}
+
+	gpuIt = mBonedMeshBuffer.GPUBegin(); 
+
+
+	mSkeletonBoundingboxRenderShader->SetShader(commandList);
+	
+	commandList->IASetVertexBuffers(0, 0, nullptr);
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST); 
+	commandList->SetGraphicsRootConstantBufferView(0, camera);
+
+
+	for (auto& [shader, meshContexts] : mBonedMeshContexts) {
+		for (auto& [mesh, worlds] : meshContexts) {
+
+			commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
+			commandList->DrawInstanced(1, static_cast<UINT>(worlds.size()), 0, 0);
+
+			gpuIt += worlds.size(); 
+		}
+	}
+
 }

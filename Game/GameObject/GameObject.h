@@ -5,6 +5,8 @@
 #include "../Utility/Defines.h"
 #include "../Game/GameObject/Transform.h"
 #include "../GameObject/Collider.h"
+#include "../GameObject/Animator.h"
+
 #define MONO_TYPE_MESH
 
 #ifdef MONO_TYPE_MESH 
@@ -21,17 +23,23 @@ public:
 
 	void SetActiveState(bool state); 
 	void ToggleActiveState();
-	void UpdateShaderVariables(); 
+
+	void UpdateShaderVariables(BoneTransformBuffer& boneTransform); 
+	bool GetAnimatorState() const;
 public:
 	Mesh* mMesh{ nullptr };
 	GraphicsShaderBase* mShader{ nullptr };
 	MaterialIndex mMaterial{ 0 };
 
+	bool mAnimated{ false };
+	AnimatorGraph::AnimationGraphController mGraphController{};
+	AnimatorGraph::BoneMaskAnimationGraphController mBoneMaskGraphController{};
+
+	Collider mCollider{};
 private:
 	ModelContext mModelContext{};
 
 	Transform mTransform{};
-	Collider mCollider{};
 
 	bool mActiveState{ true };
 };

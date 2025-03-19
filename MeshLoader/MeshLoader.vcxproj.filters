@@ -19,6 +19,9 @@
     <Filter Include="Base">
       <UniqueIdentifier>{0c1d0592-7f49-4ee6-8d1c-e6b410d0f524}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Baker">
+      <UniqueIdentifier>{5fa4bd57-4846-4edf-ba08-6cd4349074ec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Loader\MeshLoader.cpp">
@@ -36,6 +39,15 @@
     <ClCompile Include="Base\AnimationData.cpp">
       <Filter>Base</Filter>
     </ClCompile>
+    <ClCompile Include="Loader\ColliderLoader.cpp">
+      <Filter>Loader</Filter>
+    </ClCompile>
+    <ClCompile Include="Loader\TerrainBaker.cpp">
+      <Filter>Loader</Filter>
+    </ClCompile>
+    <ClCompile Include="Baker\ColliderBaker.cpp">
+      <Filter>Baker</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Loader\MeshLoader.h">
@@ -52,6 +64,15 @@
     </ClInclude>
     <ClInclude Include="Base\AnimationData.h">
       <Filter>Base</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader\ColliderLoader.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Loader\TerrainBaker.h">
+      <Filter>Loader</Filter>
+    </ClInclude>
+    <ClInclude Include="Baker\ColliderBaker.h">
+      <Filter>Baker</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

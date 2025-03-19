@@ -7,7 +7,7 @@ struct CameraParameter {
 	float aspect{Config::WINDOW_WIDTH<float> / Config::WINDOW_HEIGHT<float> };
 	float fov{ DirectX::XMConvertToRadians(60.f) };
 	float nearZ{ 0.1f };
-	float farZ{ 5000.f };
+	float farZ{ 2000.f };
 };
 
 struct CameraConstant {
@@ -65,3 +65,18 @@ public:
 	
 	virtual ECameraMode GetMode() const override { return ECameraMode::Free; }
 };
+
+class TPPCameraMode : public CameraMode {
+public:
+	TPPCameraMode(Camera* camera, Transform& transform, const DirectX::SimpleMath::Vector3& offset);
+	virtual ~TPPCameraMode();
+public:
+	virtual void Enter() override;
+	virtual void Exit() override;
+	virtual void Update() override;
+	virtual ECameraMode GetMode() const;
+private:
+	Transform& mTargetTransform;
+	DirectX::SimpleMath::Vector3 mOffset{ DirectX::SimpleMath::Vector3::Zero };
+};
+

@@ -5,6 +5,7 @@
 #include "../Utility/Serializer.h"
 #include "../Utility/Exceptions.h"
 #include "../Utility/Crash.h"
+#define DIRECTWRITE
 
 struct CameraConstants {
 	SimpleMath::Matrix view;
@@ -15,6 +16,9 @@ struct CameraConstants {
 
 Renderer::Renderer(HWND rendererWindowHandle)
 	: mRendererWindow(rendererWindowHandle) {
+
+
+
 
 	// 셰이더 매니저 테스트용.. 
 	gShaderManager.Test();
@@ -27,15 +31,19 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitCommandList();
 	Renderer::InitRenderTargets();
 	Renderer::InitDepthStencilBuffer();
+	Renderer::InitStringRenderer();
 
 	Renderer::ResetCommandList();
 
 	Renderer::InitCoreResources(); 
 	Renderer::InitDefferedRenderer();
+
+
+	static auto text = TextBlockManager::GetInstance().CreateTextBlock(L"Hello, World!", { 50, 50, 140, 140 }, StringColor::Seashell, "NotoSansKR");
 }
 
 Renderer::~Renderer() {
-
+	Renderer::FlushCommandQueue(); 
 }
 
 
@@ -145,18 +153,27 @@ void Renderer::Render() {
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
 	mDefferedRenderer.Render(mCommandList);
-
+#ifndef DIRECTWRITE 
 	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
 	CheckHR(mCommandList->Close());
 	ID3D12CommandList* commandLists[] = { mCommandList.Get() };
 	mCommandQueue->ExecuteCommandLists(1, commandLists);
+	Renderer::FlushCommandQueue();
 
 	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
-
 	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
-
+#else 
+	CheckHR(mCommandList->Close());
+	ID3D12CommandList* commandLists[] = { mCommandList.Get() };
+	mCommandQueue->ExecuteCommandLists(1, commandLists);
 	Renderer::FlushCommandQueue();
+
+	mStringRenderer.Render();
+
+	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
+	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
+#endif
 }
 
 void Renderer::InitFactory() {
@@ -173,8 +190,54 @@ void Renderer::InitFactory() {
 #endif
 }
 
+ComPtr<IDXGIAdapter1> Renderer::GetBestAdapter() {
+	OutputDebugString(L"\n\n====================Selecting Adapter====================\n\n");
+
+	ComPtr<IDXGIAdapter1> bestAdapter;
+	size_t maxVRAM = 0;
+
+	std::wstring message{};
+
+	for (UINT i = 0; ; i++) {
+		ComPtr<IDXGIAdapter1> adapter;
+		if (mFactory->EnumAdapters1(i, &adapter) == DXGI_ERROR_NOT_FOUND) {
+			break;
+		}
+
+		DXGI_ADAPTER_DESC1 desc;
+		adapter->GetDesc1(&desc);
+
+		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) continue;
+		message = std::format(L"Adapter{:^3} : {} | VRAM: {} MB\n", i, desc.Description, desc.DedicatedVideoMemory / (1024 * 1024));
+		OutputDebugString(message.c_str());
+
+		if (desc.DedicatedVideoMemory > maxVRAM) {
+			maxVRAM = desc.DedicatedVideoMemory;
+			bestAdapter = adapter;
+		}
+	}
+
+	if (bestAdapter) {
+		DXGI_ADAPTER_DESC1 bestDesc;
+		bestAdapter->GetDesc1(&bestDesc);
+
+		message = std::format(L"Selected Adapter: {} | VRAM: {} MB\n", bestDesc.Description, bestDesc.DedicatedVideoMemory / (1024 * 1024));
+		OutputDebugString(message.c_str());
+	}
+	else {
+		OutputDebugStringA("No suitable GPU found.\n");
+	}
+	OutputDebugString(L"\n=========================================================\n\n");
+
+	return bestAdapter;
+}
+
 void Renderer::InitDevice() {
-	auto hr = ::D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice));
+	ComPtr<IDXGIAdapter1> adapter = GetBestAdapter();
+
+	CrashExp(adapter != nullptr, "No suitable GPU found.");
+
+	auto hr = ::D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice));
 
 	if (FAILED(hr)) {
 		ComPtr<IDXGIAdapter> warpAdapter{ nullptr };
@@ -302,6 +365,16 @@ void Renderer::InitDepthStencilBuffer() {
 	);
 
 	mDevice->CreateDepthStencilView(mDepthStencilBuffer.GetResource().Get(), nullptr, mDSHeap->GetCPUDescriptorHandleForHeapStart());
+}
+
+void Renderer::InitStringRenderer() {
+	mStringRenderer.Initialize(mDevice, mCommandQueue, mRenderTargets);
+	Renderer::InitFonts(); 
+	TextBlockManager::GetInstance().Initialize(&mStringRenderer);
+}
+
+void Renderer::InitFonts() {
+	mStringRenderer.LoadExternalFont("NotoSansKR", "Resources/Font/NotoSansKR-Regular-Hestia.otf", L"Noto Sans KR", L"ko-kr");
 }
 
 void Renderer::InitCoreResources() {

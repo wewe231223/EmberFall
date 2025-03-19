@@ -1,12 +1,13 @@
 #include "pch.h"
 #include "GameObject.h"
+#include "../Game/System/Timer.h"
 
 GameObject::operator bool() const {
 	return mActiveState;
 }
 
 std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GameObject::GetRenderData() const {
-	return std::make_tuple(mMesh, mShader, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mMaterial});
+	return std::make_tuple(mMesh, mShader, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mCollider.GetExtents() ,mMaterial});
 }
 
 const Transform& GameObject::GetTransform() const {
@@ -25,7 +26,23 @@ void GameObject::ToggleActiveState() {
 	mActiveState = !mActiveState;
 }
 
-void GameObject::UpdateShaderVariables(){
+void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransform) {
+	static double counter{ 0.0 };
+	counter += 0.00000001;
+
+	if (mAnimated) {
+		// mGraphController.Update(Time.GetDeltaTime(), boneTransform);
+		 mBoneMaskGraphController.Update(Time.GetDeltaTime(), boneTransform);
+	}
+
+	if (mCollider.GetActiveState()) {
+		mCollider.UpdateBox(mTransform.GetWorldMatrix());
+	}
+
 	mTransform.UpdateWorldMatrix();
 	mModelContext.world = mTransform.GetWorldMatrix();
+}
+
+bool GameObject::GetAnimatorState() const {
+	return mAnimated; 
 }

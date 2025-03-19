@@ -18,6 +18,7 @@
 #include "../Manager/MeshRenderManager.h"
 #include "../Manager/TextureManager.h"
 #include "../Resource/Mesh.h"
+#include "../Renderer/Core/StringRenderer.h"
 
 class Renderer {
 public:
@@ -44,6 +45,7 @@ public:
 	void Render();
 private:
 	void InitFactory();
+	ComPtr<IDXGIAdapter1> GetBestAdapter();
 	void InitDevice();
 	void InitCommandQueue();
 	void InitFence();
@@ -51,6 +53,10 @@ private:
 	void InitCommandList();
 	void InitRenderTargets();
 	void InitDepthStencilBuffer();
+
+	void InitStringRenderer(); 
+	void InitFonts(); 
+
 	void InitCoreResources(); 
 	void InitDefferedRenderer();
 
@@ -83,6 +89,8 @@ private:
 	ComPtr<ID3D12DescriptorHeap> mRTVHeap{ nullptr };
 	std::array<Texture, Config::BACKBUFFER_COUNT<UINT>> mRenderTargets{};
 	UINT mRTIndex{ 0 };
+
+	StringRenderer mStringRenderer{}; 
 
 	/*
 	1. diffuse 

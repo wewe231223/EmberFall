@@ -2,37 +2,28 @@
 #include "Collider.h"
 #include "../GameObject/GameObject.h"
 
-Collider::Collider(GameObject* owner, DirectX::BoundingOrientedBox box, std::function<void(GameObject*, GameObject*)> onCollision) : mOwner(owner), mOriginBox(box), mOnCollision(onCollision) {
+Collider::Collider(std::vector<DirectX::XMFLOAT3>& positions) {
+	DirectX::BoundingOrientedBox::CreateFromPoints(mOrigin, positions.size(), positions.data(), sizeof(DirectX::XMFLOAT3));
+	mActive = true;
 }
 
-void Collider::Update(Transform& transform) {
-	mOriginBox.Transform(mBox, transform.GetWorldMatrix());
+Collider::Collider(DirectX::BoundingBox box) {
+	DirectX::BoundingOrientedBox::CreateFromBoundingBox(mOrigin, box);
+	mActive = true;
 }
 
-void Collider::Test(Collider& other) {
-	if (mBox.Intersects(other.mBox)) {
-		if (mOnCollision) {
-			std::invoke(mOnCollision, mOwner, other.mOwner);
-		}
-
-		for (auto& box : mCompositeBox) {
-			box.Test(other);
-		}
-
-		for (auto& box : other.mCompositeBox) {
-			Test(box);
-		}
-	}
+bool Collider::GetActiveState() const {
+	return mActive;
 }
 
-void FrustumCollider::InitializeViewFrustum(SimpleMath::Matrix& proj) {
-	DirectX::BoundingFrustum::CreateFromMatrix(mViewFrustum, proj);
+void Collider::UpdateBox(SimpleMath::Matrix& world) {
+	mOrigin.Transform(mWorld, world);
 }
 
-void FrustumCollider::Update(SimpleMath::Matrix& view) {
-	mViewFrustum.Transform(mWorldFrustum, view.Invert());
+SimpleMath::Vector3 Collider::GetExtents() const {
+	return mOrigin.Extents;
 }
 
-bool FrustumCollider::Intersect(Collider& other) {
-    return mWorldFrustum.Intersects(other.mBox);
+bool Collider::CheckCollision(Collider& other) {
+	return mWorld.Intersects(other.mWorld);
 }

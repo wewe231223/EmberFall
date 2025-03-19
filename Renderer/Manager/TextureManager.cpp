@@ -22,7 +22,7 @@ TextureManager::TextureManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graphic
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.Format = pair.second.GetResource()->GetDesc().Format;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MipLevels = pair.second.GetResource()->GetDesc().MipLevels;
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE handle{ mTextureHeap->GetCPUDescriptorHandleForHeapStart() };
 	device->CreateShaderResourceView(pair.second.GetResource().Get(), &srvDesc, handle);

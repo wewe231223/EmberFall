@@ -5,6 +5,7 @@
 #include "../Resource/Mesh.h"
 #include "../Core/Shader.h"
 #include "../Utility/Defines.h"
+#include "../Config/Config.h"
 
 #ifdef max 
 #undef max
@@ -12,10 +13,10 @@
 
 class MeshRenderManager {
 	template<typename T>
-	static constexpr T MAX_INSTANCE_COUNT = static_cast<T>(65535);
+	static constexpr T MAX_INSTANCE_COUNT = static_cast<T>(2048);
 
 	template<typename T> 
-	static constexpr T MAX_BONE_COUNT = static_cast<T>(MAX_INSTANCE_COUNT<T> * 100);
+	static constexpr T MAX_BONE_COUNT = static_cast<T>(MAX_INSTANCE_COUNT<T> * Config::MAX_BONE_COUNT_PER_INSTANCE<T>);
 
 	static constexpr UINT RESERVED_CONTEXT_SLOT = 8;
 public:
@@ -30,7 +31,7 @@ public:
 	MeshRenderManager& operator=(MeshRenderManager&& other) = default;
 public:
 	void AppendPlaneMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, UINT reservedSlot = std::numeric_limits<UINT>::max() );
-	void AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, std::vector<SimpleMath::Matrix>& boneTransform);
+	void AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms );
 
 	void PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList);
 	void Render(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
@@ -52,4 +53,7 @@ private:
 	
 	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<ModelContext>>> mPlainMeshReserved{};
 	std::unordered_map<GraphicsShaderBase* ,std::unordered_map<Mesh*, std::vector<ModelContext>>> mPlainMeshContexts{};
+
+	std::unique_ptr<GraphicsShaderBase> mSkeletonBoundingboxRenderShader{};
+	std::unique_ptr<GraphicsShaderBase> mStandardBoundingBoxRenderShader{}; 
 };

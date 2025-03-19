@@ -15,6 +15,26 @@ struct BoneAnimation {
 	std::vector<std::pair<double, SimpleMath::Vector3>> scalingKey{};
 };
 
+struct BoneNode {
+    UINT index; 
+    SimpleMath::Matrix transformation;
+    std::vector<std::shared_ptr<BoneNode>> children;
+};
+
+struct AnimationClip {
+    double duration{ 0.0 };
+    double ticksPerSecond{ 0.0 };
+
+    DirectX::SimpleMath::Matrix globalInverseTransform{ SimpleMath::Matrix::Identity };
+
+    std::vector<SimpleMath::Matrix> boneOffsetMatrices{};
+    std::unordered_map<UINT, BoneAnimation> boneAnimations{};
+
+    std::shared_ptr<BoneNode> root{ nullptr };
+};
+
+
+// ---------------------------------------------------------------------------------------------------------------------------
 namespace Legacy {
     struct BoneNode {
         std::string name; // <-----------------------------------------------  1) A 라는 이름 
@@ -35,27 +55,3 @@ namespace Legacy {
         std::shared_ptr<BoneNode> root{ nullptr };
     };
 }
-
-// ---------------------------------------------------------------------------------------------------------------------------
-
-
-struct BoneNode {
-    UINT index; 
-    SimpleMath::Matrix transformation;
-    std::vector<std::shared_ptr<BoneNode>> children;
-};
-
-struct AnimationClip {
-    float duration{ 0.0 };
-    float ticksPerSecond{ 0.f };
-
-    DirectX::SimpleMath::Matrix globalInverseTransform{ SimpleMath::Matrix::Identity };
-
-    std::vector<SimpleMath::Matrix> boneOffsetMatrices{};
-    std::unordered_map<UINT, BoneAnimation> boneAnimations{};
-
-    std::shared_ptr<BoneNode> root{ nullptr };
-};
-
-
-// ---------------------------------------------------------------------------------------------------------------------------

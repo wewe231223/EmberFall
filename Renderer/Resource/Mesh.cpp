@@ -48,60 +48,67 @@ Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comman
 	{
 		float halfSize = size * 0.5f;
 
-		SimpleMath::Vector3 cubeNormals[] = {
-			{0, 0, -1}, {0, 0, 1}, {0, -1, 0}, {0, 1, 0}, {-1, 0, 0}, {1, 0, 0}
+		DirectX::XMFLOAT3 cubePositions[] = {
+			// Front Face
+			{-halfSize, -halfSize,  halfSize}, { halfSize, -halfSize,  halfSize}, {-halfSize,  halfSize,  halfSize},
+			{ halfSize, -halfSize,  halfSize}, { halfSize,  halfSize,  halfSize}, {-halfSize,  halfSize,  halfSize},
+			// Back Face
+			{ halfSize, -halfSize, -halfSize}, {-halfSize, -halfSize, -halfSize}, { halfSize,  halfSize, -halfSize},
+			{-halfSize, -halfSize, -halfSize}, {-halfSize,  halfSize, -halfSize}, { halfSize,  halfSize, -halfSize},
+			// Left Face
+			{-halfSize, -halfSize, -halfSize}, {-halfSize, -halfSize,  halfSize}, {-halfSize,  halfSize, -halfSize},
+			{-halfSize, -halfSize,  halfSize}, {-halfSize,  halfSize,  halfSize}, {-halfSize,  halfSize, -halfSize},
+			// Right Face
+			{ halfSize, -halfSize,  halfSize}, { halfSize, -halfSize, -halfSize}, { halfSize,  halfSize,  halfSize},
+			{ halfSize, -halfSize, -halfSize}, { halfSize,  halfSize, -halfSize}, { halfSize,  halfSize,  halfSize},
+			// Top Face
+			{-halfSize,  halfSize,  halfSize}, { halfSize,  halfSize,  halfSize}, {-halfSize,  halfSize, -halfSize},
+			{ halfSize,  halfSize,  halfSize}, { halfSize,  halfSize, -halfSize}, {-halfSize,  halfSize, -halfSize},
+			// Bottom Face
+			{-halfSize, -halfSize, -halfSize}, { halfSize, -halfSize, -halfSize}, {-halfSize, -halfSize,  halfSize},
+			{ halfSize, -halfSize, -halfSize}, { halfSize, -halfSize,  halfSize}, {-halfSize, -halfSize,  halfSize}
 		};
 
-		SimpleMath::Vector3 cubePositions[] = {
-			{-halfSize, -halfSize, -halfSize}, {halfSize, -halfSize, -halfSize},
-			{halfSize, halfSize, -halfSize}, {-halfSize, halfSize, -halfSize},
-			{-halfSize, -halfSize, halfSize}, {halfSize, -halfSize, halfSize},
-			{halfSize, halfSize, halfSize}, {-halfSize, halfSize, halfSize}
+		DirectX::XMFLOAT3 cubeNormals[] = {
+		  {0.0f,  0.0f,  1.0f}, {0.0f,  0.0f,  1.0f}, {0.0f,  0.0f,  1.0f},
+		  {0.0f,  0.0f,  1.0f}, {0.0f,  0.0f,  1.0f}, {0.0f,  0.0f,  1.0f},
+		  {0.0f,  0.0f, -1.0f}, {0.0f,  0.0f, -1.0f}, {0.0f,  0.0f, -1.0f},
+		  {0.0f,  0.0f, -1.0f}, {0.0f,  0.0f, -1.0f}, {0.0f,  0.0f, -1.0f},
+		  {-1.0f,  0.0f,  0.0f}, {-1.0f,  0.0f,  0.0f}, {-1.0f,  0.0f,  0.0f},
+		  {-1.0f,  0.0f,  0.0f}, {-1.0f,  0.0f,  0.0f}, {-1.0f,  0.0f,  0.0f},
+		  {1.0f,  0.0f,  0.0f}, {1.0f,  0.0f,  0.0f}, {1.0f,  0.0f,  0.0f},
+		  {1.0f,  0.0f,  0.0f}, {1.0f,  0.0f,  0.0f}, {1.0f,  0.0f,  0.0f},
+		  {0.0f,  1.0f,  0.0f}, {0.0f,  1.0f,  0.0f}, {0.0f,  1.0f,  0.0f},
+		  {0.0f,  1.0f,  0.0f}, {0.0f,  1.0f,  0.0f}, {0.0f,  1.0f,  0.0f},
+		  {0.0f, -1.0f,  0.0f}, {0.0f, -1.0f,  0.0f}, {0.0f, -1.0f,  0.0f},
+		  {0.0f, -1.0f,  0.0f}, {0.0f, -1.0f,  0.0f}, {0.0f, -1.0f,  0.0f}
 		};
 
-		SimpleMath::Vector2 cubeTexcoords[] = {
-			{0.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f}
+		DirectX::XMFLOAT2 cubeTexcoords[] = {
+		{0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f},
+		{1.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f},
+		{0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f},
+		{1.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f},
+		{0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f},
+		{1.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f},
+		{0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f},
+		{1.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f},
+		{0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f},
+		{1.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f},
+		{0.0f, 1.0f}, {1.0f, 1.0f}, {0.0f, 0.0f},
+		{1.0f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f},
 		};
 
-		UINT cubeFaces[][4] = {
-			{0, 1, 2, 3},  // Front
-			{4, 5, 6, 7},  // Back
-			{0, 4, 7, 3},  // Left
-			{1, 5, 6, 2},  // Right
-			{0, 1, 5, 4},  // Bottom
-			{3, 2, 6, 7}   // Top
-		};
 
-		for (int face = 0; face < 6; ++face) {
-			for (int i = 0; i < 2; ++i) {
-				positions.push_back(cubePositions[cubeFaces[face][0]]);
-				normals.push_back(cubeNormals[face]);
-				texcoords.push_back(cubeTexcoords[0]);
-
-				positions.push_back(cubePositions[cubeFaces[face][1]]);
-				normals.push_back(cubeNormals[face]);
-				texcoords.push_back(cubeTexcoords[1]);
-
-				positions.push_back(cubePositions[cubeFaces[face][2]]);
-				normals.push_back(cubeNormals[face]);
-				texcoords.push_back(cubeTexcoords[2]);
-
-				positions.push_back(cubePositions[cubeFaces[face][0]]);
-				normals.push_back(cubeNormals[face]);
-				texcoords.push_back(cubeTexcoords[0]);
-
-				positions.push_back(cubePositions[cubeFaces[face][2]]);
-				normals.push_back(cubeNormals[face]);
-				texcoords.push_back(cubeTexcoords[2]);
-
-				positions.push_back(cubePositions[cubeFaces[face][3]]);
-				normals.push_back(cubeNormals[face]);
-				texcoords.push_back(cubeTexcoords[3]);
-			}
-		}
+		positions.assign(cubePositions, cubePositions + 36);
+		normals.assign(cubeNormals, cubeNormals + 36);
+		texcoords.assign(cubeTexcoords, cubeTexcoords + 36);
 
 		mIndexed = false;
-		mUnitCount = static_cast<UINT>(positions.size());
+		mUnitCount = 36;
+
+		mPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
 	}
 	break;
 	case EmbeddedMeshType::Sphere:
