@@ -184,6 +184,7 @@
     <ClCompile Include="Trigger.cpp" />
     <ClCompile Include="ViewList.cpp" />
     <ClCompile Include="Weapon.cpp" />
+    <ClCompile Include="WeaponSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AttackSystem.h" />
@@ -225,6 +226,7 @@
     <ClInclude Include="Trigger.h" />
     <ClInclude Include="ViewList.h" />
     <ClInclude Include="Weapon.h" />
+    <ClInclude Include="WeaponSystem.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

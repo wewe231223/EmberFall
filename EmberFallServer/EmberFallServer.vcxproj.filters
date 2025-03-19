@@ -202,6 +202,9 @@
     <ClCompile Include="GameEventFactory.cpp">
       <Filter>GameEvent</Filter>
     </ClCompile>
+    <ClCompile Include="WeaponSystem.cpp">
+      <Filter>Weapon</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -320,6 +323,9 @@
     </ClInclude>
     <ClInclude Include="GameEventFactory.h">
       <Filter>GameEvent</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponSystem.h">
+      <Filter>Weapon</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

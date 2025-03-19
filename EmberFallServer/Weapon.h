@@ -8,18 +8,55 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class IWeapon abstract {
-public:
-    IWeapon(Weapon tag);
-    virtual ~IWeapon();
+namespace Weapons {
+    class IWeapon abstract {
+    public:
+        IWeapon(Weapon type);
+        virtual ~IWeapon();
 
-public:
-    virtual void Attack(const SimpleMath::Vector3& dir) abstract;
+    public:
+        Weapon GetWeaponType() const;
+        std::shared_ptr<class Collider> GetHitbox() const;
 
-protected:
-    float mDamage{ };
+        virtual void Attack(const SimpleMath::Vector3& dir) abstract;
 
-private:
-    Weapon mWeaponTag;
-    std::shared_ptr<class Collider> mHitbox{ };
-};
+    public:
+        GameUnits::GameUnit<GameUnits::StandardTime> mAttackDelay{ };
+
+    protected:
+        bool mAttackable{ true };
+        float mDamage{ };
+        std::shared_ptr<class Collider> mHitbox{ };
+
+    private:
+        Weapon mWeaponType;
+    };
+
+    class Spear : public IWeapon {
+    public:
+        Spear(const SimpleMath::Vector3& hitBoxSize);
+        virtual ~Spear();
+
+    public:
+        virtual void Attack(const SimpleMath::Vector3& dir) override;
+    };
+
+    class Bow : public IWeapon {
+        Bow(const SimpleMath::Vector3& hitBoxSize, GameUnits::GameUnit<GameUnits::StandardSpeed> arrowSpeed);
+        virtual ~Bow();
+    
+    public:
+        virtual void Attack(const SimpleMath::Vector3& dir) override;
+    
+    private:
+        GameUnits::GameUnit<GameUnits::StandardSpeed> mArrowSpeed{ };
+    };
+
+    class Sword : public IWeapon {
+        Sword(const SimpleMath::Vector3& hitBoxSize);
+        virtual ~Sword();
+    
+    public:
+        virtual void Attack(const SimpleMath::Vector3& dir) override;
+    };
+}

@@ -72,6 +72,7 @@ struct PacketProtocolVersion : public PacketHeader {
     uint8_t minor{ PROTOCOL_VERSION_MINOR };
 };
 
+// if ObjectId >= 256 then Object Packet else Player Packet
 namespace PacketSC { // Server To Client
     struct PacketNotifyId : public PacketHeader { };
 

@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "ItemScript.h"
 
-ItemScript::ItemScript(std::shared_ptr<GameObject> owner)
-    : Script{ owner, ObjectTag::ITEM } { }
+ItemScript::ItemScript(std::shared_ptr<GameObject> owner, ItemTag item) 
+    : Script{ owner, ObjectTag::ITEM }, mItemTag{ item } { }
 
 ItemScript::~ItemScript() { }
 

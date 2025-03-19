@@ -2,6 +2,7 @@
 #include "ObjectBuilder.h"
 #include "PlayerScript.h"
 #include "MonsterScript.h"
+#include "ItemScript.h"
 #include "CorruptedGem.h"
 #include "Trigger.h"
 
@@ -32,3 +33,9 @@ void ObjectBuilder::BuildTrigger(std::shared_ptr<GameObject>& gameObject, std::s
 
     gameObject->Init();
 }
+
+//void ObjectBuilder::BuildItem(std::shared_ptr<GameObject>& gameObject, ItemTag item) {
+//    gameObject->ClearComponents();
+//
+//    gameObject->CreateComponent<ItemScript>(gameObject);
+//}

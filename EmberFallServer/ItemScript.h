@@ -9,11 +9,12 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+#include "Item.h"
 #include "Script.h"
 
 class ItemScript : public Script {
 public:
-    ItemScript(std::shared_ptr<GameObject> owner);
+    ItemScript(std::shared_ptr<GameObject> owner, ItemTag item);
     virtual ~ItemScript();
 
 private:
@@ -27,4 +28,7 @@ private:
     virtual void OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
 
     virtual void DispatchGameEvent(struct GameEvent* event) override;
+
+private:
+    ItemTag mItemTag{ };
 };
