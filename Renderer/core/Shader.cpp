@@ -874,3 +874,37 @@ D3D12_SHADER_BYTECODE DefferedShader::CreatePixelShader() {
 	auto& blob = gShaderManager.GetShaderBlob("Deffered", ShaderType::PixelShader);
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }
+
+BBShader::BBShader() {
+}
+
+void BBShader::CreateShader(ComPtr<ID3D12Device> device) {
+}
+
+GraphcsShaderBase::InputLayout BBShader::CreateInputLayout() {
+	return InputLayout();
+}
+
+RootParameters BBShader::CreateRootParameters()
+{
+	return RootParameters();
+}
+
+UINT BBShader::CreateNumOfRenderTarget()
+{
+	return 0;
+}
+
+void BBShader::CreateRTVFormat(const std::span<DXGI_FORMAT>&)
+{
+}
+
+D3D12_SHADER_BYTECODE BBShader::CreateVertexShader()
+{
+	return D3D12_SHADER_BYTECODE();
+}
+
+D3D12_SHADER_BYTECODE BBShader::CreatePixelShader()
+{
+	return D3D12_SHADER_BYTECODE();
+}

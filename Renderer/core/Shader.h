@@ -159,8 +159,6 @@ protected:
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
 };
 
-
-
 class SkyBoxShader : public GraphicsShaderBase {
 public:
 	SkyBoxShader();
@@ -172,6 +170,23 @@ protected:
 	virtual RootParameters CreateRootParameters() override;
 
 	virtual D3D12_DEPTH_STENCIL_DESC CreateDepthStencilState() override;
+
+	virtual UINT CreateNumOfRenderTarget() override;
+	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&) override;
+
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
+};
+
+class BBShader : public GraphicsShaderBase {
+public:
+	BBShader();
+	virtual ~BBShader() = default;
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+protected:
+	virtual InputLayout CreateInputLayout() override;
+	virtual RootParameters CreateRootParameters() override;
 
 	virtual UINT CreateNumOfRenderTarget() override;
 	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&) override;

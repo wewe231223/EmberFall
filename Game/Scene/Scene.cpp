@@ -133,7 +133,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 			{
 				AnimatorGraph::AnimationTransition attackToRun{};
 				attackToRun.targetStateIndex = 1;
-				attackToRun.blendDuration = 0.3;
+				attackToRun.blendDuration = 0.1;
 				attackToRun.parameterName = "Run";
 				attackToRun.expectedValue = true;
 				attackToRun.triggerOnEnd = true;
@@ -144,15 +144,12 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 				attackToIdle.blendDuration = 0.2;
 				attackToIdle.parameterName = "Run";
 				attackToIdle.expectedValue = false;
-				attackToIdle.triggerOnEnd = true;
+				attackToIdle.triggerOnEnd = false;
 				runAttack.transitions.emplace_back(attackToIdle);
 			}
 
-
-			
-
-
 			std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, runState,  runAttack };
+
 			mPlayer.mBoneMaskGraphController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
 			mPlayer.mBoneMaskGraphController.AddParameter("Run", AnimatorGraph::ParameterType::Bool);
 			mPlayer.mBoneMaskGraphController.AddParameter("Attack", AnimatorGraph::ParameterType::Trigger);
