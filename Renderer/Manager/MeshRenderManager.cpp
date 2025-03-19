@@ -7,6 +7,9 @@ MeshRenderManager::MeshRenderManager(ComPtr<ID3D12Device> device) {
 	mPlainMeshBuffer = DefaultBuffer(device, sizeof(ModelContext), MeshRenderManager::MAX_INSTANCE_COUNT<size_t>);
 	mBonedMeshBuffer = DefaultBuffer(device, sizeof(AnimationModelContext), MeshRenderManager::MAX_INSTANCE_COUNT<size_t>);
 	mAnimationBuffer = DefaultBuffer(device, sizeof(SimpleMath::Matrix), MeshRenderManager::MAX_BONE_COUNT<size_t>);
+
+	mBoundingBoxRenderShader = std::make_unique<BBShader>();
+	mBoundingBoxRenderShader->CreateShader(device);
 }
 
 
@@ -166,4 +169,25 @@ void MeshRenderManager::RenderBonedMesh(ComPtr<ID3D12GraphicsCommandList> comman
 			gpuIt += worlds.size();
 		}
 	}
+
+	gpuIt = mBonedMeshBuffer.GPUBegin(); 
+
+
+	mBoundingBoxRenderShader->SetShader(commandList);
+	
+	commandList->IASetVertexBuffers(0, 0, nullptr);
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST); 
+	commandList->SetGraphicsRootConstantBufferView(0, camera);
+
+
+	for (auto& [shader, meshContexts] : mBonedMeshContexts) {
+		for (auto& [mesh, worlds] : meshContexts) {
+
+			commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
+			commandList->DrawInstanced(1, static_cast<UINT>(worlds.size()), 0, 0);
+
+			gpuIt += worlds.size(); 
+		}
+	}
+
 }

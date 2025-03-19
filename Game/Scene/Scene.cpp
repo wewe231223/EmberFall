@@ -133,7 +133,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 			{
 				AnimatorGraph::AnimationTransition attackToRun{};
 				attackToRun.targetStateIndex = 1;
-				attackToRun.blendDuration = 0.1;
+				attackToRun.blendDuration = 0.3;
 				attackToRun.parameterName = "Run";
 				attackToRun.expectedValue = true;
 				attackToRun.triggerOnEnd = true;
