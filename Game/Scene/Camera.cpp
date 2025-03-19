@@ -106,23 +106,20 @@ void TPPCameraMode::Update() {
 
 	mCamera->GetTransform().GetRotation() = DirectX::SimpleMath::Quaternion::Identity;
 
-	// 목표 방향 벡터 계산 (XZ 평면에서)
 	DirectX::SimpleMath::Vector3 direction = mTargetTransform.GetPosition() - mCamera->GetTransform().GetPosition();
-	direction.y = 0; // Y축 성분 제거하여 수평 회전만 고려
+	direction.y = 0; 
 	direction.Normalize();
 
-	// Yaw 회전 계산
 	float yaw = std::atan2(direction.x, direction.z);
-
 	static float pitch = 0.f;
 
-	pitch += Input.GetDeltaMouseY() * Time.GetSmoothDeltaTime<float>() * 0.7f;
+	pitch += Input.GetDeltaMouseY() * Time.GetSmoothDeltaTime<float>() * 0.3f;
 
-	if (pitch > DirectX::XMConvertToRadians(30.f)) {
-		pitch = DirectX::XMConvertToRadians(30.f);
+	if (pitch > DirectX::XMConvertToRadians(20.f)) {
+		pitch = DirectX::XMConvertToRadians(20.f);
 	}
-	if (pitch < DirectX::XMConvertToRadians(-30.f)) {
-		pitch = DirectX::XMConvertToRadians(-30.f);
+	if (pitch < DirectX::XMConvertToRadians(-20.f)) {
+		pitch = DirectX::XMConvertToRadians(-20.f);
 	}
 
 	mCamera->GetTransform().Rotate(pitch, yaw, 0.f);

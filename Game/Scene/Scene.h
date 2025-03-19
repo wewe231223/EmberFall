@@ -8,6 +8,8 @@
 #include "../Game/GameObject/Animator.h"
 #include "../MeshLoader/Loader/TerrainLoader.h"
 #include "../Game/Scene/Player.h"
+#include "../ServerLib/PacketProcessor.h"
+#include "../ServerLib/PacketHandler.h"
 
 class Scene {
 public:
@@ -17,6 +19,8 @@ public:
 	void ProcessNetwork(); 
 	void Update();
 public:
+	void BuildPacketProcessor(); 
+
 	void BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList); 
 	void BuildMaterial();
 	void BuildShader(ComPtr<ID3D12Device> device);
@@ -26,6 +30,19 @@ public:
 	void SetInputSwordManMode();
 	void SetInputMageMode();
 private:
+	void ProcessNotifyId(PacketHeader* header);
+	void ProcessPacketProtocolVersion(PacketHeader* header);
+	void ProcessPlayerPacket(PacketHeader* header);
+	void ProcessObjectPacket(PacketHeader* header);
+	void ProcessObjectDead(PacketHeader* header);
+	void ProcessObjectAppeared(PacketHeader* header);
+	void ProcessObjectDisappeared(PacketHeader* header);
+	void ProcessPlayerExit(PacketHeader* header);
+	void ProcessAcquiredItem(PacketHeader* header);
+	void ProcessObjectAttacked(PacketHeader* header);
+	void ProcessUseItem(PacketHeader* header);
+	void ProcessRestoreHP(PacketHeader* header);
+private:
 	std::shared_ptr<TextureManager> mTextureManager{ nullptr };
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{ nullptr };
 	std::shared_ptr<MaterialManager> mMaterialManager{ nullptr };
@@ -33,6 +50,8 @@ private:
 	std::unordered_map<std::string, std::unique_ptr<Mesh>> mMeshMap{};
 	std::unordered_map<std::string, std::unique_ptr<GraphicsShaderBase>> mShaderMap{};
 	std::unordered_map<std::string, AnimationLoader> mAnimationMap{};
+
+	ClientPacketProcessor mPacketProcessor{};
 
 	Camera mCamera{};
 	std::unique_ptr<CameraMode> mCameraMode{ nullptr };
@@ -53,5 +72,5 @@ private:
 	TerrainLoader tLoader{}; 
 	TerrainCollider tCollider{};
 
-	TextBlock* mPickedObjectText{ TextBlockManager::GetInstance().CreateTextBlock(L"",D2D1_RECT_F{100.f,0.f,800.f,100.f},StringColor::Black, "NotoSansKR") };
+	TextBlock* mNetworkInfoText{ TextBlockManager::GetInstance().CreateTextBlock(L"",D2D1_RECT_F{100.f,0.f,800.f,100.f},StringColor::Black, "NotoSansKR") };
 };

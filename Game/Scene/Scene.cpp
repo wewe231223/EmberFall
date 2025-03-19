@@ -1,3 +1,5 @@
+#include <ranges>
+#include <random>
 #include "pch.h"
 #include "Scene.h"
 #include "../Renderer/Core/Renderer.h"
@@ -8,17 +10,81 @@
 #else 
 #pragma comment(lib,"out/release/MeshLoader.lib")
 #endif
-#include <ranges>
-#include <random>
 #include "../Game/System/Timer.h"
 #include "../Game/System/Input.h"
 #include "../Utility/NonReplacementSampler.h"
 #include "../MeshLoader/Loader/TerrainBaker.h"
 
-Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
-	tCollider.LoadFromFile("Resources/Binarys/Terrain/TerrainBaked.bin");
 
+#pragma region PacketProcessFn 
+void Scene::ProcessNotifyId(PacketHeader* header) {
+	gClientCore->InitSessionId(header->id);
+	mNetworkInfoText->GetText() = std::format(L"My Session ID : {}", header->id); 
+
+}
+
+void Scene::ProcessPacketProtocolVersion(PacketHeader* header) {
+	auto protocolVersion = reinterpret_cast<PacketProtocolVersion*>(header);
+	if (PROTOCOL_VERSION_MAJOR != protocolVersion->major or
+		PROTOCOL_VERSION_MINOR != protocolVersion->minor) {
+		gClientCore->CloseSession();
+		//glfwSetWindowShouldClose()
+
+		MessageBox(nullptr, L"ERROR!!!!!\nProtocolVersion Mismatching", L"", MB_OK | MB_ICONERROR);
+		::exit(0);
+	}
+}
+
+void Scene::ProcessPlayerPacket(PacketHeader* header) {
+
+}
+
+void Scene::ProcessObjectPacket(PacketHeader* header) {
+
+}
+
+void Scene::ProcessObjectDead(PacketHeader* header) {
+
+}
+
+void Scene::ProcessObjectAppeared(PacketHeader* header) {
+
+}
+
+void Scene::ProcessObjectDisappeared(PacketHeader* header) {
+
+}
+
+void Scene::ProcessPlayerExit(PacketHeader* header) {
+
+}
+
+void Scene::ProcessAcquiredItem(PacketHeader* header) {
+
+}
+
+void Scene::ProcessObjectAttacked(PacketHeader* header) {
+
+}
+
+void Scene::ProcessUseItem(PacketHeader* header) {
+
+}
+
+void Scene::ProcessRestoreHP(PacketHeader* header) {
+
+}
+#pragma endregion 
+
+
+Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
+	
 	mInputSign = NonReplacementSampler::GetInstance().Sample(); 
+	
+	gClientCore->Init();
+	if (false == gClientCore->Start("127.0.0.1", 7777)) {
+		Crash(false);
+	}
 
 	mMeshRenderManager = std::get<0>(managers);
 	mTextureManager = std::get<1>(managers);
@@ -27,7 +93,9 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	Scene::BuildShader(device); 
 	Scene::BuildMesh(device, commandList);
 	Scene::BuildMaterial();
+	Scene::BuildPacketProcessor();
 
+	tCollider.LoadFromFile("Resources/Binarys/Terrain/TerrainBaked.bin");
 
 	mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
@@ -149,8 +217,14 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	mCameraMode->Enter();
 
-	mPickedObjectText->GetText() = L"Picked Object : None";
 
+}
+
+void Scene::ProcessNetwork() {
+	auto packetHandler = gClientCore->GetPacketHandler(); 
+	decltype(auto) buffer = packetHandler->GetBuffer(); 
+
+	mPacketProcessor.ProcessPackets(buffer);
 }
 
 void Scene::Update() {
@@ -177,6 +251,21 @@ void Scene::Update() {
 	mMeshRenderManager->AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);
 
 	mCamera.UpdateBuffer(); 
+}
+
+void Scene::BuildPacketProcessor() {
+	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_PROTOCOL_VERSION, [this](PacketHeader* header) { ProcessPacketProtocolVersion(header); });
+	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_NOTIFY_ID, [this](PacketHeader* header) { ProcessNotifyId(header); });
+	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_PLAYER, [this](PacketHeader* header) { ProcessPlayerPacket(header); });
+	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_OBJECT, [this](PacketHeader* header) { ProcessObjectPacket(header); });
+	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_OBJECT_APPEARED, [this](PacketHeader* header) { ProcessObjectAppeared(header); });
+	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_OBJECT_DISAPPEARED, [this](PacketHeader* header) { ProcessObjectDisappeared(header); });
+	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_OBJECT_DEAD, [this](PacketHeader* header) { ProcessObjectDead(header); });
+	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_RESTORE_HEALTH, [this](PacketHeader* header) { ProcessRestoreHP(header); });
+	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_USE_ITEM, [this](PacketHeader* header) { ProcessUseItem(header); });
+	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_PLAYER_EXIT, [this](PacketHeader* header) { ProcessPlayerExit(header); });
+	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_ATTACKED, [this](PacketHeader* header) { ProcessObjectAttacked(header); });
+	mPacketProcessor.RegisterProcessFn(PacketType::PAKCET_ACQUIRED_ITEM, [this](PacketHeader* header) { ProcessAcquiredItem(header); });
 }
 
 void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
@@ -380,6 +469,9 @@ void Scene::SetInputSwordManMode() {
 void Scene::SetInputMageMode() {
 
 }
+
+
+
 
 
 

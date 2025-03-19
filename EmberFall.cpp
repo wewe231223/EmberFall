@@ -111,7 +111,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             Time.AdvanceTime();
             Input.Update();
 
+            scene.ProcessNetwork(); 
             scene.Update();
+            
             renderer.PrepareRender();
             renderer.Render();
 
