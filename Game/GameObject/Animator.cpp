@@ -486,7 +486,7 @@ namespace AnimatorGraph {
 
     void AnimationGraphController::Update(double deltaTime, BoneTransformBuffer& boneTransforms) {
         EvaluateTransitions();
-        mAnimator.UpdateBoneTransform(deltaTime, boneTransforms);
+        mAnimator.UpdateBoneTransform(deltaTime * mStates[mCurrentStateIndex].speed, boneTransforms);
     }
 
     void AnimationGraphController::AddParameter(const std::string& name, ParameterType type) {
@@ -868,7 +868,8 @@ namespace AnimatorGraph {
 
     void BoneMaskAnimationGraphController::Update(double deltaTime, BoneTransformBuffer& boneTransforms) {
         EvaluateTransitions();
-        mAnimator.UpdateBoneTransforms(deltaTime, boneTransforms);
+        
+        mAnimator.UpdateBoneTransforms(deltaTime * mStates[mCurrentStateIndex].speed, boneTransforms);
     }
 
     void BoneMaskAnimationGraphController::AddParameter(const std::string& name, ParameterType type) {

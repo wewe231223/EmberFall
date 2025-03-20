@@ -99,9 +99,12 @@ void TPPCameraMode::Exit() {
 }
 
 void TPPCameraMode::Update() {
+	const float YSensitive = 0.15f; 
+
 	auto forward = mTargetTransform.GetForward();
 	auto right = mTargetTransform.GetRight();
 	auto up = mTargetTransform.GetUp();
+
 	mCamera->GetTransform().SetPosition(mTargetTransform.GetPosition() + DirectX::SimpleMath::Vector3{ mOffset.x * right + mOffset.y * up + mOffset.z * forward });
 
 	mCamera->GetTransform().GetRotation() = DirectX::SimpleMath::Quaternion::Identity;
@@ -123,7 +126,6 @@ void TPPCameraMode::Update() {
 	}
 
 	mCamera->GetTransform().Rotate(pitch, yaw, 0.f);
-
 }
 
 ECameraMode TPPCameraMode::GetMode() const {

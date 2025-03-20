@@ -17,8 +17,9 @@ bool Player::GetActiveState() const {
 }
 
 void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
+	const float XSensivity = 0.15f;
 
-	mTransform.Rotate(0.f, Input.GetDeltaMouseX() * 0.0007f, 0.f);
+	mTransform.Rotate(0.f, Input.GetDeltaMouseX() * Time.GetSmoothDeltaTime<float>() * XSensivity, 0.f);
 
 
 	static BoneTransformBuffer boneTransformBuffer{};

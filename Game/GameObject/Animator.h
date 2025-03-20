@@ -85,6 +85,7 @@ namespace AnimatorGraph {
         size_t stateIndex;
         std::string name;
         const AnimationClip* clip;
+        double speed{ 1.0 };
         std::vector<AnimationTransition> transitions;
     };
 
@@ -104,6 +105,7 @@ namespace AnimatorGraph {
     struct BoneMaskAnimationState {
         size_t maskedClipIndex;
         size_t nonMaskedClipIndex;
+        double speed{ 1.0 };
         std::string name;
         std::vector<AnimationTransition> transitions;
     };

@@ -19,7 +19,8 @@ void Scene::ProcessNotifyId(PacketHeader* header) {
 	gClientCore->InitSessionId(header->id);
 	mNetworkInfoText->GetText() = std::format(L"My Session ID : {}", header->id);
 	mMyPlayer = mHumanPlayers.begin() + header->id;
-	*mMyPlayer = Player(mMeshMap["T_Pose"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
+
+	*mMyPlayer = Player(mMeshMap["HumanBaseAnim"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mBaseAnimationController);
 
 	mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
 	mCameraMode->Enter();
@@ -30,8 +31,8 @@ void Scene::ProcessPacketProtocolVersion(PacketHeader* header) {
 	auto protocolVersion = reinterpret_cast<PacketProtocolVersion*>(header);
 	if (PROTOCOL_VERSION_MAJOR != protocolVersion->major or
 		PROTOCOL_VERSION_MINOR != protocolVersion->minor) {
+
 		gClientCore->CloseSession();
-		//glfwSetWindowShouldClose()
 
 		MessageBox(nullptr, L"ERROR!!!!!\nProtocolVersion Mismatching", L"", MB_OK | MB_ICONERROR);
 		::exit(0);
@@ -44,7 +45,7 @@ void Scene::ProcessPlayerPacket(PacketHeader* header) {
 	auto player = mHumanPlayers.begin() + header->id;
 
 	if (player->GetActiveState() == false) {
-		*player = Player(mMeshMap["T_Pose"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
+		*player = Player(mMeshMap["HumanBaseAnim"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mBaseAnimationController);
 	}
 
 	player->GetTransform().GetPosition() = packet->position;
@@ -135,10 +136,10 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(-35.f), 0.f);
 	}
 
-	mAnimationMap["Man"].Load("Resources/Assets/Knight/archer.gltf");
+
 	Scene::BuildAniamtionController(); 
 
-	Scene::SetInputArcherMode(); 
+	Scene::SetInputBaseAnimMode(); 
 
 
 	
@@ -324,6 +325,9 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 	mMeshMap["Cube"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Cube, 1);
 
+	data = Loader.Load("Resources/Assets/Knight/BaseAnim/BaseAnim.gltf");
+	mMeshMap["HumanBaseAnim"] = std::make_unique<Mesh>(device, commandList, data);
+
 	data = Loader.Load("Resources/Assets/Knight/archer.gltf");
 	mMeshMap["T_Pose"] = std::make_unique<Mesh>(device, commandList, data);
 
@@ -406,10 +410,281 @@ void Scene::BuildShader(ComPtr<ID3D12Device> device) {
 }
 
 void Scene::BuildAniamtionController() {
+	// Base Anim 
+	{
+		mAnimationMap["HumanBase"].Load("Resources/Assets/Knight/BaseAnim/BaseAnim.gltf");
+
+		std::vector<const AnimationClip*> clips{ mAnimationMap["HumanBase"].GetClip(0), mAnimationMap["HumanBase"].GetClip(1), mAnimationMap["HumanBase"].GetClip(2), mAnimationMap["HumanBase"].GetClip(3), mAnimationMap["HumanBase"].GetClip(4), mAnimationMap["HumanBase"].GetClip(5) };
+		std::vector<UINT> boneMask(69);
+		std::iota(boneMask.begin(), boneMask.begin() + 59, 0);
+
+		AnimatorGraph::BoneMaskAnimationState idleState{};
+		idleState.maskedClipIndex = 0;
+		idleState.nonMaskedClipIndex = 0;
+		idleState.name = "Idle";
+
+		{
+			AnimatorGraph::AnimationTransition toForward{};
+			toForward.targetStateIndex = 1;
+			toForward.blendDuration = 0.09;
+			toForward.parameterName = "Move";
+			toForward.expectedValue = 1;
+			toForward.triggerOnEnd = false;
+			idleState.transitions.emplace_back(toForward);
+
+			AnimatorGraph::AnimationTransition toBackward{};
+			toBackward.targetStateIndex = 2;
+			toBackward.blendDuration = 0.09;
+			toBackward.parameterName = "Move";
+			toBackward.expectedValue = 2;
+			toBackward.triggerOnEnd = false;
+			idleState.transitions.emplace_back(toBackward);
+
+			AnimatorGraph::AnimationTransition toLeft{};
+			toLeft.targetStateIndex = 3;
+			toLeft.blendDuration = 0.09;
+			toLeft.parameterName = "Move";
+			toLeft.expectedValue = 3;
+			toLeft.triggerOnEnd = false;
+			idleState.transitions.emplace_back(toLeft);
+
+			AnimatorGraph::AnimationTransition toRight{};
+			toRight.targetStateIndex = 4;
+			toRight.blendDuration = 0.09;
+			toRight.parameterName = "Move";
+			toRight.expectedValue = 4;
+			toRight.triggerOnEnd = false;
+			idleState.transitions.emplace_back(toRight);
+
+			AnimatorGraph::AnimationTransition toJump{};
+			toJump.targetStateIndex = 5;
+			toJump.blendDuration = 0.09;
+			toJump.parameterName = "Jump";
+			toJump.expectedValue = true;
+			toJump.triggerOnEnd = false;
+			idleState.transitions.emplace_back(toJump);
+		}
+
+		AnimatorGraph::BoneMaskAnimationState forwardState{};
+		forwardState.maskedClipIndex = 1;
+		forwardState.nonMaskedClipIndex = 1;
+		forwardState.speed = 0.7;
+		forwardState.name = "Forward";
+
+		{
+			AnimatorGraph::AnimationTransition toIdle{};
+			toIdle.targetStateIndex = 0;
+			toIdle.blendDuration = 0.09;
+			toIdle.parameterName = "Move";
+			toIdle.expectedValue = -1;
+			toIdle.triggerOnEnd = false;
+			forwardState.transitions.emplace_back(toIdle);
+
+			AnimatorGraph::AnimationTransition toBackward{};
+			toBackward.targetStateIndex = 2;
+			toBackward.blendDuration = 0.09;
+			toBackward.parameterName = "Move";
+			toBackward.expectedValue = 2;
+			toBackward.triggerOnEnd = false;
+			forwardState.transitions.emplace_back(toBackward);
+
+			AnimatorGraph::AnimationTransition toLeft{};
+			toLeft.targetStateIndex = 3;
+			toLeft.blendDuration = 0.09;
+			toLeft.parameterName = "Move";
+			toLeft.expectedValue = 3;
+			toLeft.triggerOnEnd = false;
+			forwardState.transitions.emplace_back(toLeft);
+
+			AnimatorGraph::AnimationTransition toRight{};
+			toRight.targetStateIndex = 4;
+			toRight.blendDuration = 0.09;
+			toRight.parameterName = "Move";
+			toRight.expectedValue = 4;
+			toRight.triggerOnEnd = false;
+			forwardState.transitions.emplace_back(toRight);
+
+			AnimatorGraph::AnimationTransition toJump{};
+			toJump.targetStateIndex = 5;
+			toJump.blendDuration = 0.09;
+			toJump.parameterName = "Jump";
+			toJump.expectedValue = true;
+			toJump.triggerOnEnd = false;
+			forwardState.transitions.emplace_back(toJump);
+		}
+
+		AnimatorGraph::BoneMaskAnimationState backwardState{};
+		backwardState.maskedClipIndex = 2;
+		backwardState.nonMaskedClipIndex = 2;
+		backwardState.speed = 1.2; 
+		backwardState.name = "BackWard"; 
+
+		{
+			AnimatorGraph::AnimationTransition toIdle{};
+			toIdle.targetStateIndex = 0;
+			toIdle.blendDuration = 0.09;
+			toIdle.parameterName = "Move";
+			toIdle.expectedValue = -1;
+			toIdle.triggerOnEnd = false;
+			backwardState.transitions.emplace_back(toIdle);
+
+			AnimatorGraph::AnimationTransition toForward{};
+			toForward.targetStateIndex = 1;
+			toForward.blendDuration = 0.09;
+			toForward.parameterName = "Move";
+			toForward.expectedValue = 1;
+			toForward.triggerOnEnd = false;
+			backwardState.transitions.emplace_back(toForward);
+
+			AnimatorGraph::AnimationTransition toLeft{};
+			toLeft.targetStateIndex = 3;
+			toLeft.blendDuration = 0.09;
+			toLeft.parameterName = "Move";
+			toLeft.expectedValue = 3;
+			toLeft.triggerOnEnd = false;
+			backwardState.transitions.emplace_back(toLeft);
+
+			AnimatorGraph::AnimationTransition toRight{};
+			toRight.targetStateIndex = 4;
+			toRight.blendDuration = 0.09;
+			toRight.parameterName = "Move";
+			toRight.expectedValue = 4;
+			toRight.triggerOnEnd = false;
+			backwardState.transitions.emplace_back(toRight);
+
+			AnimatorGraph::AnimationTransition toJump{};
+			toJump.targetStateIndex = 5;
+			toJump.blendDuration = 0.09;
+			toJump.parameterName = "Jump";
+			toJump.expectedValue = true;
+			toJump.triggerOnEnd = false;
+			backwardState.transitions.emplace_back(toJump);
+		}
+
+		AnimatorGraph::BoneMaskAnimationState leftState{};
+		leftState.maskedClipIndex = 4;
+		leftState.nonMaskedClipIndex = 4;
+		leftState.speed = 0.7;
+		leftState.name = "Left";
+
+		{
+			AnimatorGraph::AnimationTransition toIdle{};
+			toIdle.targetStateIndex = 0;
+			toIdle.blendDuration = 0.09;
+			toIdle.parameterName = "Move";
+			toIdle.expectedValue = -1;
+			toIdle.triggerOnEnd = false;
+			leftState.transitions.emplace_back(toIdle);
+
+			AnimatorGraph::AnimationTransition toForward{};
+			toForward.targetStateIndex = 1;
+			toForward.blendDuration = 0.09;
+			toForward.parameterName = "Move";
+			toForward.expectedValue = 1;
+			toForward.triggerOnEnd = false;
+			leftState.transitions.emplace_back(toForward);
+
+			AnimatorGraph::AnimationTransition toBackward{};
+			toBackward.targetStateIndex = 2;
+			toBackward.blendDuration = 0.09;
+			toBackward.parameterName = "Move";
+			toBackward.expectedValue = 2;
+			toBackward.triggerOnEnd = false;
+			leftState.transitions.emplace_back(toBackward);
+
+			AnimatorGraph::AnimationTransition toRight{};
+			toRight.targetStateIndex = 4;
+			toRight.blendDuration = 0.09;
+			toRight.parameterName = "Move";
+			toRight.expectedValue = 4;
+			toRight.triggerOnEnd = false;
+			leftState.transitions.emplace_back(toRight);
+
+			AnimatorGraph::AnimationTransition toJump{};
+			toJump.targetStateIndex = 5;
+			toJump.blendDuration = 0.09;
+			toJump.parameterName = "Jump";
+			toJump.expectedValue = true;
+			toJump.triggerOnEnd = false;
+			leftState.transitions.emplace_back(toJump);
+		}
+
+		AnimatorGraph::BoneMaskAnimationState rightState{};
+		rightState.maskedClipIndex = 3;
+		rightState.nonMaskedClipIndex = 3;
+		rightState.speed = 0.7;
+		rightState.name = "Right"; 
+
+		{
+			AnimatorGraph::AnimationTransition toIdle{};
+			toIdle.targetStateIndex = 0;
+			toIdle.blendDuration = 0.09;
+			toIdle.parameterName = "Move";
+			toIdle.expectedValue = -1;
+			toIdle.triggerOnEnd = false;
+			rightState.transitions.emplace_back(toIdle);
+
+			AnimatorGraph::AnimationTransition toForward{};
+			toForward.targetStateIndex = 1;
+			toForward.blendDuration = 0.09;
+			toForward.parameterName = "Move";
+			toForward.expectedValue = 1;
+			toForward.triggerOnEnd = false;
+			rightState.transitions.emplace_back(toForward);
+
+			AnimatorGraph::AnimationTransition toBackward{};
+			toBackward.targetStateIndex = 2;
+			toBackward.blendDuration = 0.09;
+			toBackward.parameterName = "Move";
+			toBackward.expectedValue = 2;
+			toBackward.triggerOnEnd = false;
+			rightState.transitions.emplace_back(toBackward);
+
+			AnimatorGraph::AnimationTransition toLeft{};
+			toLeft.targetStateIndex = 3;
+			toLeft.blendDuration = 0.09;
+			toLeft.parameterName = "Move";
+			toLeft.expectedValue = 3;
+			toLeft.triggerOnEnd = false;
+			rightState.transitions.emplace_back(toLeft);
+
+			AnimatorGraph::AnimationTransition toJump{};
+			toJump.targetStateIndex = 5;
+			toJump.blendDuration = 0.09;
+			toJump.parameterName = "Jump";
+			toJump.expectedValue = true;
+			toJump.triggerOnEnd = false;
+			rightState.transitions.emplace_back(toJump);
+		}
+
+		AnimatorGraph::BoneMaskAnimationState jumpState{};
+		jumpState.maskedClipIndex = 5;
+		jumpState.nonMaskedClipIndex = 5;
+		jumpState.name = "Jump";
+
+		{
+			AnimatorGraph::AnimationTransition toIdle{};
+			toIdle.targetStateIndex = 0;
+			toIdle.blendDuration = 0.2;
+			toIdle.parameterName = "True";
+			toIdle.expectedValue = true;
+			toIdle.triggerOnEnd = true;
+			jumpState.transitions.emplace_back(toIdle);
+		}
+
+
+		mBaseAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, { idleState, forwardState, backwardState, leftState, rightState, jumpState });
+		mBaseAnimationController.AddParameter("Move", AnimatorGraph::ParameterType::Int);
+		mBaseAnimationController.AddParameter("Jump", AnimatorGraph::ParameterType::Trigger);
+		mBaseAnimationController.AddParameter("True", AnimatorGraph::ParameterType::Always);
+
+	}
 
 	// Archer 
 	{
-		std::vector<const AnimationClip*> clips{ mAnimationMap["Man"].GetClip(0), mAnimationMap["Man"].GetClip(1), mAnimationMap["Man"].GetClip(16), mAnimationMap["Man"].GetClip(3) };
+		mAnimationMap["Archer"].Load("Resources/Assets/Knight/archer.gltf");
+
+		std::vector<const AnimationClip*> clips{ mAnimationMap["Archer"].GetClip(0), mAnimationMap["Archer"].GetClip(1), mAnimationMap["Archer"].GetClip(16), mAnimationMap["Archer"].GetClip(3) };
 
 		std::vector<UINT> boneMask(69);
 		std::iota(boneMask.begin(), boneMask.begin() + 59, 0);
@@ -480,6 +755,48 @@ void Scene::BuildAniamtionController() {
 		mArcherAnimationController.AddParameter("Move", AnimatorGraph::ParameterType::Bool);
 		mArcherAnimationController.AddParameter("Attack", AnimatorGraph::ParameterType::Trigger);
 	}
+
+}
+
+
+void Scene::SetInputBaseAnimMode() {
+	Input.EraseCallBack(mInputSign);
+
+	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
+		mMyPlayer->GetBoneMaskController().SetInt("Move", 1);
+		});
+
+	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
+		mMyPlayer->GetBoneMaskController().SetInt("Move", -1);
+		});
+
+	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::S, mInputSign, [this]() {
+		mMyPlayer->GetBoneMaskController().SetInt("Move", 2);
+		});
+
+	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::S, mInputSign, [this]() {
+		mMyPlayer->GetBoneMaskController().SetInt("Move", -1);
+		});
+
+	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
+		mMyPlayer->GetBoneMaskController().SetInt("Move", 3);
+		});
+
+	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
+		mMyPlayer->GetBoneMaskController().SetInt("Move", -1);
+		});
+
+	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
+		mMyPlayer->GetBoneMaskController().SetInt("Move", 4);
+		});
+
+	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
+		mMyPlayer->GetBoneMaskController().SetInt("Move", -1);
+		});
+
+	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::Space, mInputSign, [this]() {
+		mMyPlayer->GetBoneMaskController().SetTrigger("Jump");
+		});
 
 }
 

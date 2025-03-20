@@ -29,6 +29,7 @@ private:
 	void BuildShader(ComPtr<ID3D12Device> device);
 	void BuildAniamtionController(); 
 
+	void SetInputBaseAnimMode(); 
 	void SetInputArcherMode(); 
 	void SetInputSwordManMode();
 	void SetInputMageMode();
@@ -70,6 +71,7 @@ private:
 	std::array<Player, 4> mHumanPlayers{};
 	std::array<Player, 4>::iterator mMyPlayer{}; 
 	
+	AnimatorGraph::BoneMaskAnimationGraphController mBaseAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mArcherAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mSwordManAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mMageAnimationController{};
