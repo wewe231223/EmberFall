@@ -115,11 +115,11 @@ void TPPCameraMode::Update() {
 
 	pitch += Input.GetDeltaMouseY() * Time.GetSmoothDeltaTime<float>() * 0.3f;
 
-	if (pitch > DirectX::XMConvertToRadians(20.f)) {
-		pitch = DirectX::XMConvertToRadians(20.f);
+	if (pitch > DirectX::XMConvertToRadians(15.f)) {
+		pitch = DirectX::XMConvertToRadians(15.f);
 	}
-	if (pitch < DirectX::XMConvertToRadians(-20.f)) {
-		pitch = DirectX::XMConvertToRadians(-20.f);
+	if (pitch < DirectX::XMConvertToRadians(-15.f)) {
+		pitch = DirectX::XMConvertToRadians(-15.f);
 	}
 
 	mCamera->GetTransform().Rotate(pitch, yaw, 0.f);

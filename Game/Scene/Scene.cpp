@@ -21,7 +21,7 @@ void Scene::ProcessNotifyId(PacketHeader* header) {
 	mMyPlayer = mHumanPlayers.begin() + header->id;
 	*mMyPlayer = Player(mMeshMap["T_Pose"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
 
-	mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,7.f });
+	mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
 	mCameraMode->Enter();
 
 }
@@ -238,7 +238,7 @@ void Scene::ProcessNetwork() {
 }
 
 void Scene::Update() {
-	mMyPlayer->GetTransform().GetPosition().y = tCollider.GetHeight(mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().z);
+	// mMyPlayer->GetTransform().GetPosition().y = tCollider.GetHeight(mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().z);
 	mCameraMode->Update();
 	
 	for (auto& gameObject : mGameObjects) {
