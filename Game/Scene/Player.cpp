@@ -19,7 +19,7 @@ bool Player::GetActiveState() const {
 void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 
 
-	const SimpleMath::Matrix localRotations[] = {
+	static const SimpleMath::Matrix localRotations[] = {
 		SimpleMath::Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(45.f), 0.f, 0.f),	// 상 or 하 + 우 
 		SimpleMath::Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(-45.f), 0.f, 0.f),	// 상 or 하 + 좌
 		SimpleMath::Matrix::Identity

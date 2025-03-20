@@ -669,6 +669,39 @@ void Scene::BuildAniamtionController() {
 			toIdle.expectedValue = true;
 			toIdle.triggerOnEnd = true;
 			jumpState.transitions.emplace_back(toIdle);
+
+			AnimatorGraph::AnimationTransition toForward{};
+			toForward.targetStateIndex = 1;
+			toForward.blendDuration = 0.09;
+			toForward.parameterName = "Move";
+			toForward.expectedValue = 1;
+			toForward.triggerOnEnd = true;
+			jumpState.transitions.emplace_back(toForward);
+
+			AnimatorGraph::AnimationTransition toBackward{};
+			toBackward.targetStateIndex = 2;
+			toBackward.blendDuration = 0.09;
+			toBackward.parameterName = "Move";
+			toBackward.expectedValue = 2;
+			toBackward.triggerOnEnd = true;
+			jumpState.transitions.emplace_back(toBackward);
+
+			AnimatorGraph::AnimationTransition toLeft{};
+			toLeft.targetStateIndex = 3;
+			toLeft.blendDuration = 0.09;
+			toLeft.parameterName = "Move";
+			toLeft.expectedValue = 3;
+			toLeft.triggerOnEnd = true;
+			jumpState.transitions.emplace_back(toLeft);
+
+			AnimatorGraph::AnimationTransition toRight{};
+			toRight.targetStateIndex = 4;
+			toRight.blendDuration = 0.09;
+			toRight.parameterName = "Move";
+			toRight.expectedValue = 4;
+			toRight.triggerOnEnd = true;
+			jumpState.transitions.emplace_back(toRight);
+
 		}
 
 

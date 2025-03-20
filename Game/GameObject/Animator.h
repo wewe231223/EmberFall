@@ -68,7 +68,6 @@ namespace AnimatorGraph {
     enum class ParameterType {
         Bool,
         Int,
-        Float,
         Trigger,
         Always,
     };
@@ -77,7 +76,7 @@ namespace AnimatorGraph {
         size_t targetStateIndex;
         double blendDuration;
         std::string parameterName;
-        std::variant<bool, int, float> expectedValue;
+        std::variant<bool, int> expectedValue;
 		bool triggerOnEnd{ false };
     };
 
@@ -167,9 +166,12 @@ namespace AnimatorGraph {
 
         void SetBool(const std::string& name, bool value);
         void SetInt(const std::string& name, int value);
-        void SetFloat(const std::string& name, float value);
         void SetTrigger(const std::string& name);
         void ResetTrigger(const std::string& name);
+
+		void SetBool(BYTE index, bool value);
+		void SetInt(BYTE index, int value);
+		void SetTrigger(BYTE index);
 
         const AnimationParameter* GetParameter(const std::string& name) const;
 
@@ -210,23 +212,23 @@ namespace AnimatorGraph {
         DirectX::SimpleMath::Quaternion InterpolateRotation(double AnimationTime, const BoneAnimation& boneAnim);
         DirectX::SimpleMath::Vector3 InterpolateScaling(double AnimationTime, const BoneAnimation& boneAnim);
     private:
-        std::vector<const AnimationClip*> mClips;
-        const AnimationClip* mDefaultClip;
-        const AnimationClip* mClipMasked;
-        const AnimationClip* mClipNonMasked;
+        std::vector<const AnimationClip*> mClips{};
+        const AnimationClip* mDefaultClip{};
+        const AnimationClip* mClipMasked{};
+        const AnimationClip* mClipNonMasked{};
 
-        bool mTransitioningMasked;
-        const AnimationClip* mTargetClipMasked;
-        double mTransitionTimeMaskedTransition;
+        bool mTransitioningMasked{};
+        const AnimationClip* mTargetClipMasked{};
+        double mTransitionTimeMaskedTransition{};
 
-        bool mTransitioningNonMasked;
-        const AnimationClip* mTargetClipNonMasked;
-        double mTransitionTimeNonMaskedTransition;
+        bool mTransitioningNonMasked{};
+        const AnimationClip* mTargetClipNonMasked{};
+        double mTransitionTimeNonMaskedTransition{};
 
         double mTransitionDuration{ 0.09 };
 
-        std::unordered_set<unsigned int> mBoneMask;
-        std::shared_ptr<BoneNode> mRootNode;
+        std::unordered_set<unsigned int> mBoneMask{};
+        std::shared_ptr<BoneNode> mRootNode{};
         double mCurrentTimeMasked{};
         double mCurrentTimeNonMasked{};
     };
@@ -243,20 +245,29 @@ namespace AnimatorGraph {
         void Update(double deltaTime, BoneTransformBuffer& boneTransforms);
 
         void AddParameter(const std::string& name, ParameterType type);
+
         void SetBool(const std::string& name, bool value);
         void SetInt(const std::string& name, int value);
-        void SetFloat(const std::string& name, float value);
         void SetTrigger(const std::string& name);
+
+        void SetBool(BYTE index, bool value); 
+		void SetInt(BYTE index, int value);
+		void SetTrigger(BYTE index);
+        
+
         void ResetTrigger(const std::string& name);
         const AnimationParameter* GetParameter(const std::string& name) const;
 
     private:
         void EvaluateTransitions();
 
-        BoneMaskAnimator mAnimator;
-        std::vector<BoneMaskAnimationState> mStates;
-        size_t mCurrentStateIndex;
-        std::unordered_map<std::string, AnimationParameter> mParameters;
+        std::vector<BoneMaskAnimationState> mStates{};
+
+        std::unordered_map<std::string, AnimationParameter> mParameters{};
+        std::vector<std::string> mParameterIndexed{};
+
+        size_t mCurrentStateIndex{};
+        BoneMaskAnimator mAnimator{};
     };
 
 };
