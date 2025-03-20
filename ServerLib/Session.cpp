@@ -5,7 +5,7 @@
 Session::Session(std::shared_ptr<class INetworkCore> coreService) 
     : INetworkObject{ coreService } {
     mSocket = NetworkUtil::CreateSocket();
-    CrashExp(INVALID_SOCKET == mSocket, "");
+    CrashExp(INVALID_SOCKET != mSocket, "");
 }
 
 Session::~Session() {

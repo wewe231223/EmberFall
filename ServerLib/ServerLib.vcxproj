@@ -152,7 +152,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Constants.h" />
-    <ClInclude Include="Crash.h" />
     <ClInclude Include="GameMath.h" />
     <ClInclude Include="GameProtocol.h" />
     <ClInclude Include="LogConsole.h" />

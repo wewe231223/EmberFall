@@ -12,7 +12,7 @@ IOCPCore::~IOCPCore() {
 
 void IOCPCore::Init(size_t workerThreadNum) {
     mIocpHandle = ::CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, static_cast<DWORD>(workerThreadNum));
-    CrashExp(NULL == mIocpHandle, "IOCP Creation Failure");
+    CrashExp(NULL != mIocpHandle, "IOCP Creation Failure");
 }
 
 HANDLE IOCPCore::GetHandle() const {

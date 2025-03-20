@@ -102,9 +102,6 @@
     <ClInclude Include="Types.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Crash.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="INetworkObject.h">
       <Filter>Core</Filter>
     </ClInclude>
