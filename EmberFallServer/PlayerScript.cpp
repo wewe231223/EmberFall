@@ -35,11 +35,11 @@ void PlayerScript::Update(const float deltaTime) {
     }
 
     if (mInput->IsActiveKey('A')) {
-        moveDir.x -= 1.0f;
+        moveDir.x += 1.0f;
     }
 
     if (mInput->IsActiveKey('D')) {
-        moveDir.x += 1.0f;
+        moveDir.x -= 1.0f;
     }
 
     if (mInput->IsActiveKey('W')) {

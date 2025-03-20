@@ -38,14 +38,17 @@ void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 		}
 	} else if (keyboard.S) {
 		if (keyboard.A) {
-			mTransform.SetLocalTransform(localRotations[1]);
+			mTransform.SetLocalTransform(localRotations[0]);
 		}
 		else if (keyboard.D) {
-			mTransform.SetLocalTransform(localRotations[0]);
+			mTransform.SetLocalTransform(localRotations[1]);
 		}
 		else {
 			mTransform.SetLocalTransform(localRotations[2]);
 		}
+	}
+	else {
+		mTransform.SetLocalTransform(localRotations[2]);
 	}
 
 
