@@ -408,6 +408,7 @@ void Scene::BuildShader(ComPtr<ID3D12Device> device) {
 	mShaderMap["SkinnedShader"] = std::move(shader);
 }
 
+
 void Scene::BuildAniamtionController() {
 	// Base Anim 
 	{
@@ -475,7 +476,7 @@ void Scene::BuildAniamtionController() {
 			toIdle.targetStateIndex = 0;
 			toIdle.blendDuration = 0.09;
 			toIdle.parameterName = "Move";
-			toIdle.expectedValue = -1;
+			toIdle.expectedValue = 0;
 			toIdle.triggerOnEnd = false;
 			forwardState.transitions.emplace_back(toIdle);
 
@@ -523,7 +524,7 @@ void Scene::BuildAniamtionController() {
 			toIdle.targetStateIndex = 0;
 			toIdle.blendDuration = 0.09;
 			toIdle.parameterName = "Move";
-			toIdle.expectedValue = -1;
+			toIdle.expectedValue = 0;
 			toIdle.triggerOnEnd = false;
 			backwardState.transitions.emplace_back(toIdle);
 
@@ -571,7 +572,7 @@ void Scene::BuildAniamtionController() {
 			toIdle.targetStateIndex = 0;
 			toIdle.blendDuration = 0.09;
 			toIdle.parameterName = "Move";
-			toIdle.expectedValue = -1;
+			toIdle.expectedValue = 0;
 			toIdle.triggerOnEnd = false;
 			leftState.transitions.emplace_back(toIdle);
 
@@ -619,7 +620,7 @@ void Scene::BuildAniamtionController() {
 			toIdle.targetStateIndex = 0;
 			toIdle.blendDuration = 0.09;
 			toIdle.parameterName = "Move";
-			toIdle.expectedValue = -1;
+			toIdle.expectedValue = 0;
 			toIdle.triggerOnEnd = false;
 			rightState.transitions.emplace_back(toIdle);
 
@@ -665,8 +666,8 @@ void Scene::BuildAniamtionController() {
 			AnimatorGraph::AnimationTransition toIdle{};
 			toIdle.targetStateIndex = 0;
 			toIdle.blendDuration = 0.2;
-			toIdle.parameterName = "True";
-			toIdle.expectedValue = true;
+			toIdle.parameterName = "Move";
+			toIdle.expectedValue = 0;
 			toIdle.triggerOnEnd = true;
 			jumpState.transitions.emplace_back(toIdle);
 
@@ -799,7 +800,7 @@ void Scene::SetInputBaseAnimMode() {
 		});
 
 	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", -1);
+		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
 		});
 
 	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::S, mInputSign, [this]() {
@@ -807,7 +808,7 @@ void Scene::SetInputBaseAnimMode() {
 		});
 
 	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::S, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", -1);
+		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
 		});
 
 	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
@@ -815,7 +816,7 @@ void Scene::SetInputBaseAnimMode() {
 		});
 
 	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", -1);
+		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
 		});
 
 	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
@@ -823,7 +824,7 @@ void Scene::SetInputBaseAnimMode() {
 		});
 
 	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", -1);
+		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
 		});
 
 	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::Space, mInputSign, [this]() {
