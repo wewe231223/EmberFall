@@ -115,6 +115,10 @@ Transform Transform::CreateChild(const SimpleMath::Vector3& localPosition, const
     return Transform();
 }
 
+void Transform::SetLocalTransform(const SimpleMath::Matrix& localMatrix) {
+	mLocalMatrix = localMatrix;
+}
+
 void Transform::UpdateWorldMatrix() {
-	mWorldMatrix = SimpleMath::Matrix::CreateScale(mScale) * SimpleMath::Matrix::CreateFromQuaternion(mRotation) * SimpleMath::Matrix::CreateTranslation(mPosition);
+	mWorldMatrix = mLocalMatrix * SimpleMath::Matrix::CreateScale(mScale) * SimpleMath::Matrix::CreateFromQuaternion(mRotation) * SimpleMath::Matrix::CreateTranslation(mPosition) ;
 }

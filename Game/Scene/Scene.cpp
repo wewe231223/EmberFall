@@ -218,7 +218,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 
 
-
 	mCamera = Camera(mainCameraBufferLocation);
 	
 	auto& cameraTransform = mCamera.GetTransform();

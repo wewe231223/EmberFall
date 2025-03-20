@@ -177,7 +177,10 @@ namespace AnimatorGraph {
         void EvaluateTransitions();
 
         std::vector<AnimationState> mStates{};
+
         std::unordered_map<std::string, AnimationParameter> mParameters{};
+        std::vector<std::string> mParameterIndexed{}; 
+
         size_t mCurrentStateIndex{};
         Animator mAnimator{};
     };

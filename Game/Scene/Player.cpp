@@ -17,6 +17,41 @@ bool Player::GetActiveState() const {
 }
 
 void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
+
+
+	const SimpleMath::Matrix localRotations[] = {
+		SimpleMath::Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(45.f), 0.f, 0.f),	// 상 or 하 + 우 
+		SimpleMath::Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(-45.f), 0.f, 0.f),	// 상 or 하 + 좌
+		SimpleMath::Matrix::Identity
+	};
+
+	auto& keyboard = Input.GetKeyboardState();
+	if (keyboard.W) {
+		if (keyboard.A) {
+			mTransform.SetLocalTransform(localRotations[1]);
+		}
+		else if (keyboard.D) {
+			mTransform.SetLocalTransform(localRotations[0]);
+		}
+		else {
+			mTransform.SetLocalTransform(localRotations[2]);
+		}
+	} else if (keyboard.S) {
+		if (keyboard.A) {
+			mTransform.SetLocalTransform(localRotations[1]);
+		}
+		else if (keyboard.D) {
+			mTransform.SetLocalTransform(localRotations[0]);
+		}
+		else {
+			mTransform.SetLocalTransform(localRotations[2]);
+		}
+	}
+
+
+
+
+
 	const float XSensivity = 0.15f;
 
 	mTransform.Rotate(0.f, Input.GetDeltaMouseX() * Time.GetSmoothDeltaTime<float>() * XSensivity, 0.f);
