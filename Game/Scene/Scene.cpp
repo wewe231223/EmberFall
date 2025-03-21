@@ -20,7 +20,7 @@ void Scene::ProcessNotifyId(PacketHeader* header) {
 	mNetworkInfoText->GetText() = std::format(L"My Session ID : {}", header->id);
 	mMyPlayer = mHumanPlayers.begin() + header->id;
 
-	*mMyPlayer = Player(mMeshMap["HumanBaseAnim"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mBaseAnimationController);
+	*mMyPlayer = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
 
 	mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
 	mCameraMode->Enter();
@@ -330,6 +330,9 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	data = Loader.Load("Resources/Assets/Knight/archer.gltf");
 	mMeshMap["T_Pose"] = std::make_unique<Mesh>(device, commandList, data);
 
+	data = Loader.Load("Resources/Assets/Knight/LongSword/LongSword.gltf");
+	mMeshMap["SwordMan"] = std::make_unique<Mesh>(device, commandList, data);
+
 	data = Loader.Load("Resources/Assets/Stone/Stone1.gltf");
 	mMeshMap["Stone1"] = std::make_unique<Mesh>(device, commandList, data);
 
@@ -414,7 +417,7 @@ void Scene::BuildAniamtionController() {
 	{
 		mAnimationMap["HumanBase"].Load("Resources/Assets/Knight/BaseAnim/BaseAnim.gltf");
 
-		std::vector<const AnimationClip*> clips{ mAnimationMap["HumanBase"].GetClip(0), mAnimationMap["HumanBase"].GetClip(1), mAnimationMap["HumanBase"].GetClip(2), mAnimationMap["HumanBase"].GetClip(3), mAnimationMap["HumanBase"].GetClip(4), mAnimationMap["HumanBase"].GetClip(5) };
+		std::vector<const AnimationClip*> clips{ mAnimationMap["HumanBase"].GetClip(0), mAnimationMap["HumanBase"].GetClip(1), mAnimationMap["HumanBase"].GetClip(2), mAnimationMap["HumanBase"].GetClip(4), mAnimationMap["HumanBase"].GetClip(3), mAnimationMap["HumanBase"].GetClip(5) };
 		std::vector<UINT> boneMask(69);
 		std::iota(boneMask.begin(), boneMask.begin() + 59, 0);
 
@@ -712,6 +715,84 @@ void Scene::BuildAniamtionController() {
 		mBaseAnimationController.AddParameter("True", AnimatorGraph::ParameterType::Always);
 
 	}
+
+	// LongSword
+	{
+		mAnimationMap["LongSword"].Load("Resources/Assets/Knight/LongSword/LongSword.gltf");
+		auto& loader = mAnimationMap["LongSword"];
+
+		std::vector<const AnimationClip*> clips {
+			loader.GetClip(0), // Idle
+			loader.GetClip(1), // Forward Run
+			loader.GetClip(2), // Backward Run
+			loader.GetClip(3), // Left Run
+			loader.GetClip(4), // Right Run
+			loader.GetClip(5), // Jump 
+			loader.GetClip(6), // Running Jump 
+			loader.GetClip(7), // Attacked 1 
+			loader.GetClip(8), // Attacked 2 
+			loader.GetClip(9), // Attack 1 
+			loader.GetClip(10),// Attack 2
+			loader.GetClip(11),// Death 
+		}; 
+
+		std::vector<UINT> boneMask(69);
+		std::iota(boneMask.begin(), boneMask.begin() + 59, 0);
+
+		AnimatorGraph::BoneMaskAnimationState idleState{};
+		idleState.maskedClipIndex = 0;
+		idleState.nonMaskedClipIndex = 0;
+		idleState.name = "Idle";
+		
+		{
+			AnimatorGraph::AnimationTransition toForward{};
+			toForward.targetStateIndex = 1;
+			toForward.blendDuration = 0.09;
+			toForward.parameterName = "Move";
+			toForward.expectedValue = 1;
+			toForward.triggerOnEnd = false;
+			idleState.transitions.emplace_back(toForward);
+
+			AnimatorGraph::AnimationTransition toBackward{};
+			toBackward.targetStateIndex = 2;
+			toBackward.blendDuration = 0.09;
+			toBackward.parameterName = "Move";
+			toBackward.expectedValue = 2;
+			toBackward.triggerOnEnd = false;
+			idleState.transitions.emplace_back(toBackward);
+
+			AnimatorGraph::AnimationTransition toLeft{};
+			toLeft.targetStateIndex = 3;
+			toLeft.blendDuration = 0.09;
+			toLeft.parameterName = "Move";
+			toLeft.expectedValue = 3;
+			toLeft.triggerOnEnd = false;
+			idleState.transitions.emplace_back(toLeft);
+
+			AnimatorGraph::AnimationTransition toRight{};
+			toRight.targetStateIndex = 4;
+			toRight.blendDuration = 0.09;
+			toRight.parameterName = "Move";
+			toRight.expectedValue = 4;
+			toRight.triggerOnEnd = false;
+			idleState.transitions.emplace_back(toRight);
+
+			AnimatorGraph::AnimationTransition toJump{};
+			toJump.targetStateIndex = 5;
+			toJump.blendDuration = 0.09;
+			toJump.parameterName = "Jump";
+			toJump.expectedValue = true;
+			toJump.triggerOnEnd = false;
+			idleState.transitions.emplace_back(toJump);
+		}
+
+
+		mSwordManAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, { idleState });
+		mSwordManAnimationController.AddParameter("Move", AnimatorGraph::ParameterType::Int);
+		mSwordManAnimationController.AddParameter("Jump", AnimatorGraph::ParameterType::Trigger);
+		mSwordManAnimationController.AddParameter("True", AnimatorGraph::ParameterType::Always);
+	}
+
 
 	// Archer 
 	{
