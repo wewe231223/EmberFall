@@ -58,7 +58,8 @@ enum EntityType : uint8_t {
     MONSTER3,
     ITEM_HOLYWATER,
     ITEM_CROSS,
-    ITEM_POTION
+    ITEM_POTION,
+    PROJECTILE_ARROW,
 };
 
 struct PacketHeader {

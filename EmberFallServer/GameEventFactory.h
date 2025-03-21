@@ -18,6 +18,6 @@ public:
         return std::make_shared<EventType>(args...);
     }
 
-    static std::shared_ptr<GameEvent> EventClone(std::shared_ptr<GameEvent> event);
+    static std::shared_ptr<GameEvent> CloneEvent(std::shared_ptr<GameEvent> event);
 };
 

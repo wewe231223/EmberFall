@@ -142,6 +142,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp" />
+    <ClCompile Include="ArrowScript.cpp" />
     <ClCompile Include="AttackSystem.cpp" />
     <ClCompile Include="BehaviorTreeBase.cpp" />
     <ClCompile Include="BehaviorTreeMonster.cpp" />
@@ -155,6 +156,7 @@
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="ItemScript.cpp" />
     <ClCompile Include="ObjectBuilder.cpp" />
+    <ClCompile Include="ObjectSpawner.cpp" />
     <ClCompile Include="PacketProcessFunctions.cpp" />
     <ClCompile Include="PathFinder.cpp" />
     <ClCompile Include="TerrainCollider.cpp" />
@@ -187,6 +189,7 @@
     <ClCompile Include="WeaponSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ArrowScript.h" />
     <ClInclude Include="AttackSystem.h" />
     <ClInclude Include="BehaviorTreeBase.h" />
     <ClInclude Include="BehaviorTreeMonster.h" />
@@ -201,6 +204,7 @@
     <ClInclude Include="Item.h" />
     <ClInclude Include="ItemScript.h" />
     <ClInclude Include="ObjectBuilder.h" />
+    <ClInclude Include="ObjectSpawner.h" />
     <ClInclude Include="PacketProcessFunctions.h" />
     <ClInclude Include="PathFinder.h" />
     <ClInclude Include="TerrainCollider.h" />

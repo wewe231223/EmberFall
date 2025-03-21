@@ -9,6 +9,7 @@
 
 MonsterScript::MonsterScript(std::shared_ptr<class GameObject> owner)
     : Script{ owner, ObjectTag::MONSTER } {
+    owner->SetEntityType(EntityType::MONSTER1);
     owner->RestoreHealth(1000.0f);
 }
 
@@ -78,6 +79,7 @@ BT::NodeStatus MonsterScript::MoveTo(const float deltaTime) {
         return BT::NodeStatus::SUCCESS;
     }
 
+    owner->GetTransform()->SetLook(moveDir);
     owner->GetPhysics()->Acceleration(moveDir, deltaTime);
     return BT::NodeStatus::RUNNING;
 }

@@ -24,6 +24,7 @@ enum class ObjectTag : uint8_t {
     CORRUPTED_GEM,
     ITEM,
     TRIGGER,
+    ARROW,
     NONE,
 };
 
@@ -46,6 +47,7 @@ public:
 
     SimpleMath::Vector3 GetPosition() const;
     SimpleMath::Quaternion GetRotation() const;
+    SimpleMath::Vector3 GetEulerRotation() const;
     SimpleMath::Vector3 GetScale() const;
     SimpleMath::Matrix GetWorld() const;
     ObjectTag GetTag() const;
@@ -58,6 +60,8 @@ public:
     void SetTag(ObjectTag tag);
     void SetEntityType(EntityType type);
     void SetCollider(std::shared_ptr<Collider> collider);
+
+    void Reset();
 
     void ReduceHealth(float hp);
     void RestoreHealth(float hp);

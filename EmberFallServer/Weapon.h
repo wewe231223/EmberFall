@@ -8,6 +8,8 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "Collider.h"
+
 namespace Weapons {
     class IWeapon abstract {
     public:
@@ -16,7 +18,7 @@ namespace Weapons {
 
     public:
         Weapon GetWeaponType() const;
-        std::shared_ptr<class Collider> GetHitbox() const;
+        std::shared_ptr<Collider> GetHitbox() const;
 
         virtual void Attack(const SimpleMath::Vector3& dir) abstract;
 
@@ -26,7 +28,7 @@ namespace Weapons {
     protected:
         bool mAttackable{ true };
         float mDamage{ };
-        std::shared_ptr<class Collider> mHitbox{ };
+        std::shared_ptr<Collider> mHitbox{ };
 
     private:
         Weapon mWeaponType;

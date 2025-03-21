@@ -52,6 +52,10 @@ SimpleMath::Quaternion GameObject::GetRotation() const {
     return mTransform->GetRotation();
 }
 
+SimpleMath::Vector3 GameObject::GetEulerRotation() const {
+    return mTransform->GetEulerRotation();
+}
+
 SimpleMath::Vector3 GameObject::GetScale() const {
     return mTransform->GetScale();
 }
@@ -86,6 +90,14 @@ void GameObject::SetEntityType(EntityType type) {
 
 void GameObject::SetCollider(std::shared_ptr<Collider> collider) {
     mCollider = collider;
+}
+
+void GameObject::Reset() {
+    ClearComponents();
+    mHP = 0.0f;
+    mCollider.reset();
+    mTransform->Reset();
+    mPhysics->Reset();
 }
 
 void GameObject::ReduceHealth(float hp) {

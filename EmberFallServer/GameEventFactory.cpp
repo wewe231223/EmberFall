@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "GameEventFactory.h"
 
-std::shared_ptr<GameEvent> GameEventFactory::EventClone(std::shared_ptr<GameEvent> event) {
+std::shared_ptr<GameEvent> GameEventFactory::CloneEvent(std::shared_ptr<GameEvent> event) {
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
         {

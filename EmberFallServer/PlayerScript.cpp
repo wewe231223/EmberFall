@@ -5,9 +5,12 @@
 #include "GameObject.h"
 #include "ServerGameScene.h"
 #include "GameEventManager.h"
+#include "ObjectSpawner.h"
 
 PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input, std::shared_ptr<SessionManager> sessionManager)
-    : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ static_cast<SessionIdType>(owner->GetId()), sessionManager } {}
+    : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ static_cast<SessionIdType>(owner->GetId()), sessionManager } {
+    owner->SetEntityType(EntityType::PLAYER);
+}
 
 PlayerScript::~PlayerScript() { }
 
@@ -54,37 +57,24 @@ void PlayerScript::Update(const float deltaTime) {
         physics->Jump(deltaTime);
     }
 
-    if (mInput->IsDown(VK_F1)) {
-        physics->mFactor.mass += 10.0kg;
-    }
-
-    if (mInput->IsDown(VK_F2)) {
-        physics->mFactor.acceleration += 1.0mps2;
+    if (mInput->IsUp(VK_F1)) {
+        gObjectSpawner->SpawnProjectile(ObjectTag::ARROW, GetOwner()->GetPosition(),
+            GetOwner()->GetTransform()->Forward(), GameProtocol::Unit::DEFAULT_PROJECTILE_SPEED); // temp speed
     }
 
     if (mInput->IsDown(VK_SHIFT)) {
-        auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(50.0mps);
+        auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(GameProtocol::Unit::PLAYER_RUN_SPEED);
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h",
             GetOwner()->GetId(),
             maxSpeed.Count());
         physics->mFactor.maxMoveSpeed = maxSpeed;
     }
     else if (mInput->IsUp(VK_SHIFT)) {
-        auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(5.0mps);
+        auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(GameProtocol::Unit::PLAYER_WALK_SPEED);
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h", 
             GetOwner()->GetId(),
             maxSpeed.Count());
         physics->mFactor.maxMoveSpeed = maxSpeed;
-    }
-
-    if (mInput->IsUp(VK_F1)) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Push GameEvent: Attack All Monster");
-
-        auto event = std::make_shared<AttackEvent>();
-        event->type = GameEventType::ATTACK_EVENT;
-        event->sender = GetOwner()->GetId();
-        event->damage = 10.0f;
-        gEventManager->PushEvent(event);
     }
 
     if (mInput->IsActiveKey('F')) {
@@ -195,8 +185,8 @@ void PlayerScript::UseItem() {
 
 void PlayerScript::Attack(const SimpleMath::Vector3& dir, const SimpleMath::Vector3& hitboxSize) {
     std::shared_ptr<AttackEvent> attackEvent = std::make_shared<AttackEvent>();
-    attackEvent->damage = 10.0f;
+    attackEvent->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
 
-    mGameScene->SpawnTrigger(attackEvent, 5.0f, 1.0f, 5, SimpleMath::Vector3::Zero, hitboxSize, dir);
+    gObjectSpawner->SpawnTrigger(attackEvent, 5.0f, 1.0f, 5, SimpleMath::Vector3::Zero, hitboxSize, dir);
 }
 

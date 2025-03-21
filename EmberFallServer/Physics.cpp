@@ -15,6 +15,14 @@ bool Physics::IsMovingXZ() const {
     return false == MathUtil::IsVectorZero(mVelocity);
 }
 
+void Physics::Reset() {
+    mOnGround = false;
+    mOnOtherObject = false;
+
+    mPrevImpulse = SimpleMath::Vector3::Zero;
+    mVelocity = SimpleMath::Vector3::Zero;
+}
+
 bool Physics::IsOnGround() const {
     return mOnGround;
 }
@@ -79,7 +87,7 @@ void Physics::Acceleration(const SimpleMath::Vector3& dir, const float deltaTime
     ClampVelocity();
 }
 
-void Physics::AddVelocity(const SimpleMath::Vector3& speed, const float deltaTime) {
+void Physics::AddVelocity(const SimpleMath::Vector3& speed) {
     mVelocity += speed;
 
     ClampVelocity();

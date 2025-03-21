@@ -3,6 +3,8 @@
 #include "ServerGameScene.h"
 #include "GameTimer.h"
 #include "GameObject.h"
+#include "ObjectSpawner.h"
+#include "GameEventManager.h"
 #include "Input.h"
 
 #include "PlayerScript.h"
@@ -34,8 +36,12 @@ void ServerFrame::InitGameScenes() {
     mGameScenes.emplace_back(std::make_shared<PlayScene>());
 
     mCurrentScene = mGameScenes.front();
+    gObjectSpawner->SetCurrentScene(mCurrentScene);
+    gEventManager->SetCurrentGameScene(mCurrentScene);
+
     mCurrentScene->Init();
     mCurrentScene->RegisterPacketProcessFunctions();
+
     StaticTimer::Sync(30);
 }
 
