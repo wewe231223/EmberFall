@@ -49,8 +49,6 @@ private:
     void AcquireItem(const float deltaTime, const std::shared_ptr<GameObject>& item);
     void UseItem();
 
-    void Attack(const SimpleMath::Vector3& dir, const SimpleMath::Vector3& hitboxSize);
-
 private:
     std::shared_ptr<Input> mInput{ };
     Inventory mInventory{ };

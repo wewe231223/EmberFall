@@ -20,7 +20,7 @@ namespace Weapons {
         Weapon GetWeaponType() const;
         std::shared_ptr<Collider> GetHitbox() const;
 
-        virtual void Attack(const SimpleMath::Vector3& dir) abstract;
+        virtual void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) abstract;
 
     public:
         GameUnits::GameUnit<GameUnits::StandardTime> mAttackDelay{ };
@@ -34,31 +34,51 @@ namespace Weapons {
         Weapon mWeaponType;
     };
 
+    class Fist : public IWeapon {
+    public:
+        Fist(const SimpleMath::Vector3& hitBoxSize);
+        virtual ~Fist();
+
+    public:
+        virtual void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
+    };
+
     class Spear : public IWeapon {
     public:
         Spear(const SimpleMath::Vector3& hitBoxSize);
         virtual ~Spear();
 
     public:
-        virtual void Attack(const SimpleMath::Vector3& dir) override;
+        virtual void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
     };
 
     class Bow : public IWeapon {
-        Bow(const SimpleMath::Vector3& hitBoxSize, GameUnits::GameUnit<GameUnits::StandardSpeed> arrowSpeed);
+    public:
+        Bow(const SimpleMath::Vector3& hitBoxSize);
         virtual ~Bow();
     
     public:
-        virtual void Attack(const SimpleMath::Vector3& dir) override;
+        virtual void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
     
     private:
         GameUnits::GameUnit<GameUnits::StandardSpeed> mArrowSpeed{ };
     };
 
     class Sword : public IWeapon {
+    public:
         Sword(const SimpleMath::Vector3& hitBoxSize);
         virtual ~Sword();
     
     public:
-        virtual void Attack(const SimpleMath::Vector3& dir) override;
+        virtual void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
+    };
+
+    class Staff : public IWeapon {
+    public:
+        Staff(const SimpleMath::Vector3& hitBoxSize);
+        virtual ~Staff();
+
+    public:
+        virtual void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
     };
 }

@@ -34,7 +34,23 @@ void PlayerScript::Update(const float deltaTime) {
 
     SimpleMath::Vector3 moveDir{ SimpleMath::Vector3::Zero };
     if (mInput->IsUp('P')) {
-        Attack(GetTransform()->Forward(), SimpleMath::Vector3{ 100.0f });
+        GetOwner()->Attack();
+    }
+
+    if (mInput->IsUp('1')) {
+        GetOwner()->ChangeWeapon(Weapon::NONE);
+    }
+
+    if (mInput->IsUp('2')) {
+        GetOwner()->ChangeWeapon(Weapon::SWORD);
+    }
+
+    if (mInput->IsUp('3')) {
+        GetOwner()->ChangeWeapon(Weapon::SPEAR);
+    }
+
+    if (mInput->IsUp('4')) {
+        GetOwner()->ChangeWeapon(Weapon::BOW);
     }
 
     if (mInput->IsActiveKey('A')) {
@@ -182,11 +198,3 @@ void PlayerScript::AcquireItem(const float deltaTime, const std::shared_ptr<Game
 void PlayerScript::UseItem() {
 
 }
-
-void PlayerScript::Attack(const SimpleMath::Vector3& dir, const SimpleMath::Vector3& hitboxSize) {
-    std::shared_ptr<AttackEvent> attackEvent = std::make_shared<AttackEvent>();
-    attackEvent->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
-
-    gObjectSpawner->SpawnTrigger(attackEvent, 5.0f, 1.0f, 5, SimpleMath::Vector3::Zero, hitboxSize, dir);
-}
-

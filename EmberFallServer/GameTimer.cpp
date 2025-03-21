@@ -17,7 +17,6 @@ TimerEvent::TimerEvent(TimerEvent&& other) noexcept {
 TimerEvent& TimerEvent::operator=(TimerEvent&& other) noexcept {
     mFunction = std::move(other.mFunction);
     mTimeRegistered = GameTimer::Clock::now();
-    //mDelay = other.mDelay;
     mDelay = other.mDelay - std::chrono::duration_cast<Duration>(GameTimer::Clock::now() - other.mTimeRegistered);
     mDelayOrigin = other.mDelayOrigin;
     mLoopCount = other.mLoopCount;
