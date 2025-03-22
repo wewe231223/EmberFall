@@ -1,4 +1,5 @@
 #pragma once 
+#include "../Game/GameObject/GameObject.h"
 #include "../Game/GameObject/Animator.h"
 #include "../Game/GameObject/Transform.h"
 #include "../Renderer/Resource/Mesh.h"
@@ -20,6 +21,8 @@ public:
 public:
 	bool GetActiveState() const;
 
+	void SetWeapon(const GameObject& weapon);
+
 	void Update(std::shared_ptr<MeshRenderManager>&);
 
 	Transform& GetTransform();
@@ -34,6 +37,8 @@ private:
 	Mesh* mMesh{};
 	GraphicsShaderBase* mShader{};
 	MaterialIndex mMaterial{ 0 };
+
+	GameObject mWeapon{}; 
 
 	AnimatorGraph::BoneMaskAnimationGraphController mBoneMaskController{};
 

@@ -52,7 +52,7 @@ public:
 	void SetLocalTransform(const SimpleMath::Matrix& localMatrix);
 
 	void UpdateWorldMatrix();
-
+	void UpdateWorldMatrix(SimpleMath::Matrix& parent);
 private:
 	SimpleMath::Vector3 mPosition{ DirectX::SimpleMath::Vector3::Zero };
 	SimpleMath::Quaternion mRotation{ DirectX::SimpleMath::Quaternion::Identity };

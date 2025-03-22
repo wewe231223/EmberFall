@@ -21,10 +21,10 @@ void Scene::ProcessNotifyId(PacketHeader* header) {
 	mMyPlayer = mHumanPlayers.begin() + header->id;
 
 	*mMyPlayer = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+	mMyPlayer->SetWeapon(mGameObjects.back().Clone());
 
 	mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
 	mCameraMode->Enter();
-
 }
 
 void Scene::ProcessPacketProtocolVersion(PacketHeader* header) {
@@ -95,9 +95,12 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mNetworkSign = NonReplacementSampler::GetInstance().Sample();
 	
 	gClientCore->Init();
-	if (false == gClientCore->Start("127.0.0.1", 7777)) {
+	auto res = gClientCore->Start("127.0.0.1", 7777);
+	if (false == res) {
+		DebugBreak(); 
 		Crash(false);
 	}
+
 
 	mMeshRenderManager = std::get<0>(managers);
 	mTextureManager = std::get<1>(managers);
@@ -138,86 +141,22 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	}
 
 
-	Scene::BuildAniamtionController(); 
+	{
+		auto& object = mGameObjects.emplace_back();
+		object.mShader = mShaderMap["StandardShader"].get();
+		object.mMesh = mMeshMap["Sword"].get();
+		object.mMaterial = mMaterialManager->GetMaterial("SwordMaterial");
 
-	Scene::SetInputBaseAnimMode(); 
-
-
+		object.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 0.f), 0.f };
 	
 
-
-		//AnimatorGraph::AnimationState idleState{}; 
-		//idleState.stateIndex = 0;
-		//idleState.name = "Idle";
-		//idleState.clip = mAnimationMap["Man"].GetClip(0);
-		//{
-		//	AnimatorGraph::AnimationTransition idleToRun{};
-		//	idleToRun.targetStateIndex = 1;
-		//	idleToRun.blendDuration = 0.09;
-		//	idleToRun.parameterName = "Speed";
-		//	idleToRun.expectedValue = true;
-		//	idleState.transitions.emplace_back(idleToRun);
-		//}
-
-
-		//AnimatorGraph::AnimationState stateRun;
-		//stateRun.stateIndex = 1;
-		//stateRun.name = "Run";
-		//stateRun.clip = mAnimationMap["Man"].GetClip(3);
-		//{
-		//	AnimatorGraph::AnimationTransition runToIdle;
-		//	runToIdle.targetStateIndex = 0;
-		//	runToIdle.blendDuration = 0.09;
-		//	runToIdle.parameterName = "Speed";
-		//	runToIdle.expectedValue = false;
-		//	stateRun.transitions.emplace_back(runToIdle);
-		//}
-
-		//std::vector<AnimatorGraph::AnimationState> states{ idleState, stateRun };
-
-
-		//mPlayer.mGraphController = AnimatorGraph::AnimationGraphController(states);
-		//mPlayer.mGraphController.AddParameter("Speed", AnimatorGraph::ParameterType::Bool);
+	}
 
 
 
 
-
-	//	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, sign, [this]() {
-	//		mPlayer.GetTransform().Translate({ 0.f, 0.f, -speed });
-	//		mPlayer.mGraphController.SetBool("Speed", true);
-	//		mPlayer.mBoneMaskGraphController.SetBool("Run", true);
-	//		});
-
-	//	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::W, sign, [this]() {
-	//		mPlayer.mGraphController.SetBool("Speed", false);
-	//		mPlayer.mBoneMaskGraphController.SetBool("Run", false);
-	//		});
-
-	//	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::S, sign, [this]() {
-	//		mPlayer.GetTransform().Translate({ 0.f, 0.f, speed });
-	//		});
-
-	//	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, sign, [this]() {
-	//		mPlayer.GetTransform().Translate({ speed, 0.f, 0.f });
-	//		});
-
-	//	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, sign, [this]() {
-	//		mPlayer.GetTransform().Translate({ -speed, 0.f, 0.f });
-	//		});
-	//
-
-	//	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F, sign, [this]() {
-	//		mPlayer.mBoneMaskGraphController.SetTrigger("Attack");
-	//		speed = 0.005f;
-	//		});
-
-	//	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::F, sign, [this]() { speed = 0.01f; });
-	//}
-
-
-
-
+	Scene::BuildAniamtionController(); 
+	Scene::SetInputBaseAnimMode(); 
 
 	mCamera = Camera(mainCameraBufferLocation);
 	
@@ -240,9 +179,12 @@ void Scene::ProcessNetwork() {
 
 void Scene::Update() {
 	// mMyPlayer->GetTransform().GetPosition().y = tCollider.GetHeight(mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().z);
-	mCameraMode->Update();
 	
-	for (auto& gameObject : mGameObjects) {
+	if (mCameraMode) {
+		mCameraMode->Update();
+	}
+
+	for (auto& gameObject : mGameObjects | std::views::take(mGameObjects.size() - 1)) {
 		if (gameObject) {
 			gameObject.UpdateShaderVariables();
 			auto [mesh, shader, modelContext] = gameObject.GetRenderData();
@@ -346,7 +288,7 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	data = Loader.Load("Resources/Assets/Mountain/Mountain.gltf");
 	mMeshMap["Mountain"] = std::make_unique<Mesh>(device, commandList, data);
 	
-	data = Loader.Load("Resources/Assets/Weapon/sword/sword.gltf");
+	data = Loader.Load("Resources/Assets/Weapon/sword/LongSword.obj");
 	mMeshMap["Sword"] = std::make_unique<Mesh>(device, commandList, data);
 
 	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
@@ -390,7 +332,7 @@ void Scene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Default_OBJ_baseColor");
 	mMaterialManager->CreateMaterial("MountainMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("M_LongSword_baseColor");
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("SwordA_v004_Default_AlbedoTransparency");
 	mMaterialManager->CreateMaterial("SwordMaterial", mat);
 }
 
@@ -726,8 +668,8 @@ void Scene::BuildAniamtionController() {
 			loader.GetClip(0), // Idle
 			loader.GetClip(1), // Forward Run
 			loader.GetClip(2), // Backward Run
-			loader.GetClip(3), // Left Run
-			loader.GetClip(4), // Right Run
+			loader.GetClip(4), // Left Run
+			loader.GetClip(3), // Right Run
 			loader.GetClip(5), // Jump 
 			loader.GetClip(6), // Running Jump 
 			loader.GetClip(7), // Attacked 1 
@@ -785,12 +727,21 @@ void Scene::BuildAniamtionController() {
 			toJump.expectedValue = true;
 			toJump.triggerOnEnd = false;
 			idleState.transitions.emplace_back(toJump);
+
+			AnimatorGraph::AnimationTransition toAttack{};
+			toAttack.targetStateIndex = 7;
+			toAttack.blendDuration = 0.09;
+			toAttack.parameterName = "Attack";
+			toAttack.expectedValue = true;
+			toAttack.triggerOnEnd = false;
+			idleState.transitions.emplace_back(toAttack);
 		}
 
 		AnimatorGraph::BoneMaskAnimationState forwardState{};
 		forwardState.maskedClipIndex = 1;
 		forwardState.nonMaskedClipIndex = 1;
 		forwardState.name = "Forward";
+		forwardState.speed = 1.2;
 
 		{
 			AnimatorGraph::AnimationTransition toIdle{};
@@ -826,7 +777,7 @@ void Scene::BuildAniamtionController() {
 			forwardState.transitions.emplace_back(toRight);
 
 			AnimatorGraph::AnimationTransition toJump{};
-			toJump.targetStateIndex = 5;
+			toJump.targetStateIndex = 6;
 			toJump.blendDuration = 0.09;
 			toJump.parameterName = "Jump";
 			toJump.expectedValue = true;
@@ -1026,13 +977,102 @@ void Scene::BuildAniamtionController() {
 		AnimatorGraph::BoneMaskAnimationState runningJump{}; 
 		runningJump.maskedClipIndex = 6; 
 		runningJump.nonMaskedClipIndex = 6;
+		runningJump.name = "RunningJump";
+
+		{
+			AnimatorGraph::AnimationTransition toIdle{};
+			toIdle.targetStateIndex = 0;
+			toIdle.blendDuration = 0.2;
+			toIdle.parameterName = "Move";
+			toIdle.expectedValue = 0;
+			toIdle.triggerOnEnd = true;
+			runningJump.transitions.emplace_back(toIdle);
+
+			AnimatorGraph::AnimationTransition toForward{};
+			toForward.targetStateIndex = 1;
+			toForward.blendDuration = 0.09;
+			toForward.parameterName = "Move";
+			toForward.expectedValue = 1;
+			toForward.triggerOnEnd = true;
+			runningJump.transitions.emplace_back(toForward);
+
+			AnimatorGraph::AnimationTransition toBackward{};
+			toBackward.targetStateIndex = 2;
+			toBackward.blendDuration = 0.09;
+			toBackward.parameterName = "Move";
+			toBackward.expectedValue = 2;
+			toBackward.triggerOnEnd = true;
+			runningJump.transitions.emplace_back(toBackward);
+
+			AnimatorGraph::AnimationTransition toLeft{};
+			toLeft.targetStateIndex = 3;
+			toLeft.blendDuration = 0.09;
+			toLeft.parameterName = "Move";
+			toLeft.expectedValue = 3;
+			toLeft.triggerOnEnd = true;
+			runningJump.transitions.emplace_back(toLeft);
+
+			AnimatorGraph::AnimationTransition toRight{};
+			toRight.targetStateIndex = 4;
+			toRight.blendDuration = 0.09;
+			toRight.parameterName = "Move";
+			toRight.expectedValue = 4;
+			toRight.triggerOnEnd = true;
+			runningJump.transitions.emplace_back(toRight);
+		}
+
+		AnimatorGraph::BoneMaskAnimationState attack{};
+		attack.maskedClipIndex = 10;
+		attack.nonMaskedClipIndex = 10;
+		attack.name = "Attack";
+
+		{
+			AnimatorGraph::AnimationTransition toIdle{};
+			toIdle.targetStateIndex = 0;
+			toIdle.blendDuration = 0.2;
+			toIdle.parameterName = "Move";
+			toIdle.expectedValue = 0;
+			toIdle.triggerOnEnd = true;
+			attack.transitions.emplace_back(toIdle);
+
+			AnimatorGraph::AnimationTransition toForward{};
+			toForward.targetStateIndex = 1;
+			toForward.blendDuration = 0.09;
+			toForward.parameterName = "Move";
+			toForward.expectedValue = 1;
+			toForward.triggerOnEnd = true;
+			attack.transitions.emplace_back(toForward);
+
+			AnimatorGraph::AnimationTransition toBackward{};
+			toBackward.targetStateIndex = 2;
+			toBackward.blendDuration = 0.09;
+			toBackward.parameterName = "Move";
+			toBackward.expectedValue = 2;
+			toBackward.triggerOnEnd = true;
+			attack.transitions.emplace_back(toBackward);
+
+			AnimatorGraph::AnimationTransition toLeft{};
+			toLeft.targetStateIndex = 3;
+			toLeft.blendDuration = 0.09;
+			toLeft.parameterName = "Move";
+			toLeft.expectedValue = 3;
+			toLeft.triggerOnEnd = true;
+			attack.transitions.emplace_back(toLeft);
+
+			AnimatorGraph::AnimationTransition toRight{};
+			toRight.targetStateIndex = 4;
+			toRight.blendDuration = 0.09;
+			toRight.parameterName = "Move";
+			toRight.expectedValue = 4;
+			toRight.triggerOnEnd = true;
+			attack.transitions.emplace_back(toRight);
+		}
 
 
-
-
-		mSwordManAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, { idleState, forwardState, backwardState, leftState, rightState, jumpState });
+		mSwordManAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, { idleState, forwardState, backwardState, leftState, rightState, jumpState, runningJump, attack });
 		mSwordManAnimationController.AddParameter("Move", AnimatorGraph::ParameterType::Int);
 		mSwordManAnimationController.AddParameter("Jump", AnimatorGraph::ParameterType::Trigger);
+		mSwordManAnimationController.AddParameter("Attack", AnimatorGraph::ParameterType::Trigger);
 		mSwordManAnimationController.AddParameter("True", AnimatorGraph::ParameterType::Always);
 	}
 
@@ -1153,6 +1193,10 @@ void Scene::SetInputBaseAnimMode() {
 
 	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::Space, mInputSign, [this]() {
 		mMyPlayer->GetBoneMaskController().SetTrigger("Jump");
+		});
+
+	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F, mInputSign, [this]() {
+		mMyPlayer->GetBoneMaskController().SetTrigger("Attack");
 		});
 
 }

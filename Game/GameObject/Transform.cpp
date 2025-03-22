@@ -122,3 +122,7 @@ void Transform::SetLocalTransform(const SimpleMath::Matrix& localMatrix) {
 void Transform::UpdateWorldMatrix() {
 	mWorldMatrix = mLocalMatrix * SimpleMath::Matrix::CreateScale(mScale) * SimpleMath::Matrix::CreateFromQuaternion(mRotation) * SimpleMath::Matrix::CreateTranslation(mPosition) ;
 }
+
+void Transform::UpdateWorldMatrix(SimpleMath::Matrix& parent) {
+	mWorldMatrix = SimpleMath::Matrix::CreateScale(mScale) * SimpleMath::Matrix::CreateFromQuaternion(mRotation) * SimpleMath::Matrix::CreateTranslation(mPosition) * ( mLocalMatrix * parent );
+}

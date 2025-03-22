@@ -25,7 +25,10 @@ public:
 	void ToggleActiveState();
 
 	void UpdateShaderVariables(); 
+	void UpdateShaderVariables(SimpleMath::Matrix& parent);
 	bool GetAnimatorState() const;
+
+	GameObject Clone(); 
 public:
 	Mesh* mMesh{ nullptr };
 	GraphicsShaderBase* mShader{ nullptr };

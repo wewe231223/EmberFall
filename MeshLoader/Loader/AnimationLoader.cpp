@@ -137,7 +137,6 @@ AnimationClip AnimationLoader::LoadClip(UINT animIndex) {
     clip.duration = aiAnim->mDuration;
     clip.ticksPerSecond = aiAnim->mTicksPerSecond != 0 ? aiAnim->mTicksPerSecond : 25.0;
 
-    std::unordered_map<std::string, UINT> boneMap{};
     UINT boneNumbers{ 0 };
 
     for (UINT i = 0; i < mScene->mNumMeshes; ++i) {
@@ -146,10 +145,10 @@ AnimationClip AnimationLoader::LoadClip(UINT animIndex) {
             UINT boneIndex{ 0 };
             std::string boneName = mesh->mBones[j]->mName.C_Str();
 
-            if (boneMap.find(boneName) == boneMap.end()) {
+            if (mBoneIndexMap.find(boneName) == mBoneIndexMap.end()) {
                 boneIndex = boneNumbers;
                 boneNumbers++;
-                boneMap[boneName] = boneIndex;
+                mBoneIndexMap[boneName] = boneIndex;
 
                 clip.boneOffsetMatrices.emplace_back();
                 auto offset = SimpleMath::Matrix{
@@ -163,7 +162,7 @@ AnimationClip AnimationLoader::LoadClip(UINT animIndex) {
         }
     }
 
-    for (const auto& [boneName, boneIndex] : boneMap) {
+    for (const auto& [boneName, boneIndex] : mBoneIndexMap) {
         clip.boneAnimations[boneIndex] = BoneAnimation{};
     }
 
@@ -171,8 +170,8 @@ AnimationClip AnimationLoader::LoadClip(UINT animIndex) {
             
         const aiNodeAnim* nodeAnim = aiAnim->mChannels[i];
 
-        auto it = boneMap.find(nodeAnim->mNodeName.data);
-        if (it != boneMap.end()) {
+        auto it = mBoneIndexMap.find(nodeAnim->mNodeName.data);
+        if (it != mBoneIndexMap.end()) {
             UINT boneIndex = it->second;
             BoneAnimation& boneAnim = clip.boneAnimations[boneIndex];
 
@@ -204,7 +203,7 @@ AnimationClip AnimationLoader::LoadClip(UINT animIndex) {
         return pair.second.positionKey.empty() and pair.second.rotationKey.empty() and pair.second.scalingKey.empty();
         });
 
-    clip.root = BuildNode(rootNode, boneMap);
+    clip.root = BuildNode(rootNode, mBoneIndexMap);
         
     auto giTransform = mScene->mRootNode->mTransformation.Inverse();
     clip.globalInverseTransform = SimpleMath::Matrix{
@@ -221,7 +220,8 @@ AnimationClip AnimationLoader::LoadClip(UINT animIndex) {
 void AnimationLoader::Load(const std::filesystem::path& path) {
     if (AnimationLoader::CheckBinary(path)) {
 		AnimationDeserializer deserializer{ std::filesystem::path(BINARY_PATH) / (path.filename().stem().string() + ".bin") };
-		mClips = deserializer.Deserialize();
+        mBoneIndexMap = deserializer.DeserializeBoneIndexMap(); 
+		mClips = deserializer.DeserializeClips();
     }
     else {
         mScene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_ConvertToLeftHanded);
@@ -238,17 +238,24 @@ void AnimationLoader::Load(const std::filesystem::path& path) {
         CrashExp(mScene->mNumAnimations != 0, "Any Animation Data not Found");
 
         for (UINT i = 0; i < mScene->mNumAnimations; ++i) {
+            mBoneIndexMap.clear(); 
             mClips.emplace_back(LoadClip(i));
         }
 
         std::filesystem::path binaryPath = std::filesystem::path(BINARY_PATH) / (path.filename().stem().string() + ".bin");
         AnimationSerializer serializer{ binaryPath };
-		serializer.Serialze(mClips);
+		
+        serializer.Serialize(mBoneIndexMap);
+        serializer.Serialze(mClips);
     }
 }
 
 AnimationClip* AnimationLoader::GetClip(UINT index) {
     return std::addressof(mClips[index]);
+}
+
+UINT AnimationLoader::GetBoneIndex(const std::string& name) {
+    return mBoneIndexMap[name];
 }
 
 bool AnimationLoader::CheckBinary(const std::filesystem::path& path) {
@@ -279,6 +286,16 @@ std::shared_ptr<BoneNode> AnimationLoader::BuildNode(const aiNode* node, const s
 
 
 #pragma region AnimationSerializer
+void AnimationSerializer::Serialize(const std::unordered_map<std::string, UINT>& boneIndexMap) {
+	size_t size = boneIndexMap.size();
+	mFile.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
+
+	for (const auto& [key, value] : boneIndexMap) {
+		Write(key);
+		Write(value);
+	}
+}
+
 void AnimationSerializer::Serialze(const std::vector<AnimationClip>& clips) {
 	size_t size = clips.size();
 	mFile.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
@@ -371,7 +388,26 @@ void AnimationSerializer::WriteBoneNode(const std::shared_ptr<BoneNode>& node) {
 
 
 #pragma region AnimationDeserializer
-std::vector<AnimationClip> AnimationDeserializer::Deserialize() {
+std::unordered_map<std::string, UINT> AnimationDeserializer::DeserializeBoneIndexMap() {
+    std::unordered_map<std::string, UINT> boneIndexMap{};
+
+    size_t size{};
+    mFile.read(reinterpret_cast<char*>(&size), sizeof(size_t));
+
+    for (size_t i = 0; i < size; ++i) {
+        std::string key{};
+        UINT value{};
+
+        Read(key);
+        Read(value);
+
+        boneIndexMap[key] = value;
+    }
+
+    return boneIndexMap;
+}
+
+std::vector<AnimationClip> AnimationDeserializer::DeserializeClips() {
     std::vector<AnimationClip> clips{};
 
 	size_t size{};

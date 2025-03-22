@@ -16,6 +16,10 @@ bool Player::GetActiveState() const {
 	return mActiveState;
 }
 
+void Player::SetWeapon(const GameObject& weapon) {
+	mWeapon = weapon; 
+}
+
 void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 
 
@@ -56,7 +60,6 @@ void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 
 
 	const float XSensivity = 0.15f;
-
 	mTransform.Rotate(0.f, Input.GetDeltaMouseX() * Time.GetSmoothDeltaTime<float>() * XSensivity, 0.f);
 
 
@@ -68,6 +71,13 @@ void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 	mModelContext.world = mTransform.GetWorldMatrix();
 
 	manager->AppendBonedMeshContext(mShader, mMesh, ModelContext{mTransform.GetWorldMatrix().Transpose(), SimpleMath::Vector3{0.3f, 0.8f, 0.3f}, mMaterial}, boneTransformBuffer);
+
+	if (mWeapon) {
+		mWeapon.GetTransform().SetLocalTransform(boneTransformBuffer.boneTransforms[58].Transpose());
+		mWeapon.UpdateShaderVariables(mTransform.GetWorldMatrix());
+		auto [mesh, shader, modelContext] = mWeapon.GetRenderData();
+		manager->AppendPlaneMeshContext(shader, mesh, modelContext);
+	}
 }
 
 Transform& Player::GetTransform() {
