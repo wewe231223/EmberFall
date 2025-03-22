@@ -64,7 +64,6 @@ public:
     virtual void DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerEvent>& eventQueue);
 
     virtual void RegisterPacketProcessFunctions() abstract;
-    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) abstract;
     virtual void Update(const float deltaTime) abstract;
     virtual void LateUpdate(const float deltaTime) abstract;
 
@@ -93,7 +92,6 @@ public:
     virtual void Init() override;
 
     virtual void RegisterPacketProcessFunctions() override;
-    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) override;
     virtual void Update(const float deltaTime) override;
     virtual void LateUpdate(const float deltaTime) override;
 

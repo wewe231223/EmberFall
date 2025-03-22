@@ -25,6 +25,11 @@ void MonsterScript::Update(const float deltaTime) {
 
 void MonsterScript::LateUpdate(const float deltaTime) { 
     if (GetOwner()->HP() <= MathUtil::EPSILON) {
+        PacketSC::PacketObjectDead packet{ sizeof(PacketSC::PacketObjectDead), PacketType::PACKET_OBJECT_DEAD };
+        packet.objId = GetOwner()->GetId();
+
+        gServerCore->SendAll(&packet);
+
         GetOwner()->SetActive(false);
     }
 }

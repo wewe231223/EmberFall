@@ -3,8 +3,8 @@
 #include "ServerGameScene.h"
 #include "GameObject.h"
 
-ViewList::ViewList(SessionIdType ownerId, std::shared_ptr<SessionManager> sessionManager) 
-    : mOwnerId{ ownerId }, mSessionManager { sessionManager } { }
+ViewList::ViewList(SessionIdType ownerId) 
+    : mOwnerId{ ownerId } { }
 
 ViewList::~ViewList() { }
 
@@ -67,13 +67,13 @@ void ViewList::Send() {
             playerPacket.id = static_cast<SessionIdType>(objectId);
             playerPacket.position = object->GetPosition();
             playerPacket.rotationYaw = object->GetEulerRotation().y;
-            mSessionManager->Send(mOwnerId, &playerPacket);
+            gServerCore->Send(mOwnerId, &playerPacket);
         }
         else {
             objectPacket.objId = objectId - OBJECT_ID_START;
             objectPacket.position = object->GetPosition();
             objectPacket.rotationYaw = object->GetEulerRotation().y;
-            mSessionManager->Send(mOwnerId, &objectPacket);
+            gServerCore->Send(mOwnerId, &objectPacket);
         }
 
     }

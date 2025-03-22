@@ -24,7 +24,7 @@ class IServerGameScene;
 
 class PlayerScript : public Script {
 public:
-    PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input, std::shared_ptr<SessionManager> sessionManager);
+    PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input);
     virtual ~PlayerScript();
 
 public:

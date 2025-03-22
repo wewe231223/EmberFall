@@ -129,13 +129,11 @@ void PlayScene::RegisterPacketProcessFunctions() {
         [=](PacketHeader* header) { ProcessPacketCamera(header, mPlayers); });
 }
 
-void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
-    auto packetHandler = serverCore->GetPacketHandler();
+void PlayScene::Update(const float deltaTime) {
+    auto packetHandler = gServerCore->GetPacketHandler();
     auto& buffer = packetHandler->GetBuffer();
     mPacketProcessor.ProcessPackets(buffer);
-}
 
-void PlayScene::Update(const float deltaTime) {
     for (auto& [id, obj] : mPlayers) {
         obj->Update(deltaTime);
     }
