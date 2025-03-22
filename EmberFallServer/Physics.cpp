@@ -15,7 +15,12 @@ bool Physics::IsMovingXZ() const {
     return false == MathUtil::IsVectorZero(mVelocity);
 }
 
+void Physics::Disable() {
+    mActive = false;
+}
+
 void Physics::Reset() {
+    mActive = true;
     mOnGround = false;
     mOnOtherObject = false;
 
@@ -100,7 +105,7 @@ void Physics::AddForce(const SimpleMath::Vector3& force, const float deltaTime) 
 }
 
 void Physics::Update(const float deltaTime) {
-    if (mTransform.expired()) {
+    if (mTransform.expired() or false == mActive) {
         return;
     }
 

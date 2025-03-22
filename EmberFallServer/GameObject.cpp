@@ -98,6 +98,10 @@ void GameObject::ChangeWeapon(Weapon weapon) {
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player Change Weapon : {}", static_cast<int>(weapon));
 }
 
+void GameObject::DisablePhysics() {
+    mPhysics->Disable();
+}
+
 void GameObject::Reset() {
     ClearComponents();
     mHP = 0.0f;

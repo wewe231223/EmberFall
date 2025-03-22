@@ -31,6 +31,7 @@ void ObjectBuilder::BuildObjectComponent(std::shared_ptr<GameObject>& gameObject
 void ObjectBuilder::BuildTrigger(std::shared_ptr<GameObject>& gameObject, std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
     const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents, const SimpleMath::Vector3& dir) {
     gameObject->Reset();
+    gameObject->DisablePhysics();
 
     gameObject->GetTransform()->Translate(center);
     gameObject->GetTransform()->Rotation(MathUtil::GetQuatFromLook(dir));
@@ -43,6 +44,7 @@ void ObjectBuilder::BuildTrigger(std::shared_ptr<GameObject>& gameObject, std::s
 void ObjectBuilder::BuildTrigger(std::shared_ptr<GameObject>& gameObject, std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
     const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir, std::shared_ptr<Collider> collider) {
     gameObject->Reset();
+    gameObject->DisablePhysics();
 
     gameObject->GetTransform()->Translate(pos);
     gameObject->GetTransform()->Rotation(MathUtil::GetQuatFromLook(dir));

@@ -89,7 +89,7 @@ TerrainCollider& PlayScene::GetTerrainCollider() {
 }
 
 void PlayScene::Init() {
-    mTerrain = std::make_shared<Terrain>("../Resources/HeightMap.raw");
+    mTerrain = std::make_shared<Terrain>("../Resources/Binarys/Terrain/TerrainBaked.bin");
     mTerrainCollider.SetTerrain(mTerrain);
 
     mObjects.resize(MAX_OBJECT);

@@ -54,7 +54,6 @@ Graph::Edge& Graph::GetEdge(IndexType from, IndexType to) {
         }
     }
 
-    Crash(std::format("Edge from {}: to {} is not exists", from, to));
 }
 
 void Graph::AddNode(Node node) {

@@ -62,6 +62,7 @@ public:
     void SetEntityType(EntityType type);
     void SetCollider(std::shared_ptr<Collider> collider);
     void ChangeWeapon(Weapon weapon);
+    void DisablePhysics();
 
     void Reset();
 

@@ -43,6 +43,7 @@ public:
     bool IsMoving() const;
     bool IsMovingXZ() const;
 
+    void Disable();
     void Reset();
 
     void Jump(const float deltaTime);
@@ -66,6 +67,7 @@ public:
     PhysicsFactor mFactor{ };
 
 private:
+    bool mActive{ true };
     bool mOnGround{ true };
     bool mOnOtherObject{ true };
 
