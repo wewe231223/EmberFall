@@ -108,6 +108,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	Scene::BuildMaterial();
 	Scene::BuildPacketProcessor();
 
+	// SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", "Resources/Binarys/Terrain/TerrainBaked.bin");
 	tCollider.LoadFromFile("Resources/Binarys/Terrain/TerrainBaked.bin");
 
 	mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
@@ -743,7 +744,7 @@ void Scene::BuildAniamtionController() {
 		idleState.maskedClipIndex = 0;
 		idleState.nonMaskedClipIndex = 0;
 		idleState.name = "Idle";
-		
+
 		{
 			AnimatorGraph::AnimationTransition toForward{};
 			toForward.targetStateIndex = 1;
@@ -786,8 +787,250 @@ void Scene::BuildAniamtionController() {
 			idleState.transitions.emplace_back(toJump);
 		}
 
+		AnimatorGraph::BoneMaskAnimationState forwardState{};
+		forwardState.maskedClipIndex = 1;
+		forwardState.nonMaskedClipIndex = 1;
+		forwardState.name = "Forward";
 
-		mSwordManAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, { idleState });
+		{
+			AnimatorGraph::AnimationTransition toIdle{};
+			toIdle.targetStateIndex = 0;
+			toIdle.blendDuration = 0.09;
+			toIdle.parameterName = "Move";
+			toIdle.expectedValue = 0;
+			toIdle.triggerOnEnd = false;
+			forwardState.transitions.emplace_back(toIdle);
+
+			AnimatorGraph::AnimationTransition toBackward{};
+			toBackward.targetStateIndex = 2;
+			toBackward.blendDuration = 0.09;
+			toBackward.parameterName = "Move";
+			toBackward.expectedValue = 2;
+			toBackward.triggerOnEnd = false;
+			forwardState.transitions.emplace_back(toBackward);
+
+			AnimatorGraph::AnimationTransition toLeft{};
+			toLeft.targetStateIndex = 3;
+			toLeft.blendDuration = 0.09;
+			toLeft.parameterName = "Move";
+			toLeft.expectedValue = 3;
+			toLeft.triggerOnEnd = false;
+			forwardState.transitions.emplace_back(toLeft);
+
+			AnimatorGraph::AnimationTransition toRight{};
+			toRight.targetStateIndex = 4;
+			toRight.blendDuration = 0.09;
+			toRight.parameterName = "Move";
+			toRight.expectedValue = 4;
+			toRight.triggerOnEnd = false;
+			forwardState.transitions.emplace_back(toRight);
+
+			AnimatorGraph::AnimationTransition toJump{};
+			toJump.targetStateIndex = 5;
+			toJump.blendDuration = 0.09;
+			toJump.parameterName = "Jump";
+			toJump.expectedValue = true;
+			toJump.triggerOnEnd = false;
+			forwardState.transitions.emplace_back(toJump);
+		}
+
+		AnimatorGraph::BoneMaskAnimationState backwardState{};
+		backwardState.maskedClipIndex = 2;
+		backwardState.nonMaskedClipIndex = 2;
+		backwardState.name = "BackWard";
+
+		{
+			AnimatorGraph::AnimationTransition toIdle{};
+			toIdle.targetStateIndex = 0;
+			toIdle.blendDuration = 0.09;
+			toIdle.parameterName = "Move";
+			toIdle.expectedValue = 0;
+			toIdle.triggerOnEnd = false;
+			backwardState.transitions.emplace_back(toIdle);
+
+			AnimatorGraph::AnimationTransition toForward{};
+			toForward.targetStateIndex = 1;
+			toForward.blendDuration = 0.09;
+			toForward.parameterName = "Move";
+			toForward.expectedValue = 1;
+			toForward.triggerOnEnd = false;
+			backwardState.transitions.emplace_back(toForward);
+
+			AnimatorGraph::AnimationTransition toLeft{};
+			toLeft.targetStateIndex = 3;
+			toLeft.blendDuration = 0.09;
+			toLeft.parameterName = "Move";
+			toLeft.expectedValue = 3;
+			toLeft.triggerOnEnd = false;
+			backwardState.transitions.emplace_back(toLeft);
+
+			AnimatorGraph::AnimationTransition toRight{};
+			toRight.targetStateIndex = 4;
+			toRight.blendDuration = 0.09;
+			toRight.parameterName = "Move";
+			toRight.expectedValue = 4;
+			toRight.triggerOnEnd = false;
+			backwardState.transitions.emplace_back(toRight);
+
+			AnimatorGraph::AnimationTransition toJump{};
+			toJump.targetStateIndex = 5;
+			toJump.blendDuration = 0.09;
+			toJump.parameterName = "Jump";
+			toJump.expectedValue = true;
+			toJump.triggerOnEnd = false;
+			backwardState.transitions.emplace_back(toJump);
+		}
+
+		AnimatorGraph::BoneMaskAnimationState leftState{};
+		leftState.maskedClipIndex = 4;
+		leftState.nonMaskedClipIndex = 4;
+		leftState.name = "Left";
+
+		{
+			AnimatorGraph::AnimationTransition toIdle{};
+			toIdle.targetStateIndex = 0;
+			toIdle.blendDuration = 0.09;
+			toIdle.parameterName = "Move";
+			toIdle.expectedValue = 0;
+			toIdle.triggerOnEnd = false;
+			leftState.transitions.emplace_back(toIdle);
+
+			AnimatorGraph::AnimationTransition toForward{};
+			toForward.targetStateIndex = 1;
+			toForward.blendDuration = 0.09;
+			toForward.parameterName = "Move";
+			toForward.expectedValue = 1;
+			toForward.triggerOnEnd = false;
+			leftState.transitions.emplace_back(toForward);
+
+			AnimatorGraph::AnimationTransition toBackward{};
+			toBackward.targetStateIndex = 2;
+			toBackward.blendDuration = 0.09;
+			toBackward.parameterName = "Move";
+			toBackward.expectedValue = 2;
+			toBackward.triggerOnEnd = false;
+			leftState.transitions.emplace_back(toBackward);
+
+			AnimatorGraph::AnimationTransition toRight{};
+			toRight.targetStateIndex = 4;
+			toRight.blendDuration = 0.09;
+			toRight.parameterName = "Move";
+			toRight.expectedValue = 4;
+			toRight.triggerOnEnd = false;
+			leftState.transitions.emplace_back(toRight);
+
+			AnimatorGraph::AnimationTransition toJump{};
+			toJump.targetStateIndex = 5;
+			toJump.blendDuration = 0.09;
+			toJump.parameterName = "Jump";
+			toJump.expectedValue = true;
+			toJump.triggerOnEnd = false;
+			leftState.transitions.emplace_back(toJump);
+		}
+
+		AnimatorGraph::BoneMaskAnimationState rightState{};
+		rightState.maskedClipIndex = 3;
+		rightState.nonMaskedClipIndex = 3;
+		rightState.name = "Right";
+
+		{
+			AnimatorGraph::AnimationTransition toIdle{};
+			toIdle.targetStateIndex = 0;
+			toIdle.blendDuration = 0.09;
+			toIdle.parameterName = "Move";
+			toIdle.expectedValue = 0;
+			toIdle.triggerOnEnd = false;
+			rightState.transitions.emplace_back(toIdle);
+
+			AnimatorGraph::AnimationTransition toForward{};
+			toForward.targetStateIndex = 1;
+			toForward.blendDuration = 0.09;
+			toForward.parameterName = "Move";
+			toForward.expectedValue = 1;
+			toForward.triggerOnEnd = false;
+			rightState.transitions.emplace_back(toForward);
+
+			AnimatorGraph::AnimationTransition toBackward{};
+			toBackward.targetStateIndex = 2;
+			toBackward.blendDuration = 0.09;
+			toBackward.parameterName = "Move";
+			toBackward.expectedValue = 2;
+			toBackward.triggerOnEnd = false;
+			rightState.transitions.emplace_back(toBackward);
+
+			AnimatorGraph::AnimationTransition toLeft{};
+			toLeft.targetStateIndex = 3;
+			toLeft.blendDuration = 0.09;
+			toLeft.parameterName = "Move";
+			toLeft.expectedValue = 3;
+			toLeft.triggerOnEnd = false;
+			rightState.transitions.emplace_back(toLeft);
+
+			AnimatorGraph::AnimationTransition toJump{};
+			toJump.targetStateIndex = 5;
+			toJump.blendDuration = 0.09;
+			toJump.parameterName = "Jump";
+			toJump.expectedValue = true;
+			toJump.triggerOnEnd = false;
+			rightState.transitions.emplace_back(toJump);
+		}
+
+		AnimatorGraph::BoneMaskAnimationState jumpState{};
+		jumpState.maskedClipIndex = 5;
+		jumpState.nonMaskedClipIndex = 5;
+		jumpState.name = "Jump";
+
+		{
+			AnimatorGraph::AnimationTransition toIdle{};
+			toIdle.targetStateIndex = 0;
+			toIdle.blendDuration = 0.2;
+			toIdle.parameterName = "Move";
+			toIdle.expectedValue = 0;
+			toIdle.triggerOnEnd = true;
+			jumpState.transitions.emplace_back(toIdle);
+
+			AnimatorGraph::AnimationTransition toForward{};
+			toForward.targetStateIndex = 1;
+			toForward.blendDuration = 0.09;
+			toForward.parameterName = "Move";
+			toForward.expectedValue = 1;
+			toForward.triggerOnEnd = true;
+			jumpState.transitions.emplace_back(toForward);
+
+			AnimatorGraph::AnimationTransition toBackward{};
+			toBackward.targetStateIndex = 2;
+			toBackward.blendDuration = 0.09;
+			toBackward.parameterName = "Move";
+			toBackward.expectedValue = 2;
+			toBackward.triggerOnEnd = true;
+			jumpState.transitions.emplace_back(toBackward);
+
+			AnimatorGraph::AnimationTransition toLeft{};
+			toLeft.targetStateIndex = 3;
+			toLeft.blendDuration = 0.09;
+			toLeft.parameterName = "Move";
+			toLeft.expectedValue = 3;
+			toLeft.triggerOnEnd = true;
+			jumpState.transitions.emplace_back(toLeft);
+
+			AnimatorGraph::AnimationTransition toRight{};
+			toRight.targetStateIndex = 4;
+			toRight.blendDuration = 0.09;
+			toRight.parameterName = "Move";
+			toRight.expectedValue = 4;
+			toRight.triggerOnEnd = true;
+			jumpState.transitions.emplace_back(toRight);
+
+		}
+
+		AnimatorGraph::BoneMaskAnimationState runningJump{}; 
+		runningJump.maskedClipIndex = 6; 
+		runningJump.nonMaskedClipIndex = 6;
+
+
+
+
+		mSwordManAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, { idleState, forwardState, backwardState, leftState, rightState, jumpState });
 		mSwordManAnimationController.AddParameter("Move", AnimatorGraph::ParameterType::Int);
 		mSwordManAnimationController.AddParameter("Jump", AnimatorGraph::ParameterType::Trigger);
 		mSwordManAnimationController.AddParameter("True", AnimatorGraph::ParameterType::Always);

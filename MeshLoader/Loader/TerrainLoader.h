@@ -12,6 +12,7 @@ public:
 	TerrainLoader() = default;
 	~TerrainLoader() = default;
 public:
+	int GetLength() const;
 	MeshData Load(const std::filesystem::path& path, bool patch);
 private:
 	void CreatePatch(MeshData& data, int zStart, int zEnd, int xStart, int xEnd);
@@ -20,29 +21,19 @@ private:
 	int mLength{};
 };
 
-
-struct TessellatedPatchHeader {
-	int gridWidth;    
-	int gridHeight;   
-	float gridSpacing; 
-	float minX;       // 패치의 좌측 하단 x 
-	float minZ;       // 패치의 좌측 하단 z
-};
-
-struct TessellatedPatch {
-	TessellatedPatchHeader header;
-	std::vector<SimpleMath::Vector3> vertices; 
-};
-
-
 class TerrainCollider {
 public:
 	TerrainCollider() = default;
 	~TerrainCollider() = default;
-public:
+
+
 	bool LoadFromFile(const std::filesystem::path& filePath);
 	float GetHeight(float x, float z) const;
-
 private:
-	std::vector<TessellatedPatch> mPatches;
+	std::vector<SimpleMath::Vector3> mGlobalVertices;
+	int  mGlobalWidth = 0;  
+	int  mGlobalHeight = 0;   
+	float mGridSpacing = 0.0f; 
+	float mMinX = 0.0f;        
+	float mMinZ = 0.0f;        
 };
