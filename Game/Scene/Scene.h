@@ -68,8 +68,9 @@ private:
 
 	int mInputSign{}; 
 
-	std::array<Player, 4> mHumanPlayers{};
-	std::array<Player, 4>::iterator mMyPlayer{}; 
+	std::unordered_map<NetworkObjectIdType, std::vector<Player>::iterator> mIndexMap{};
+	std::vector<Player> mPlayers{};
+	std::vector<Player>::iterator mMyPlayer{}; 
 	
 	AnimatorGraph::BoneMaskAnimationGraphController mBaseAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mArcherAnimationController{};

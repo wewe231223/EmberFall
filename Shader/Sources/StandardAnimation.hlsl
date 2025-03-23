@@ -75,12 +75,13 @@ StandardAnimation_PIN StandardAnimation_VS(StandardAnimation_VIN input) {
     float4x4 boneTransform = (float4x4)0;
     
  
-    boneTransform += boneTransforms[ modelContext.boneStart + input.boneID[0] ] * input.boneWeight.x;
-    boneTransform += boneTransforms[ modelContext.boneStart + input.boneID[1] ] * input.boneWeight.y;
-    boneTransform += boneTransforms[ modelContext.boneStart + input.boneID[2] ] * input.boneWeight.z;
-    boneTransform += boneTransforms[ modelContext.boneStart + input.boneID[3] ] * input.boneWeight.w;
+    boneTransform += boneTransforms[modelContext.boneStart + input.boneID[0]] * input.boneWeight.x;
+    boneTransform += boneTransforms[modelContext.boneStart + input.boneID[1]] * input.boneWeight.y;
+    boneTransform += boneTransforms[modelContext.boneStart + input.boneID[2]] * input.boneWeight.z;
+    boneTransform += boneTransforms[modelContext.boneStart + input.boneID[3]] * input.boneWeight.w;
     
     output.position = mul(float4(input.position, 1.0f), boneTransform);
+        
     output.position = mul(output.position, modelContext.world);
     output.position = mul(output.position, viewProjection);
     

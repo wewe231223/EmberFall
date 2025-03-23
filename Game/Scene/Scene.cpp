@@ -18,13 +18,13 @@
 void Scene::ProcessNotifyId(PacketHeader* header) {
 	gClientCore->InitSessionId(header->id);
 	mNetworkInfoText->GetText() = std::format(L"My Session ID : {}", header->id);
-	mMyPlayer = mHumanPlayers.begin() + header->id;
+	//mMyPlayer = mHumanPlayers.begin() + header->id;
 
-	*mMyPlayer = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-	mMyPlayer->SetWeapon(mGameObjects.back().Clone());
+	//*mMyPlayer = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+	//mMyPlayer->SetWeapon(mGameObjects.back().Clone());
 
-	mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
-	mCameraMode->Enter();
+	//mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
+	//mCameraMode->Enter();
 }
 
 void Scene::ProcessPacketProtocolVersion(PacketHeader* header) {
@@ -37,7 +37,7 @@ void Scene::ProcessPacketProtocolVersion(PacketHeader* header) {
 		MessageBox(nullptr, L"ERROR!!!!!\nProtocolVersion Mismatching", L"", MB_OK | MB_ICONERROR);
 		::exit(0);
 	}
-}
+}	
 
 void Scene::ProcessPlayerPacket(PacketHeader* header) {
 	//auto packet = reinterpret_cast<PacketSC::PacketPlayer*>(header);
@@ -54,14 +54,42 @@ void Scene::ProcessPlayerPacket(PacketHeader* header) {
 void Scene::ProcessObjectPacket(PacketHeader* header) {
 	auto packet = reinterpret_cast<PacketSC::PacketObject*>(header);
 	
-	if (packet->objId > OBJECT_ID_START) {
-		auto player = mHumanPlayers.begin() + header->id;
+	// 플레이어 영역에 해당한다면
+	if (packet->objId < OBJECT_ID_START) {
+		// 그게 만약 나라면 
+		if (packet->objId == gClientCore->GetSessionId()) {
+			// 플레이어 인스턴스가 없다면 
+			if (mIndexMap.find(packet->objId) == mIndexMap.end()) {
+				mPlayers.emplace_back(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				mIndexMap[packet->objId] = mPlayers.end() - 1;
+				mMyPlayer = mPlayers.end() - 1; 
 
-		if (player->GetActiveState() == false) {
-			*player = Player(mMeshMap["HumanBaseAnim"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mBaseAnimationController);
+				mMyPlayer->SetWeapon(mGameObjects.back().Clone()); 
+
+				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
+				mCameraMode->Enter();
+			}
+			// 플레이어 인스턴스가 있다면 
+			else {
+				mPlayers[packet->objId].GetTransform().GetPosition() = packet->position;
+			}
 		}
-
-		player->GetTransform().GetPosition() = packet->position;
+		// 아니라면 ( 다른 플레이어 라면 ) 
+		else {
+			// 그 플레이어 인스턴스가 없다면 
+			if (mIndexMap.find(packet->objId) == mIndexMap.end()) {
+				mPlayers.emplace_back(mMeshMap["HumanBaseAnim"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mBaseAnimationController);
+				mIndexMap[packet->objId] = mPlayers.end() - 1;
+			}
+			// 그 플레이어 인스턴스가 있다면 
+			else {
+				mPlayers[packet->objId].GetTransform().GetPosition() = packet->position;
+			}
+		}
+	}
+	// 그게 아니라면 기타 게임 오브젝트이다. 
+	else {
+		
 	}
 }
 
@@ -202,11 +230,16 @@ void Scene::Update() {
 		if (gameObject) {
 			gameObject.UpdateShaderVariables();
 			auto [mesh, shader, modelContext] = gameObject.GetRenderData();
+
+			if (shader == nullptr) {
+				DebugBreak(); 
+			}
+
 			mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
 		}
 	}
 
-	for (auto& player : mHumanPlayers) {
+	for (auto& player : mPlayers) {
 		if (player.GetActiveState()) {
 			player.Update(mMeshRenderManager);
 		}
@@ -250,7 +283,6 @@ void Scene::SendNetwork() {
 void Scene::BuildPacketProcessor() {
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_PROTOCOL_VERSION, [this](PacketHeader* header) { ProcessPacketProtocolVersion(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_NOTIFY_ID, [this](PacketHeader* header) { ProcessNotifyId(header); });
-	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_PLAYER, [this](PacketHeader* header) { ProcessPlayerPacket(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_OBJECT, [this](PacketHeader* header) { ProcessObjectPacket(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_OBJECT_APPEARED, [this](PacketHeader* header) { ProcessObjectAppeared(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_OBJECT_DISAPPEARED, [this](PacketHeader* header) { ProcessObjectDisappeared(header); });
@@ -302,7 +334,7 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	data = Loader.Load("Resources/Assets/Mountain/Mountain.gltf");
 	mMeshMap["Mountain"] = std::make_unique<Mesh>(device, commandList, data);
 	
-	data = Loader.Load("Resources/Assets/Weapon/sword/LongSword.obj");
+	data = Loader.Load("Resources/Assets/Weapon/sword/LongSword.glb");
 	mMeshMap["Sword"] = std::make_unique<Mesh>(device, commandList, data);
 
 	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
@@ -1217,25 +1249,25 @@ void Scene::SetInputBaseAnimMode() {
 
 void Scene::SetInputArcherMode() {
 
-	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetBool("Move", true);
-		});
+	//Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
+	//	mMyPlayer->GetBoneMaskController().SetBool("Move", true);
+	//	});
 
-	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetBool("Move", false);
-		});
+	//Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
+	//	mMyPlayer->GetBoneMaskController().SetBool("Move", false);
+	//	});
 
 
-	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
-		});
+	//Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
+	//	});
 
-	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
-		});
-	
+	//Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
+	//	});
+	//
 
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetTrigger("Attack");
-		});
+	//Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F, mInputSign, [this]() {
+	//	mMyPlayer->GetBoneMaskController().SetTrigger("Attack");
+	//	});
 }
 
 void Scene::SetInputSwordManMode() {

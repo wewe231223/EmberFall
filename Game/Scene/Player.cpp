@@ -10,6 +10,8 @@ Player::Player(Mesh* mesh, GraphicsShaderBase* shader, MaterialIndex material, A
 	mBoneMaskController = boneMaskController;
 
 	mActiveState = true;
+
+	mWeapon.SetActiveState(false);
 }
 
 bool Player::GetActiveState() const {
@@ -18,6 +20,7 @@ bool Player::GetActiveState() const {
 
 void Player::SetWeapon(const GameObject& weapon) {
 	mWeapon = weapon; 
+	mWeapon.SetActiveState(true);
 }
 
 void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
