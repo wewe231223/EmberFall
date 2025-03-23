@@ -40,19 +40,29 @@ void Scene::ProcessPacketProtocolVersion(PacketHeader* header) {
 }
 
 void Scene::ProcessPlayerPacket(PacketHeader* header) {
-	auto packet = reinterpret_cast<PacketSC::PacketPlayer*>(header);
+	//auto packet = reinterpret_cast<PacketSC::PacketPlayer*>(header);
 
-	auto player = mHumanPlayers.begin() + header->id;
+	//auto player = mHumanPlayers.begin() + header->id;
 
-	if (player->GetActiveState() == false) {
-		*player = Player(mMeshMap["HumanBaseAnim"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mBaseAnimationController);
-	}
+	//if (player->GetActiveState() == false) {
+	//	*player = Player(mMeshMap["HumanBaseAnim"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mBaseAnimationController);
+	//}
 
-	player->GetTransform().GetPosition() = packet->position;
+	//player->GetTransform().GetPosition() = packet->position;
 }
 
 void Scene::ProcessObjectPacket(PacketHeader* header) {
+	auto packet = reinterpret_cast<PacketSC::PacketObject*>(header);
+	
+	if (packet->objId > OBJECT_ID_START) {
+		auto player = mHumanPlayers.begin() + header->id;
 
+		if (player->GetActiveState() == false) {
+			*player = Player(mMeshMap["HumanBaseAnim"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mBaseAnimationController);
+		}
+
+		player->GetTransform().GetPosition() = packet->position;
+	}
 }
 
 void Scene::ProcessObjectDead(PacketHeader* header) {
