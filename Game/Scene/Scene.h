@@ -15,7 +15,7 @@
 class Scene {
 public:
 	Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList ,std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation); 
-	~Scene() = default;
+	~Scene();
 public:
 	void ProcessNetwork(); 
 	void Update();

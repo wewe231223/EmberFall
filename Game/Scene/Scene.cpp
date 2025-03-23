@@ -170,6 +170,10 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 }
 
+Scene::~Scene() {
+	gClientCore->End(); 
+}
+
 void Scene::ProcessNetwork() {
 	auto packetHandler = gClientCore->GetPacketHandler(); 
 	decltype(auto) buffer = packetHandler->GetBuffer(); 
@@ -1159,7 +1163,7 @@ void Scene::BuildAniamtionController() {
 void Scene::SetInputBaseAnimMode() {
 	Input.EraseCallBack(mInputSign);
 
-	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
+	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 1);
 		});
 
@@ -1167,7 +1171,7 @@ void Scene::SetInputBaseAnimMode() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
 		});
 
-	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::S, mInputSign, [this]() {
+	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::S, mInputSign, [this]() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 2);
 		});
 
@@ -1175,7 +1179,7 @@ void Scene::SetInputBaseAnimMode() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
 		});
 
-	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
+	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 3);
 		});
 
@@ -1183,7 +1187,7 @@ void Scene::SetInputBaseAnimMode() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
 		});
 
-	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
+	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 4);
 		});
 

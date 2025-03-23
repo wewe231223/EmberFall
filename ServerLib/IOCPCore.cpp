@@ -61,6 +61,7 @@ void IOCPCore::IOWorker() {
             }
             else if (IOType::CONNECT == overlappedEx->type) {
                 gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Connect Error!!");
+                MessageBoxA(nullptr, NetworkUtil::WSAErrorMessage().c_str(), "", MB_OK);
                 Crash("Connect Error");
             }
 
