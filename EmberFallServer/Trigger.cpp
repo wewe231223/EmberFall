@@ -43,7 +43,7 @@ void Trigger::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent,
 
     delayCounter += StaticTimer::GetDeltaTime();
     if (mProduceEventDelay < delayCounter) {
-        auto cloneEvent = GameEventFactory::EventClone(mEvent);
+        auto cloneEvent = GameEventFactory::CloneEvent(mEvent);
         cloneEvent->receiver = opponentId;
         gEventManager->PushEvent(cloneEvent);
 

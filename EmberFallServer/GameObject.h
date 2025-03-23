@@ -15,6 +15,7 @@
 
 #include "Collider.h"
 #include "GameObjectComponent.h"
+#include "WeaponSystem.h"
 
 class IServerGameScene;
 
@@ -24,6 +25,7 @@ enum class ObjectTag : uint8_t {
     CORRUPTED_GEM,
     ITEM,
     TRIGGER,
+    ARROW,
     NONE,
 };
 
@@ -46,6 +48,7 @@ public:
 
     SimpleMath::Vector3 GetPosition() const;
     SimpleMath::Quaternion GetRotation() const;
+    SimpleMath::Vector3 GetEulerRotation() const;
     SimpleMath::Vector3 GetScale() const;
     SimpleMath::Matrix GetWorld() const;
     ObjectTag GetTag() const;
@@ -58,6 +61,10 @@ public:
     void SetTag(ObjectTag tag);
     void SetEntityType(EntityType type);
     void SetCollider(std::shared_ptr<Collider> collider);
+    void ChangeWeapon(Weapon weapon);
+    void DisablePhysics();
+
+    void Reset();
 
     void ReduceHealth(float hp);
     void RestoreHealth(float hp);
@@ -70,9 +77,10 @@ public:
     void OnCollision(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
     void OnCollisionTerrain(const float height);
 
-    virtual void DispatchGameEvent(GameEvent* event);
+    void DispatchGameEvent(GameEvent* event);
 
     void ClearComponents();
+    void Attack();
 
     template <typename ColliderType, typename... Args>
         requires std::derived_from<ColliderType, Collider> and std::is_constructible_v<ColliderType, Args...>
@@ -104,9 +112,9 @@ public:
     }
 
 private:
-    virtual void OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
-    virtual void OnCollisionStay(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
-    virtual void OnCollisionExit(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
+    void OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
+    void OnCollisionStay(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
+    void OnCollisionExit(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
 
 private:
     bool mActive{ true };
@@ -121,6 +129,8 @@ private:
     std::shared_ptr<class Physics> mPhysics{ };                         // Physics
     std::shared_ptr<Collider> mCollider{ nullptr };                     // 
     std::vector<std::shared_ptr<GameObjectComponent>> mComponents{ };   // Components
+
+    WeaponSystem mWeaponSystem{ };
 
     std::shared_ptr<IServerGameScene> mGameScene{ };
 };

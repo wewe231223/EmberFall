@@ -7,6 +7,7 @@
 
 GameObject::GameObject(std::shared_ptr<IServerGameScene> gameScene)
     : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mGameScene{ gameScene } {
+    mWeaponSystem.SetWeapon(Weapon::NONE);
     mPhysics->SetTransform(mTransform);
 }
 
@@ -52,6 +53,10 @@ SimpleMath::Quaternion GameObject::GetRotation() const {
     return mTransform->GetRotation();
 }
 
+SimpleMath::Vector3 GameObject::GetEulerRotation() const {
+    return mTransform->GetEulerRotation();
+}
+
 SimpleMath::Vector3 GameObject::GetScale() const {
     return mTransform->GetScale();
 }
@@ -86,6 +91,23 @@ void GameObject::SetEntityType(EntityType type) {
 
 void GameObject::SetCollider(std::shared_ptr<Collider> collider) {
     mCollider = collider;
+}
+
+void GameObject::ChangeWeapon(Weapon weapon) {
+    mWeaponSystem.SetWeapon(weapon);
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player Change Weapon : {}", static_cast<int>(weapon));
+}
+
+void GameObject::DisablePhysics() {
+    mPhysics->Disable();
+}
+
+void GameObject::Reset() {
+    ClearComponents();
+    mHP = 0.0f;
+    mCollider.reset();
+    mTransform->Reset();
+    mPhysics->Reset();
 }
 
 void GameObject::ReduceHealth(float hp) {
@@ -168,6 +190,10 @@ void GameObject::DispatchGameEvent(GameEvent* event) {
 
 void GameObject::ClearComponents() {
     mComponents.clear();
+}
+
+void GameObject::Attack() {
+    mWeaponSystem.Attack(mTransform->GetPosition(), mTransform->Forward());
 }
 
 void GameObject::OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 

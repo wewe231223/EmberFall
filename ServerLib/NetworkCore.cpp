@@ -87,6 +87,18 @@ void ServerCore::End() {
     ::WSACleanup();
 }
 
+void ServerCore::Send(SessionIdType to, void* packet) {
+    mSessionManager->Send(to, packet);
+}
+
+void ServerCore::SendAll(void* packet) {
+    mSessionManager->SendAll(packet);
+}
+
+void ServerCore::SendAll(void* data, size_t size) {
+    mSessionManager->SendAll(data, size);
+}
+
 ClientCore::ClientCore() 
     : INetworkCore{ NetworkType::CLIENT } {
 }

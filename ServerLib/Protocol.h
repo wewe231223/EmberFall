@@ -6,7 +6,7 @@ using SenderIdType = SessionIdType;
 
 // Protocol version - ver 1.0
 inline constexpr uint8_t PROTOCOL_VERSION_MAJOR = 1;
-inline constexpr uint8_t PROTOCOL_VERSION_MINOR = 0;
+inline constexpr uint8_t PROTOCOL_VERSION_MINOR = 1;
 inline constexpr PacketTypeT PACKET_CS_START = 0x00;
 inline constexpr PacketTypeT PACKET_SC_START = 0x81;
 
@@ -26,7 +26,6 @@ namespace PacketType {
     enum PacketSC : PacketTypeT {
         PACKET_PROTOCOL_VERSION = 0x81,
         PACKET_NOTIFY_ID,
-        PACKET_PLAYER,
         PACKET_OBJECT,
         PACKET_OBJECT_APPEARED,
         PACKET_OBJECT_DISAPPEARED,
@@ -58,7 +57,8 @@ enum EntityType : uint8_t {
     MONSTER3,
     ITEM_HOLYWATER,
     ITEM_CROSS,
-    ITEM_POTION
+    ITEM_POTION,
+    PROJECTILE_ARROW,
 };
 
 struct PacketHeader {
@@ -75,11 +75,6 @@ struct PacketProtocolVersion : public PacketHeader {
 // if ObjectId >= 256 then Object Packet else Player Packet
 namespace PacketSC { // Server To Client
     struct PacketNotifyId : public PacketHeader { };
-
-    struct PacketPlayer : public PacketHeader { 
-        float rotationYaw;
-        SimpleMath::Vector3 position;
-    };
 
     struct PacketObject : public PacketHeader {
         NetworkObjectIdType objId;

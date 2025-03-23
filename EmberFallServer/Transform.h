@@ -25,8 +25,11 @@ public:
     SimpleMath::Vector3 GetPrevPosition() const;
     SimpleMath::Vector3 GetPosition() const;
     SimpleMath::Quaternion GetRotation() const;
+    SimpleMath::Vector3 GetEulerRotation() const;
     SimpleMath::Vector3 GetScale() const;
     SimpleMath::Matrix GetWorld() const;
+
+    void Reset();
 
     void SetY(const float y);
     void Translate(const SimpleMath::Vector3& v);

@@ -14,7 +14,7 @@
 
 class ViewList {
 public:
-    ViewList(SessionIdType ownerId, std::shared_ptr<SessionManager> sessionManager);
+    ViewList(SessionIdType ownerId);
     ~ViewList();
 
     ViewList& operator=(const ViewList& other);
@@ -36,6 +36,5 @@ public:
 
 private:
     SessionIdType mOwnerId{ };
-    std::shared_ptr<SessionManager> mSessionManager{ };
     std::set<std::shared_ptr<class GameObject>> mObjectInRange{ };
 };

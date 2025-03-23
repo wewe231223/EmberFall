@@ -5,9 +5,12 @@
 #include "GameObject.h"
 #include "ServerGameScene.h"
 #include "GameEventManager.h"
+#include "ObjectSpawner.h"
 
-PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input, std::shared_ptr<SessionManager> sessionManager)
-    : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ static_cast<SessionIdType>(owner->GetId()), sessionManager } {}
+PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input)
+    : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ static_cast<SessionIdType>(owner->GetId()) } {
+    owner->SetEntityType(EntityType::PLAYER);
+}
 
 PlayerScript::~PlayerScript() { }
 
@@ -31,15 +34,31 @@ void PlayerScript::Update(const float deltaTime) {
 
     SimpleMath::Vector3 moveDir{ SimpleMath::Vector3::Zero };
     if (mInput->IsUp('P')) {
-        Attack(GetTransform()->Forward(), SimpleMath::Vector3{ 100.0f });
+        GetOwner()->Attack();
+    }
+
+    if (mInput->IsUp('1')) {
+        GetOwner()->ChangeWeapon(Weapon::NONE);
+    }
+
+    if (mInput->IsUp('2')) {
+        GetOwner()->ChangeWeapon(Weapon::SWORD);
+    }
+
+    if (mInput->IsUp('3')) {
+        GetOwner()->ChangeWeapon(Weapon::SPEAR);
+    }
+
+    if (mInput->IsUp('4')) {
+        GetOwner()->ChangeWeapon(Weapon::BOW);
     }
 
     if (mInput->IsActiveKey('A')) {
-        moveDir.x -= 1.0f;
+        moveDir.x += 1.0f;
     }
 
     if (mInput->IsActiveKey('D')) {
-        moveDir.x += 1.0f;
+        moveDir.x -= 1.0f;
     }
 
     if (mInput->IsActiveKey('W')) {
@@ -54,37 +73,24 @@ void PlayerScript::Update(const float deltaTime) {
         physics->Jump(deltaTime);
     }
 
-    if (mInput->IsDown(VK_F1)) {
-        physics->mFactor.mass += 10.0kg;
+    if (mInput->IsUp(VK_F1)) {
+        gObjectSpawner->SpawnProjectile(ObjectTag::ARROW, GetOwner()->GetPosition(),
+            GetOwner()->GetTransform()->Forward(), GameProtocol::Unit::DEFAULT_PROJECTILE_SPEED); // temp speed
     }
 
-    if (mInput->IsDown(VK_F2)) {
-        physics->mFactor.acceleration += 1.0mps2;
-    }
-
-    if (mInput->IsDown(VK_SHIFT)) {
-        auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(50.0mps);
+    if (mInput->IsDown(VK_LSHIFT)) {
+        auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(GameProtocol::Unit::PLAYER_RUN_SPEED);
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h",
             GetOwner()->GetId(),
             maxSpeed.Count());
         physics->mFactor.maxMoveSpeed = maxSpeed;
     }
-    else if (mInput->IsUp(VK_SHIFT)) {
-        auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(5.0mps);
+    else if (mInput->IsUp(VK_LSHIFT)) {
+        auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(GameProtocol::Unit::PLAYER_WALK_SPEED);
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h", 
             GetOwner()->GetId(),
             maxSpeed.Count());
         physics->mFactor.maxMoveSpeed = maxSpeed;
-    }
-
-    if (mInput->IsUp(VK_F1)) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Push GameEvent: Attack All Monster");
-
-        auto event = std::make_shared<AttackEvent>();
-        event->type = GameEventType::ATTACK_EVENT;
-        event->sender = GetOwner()->GetId();
-        event->damage = 10.0f;
-        gEventManager->PushEvent(event);
     }
 
     if (mInput->IsActiveKey('F')) {
@@ -192,11 +198,3 @@ void PlayerScript::AcquireItem(const float deltaTime, const std::shared_ptr<Game
 void PlayerScript::UseItem() {
 
 }
-
-void PlayerScript::Attack(const SimpleMath::Vector3& dir, const SimpleMath::Vector3& hitboxSize) {
-    std::shared_ptr<AttackEvent> attackEvent = std::make_shared<AttackEvent>();
-    attackEvent->damage = 10.0f;
-
-    mGameScene->SpawnTrigger(attackEvent, 5.0f, 1.0f, 5, SimpleMath::Vector3::Zero, hitboxSize, dir);
-}
-

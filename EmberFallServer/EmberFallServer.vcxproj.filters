@@ -52,14 +52,8 @@
     <Filter Include="PathFinding\Map">
       <UniqueIdentifier>{1938af07-f06e-4960-a6b9-02d3fe1874e6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Script\Objects">
-      <UniqueIdentifier>{b4f2a0a4-c6a6-47cb-b111-e70911a3eab2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Script\Base">
       <UniqueIdentifier>{24b3899b-1638-42aa-9efe-1a8f343a258f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Script\Player">
-      <UniqueIdentifier>{edce1043-2100-4a5b-98c3-5a3911cb9366}</UniqueIdentifier>
     </Filter>
     <Filter Include="Script\Item&amp;Skill">
       <UniqueIdentifier>{f8c38d71-0788-4c68-a6b9-25fb1baa32d9}</UniqueIdentifier>
@@ -79,6 +73,27 @@
     <Filter Include="pch">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Script\Monsters">
+      <UniqueIdentifier>{835d1265-ff49-4927-9ed8-5716707b1926}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\Projectile">
+      <UniqueIdentifier>{2ba7016a-baca-44c8-bb10-77eb8e90cb88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\Env">
+      <UniqueIdentifier>{b4f2a0a4-c6a6-47cb-b111-e70911a3eab2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\User">
+      <UniqueIdentifier>{edce1043-2100-4a5b-98c3-5a3911cb9366}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\User\Player">
+      <UniqueIdentifier>{407ecfb9-1bcb-4ab0-a864-b2a6bb98d306}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\User\Boss">
+      <UniqueIdentifier>{f36cfa5e-46c4-4c64-9a66-3a335f878b89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Script\User\Common">
+      <UniqueIdentifier>{e64cda37-1c0a-469a-9c94-e2f10fa65cb5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -154,20 +169,11 @@
     <ClCompile Include="GraphMap.cpp">
       <Filter>PathFinding\Map</Filter>
     </ClCompile>
-    <ClCompile Include="MonsterScript.cpp">
-      <Filter>Script\Objects</Filter>
-    </ClCompile>
     <ClCompile Include="CorruptedGem.cpp">
-      <Filter>Script\Objects</Filter>
+      <Filter>Script\Env</Filter>
     </ClCompile>
     <ClCompile Include="Script.cpp">
       <Filter>Script\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerScript.cpp">
-      <Filter>Script\Player</Filter>
-    </ClCompile>
-    <ClCompile Include="ViewList.cpp">
-      <Filter>Script\Player</Filter>
     </ClCompile>
     <ClCompile Include="Events.cpp">
       <Filter>GameEvent</Filter>
@@ -183,9 +189,6 @@
     </ClCompile>
     <ClCompile Include="PacketProcessFunctions.cpp">
       <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Inventory.cpp">
-      <Filter>Script\Player</Filter>
     </ClCompile>
     <ClCompile Include="Weapon.cpp">
       <Filter>Weapon</Filter>
@@ -204,6 +207,24 @@
     </ClCompile>
     <ClCompile Include="WeaponSystem.cpp">
       <Filter>Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectSpawner.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterScript.cpp">
+      <Filter>Script\Monsters</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrowScript.cpp">
+      <Filter>Script\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="Inventory.cpp">
+      <Filter>Script\User\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="ViewList.cpp">
+      <Filter>Script\User\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerScript.cpp">
+      <Filter>Script\User\Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -276,20 +297,11 @@
     <ClInclude Include="GraphMap.h">
       <Filter>PathFinding\Map</Filter>
     </ClInclude>
-    <ClInclude Include="MonsterScript.h">
-      <Filter>Script\Objects</Filter>
-    </ClInclude>
     <ClInclude Include="CorruptedGem.h">
-      <Filter>Script\Objects</Filter>
+      <Filter>Script\Env</Filter>
     </ClInclude>
     <ClInclude Include="Script.h">
       <Filter>Script\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerScript.h">
-      <Filter>Script\Player</Filter>
-    </ClInclude>
-    <ClInclude Include="ViewList.h">
-      <Filter>Script\Player</Filter>
     </ClInclude>
     <ClInclude Include="Events.h">
       <Filter>GameEvent</Filter>
@@ -305,9 +317,6 @@
     </ClInclude>
     <ClInclude Include="PacketProcessFunctions.h">
       <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Inventory.h">
-      <Filter>Script\Player</Filter>
     </ClInclude>
     <ClInclude Include="Weapon.h">
       <Filter>Weapon</Filter>
@@ -326,6 +335,24 @@
     </ClInclude>
     <ClInclude Include="WeaponSystem.h">
       <Filter>Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectSpawner.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterScript.h">
+      <Filter>Script\Monsters</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrowScript.h">
+      <Filter>Script\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="Inventory.h">
+      <Filter>Script\User\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewList.h">
+      <Filter>Script\User\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerScript.h">
+      <Filter>Script\User\Player</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

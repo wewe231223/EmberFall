@@ -24,7 +24,7 @@ class IServerGameScene;
 
 class PlayerScript : public Script {
 public:
-    PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input, std::shared_ptr<SessionManager> sessionManager);
+    PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input);
     virtual ~PlayerScript();
 
 public:
@@ -48,8 +48,6 @@ private:
     void DestroyGem(const float deltaTime, const std::shared_ptr<GameObject>& gem);
     void AcquireItem(const float deltaTime, const std::shared_ptr<GameObject>& item);
     void UseItem();
-
-    void Attack(const SimpleMath::Vector3& dir, const SimpleMath::Vector3& hitboxSize);
 
 private:
     std::shared_ptr<Input> mInput{ };

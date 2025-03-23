@@ -56,22 +56,19 @@ public:
     PlayerList& GetPlayers();
     virtual ObjectList& GetObjects() abstract;
     virtual std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) abstract;
+    virtual std::shared_ptr<GameObject>& GetInvalidObject() abstract;
+    virtual TerrainCollider& GetTerrainCollider() abstract;
 
     virtual void Init() abstract;
 
     virtual void DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerEvent>& eventQueue);
 
     virtual void RegisterPacketProcessFunctions() abstract;
-    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) abstract;
     virtual void Update(const float deltaTime) abstract;
     virtual void LateUpdate(const float deltaTime) abstract;
 
     virtual void AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject);
     virtual void ExitPlayer(SessionIdType id);
-
-    virtual void SpawnObject(ObjectTag tag) abstract;
-    virtual void SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
-        const SimpleMath::Vector3& pos, const SimpleMath::Vector3& size, const SimpleMath::Vector3& dir) abstract;
 
 protected:
     ServerPacketProcessor mPacketProcessor{ };
@@ -89,20 +86,17 @@ public:
 public:
     virtual ObjectList& GetObjects() override;
     virtual std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) override;
+    virtual std::shared_ptr<GameObject>& GetInvalidObject() override;
+    virtual TerrainCollider& GetTerrainCollider() override;
 
     virtual void Init() override;
 
     virtual void RegisterPacketProcessFunctions() override;
-    virtual void ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) override;
     virtual void Update(const float deltaTime) override;
     virtual void LateUpdate(const float deltaTime) override;
 
     virtual void AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) override;
     virtual void ExitPlayer(SessionIdType id) override;
-
-    virtual void SpawnObject(ObjectTag tag) override;
-    virtual void SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
-        const SimpleMath::Vector3& pos, const SimpleMath::Vector3& size, const SimpleMath::Vector3& dir) override;
 
 private:
     ObjectList mObjects{ };

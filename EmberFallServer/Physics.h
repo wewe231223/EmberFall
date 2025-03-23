@@ -43,12 +43,15 @@ public:
     bool IsMoving() const;
     bool IsMovingXZ() const;
 
+    void Disable();
+    void Reset();
+
     void Jump(const float deltaTime);
 
     void ResizeVelocity(float speed);
     void Acceleration(const SimpleMath::Vector3& dir, const float acceleration, const float deltaTime);
     void Acceleration(const SimpleMath::Vector3& dir, const float deltaTime);
-    void AddVelocity(const SimpleMath::Vector3& velocity, const float deltaTime);
+    void AddVelocity(const SimpleMath::Vector3& velocity);
     void AddForce(const SimpleMath::Vector3& force, const float deltaTime);
     void Update(const float deltaTime);
     void LateUpdate(const float deltaTime);
@@ -64,6 +67,7 @@ public:
     PhysicsFactor mFactor{ };
 
 private:
+    bool mActive{ true };
     bool mOnGround{ true };
     bool mOnOtherObject{ true };
 

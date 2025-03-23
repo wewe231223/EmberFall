@@ -17,7 +17,6 @@ TimerEvent::TimerEvent(TimerEvent&& other) noexcept {
 TimerEvent& TimerEvent::operator=(TimerEvent&& other) noexcept {
     mFunction = std::move(other.mFunction);
     mTimeRegistered = GameTimer::Clock::now();
-    //mDelay = other.mDelay;
     mDelay = other.mDelay - std::chrono::duration_cast<Duration>(GameTimer::Clock::now() - other.mTimeRegistered);
     mDelayOrigin = other.mDelayOrigin;
     mLoopCount = other.mLoopCount;
@@ -52,17 +51,17 @@ void GameTimer::TimerEvent::Excute() const {
 
 GameTimer::GameTimer()
     : mPrevPoint{ Clock::now() }, mPointSinceStart{ Clock::now() } { 
-    PushTimerEvent([=]() {
-            if (1.0f <= mFpsCounter) {
-                mFps = mFpsCount;
-                mFpsCount = 0;
-                mFpsCounter = 0.0f;
-                gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "FPS: {}", mFps);
-            }
-        }, 
-        1s, 
-        std::numeric_limits<int32_t>::max()
-    );
+    //PushTimerEvent([=]() {
+    //        if (1.0f <= mFpsCounter) {
+    //            mFps = mFpsCount;
+    //            mFpsCount = 0;
+    //            mFpsCounter = 0.0f;
+    //            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "FPS: {}", mFps);
+    //        }
+    //    }, 
+    //    1s, 
+    //    std::numeric_limits<int32_t>::max()
+    //);
 }
 
 GameTimer::~GameTimer() { }

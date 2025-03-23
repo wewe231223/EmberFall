@@ -3,8 +3,8 @@
 #include "ServerGameScene.h"
 #include "GameObject.h"
 
-ViewList::ViewList(SessionIdType ownerId, std::shared_ptr<SessionManager> sessionManager) 
-    : mOwnerId{ ownerId }, mSessionManager { sessionManager } { }
+ViewList::ViewList(SessionIdType ownerId) 
+    : mOwnerId{ ownerId } { }
 
 ViewList::~ViewList() { }
 
@@ -49,11 +49,6 @@ void ViewList::Update() {
 void ViewList::Send() {
     static size_t prevSendSize{ };
 
-    PacketSC::PacketPlayer playerPacket{
-        sizeof(PacketSC::PacketPlayer),
-        PacketType::PACKET_PLAYER,
-    };
-
     PacketSC::PacketObject objectPacket{ 
         sizeof(PacketSC::PacketObject), 
         PacketType::PACKET_OBJECT,
@@ -62,36 +57,27 @@ void ViewList::Send() {
 
     NetworkObjectIdType objectId{ };
     for (const auto& object : mObjectInRange) {
-        objectId = object->GetId();
-        if (objectId < INVALID_SESSION_ID) {
-            playerPacket.id = static_cast<SessionIdType>(objectId);
-            playerPacket.position = object->GetPosition();
-            //playerPacket.rotationYaw = ;
-            mSessionManager->Send(mOwnerId, &playerPacket);
-        }
-        else {
-            objectPacket.objId = objectId - OBJECT_ID_START;
-            objectPacket.position = object->GetPosition();
-            //objectPacket.rotationYaw = ;
-            mSessionManager->Send(mOwnerId, &objectPacket);
-        }
-
+        objectPacket.objId = object->GetId();
+        objectPacket.position = object->GetPosition();
+        objectPacket.rotationYaw = object->GetEulerRotation().y;
+        gServerCore->Send(mOwnerId, &objectPacket);
     }
 }
 
 void ViewList::AddInRange(std::shared_ptr<GameObject> obj) {
     mObjectInRange.insert(obj);
 
-    //PacketSC::PacketObjectAppeared objectPacket{
-    //    sizeof(PacketSC::PacketObject),
-    //    PacketType::PACKET_OBJECT,
-    //    mOwnerId
-    //};
+    PacketSC::PacketObjectAppeared objectPacket{
+        sizeof(PacketSC::PacketObject),
+        PacketType::PACKET_OBJECT_APPEARED,
+        mOwnerId
+    };
 
-    //objectPacket.objId = obj->GetId() - OBJECT_ID_START;
-    //objectPacket.position = obj->GetPosition();
-    ////objectPacket.rotationYaw = ;
-    //mSessionManager->Send(mOwnerId, &objectPacket);
+    objectPacket.objId = obj->GetId();
+    objectPacket.entity = obj->GetEntityType();
+    objectPacket.position = obj->GetPosition();
+    objectPacket.rotationYaw = obj->GetEulerRotation().y;
+    gServerCore->Send(mOwnerId, &objectPacket);
 }
 
 bool ViewList::EraseFromRange(std::shared_ptr<GameObject> obj) {
@@ -99,16 +85,16 @@ bool ViewList::EraseFromRange(std::shared_ptr<GameObject> obj) {
         return false;
     }
    
-    mObjectInRange.erase(obj);
-    //PacketSC::PacketObjectDisappeared objectPacket{
-    //    sizeof(PacketSC::PacketObject),
-    //    PacketType::PACKET_OBJECT,
-    //    mOwnerId
-    //};
+    PacketSC::PacketObjectDisappeared objectPacket{
+        sizeof(PacketSC::PacketObject),
+        PacketType::PACKET_OBJECT_DISAPPEARED,
+        mOwnerId
+    };
 
-    //objectPacket.objId = obj->GetId() - OBJECT_ID_START;
-    ////objectPacket.rotationYaw = ;
-    //mSessionManager->Send(mOwnerId, &objectPacket);
+    objectPacket.objId = obj->GetId();
+    gServerCore->Send(mOwnerId, &objectPacket);   
+
+    mObjectInRange.erase(obj);
 
     return true;
 }

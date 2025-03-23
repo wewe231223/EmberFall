@@ -23,6 +23,15 @@
     <Filter Include="Literals">
       <UniqueIdentifier>{ca88efeb-3a56-4111-b747-bc44139a03a1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\Protocol">
+      <UniqueIdentifier>{c4ca363b-5edf-46cf-a868-375605b1960e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\Memory">
+      <UniqueIdentifier>{801b6719-4e4d-4975-8f2f-08b4caa1a5d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\Packets">
+      <UniqueIdentifier>{e2d23796-4f9b-4a94-8f64-71bc3fb8aa34}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetworkUtils.cpp">
@@ -61,18 +70,6 @@
     <ClCompile Include="NetworkCore.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="Protocol.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="OverlappedEx.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="SendBuffers.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
-    <ClCompile Include="MemoryPool.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="LogConsole.cpp">
       <Filter>Log</Filter>
     </ClCompile>
@@ -83,13 +80,25 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="GameProtocol.cpp">
-      <Filter>Common</Filter>
+      <Filter>Common\Protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="Protocol.cpp">
+      <Filter>Common\Protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryPool.cpp">
+      <Filter>Common\Memory</Filter>
     </ClCompile>
     <ClCompile Include="PacketFactory.cpp">
-      <Filter>Common</Filter>
+      <Filter>Common\Packets</Filter>
     </ClCompile>
     <ClCompile Include="PacketProcessor.cpp">
-      <Filter>Common</Filter>
+      <Filter>Common\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlappedEx.cpp">
+      <Filter>Common\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="SendBuffers.cpp">
+      <Filter>Common\Packets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -129,18 +138,6 @@
     <ClInclude Include="NetworkCore.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Protocol.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="OverlappedEx.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="SendBuffers.h">
-      <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="MemoryPool.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>Pch</Filter>
     </ClInclude>
@@ -157,13 +154,25 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="GameProtocol.h">
-      <Filter>Common</Filter>
+      <Filter>Common\Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
+      <Filter>Common\Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPool.h">
+      <Filter>Common\Memory</Filter>
     </ClInclude>
     <ClInclude Include="PacketFactory.h">
-      <Filter>Common</Filter>
+      <Filter>Common\Packets</Filter>
     </ClInclude>
     <ClInclude Include="PacketProcessor.h">
-      <Filter>Common</Filter>
+      <Filter>Common\Packets</Filter>
+    </ClInclude>
+    <ClInclude Include="OverlappedEx.h">
+      <Filter>Common\Packets</Filter>
+    </ClInclude>
+    <ClInclude Include="SendBuffers.h">
+      <Filter>Common\Packets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
