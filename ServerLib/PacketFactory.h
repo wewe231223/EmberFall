@@ -13,6 +13,8 @@
 
 class PacketFactory {
 public:
+    //static PacketHeader();
 
+private:
 };
 

@@ -54,11 +54,11 @@ void PlayerScript::Update(const float deltaTime) {
     }
 
     if (mInput->IsActiveKey('A')) {
-        moveDir.x -= 1.0f;
+        moveDir.x += 1.0f;
     }
 
     if (mInput->IsActiveKey('D')) {
-        moveDir.x += 1.0f;
+        moveDir.x -= 1.0f;
     }
 
     if (mInput->IsActiveKey('W')) {
@@ -78,14 +78,14 @@ void PlayerScript::Update(const float deltaTime) {
             GetOwner()->GetTransform()->Forward(), GameProtocol::Unit::DEFAULT_PROJECTILE_SPEED); // temp speed
     }
 
-    if (mInput->IsDown(VK_SHIFT)) {
+    if (mInput->IsDown(VK_LSHIFT)) {
         auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(GameProtocol::Unit::PLAYER_RUN_SPEED);
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h",
             GetOwner()->GetId(),
             maxSpeed.Count());
         physics->mFactor.maxMoveSpeed = maxSpeed;
     }
-    else if (mInput->IsUp(VK_SHIFT)) {
+    else if (mInput->IsUp(VK_LSHIFT)) {
         auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(GameProtocol::Unit::PLAYER_WALK_SPEED);
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h", 
             GetOwner()->GetId(),

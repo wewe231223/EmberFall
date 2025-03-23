@@ -51,17 +51,17 @@ void GameTimer::TimerEvent::Excute() const {
 
 GameTimer::GameTimer()
     : mPrevPoint{ Clock::now() }, mPointSinceStart{ Clock::now() } { 
-    PushTimerEvent([=]() {
-            if (1.0f <= mFpsCounter) {
-                mFps = mFpsCount;
-                mFpsCount = 0;
-                mFpsCounter = 0.0f;
-                gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "FPS: {}", mFps);
-            }
-        }, 
-        1s, 
-        std::numeric_limits<int32_t>::max()
-    );
+    //PushTimerEvent([=]() {
+    //        if (1.0f <= mFpsCounter) {
+    //            mFps = mFpsCount;
+    //            mFpsCount = 0;
+    //            mFpsCounter = 0.0f;
+    //            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "FPS: {}", mFps);
+    //        }
+    //    }, 
+    //    1s, 
+    //    std::numeric_limits<int32_t>::max()
+    //);
 }
 
 GameTimer::~GameTimer() { }
