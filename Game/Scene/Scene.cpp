@@ -66,6 +66,7 @@ void Scene::ProcessObjectPacket(PacketHeader* header) {
 
 				mMyPlayer->SetWeapon(mGameObjects.back().Clone()); 
 
+				
 				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
 				mCameraMode->Enter();
 			}
@@ -173,6 +174,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["StandardShader"].get();
 		object.mMesh = mMeshMap["Mountain"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
+		object.mCollider = mColliderMap["Mountain"];
 
 		object.GetTransform().GetPosition() = { 370.f,tCollider.GetHeight(370.f, 300.f) - 10.f ,300.f };
 		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(-35.f), 0.f);
@@ -184,6 +186,8 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["StandardShader"].get();
 		object.mMesh = mMeshMap["Sword"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("SwordMaterial");
+		object.mCollider = mColliderMap["Sword"];
+		
 
 		object.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 0.f), 0.f };
 	
@@ -202,8 +206,8 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
 	cameraTransform.Look({ 0.f,85.f,0.f });
 
-	// mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
-
+	//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+	//mCameraMode->Enter(); 
 
 
 }
@@ -251,6 +255,8 @@ void Scene::Update() {
 	mMeshRenderManager->AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);
 
 	mCamera.UpdateBuffer(); 
+
+	mNetworkInfoText->GetText() = std::format(L"{}", mMyPlayer->GetBoneMaskController().GetParameter("Move")->intValue);
 }
 
 void Scene::SendNetwork() {
@@ -333,9 +339,11 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 	data = Loader.Load("Resources/Assets/Mountain/Mountain.gltf");
 	mMeshMap["Mountain"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Mountain"] = Collider{ data.position };
 	
 	data = Loader.Load("Resources/Assets/Weapon/sword/LongSword.glb");
 	mMeshMap["Sword"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Sword"] = Collider{ data.position };
 
 	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 
@@ -736,7 +744,6 @@ void Scene::BuildAniamtionController() {
 		{
 			AnimatorGraph::AnimationTransition toForward{};
 			toForward.targetStateIndex = 1;
-			toForward.blendDuration = 0.09;
 			toForward.parameterName = "Move";
 			toForward.expectedValue = 1;
 			toForward.triggerOnEnd = false;
@@ -744,7 +751,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toBackward{};
 			toBackward.targetStateIndex = 2;
-			toBackward.blendDuration = 0.09;
 			toBackward.parameterName = "Move";
 			toBackward.expectedValue = 2;
 			toBackward.triggerOnEnd = false;
@@ -752,7 +758,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toLeft{};
 			toLeft.targetStateIndex = 3;
-			toLeft.blendDuration = 0.09;
 			toLeft.parameterName = "Move";
 			toLeft.expectedValue = 3;
 			toLeft.triggerOnEnd = false;
@@ -760,7 +765,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toRight{};
 			toRight.targetStateIndex = 4;
-			toRight.blendDuration = 0.09;
 			toRight.parameterName = "Move";
 			toRight.expectedValue = 4;
 			toRight.triggerOnEnd = false;
@@ -768,7 +772,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toJump{};
 			toJump.targetStateIndex = 5;
-			toJump.blendDuration = 0.09;
 			toJump.parameterName = "Jump";
 			toJump.expectedValue = true;
 			toJump.triggerOnEnd = false;
@@ -776,7 +779,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toAttack{};
 			toAttack.targetStateIndex = 7;
-			toAttack.blendDuration = 0.09;
 			toAttack.parameterName = "Attack";
 			toAttack.expectedValue = true;
 			toAttack.triggerOnEnd = false;
@@ -792,7 +794,6 @@ void Scene::BuildAniamtionController() {
 		{
 			AnimatorGraph::AnimationTransition toIdle{};
 			toIdle.targetStateIndex = 0;
-			toIdle.blendDuration = 0.09;
 			toIdle.parameterName = "Move";
 			toIdle.expectedValue = 0;
 			toIdle.triggerOnEnd = false;
@@ -800,7 +801,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toBackward{};
 			toBackward.targetStateIndex = 2;
-			toBackward.blendDuration = 0.09;
 			toBackward.parameterName = "Move";
 			toBackward.expectedValue = 2;
 			toBackward.triggerOnEnd = false;
@@ -808,7 +808,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toLeft{};
 			toLeft.targetStateIndex = 3;
-			toLeft.blendDuration = 0.09;
 			toLeft.parameterName = "Move";
 			toLeft.expectedValue = 3;
 			toLeft.triggerOnEnd = false;
@@ -816,7 +815,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toRight{};
 			toRight.targetStateIndex = 4;
-			toRight.blendDuration = 0.09;
 			toRight.parameterName = "Move";
 			toRight.expectedValue = 4;
 			toRight.triggerOnEnd = false;
@@ -824,7 +822,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toJump{};
 			toJump.targetStateIndex = 6;
-			toJump.blendDuration = 0.09;
 			toJump.parameterName = "Jump";
 			toJump.expectedValue = true;
 			toJump.triggerOnEnd = false;
@@ -839,7 +836,6 @@ void Scene::BuildAniamtionController() {
 		{
 			AnimatorGraph::AnimationTransition toIdle{};
 			toIdle.targetStateIndex = 0;
-			toIdle.blendDuration = 0.09;
 			toIdle.parameterName = "Move";
 			toIdle.expectedValue = 0;
 			toIdle.triggerOnEnd = false;
@@ -847,7 +843,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toForward{};
 			toForward.targetStateIndex = 1;
-			toForward.blendDuration = 0.09;
 			toForward.parameterName = "Move";
 			toForward.expectedValue = 1;
 			toForward.triggerOnEnd = false;
@@ -863,7 +858,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toRight{};
 			toRight.targetStateIndex = 4;
-			toRight.blendDuration = 0.09;
 			toRight.parameterName = "Move";
 			toRight.expectedValue = 4;
 			toRight.triggerOnEnd = false;
@@ -871,7 +865,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toJump{};
 			toJump.targetStateIndex = 5;
-			toJump.blendDuration = 0.09;
 			toJump.parameterName = "Jump";
 			toJump.expectedValue = true;
 			toJump.triggerOnEnd = false;
@@ -886,7 +879,6 @@ void Scene::BuildAniamtionController() {
 		{
 			AnimatorGraph::AnimationTransition toIdle{};
 			toIdle.targetStateIndex = 0;
-			toIdle.blendDuration = 0.09;
 			toIdle.parameterName = "Move";
 			toIdle.expectedValue = 0;
 			toIdle.triggerOnEnd = false;
@@ -894,7 +886,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toForward{};
 			toForward.targetStateIndex = 1;
-			toForward.blendDuration = 0.09;
 			toForward.parameterName = "Move";
 			toForward.expectedValue = 1;
 			toForward.triggerOnEnd = false;
@@ -902,7 +893,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toBackward{};
 			toBackward.targetStateIndex = 2;
-			toBackward.blendDuration = 0.09;
 			toBackward.parameterName = "Move";
 			toBackward.expectedValue = 2;
 			toBackward.triggerOnEnd = false;
@@ -910,7 +900,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toRight{};
 			toRight.targetStateIndex = 4;
-			toRight.blendDuration = 0.09;
 			toRight.parameterName = "Move";
 			toRight.expectedValue = 4;
 			toRight.triggerOnEnd = false;
@@ -918,7 +907,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toJump{};
 			toJump.targetStateIndex = 5;
-			toJump.blendDuration = 0.09;
 			toJump.parameterName = "Jump";
 			toJump.expectedValue = true;
 			toJump.triggerOnEnd = false;
@@ -933,7 +921,6 @@ void Scene::BuildAniamtionController() {
 		{
 			AnimatorGraph::AnimationTransition toIdle{};
 			toIdle.targetStateIndex = 0;
-			toIdle.blendDuration = 0.09;
 			toIdle.parameterName = "Move";
 			toIdle.expectedValue = 0;
 			toIdle.triggerOnEnd = false;
@@ -941,7 +928,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toForward{};
 			toForward.targetStateIndex = 1;
-			toForward.blendDuration = 0.09;
 			toForward.parameterName = "Move";
 			toForward.expectedValue = 1;
 			toForward.triggerOnEnd = false;
@@ -949,7 +935,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toBackward{};
 			toBackward.targetStateIndex = 2;
-			toBackward.blendDuration = 0.09;
 			toBackward.parameterName = "Move";
 			toBackward.expectedValue = 2;
 			toBackward.triggerOnEnd = false;
@@ -957,7 +942,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toLeft{};
 			toLeft.targetStateIndex = 3;
-			toLeft.blendDuration = 0.09;
 			toLeft.parameterName = "Move";
 			toLeft.expectedValue = 3;
 			toLeft.triggerOnEnd = false;
@@ -965,7 +949,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toJump{};
 			toJump.targetStateIndex = 5;
-			toJump.blendDuration = 0.09;
 			toJump.parameterName = "Jump";
 			toJump.expectedValue = true;
 			toJump.triggerOnEnd = false;
@@ -988,7 +971,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toForward{};
 			toForward.targetStateIndex = 1;
-			toForward.blendDuration = 0.09;
 			toForward.parameterName = "Move";
 			toForward.expectedValue = 1;
 			toForward.triggerOnEnd = true;
@@ -996,7 +978,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toBackward{};
 			toBackward.targetStateIndex = 2;
-			toBackward.blendDuration = 0.09;
 			toBackward.parameterName = "Move";
 			toBackward.expectedValue = 2;
 			toBackward.triggerOnEnd = true;
@@ -1004,7 +985,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toLeft{};
 			toLeft.targetStateIndex = 3;
-			toLeft.blendDuration = 0.09;
 			toLeft.parameterName = "Move";
 			toLeft.expectedValue = 3;
 			toLeft.triggerOnEnd = true;
@@ -1012,7 +992,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toRight{};
 			toRight.targetStateIndex = 4;
-			toRight.blendDuration = 0.09;
 			toRight.parameterName = "Move";
 			toRight.expectedValue = 4;
 			toRight.triggerOnEnd = true;
@@ -1036,7 +1015,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toForward{};
 			toForward.targetStateIndex = 1;
-			toForward.blendDuration = 0.09;
 			toForward.parameterName = "Move";
 			toForward.expectedValue = 1;
 			toForward.triggerOnEnd = true;
@@ -1044,7 +1022,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toBackward{};
 			toBackward.targetStateIndex = 2;
-			toBackward.blendDuration = 0.09;
 			toBackward.parameterName = "Move";
 			toBackward.expectedValue = 2;
 			toBackward.triggerOnEnd = true;
@@ -1052,7 +1029,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toLeft{};
 			toLeft.targetStateIndex = 3;
-			toLeft.blendDuration = 0.09;
 			toLeft.parameterName = "Move";
 			toLeft.expectedValue = 3;
 			toLeft.triggerOnEnd = true;
@@ -1060,7 +1036,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toRight{};
 			toRight.targetStateIndex = 4;
-			toRight.blendDuration = 0.09;
 			toRight.parameterName = "Move";
 			toRight.expectedValue = 4;
 			toRight.triggerOnEnd = true;
@@ -1083,7 +1058,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toForward{};
 			toForward.targetStateIndex = 1;
-			toForward.blendDuration = 0.09;
 			toForward.parameterName = "Move";
 			toForward.expectedValue = 1;
 			toForward.triggerOnEnd = true;
@@ -1091,7 +1065,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toBackward{};
 			toBackward.targetStateIndex = 2;
-			toBackward.blendDuration = 0.09;
 			toBackward.parameterName = "Move";
 			toBackward.expectedValue = 2;
 			toBackward.triggerOnEnd = true;
@@ -1099,7 +1072,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toLeft{};
 			toLeft.targetStateIndex = 3;
-			toLeft.blendDuration = 0.09;
 			toLeft.parameterName = "Move";
 			toLeft.expectedValue = 3;
 			toLeft.triggerOnEnd = true;
@@ -1107,7 +1079,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toRight{};
 			toRight.targetStateIndex = 4;
-			toRight.blendDuration = 0.09;
 			toRight.parameterName = "Move";
 			toRight.expectedValue = 4;
 			toRight.triggerOnEnd = true;
@@ -1205,7 +1176,7 @@ void Scene::BuildAniamtionController() {
 void Scene::SetInputBaseAnimMode() {
 	Input.EraseCallBack(mInputSign);
 
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
+	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 1);
 		});
 
@@ -1213,7 +1184,7 @@ void Scene::SetInputBaseAnimMode() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
 		});
 
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::S, mInputSign, [this]() {
+	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::S, mInputSign, [this]() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 2);
 		});
 
@@ -1221,7 +1192,7 @@ void Scene::SetInputBaseAnimMode() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
 		});
 
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
+	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 3);
 		});
 
@@ -1229,7 +1200,7 @@ void Scene::SetInputBaseAnimMode() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
 		});
 
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
+	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 4);
 		});
 

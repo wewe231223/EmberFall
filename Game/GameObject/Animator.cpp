@@ -667,7 +667,7 @@ namespace AnimatorGraph {
     }
 
     void BoneMaskAnimator::TransitionMaskedToClip(size_t clipIndex) {
-        if (clipIndex < mClips.size() && mClipMasked != mClips[clipIndex]) {
+        if (clipIndex < mClips.size()) {
             mTargetClipMasked = mClips[clipIndex];
             mTransitioningMasked = true;
             mTransitionTimeMaskedTransition = 0.0;
@@ -675,7 +675,7 @@ namespace AnimatorGraph {
     }
 
     void BoneMaskAnimator::TransitionNonMaskedToClip(size_t clipIndex) {
-        if (clipIndex < mClips.size() && mClipNonMasked != mClips[clipIndex]) {
+        if (clipIndex < mClips.size()) {
             mTargetClipNonMasked = mClips[clipIndex];
             mTransitioningNonMasked = true;
             mTransitionTimeNonMaskedTransition = 0.0;

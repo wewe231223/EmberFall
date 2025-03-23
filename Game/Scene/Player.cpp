@@ -11,6 +11,9 @@ Player::Player(Mesh* mesh, GraphicsShaderBase* shader, MaterialIndex material, A
 
 	mActiveState = true;
 
+	DirectX::BoundingBox box{ {0.f,0.8f,0.f}, {0.25f, 0.8f, 0.25f} };
+	mCollider = Collider{ box };
+
 	mWeapon.SetActiveState(false);
 }
 
@@ -73,7 +76,9 @@ void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 	mTransform.UpdateWorldMatrix();
 	mModelContext.world = mTransform.GetWorldMatrix();
 
-	manager->AppendBonedMeshContext(mShader, mMesh, ModelContext{mTransform.GetWorldMatrix().Transpose(), SimpleMath::Vector3{0.3f, 0.8f, 0.3f}, mMaterial}, boneTransformBuffer);
+	mCollider.UpdateBox(mTransform.GetWorldMatrix());
+
+	manager->AppendBonedMeshContext(mShader, mMesh, ModelContext{mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
 
 	if (mWeapon) {
 		mWeapon.GetTransform().SetLocalTransform(boneTransformBuffer.boneTransforms[58].Transpose());

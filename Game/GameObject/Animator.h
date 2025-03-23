@@ -74,7 +74,7 @@ namespace AnimatorGraph {
 
     struct AnimationTransition {
         size_t targetStateIndex;
-        double blendDuration;
+        double blendDuration{ 0.09 };
         std::string parameterName;
         std::variant<bool, int> expectedValue;
 		bool triggerOnEnd{ false };

@@ -20,6 +20,7 @@ public:
 	void ProcessNetwork(); 
 	void Update();
 	void SendNetwork(); 
+
 private:
 	void BuildPacketProcessor(); 
 	void BuildSendKeyList(); 
@@ -51,6 +52,7 @@ private:
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{ nullptr };
 	std::shared_ptr<MaterialManager> mMaterialManager{ nullptr };
 
+	std::unordered_map<std::string, Collider> mColliderMap{};
 	std::unordered_map<std::string, std::unique_ptr<Mesh>> mMeshMap{};
 	std::unordered_map<std::string, std::unique_ptr<GraphicsShaderBase>> mShaderMap{};
 	std::unordered_map<std::string, AnimationLoader> mAnimationMap{};
