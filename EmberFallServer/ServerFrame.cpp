@@ -59,9 +59,8 @@ void ServerFrame::OnPlayerConnect(SessionIdType id) {
     auto object = std::make_shared<GameObject>(mCurrentScene);
     
     object->InitId(id);
-    object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
+    object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.85f });
     object->CreateComponent<PlayerScript>(object, mInputManager->GetInput(id));
-    object->GetTransform()->Scale(SimpleMath::Vector3{ 1.4f });
 
     Lock::SRWLockGuard playersGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mPlayersLock };
     mPlayers[id] = object;
