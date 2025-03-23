@@ -53,7 +53,9 @@ void GInput::Update()
 				}
 			}
 		}
-		else if (mKeyboardTracker.IsKeyReleased(static_cast<DirectX::Keyboard::Keys>(key))) {
+		
+		
+		if (mKeyboardTracker.IsKeyReleased(static_cast<DirectX::Keyboard::Keys>(key))) {
 			for (auto& [callback, sign] : mKeyReleaseCallbacks[key]) {
 				std::invoke(callback);
 			}

@@ -129,6 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AnimationDefines.h" />
     <ClInclude Include="Crash.h" />
     <ClInclude Include="Defines.h" />
     <ClInclude Include="DirectXInclude.h" />

@@ -468,9 +468,6 @@ namespace AnimatorGraph {
         case ParameterType::Int:
             intValue = 0;
             break;
-        case ParameterType::Float:
-            floatValue = 0.0f;
-            break;
         }
     }
 
@@ -486,11 +483,12 @@ namespace AnimatorGraph {
 
     void AnimationGraphController::Update(double deltaTime, BoneTransformBuffer& boneTransforms) {
         EvaluateTransitions();
-        mAnimator.UpdateBoneTransform(deltaTime, boneTransforms);
+        mAnimator.UpdateBoneTransform(deltaTime * mStates[mCurrentStateIndex].speed, boneTransforms);
     }
 
     void AnimationGraphController::AddParameter(const std::string& name, ParameterType type) {
         mParameters[name] = AnimationParameter(name, type);
+		mParameterIndexed.emplace_back(name);
     }
 
     void AnimationGraphController::SetBool(const std::string& name, bool value) {
@@ -507,13 +505,6 @@ namespace AnimatorGraph {
         }
     }
 
-    void AnimationGraphController::SetFloat(const std::string& name, float value) {
-        auto it = mParameters.find(name);
-        if (it != mParameters.end() && it->second.type == ParameterType::Float) {
-            it->second.floatValue = value;
-        }
-    }
-
     void AnimationGraphController::SetTrigger(const std::string& name) {
         auto it = mParameters.find(name);
         if (it != mParameters.end() && it->second.type == ParameterType::Trigger) {
@@ -526,6 +517,18 @@ namespace AnimatorGraph {
         if (it != mParameters.end() && it->second.type == ParameterType::Trigger) {
             it->second.boolValue = false;
         }
+    }
+
+    void AnimationGraphController::SetBool(BYTE index, bool value) {
+		SetBool(mParameterIndexed[index], value);
+    }
+
+    void AnimationGraphController::SetInt(BYTE index, int value) {
+		SetInt(mParameterIndexed[index], value);
+    }
+
+    void AnimationGraphController::SetTrigger(BYTE index) {
+		SetTrigger(mParameterIndexed[index]);
     }
 
     const AnimationParameter* AnimationGraphController::GetParameter(const std::string& name) const {
@@ -555,13 +558,6 @@ namespace AnimatorGraph {
             case ParameterType::Int: {
                 int expected = std::get<int>(transition.expectedValue);
                 if (param.intValue == expected) {
-                    conditionMet = true;
-                }
-                break;
-            }
-            case ParameterType::Float: {
-                float expected = std::get<float>(transition.expectedValue);
-                if (std::fabs(param.floatValue - expected) < 0.001f) {
                     conditionMet = true;
                 }
                 break;
@@ -868,11 +864,13 @@ namespace AnimatorGraph {
 
     void BoneMaskAnimationGraphController::Update(double deltaTime, BoneTransformBuffer& boneTransforms) {
         EvaluateTransitions();
-        mAnimator.UpdateBoneTransforms(deltaTime, boneTransforms);
+        
+        mAnimator.UpdateBoneTransforms(deltaTime * mStates[mCurrentStateIndex].speed, boneTransforms);
     }
 
     void BoneMaskAnimationGraphController::AddParameter(const std::string& name, ParameterType type) {
         mParameters[name] = AnimationParameter(name, type);
+        mParameterIndexed.emplace_back(name);
     }
 
     void BoneMaskAnimationGraphController::SetBool(const std::string& name, bool value) {
@@ -889,18 +887,23 @@ namespace AnimatorGraph {
         }
     }
 
-    void BoneMaskAnimationGraphController::SetFloat(const std::string& name, float value) {
-        auto it = mParameters.find(name);
-        if (it != mParameters.end() && it->second.type == ParameterType::Float) {
-            it->second.floatValue = value;
-        }
-    }
-
     void BoneMaskAnimationGraphController::SetTrigger(const std::string& name) {
         auto it = mParameters.find(name);
         if (it != mParameters.end() && it->second.type == ParameterType::Trigger) {
             it->second.boolValue = true;
         }
+    }
+
+    void BoneMaskAnimationGraphController::SetBool(BYTE index, bool value) {
+		SetBool(mParameterIndexed[index], value);
+    }
+
+    void BoneMaskAnimationGraphController::SetInt(BYTE index, int value) {
+		SetInt(mParameterIndexed[index], value);
+    }
+
+    void BoneMaskAnimationGraphController::SetTrigger(BYTE index) {
+		SetTrigger(mParameterIndexed[index]);
     }
 
     void BoneMaskAnimationGraphController::ResetTrigger(const std::string& name) {
@@ -942,13 +945,6 @@ namespace AnimatorGraph {
             case ParameterType::Int: {
                 int expected = std::get<int>(transition.expectedValue);
                 if (param.intValue == expected) {
-                    conditionMet = true;
-                }
-                break;
-            }
-            case ParameterType::Float: {
-                float expected = std::get<float>(transition.expectedValue);
-                if (std::fabs(param.floatValue - expected) < 0.001f) {
                     conditionMet = true;
                 }
                 break;

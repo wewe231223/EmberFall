@@ -26,23 +26,43 @@ void GameObject::ToggleActiveState() {
 	mActiveState = !mActiveState;
 }
 
-void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransform) {
-	static double counter{ 0.0 };
-	counter += 0.00000001;
-
-	if (mAnimated) {
-		// mGraphController.Update(Time.GetDeltaTime(), boneTransform);
-		 mBoneMaskGraphController.Update(Time.GetDeltaTime(), boneTransform);
-	}
+void GameObject::UpdateShaderVariables() {
+	mTransform.UpdateWorldMatrix();
 
 	if (mCollider.GetActiveState()) {
 		mCollider.UpdateBox(mTransform.GetWorldMatrix());
 	}
 
-	mTransform.UpdateWorldMatrix();
+	mModelContext.world = mTransform.GetWorldMatrix();
+}
+
+void GameObject::UpdateShaderVariables(SimpleMath::Matrix& parent) {
+	mTransform.UpdateWorldMatrix(parent);
+
+	if (mCollider.GetActiveState()) {
+		mCollider.UpdateBox(mTransform.GetWorldMatrix());
+	}
+
 	mModelContext.world = mTransform.GetWorldMatrix();
 }
 
 bool GameObject::GetAnimatorState() const {
 	return mAnimated; 
+}
+
+GameObject GameObject::Clone() {
+	GameObject clone{}; 
+
+	clone.mActiveState = true;
+	clone.mAnimated = mAnimated;
+	clone.mBoneMaskGraphController = mBoneMaskGraphController;
+	clone.mCollider = mCollider;
+	clone.mGraphController = mGraphController;
+	clone.mMaterial = mMaterial;
+	clone.mShader = mShader;
+	clone.mMesh = mMesh;
+	clone.mModelContext = ModelContext{};
+	clone.mTransform = Transform{};
+	
+	return clone; 
 }

@@ -1,0 +1,105 @@
+#include "pch.h"
+#include "Player.h"
+#include "../Game/System/Timer.h"
+#include "../Game/System/Input.h"
+
+Player::Player(Mesh* mesh, GraphicsShaderBase* shader, MaterialIndex material, AnimatorGraph::BoneMaskAnimationGraphController boneMaskController) {
+	mMesh = mesh;
+	mShader = shader;
+	mMaterial = material;
+	mBoneMaskController = boneMaskController;
+
+	mActiveState = true;
+}
+
+bool Player::GetActiveState() const {
+	return mActiveState;
+}
+
+void Player::SetWeapon(const GameObject& weapon) {
+	mWeapon = weapon; 
+}
+
+void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
+
+
+	static const SimpleMath::Matrix localRotations[] = {
+		SimpleMath::Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(45.f), 0.f, 0.f),	// 상 or 하 + 우 
+		SimpleMath::Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(-45.f), 0.f, 0.f),	// 상 or 하 + 좌
+		SimpleMath::Matrix::Identity
+	};
+
+	auto& keyboard = Input.GetKeyboardState();
+	if (keyboard.W) {
+		if (keyboard.A) {
+			mTransform.SetLocalTransform(localRotations[1]);
+		}
+		else if (keyboard.D) {
+			mTransform.SetLocalTransform(localRotations[0]);
+		}
+		else {
+			mTransform.SetLocalTransform(localRotations[2]);
+		}
+	} else if (keyboard.S) {
+		if (keyboard.A) {
+			mTransform.SetLocalTransform(localRotations[0]);
+		}
+		else if (keyboard.D) {
+			mTransform.SetLocalTransform(localRotations[1]);
+		}
+		else {
+			mTransform.SetLocalTransform(localRotations[2]);
+		}
+	}
+	else {
+		mTransform.SetLocalTransform(localRotations[2]);
+	}
+
+
+
+
+
+	const float XSensivity = 0.15f;
+	mTransform.Rotate(0.f, Input.GetDeltaMouseX() * Time.GetSmoothDeltaTime<float>() * XSensivity, 0.f);
+
+
+	static BoneTransformBuffer boneTransformBuffer{};
+
+	mBoneMaskController.Update(Time.GetDeltaTime(), boneTransformBuffer);
+
+	mTransform.UpdateWorldMatrix();
+	mModelContext.world = mTransform.GetWorldMatrix();
+
+	manager->AppendBonedMeshContext(mShader, mMesh, ModelContext{mTransform.GetWorldMatrix().Transpose(), SimpleMath::Vector3{0.3f, 0.8f, 0.3f}, mMaterial}, boneTransformBuffer);
+
+	if (mWeapon) {
+		mWeapon.GetTransform().SetLocalTransform(boneTransformBuffer.boneTransforms[58].Transpose());
+		mWeapon.UpdateShaderVariables(mTransform.GetWorldMatrix());
+		auto [mesh, shader, modelContext] = mWeapon.GetRenderData();
+		manager->AppendPlaneMeshContext(shader, mesh, modelContext);
+	}
+}
+
+Transform& Player::GetTransform() {
+	return mTransform; 
+}
+
+AnimatorGraph::BoneMaskAnimationGraphController& Player::GetBoneMaskController() {
+	return mBoneMaskController;
+}
+
+void Player::SetMesh(Mesh* mesh) {
+	mMesh = mesh;
+}
+
+void Player::SetShader(GraphicsShaderBase* shader) {
+	mShader = shader;
+}
+
+void Player::SetMaterial(MaterialIndex material) {
+	mMaterial = material;
+}
+
+void Player::SetBoneMaskController(AnimatorGraph::BoneMaskAnimationGraphController boneMaskController) {
+	mBoneMaskController = boneMaskController;
+}

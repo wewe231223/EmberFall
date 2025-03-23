@@ -2,10 +2,15 @@
 #include <ranges>
 #include "TerrainLoader.h"
 #include "../Utility/Crash.h"
+#include "../Utility/Defines.h"
 
 #ifdef max 
 #undef max
 #endif // max
+
+int TerrainLoader::GetLength() const {
+    return mLength;
+}
 
 MeshData TerrainLoader::Load(const std::filesystem::path& path, bool patch) {
     MeshData meshData{};
@@ -77,67 +82,46 @@ void TerrainLoader::CreatePatch(MeshData& data, int zStart, int zEnd, int xStart
 
 bool TerrainCollider::LoadFromFile(const std::filesystem::path& filePath) {
     std::ifstream file(filePath, std::ios::binary);
-    
+
     if (!file) {
         return false;
     }
 
-    int patchCount = 0;
-    file.read(reinterpret_cast<char*>(&patchCount), sizeof(patchCount));
-    mPatches.resize(static_cast<size_t>(patchCount));
+	file.read(reinterpret_cast<char*>(&mGlobalWidth), sizeof(mGlobalWidth));
+	file.read(reinterpret_cast<char*>(&mGlobalHeight), sizeof(mGlobalHeight));
+	file.read(reinterpret_cast<char*>(&mGridSpacing), sizeof(mGridSpacing));
+	file.read(reinterpret_cast<char*>(&mMinX), sizeof(mMinX));
+	file.read(reinterpret_cast<char*>(&mMinZ), sizeof(mMinZ));
 
-    for (int i = 0; i < patchCount; ++i) {
-        TessellatedPatchHeader header;
-        file.read(reinterpret_cast<char*>(&header.gridWidth), sizeof(header.gridWidth));
-        file.read(reinterpret_cast<char*>(&header.gridHeight), sizeof(header.gridHeight));
-        file.read(reinterpret_cast<char*>(&header.gridSpacing), sizeof(header.gridSpacing));
-        file.read(reinterpret_cast<char*>(&header.minX), sizeof(header.minX));
-        file.read(reinterpret_cast<char*>(&header.minZ), sizeof(header.minZ));
-        mPatches[static_cast<size_t>(i)].header = header;
-    }
 
-    for (int i = 0; i < patchCount; ++i) {
-        int count = mPatches[static_cast<size_t>(i)].header.gridWidth * mPatches[static_cast<size_t>(i)].header.gridHeight;
-        mPatches[static_cast<size_t>(i)].vertices.resize(static_cast<size_t>(count));
-        file.read(reinterpret_cast<char*>(mPatches[static_cast<size_t>(i)].vertices.data()), count * sizeof(SimpleMath::Vector3));
-    }
+    mGlobalVertices.resize(mGlobalWidth * mGlobalHeight);
+    file.read(reinterpret_cast<char*>(mGlobalVertices.data()), mGlobalVertices.size() * sizeof(SimpleMath::Vector3));
     return true;
 }
 
 float TerrainCollider::GetHeight(float x, float z) const {
-    for (const auto& patch : mPatches) {
-        float patchMinX = patch.header.minX;
-        float patchMaxX = patchMinX + patch.header.gridSpacing * (patch.header.gridWidth - 1);
-        float patchMinZ = patch.header.minZ;
-        float patchMaxZ = patchMinZ + patch.header.gridSpacing * (patch.header.gridHeight - 1);
+    float localX = x - mMinX;
+    float localZ = z - mMinZ;
 
-        if (x >= patchMinX && x <= patchMaxX && z >= patchMinZ && z <= patchMaxZ) {
-            float localX = x - patchMinX;
-            float localZ = z - patchMinZ;
+    float fcol = localX / mGridSpacing;
+    float frow = localZ / mGridSpacing;
 
-            float col = localX / patch.header.gridSpacing;
-            float row = localZ / patch.header.gridSpacing;
-            
-            int j = static_cast<int>(std::floor(col));
-            int i = static_cast<int>(std::floor(row));
-            
-            if (i < 0) i = 0;
-            if (j < 0) j = 0;
-            if (i >= patch.header.gridHeight - 1) i = patch.header.gridHeight - 2;
-            if (j >= patch.header.gridWidth - 1) j = patch.header.gridWidth - 2;
+    int col = static_cast<int>(fcol);
+    int row = static_cast<int>(frow);
 
-            float t = col - static_cast<float>(j);
-            float u = row - static_cast<float>(i);
+	col = std::clamp(col, 0, mGlobalWidth - 2);
+	row = std::clamp(row, 0, mGlobalHeight - 2);
 
-            const SimpleMath::Vector3& v00 = patch.vertices[static_cast<size_t>(i) * patch.header.gridWidth + j];
-            const SimpleMath::Vector3& v10 = patch.vertices[static_cast<size_t>(i) * patch.header.gridWidth + (j + 1)];
-            const SimpleMath::Vector3& v01 = patch.vertices[static_cast<size_t>(i + 1) * patch.header.gridWidth + j];
-            const SimpleMath::Vector3& v11 = patch.vertices[static_cast<size_t>(i + 1) * patch.header.gridWidth + (j + 1)];
+    float t = fcol - col;
+    float u = frow - row;
 
-            float y0 = v00.y * (1.0f - t) + v10.y * t;
-            float y1 = v01.y * (1.0f - t) + v11.y * t;
-            return y0 * (1.0f - u) + y1 * u;
-        }
-    }
-    return 0.0f;
+    const SimpleMath::Vector3& v00 = mGlobalVertices[row * mGlobalWidth + col];
+    const SimpleMath::Vector3& v10 = mGlobalVertices[row * mGlobalWidth + col + 1];
+    const SimpleMath::Vector3& v01 = mGlobalVertices[(row + 1) * mGlobalWidth + col];
+    const SimpleMath::Vector3& v11 = mGlobalVertices[(row + 1) * mGlobalWidth + col + 1];
+
+    float y0 = v00.y * (1.0f - t) + v10.y * t;
+    float y1 = v01.y * (1.0f - t) + v11.y * t;
+
+    return y0 * (1.0f - u) + y1 * u;
 }

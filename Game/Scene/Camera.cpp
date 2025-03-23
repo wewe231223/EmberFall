@@ -70,9 +70,6 @@ void FreeCameraMode::Update() {
 
 	mCamera->GetTransform().GetRotation() = DirectX::SimpleMath::Quaternion::Identity;
 
-//	Console.Log("x : {} , y : {} ", LogType::Info, Input.GetDeltaMouseX(), Input.GetDeltaMouseY());
-
-
 	static float yaw = 0.f;
 	static float pitch = 0.f;
 
@@ -102,13 +99,33 @@ void TPPCameraMode::Exit() {
 }
 
 void TPPCameraMode::Update() {
+	const float YSensitive = 0.15f; 
+
 	auto forward = mTargetTransform.GetForward();
 	auto right = mTargetTransform.GetRight();
 	auto up = mTargetTransform.GetUp();
 
-	//	mCamera->GetTransform().ResetRotation();
 	mCamera->GetTransform().SetPosition(mTargetTransform.GetPosition() + DirectX::SimpleMath::Vector3{ mOffset.x * right + mOffset.y * up + mOffset.z * forward });
-	mCamera->GetTransform().Look(mTargetTransform);
+
+	mCamera->GetTransform().GetRotation() = DirectX::SimpleMath::Quaternion::Identity;
+
+	DirectX::SimpleMath::Vector3 direction = mTargetTransform.GetPosition() - mCamera->GetTransform().GetPosition();
+	direction.y = 0; 
+	direction.Normalize();
+
+	float yaw = std::atan2(direction.x, direction.z);
+	static float pitch = 0.f;
+
+	pitch += Input.GetDeltaMouseY() * Time.GetSmoothDeltaTime<float>() * 0.3f;
+
+	if (pitch > DirectX::XMConvertToRadians(15.f)) {
+		pitch = DirectX::XMConvertToRadians(15.f);
+	}
+	if (pitch < DirectX::XMConvertToRadians(-15.f)) {
+		pitch = DirectX::XMConvertToRadians(-15.f);
+	}
+
+	mCamera->GetTransform().Rotate(pitch, yaw, 0.f);
 }
 
 ECameraMode TPPCameraMode::GetMode() const {

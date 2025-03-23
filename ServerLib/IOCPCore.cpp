@@ -12,7 +12,7 @@ IOCPCore::~IOCPCore() {
 
 void IOCPCore::Init(size_t workerThreadNum) {
     mIocpHandle = ::CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, static_cast<DWORD>(workerThreadNum));
-    CrashExp(NULL == mIocpHandle, "IOCP Creation Failure");
+    CrashExp(NULL != mIocpHandle, "IOCP Creation Failure");
 }
 
 HANDLE IOCPCore::GetHandle() const {
@@ -61,6 +61,7 @@ void IOCPCore::IOWorker() {
             }
             else if (IOType::CONNECT == overlappedEx->type) {
                 gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Connect Error!!");
+                MessageBoxA(nullptr, NetworkUtil::WSAErrorMessage().c_str(), "", MB_OK);
                 Crash("Connect Error");
             }
 

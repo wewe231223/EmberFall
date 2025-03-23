@@ -22,6 +22,9 @@
     <Filter Include="System">
       <UniqueIdentifier>{b3773c05-f3e3-420a-8ae6-bbb15ca5d43c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TerrainScene">
+      <UniqueIdentifier>{07a7817b-6bca-4929-b2ce-9efc5ca0a283}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -51,6 +54,9 @@
     <ClCompile Include="GameObject\Animator.cpp">
       <Filter>GameObject</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\Player.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -79,6 +85,9 @@
     </ClInclude>
     <ClInclude Include="GameObject\Animator.h">
       <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Player.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

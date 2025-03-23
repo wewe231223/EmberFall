@@ -152,6 +152,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Scene\Camera.cpp" />
+    <ClCompile Include="Scene\Player.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="System\Input.cpp" />
     <ClCompile Include="System\Timer.cpp" />
@@ -163,6 +164,7 @@
     <ClInclude Include="GameObject\Transform.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Scene\Camera.h" />
+    <ClInclude Include="Scene\Player.h" />
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="System\Input.h" />
     <ClInclude Include="System\Timer.h" />

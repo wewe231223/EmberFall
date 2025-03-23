@@ -6,9 +6,6 @@
 #include "../MeshLoader/Loader/TerrainLoader.h"
 #include "../Utility/DirectXInclude.h" 
 
-using namespace SimpleMath;
-
-
 static float BernsteinBasis(int i, float t) {
     switch (i) {
     case 0: return (1.0f - t) * (1.0f - t) * (1.0f - t) * (1.0f - t);
@@ -58,75 +55,84 @@ static std::vector<::DirectX::SimpleMath::Vector3> SimulateTessellationForPatch(
     return tessellated;
 }
 
-bool SimulateTessellationAndWriteFile(const std::filesystem::path& heightMapPath, const std::filesystem::path& outputFilePath) {
+struct TerrainHeader {
+    int gridWidth;     
+    int gridHeight;    
+    float gridSpacing; 
+    float minX;        
+    float minZ;        
+};
+
+bool SimulateGlobalTessellationAndWriteFile(const std::filesystem::path& heightMapPath, const std::filesystem::path& outputFilePath) {
     TerrainLoader loader;
     MeshData meshData = loader.Load(heightMapPath, true);
 
-    // 각 패치 당 컨트롤 포인트 개수: 25개 (5×5)
-    const int patchControlPointCount = 25;
-    std::size_t numPatches = meshData.position.size() / static_cast<size_t>(patchControlPointCount);
+    int PATCH_LENGTH = 4;
+	int PATCH_SCALE = 8;
 
-    const int tessFactor = 16;
-    const int tessGridSize = tessFactor + 1; // 17
+   
+    int patchSize = PATCH_LENGTH * PATCH_SCALE;
 
-    std::vector<TessellatedPatch> patches;
-    patches.reserve(numPatches);
+    int patchesX = (loader.GetLength() - patchSize) / patchSize + 1;
+    int patchesZ = (loader.GetLength() - patchSize) / patchSize + 1;
 
-    for (size_t patchIndex = 0; patchIndex < numPatches; ++patchIndex) {
-        auto patchBegin = meshData.position.begin() + patchIndex * patchControlPointCount;
-        std::vector<SimpleMath::Vector3> controlPoints(patchBegin, patchBegin + patchControlPointCount);
+    const int tessFactor = 16;             
+    const int tessGridSize = tessFactor + 1;  
+    int totalPatches = patchesX * patchesZ;
 
-        // CPU에서 테셀레이션 시뮬레이션
-        std::vector<SimpleMath::Vector3> tessVertices = SimulateTessellationForPatch(controlPoints);
+    std::vector<std::vector<SimpleMath::Vector3>> tessPatches(totalPatches);
 
-        float minX = controlPoints[0].x;
-        float maxX = controlPoints[0].x;
-        float minZ = controlPoints[0].z;
-        float maxZ = controlPoints[0].z;
-        for (const auto& pt : controlPoints)
-        {
-            if (pt.x < minX) { minX = pt.x; }
-            if (pt.x > maxX) { maxX = pt.x; }
-            if (pt.z < minZ) { minZ = pt.z; }
-            if (pt.z > maxZ) { maxZ = pt.z; }
-        }
-        // gridSpacing: tessellated 패치 내 x 방향 간격 = z 방향 간격
-        float gridSpacing = (maxX - minX) / static_cast<float>(tessGridSize - 1);
-
-        TessellatedPatch patch;
-        patch.header.gridWidth = tessGridSize;
-        patch.header.gridHeight = tessGridSize;
-        patch.header.gridSpacing = gridSpacing;
-        patch.header.minX = minX;
-        patch.header.minZ = minZ;
-        patch.vertices = std::move(tessVertices);
-
-        patches.push_back(std::move(patch));
+    for (int patch = 0; patch < totalPatches; ++patch) {
+        auto beginIter = meshData.position.begin() + patch * 25;
+        std::vector<SimpleMath::Vector3> controlPoints(beginIter, beginIter + 25);
+        std::vector<SimpleMath::Vector3> tessVerts = SimulateTessellationForPatch(controlPoints);
+        tessPatches[patch] = std::move(tessVerts);
     }
 
-    // 파일 포맷:
-    // 각 패치별 헤더: int gridWidth, int gridHeight, float gridSpacing, float minX, float minZ
-    // 그 후, 각 패치의 tessellated vertex 배열 
+    std::vector<std::vector<SimpleMath::Vector3>> tessPatchesOrdered(totalPatches);
+    for (int r = 0; r < patchesZ; ++r) {
+        int srcRow = patchesZ - 1 - r; 
+        for (int c = 0; c < patchesX; ++c) {
+            int srcIndex = srcRow * patchesX + c;
+            int destIndex = r * patchesX + c;
+            tessPatchesOrdered[destIndex] = std::move(tessPatches[srcIndex]);
+        }
+    }
+
+    int globalWidth = patchesX * (tessGridSize - 1) + 1;
+    int globalHeight = patchesZ * (tessGridSize - 1) + 1;
+    std::vector<SimpleMath::Vector3> globalVertices(globalWidth * globalHeight);
+
+    for (int pr = 0; pr < patchesZ; ++pr) {
+        for (int pc = 0; pc < patchesX; ++pc) {
+            int patchIdx = pr * patchesX + pc;
+            const auto& patchVerts = tessPatchesOrdered[patchIdx];
+            for (int i = 0; i < tessGridSize; ++i) {
+                for (int j = 0; j < tessGridSize; ++j) {
+
+                    int globalRow = pr * (tessGridSize - 1) + i;
+                    int globalCol = pc * (tessGridSize - 1) + j;
+
+                    globalVertices[globalRow * globalWidth + globalCol] = patchVerts[i * tessGridSize + j];
+                }
+            }
+        }
+    }
+
+    float minX = globalVertices[0].x;
+    float minZ = globalVertices[0].z;
+
+    float gridSpacing = (globalWidth > 1) ? (globalVertices[1].x - globalVertices[0].x) : 1.0f;
+
+    TerrainHeader header{ globalWidth, globalHeight, gridSpacing, minX, minZ };
+
     std::ofstream outFile(outputFilePath, std::ios::binary);
     if (!outFile) {
         return false;
     }
 
-    int patchCount = static_cast<int>(patches.size());
-    outFile.write(reinterpret_cast<const char*>(&patchCount), sizeof(patchCount));
-
-    for (const auto& patch : patches) {
-        outFile.write(reinterpret_cast<const char*>(&patch.header.gridWidth), sizeof(patch.header.gridWidth));
-        outFile.write(reinterpret_cast<const char*>(&patch.header.gridHeight), sizeof(patch.header.gridHeight));
-        outFile.write(reinterpret_cast<const char*>(&patch.header.gridSpacing), sizeof(patch.header.gridSpacing));
-        outFile.write(reinterpret_cast<const char*>(&patch.header.minX), sizeof(patch.header.minX));
-        outFile.write(reinterpret_cast<const char*>(&patch.header.minZ), sizeof(patch.header.minZ));
-    }
-
-    for (const auto& patch : patches) {
-        outFile.write(reinterpret_cast<const char*>(patch.vertices.data()),
-            patch.vertices.size() * sizeof(SimpleMath::Vector3));
-    }
+    outFile.write(reinterpret_cast<const char*>(&header), sizeof(header));
+    outFile.write(reinterpret_cast<const char*>(globalVertices.data()), globalVertices.size() * sizeof(SimpleMath::Vector3));
 
     return true;
 }

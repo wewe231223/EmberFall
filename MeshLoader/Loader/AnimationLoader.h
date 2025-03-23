@@ -38,6 +38,7 @@ public:
 	void Load(const std::filesystem::path& path);
 	
 	AnimationClip* GetClip(UINT index);
+	UINT GetBoneIndex(const std::string& name);
 private:
 	bool CheckBinary(const std::filesystem::path& path);
 
@@ -45,6 +46,8 @@ private:
 	std::shared_ptr<BoneNode> BuildNode(const aiNode* node, const std::unordered_map<std::string, UINT>& boneMap);
 private:
 	std::vector<AnimationClip> mClips{};
+
+	std::unordered_map<std::string, UINT> mBoneIndexMap{}; 
 
 	Assimp::Importer mImporter{};
 	const aiScene* mScene{}; 
@@ -56,6 +59,7 @@ public:
 	explicit AnimationSerializer(const std::filesystem::path& fileName) : mFile(fileName, std::ios::binary) {}
 	~AnimationSerializer() = default;
 public:
+	void Serialize(const std::unordered_map<std::string, UINT>& boneIndexMap);
 	void Serialze(const std::vector<AnimationClip>& clips);
 private:
 	void SerializeClip(const AnimationClip& clip);
@@ -76,7 +80,6 @@ private:
 	void WriteMap(const std::unordered_map<UINT, BoneAnimation>& value);
 
 	void WriteBoneNode(const std::shared_ptr<BoneNode>& node);
-
 private:
 	std::ofstream mFile{};
 };
@@ -95,7 +98,8 @@ public:
 	explicit AnimationDeserializer(const std::filesystem::path& fileName) : mFile(fileName, std::ios::binary) {}
 	~AnimationDeserializer() = default;
 public:
-	std::vector<AnimationClip> Deserialize();
+	std::unordered_map<std::string, UINT> DeserializeBoneIndexMap();
+	std::vector<AnimationClip> DeserializeClips();
 private:
 	AnimationClip DeserializeClip();
 

@@ -49,8 +49,10 @@ public:
 
 	Transform CreateChild(const SimpleMath::Vector3& localPosition = SimpleMath::Vector3::Zero, const SimpleMath::Quaternion& localRotate = SimpleMath::Quaternion::Identity, const SimpleMath::Vector3& localScale = SimpleMath::Vector3::One);
 
-	void UpdateWorldMatrix();
+	void SetLocalTransform(const SimpleMath::Matrix& localMatrix);
 
+	void UpdateWorldMatrix();
+	void UpdateWorldMatrix(SimpleMath::Matrix& parent);
 private:
 	SimpleMath::Vector3 mPosition{ DirectX::SimpleMath::Vector3::Zero };
 	SimpleMath::Quaternion mRotation{ DirectX::SimpleMath::Quaternion::Identity };

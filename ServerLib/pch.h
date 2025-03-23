@@ -45,6 +45,7 @@
 #include <concurrent_unordered_map.h>
 #include <concurrent_queue.h>
 
+#include "../Utility/Crash.h"
 #include "../External/Include/DirectXTK12/SimpleMath.h"
 
 namespace SimpleMath = DirectX::SimpleMath;
@@ -54,7 +55,6 @@ namespace SimpleMath = DirectX::SimpleMath;
 #include "Types.h"
 #include "Constants.h"
 #include "OverlappedEx.h"
-#include "Crash.h"
 #include "Lock.h"
 #include "Protocol.h"
 #include "NetworkUtils.h"
