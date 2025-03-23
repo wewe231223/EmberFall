@@ -51,12 +51,25 @@ SimpleMath::Quaternion Transform::GetRotation() const {
     return mRotation;
 }
 
+SimpleMath::Vector3 Transform::GetEulerRotation() const {
+    return mRotation.ToEuler();
+}
+
 SimpleMath::Vector3 Transform::GetScale() const {
     return mScale;
 }
 
 SimpleMath::Matrix Transform::GetWorld() const {
     return mWorld;
+}
+
+void Transform::Reset() {
+    mPrevPosition = SimpleMath::Vector3::Zero;
+    mPosition = SimpleMath::Vector3::Zero;
+
+    mRotation = SimpleMath::Quaternion::Identity;
+    mScale = SimpleMath::Vector3::One;
+    mWorld = SimpleMath::Matrix::Identity;
 }
 
 void Transform::SetY(const float y) {
@@ -77,40 +90,12 @@ void Transform::Move(const SimpleMath::Vector3& moveVec) {
 }
 
 void Transform::SetLook(const SimpleMath::Vector3& lookVec) {
-    // 정규화된 look 벡터 생성
-    SimpleMath::Vector3 forward = -lookVec;
-    forward.Normalize();
-
-    // 기본 up 벡터 (필요하면 조정 가능)
-    SimpleMath::Vector3 up = SimpleMath::Vector3::Up;
-
-    // LookAt 행렬 대신 방향 벡터로 회전 행렬 직접 생성
-    SimpleMath::Vector3 right = up.Cross(forward);
-    right.Normalize();
-
-    up = forward.Cross(right);
-    up.Normalize();
-
-    SimpleMath::Matrix rotationMatrix(
-        right.x, right.y, right.z, 0,
-        up.x, up.y, up.z, 0,
-        forward.x, forward.y, forward.z, 0,
-        0, 0, 0, 1
-    );
-
-    // 회전 행렬에서 쿼터니언 생성
-    mRotation = SimpleMath::Quaternion::CreateFromRotationMatrix(rotationMatrix);
+    mRotation = MathUtil::GetQuatFromLook(lookVec);
 }
 
 void Transform::LookAt(const SimpleMath::Vector3& target) {
-    DirectX::SimpleMath::Vector3 direction = target - mPosition;
-    direction.Normalize();
-
-    auto look = DirectX::SimpleMath::Quaternion::FromToRotation(Forward(), direction);
-    look.Normalize();
-    mRotation = DirectX::SimpleMath::Quaternion::Concatenate(look, mRotation);
-
-    mRotation.Normalize();
+    auto toLookQuat = MathUtil::GetQuatBeetweenVectors(Forward(), target);
+    mRotation = SimpleMath::Quaternion::Concatenate(mRotation, toLookQuat);
 }
 
 void Transform::LookAtSmoothly(const SimpleMath::Vector3& target, float lerpFactor) {

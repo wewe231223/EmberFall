@@ -1,0 +1,27 @@
+#pragma once
+
+#include "GameObject.h"
+#include "ServerGameScene.h"
+
+class ObjectSpawner {
+public:
+    ObjectSpawner();
+    ~ObjectSpawner();
+
+public:
+    void SetCurrentScene(std::shared_ptr<class IServerGameScene> gameScene);
+
+    void SpawnObject(ObjectTag objectType, bool terrainCollision = true);
+    void SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
+        const SimpleMath::Vector3& pos, const SimpleMath::Vector3& size, const SimpleMath::Vector3& dir);
+
+    void SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
+        const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir, std::shared_ptr<class Collider> collider);
+
+    void SpawnProjectile(ObjectTag objectType, const SimpleMath::Vector3& pos,
+        const SimpleMath::Vector3& dir, GameUnits::GameUnit<GameUnits::StandardSpeed> speed, bool terraincollision = true);
+
+private:
+    std::shared_ptr<class IServerGameScene> mCurrentScene{ };
+};
+

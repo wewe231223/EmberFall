@@ -3,7 +3,9 @@
 #include "GameObject.h"
 
 CorruptedGemScript::CorruptedGemScript(std::shared_ptr<GameObject> owner) 
-    : Script{ owner, ObjectTag::NONE } { }
+    : Script{ owner, ObjectTag::NONE } { 
+    owner->SetEntityType(EntityType::ENV);
+}
 
 CorruptedGemScript::~CorruptedGemScript() { }
 

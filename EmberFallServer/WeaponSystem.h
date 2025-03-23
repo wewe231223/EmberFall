@@ -8,13 +8,19 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "Weapon.h"
+
 class WeaponSystem {
 public:
     WeaponSystem();
     ~WeaponSystem();
 
 public:
+    Weapon GetWeaponType() const;
+
+    void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir);
+    void SetWeapon(Weapon weapon);
 
 private:
-    std::shared_ptr<class IWeapon> mWeapon{ };
+    std::shared_ptr<Weapons::IWeapon> mWeapon{ };
 };

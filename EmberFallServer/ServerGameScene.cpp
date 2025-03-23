@@ -2,7 +2,6 @@
 #include "ServerGameScene.h"
 #include "GameEventManager.h"
 #include "Terrain.h"
-#include "Collider.h"
 #include "Input.h"
 
 #include "PlayerScript.h"
@@ -10,7 +9,7 @@
 
 #include "PacketProcessFunctions.h"
 
-#include "ObjectBuilder.h"
+#include "ObjectSpawner.h"
 
 IServerGameScene::IServerGameScene() { }
 
@@ -80,10 +79,18 @@ std::shared_ptr<GameObject> PlayScene::GetObjectFromId(NetworkObjectIdType id) {
     }
 }
 
+std::shared_ptr<GameObject>& PlayScene::GetInvalidObject() {
+    return *std::find_if(mObjects.begin(), mObjects.end(),
+        [](const std::shared_ptr<GameObject>& obj) { return not obj->IsActive(); });
+}
+
+TerrainCollider& PlayScene::GetTerrainCollider() {
+    return mTerrainCollider;
+}
+
 void PlayScene::Init() {
-    mTerrain = std::make_shared<Terrain>("../Resources/HeightMap.raw");
+    mTerrain = std::make_shared<Terrain>("../Resources/Binarys/Terrain/TerrainBaked.bin");
     mTerrainCollider.SetTerrain(mTerrain);
-    gEventManager->SetCurrentGameScene(shared_from_this());
 
     mObjects.resize(MAX_OBJECT);
     for (NetworkObjectIdType id{ 0 }; auto & object : mObjects) {
@@ -98,7 +105,7 @@ void PlayScene::Init() {
     }
 
     for (int32_t i = 0; i < 3; ++i) {
-        SpawnObject(ObjectTag::MONSTER);
+        gObjectSpawner->SpawnObject(ObjectTag::MONSTER);
     }
 }
 
@@ -122,13 +129,11 @@ void PlayScene::RegisterPacketProcessFunctions() {
         [=](PacketHeader* header) { ProcessPacketCamera(header, mPlayers); });
 }
 
-void PlayScene::ProcessPackets(const std::shared_ptr<ServerCore>& serverCore) {
-    auto packetHandler = serverCore->GetPacketHandler();
+void PlayScene::Update(const float deltaTime) {
+    auto packetHandler = gServerCore->GetPacketHandler();
     auto& buffer = packetHandler->GetBuffer();
     mPacketProcessor.ProcessPackets(buffer);
-}
 
-void PlayScene::Update(const float deltaTime) {
     for (auto& [id, obj] : mPlayers) {
         obj->Update(deltaTime);
     }
@@ -177,23 +182,4 @@ void PlayScene::ExitPlayer(SessionIdType id) {
 
     mTerrainCollider.RemoveObjectFromTerrainGroup(it->second);
     mPlayers.erase(it);
-}
-
-void PlayScene::SpawnObject(ObjectTag tag) { 
-    auto obj = *std::find_if(mObjects.begin(), mObjects.end(),
-        [](const std::shared_ptr<GameObject>& obj) { return not obj->IsActive(); });
-    ObjectBuilder::BuildObjectComponent(obj, tag);
-    mTerrainCollider.AddObjectInTerrainGroup(obj);
-
-    obj->SetActive(true);
-}
-
-void PlayScene::SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount, 
-    const SimpleMath::Vector3& pos, const SimpleMath::Vector3& size, const SimpleMath::Vector3& dir) {
-    auto obj = *std::find_if(mObjects.begin(), mObjects.end(),
-        [](const std::shared_ptr<GameObject>& obj) { return not obj->IsActive(); });
-
-    ObjectBuilder::BuildTrigger(obj, event, lifeTime, eventDelay, eventCount, pos, size, dir);
-
-    obj->SetActive(true);
 }

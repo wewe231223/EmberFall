@@ -25,10 +25,32 @@ namespace MathUtil {
     inline constexpr SimpleMath::Vector3 EPSILON_VEC3 = SimpleMath::Vector3{ EPSILON };
     inline constexpr SimpleMath::Vector2 EPSILON_VEC2 = SimpleMath::Vector2{ EPSILON };
 
+    template <typename T, typename ValType=size_t>
+    inline constexpr ValType BIT_OF = sizeof(T) * CHAR_BIT;
+
+    // Infinite
+    template <typename T> requires std::is_arithmetic_v<T>
+    inline T Infinite() 
+    {
+        return std::numeric_limits<T>::infinity();
+    }
+
     // Absolute
     inline SimpleMath::Vector3 AbsVector(const SimpleMath::Vector3& v)
     {
         return DirectX::XMVectorAbs(v);
+    }
+
+    template <typename T> requires std::is_arithmetic_v<T> and std::is_signed_v<T>
+    inline T Abs(T val) 
+    {
+        if constexpr (std::is_floating_point_v) {
+            return std::fabs(val);
+        }
+        else {
+            T val2{ val >> (BIT_OF<T> - 1) };
+            return (val2 ^ val) - val2;
+        }
     }
 
     // Compare EPSILON Vector

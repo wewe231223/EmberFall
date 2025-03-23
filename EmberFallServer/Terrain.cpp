@@ -2,175 +2,53 @@
 #include "Terrain.h"
 #include "Collider.h"
 
-HeightMap::HeightMap(std::string_view imageFilePath, size_t imageWidth, size_t imageHeight) {
-    std::filesystem::path path{ imageFilePath };
-    size_t fileSize = 0;
-    if (0 == imageWidth or 0 == imageHeight) {
-        fileSize = std::filesystem::file_size(imageFilePath);
-        mWidth = mHeight = static_cast<size_t>(std::sqrt(fileSize));
-    }
-    else {
-        mWidth = imageWidth;
-        mHeight = imageHeight;
-        fileSize = imageWidth * imageHeight;
-    }
-
-    std::ifstream imageFile{ path, std::ios::binary };
-    if (not imageFile.is_open()) {
-        return;
-    }
-
-    mPixels.resize(fileSize / sizeof(PixelType));
-    imageFile.read(reinterpret_cast<char*>(mPixels.data()), fileSize);
-
-    for (int z = 0; z < mHeight; ++z) {
-        for (int x = 0; x < mWidth; ++x) {
-            std::swap(mPixels[x + z * mWidth], mPixels[x + (mHeight - z - 1) * mWidth]); // flip
-        }
-    }
-
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Height Map Load Success [File: {}] [Size: {}]", imageFilePath, fileSize);
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Height Map Info [Width: {}] [Height: {}]", mWidth, mHeight);
+Terrain::Terrain(const std::filesystem::path& path) {
+    LoadFromFile(path);
 }
-
-HeightMap::~HeightMap() { }
-
-HeightMap::HeightMap(const HeightMap& other) {
-    mPixels.resize(other.PixelCount());
-    std::copy(other.mPixels.begin(), other.mPixels.end(), mPixels.begin());
-}
-
-HeightMap::HeightMap(HeightMap&& other) noexcept {
-    mPixels = std::move(other.mPixels);
-}
-
-HeightMap& HeightMap::operator=(const HeightMap& other) {
-    mPixels.resize(other.PixelCount());
-    std::copy(other.mPixels.begin(), other.mPixels.end(), mPixels.begin());
-    return *this;
-}
-
-HeightMap& HeightMap::operator=(HeightMap&& other) noexcept {
-    mPixels = std::move(other.mPixels);
-    return *this;
-}
-
-size_t HeightMap::ImageWidth() const {
-    return mWidth;
-}
-
-size_t HeightMap::ImageHeight() const {
-    return mHeight;
-}
-
-float HeightMap::GetPixel(size_t idx) const {
-    return static_cast<float>(mPixels[idx]);
-}
-
-float HeightMap::GetPixel(size_t u, size_t v) const {
-    return static_cast<float>(mPixels[mWidth * v + u]);
-}
-
-float HeightMap::GetPixel(const float u, const float v) const {
-    size_t iu{ static_cast<size_t>(u) };
-    size_t iv{ static_cast<size_t>(v) };
-
-    if ((iu >= mWidth - 1 or iv >= mHeight - 1) or (0.0f > u or 0.0f > v)) {
-        return 0.0f;
-    }
-
-    float fu{ u - iu };
-    float fv{ v - iv };
-
-    float ltHeight{ GetPixel(iu, iv + 1) };
-    float rtHeight{ GetPixel(iu + 1, iv + 1) };
-    float lbHeight{ GetPixel(iu, iv) };
-    float rbHeight{ GetPixel(iu + 1, iv) };
-
-    float topHeight = std::lerp(ltHeight, rtHeight, fu);
-    float bottomHeight = std::lerp(ltHeight, rtHeight, fu);
-
-    return std::lerp(topHeight, bottomHeight, fv);
-}
-
-float HeightMap::GetPixel(const SimpleMath::Vector2& uv) const {
-    return GetPixel(uv.x, uv.y);
-}
-
-size_t HeightMap::Size() const {
-    return mPixels.size() * sizeof(PixelType);
-}
-
-size_t HeightMap::PixelCount() const {
-    return mPixels.size();
-}
-
-Terrain::Terrain(std::string_view imageFile, const SimpleMath::Vector2& mapSize, size_t imageWidth, size_t imageHeight) 
-    : mMapSize{ mapSize } {
-    mHeightMap = std::make_shared<HeightMap>(imageFile, imageWidth, imageHeight);
-
-    mTileSize = { mMapSize.x / static_cast<float>(mHeightMap->ImageWidth()),
-        mMapSize.y / static_cast<float>(mHeightMap->ImageHeight()) };
-
-    mLeftBottom = -mMapSize / 2.0f;
-
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Terrain Generate Success");
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, 
-        "Map Size (Meter): {} x {}, TileSize: ({}, {})\nCenter of Scene: (0.0, 0.0)",
-        mMapSize.x, mMapSize.y, mTileSize.x, mTileSize.y);
-}
-
-Terrain::Terrain(std::shared_ptr<HeightMap> image, const SimpleMath::Vector3& scale) 
-    : mMapSize{ scale }, mHeightMap{ image } { }
 
 Terrain::~Terrain() { }
-
-Terrain::Terrain(const Terrain& other) { }
-
-Terrain::Terrain(Terrain&& other) noexcept { }
-
-Terrain& Terrain::operator=(const Terrain& other) {
-    return *this;
-}
-
-Terrain& Terrain::operator=(Terrain&& other) noexcept {
-    return *this;
-}
-
-void Terrain::ResetHeightMap(std::shared_ptr<HeightMap> heightMap) {
-    mHeightMap = heightMap;
-}
 
 SimpleMath::Vector2 Terrain::GetMapSize() const {
     return mMapSize;
 }
 
-std::pair<SimpleMath::Vector2, SimpleMath::Vector2> Terrain::GetArea() const {
-    return std::make_pair(mLeftBottom, mLeftBottom + mMapSize);
-}
-
 SimpleMath::Vector2 Terrain::GetMapLeftBottom() const {
-    return mLeftBottom;
+    return -mMapSize / 2.0f;
 }
 
-std::shared_ptr<HeightMap> Terrain::GetHeightMap() const {
-    return mHeightMap;
+float Terrain::GetHeight(float x, float z, float offset) const {
+    float localX = x - mMinX;
+    float localZ = z - mMinZ;
+
+    float fcol = localX / mGridSpacing;
+    float frow = localZ / mGridSpacing;
+
+    int col = static_cast<int>(fcol);
+    int row = static_cast<int>(frow);
+
+    col = std::clamp(col, 0, mGlobalWidth - 2);
+    row = std::clamp(row, 0, mGlobalHeight - 2);
+
+    float t = fcol - col;
+    float u = frow - row;
+
+    decltype(auto) v00 = mGlobalVertices[row * mGlobalWidth + col];
+    decltype(auto) v10 = mGlobalVertices[row * mGlobalWidth + col + 1];
+    decltype(auto) v01 = mGlobalVertices[(row + 1) * mGlobalWidth + col];
+    decltype(auto) v11 = mGlobalVertices[(row + 1) * mGlobalWidth + col + 1];
+
+    float y0 = v00.y * (1.0f - t) + v10.y * t;
+    float y1 = v01.y * (1.0f - t) + v11.y * t;
+
+    return y0 * (1.0f - u) + y1 * u;
 }
 
 float Terrain::GetHeight(const SimpleMath::Vector2& pos, float offset) const {
-    float idxX = (pos.x - mLeftBottom.x) / mTileSize.x;
-    float idxZ = (pos.y - mLeftBottom.y) / mTileSize.y;
-
-    float pixel = mHeightMap->GetPixel(idxX, idxZ);
-    return pixel * mScaleY + offset;
+    return GetHeight(pos.x, pos.y, offset);
 }
 
 float Terrain::GetHeight(const SimpleMath::Vector3& pos, float offset) const {
-    float idxX = (pos.x - mLeftBottom.x) / mTileSize.x;
-    float idxZ = (pos.z - mLeftBottom.y) / mTileSize.y;
-
-    float pixel = mHeightMap->GetPixel(idxX, idxZ);
-    return pixel * mScaleY + offset;
+    return GetHeight(pos.x, pos.z, offset);
 }
 
 bool Terrain::Contains(const SimpleMath::Vector3& position) {
@@ -206,4 +84,23 @@ bool Terrain::Contains(const std::shared_ptr<Collider>& collider, float& height)
     default:
         return false;
     }
+}
+
+bool Terrain::LoadFromFile(const std::filesystem::path& path) {
+    std::ifstream file{ path, std::ios::binary };
+
+    if (!file) {
+        return false;
+    }
+
+    file.read(reinterpret_cast<char*>(&mGlobalWidth), sizeof(mGlobalWidth));
+    file.read(reinterpret_cast<char*>(&mGlobalHeight), sizeof(mGlobalHeight));
+    file.read(reinterpret_cast<char*>(&mGridSpacing), sizeof(mGridSpacing));
+    file.read(reinterpret_cast<char*>(&mMinX), sizeof(mMinX));
+    file.read(reinterpret_cast<char*>(&mMinZ), sizeof(mMinZ));
+
+    mGlobalVertices.resize(mGlobalWidth * mGlobalHeight);
+    file.read(reinterpret_cast<char*>(mGlobalVertices.data()), mGlobalVertices.size() * sizeof(SimpleMath::Vector3));
+
+    return true;
 }

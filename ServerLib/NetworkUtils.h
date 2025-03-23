@@ -94,4 +94,9 @@ namespace NetworkUtil {
     {
         return *(reinterpret_cast<PacketSizeType*>(AddressOf(iter)));
     }
+
+    inline NetworkObjectIdType ObjectIdToIndexId(NetworkObjectIdType objectId)
+    {
+        return objectId - OBJECT_ID_START;
+    }
 }

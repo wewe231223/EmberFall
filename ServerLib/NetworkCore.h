@@ -59,6 +59,10 @@ public:
     virtual bool Start(const std::string& ip, const UINT16 port) override;
     virtual void End() override;
 
+    void Send(SessionIdType to, void* packet);
+    void SendAll(void* packet);
+    void SendAll(void* data, size_t size);
+
 private:
     std::shared_ptr<class Listener> mListener{ nullptr };
     std::shared_ptr<SessionManager> mSessionManager{ nullptr };
