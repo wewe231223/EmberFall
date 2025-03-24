@@ -94,6 +94,9 @@ void Collider::UpdateState(bool collisionResult, NetworkObjectIdType objId) {
 BoxCollider::BoxCollider() 
     : Collider{ ColliderType::BOX } { }
 
+BoxCollider::BoxCollider(const DirectX::BoundingBox& box) 
+    : Collider{ ColliderType::BOX }, mLocalBox{ box } { }
+
 BoxCollider::BoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents)
     : Collider{ ColliderType::BOX }, mLocalBox{ center, extents }, mBoundingBox{ } { }
 
@@ -195,6 +198,11 @@ bool SphereCollider::CheckCollision(const std::shared_ptr<Collider>& other) {
 
 OrientedBoxCollider::OrientedBoxCollider()
     : Collider{ ColliderType::ORIENTED_BOX } { }
+
+OrientedBoxCollider::OrientedBoxCollider(const DirectX::BoundingBox& box)
+    : Collider{ ColliderType::ORIENTED_BOX } { 
+    DirectX::BoundingOrientedBox::CreateFromBoundingBox(mLocalBox, box);
+}
 
 OrientedBoxCollider::OrientedBoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents, const SimpleMath::Quaternion& quat)
     : Collider{ ColliderType::ORIENTED_BOX }, mLocalBox{ center, extents, quat }, mBoundingBox{ } { }

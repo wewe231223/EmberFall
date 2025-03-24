@@ -60,6 +60,10 @@ void IServerGameScene::ExitPlayer(SessionIdType id) {
     mPlayerList.pop_back();
 
     mPlayers.erase(it);
+
+
+    PacketSC::PacketPlayerExit exitPacket{ sizeof(PacketSC::PacketPlayerExit), PacketType::PACKET_PLAYER_EXIT, id };
+    gServerCore->SendAll(&exitPacket);
 }
 
 PlayScene::PlayScene() { }
