@@ -1043,8 +1043,8 @@ void Scene::BuildAniamtionController() {
 		}
 
 		AnimatorGraph::BoneMaskAnimationState attack{};
-		attack.maskedClipIndex = 10;
-		attack.nonMaskedClipIndex = 10;
+		attack.maskedClipIndex = 9;
+		attack.nonMaskedClipIndex = 9;
 		attack.name = "Attack";
 
 		{
