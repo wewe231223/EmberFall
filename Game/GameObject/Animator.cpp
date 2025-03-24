@@ -360,9 +360,7 @@ namespace AnimatorGraph {
             SimpleMath::Vector3 pos = InterpolatePosition(AnimationTime, boneAnim);
             SimpleMath::Quaternion rot = InterpolateRotation(AnimationTime, boneAnim);
             SimpleMath::Vector3 scale = InterpolateScaling(AnimationTime, boneAnim);
-            nodeTransform = SimpleMath::Matrix::CreateScale(scale) *
-                SimpleMath::Matrix::CreateFromQuaternion(rot) *
-                SimpleMath::Matrix::CreateTranslation(pos);
+            nodeTransform = SimpleMath::Matrix::CreateScale(scale) * SimpleMath::Matrix::CreateFromQuaternion(rot) * SimpleMath::Matrix::CreateTranslation(pos);
         }
         SimpleMath::Matrix globalTransform = nodeTransform * ParentTransform;
         if (node->index != std::numeric_limits<UINT>::max()) {

@@ -1177,7 +1177,14 @@ void Scene::SetInputBaseAnimMode() {
 	Input.EraseCallBack(mInputSign);
 
 	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", 1);
+
+		if (Input.GetKeyboardState().S) {
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
+		}
+		else {
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 1);
+		}
+
 		});
 
 	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
@@ -1185,7 +1192,13 @@ void Scene::SetInputBaseAnimMode() {
 		});
 
 	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::S, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", 2);
+
+		if (Input.GetKeyboardState().W)
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
+		else {
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 2);
+		}
+
 		});
 
 	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::S, mInputSign, [this]() {
@@ -1193,7 +1206,13 @@ void Scene::SetInputBaseAnimMode() {
 		});
 
 	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", 3);
+
+		if (Input.GetKeyboardState().D)
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
+		else {
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 3);
+		}
+
 		});
 
 	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
@@ -1201,7 +1220,13 @@ void Scene::SetInputBaseAnimMode() {
 		});
 
 	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", 4);
+
+		if (Input.GetKeyboardState().A)
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
+		else {
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 4);
+		}
+	
 		});
 
 	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
