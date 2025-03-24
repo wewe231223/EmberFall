@@ -14,7 +14,9 @@ public:
 
 	void UpdateBox(SimpleMath::Matrix& world); 
 
+	SimpleMath::Vector3 GetCenter() const;
 	SimpleMath::Vector3 GetExtents() const;
+
 	bool CheckCollision(Collider& other);
 private:
 	DirectX::BoundingOrientedBox mOrigin{};

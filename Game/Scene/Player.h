@@ -45,5 +45,7 @@ private:
 	ModelContext mModelContext{};
 	Transform mTransform{}; 
 
+	Collider mCollider{};
+
 	bool mActiveState{ false };
 };

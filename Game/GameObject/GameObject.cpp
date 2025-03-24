@@ -7,7 +7,7 @@ GameObject::operator bool() const {
 }
 
 std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GameObject::GetRenderData() const {
-	return std::make_tuple(mMesh, mShader, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mCollider.GetExtents() ,mMaterial});
+	return std::make_tuple(mMesh, mShader, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter() , mCollider.GetExtents() ,mMaterial});
 }
 
 const Transform& GameObject::GetTransform() const {

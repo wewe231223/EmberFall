@@ -18,13 +18,13 @@
 void Scene::ProcessNotifyId(PacketHeader* header) {
 	gClientCore->InitSessionId(header->id);
 	mNetworkInfoText->GetText() = std::format(L"My Session ID : {}", header->id);
-	mMyPlayer = mHumanPlayers.begin() + header->id;
+	//mMyPlayer = mHumanPlayers.begin() + header->id;
 
-	*mMyPlayer = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-	mMyPlayer->SetWeapon(mGameObjects.back().Clone());
+	//*mMyPlayer = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+	//mMyPlayer->SetWeapon(mGameObjects.back().Clone());
 
-	mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
-	mCameraMode->Enter();
+	//mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
+	//mCameraMode->Enter();
 }
 
 void Scene::ProcessPacketProtocolVersion(PacketHeader* header) {
@@ -37,7 +37,7 @@ void Scene::ProcessPacketProtocolVersion(PacketHeader* header) {
 		MessageBox(nullptr, L"ERROR!!!!!\nProtocolVersion Mismatching", L"", MB_OK | MB_ICONERROR);
 		::exit(0);
 	}
-}
+}	
 
 void Scene::ProcessPlayerPacket(PacketHeader* header) {
 	//auto packet = reinterpret_cast<PacketSC::PacketPlayer*>(header);
@@ -54,14 +54,43 @@ void Scene::ProcessPlayerPacket(PacketHeader* header) {
 void Scene::ProcessObjectPacket(PacketHeader* header) {
 	auto packet = reinterpret_cast<PacketSC::PacketObject*>(header);
 	
-	if (packet->objId > OBJECT_ID_START) {
-		auto player = mHumanPlayers.begin() + header->id;
+	// 플레이어 영역에 해당한다면
+	if (packet->objId < OBJECT_ID_START) {
+		// 그게 만약 나라면 
+		if (packet->objId == gClientCore->GetSessionId()) {
+			// 플레이어 인스턴스가 없다면 
+			if (mIndexMap.find(packet->objId) == mIndexMap.end()) {
+				mPlayers.emplace_back(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				mIndexMap[packet->objId] = mPlayers.end() - 1;
+				mMyPlayer = mPlayers.end() - 1; 
 
-		if (player->GetActiveState() == false) {
-			*player = Player(mMeshMap["HumanBaseAnim"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mBaseAnimationController);
+				mMyPlayer->SetWeapon(mGameObjects.back().Clone()); 
+
+				
+				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
+				mCameraMode->Enter();
+			}
+			// 플레이어 인스턴스가 있다면 
+			else {
+				mPlayers[packet->objId].GetTransform().GetPosition() = packet->position;
+			}
 		}
-
-		player->GetTransform().GetPosition() = packet->position;
+		// 아니라면 ( 다른 플레이어 라면 ) 
+		else {
+			// 그 플레이어 인스턴스가 없다면 
+			if (mIndexMap.find(packet->objId) == mIndexMap.end()) {
+				mPlayers.emplace_back(mMeshMap["HumanBaseAnim"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mBaseAnimationController);
+				mIndexMap[packet->objId] = mPlayers.end() - 1;
+			}
+			// 그 플레이어 인스턴스가 있다면 
+			else {
+				mPlayers[packet->objId].GetTransform().GetPosition() = packet->position;
+			}
+		}
+	}
+	// 그게 아니라면 기타 게임 오브젝트이다. 
+	else {
+		
 	}
 }
 
@@ -145,6 +174,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["StandardShader"].get();
 		object.mMesh = mMeshMap["Mountain"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
+		object.mCollider = mColliderMap["Mountain"];
 
 		object.GetTransform().GetPosition() = { 370.f,tCollider.GetHeight(370.f, 300.f) - 10.f ,300.f };
 		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(-35.f), 0.f);
@@ -156,6 +186,8 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mShader = mShaderMap["StandardShader"].get();
 		object.mMesh = mMeshMap["Sword"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("SwordMaterial");
+		object.mCollider = mColliderMap["Sword"];
+		
 
 		object.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 0.f), 0.f };
 	
@@ -174,8 +206,8 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
 	cameraTransform.Look({ 0.f,85.f,0.f });
 
-	// mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
-
+	//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+	//mCameraMode->Enter(); 
 
 
 }
@@ -202,11 +234,16 @@ void Scene::Update() {
 		if (gameObject) {
 			gameObject.UpdateShaderVariables();
 			auto [mesh, shader, modelContext] = gameObject.GetRenderData();
+
+			if (shader == nullptr) {
+				DebugBreak(); 
+			}
+
 			mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
 		}
 	}
 
-	for (auto& player : mHumanPlayers) {
+	for (auto& player : mPlayers) {
 		if (player.GetActiveState()) {
 			player.Update(mMeshRenderManager);
 		}
@@ -218,6 +255,8 @@ void Scene::Update() {
 	mMeshRenderManager->AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);
 
 	mCamera.UpdateBuffer(); 
+
+	mNetworkInfoText->GetText() = std::format(L"{}", mMyPlayer->GetBoneMaskController().GetParameter("Move")->intValue);
 }
 
 void Scene::SendNetwork() {
@@ -250,7 +289,6 @@ void Scene::SendNetwork() {
 void Scene::BuildPacketProcessor() {
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_PROTOCOL_VERSION, [this](PacketHeader* header) { ProcessPacketProtocolVersion(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_NOTIFY_ID, [this](PacketHeader* header) { ProcessNotifyId(header); });
-	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_PLAYER, [this](PacketHeader* header) { ProcessPlayerPacket(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_OBJECT, [this](PacketHeader* header) { ProcessObjectPacket(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_OBJECT_APPEARED, [this](PacketHeader* header) { ProcessObjectAppeared(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_OBJECT_DISAPPEARED, [this](PacketHeader* header) { ProcessObjectDisappeared(header); });
@@ -301,9 +339,11 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 	data = Loader.Load("Resources/Assets/Mountain/Mountain.gltf");
 	mMeshMap["Mountain"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Mountain"] = Collider{ data.position };
 	
-	data = Loader.Load("Resources/Assets/Weapon/sword/LongSword.obj");
+	data = Loader.Load("Resources/Assets/Weapon/sword/LongSword.glb");
 	mMeshMap["Sword"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Sword"] = Collider{ data.position };
 
 	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 
@@ -704,7 +744,6 @@ void Scene::BuildAniamtionController() {
 		{
 			AnimatorGraph::AnimationTransition toForward{};
 			toForward.targetStateIndex = 1;
-			toForward.blendDuration = 0.09;
 			toForward.parameterName = "Move";
 			toForward.expectedValue = 1;
 			toForward.triggerOnEnd = false;
@@ -712,7 +751,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toBackward{};
 			toBackward.targetStateIndex = 2;
-			toBackward.blendDuration = 0.09;
 			toBackward.parameterName = "Move";
 			toBackward.expectedValue = 2;
 			toBackward.triggerOnEnd = false;
@@ -720,7 +758,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toLeft{};
 			toLeft.targetStateIndex = 3;
-			toLeft.blendDuration = 0.09;
 			toLeft.parameterName = "Move";
 			toLeft.expectedValue = 3;
 			toLeft.triggerOnEnd = false;
@@ -728,7 +765,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toRight{};
 			toRight.targetStateIndex = 4;
-			toRight.blendDuration = 0.09;
 			toRight.parameterName = "Move";
 			toRight.expectedValue = 4;
 			toRight.triggerOnEnd = false;
@@ -736,7 +772,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toJump{};
 			toJump.targetStateIndex = 5;
-			toJump.blendDuration = 0.09;
 			toJump.parameterName = "Jump";
 			toJump.expectedValue = true;
 			toJump.triggerOnEnd = false;
@@ -744,7 +779,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toAttack{};
 			toAttack.targetStateIndex = 7;
-			toAttack.blendDuration = 0.09;
 			toAttack.parameterName = "Attack";
 			toAttack.expectedValue = true;
 			toAttack.triggerOnEnd = false;
@@ -760,7 +794,6 @@ void Scene::BuildAniamtionController() {
 		{
 			AnimatorGraph::AnimationTransition toIdle{};
 			toIdle.targetStateIndex = 0;
-			toIdle.blendDuration = 0.09;
 			toIdle.parameterName = "Move";
 			toIdle.expectedValue = 0;
 			toIdle.triggerOnEnd = false;
@@ -768,7 +801,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toBackward{};
 			toBackward.targetStateIndex = 2;
-			toBackward.blendDuration = 0.09;
 			toBackward.parameterName = "Move";
 			toBackward.expectedValue = 2;
 			toBackward.triggerOnEnd = false;
@@ -776,7 +808,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toLeft{};
 			toLeft.targetStateIndex = 3;
-			toLeft.blendDuration = 0.09;
 			toLeft.parameterName = "Move";
 			toLeft.expectedValue = 3;
 			toLeft.triggerOnEnd = false;
@@ -784,7 +815,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toRight{};
 			toRight.targetStateIndex = 4;
-			toRight.blendDuration = 0.09;
 			toRight.parameterName = "Move";
 			toRight.expectedValue = 4;
 			toRight.triggerOnEnd = false;
@@ -792,7 +822,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toJump{};
 			toJump.targetStateIndex = 6;
-			toJump.blendDuration = 0.09;
 			toJump.parameterName = "Jump";
 			toJump.expectedValue = true;
 			toJump.triggerOnEnd = false;
@@ -807,7 +836,6 @@ void Scene::BuildAniamtionController() {
 		{
 			AnimatorGraph::AnimationTransition toIdle{};
 			toIdle.targetStateIndex = 0;
-			toIdle.blendDuration = 0.09;
 			toIdle.parameterName = "Move";
 			toIdle.expectedValue = 0;
 			toIdle.triggerOnEnd = false;
@@ -815,7 +843,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toForward{};
 			toForward.targetStateIndex = 1;
-			toForward.blendDuration = 0.09;
 			toForward.parameterName = "Move";
 			toForward.expectedValue = 1;
 			toForward.triggerOnEnd = false;
@@ -831,7 +858,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toRight{};
 			toRight.targetStateIndex = 4;
-			toRight.blendDuration = 0.09;
 			toRight.parameterName = "Move";
 			toRight.expectedValue = 4;
 			toRight.triggerOnEnd = false;
@@ -839,7 +865,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toJump{};
 			toJump.targetStateIndex = 5;
-			toJump.blendDuration = 0.09;
 			toJump.parameterName = "Jump";
 			toJump.expectedValue = true;
 			toJump.triggerOnEnd = false;
@@ -854,7 +879,6 @@ void Scene::BuildAniamtionController() {
 		{
 			AnimatorGraph::AnimationTransition toIdle{};
 			toIdle.targetStateIndex = 0;
-			toIdle.blendDuration = 0.09;
 			toIdle.parameterName = "Move";
 			toIdle.expectedValue = 0;
 			toIdle.triggerOnEnd = false;
@@ -862,7 +886,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toForward{};
 			toForward.targetStateIndex = 1;
-			toForward.blendDuration = 0.09;
 			toForward.parameterName = "Move";
 			toForward.expectedValue = 1;
 			toForward.triggerOnEnd = false;
@@ -870,7 +893,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toBackward{};
 			toBackward.targetStateIndex = 2;
-			toBackward.blendDuration = 0.09;
 			toBackward.parameterName = "Move";
 			toBackward.expectedValue = 2;
 			toBackward.triggerOnEnd = false;
@@ -878,7 +900,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toRight{};
 			toRight.targetStateIndex = 4;
-			toRight.blendDuration = 0.09;
 			toRight.parameterName = "Move";
 			toRight.expectedValue = 4;
 			toRight.triggerOnEnd = false;
@@ -886,7 +907,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toJump{};
 			toJump.targetStateIndex = 5;
-			toJump.blendDuration = 0.09;
 			toJump.parameterName = "Jump";
 			toJump.expectedValue = true;
 			toJump.triggerOnEnd = false;
@@ -901,7 +921,6 @@ void Scene::BuildAniamtionController() {
 		{
 			AnimatorGraph::AnimationTransition toIdle{};
 			toIdle.targetStateIndex = 0;
-			toIdle.blendDuration = 0.09;
 			toIdle.parameterName = "Move";
 			toIdle.expectedValue = 0;
 			toIdle.triggerOnEnd = false;
@@ -909,7 +928,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toForward{};
 			toForward.targetStateIndex = 1;
-			toForward.blendDuration = 0.09;
 			toForward.parameterName = "Move";
 			toForward.expectedValue = 1;
 			toForward.triggerOnEnd = false;
@@ -917,7 +935,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toBackward{};
 			toBackward.targetStateIndex = 2;
-			toBackward.blendDuration = 0.09;
 			toBackward.parameterName = "Move";
 			toBackward.expectedValue = 2;
 			toBackward.triggerOnEnd = false;
@@ -925,7 +942,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toLeft{};
 			toLeft.targetStateIndex = 3;
-			toLeft.blendDuration = 0.09;
 			toLeft.parameterName = "Move";
 			toLeft.expectedValue = 3;
 			toLeft.triggerOnEnd = false;
@@ -933,7 +949,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toJump{};
 			toJump.targetStateIndex = 5;
-			toJump.blendDuration = 0.09;
 			toJump.parameterName = "Jump";
 			toJump.expectedValue = true;
 			toJump.triggerOnEnd = false;
@@ -956,7 +971,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toForward{};
 			toForward.targetStateIndex = 1;
-			toForward.blendDuration = 0.09;
 			toForward.parameterName = "Move";
 			toForward.expectedValue = 1;
 			toForward.triggerOnEnd = true;
@@ -964,7 +978,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toBackward{};
 			toBackward.targetStateIndex = 2;
-			toBackward.blendDuration = 0.09;
 			toBackward.parameterName = "Move";
 			toBackward.expectedValue = 2;
 			toBackward.triggerOnEnd = true;
@@ -972,7 +985,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toLeft{};
 			toLeft.targetStateIndex = 3;
-			toLeft.blendDuration = 0.09;
 			toLeft.parameterName = "Move";
 			toLeft.expectedValue = 3;
 			toLeft.triggerOnEnd = true;
@@ -980,7 +992,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toRight{};
 			toRight.targetStateIndex = 4;
-			toRight.blendDuration = 0.09;
 			toRight.parameterName = "Move";
 			toRight.expectedValue = 4;
 			toRight.triggerOnEnd = true;
@@ -1004,7 +1015,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toForward{};
 			toForward.targetStateIndex = 1;
-			toForward.blendDuration = 0.09;
 			toForward.parameterName = "Move";
 			toForward.expectedValue = 1;
 			toForward.triggerOnEnd = true;
@@ -1012,7 +1022,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toBackward{};
 			toBackward.targetStateIndex = 2;
-			toBackward.blendDuration = 0.09;
 			toBackward.parameterName = "Move";
 			toBackward.expectedValue = 2;
 			toBackward.triggerOnEnd = true;
@@ -1020,7 +1029,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toLeft{};
 			toLeft.targetStateIndex = 3;
-			toLeft.blendDuration = 0.09;
 			toLeft.parameterName = "Move";
 			toLeft.expectedValue = 3;
 			toLeft.triggerOnEnd = true;
@@ -1028,7 +1036,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toRight{};
 			toRight.targetStateIndex = 4;
-			toRight.blendDuration = 0.09;
 			toRight.parameterName = "Move";
 			toRight.expectedValue = 4;
 			toRight.triggerOnEnd = true;
@@ -1051,7 +1058,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toForward{};
 			toForward.targetStateIndex = 1;
-			toForward.blendDuration = 0.09;
 			toForward.parameterName = "Move";
 			toForward.expectedValue = 1;
 			toForward.triggerOnEnd = true;
@@ -1059,7 +1065,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toBackward{};
 			toBackward.targetStateIndex = 2;
-			toBackward.blendDuration = 0.09;
 			toBackward.parameterName = "Move";
 			toBackward.expectedValue = 2;
 			toBackward.triggerOnEnd = true;
@@ -1067,7 +1072,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toLeft{};
 			toLeft.targetStateIndex = 3;
-			toLeft.blendDuration = 0.09;
 			toLeft.parameterName = "Move";
 			toLeft.expectedValue = 3;
 			toLeft.triggerOnEnd = true;
@@ -1075,7 +1079,6 @@ void Scene::BuildAniamtionController() {
 
 			AnimatorGraph::AnimationTransition toRight{};
 			toRight.targetStateIndex = 4;
-			toRight.blendDuration = 0.09;
 			toRight.parameterName = "Move";
 			toRight.expectedValue = 4;
 			toRight.triggerOnEnd = true;
@@ -1173,32 +1176,57 @@ void Scene::BuildAniamtionController() {
 void Scene::SetInputBaseAnimMode() {
 	Input.EraseCallBack(mInputSign);
 
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", 1);
+	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
+
+		if (Input.GetKeyboardState().S) {
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
+		}
+		else {
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 1);
+		}
+
 		});
 
 	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
 		});
 
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::S, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", 2);
+	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::S, mInputSign, [this]() {
+
+		if (Input.GetKeyboardState().W)
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
+		else {
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 2);
+		}
+
 		});
 
 	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::S, mInputSign, [this]() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
 		});
 
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", 3);
+	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
+
+		if (Input.GetKeyboardState().D)
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
+		else {
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 3);
+		}
+
 		});
 
 	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
 		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
 		});
 
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", 4);
+	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
+
+		if (Input.GetKeyboardState().A)
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
+		else {
+			mMyPlayer->GetBoneMaskController().SetInt("Move", 4);
+		}
+	
 		});
 
 	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
@@ -1217,25 +1245,25 @@ void Scene::SetInputBaseAnimMode() {
 
 void Scene::SetInputArcherMode() {
 
-	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetBool("Move", true);
-		});
+	//Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
+	//	mMyPlayer->GetBoneMaskController().SetBool("Move", true);
+	//	});
 
-	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetBool("Move", false);
-		});
+	//Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
+	//	mMyPlayer->GetBoneMaskController().SetBool("Move", false);
+	//	});
 
 
-	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
-		});
+	//Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
+	//	});
 
-	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
-		});
-	
+	//Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
+	//	});
+	//
 
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetTrigger("Attack");
-		});
+	//Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F, mInputSign, [this]() {
+	//	mMyPlayer->GetBoneMaskController().SetTrigger("Attack");
+	//	});
 }
 
 void Scene::SetInputSwordManMode() {

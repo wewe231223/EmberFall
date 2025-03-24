@@ -40,7 +40,7 @@ float Terrain::GetHeight(float x, float z, float offset) const {
     float y0 = v00.y * (1.0f - t) + v10.y * t;
     float y1 = v01.y * (1.0f - t) + v11.y * t;
 
-    return y0 * (1.0f - u) + y1 * u;
+    return (y0 * (1.0f - u) + y1 * u) + offset;
 }
 
 float Terrain::GetHeight(const SimpleMath::Vector2& pos, float offset) const {

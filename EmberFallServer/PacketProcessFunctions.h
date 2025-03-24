@@ -9,8 +9,6 @@ inline void ProcessPacketKeyInput(PacketHeader* header, const std::shared_ptr<In
     auto keyInput = reinterpret_cast<PacketCS::PacketKeyInput*>(header);
     auto input = inputManager->GetInput(keyInput->id);
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "ProcessPacketKeyInput: Key: 0x{:x} | Down: {}", keyInput->key, keyInput->down);
-
     input->UpdateInput(keyInput->key, keyInput->down);
 }
 
@@ -19,6 +17,7 @@ inline void ProcessPacketCamera(PacketHeader* header, PlayerMap& players)
     auto cameraPacket = reinterpret_cast<PacketCS::PacketCamera*>(header);
 
     if (players.contains(cameraPacket->id)) {
+        cameraPacket->look.y = 0.0f;
         players[cameraPacket->id]->GetTransform()->SetLook(cameraPacket->look);
     }
 }
