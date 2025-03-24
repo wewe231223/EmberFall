@@ -20,6 +20,7 @@ public:
 	Player& operator=(Player&&) = default;
 public:
 	bool GetActiveState() const;
+	void SetInactive(); 
 
 	void SetWeapon(const GameObject& weapon);
 
@@ -33,6 +34,9 @@ public:
 	void SetMaterial(MaterialIndex material);
 
 	void SetBoneMaskController(AnimatorGraph::BoneMaskAnimationGraphController boneMaskController);
+
+	void SetMyPlayer();
+	
 private:
 	Mesh* mMesh{};
 	GraphicsShaderBase* mShader{};
@@ -48,4 +52,5 @@ private:
 	Collider mCollider{};
 
 	bool mActiveState{ false };
+	bool mMyPlayer{ false };
 };
