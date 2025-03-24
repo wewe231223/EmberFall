@@ -2,8 +2,8 @@
 
 namespace EntryKeys {
     inline const std::filesystem::path DEFAULT_BOX_PATH{ "../Resources/Binarys/Collider/BoundingBoxes.bin" };
-    inline constexpr std::string PLAYER_BOUNDING_BOX = "PLAYER";
-    inline constexpr std::string SWORD_BOUNDING_BOX = "LONG_SWORD";
+    inline const char* PLAYER_BOUNDING_BOX = "PLAYER";
+    inline const char* SWORD_BOUNDING_BOX = "LONG_SWORD";
 }
 
 class BoundingBoxImporter {

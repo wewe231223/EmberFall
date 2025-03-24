@@ -34,6 +34,7 @@ void IServerGameScene::DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerE
             break;
 
         case PlayerEvent::EventType::DISCONNECT:
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player Exit");
             ExitPlayer(event.id);
             break;
 
@@ -60,7 +61,6 @@ void IServerGameScene::ExitPlayer(SessionIdType id) {
     mPlayerList.pop_back();
 
     mPlayers.erase(it);
-
 
     PacketSC::PacketPlayerExit exitPacket{ sizeof(PacketSC::PacketPlayerExit), PacketType::PACKET_PLAYER_EXIT, id };
     gServerCore->SendAll(&exitPacket);
@@ -186,4 +186,8 @@ void PlayScene::ExitPlayer(SessionIdType id) {
 
     mTerrainCollider.RemoveObjectFromTerrainGroup(it->second);
     mPlayers.erase(it);
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Call Player Exit");
+
+    PacketSC::PacketPlayerExit exitPacket{ sizeof(PacketSC::PacketPlayerExit), PacketType::PACKET_PLAYER_EXIT, id };
+    gServerCore->SendAll(&exitPacket);
 }
