@@ -21,6 +21,10 @@ bool Player::GetActiveState() const {
 	return mActiveState;
 }
 
+void Player::SetInactive() {
+	mActiveState = false; 
+}
+
 void Player::SetWeapon(const GameObject& weapon) {
 	mWeapon = weapon; 
 	mWeapon.SetActiveState(true);
@@ -28,46 +32,43 @@ void Player::SetWeapon(const GameObject& weapon) {
 
 void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 
+	if (mMyPlayer) {
+		static const SimpleMath::Matrix localRotations[] = {
+			SimpleMath::Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(45.f), 0.f, 0.f),	// 상 or 하 + 우 
+			SimpleMath::Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(-45.f), 0.f, 0.f),	// 상 or 하 + 좌
+			SimpleMath::Matrix::Identity
+		};
 
-	static const SimpleMath::Matrix localRotations[] = {
-		SimpleMath::Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(45.f), 0.f, 0.f),	// 상 or 하 + 우 
-		SimpleMath::Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(-45.f), 0.f, 0.f),	// 상 or 하 + 좌
-		SimpleMath::Matrix::Identity
-	};
-
-	auto& keyboard = Input.GetKeyboardState();
-	if (keyboard.W) {
-		if (keyboard.A) {
-			mTransform.SetLocalTransform(localRotations[1]);
+		auto& keyboard = Input.GetKeyboardState();
+		if (keyboard.W) {
+			if (keyboard.A) {
+				mTransform.SetLocalTransform(localRotations[1]);
+			}
+			else if (keyboard.D) {
+				mTransform.SetLocalTransform(localRotations[0]);
+			}
+			else {
+				mTransform.SetLocalTransform(localRotations[2]);
+			}
 		}
-		else if (keyboard.D) {
-			mTransform.SetLocalTransform(localRotations[0]);
+		else if (keyboard.S) {
+			if (keyboard.A) {
+				mTransform.SetLocalTransform(localRotations[0]);
+			}
+			else if (keyboard.D) {
+				mTransform.SetLocalTransform(localRotations[1]);
+			}
+			else {
+				mTransform.SetLocalTransform(localRotations[2]);
+			}
 		}
 		else {
 			mTransform.SetLocalTransform(localRotations[2]);
 		}
-	} else if (keyboard.S) {
-		if (keyboard.A) {
-			mTransform.SetLocalTransform(localRotations[0]);
-		}
-		else if (keyboard.D) {
-			mTransform.SetLocalTransform(localRotations[1]);
-		}
-		else {
-			mTransform.SetLocalTransform(localRotations[2]);
-		}
+
+		const float XSensivity = 0.15f;
+		mTransform.Rotate(0.f, Input.GetDeltaMouseX() * Time.GetSmoothDeltaTime<float>() * XSensivity, 0.f);
 	}
-	else {
-		mTransform.SetLocalTransform(localRotations[2]);
-	}
-
-
-
-
-
-	const float XSensivity = 0.15f;
-	mTransform.Rotate(0.f, Input.GetDeltaMouseX() * Time.GetSmoothDeltaTime<float>() * XSensivity, 0.f);
-
 
 	static BoneTransformBuffer boneTransformBuffer{};
 
@@ -110,4 +111,8 @@ void Player::SetMaterial(MaterialIndex material) {
 
 void Player::SetBoneMaskController(AnimatorGraph::BoneMaskAnimationGraphController boneMaskController) {
 	mBoneMaskController = boneMaskController;
+}
+
+void Player::SetMyPlayer() {
+	mMyPlayer = true;
 }

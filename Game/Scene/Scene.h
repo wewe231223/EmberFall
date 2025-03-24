@@ -70,9 +70,15 @@ private:
 
 	int mInputSign{}; 
 
-	std::unordered_map<NetworkObjectIdType, std::vector<Player>::iterator> mIndexMap{};
-	std::vector<Player> mPlayers{};
-	std::vector<Player>::iterator mMyPlayer{}; 
+
+
+	std::unordered_map<NetworkObjectIdType, std::array<Player, 5>::iterator> mIndexMap{};
+	std::array<Player, 5> mPlayers{};
+	
+	std::array<Player, 5>::iterator mNextPlayerLoc{ mPlayers.begin() };
+	std::array<Player, 5>::iterator mMyPlayer{};
+
+
 	
 	AnimatorGraph::BoneMaskAnimationGraphController mBaseAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mArcherAnimationController{};

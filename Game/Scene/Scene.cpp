@@ -18,13 +18,6 @@
 void Scene::ProcessNotifyId(PacketHeader* header) {
 	gClientCore->InitSessionId(header->id);
 	mNetworkInfoText->GetText() = std::format(L"My Session ID : {}", header->id);
-	//mMyPlayer = mHumanPlayers.begin() + header->id;
-
-	//*mMyPlayer = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-	//mMyPlayer->SetWeapon(mGameObjects.back().Clone());
-
-	//mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
-	//mCameraMode->Enter();
 }
 
 void Scene::ProcessPacketProtocolVersion(PacketHeader* header) {
@@ -39,19 +32,21 @@ void Scene::ProcessPacketProtocolVersion(PacketHeader* header) {
 	}
 }	
 
+// Deprecated 
 void Scene::ProcessPlayerPacket(PacketHeader* header) {
-	//auto packet = reinterpret_cast<PacketSC::PacketPlayer*>(header);
 
-	//auto player = mHumanPlayers.begin() + header->id;
-
-	//if (player->GetActiveState() == false) {
-	//	*player = Player(mMeshMap["HumanBaseAnim"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mBaseAnimationController);
-	//}
-
-	//player->GetTransform().GetPosition() = packet->position;
 }
 
 void Scene::ProcessObjectPacket(PacketHeader* header) {
+	static auto FindNextPlayerLoc = [this]()  {
+		for (auto iter = mPlayers.begin(); iter != mPlayers.end(); ++iter) {
+			if (not iter->GetActiveState()) {
+				return iter;
+			}
+		}
+		return mPlayers.end();
+	};
+	
 	auto packet = reinterpret_cast<PacketSC::PacketObject*>(header);
 	
 	// 플레이어 영역에 해당한다면
@@ -59,32 +54,44 @@ void Scene::ProcessObjectPacket(PacketHeader* header) {
 		// 그게 만약 나라면 
 		if (packet->objId == gClientCore->GetSessionId()) {
 			// 플레이어 인스턴스가 없다면 
-			if (mIndexMap.find(packet->objId) == mIndexMap.end()) {
-				mPlayers.emplace_back(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-				mIndexMap[packet->objId] = mPlayers.end() - 1;
-				mMyPlayer = mPlayers.end() - 1; 
+			if (not mIndexMap.contains(packet->objId)) {
+				if (mNextPlayerLoc == mPlayers.end()) Crash("There is no more space for My Player!!");
+				
+				*mNextPlayerLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				mIndexMap[packet->objId] = mNextPlayerLoc; 
+				mMyPlayer = mNextPlayerLoc;
+
+
+
+				mNextPlayerLoc = FindNextPlayerLoc();
+
+
 
 				mMyPlayer->SetWeapon(mGameObjects.back().Clone()); 
-
+				mMyPlayer->SetMyPlayer();
 				
 				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
 				mCameraMode->Enter();
 			}
 			// 플레이어 인스턴스가 있다면 
 			else {
-				mPlayers[packet->objId].GetTransform().GetPosition() = packet->position;
+				mIndexMap[packet->objId]->GetTransform().GetPosition() = packet->position;
 			}
 		}
 		// 아니라면 ( 다른 플레이어 라면 ) 
 		else {
-			// 그 플레이어 인스턴스가 없다면 
-			if (mIndexMap.find(packet->objId) == mIndexMap.end()) {
-				mPlayers.emplace_back(mMeshMap["HumanBaseAnim"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mBaseAnimationController);
-				mIndexMap[packet->objId] = mPlayers.end() - 1;
+			// 그 플레이어 인스턴스가 없다면  
+			if (not mIndexMap.contains(packet->objId)) {
+				if (mNextPlayerLoc == mPlayers.end()) Crash("There is no more space for Other Player!!");
+
+				*mNextPlayerLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				mIndexMap[packet->objId] = mNextPlayerLoc;
+
+				mNextPlayerLoc = FindNextPlayerLoc(); 
 			}
 			// 그 플레이어 인스턴스가 있다면 
 			else {
-				mPlayers[packet->objId].GetTransform().GetPosition() = packet->position;
+				mIndexMap[packet->objId]->GetTransform().GetPosition() = packet->position;
 			}
 		}
 	}
@@ -107,7 +114,10 @@ void Scene::ProcessObjectDisappeared(PacketHeader* header) {
 }
 
 void Scene::ProcessPlayerExit(PacketHeader* header) {
-
+	if (mIndexMap.contains(header->id)) {
+		mIndexMap[header->id]->SetInactive();
+		mIndexMap.erase(header->id);
+	}
 }
 
 void Scene::ProcessAcquiredItem(PacketHeader* header) {
@@ -209,6 +219,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 	//mCameraMode->Enter(); 
 
+	
 
 }
 
@@ -242,7 +253,7 @@ void Scene::Update() {
 			mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
 		}
 	}
-
+ 
 	for (auto& player : mPlayers) {
 		if (player.GetActiveState()) {
 			player.Update(mMeshRenderManager);
@@ -256,7 +267,6 @@ void Scene::Update() {
 
 	mCamera.UpdateBuffer(); 
 
-	mNetworkInfoText->GetText() = std::format(L"{}", mMyPlayer->GetBoneMaskController().GetParameter("Move")->intValue);
 }
 
 void Scene::SendNetwork() {
