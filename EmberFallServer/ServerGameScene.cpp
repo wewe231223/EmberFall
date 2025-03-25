@@ -153,6 +153,8 @@ void PlayScene::Update(const float deltaTime) {
 }
 
 void PlayScene::LateUpdate(const float deltaTime) { 
+    std::erase_if(mPlayerList, [=](const std::shared_ptr<GameObject>& obj) { return not obj->IsActive(); });
+
     for (auto& [id, obj] : mPlayers) {
         obj->LateUpdate(deltaTime);
     }
@@ -164,10 +166,12 @@ void PlayScene::LateUpdate(const float deltaTime) {
 
 void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
     mPlayers[id] = playerObject;
-    mPlayerList.push_back(playerObject);
+    mPlayerList.emplace_back(playerObject);
 
     playerObject->GetComponent<PlayerScript>()->ResetGameScene(shared_from_this());
-    playerObject->GetTransform()->Translate(Random::GetRandomVec3(-100.0f, 100.0f));
+    auto randPos = Random::GetRandomVec3(-50.0f, 50.0f);
+    randPos.y = 0.0f;
+    playerObject->GetTransform()->Translate(randPos);
 
     mTerrainCollider.AddObjectInTerrainGroup(playerObject);
 
@@ -179,10 +183,8 @@ void PlayScene::ExitPlayer(SessionIdType id) {
     if (it == mPlayers.end()) {
         return;
     }
-
-    auto objSearch = std::find(mPlayerList.begin(), mPlayerList.end(), it->second);
-    std::swap(*objSearch, mPlayerList.back());
-    mPlayerList.pop_back();
+    
+    it->second->SetActive(false);
 
     mTerrainCollider.RemoveObjectFromTerrainGroup(it->second);
     mPlayers.erase(it);
