@@ -34,7 +34,7 @@ void DefferedRenderer::RegisterGBufferTexture(ComPtr<ID3D12Device> device, const
 }
 
 void DefferedRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList) {
-	mDefferedShader.SetShader(commandList);
+	mDefferedShader.SetGPassShader(commandList);
 
 	commandList->SetDescriptorHeaps(1, mGBufferSRVHeap.GetAddressOf());
 

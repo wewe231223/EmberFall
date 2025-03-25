@@ -42,6 +42,7 @@ struct StandardAnimation_VIN
 struct StandardAnimation_PIN
 {
     float4 position : SV_POSITION;
+    float3 wPosition : POSITION;
     float3 normal : NORMAL;
     float2 texcoord : TEXCOORD;
     uint material : MATERIALID;
@@ -84,6 +85,7 @@ StandardAnimation_PIN StandardAnimation_VS(StandardAnimation_VIN input) {
     output.position = mul(float4(input.position, 1.0f), boneTransform);
         
     output.position = mul(output.position, modelContext.world);
+    output.wPosition = output.position.xyz;
     output.position = mul(output.position, viewProjection);
     
     output.normal = normalize(mul(input.normal, (float3x3)boneTransform));
@@ -100,6 +102,6 @@ Deffered_POUT StandardAnimation_PS(StandardAnimation_PIN input) {
     output.diffuse = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord);
     // color += materialConstants[input.material].diffuse;
     
-    
+    output.position = float4(input.wPosition, 1.0f);
     return output;
 }

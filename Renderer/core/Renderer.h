@@ -19,6 +19,7 @@
 #include "../Manager/TextureManager.h"
 #include "../Resource/Mesh.h"
 #include "../Renderer/Core/StringRenderer.h"
+#include "../Renderer/Core/ShadowRenderer.h"
 
 class Renderer {
 public:
@@ -41,7 +42,6 @@ public:
 
 	void Update();
 
-	void PrepareRender();
 	void Render();
 private:
 	void InitFactory();
@@ -56,6 +56,8 @@ private:
 
 	void InitStringRenderer(); 
 	void InitFonts(); 
+
+	void InitShadowRenderer();
 
 	void InitCoreResources(); 
 	void InitDefferedRenderer();
@@ -91,7 +93,7 @@ private:
 	UINT mRTIndex{ 0 };
 
 	StringRenderer mStringRenderer{}; 
-
+	ShadowRenderer mShadowRenderer{};
 	/*
 	1. diffuse 
 	2. normal

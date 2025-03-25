@@ -115,7 +115,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             scene.Update();
             scene.SendNetwork(); 
 
-            renderer.PrepareRender();
             renderer.Render();
 
             // 게임 루프... 

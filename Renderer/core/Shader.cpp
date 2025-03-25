@@ -385,6 +385,13 @@ void GraphicsShaderBase::CreateShader(ComPtr<ID3D12Device> device) {
 	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPipelineState)));
+
+	psoDesc.PS = { nullptr, 0 };
+	psoDesc.NumRenderTargets = 0;
+	std::memset(psoDesc.RTVFormats, DXGI_FORMAT_UNKNOWN, sizeof(DXGI_FORMAT) * 8);
+	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mShadowPipelineState)));
 }
 
 UINT GraphicsShaderBase::GetShaderID() const {
@@ -395,7 +402,12 @@ const std::bitset<8>& GraphicsShaderBase::GetAttribute() const {
 	return mAttribute;
 }
 
-void GraphicsShaderBase::SetShader(ComPtr<ID3D12GraphicsCommandList> commandList) {
+void GraphicsShaderBase::SetShadowPassShader(ComPtr<ID3D12GraphicsCommandList> commandList) {
+	commandList->SetPipelineState(mShadowPipelineState.Get());
+	commandList->SetGraphicsRootSignature(mRootSignature.Get());
+}
+
+void GraphicsShaderBase::SetGPassShader(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	commandList->SetPipelineState(mPipelineState.Get());
 	commandList->SetGraphicsRootSignature(mRootSignature.Get());
 }
