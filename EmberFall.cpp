@@ -77,11 +77,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     int n = NonReplacementSampler::GetInstance().Sample();
 
-	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::Escape, n, []() {
+	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::Escape, n, []() {
 		PostQuitMessage(0);
 		});
 
-    Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::F2, n, []() {Input.ToggleVirtualMouse(); });
+    Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F2, n, []() {Input.ToggleVirtualMouse(); });
 
 	size_t frameCount = 0;
 
