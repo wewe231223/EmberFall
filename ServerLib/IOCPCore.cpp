@@ -57,6 +57,7 @@ void IOCPCore::IOWorker() {
             overlappedEx->owner.reset();
             if (IOType::ACCEPT == overlappedEx->type) {
                 gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Accept Error!!");
+                gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "{}", NetworkUtil::WSAErrorMessage());
                 Crash("Accept Error");
             }
             else if (IOType::CONNECT == overlappedEx->type) {

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "WeaponSystem.h"
+#include "BoundingBoxImporter.h"
 
 WeaponSystem::WeaponSystem() { }
 
@@ -22,6 +23,7 @@ void WeaponSystem::SetWeapon(Weapon weapon) {
         break;
 
     case Weapon::SWORD:
+        //mWeapon = std::make_shared<Weapons::Sword>(BoundingBoxImporter::GetBoundingBox(EntryKeys::SWORD_BOUNDING_BOX));
         mWeapon = std::make_shared<Weapons::Sword>(SimpleMath::Vector3{ 0.5f });
         break;
 

@@ -307,7 +307,7 @@ void Scene::BuildPacketProcessor() {
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_USE_ITEM, [this](PacketHeader* header) { ProcessUseItem(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_PLAYER_EXIT, [this](PacketHeader* header) { ProcessPlayerExit(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_ATTACKED, [this](PacketHeader* header) { ProcessObjectAttacked(header); });
-	mPacketProcessor.RegisterProcessFn(PacketType::PAKCET_ACQUIRED_ITEM, [this](PacketHeader* header) { ProcessAcquiredItem(header); });
+	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_ACQUIRED_ITEM, [this](PacketHeader* header) { ProcessAcquiredItem(header); });
 }
 
 void Scene::BuildSendKeyList() {
