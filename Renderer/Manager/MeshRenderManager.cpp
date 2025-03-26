@@ -36,9 +36,6 @@ void MeshRenderManager::AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh*
 }
 
 void MeshRenderManager::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList) {
-
-
-
 	DefaultBufferCPUIterator it{ mPlainMeshBuffer.CPUBegin() };
 
 	for (auto& [shader, meshContexts] : mPlainMeshReserved) {
@@ -76,10 +73,15 @@ void MeshRenderManager::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandL
 	mAnimationBuffer.Upload(commandList, mAnimationBuffer.CPUBegin(), it);
 }
 
+void MeshRenderManager::RenderShadowPass(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
+	MeshRenderManager::RenderShadowPassPlainMesh(commandList, mat, camera);
+	MeshRenderManager::RenderShadowPassBonedMesh(commandList, mat, camera);
+}
+
 // 복사 2 
-void MeshRenderManager::Render(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
-	MeshRenderManager::RenderPlainMesh(commandList,tex,mat,camera);
-	MeshRenderManager::RenderBonedMesh(commandList,tex,mat,camera);
+void MeshRenderManager::RenderGPass(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
+	MeshRenderManager::RenderGPassPlainMesh(commandList, tex, mat, camera);
+	MeshRenderManager::RenderGPassBonedMesh(commandList, tex, mat, camera);
 }
 
 void MeshRenderManager::Reset(){
@@ -91,11 +93,67 @@ void MeshRenderManager::Reset(){
 	mPlainMeshContexts.clear(); 
 }
 
-void MeshRenderManager::RenderPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
+void MeshRenderManager::RenderShadowPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
+	auto gpuIt = mPlainMeshBuffer.GPUBegin() + static_cast<std::ptrdiff_t>(MeshRenderManager::RESERVED_CONTEXT_SLOT);
+
+	for (auto& [shader, meshContexts] : mPlainMeshContexts) {
+		shader->SetShadowPassShader(commandList);
+		commandList->SetGraphicsRootConstantBufferView(0, camera);
+		commandList->SetGraphicsRootShaderResourceView(2, mat);
+
+		for (auto& [mesh, worlds] : meshContexts) {
+
+			mesh->Bind(commandList, shader->GetAttribute());
+
+			commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
+
+			if (mesh->GetIndexed()) {
+				commandList->DrawIndexedInstanced(mesh->GetUnitCount(), static_cast<UINT>(worlds.size()), 0, 0, 0);
+			}
+			else {
+				commandList->DrawInstanced(mesh->GetUnitCount(), static_cast<UINT>(worlds.size()), 0, 0);
+			}
+
+			gpuIt += worlds.size();
+		}
+	}
+}
+
+void MeshRenderManager::RenderShadowPassBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
+	DefaultBufferGPUIterator boneIt{ mAnimationBuffer.GPUBegin() };
+	DefaultBufferGPUIterator gpuIt{ mBonedMeshBuffer.GPUBegin() };
+
+	for (auto& [shader, meshContexts] : mBonedMeshContexts) {
+
+		shader->SetShadowPassShader(commandList);
+
+		commandList->SetGraphicsRootConstantBufferView(0, camera);
+		commandList->SetGraphicsRootShaderResourceView(2, mat);
+		commandList->SetGraphicsRootShaderResourceView(4, *boneIt);
+
+		for (auto& [mesh, worlds] : meshContexts) {
+			mesh->Bind(commandList, shader->GetAttribute());
+
+			commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
+
+			if (mesh->GetIndexed()) {
+				commandList->DrawIndexedInstanced(mesh->GetUnitCount(), static_cast<UINT>(worlds.size()), 0, 0, 0);
+			}
+			else {
+				commandList->DrawInstanced(mesh->GetUnitCount(), static_cast<UINT>(worlds.size()), 0, 0);
+			}
+
+			gpuIt += worlds.size();
+		}
+	}
+
+}
+
+void MeshRenderManager::RenderGPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
 	DefaultBufferGPUIterator gpuIt{ mPlainMeshBuffer.GPUBegin() };
 
 	for (auto& [shader, meshContexts] : mPlainMeshReserved) {
-		shader->SetShader(commandList);
+		shader->SetGPassShader(commandList);
 		commandList->SetGraphicsRootConstantBufferView(0, camera);
 		commandList->SetGraphicsRootShaderResourceView(2, mat);
 		commandList->SetGraphicsRootDescriptorTable(3, tex);
@@ -120,7 +178,7 @@ void MeshRenderManager::RenderPlainMesh(ComPtr<ID3D12GraphicsCommandList> comman
 	gpuIt = mPlainMeshBuffer.GPUBegin() + static_cast<std::ptrdiff_t>(MeshRenderManager::RESERVED_CONTEXT_SLOT);
 
 	for (auto& [shader, meshContexts] : mPlainMeshContexts) {
-		shader->SetShader(commandList);
+		shader->SetGPassShader(commandList);
 		commandList->SetGraphicsRootConstantBufferView(0, camera); 
 		commandList->SetGraphicsRootShaderResourceView(2, mat);
 		commandList->SetGraphicsRootDescriptorTable(3, tex);
@@ -146,7 +204,7 @@ void MeshRenderManager::RenderPlainMesh(ComPtr<ID3D12GraphicsCommandList> comman
 	gpuIt = mPlainMeshBuffer.GPUBegin() + static_cast<std::ptrdiff_t>(MeshRenderManager::RESERVED_CONTEXT_SLOT);
 
 
-	mStandardBoundingBoxRenderShader->SetShader(commandList);
+	mStandardBoundingBoxRenderShader->SetGPassShader(commandList);
 
 	commandList->IASetVertexBuffers(0, 0, nullptr);
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
@@ -165,14 +223,14 @@ void MeshRenderManager::RenderPlainMesh(ComPtr<ID3D12GraphicsCommandList> comman
 
 }
 
-void MeshRenderManager::RenderBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
+void MeshRenderManager::RenderGPassBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
 
 	DefaultBufferGPUIterator boneIt{ mAnimationBuffer.GPUBegin() };
 	DefaultBufferGPUIterator gpuIt{ mBonedMeshBuffer.GPUBegin() };
 
 	for (auto& [shader, meshContexts] : mBonedMeshContexts) {
 
-		shader->SetShader(commandList);
+		shader->SetGPassShader(commandList);
 
 		commandList->SetGraphicsRootConstantBufferView(0, camera);
 		commandList->SetGraphicsRootShaderResourceView(2, mat);
@@ -198,7 +256,7 @@ void MeshRenderManager::RenderBonedMesh(ComPtr<ID3D12GraphicsCommandList> comman
 	gpuIt = mBonedMeshBuffer.GPUBegin(); 
 
 
-	mSkeletonBoundingboxRenderShader->SetShader(commandList);
+	mSkeletonBoundingboxRenderShader->SetGPassShader(commandList);
 	
 	commandList->IASetVertexBuffers(0, 0, nullptr);
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST); 

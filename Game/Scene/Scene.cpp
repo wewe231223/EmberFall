@@ -61,7 +61,7 @@ void Scene::ProcessObjectPacket(PacketHeader* header) {
 				mIndexMap[packet->objId] = mNextPlayerLoc; 
 				mMyPlayer = mNextPlayerLoc;
 
-
+				mMyPlayer->GetTransform().Scaling(10.f, 10.f, 10.f);
 
 				mNextPlayerLoc = FindNextPlayerLoc();
 
@@ -240,6 +240,8 @@ void Scene::ProcessNetwork() {
 void Scene::Update() {
 	// mMyPlayer->GetTransform().GetPosition().y = tCollider.GetHeight(mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().z);
 	
+	mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().y, mMyPlayer->GetTransform().GetPosition().z);
+
 	if (mCameraMode) {
 		mCameraMode->Update();
 	}

@@ -385,6 +385,13 @@ void GraphicsShaderBase::CreateShader(ComPtr<ID3D12Device> device) {
 	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPipelineState)));
+
+	psoDesc.PS = { nullptr, 0 };
+	psoDesc.NumRenderTargets = 0;
+	std::memset(psoDesc.RTVFormats, DXGI_FORMAT_UNKNOWN, sizeof(DXGI_FORMAT) * 8);
+	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mShadowPipelineState)));
 }
 
 UINT GraphicsShaderBase::GetShaderID() const {
@@ -395,7 +402,12 @@ const std::bitset<8>& GraphicsShaderBase::GetAttribute() const {
 	return mAttribute;
 }
 
-void GraphicsShaderBase::SetShader(ComPtr<ID3D12GraphicsCommandList> commandList) {
+void GraphicsShaderBase::SetShadowPassShader(ComPtr<ID3D12GraphicsCommandList> commandList) {
+	commandList->SetPipelineState(mShadowPipelineState.Get());
+	commandList->SetGraphicsRootSignature(mRootSignature.Get());
+}
+
+void GraphicsShaderBase::SetGPassShader(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	commandList->SetPipelineState(mPipelineState.Get());
 	commandList->SetGraphicsRootSignature(mRootSignature.Get());
 }
@@ -803,18 +815,23 @@ GraphicsShaderBase::InputLayout DefferedShader::CreateInputLayout() {
 GraphicsShaderBase::RootParameters DefferedShader::CreateRootParameters() {
 	GraphicsShaderBase::RootParameters params{};
 
+	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	params.Parameters[0].Descriptor.ShaderRegister = 0;
+	params.Parameters[0].Descriptor.RegisterSpace = 0;
+	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
 	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	params.Ranges[0].NumDescriptors = Config::GBUFFER_COUNT<UINT>;
+	params.Ranges[0].NumDescriptors = Config::GBUFFER_COUNT<UINT> + 1 ; // Shadow Map
 	params.Ranges[0].BaseShaderRegister = 0;
 	params.Ranges[0].RegisterSpace = 0;
 	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	params.Parameters[0].DescriptorTable.NumDescriptorRanges = 1;
-	params.Parameters[0].DescriptorTable.pDescriptorRanges = params.Ranges.data();
-	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[1].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[1].DescriptorTable.pDescriptorRanges = params.Ranges.data();
+	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.ParameterCount = 1;
+	params.ParameterCount = 2;
 
 	return params;
 }

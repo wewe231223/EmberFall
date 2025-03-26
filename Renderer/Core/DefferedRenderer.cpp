@@ -5,7 +5,7 @@
 
 DefferedRenderer::DefferedRenderer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	D3D12_DESCRIPTOR_HEAP_DESC desc{};
-	desc.NumDescriptors = Config::GBUFFER_COUNT<UINT>;
+	desc.NumDescriptors = Config::GBUFFER_COUNT<UINT> + 1;
 	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
@@ -33,8 +33,23 @@ void DefferedRenderer::RegisterGBufferTexture(ComPtr<ID3D12Device> device, const
 
 }
 
-void DefferedRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList) {
-	mDefferedShader.SetShader(commandList);
+void DefferedRenderer::RegisterShadowMap(ComPtr<ID3D12Device> device, Texture& shadowMap) {
+	D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
+	desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	desc.Texture2D.MipLevels = 1;
+	desc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE handle{ mGBufferSRVHeap->GetCPUDescriptorHandleForHeapStart() };
+
+	auto descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+	handle.Offset(Config::GBUFFER_COUNT<>, descriptorSize);
+	device->CreateShaderResourceView(shadowMap.GetResource().Get(), &desc, handle);
+}
+
+void DefferedRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator shadowCameraBuffer) {
+	mDefferedShader.SetGPassShader(commandList);
 
 	commandList->SetDescriptorHeaps(1, mGBufferSRVHeap.GetAddressOf());
 
@@ -43,7 +58,8 @@ void DefferedRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList) {
 
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	commandList->SetGraphicsRootDescriptorTable(0, mGBufferSRVHeap->GetGPUDescriptorHandleForHeapStart());
+	commandList->SetGraphicsRootConstantBufferView(0, *shadowCameraBuffer);
+	commandList->SetGraphicsRootDescriptorTable(1, mGBufferSRVHeap->GetGPUDescriptorHandleForHeapStart());
 
 	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }

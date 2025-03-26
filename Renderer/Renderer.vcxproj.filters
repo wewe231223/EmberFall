@@ -63,6 +63,9 @@
     <ClCompile Include="Core\StringRenderer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Core\ShadowRenderer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -99,6 +102,9 @@
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Core\StringRenderer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\ShadowRenderer.h">
       <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>

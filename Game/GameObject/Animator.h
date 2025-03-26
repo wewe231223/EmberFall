@@ -254,9 +254,7 @@ namespace AnimatorGraph {
     class BoneMaskAnimationGraphController {
     public:
         BoneMaskAnimationGraphController() = default;
-        BoneMaskAnimationGraphController(const std::vector<const AnimationClip*>& clips,
-            const std::vector<UINT>& boneMask,
-            const std::vector<BoneMaskAnimationState>& states);
+        BoneMaskAnimationGraphController(const std::vector<const AnimationClip*>& clips, const std::vector<UINT>& boneMask, const std::vector<BoneMaskAnimationState>& states);
         ~BoneMaskAnimationGraphController() = default;
 
         void Update(double deltaTime, BoneTransformBuffer& boneTransforms);

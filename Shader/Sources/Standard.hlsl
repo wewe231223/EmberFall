@@ -39,6 +39,7 @@ struct Standard_VIN
 struct Standard_VOUT
 {
     float4 position : SV_POSITION;
+    float3 wPosition : POSITION;
     float3 normal : NORMAL;
     float2 texcoord : TEXCOORD;
     uint material : MATERIALID;
@@ -68,9 +69,11 @@ Standard_VOUT Standard_VS(Standard_VIN input) {
 
     Standard_VOUT output;
     output.position = mul(float4(input.position, 1.f), modelContext.world);
+    output.wPosition = output.position.xyz; 
     //output.position = mul(output.position, view);
     //output.position = mul(output.position, projection);
     output.position = mul(output.position, viewProjection);
+    
     
     output.normal = mul(input.normal, (float3x3)modelContext.world);
     output.texcoord = input.texcoord;
@@ -91,5 +94,7 @@ Deffered_POUT Standard_PS(Standard_VOUT input) {
     }
     
     output.diffuse = color;
+    output.position = float4(input.wPosition, 1.0f);
+    
     return output;
 }

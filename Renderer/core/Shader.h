@@ -72,7 +72,9 @@ public:
 
 	virtual UINT GetShaderID() const;
 	const std::bitset<8>& GetAttribute() const;
-	void SetShader(ComPtr<ID3D12GraphicsCommandList> commandList);
+
+	void SetShadowPassShader(ComPtr<ID3D12GraphicsCommandList> commandList);
+	void SetGPassShader(ComPtr<ID3D12GraphicsCommandList> commandList);
 protected:
 
 	virtual InputLayout CreateInputLayout();
@@ -96,6 +98,8 @@ protected:
 private:
 	ComPtr<ID3D12RootSignature> mRootSignature{};
 	ComPtr<ID3D12PipelineState> mPipelineState{};
+
+	ComPtr<ID3D12PipelineState> mShadowPipelineState{};
 };
 
 

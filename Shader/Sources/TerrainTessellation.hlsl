@@ -56,6 +56,7 @@ struct Terrain_DIN
 struct Terrain_PIN
 {
     float4 position : SV_POSITION;
+    float3 wPosition : POSITION;
     float2 texcoord1 : TEXCOORD0;
     float2 texcoord2 : TEXCOORD1;
     uint material : MATERIALID;
@@ -200,6 +201,7 @@ Terrain_PIN Terrain_DS(PatchTessFactor patchTess, float2 uv : SV_DomainLocation,
     
     output.position = float4(CubicBezierSum(patch, basisU, basisV), 1.f);
     output.position = mul(output.position, world);
+    output.wPosition = output.position.xyz;
     output.position = mul(output.position, viewProjection);
     output.material = material;
     
@@ -233,6 +235,7 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
     Color = saturate(BaseColor * 0.6f + DetailColor * 0.4f);
     
     output.diffuse = Color;
+    output.position = float4(input.wPosition, 1.f);
     
     return output;
     

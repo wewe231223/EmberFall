@@ -171,6 +171,7 @@ void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerOb
     playerObject->GetComponent<PlayerScript>()->ResetGameScene(shared_from_this());
     auto randPos = Random::GetRandomVec3(-50.0f, 50.0f);
     randPos.y = 0.0f;
+
     playerObject->GetTransform()->Translate(randPos);
 
     mTerrainCollider.AddObjectInTerrainGroup(playerObject);

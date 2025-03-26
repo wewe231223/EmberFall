@@ -9,6 +9,13 @@ concept HasIndex = requires {
 	{ T::index } -> std::convertible_to<size_t>;
 };
 
+struct CameraConstants {
+    SimpleMath::Matrix view;
+    SimpleMath::Matrix proj;
+    SimpleMath::Matrix viewProj;
+    SimpleMath::Vector3 cameraPosition;
+};
+
 using MaterialIndex = UINT;
 
 struct ModelContext {

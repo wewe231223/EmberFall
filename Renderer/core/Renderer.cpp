@@ -7,13 +7,6 @@
 #include "../Utility/Crash.h"
 #define DIRECTWRITE
 
-struct CameraConstants {
-	SimpleMath::Matrix view;
-	SimpleMath::Matrix proj;
-	SimpleMath::Matrix viewProj;
-	SimpleMath::Vector3 cameraPosition;
-};
-
 Renderer::Renderer(HWND rendererWindowHandle)
 	: mRendererWindow(rendererWindowHandle) {
 
@@ -32,6 +25,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitRenderTargets();
 	Renderer::InitDepthStencilBuffer();
 	Renderer::InitStringRenderer();
+	Renderer::InitShadowRenderer();
 
 	Renderer::ResetCommandList();
 
@@ -79,18 +73,49 @@ void Renderer::Update() {
 	// Update... 
 }
 
-void Renderer::PrepareRender() {
+
+void Renderer::Render() {
 	Renderer::ResetCommandList();
+	D3D12_VIEWPORT viewport{};
+
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = 1000.f;
+	viewport.Height = 1000.f;
+	viewport.MinDepth = 0.f;
+	viewport.MaxDepth = 1.f;
+
+	//viewport.TopLeftX = 0;
+	//viewport.TopLeftY = 0;
+	//viewport.Width = Config::WINDOW_WIDTH<float>;
+	//viewport.Height = Config::WINDOW_HEIGHT<float>;
+	//viewport.MinDepth = 0.f;
+	//viewport.MaxDepth = 1.f;
+
+	D3D12_RECT scissorRect{};
+	scissorRect.left = 0;
+	scissorRect.top = 0;
+	scissorRect.right = Config::WINDOW_WIDTH<LONG>;
+	scissorRect.bottom = Config::WINDOW_HEIGHT<LONG>;
+
+	mCommandList->RSSetViewports(1, &viewport);
+	mCommandList->RSSetScissorRects(1, &scissorRect);
+
+	mMainCameraBuffer.Upload(mCommandList);
+	mMeshRenderManager->PrepareRender(mCommandList);
+
+
+	mShadowRenderer.SetShadowDSV(mCommandList);
+	mShadowRenderer.Update(mCommandList, mMainCameraBuffer.CPUBegin());
+
+	mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer.GetShadowCameraBuffer());
+	// mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
+
+	// G-Buffer Pass 
 	auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-
-	//auto& currentBackBuffer = mRenderTargets[mRTIndex];
-	//CD3DX12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(currentBackBuffer.GetResource().Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET) };
-	//mCommandList->ResourceBarrier(1, &barrier);
-
 	auto dsvHandle = mDSHeap->GetCPUDescriptorHandleForHeapStart();
 	mCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-	// deffered 
 	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	CD3DX12_CPU_DESCRIPTOR_HANDLE gBufferHandle{ mGBufferHeap->GetCPUDescriptorHandleForHeapStart() };
 	D3D12_CPU_DESCRIPTOR_HANDLE gBufferHandles[] = {
@@ -104,55 +129,22 @@ void Renderer::PrepareRender() {
 
 	mCommandList->OMSetRenderTargets(3, gBufferHandles, FALSE, &dsvHandle);
 
-	// forward 
-	//CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mRTIndex), rtvDescriptorSize };
-	//mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
-	//mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
-
-	D3D12_VIEWPORT viewport{};
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.Width = Config::WINDOW_WIDTH<float>;
-	viewport.Height = Config::WINDOW_HEIGHT<float>;
-	viewport.MinDepth = 0.f;
-	viewport.MaxDepth = 1.f;
-
-	D3D12_RECT scissorRect{};
-	scissorRect.left = 0;
-	scissorRect.top = 0;
-	scissorRect.right = Config::WINDOW_WIDTH<LONG>;
-	scissorRect.bottom = Config::WINDOW_HEIGHT<LONG>;
-
-	mCommandList->RSSetViewports(1, &viewport);
-	mCommandList->RSSetScissorRects(1, &scissorRect);
-
-
-	mMainCameraBuffer.Upload(mCommandList); 
-	mMeshRenderManager->PrepareRender(mCommandList);
-}
-
-void Renderer::Render() {
 	auto& currentBackBuffer = mRenderTargets[mRTIndex];
 
 	mTextureManager->Bind(mCommandList);
-	mMeshRenderManager->Render(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin() );
+	mMeshRenderManager->RenderGPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin() );
 	mMeshRenderManager->Reset();
 
-	// Rendering End
-//	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
-	
-
-	// Deffered Rendering
+	// Deffered Rendering Pass 
+	mShadowRenderer.TransitionShadowMap(mCommandList);
 	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-
-	auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mRTIndex), rtvDescriptorSize };
 	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
-	mDefferedRenderer.Render(mCommandList);
+	mDefferedRenderer.Render(mCommandList, mShadowRenderer.GetShadowCameraBuffer());
 #ifndef DIRECTWRITE 
 	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
@@ -377,6 +369,10 @@ void Renderer::InitFonts() {
 	mStringRenderer.LoadExternalFont("NotoSansKR", "Resources/Font/NotoSansKR-Regular-Hestia.otf", L"Noto Sans KR", L"ko-kr");
 }
 
+void Renderer::InitShadowRenderer() {
+	mShadowRenderer = ShadowRenderer(mDevice);
+}
+
 void Renderer::InitCoreResources() {
 	mMeshRenderManager = std::make_shared<MeshRenderManager>(mDevice);
 	mTextureManager = std::make_shared<TextureManager>(mDevice, mCommandList);
@@ -390,6 +386,7 @@ void Renderer::InitDefferedRenderer() {
 	mDefferedRenderer = DefferedRenderer(mDevice, mCommandList);
 
 	mDefferedRenderer.RegisterGBufferTexture(mDevice, mGBuffers);
+	mDefferedRenderer.RegisterShadowMap(mDevice, mShadowRenderer.GetShadowMap());
 
 }
 
