@@ -12,6 +12,7 @@
 #endif
 
 class MeshRenderManager {
+public:
 	template<typename T>
 	static constexpr T MAX_INSTANCE_COUNT = static_cast<T>(2048);
 

@@ -81,7 +81,6 @@ namespace AnimatorGraph {
     };
 
     struct AnimationState {
-        size_t stateIndex;
         std::string name;
         const AnimationClip* clip;
         double speed{ 1.0 };

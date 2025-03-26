@@ -58,13 +58,7 @@ float ComputeShadowFactor(float3 worldPos)
 float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 {
 
-    return float4(GBuffers[3].Sample(linearClampSampler, input.texcoord).rrr, 1.0);
+    // return float4(GBuffers[3].Sample(linearClampSampler, input.texcoord).rrr, 1.0);
     
-    float4 diffuse = GBuffers[0].Sample(linearClampSampler, input.texcoord);
-    float3 worldPos = GBuffers[2].Sample(linearClampSampler, input.texcoord).rgb;
-    
-
-    float shadowFactor = (length(worldPos) == 0.0) ? 1.0 : ComputeShadowFactor(worldPos);
-    
-    return float4(diffuse.rgb * shadowFactor, 1.0);
+    return float4(GBuffers[0].Sample(linearClampSampler, input.texcoord).rgb, 1.0);
 }

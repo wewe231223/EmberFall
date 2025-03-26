@@ -44,7 +44,7 @@ private:
 
 	Transform mTransform{};
 
-	bool mActiveState{ true };
+	bool mActiveState{ false };
 };
 #else 
 

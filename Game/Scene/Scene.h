@@ -30,6 +30,13 @@ private:
 	void BuildShader(ComPtr<ID3D12Device> device);
 	void BuildAniamtionController(); 
 
+	void BuildBaseAnimationController();
+	void BuildArcherAnimationController();
+	void BuildSwordManAnimationController();
+	void BuildMageAnimationController();
+
+	void BuildMonsterType1AnimationController();
+
 	void SetInputBaseAnimMode(); 
 	void SetInputArcherMode(); 
 	void SetInputSwordManMode();
@@ -62,6 +69,8 @@ private:
 	Camera mCamera{};
 	std::unique_ptr<CameraMode> mCameraMode{ nullptr };
 
+
+	std::unordered_map<NetworkObjectIdType, std::vector<GameObject>::iterator> mGameObjectMap{};
 	std::vector<GameObject> mGameObjects{};
 
 	int mNetworkSign{};
@@ -85,7 +94,9 @@ private:
 	AnimatorGraph::BoneMaskAnimationGraphController mSwordManAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mMageAnimationController{};
 
-	GameObject mSkyBox{}; 
+	AnimatorGraph::AnimationGraphController mMonsterType1AnimationController{}; 
+
+	GameObject mSkyBox{};
 
 	TerrainLoader tLoader{}; 
 	TerrainCollider tCollider{};

@@ -78,19 +78,14 @@ void Renderer::Render() {
 	Renderer::ResetCommandList();
 	D3D12_VIEWPORT viewport{};
 
+
+
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = 1000.f;
-	viewport.Height = 1000.f;
+	viewport.Width = Config::WINDOW_WIDTH<float>;
+	viewport.Height = Config::WINDOW_HEIGHT<float>;
 	viewport.MinDepth = 0.f;
 	viewport.MaxDepth = 1.f;
-
-	//viewport.TopLeftX = 0;
-	//viewport.TopLeftY = 0;
-	//viewport.Width = Config::WINDOW_WIDTH<float>;
-	//viewport.Height = Config::WINDOW_HEIGHT<float>;
-	//viewport.MinDepth = 0.f;
-	//viewport.MaxDepth = 1.f;
 
 	D3D12_RECT scissorRect{};
 	scissorRect.left = 0;
