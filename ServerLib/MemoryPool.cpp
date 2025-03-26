@@ -33,7 +33,8 @@ bool MemoryPool::AllocMemBlocks(size_t memBlockSize, size_t memBlockCount) {
 void* MemoryPool::Pop() {
     size_t availableIndex{ };
     if (false == mAvailableIndices.try_pop(availableIndex)) {
-        return nullptr; // 더이상 사용할 수 있는 메모리블록이 없는경우
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "MemoryPool::Pop - No available memory blocks. Pool is exhausted.");
+        return nullptr; // 더이상 사용할 수 있는 메모리 블록이 없는 경우
     }
 
     return static_cast<char*>(mBasePtr) + (availableIndex * mMemBlockSize);
@@ -42,6 +43,7 @@ void* MemoryPool::Pop() {
 bool MemoryPool::Push(void* ptr) {
     ptrdiff_t dist{ static_cast<char*>(ptr) - static_cast<char*>(mBasePtr) };
     if (dist < 0 or dist >= static_cast<ptrdiff_t>(mMemBlockCount * mMemBlockSize)) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "MemoryPool::Push - Invalid pointer detected. Out of bounds access.");
         return false;
     }
 

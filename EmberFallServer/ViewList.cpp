@@ -22,10 +22,10 @@ void ViewList::Update() {
     }
 
     auto& playerList = mCurrentScene->GetPlayers();
-    for (const auto& player : playerList | std::views::filter([](const std::shared_ptr<GameObject>& object) { return object->IsActive(); })) {
+    for (const auto& player : playerList) {
         auto playerPos = player->GetPosition();
 
-        if (MathUtil::IsInRange(mPosition, mViewRange, playerPos)) {
+        if (MathUtil::IsInRange(mPosition, mViewRange, playerPos) and player->IsActive()) {
             AddInRange(player);
         }
         else {
@@ -47,10 +47,8 @@ void ViewList::Update() {
 }
 
 void ViewList::Send() {
-    static size_t prevSendSize{ };
-
-    PacketSC::PacketObject objectPacket{ 
-        sizeof(PacketSC::PacketObject), 
+    PacketSC::PacketObject objectPacket{
+        sizeof(PacketSC::PacketObject),
         PacketType::PACKET_OBJECT,
         mOwnerId
     };

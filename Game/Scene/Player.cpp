@@ -41,10 +41,10 @@ void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 
 		auto& keyboard = Input.GetKeyboardState();
 		if (keyboard.W) {
-			if (keyboard.A) {
+			if (keyboard.A and not keyboard.D) {
 				mTransform.SetLocalTransform(localRotations[1]);
 			}
-			else if (keyboard.D) {
+			else if (keyboard.D and not keyboard.A) {
 				mTransform.SetLocalTransform(localRotations[0]);
 			}
 			else {
@@ -52,10 +52,10 @@ void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 			}
 		}
 		else if (keyboard.S) {
-			if (keyboard.A) {
+			if (keyboard.A and not keyboard.D) {
 				mTransform.SetLocalTransform(localRotations[0]);
 			}
-			else if (keyboard.D) {
+			else if (keyboard.D and not keyboard.A) {
 				mTransform.SetLocalTransform(localRotations[1]);
 			}
 			else {

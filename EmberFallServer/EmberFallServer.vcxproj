@@ -146,6 +146,7 @@
     <ClCompile Include="AttackSystem.cpp" />
     <ClCompile Include="BehaviorTreeBase.cpp" />
     <ClCompile Include="BehaviorTreeMonster.cpp" />
+    <ClCompile Include="BoundingBoxImporter.cpp" />
     <ClCompile Include="BT_MonsterChase.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="GameEventFactory.cpp" />
@@ -193,6 +194,7 @@
     <ClInclude Include="AttackSystem.h" />
     <ClInclude Include="BehaviorTreeBase.h" />
     <ClInclude Include="BehaviorTreeMonster.h" />
+    <ClInclude Include="BoundingBoxImporter.h" />
     <ClInclude Include="BT_MonsterChase.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="GameEventFactory.h" />

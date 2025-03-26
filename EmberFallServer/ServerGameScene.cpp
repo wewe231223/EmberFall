@@ -34,6 +34,7 @@ void IServerGameScene::DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerE
             break;
 
         case PlayerEvent::EventType::DISCONNECT:
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player Exit");
             ExitPlayer(event.id);
             break;
 
@@ -60,6 +61,9 @@ void IServerGameScene::ExitPlayer(SessionIdType id) {
     mPlayerList.pop_back();
 
     mPlayers.erase(it);
+
+    PacketSC::PacketPlayerExit exitPacket{ sizeof(PacketSC::PacketPlayerExit), PacketType::PACKET_PLAYER_EXIT, id };
+    gServerCore->SendAll(&exitPacket);
 }
 
 PlayScene::PlayScene() { }
@@ -149,6 +153,8 @@ void PlayScene::Update(const float deltaTime) {
 }
 
 void PlayScene::LateUpdate(const float deltaTime) { 
+    std::erase_if(mPlayerList, [=](const std::shared_ptr<GameObject>& obj) { return not obj->IsActive(); });
+
     for (auto& [id, obj] : mPlayers) {
         obj->LateUpdate(deltaTime);
     }
@@ -160,12 +166,12 @@ void PlayScene::LateUpdate(const float deltaTime) {
 
 void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
     mPlayers[id] = playerObject;
-    mPlayerList.push_back(playerObject);
+    mPlayerList.emplace_back(playerObject);
 
     playerObject->GetComponent<PlayerScript>()->ResetGameScene(shared_from_this());
-    // auto randPos = Random::GetRandomVec3(-50.0f, 50.0f);
-    // randPos.y = 0.0f;
-    auto randPos = SimpleMath::Vector3(0.f, 0.f, 0.f);
+    auto randPos = Random::GetRandomVec3(-50.0f, 50.0f);
+    randPos.y = 0.0f;
+
     playerObject->GetTransform()->Translate(randPos);
 
     mTerrainCollider.AddObjectInTerrainGroup(playerObject);
@@ -178,11 +184,13 @@ void PlayScene::ExitPlayer(SessionIdType id) {
     if (it == mPlayers.end()) {
         return;
     }
-
-    auto objSearch = std::find(mPlayerList.begin(), mPlayerList.end(), it->second);
-    std::swap(*objSearch, mPlayerList.back());
-    mPlayerList.pop_back();
+    
+    it->second->SetActive(false);
 
     mTerrainCollider.RemoveObjectFromTerrainGroup(it->second);
     mPlayers.erase(it);
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Call Player Exit");
+
+    PacketSC::PacketPlayerExit exitPacket{ sizeof(PacketSC::PacketPlayerExit), PacketType::PACKET_PLAYER_EXIT, id };
+    gServerCore->SendAll(&exitPacket);
 }

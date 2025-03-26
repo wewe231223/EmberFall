@@ -21,7 +21,7 @@ void GInput::Initialize(HWND hWnd)
 {
 	mWindowHandle = hWnd;
 
-	GInput::EnableVirtualMouse();
+	// GInput::EnableVirtualMouse();
 
 }
 
