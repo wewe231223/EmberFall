@@ -68,7 +68,7 @@ void TerrainLoader::CreatePatch(MeshData& data, int zStart, int zEnd, int xStart
             int x = std::clamp(static_cast<int>(xStart + j * stepSize), 0, mLength - 1);
 
             const DirectX::XMFLOAT2 uv0{ static_cast<float>(x) / (mLength - 1), 1.f - static_cast<float>(z) / (mLength - 1) };
-            const DirectX::XMFLOAT2 uv1{ static_cast<float>(j) / PATCH_LENGTH, static_cast<float>(i) / PATCH_LENGTH };
+            const DirectX::XMFLOAT2 uv1{ static_cast<float>(j) / PATCH_LENGTH, static_cast<float>(i) / PATCH_LENGTH};
 
             float nz = static_cast<float>(z - mLength / 2);
             float nx = static_cast<float>(x - mLength / 2);

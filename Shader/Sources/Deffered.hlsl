@@ -5,8 +5,15 @@ SamplerState linearClampSampler : register(s3);
 SamplerState anisotropicWrapSampler : register(s4);
 SamplerState anisotropicClampSampler : register(s5);
 
-Texture2D GBuffers[3] : register(t0);
+Texture2D GBuffers[4] : register(t0, space0);
 
+cbuffer Camera : register(b0)
+{
+    matrix view;
+    matrix projection;
+    matrix viewProjection;
+    float3 cameraPosition;
+}
 
 struct Deffered_VIN
 {
@@ -29,7 +36,35 @@ Deffered_VOUT Deffered_VS(Deffered_VIN input)
     return output;
 }
 
+
+float ComputeShadowFactor(float3 worldPos)
+{
+    float4 lightPos = mul(float4(worldPos, 1.0), viewProjection);
+    
+
+    lightPos.xyz /= lightPos.w;
+
+    lightPos.xy = lightPos.xy * 0.5f + 0.5f;
+
+    if (lightPos.x < 0.0 || lightPos.x > 1.0 || lightPos.y < 0.0 || lightPos.y > 1.0)
+        return 1.0;
+    
+
+    float shadowMapDepth = GBuffers[3].Sample(linearClampSampler, lightPos.xy).r;
+
+    return (lightPos.z - 0.01 > shadowMapDepth) ? 0.0f : 1.0f;
+}
+
 float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 {
-    return GBuffers[0].Sample(linearWrapSampler, input.texcoord);
+
+    return float4(GBuffers[3].Sample(linearClampSampler, input.texcoord).rrr, 1.0);
+    
+    float4 diffuse = GBuffers[0].Sample(linearClampSampler, input.texcoord);
+    float3 worldPos = GBuffers[2].Sample(linearClampSampler, input.texcoord).rgb;
+    
+
+    float shadowFactor = (length(worldPos) == 0.0) ? 1.0 : ComputeShadowFactor(worldPos);
+    
+    return float4(diffuse.rgb * shadowFactor, 1.0);
 }

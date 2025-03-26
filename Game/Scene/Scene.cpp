@@ -61,7 +61,7 @@ void Scene::ProcessObjectPacket(PacketHeader* header) {
 				mIndexMap[packet->objId] = mNextPlayerLoc; 
 				mMyPlayer = mNextPlayerLoc;
 
-
+				mMyPlayer->GetTransform().Scaling(10.f, 10.f, 10.f);
 
 				mNextPlayerLoc = FindNextPlayerLoc();
 

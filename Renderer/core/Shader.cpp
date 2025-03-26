@@ -815,18 +815,23 @@ GraphicsShaderBase::InputLayout DefferedShader::CreateInputLayout() {
 GraphicsShaderBase::RootParameters DefferedShader::CreateRootParameters() {
 	GraphicsShaderBase::RootParameters params{};
 
+	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	params.Parameters[0].Descriptor.ShaderRegister = 0;
+	params.Parameters[0].Descriptor.RegisterSpace = 0;
+	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
 	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	params.Ranges[0].NumDescriptors = Config::GBUFFER_COUNT<UINT>;
+	params.Ranges[0].NumDescriptors = Config::GBUFFER_COUNT<UINT> + 1 ; // Shadow Map
 	params.Ranges[0].BaseShaderRegister = 0;
 	params.Ranges[0].RegisterSpace = 0;
 	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	params.Parameters[0].DescriptorTable.NumDescriptorRanges = 1;
-	params.Parameters[0].DescriptorTable.pDescriptorRanges = params.Ranges.data();
-	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[1].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[1].DescriptorTable.pDescriptorRanges = params.Ranges.data();
+	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.ParameterCount = 1;
+	params.ParameterCount = 2;
 
 	return params;
 }

@@ -7,13 +7,6 @@
 #include "../Utility/Crash.h"
 #define DIRECTWRITE
 
-struct CameraConstants {
-	SimpleMath::Matrix view;
-	SimpleMath::Matrix proj;
-	SimpleMath::Matrix viewProj;
-	SimpleMath::Vector3 cameraPosition;
-};
-
 Renderer::Renderer(HWND rendererWindowHandle)
 	: mRendererWindow(rendererWindowHandle) {
 
@@ -83,14 +76,21 @@ void Renderer::Update() {
 
 void Renderer::Render() {
 	Renderer::ResetCommandList();
-
 	D3D12_VIEWPORT viewport{};
+
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = Config::WINDOW_WIDTH<float>;
-	viewport.Height = Config::WINDOW_HEIGHT<float>;
+	viewport.Width = 1000.f;
+	viewport.Height = 1000.f;
 	viewport.MinDepth = 0.f;
 	viewport.MaxDepth = 1.f;
+
+	//viewport.TopLeftX = 0;
+	//viewport.TopLeftY = 0;
+	//viewport.Width = Config::WINDOW_WIDTH<float>;
+	//viewport.Height = Config::WINDOW_HEIGHT<float>;
+	//viewport.MinDepth = 0.f;
+	//viewport.MaxDepth = 1.f;
 
 	D3D12_RECT scissorRect{};
 	scissorRect.left = 0;
@@ -106,8 +106,10 @@ void Renderer::Render() {
 
 
 	mShadowRenderer.SetShadowDSV(mCommandList);
-	mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
+	mShadowRenderer.Update(mCommandList, mMainCameraBuffer.CPUBegin());
 
+	mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer.GetShadowCameraBuffer());
+	// mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
 
 	// G-Buffer Pass 
 	auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -142,7 +144,7 @@ void Renderer::Render() {
 	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
-	mDefferedRenderer.Render(mCommandList);
+	mDefferedRenderer.Render(mCommandList, mShadowRenderer.GetShadowCameraBuffer());
 #ifndef DIRECTWRITE 
 	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
@@ -384,6 +386,7 @@ void Renderer::InitDefferedRenderer() {
 	mDefferedRenderer = DefferedRenderer(mDevice, mCommandList);
 
 	mDefferedRenderer.RegisterGBufferTexture(mDevice, mGBuffers);
+	mDefferedRenderer.RegisterShadowMap(mDevice, mShadowRenderer.GetShadowMap());
 
 }
 

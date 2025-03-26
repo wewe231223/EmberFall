@@ -18,7 +18,8 @@ public:
 	DefferedRenderer& operator=(DefferedRenderer&& other) noexcept = default;
 public:
 	void RegisterGBufferTexture(ComPtr<ID3D12Device> device, const std::span<Texture>& textures);
-	void Render(ComPtr<ID3D12GraphicsCommandList> commandList); 
+	void RegisterShadowMap(ComPtr<ID3D12Device> device, Texture& shadowMap);
+	void Render(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator shadowCameraBuffer);
 private:
 	void BuildShader(ComPtr<ID3D12Device> device);
 	void BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);

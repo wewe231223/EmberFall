@@ -21,10 +21,10 @@
 struct Config {
 #ifdef FHD
 	template<typename T = int> 
-	constexpr static T WINDOW_WIDTH{ static_cast<T>(800) };
+	constexpr static T WINDOW_WIDTH{ static_cast<T>(1920) };
 
 	template<typename T = int> 
-	constexpr static T WINDOW_HEIGHT{ static_cast<T>(600) };
+	constexpr static T WINDOW_HEIGHT{ static_cast<T>(1080) };
 #elif defined(HD)
 	template<typename T = int>
 	constexpr static T WINDOW_WIDTH{ static_cast<T>(1280) };
