@@ -5,6 +5,7 @@
 #include "GameObject.h"
 #include "ObjectSpawner.h"
 #include "GameEventManager.h"
+#include "BoundingBoxImporter.h"
 #include "Input.h"
 
 #include "PlayerScript.h"
@@ -59,7 +60,7 @@ void ServerFrame::OnPlayerConnect(SessionIdType id) {
     auto object = std::make_shared<GameObject>(mCurrentScene);
     
     object->InitId(id);
-    object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.85f });
+    object->CreateCollider<OrientedBoxCollider>(BoundingBoxImporter::GetBoundingBox(EntryKeys::PLAYER_BOUNDING_BOX));
     object->CreateComponent<PlayerScript>(object, mInputManager->GetInput(id));
 
     Lock::SRWLockGuard playersGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mPlayersLock };
@@ -77,7 +78,7 @@ void ServerFrame::OnPlayerDisconnect(SessionIdType id) {
         return;
     }
 
-    PlayerEvent event{ PlayerEvent::EventType::DISCONNECT, id, it->second }; 
+    PlayerEvent event{ PlayerEvent::EventType::DISCONNECT, id, it->second };
     mPlayerEventQueue.push(event);
 
     mPlayers.erase(it);

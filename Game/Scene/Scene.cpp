@@ -92,6 +92,9 @@ void Scene::ProcessObjectPacket(PacketHeader* header) {
 			// 그 플레이어 인스턴스가 있다면 
 			else {
 				mIndexMap[packet->objId]->GetTransform().GetPosition() = packet->position;
+				auto euler = mIndexMap[packet->objId]->GetTransform().GetRotation().ToEuler(); 
+				euler.y = packet->rotationYaw;
+				mIndexMap[packet->objId]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
 			}
 		}
 	}
@@ -309,7 +312,7 @@ void Scene::BuildPacketProcessor() {
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_USE_ITEM, [this](PacketHeader* header) { ProcessUseItem(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_PLAYER_EXIT, [this](PacketHeader* header) { ProcessPlayerExit(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_ATTACKED, [this](PacketHeader* header) { ProcessObjectAttacked(header); });
-	mPacketProcessor.RegisterProcessFn(PacketType::PAKCET_ACQUIRED_ITEM, [this](PacketHeader* header) { ProcessAcquiredItem(header); });
+	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_ACQUIRED_ITEM, [this](PacketHeader* header) { ProcessAcquiredItem(header); });
 }
 
 void Scene::BuildSendKeyList() {

@@ -80,12 +80,19 @@ void SessionManager::Send(SessionIdType to, void* packet) {
 
 void SessionManager::SendAll(void* packet) {
     Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "SendAll Lock");
     for (auto& [id, session] : mSessions) {
         if (false == session->IsConnected()) {
+            if (PacketType::PACKET_PLAYER_EXIT == reinterpret_cast<PacketHeader*>(packet)->type) {
+                gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "[{}]: Session DisConnected", session->GetId());
+            }    
             continue;
         }
 
         session->RegisterSend(packet);
+        if (PacketType::PACKET_PLAYER_EXIT == reinterpret_cast<PacketHeader*>(packet)->type) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "To [{}]: Session Register Success", session->GetId());
+        }
     }
 }
 
