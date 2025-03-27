@@ -20,7 +20,7 @@ public:
 	Player& operator=(Player&&) = default;
 public:
 	bool GetActiveState() const;
-	void SetInactive(); 
+	void SetActiveState(bool state);
 
 	void SetWeapon(const GameObject& weapon);
 

@@ -81,13 +81,13 @@ private:
 
 
 
-	std::unordered_map<NetworkObjectIdType, std::array<Player, 5>::iterator> mIndexMap{};
-	std::array<Player, 5> mPlayers{};
+	std::unordered_map<NetworkObjectIdType, std::array<Player, 5>::iterator> mPlayerIndexmap{};
+	std::array<Player, 5> mPlayers{ Player{}, };
 	
 	std::array<Player, 5>::iterator mNextPlayerLoc{ mPlayers.begin() };
 	std::array<Player, 5>::iterator mMyPlayer{};
 
-
+	std::array<GameObject, 3> mWeapons{}; 
 	
 	AnimatorGraph::BoneMaskAnimationGraphController mBaseAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mArcherAnimationController{};

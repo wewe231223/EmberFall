@@ -38,105 +38,78 @@ void Scene::ProcessPlayerPacket(PacketHeader* header) {
 }
 
 void Scene::ProcessObjectPacket(PacketHeader* header) {
-	static auto FindNextPlayerLoc = [this]()  {
-		for (auto iter = mPlayers.begin(); iter != mPlayers.end(); ++iter) {
-			if (not iter->GetActiveState()) {
-				return iter;
-			}
-		}
-		return mPlayers.end();
-	};
 
-	static auto FindNextObjectLoc = [this]() {
-		for (auto iter = mGameObjects.begin(); iter != mGameObjects.end(); ++iter) {
-			if (not *iter) {
-				return iter;
-			}
-		}
-		return mGameObjects.end();
-	};
-	
 
 	auto packet = reinterpret_cast<PacketSC::PacketObject*>(header);
 	
 	// 플레이어 영역에 해당한다면
 	if (packet->objId < OBJECT_ID_START) {
-		// 그게 만약 나라면 
-		if (packet->objId == gClientCore->GetSessionId()) {
-			// 플레이어 인스턴스가 없다면 
-			if (not mIndexMap.contains(packet->objId)) {
-				if (mNextPlayerLoc == mPlayers.end()) Crash("There is no more space for My Player!!");
-				
-				*mNextPlayerLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-				mIndexMap[packet->objId] = mNextPlayerLoc; 
-				mMyPlayer = mNextPlayerLoc;
+		//// 그게 만약 나라면 
+		//if (packet->objId == gClientCore->GetSessionId()) {
+		//	//// 플레이어 인스턴스가 없다면 
+		//	//if (not mIndexMap.contains(packet->objId)) {
+		//	//	if (mNextPlayerLoc == mPlayers.end()) Crash("There is no more space for My Player!!");
+		//	//	
+		//	//	*mNextPlayerLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+		//	//	mIndexMap[packet->objId] = mNextPlayerLoc; 
+		//	//	mMyPlayer = mNextPlayerLoc;
 
 
-				mNextPlayerLoc = FindNextPlayerLoc();
+		//	//	mNextPlayerLoc = FindNextPlayerLoc();
 
 
 
-				mMyPlayer->SetWeapon(mGameObjects.back().Clone()); 
-				mMyPlayer->SetMyPlayer();
-				
-				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
-				mCameraMode->Enter();
-			}
-			// 플레이어 인스턴스가 있다면 
-			else {
-				mIndexMap[packet->objId]->GetTransform().GetPosition() = packet->position;
-			}
-		}
-		// 아니라면 ( 다른 플레이어 라면 ) 
-		else {
-			// 그 플레이어 인스턴스가 없다면  
-			if (not mIndexMap.contains(packet->objId)) {
-				if (mNextPlayerLoc == mPlayers.end()) Crash("There is no more space for Other Player!!");
+		//	//	mMyPlayer->SetWeapon(mWeapons[0]);
+		//	//	mMyPlayer->SetMyPlayer();
+		//	//	
+		//	//	mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
+		//	//	mCameraMode->Enter();
+		//	//}
+		//	//// 플레이어 인스턴스가 있다면 
+		//	//else {
+		//	//	mIndexMap[packet->objId]->GetTransform().GetPosition() = packet->position;
+		//	//}
 
-				*mNextPlayerLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-				mIndexMap[packet->objId] = mNextPlayerLoc;
+		//	if (mPlayerIndexmap.contains(packet->objId)) {
+		//		mPlayerIndexmap[packet->objId]->GetTransform().GetPosition() = packet->position;
+		//	}
 
-				mNextPlayerLoc = FindNextPlayerLoc(); 
-			}
-			// 그 플레이어 인스턴스가 있다면 
-			else {
-				mIndexMap[packet->objId]->GetTransform().GetPosition() = packet->position;
-				auto euler = mIndexMap[packet->objId]->GetTransform().GetRotation().ToEuler(); 
+		//}
+		//// 아니라면 ( 다른 플레이어 라면 ) 
+		//else {
+		//	// 그 플레이어 인스턴스가 없다면  
+		//	if (not mPlayerIndexmap.contains(packet->objId)) {
+		//		if (mNextPlayerLoc == mPlayers.end()) Crash("There is no more space for Other Player!!");
+
+		//		*mNextPlayerLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+		//		mPlayerIndexmap[packet->objId] = mNextPlayerLoc;
+
+		//		mNextPlayerLoc = FindNextPlayerLoc(); 
+		//	}
+		//	// 그 플레이어 인스턴스가 있다면 
+		//	else {
+		//		mPlayerIndexmap[packet->objId]->GetTransform().GetPosition() = packet->position;
+		//		auto euler = mPlayerIndexmap[packet->objId]->GetTransform().GetRotation().ToEuler(); 
+		//		euler.y = packet->rotationYaw;
+		//		mPlayerIndexmap[packet->objId]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
+		//	}
+		//}
+
+
+		if (mPlayerIndexmap.contains(packet->objId)) {
+			mPlayerIndexmap[packet->objId]->GetTransform().GetPosition() = packet->position;
+
+			if (packet->objId != gClientCore->GetSessionId()) {
+				auto euler = mPlayerIndexmap[packet->objId]->GetTransform().GetRotation().ToEuler();
 				euler.y = packet->rotationYaw;
-				mIndexMap[packet->objId]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
+				mPlayerIndexmap[packet->objId]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
 			}
+
 		}
 	}
 	// 그게 아니라면 기타 게임 오브젝트이다. 
 	else {
 		if (mGameObjectMap.contains(packet->objId)) {
-		//	auto nextLoc = FindNextObjectLoc();
-		//	if (nextLoc == mGameObjects.end()) Crash("There is no more space for Game Object!!");
-
-		//	*nextLoc = GameObject();
-		//	
-		//	switch (packet->){
-		//	case EntityType::MONSTER1:
-		//	case EntityType::MONSTER2:
-		//	case EntityType::MONSTER3:
-		//		nextLoc->mMesh = mMeshMap["MonsterType1"].get();
-		//		nextLoc->mShader = mShaderMap["SkinnedShader"].get();
-		//		nextLoc->mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
-		//		nextLoc->mGraphController = mMonsterType1AnimationController;
-		//		nextLoc->mAnimated = true;
-		//		nextLoc->SetActiveState(true);
-		//		break;
-
-		//	default:
-		//		DebugBreak(); 
-		//		break;
-		//	}
-
-		//	
-
-		//	mGameObjectMap[packet->objId] = nextLoc;
-		//}
-		//else {
 			mGameObjectMap[packet->objId]->GetTransform().GetPosition() = packet->position;
 		}
 
@@ -148,17 +121,123 @@ void Scene::ProcessObjectDead(PacketHeader* header) {
 }
 
 void Scene::ProcessObjectAppeared(PacketHeader* header) {
+	static auto FindNextPlayerLoc = [this]() {
+		for (auto iter = mPlayers.begin(); iter != mPlayers.end(); ++iter) {
+			if (not iter->GetActiveState()) {
+				return iter;
+			}
+		}
+		return mPlayers.end();
+		};
 
+	static auto FindNextObjectLoc = [this]() {
+		for (auto iter = mGameObjects.begin(); iter != mGameObjects.end(); ++iter) {
+			if (not *iter) {
+				return iter;
+			}
+		}
+		return mGameObjects.end();
+		};
+
+
+	auto packet = reinterpret_cast<PacketSC::PacketObjectAppeared*>(header);
+	// 플레이어 등장 
+	if (packet->objId < OBJECT_ID_START) {
+		// 내 플레이어 등장 
+		if (packet->objId == gClientCore->GetSessionId()) {
+			// 플레이어 인스턴스가 없다면 
+			if (not mPlayerIndexmap.contains(packet->objId)) {
+				if (mNextPlayerLoc == mPlayers.end()) Crash("There is no more space for My Player!!");
+			
+				*mNextPlayerLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				mPlayerIndexmap[packet->objId] = mNextPlayerLoc;
+				mMyPlayer = mNextPlayerLoc;
+
+				mNextPlayerLoc = FindNextPlayerLoc();
+
+				mMyPlayer->SetWeapon(mWeapons[0]);
+				mMyPlayer->SetMyPlayer();
+			
+				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
+				mCameraMode->Enter();
+
+			}
+			else {
+				mPlayerIndexmap[packet->objId]->SetActiveState(true);
+			}
+		}
+		// 다른 플레이어 등장 
+		else {
+			// 그 플레이어 인스턴스가 없다면  
+			if (not mPlayerIndexmap.contains(packet->objId)) {
+				if (mNextPlayerLoc == mPlayers.end()) Crash("There is no more space for Other Player!!");
+
+				*mNextPlayerLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				mPlayerIndexmap[packet->objId] = mNextPlayerLoc;
+
+				mNextPlayerLoc = FindNextPlayerLoc(); 
+			}
+			else {
+				mPlayerIndexmap[packet->objId]->SetActiveState(true);
+			}
+		}
+	}
+	// 이외 오브젝트 등장 
+	else {
+		if (not mGameObjectMap.contains(packet->objId)) {
+			auto nextLoc = FindNextObjectLoc();
+			if (nextLoc == mGameObjects.end()) Crash("There is no more space for Other Object!!");
+
+			*nextLoc = GameObject{};
+			mGameObjectMap[packet->objId] = nextLoc;
+
+			switch (packet->entity) {
+			case MONSTER1:
+			case MONSTER2:
+			case MONSTER3:
+				nextLoc->mShader = mShaderMap["SkinnedShader"].get();
+				nextLoc->mMesh = mMeshMap["MonsterType1"].get();
+				nextLoc->mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
+				nextLoc->mGraphController = mMonsterType1AnimationController;
+				nextLoc->mAnimated = true;
+				nextLoc->SetActiveState(true);
+
+				nextLoc->GetTransform().Scaling(0.3f, 0.3f, 0.3f);
+				break;
+			default:
+				break;
+			}
+
+
+
+
+		}
+		else {
+			mGameObjectMap[packet->objId]->SetActiveState(true);
+		}
+	}
 }
 
 void Scene::ProcessObjectDisappeared(PacketHeader* header) {
+	auto packet = reinterpret_cast<PacketSC::PacketObjectDisappeared*>(header);
+
+	if (packet->objId < OBJECT_ID_START) {
+		if (mPlayerIndexmap.contains(packet->objId)) {
+			mPlayerIndexmap[packet->objId]->SetActiveState(false);
+		}
+	}
+	else {
+		if (mGameObjectMap.contains(packet->objId)) {
+			mGameObjectMap[packet->objId]->SetActiveState(false);
+		}
+	}
 
 }
 
 void Scene::ProcessPlayerExit(PacketHeader* header) {
-	if (mIndexMap.contains(header->id)) {
-		mIndexMap[header->id]->SetInactive();
-		mIndexMap.erase(header->id);
+	if (mPlayerIndexmap.contains(header->id)) {
+		mPlayerIndexmap[header->id]->SetActiveState(false);
+		mPlayerIndexmap.erase(header->id);
 	}
 }
 
@@ -201,6 +280,8 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	Scene::BuildMesh(device, commandList);
 	Scene::BuildMaterial();
 	Scene::BuildPacketProcessor();
+	Scene::BuildAniamtionController();
+	Scene::SetInputBaseAnimMode();
 
 	// SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", "Resources/Binarys/Terrain/TerrainBaked.bin");
 	tCollider.LoadFromFile("Resources/Binarys/Terrain/TerrainBaked.bin");
@@ -212,7 +293,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mGameObjects.resize(MeshRenderManager::MAX_INSTANCE_COUNT<size_t>, GameObject{});
 
 	{
-		auto& object = mGameObjects.emplace_back();
+		auto& object = mGameObjects[0];
 		object.mShader = mShaderMap["TerrainShader"].get();
 		object.mMesh = mMeshMap["Terrain"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("TerrainMaterial");
@@ -224,7 +305,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 
 	{
-		auto& object = mGameObjects.emplace_back(); 
+		auto& object = mGameObjects[1];
 		object.mShader = mShaderMap["StandardShader"].get();
 		object.mMesh = mMeshMap["Mountain"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
@@ -236,7 +317,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	}
 
 	{
-		auto& object = mGameObjects.emplace_back();
+		auto& object = mGameObjects[2];
 		object.mShader = mShaderMap["SkinnedShader"].get();
 		object.mMesh = mMeshMap["MonsterType1"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
@@ -244,25 +325,21 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.mAnimated = true;
 		object.SetActiveState(true);
 
+		object.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 0.f), 0.f };
+
 	}
 
 
 	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Sword"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("SwordMaterial");
-		object.mCollider = mColliderMap["Sword"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 0.f), 0.f };
-	
-
+		mWeapons[0].mShader = mShaderMap["StandardShader"].get();
+		mWeapons[0].mMesh = mMeshMap["Sword"].get();
+		mWeapons[0].mMaterial = mMaterialManager->GetMaterial("SwordMaterial");
+		mWeapons[0].mCollider = mColliderMap["Sword"];
+		mWeapons[0].SetActiveState(true);
 	}
 
 
-	Scene::BuildAniamtionController(); 
-	Scene::SetInputBaseAnimMode(); 
+
 
 	mCamera = Camera(mainCameraBufferLocation);
 	
@@ -291,21 +368,28 @@ void Scene::ProcessNetwork() {
 void Scene::Update() {
 	// mMyPlayer->GetTransform().GetPosition().y = tCollider.GetHeight(mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().z);
 	
+
+
 	mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().y, mMyPlayer->GetTransform().GetPosition().z);
 
 	if (mCameraMode) {
 		mCameraMode->Update();
 	}
 
-	for (auto& gameObject : mGameObjects | std::views::take(mGameObjects.size() - 1)) {
+	static BoneTransformBuffer boneTransformBuffer{};
+
+	for (auto& gameObject : mGameObjects) {
 		if (gameObject) {
 			if (gameObject.mAnimated) {
-				// Animation 업데이트 지원 내일부터  
+				gameObject.UpdateShaderVariables(boneTransformBuffer); 
+				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
+				mMeshRenderManager->AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
 			}
-			gameObject.UpdateShaderVariables();
-			auto [mesh, shader, modelContext] = gameObject.GetRenderData();
-
-			mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+			else {
+				gameObject.UpdateShaderVariables();
+				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
+				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+			}
 		}
 	}
  
@@ -457,7 +541,7 @@ void Scene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("SwordA_v004_Default_AlbedoTransparency");
 	mMaterialManager->CreateMaterial("SwordMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Creep_BaseColor.png");
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Creep_BaseColor");
 	mMaterialManager->CreateMaterial("MonsterType1Material", mat);
 
 }
