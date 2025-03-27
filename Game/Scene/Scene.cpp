@@ -38,64 +38,10 @@ void Scene::ProcessPlayerPacket(PacketHeader* header) {
 }
 
 void Scene::ProcessObjectPacket(PacketHeader* header) {
-
-
 	auto packet = reinterpret_cast<PacketSC::PacketObject*>(header);
 	
 	// 플레이어 영역에 해당한다면
 	if (packet->objId < OBJECT_ID_START) {
-		//// 그게 만약 나라면 
-		//if (packet->objId == gClientCore->GetSessionId()) {
-		//	//// 플레이어 인스턴스가 없다면 
-		//	//if (not mIndexMap.contains(packet->objId)) {
-		//	//	if (mNextPlayerLoc == mPlayers.end()) Crash("There is no more space for My Player!!");
-		//	//	
-		//	//	*mNextPlayerLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-		//	//	mIndexMap[packet->objId] = mNextPlayerLoc; 
-		//	//	mMyPlayer = mNextPlayerLoc;
-
-
-		//	//	mNextPlayerLoc = FindNextPlayerLoc();
-
-
-
-		//	//	mMyPlayer->SetWeapon(mWeapons[0]);
-		//	//	mMyPlayer->SetMyPlayer();
-		//	//	
-		//	//	mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
-		//	//	mCameraMode->Enter();
-		//	//}
-		//	//// 플레이어 인스턴스가 있다면 
-		//	//else {
-		//	//	mIndexMap[packet->objId]->GetTransform().GetPosition() = packet->position;
-		//	//}
-
-		//	if (mPlayerIndexmap.contains(packet->objId)) {
-		//		mPlayerIndexmap[packet->objId]->GetTransform().GetPosition() = packet->position;
-		//	}
-
-		//}
-		//// 아니라면 ( 다른 플레이어 라면 ) 
-		//else {
-		//	// 그 플레이어 인스턴스가 없다면  
-		//	if (not mPlayerIndexmap.contains(packet->objId)) {
-		//		if (mNextPlayerLoc == mPlayers.end()) Crash("There is no more space for Other Player!!");
-
-		//		*mNextPlayerLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-		//		mPlayerIndexmap[packet->objId] = mNextPlayerLoc;
-
-		//		mNextPlayerLoc = FindNextPlayerLoc(); 
-		//	}
-		//	// 그 플레이어 인스턴스가 있다면 
-		//	else {
-		//		mPlayerIndexmap[packet->objId]->GetTransform().GetPosition() = packet->position;
-		//		auto euler = mPlayerIndexmap[packet->objId]->GetTransform().GetRotation().ToEuler(); 
-		//		euler.y = packet->rotationYaw;
-		//		mPlayerIndexmap[packet->objId]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
-		//	}
-		//}
-
-
 		if (mPlayerIndexmap.contains(packet->objId)) {
 			mPlayerIndexmap[packet->objId]->GetTransform().GetPosition() = packet->position;
 
@@ -111,6 +57,9 @@ void Scene::ProcessObjectPacket(PacketHeader* header) {
 	else {
 		if (mGameObjectMap.contains(packet->objId)) {
 			mGameObjectMap[packet->objId]->GetTransform().GetPosition() = packet->position;
+			auto euler = mGameObjectMap[packet->objId]->GetTransform().GetRotation().ToEuler();
+			euler.y = packet->rotationYaw;
+			mGameObjectMap[packet->objId]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
 		}
 
 	}
@@ -150,8 +99,10 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 
 				auto nextLoc = FindNextPlayerLoc();
 
-				if (nextLoc == mPlayers.end()) Crash("There is no more space for My Player!!");
-			
+				if (nextLoc == mPlayers.end()) {
+					Crash("There is no more space for My Player!!");
+				}
+
 				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
 				mPlayerIndexmap[packet->objId] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
@@ -166,7 +117,7 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 
 			}
 			else {
-				//mPlayerIndexmap[packet->objId]->SetActiveState(true);
+				mPlayerIndexmap[packet->objId]->SetActiveState(false);
 			}
 		}
 		// 다른 플레이어 등장 
@@ -181,7 +132,7 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 
 			}
 			else {
-				//mPlayerIndexmap[packet->objId]->SetActiveState(true);
+				mPlayerIndexmap[packet->objId]->SetActiveState(false);
 			}
 		}
 	}
@@ -189,7 +140,9 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 	else {
 		if (not mGameObjectMap.contains(packet->objId)) {
 			auto nextLoc = FindNextObjectLoc();
-			if (nextLoc == mGameObjects.end()) Crash("There is no more space for Other Object!!");
+			if (nextLoc == mGameObjects.end()) {
+				Crash("There is no more space for Other Object!!");
+			}
 
 			*nextLoc = GameObject{};
 			mGameObjectMap[packet->objId] = nextLoc;
@@ -206,8 +159,24 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 				nextLoc->SetActiveState(true);
 
 				nextLoc->GetTransform().Scaling(0.3f, 0.3f, 0.3f);
+				nextLoc->GetTransform().SetPosition(packet->position);
+				break;
+			case CORRUPTED_GEM:
+				nextLoc->mShader = mShaderMap["StandardShader"].get();
+				nextLoc->mMesh = mMeshMap["CorruptedGem"].get();
+				nextLoc->mMaterial = mMaterialManager->GetMaterial("CorruptedGemMaterial");
+				nextLoc->SetActiveState(true);
+
+				nextLoc->GetTransform().SetPosition(packet->position);
+
 				break;
 			default:
+				nextLoc->mShader = mShaderMap["StandardShader"].get();
+				nextLoc->mMesh = mMeshMap["Cube"].get();
+				nextLoc->mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+				nextLoc->SetActiveState(true);
+
+				nextLoc->GetTransform().SetPosition(packet->position);
 				break;
 			}
 		}
@@ -494,8 +463,13 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mMeshMap["Sword"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Sword"] = Collider{ data.position };
 
-	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
+	data = Loader.Load("Resources/Assets/CorruptedGem/CorruptedGem.glb");
+	mMeshMap["CorruptedGem"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["CorruptedGem"] = Collider{ data.position };
 
+
+
+	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, data);
 	mMeshMap["SkyBox"] = std::make_unique<Mesh>(device, commandList, 100.f);
 
@@ -541,6 +515,8 @@ void Scene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Creep_BaseColor");
 	mMaterialManager->CreateMaterial("MonsterType1Material", mat);
 
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("CorrupedGem_BaseColor");
+	mMaterialManager->CreateMaterial("CorruptedGemMaterial", mat);
 }
 
 void Scene::BuildShader(ComPtr<ID3D12Device> device) {
@@ -1458,7 +1434,7 @@ void Scene::SetInputBaseAnimMode() {
 		mMyPlayer->GetBoneMaskController().SetTrigger("Jump");
 		});
 
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F, mInputSign, [this]() {
+	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::P, mInputSign, [this]() {
 		mMyPlayer->GetBoneMaskController().SetTrigger("Attack");
 		});
 
