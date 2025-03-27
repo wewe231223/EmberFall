@@ -43,6 +43,7 @@ public:
 	void Update();
 
 	void Render();
+	void ExecuteRender();
 private:
 	void InitFactory();
 	ComPtr<IDXGIAdapter1> GetBestAdapter();

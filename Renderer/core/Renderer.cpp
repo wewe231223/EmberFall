@@ -32,8 +32,6 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitCoreResources(); 
 	Renderer::InitDefferedRenderer();
 
-
-	static auto text = TextBlockManager::GetInstance().CreateTextBlock(L"Hello, World!", { 50, 50, 140, 140 }, StringColor::Seashell, "NotoSansKR");
 }
 
 Renderer::~Renderer() {
@@ -140,6 +138,9 @@ void Renderer::Render() {
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
 	mDefferedRenderer.Render(mCommandList, mShadowRenderer.GetShadowCameraBuffer());
+}
+
+void Renderer::ExecuteRender() {
 #ifndef DIRECTWRITE 
 	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 

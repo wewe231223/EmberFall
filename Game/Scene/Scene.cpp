@@ -117,7 +117,7 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 
 			}
 			else {
-				mPlayerIndexmap[packet->objId]->SetActiveState(false);
+				mPlayerIndexmap[packet->objId]->SetActiveState(true);
 			}
 		}
 		// 다른 플레이어 등장 
@@ -132,7 +132,7 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 
 			}
 			else {
-				mPlayerIndexmap[packet->objId]->SetActiveState(false);
+				mPlayerIndexmap[packet->objId]->SetActiveState(true);
 			}
 		}
 	}
@@ -332,10 +332,6 @@ void Scene::ProcessNetwork() {
 }
 
 void Scene::Update() {
-	// mMyPlayer->GetTransform().GetPosition().y = tCollider.GetHeight(mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().z);
-	
-
-
 	mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().y, mMyPlayer->GetTransform().GetPosition().z);
 
 	if (mCameraMode) {
