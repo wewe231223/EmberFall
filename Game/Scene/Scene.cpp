@@ -160,6 +160,8 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 			
 				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
 				mCameraMode->Enter();
+				Scene::SetInputBaseAnimMode();
+
 
 			}
 			else {
@@ -207,10 +209,6 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 			default:
 				break;
 			}
-
-
-
-
 		}
 		else {
 			mGameObjectMap[packet->objId]->SetActiveState(true);
@@ -281,7 +279,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	Scene::BuildMaterial();
 	Scene::BuildPacketProcessor();
 	Scene::BuildAniamtionController();
-	Scene::SetInputBaseAnimMode();
 
 	// SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", "Resources/Binarys/Terrain/TerrainBaked.bin");
 	tCollider.LoadFromFile("Resources/Binarys/Terrain/TerrainBaked.bin");
