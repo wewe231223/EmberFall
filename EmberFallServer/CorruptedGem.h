@@ -31,7 +31,6 @@ private:
     void OnDestroy(struct GemDestroyEvent* event);
 
 private:
-    float mDesytoyingTime{ 5.0f };
-    SimpleMath::Vector3 mOriginColor{ };
+    float mDesytoyingTime{ 3.0f };
 };
 

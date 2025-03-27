@@ -166,7 +166,7 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 
 			}
 			else {
-				mPlayerIndexmap[packet->objId]->SetActiveState(true);
+				//mPlayerIndexmap[packet->objId]->SetActiveState(true);
 			}
 		}
 		// 다른 플레이어 등장 
@@ -181,7 +181,7 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 
 			}
 			else {
-				mPlayerIndexmap[packet->objId]->SetActiveState(true);
+				//mPlayerIndexmap[packet->objId]->SetActiveState(true);
 			}
 		}
 	}

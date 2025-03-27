@@ -96,8 +96,19 @@ void PlayerScript::Update(const float deltaTime) {
     if (mInput->IsActiveKey('F')) {
         Interaction(deltaTime, GetNearestObject());
     }
-    else if (mInput->IsInactiveKey('F')) {
-        mInteractionObj = NULL;
+    else if (mInput->IsUp('F')) {
+        if (mInteractionObj != INVALID_OBJ_ID) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Cancel");
+            auto interactionPacket = PacketSC::PacketInteractCancel{
+                sizeof(PacketSC::PacketInteractCancel),
+                PacketType::PACKET_INTERACTION_CANCEL,
+                static_cast<uint8_t>(GetOwner()->GetId())
+            };
+
+            interactionPacket.playerId = GetOwner()->GetId();
+            gServerCore->Send(GetOwner()->GetId(), &interactionPacket);
+            mInteractionObj = INVALID_OBJ_ID;
+        }
     }
 
     if (mInput->IsUp('U')) {
@@ -126,6 +137,23 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
             GetOwner()->ReduceHealth(attackEvent->damage);
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!", GetOwner()->GetId());
         }
+        break;
+
+    case GameEventType::DESTROY_GEM_COMPLETE:
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Finish");
+        {
+            auto interactionPacket = PacketSC::PacketInteractFinished{
+                sizeof(PacketSC::PacketInteractFinished),
+                PacketType::PACKET_INTERACTION_FINISH,
+                static_cast<uint8_t>(GetOwner()->GetId())
+            };
+
+            interactionPacket.interactionEntityType = EntityType::CORRUPTED_GEM;
+            interactionPacket.playerId = GetOwner()->GetId();
+            interactionPacket.interactObjId = event->sender;
+            gServerCore->Send(GetOwner()->GetId(), &interactionPacket);
+        }
+        mInteractionObj = INVALID_OBJ_ID;
         break;
     }
 }
@@ -157,8 +185,23 @@ std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
 }
 
 void PlayerScript::Interaction(const float deltaTime, const std::shared_ptr<GameObject>& target) {
-    if (nullptr == target) {
+    if (nullptr == target or not target->IsActive()) {
+        mInteractionObj = INVALID_OBJ_ID;
         return;
+    }
+
+    if (target->GetId() != mInteractionObj and EntityType::CORRUPTED_GEM == target->GetEntityType()) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Start");
+        auto interactionPacket = PacketSC::PacketInteractStart{
+            sizeof(PacketSC::PacketInteractStart),
+            PacketType::PACKET_INTERACTION_START,
+            static_cast<uint8_t>(GetOwner()->GetId())
+        };
+
+        interactionPacket.interactionEntityType = target->GetEntityType();
+        interactionPacket.playerId = GetOwner()->GetId();
+        interactionPacket.interactObjId = target->GetId();
+        gServerCore->Send(GetOwner()->GetId(), &interactionPacket);
     }
 
     mInteractionObj = target->GetId();
@@ -178,6 +221,7 @@ void PlayerScript::Interaction(const float deltaTime, const std::shared_ptr<Game
 
 void PlayerScript::DestroyGem(const float deltaTime, const std::shared_ptr<GameObject>& gem) {
     static float holdStart = 0.0f; // test
+    holdStart += deltaTime;
 
     auto gemId = gem->GetId();
     if (mInteractionObj != gemId) {
@@ -188,7 +232,7 @@ void PlayerScript::DestroyGem(const float deltaTime, const std::shared_ptr<GameO
     std::shared_ptr<GemDestroyEvent> event = std::make_shared<GemDestroyEvent>();
     event->type = GameEventType::DESTROY_GEM_EVENT;
     event->receiver = gem->GetId();
-    event->holdTime = holdStart += deltaTime;
+    event->holdTime = holdStart;
     gEventManager->PushEvent(event);
 }
 

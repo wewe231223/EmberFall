@@ -51,3 +51,5 @@ struct AttackEvent : public GameEvent {
 struct GemDestroyEvent : public GameEvent {
     float holdTime; // 키 입력 유지시간.
 };
+
+struct GemDestroyed : public GameEvent { };

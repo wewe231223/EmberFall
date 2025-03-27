@@ -63,7 +63,10 @@ void ViewList::Send() {
 }
 
 void ViewList::AddInRange(std::shared_ptr<GameObject> obj) {
-    mObjectInRange.insert(obj);
+    auto ret = mObjectInRange.insert(obj);
+    if (false == ret.second) {
+        return;
+    }
 
     PacketSC::PacketObjectAppeared objectPacket{
         sizeof(PacketSC::PacketObject),

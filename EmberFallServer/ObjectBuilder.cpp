@@ -21,6 +21,11 @@ void ObjectBuilder::BuildObjectComponent(std::shared_ptr<GameObject>& gameObject
         //gameObject->CreateComponent<PlayerScript>();
         break;
 
+    case ObjectTag::CORRUPTED_GEM:
+        gameObject->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
+        gameObject->CreateComponent<CorruptedGemScript>(gameObject);
+        break;
+
     default:
         break;
     }
