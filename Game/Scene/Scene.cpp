@@ -121,7 +121,7 @@ void Scene::ProcessObjectDead(PacketHeader* header) {
 }
 
 void Scene::ProcessObjectAppeared(PacketHeader* header) {
-	static auto FindNextPlayerLoc = [this]() {
+	auto FindNextPlayerLoc = [this]() {
 		for (auto iter = mPlayers.begin(); iter != mPlayers.end(); ++iter) {
 			if (not iter->GetActiveState()) {
 				return iter;
@@ -130,7 +130,7 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 		return mPlayers.end();
 		};
 
-	static auto FindNextObjectLoc = [this]() {
+	auto FindNextObjectLoc = [this]() {
 		for (auto iter = mGameObjects.begin(); iter != mGameObjects.end(); ++iter) {
 			if (not *iter) {
 				return iter;
@@ -147,13 +147,14 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 		if (packet->objId == gClientCore->GetSessionId()) {
 			// 플레이어 인스턴스가 없다면 
 			if (not mPlayerIndexmap.contains(packet->objId)) {
-				if (mNextPlayerLoc == mPlayers.end()) Crash("There is no more space for My Player!!");
-			
-				*mNextPlayerLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-				mPlayerIndexmap[packet->objId] = mNextPlayerLoc;
-				mMyPlayer = mNextPlayerLoc;
 
-				mNextPlayerLoc = FindNextPlayerLoc();
+				auto nextLoc = FindNextPlayerLoc();
+
+				if (nextLoc == mPlayers.end()) Crash("There is no more space for My Player!!");
+			
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				mPlayerIndexmap[packet->objId] = &(*nextLoc);
+				mMyPlayer = &(*nextLoc);
 
 				mMyPlayer->SetWeapon(mWeapons[0]);
 				mMyPlayer->SetMyPlayer();
@@ -172,12 +173,12 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 		else {
 			// 그 플레이어 인스턴스가 없다면  
 			if (not mPlayerIndexmap.contains(packet->objId)) {
-				if (mNextPlayerLoc == mPlayers.end()) Crash("There is no more space for Other Player!!");
+				auto nextLoc = FindNextPlayerLoc();
+				if (nextLoc == mPlayers.end()) Crash("There is no more space for Other Player!!");
 
-				*mNextPlayerLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-				mPlayerIndexmap[packet->objId] = mNextPlayerLoc;
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				mPlayerIndexmap[packet->objId] = &(*nextLoc);
 
-				mNextPlayerLoc = FindNextPlayerLoc(); 
 			}
 			else {
 				mPlayerIndexmap[packet->objId]->SetActiveState(true);
@@ -229,7 +230,6 @@ void Scene::ProcessObjectDisappeared(PacketHeader* header) {
 			mGameObjectMap[packet->objId]->SetActiveState(false);
 		}
 	}
-
 }
 
 void Scene::ProcessPlayerExit(PacketHeader* header) {

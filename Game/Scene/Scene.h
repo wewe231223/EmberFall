@@ -74,18 +74,15 @@ private:
 	std::vector<GameObject> mGameObjects{};
 
 	int mNetworkSign{};
+	int mInputSign{}; 
 	std::vector<DirectX::Keyboard::Keys> mSendKeyList{};
 
-
-	int mInputSign{}; 
-
-
-
-	std::unordered_map<NetworkObjectIdType, std::array<Player, 5>::iterator> mPlayerIndexmap{};
+	std::unordered_map<NetworkObjectIdType, Player*> mPlayerIndexmap{};
 	std::array<Player, 5> mPlayers{ Player{}, };
 	
-	std::array<Player, 5>::iterator mNextPlayerLoc{ mPlayers.begin() };
-	std::array<Player, 5>::iterator mMyPlayer{};
+	Player* mMyPlayer{ nullptr };
+
+	
 
 	std::array<GameObject, 3> mWeapons{}; 
 	
