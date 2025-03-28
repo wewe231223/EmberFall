@@ -8,7 +8,7 @@
 
 
 #include <array>
-
+#include <numeric>
 #include "../Utility/DirectXInclude.h"
 
 

@@ -30,6 +30,9 @@ public:
 	DefaultBufferGPUIterator GetShadowCameraBuffer(); 
 
 	Texture& GetShadowMap();
+
+	template<typename T>
+	static constexpr T GetShadowMapSize() { return SHADOWMAPSIZE<T>; }
 private:
 	std::array<SimpleMath::Vector3, 8> ComputeFrustumCorners(SimpleMath::Matrix worldCameraVPInv);
 	void StablizeShadowMatrix(SimpleMath::Matrix& shadowCameraVP);

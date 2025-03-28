@@ -2,6 +2,7 @@
 #include "ShadowRenderer.h"
 #include "../Utility/Exceptions.h" 
 #include "../Game/System/Input.h"
+#include "../Game/Scene/Camera.h"
 
 #ifdef max 
 #undef max
@@ -33,33 +34,67 @@ void ShadowRenderer::SetShadowDSV(ComPtr<ID3D12GraphicsCommandList> commandList)
 }
 
 void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator worldCameraBuffer) {
-    SimpleMath::Vector3 cameraPos(-13.0f, 450.0f, -300.0f);
+	// transposed 
+	CameraConstants worldCamera{};
+	std::memcpy(&worldCamera, *worldCameraBuffer, sizeof(CameraConstants));
+
+	CameraParameter cameraParam{};
+	float farZ = 20.0f;
+	SimpleMath::Matrix invView = worldCamera.view.Transpose().Invert();
+	SimpleMath::Matrix invProj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(cameraParam.fov, cameraParam.aspect, cameraParam.nearZ, farZ).Invert();
+
+	SimpleMath::Matrix invViewProj = invProj * invView;
+	std::array<SimpleMath::Vector3, 8> frustumPosition = ComputeFrustumCorners(invViewProj);
+
+	SimpleMath::Vector3 centerFrustum = std::accumulate(frustumPosition.begin(), frustumPosition.end(), SimpleMath::Vector3(0.0f, 0.0f, 0.0f)) / 8.0f;
+
+	SimpleMath::Vector3 directionNormalized = LIGHTDIRECTION;
+	directionNormalized.Normalize();
+	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (farZ - cameraParam.nearZ));
 
 
-    float pitch = 55.392f * DirectX::XM_PI / 180.0f; 
-    float yaw = 0.0f;
-    float roll = 0.0f;
-
-
-    SimpleMath::Matrix rotation = SimpleMath::Matrix::CreateFromYawPitchRoll(yaw, pitch, roll);
-
-
-    SimpleMath::Vector3 forward = SimpleMath::Vector3::TransformNormal(SimpleMath::Vector3(0, 0, 1), rotation);
-    forward.Normalize();
-
-
-    SimpleMath::Matrix view = DirectX::XMMatrixLookToLH(cameraPos, forward, DirectX::SimpleMath::Vector3::Up);
-    SimpleMath::Matrix proj = DirectX::XMMatrixOrthographicLH(1000.f,1000.f, 0.3f, 1000.f);
+	SimpleMath::Matrix view = SimpleMath::Matrix::CreateLookAt(cameraPos, centerFrustum, DirectX::SimpleMath::Vector3::Up);
 
 
 
-    mShadowCamera.view = view.Transpose();
-    mShadowCamera.proj = proj.Transpose();
-    mShadowCamera.viewProj = mShadowCamera.proj * mShadowCamera.view;
 
+	for (SimpleMath::Vector3& position : frustumPosition) {
+		position = SimpleMath::Vector3::Transform(position, view);
+	}
+
+	SimpleMath::Vector3 minPoint = frustumPosition[0];
+	SimpleMath::Vector3 maxPoint = frustumPosition[0];
+
+
+
+	for (const SimpleMath::Vector3& position : frustumPosition)
+	{
+		minPoint.x = std::min(minPoint.x, position.x);
+		minPoint.y = std::min(minPoint.y, position.y);
+		minPoint.z = std::min(minPoint.z, position.z);
+
+		maxPoint.x = std::max(maxPoint.x, position.x);
+		maxPoint.y = std::max(maxPoint.y, position.y);
+		maxPoint.z = std::max(maxPoint.z, position.z);
+	}
+
+
+
+
+
+	float projectionSize = std::max(maxPoint.x - minPoint.x, maxPoint.y - minPoint.y);
+
+	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize, projectionSize, 1.0f, 1500.0f);
+
+
+
+	mShadowCamera.view = view.Transpose();
+	mShadowCamera.proj = proj.Transpose();
+	mShadowCamera.viewProj = mShadowCamera.proj * mShadowCamera.view;
+	mShadowCamera.cameraPosition = cameraPos;
 
 	std::memcpy(*mShadowCameraBuffer.CPUBegin(), &mShadowCamera, sizeof(CameraConstants));
-    mShadowCameraBuffer.Upload(commandList);
+	mShadowCameraBuffer.Upload(commandList);
 }
 
 

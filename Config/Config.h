@@ -15,6 +15,8 @@
 #define FHD
 #elif defined(김성준컴퓨터) 
 #define HD
+#elif defined(정영기컴퓨터) 
+#define HD
 #endif 
 
 

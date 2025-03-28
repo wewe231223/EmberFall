@@ -80,16 +80,16 @@ void Renderer::Render() {
 
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = Config::WINDOW_WIDTH<float>;
-	viewport.Height = Config::WINDOW_HEIGHT<float>;
+	viewport.Width = ShadowRenderer::GetShadowMapSize<float>();
+	viewport.Height = ShadowRenderer::GetShadowMapSize<float>();
 	viewport.MinDepth = 0.f;
 	viewport.MaxDepth = 1.f;
 
 	D3D12_RECT scissorRect{};
 	scissorRect.left = 0;
 	scissorRect.top = 0;
-	scissorRect.right = Config::WINDOW_WIDTH<LONG>;
-	scissorRect.bottom = Config::WINDOW_HEIGHT<LONG>;
+	scissorRect.right = ShadowRenderer::GetShadowMapSize<LONG>();
+	scissorRect.bottom = ShadowRenderer::GetShadowMapSize<LONG>();
 
 	mCommandList->RSSetViewports(1, &viewport);
 	mCommandList->RSSetScissorRects(1, &scissorRect);
@@ -103,6 +103,21 @@ void Renderer::Render() {
 
 	mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer.GetShadowCameraBuffer());
 	// mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
+
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = Config::WINDOW_WIDTH<float>;
+	viewport.Height = Config::WINDOW_HEIGHT<float>;
+	viewport.MinDepth = 0.f;
+	viewport.MaxDepth = 1.f;
+
+	scissorRect.left = 0;
+	scissorRect.top = 0;
+	scissorRect.right = Config::WINDOW_WIDTH<LONG>;
+	scissorRect.bottom = Config::WINDOW_HEIGHT<LONG>;
+
+	mCommandList->RSSetViewports(1, &viewport);
+	mCommandList->RSSetScissorRects(1, &scissorRect);
 
 	// G-Buffer Pass 
 	auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
