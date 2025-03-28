@@ -80,7 +80,6 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 
     if (texPos.x < 0.0 || texPos.x > 1.0 || texPos.y < 0.0 || texPos.y > 1.0)
     {
-
         return diffuse;
     }
 

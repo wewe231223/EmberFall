@@ -334,6 +334,9 @@ void Scene::ProcessNetwork() {
 void Scene::Update() {
 	mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().y, mMyPlayer->GetTransform().GetPosition().z);
 
+	if (mMyPlayer) {
+		mMyPlayer->GetTransform().GetPosition() = { mMyPlayer->GetTransform().GetPosition().x, tCollider.GetHeight(mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().z), mMyPlayer->GetTransform().GetPosition().z };
+	}
 	if (mCameraMode) {
 		mCameraMode->Update();
 	}
