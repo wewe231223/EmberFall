@@ -70,7 +70,7 @@ private:
 	std::unique_ptr<CameraMode> mCameraMode{ nullptr };
 
 
-	std::unordered_map<NetworkObjectIdType, std::vector<GameObject>::iterator> mGameObjectMap{};
+	std::unordered_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
 	std::vector<GameObject> mGameObjects{};
 
 	int mNetworkSign{};

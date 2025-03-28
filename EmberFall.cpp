@@ -55,97 +55,96 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     MSG msg{};
     
-    try {
-        UNREFERENCED_PARAMETER(hPrevInstance);
-        UNREFERENCED_PARAMETER(lpCmdLine);
+    UNREFERENCED_PARAMETER(hPrevInstance);
+    UNREFERENCED_PARAMETER(lpCmdLine);
 
-        // TODO: 여기에 코드를 입력합니다.
+    // TODO: 여기에 코드를 입력합니다.
 
-        // 전역 문자열을 초기화합니다.
-        LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-        LoadStringW(hInstance, IDC_EMBERFALL, szWindowClass, MAX_LOADSTRING);
-        MyRegisterClass(hInstance);
+    // 전역 문자열을 초기화합니다.
+    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+    LoadStringW(hInstance, IDC_EMBERFALL, szWindowClass, MAX_LOADSTRING);
+    MyRegisterClass(hInstance);
 
-        // 애플리케이션 초기화를 수행합니다:
-        if (!InitInstance(hInstance, nCmdShow))
-        {
-            return FALSE;
-        }
-
-        Renderer renderer{ hWnd };
-        Input.Initialize(hWnd);
-
-        Scene scene{ renderer.GetDevice(), renderer.GetCommandList(), renderer.GetManagers(), renderer.GetMainCameraBuffer() };
-
-        renderer.UploadResource();
-
-        int n = NonReplacementSampler::GetInstance().Sample();
-
-        Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::Escape, n, []() {
-            PostQuitMessage(0);
-            });
-
-        Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F2, n, []() {Input.ToggleVirtualMouse(); });
-
-        size_t frameCount = 0;
-
-        Time.AddEvent(1s, [&frameCount]() {
-            std::string title = "FPS : " + std::to_string(frameCount);
-            SetWindowTextA(hWnd, title.c_str());
-            frameCount = 0;
-            return true;
-            });
-
-        HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
-
-        TextBlock* CPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 0.f, 0.f, 200.f, 100.f }, StringColor::Black, "NotoSansKR");
-        IntervalTimer CPUTimer{};
-
-        TextBlock* GPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 0.f, 30.f, 200.f, 200.f }, StringColor::Black, "NotoSansKR");
-        IntervalTimer GPUTimer{};
-
-        // 기본 메시지 루프입니다:
-        while (true) {
-            if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-                if (msg.message == WM_QUIT) break;
-                if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) {
-                    TranslateMessage(&msg);
-                    DispatchMessage(&msg);
-                }
-
-            }
-            else {
-                CPUTimer.Start();
-
-                Time.AdvanceTime();
-                Input.Update();
-
-                scene.ProcessNetwork();
-                scene.Update();
-                scene.SendNetwork();
-
-                renderer.Render();
-                CPUTimer.End();
-
-                GPUTimer.Start();
-                renderer.ExecuteRender();
-                GPUTimer.End();
-
-                CPUTime->GetText() = std::format(L"CPU Time : {:.2f}us", CPUTimer.Microseconds());
-                GPUTime->GetText() = std::format(L"GPU Time : {:.2f}us", GPUTimer.Microseconds());
-
-                // 게임 루프... 
-                frameCount++;
-            }
-        }
-
-        ::DestroyWindow(hWnd);
-        gDevice.WaitForTerminate();
-
+    // 애플리케이션 초기화를 수행합니다:
+    if (!InitInstance(hInstance, nCmdShow))
+    {
+        return FALSE;
     }
-    catch (const std::exception& e) {
-		MessageBoxA(nullptr, std::format("Error : {}", e.what()).c_str(), "Error", MB_OK);
+
+    Renderer renderer{ hWnd };
+    Input.Initialize(hWnd);
+
+    std::unique_ptr<Scene> scene{}; 
+    scene = std::make_unique<Scene>(renderer.GetDevice(), renderer.GetCommandList(), renderer.GetManagers(), renderer.GetMainCameraBuffer()); 
+
+    renderer.UploadResource();
+
+    int n = NonReplacementSampler::GetInstance().Sample();
+
+    Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::Escape, n, []() {
+        PostQuitMessage(0);
+        });
+
+    Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F2, n, []() {Input.ToggleVirtualMouse(); });
+
+    size_t frameCount = 0;
+
+    Time.AddEvent(1s, [&frameCount]() {
+        std::string title = "FPS : " + std::to_string(frameCount);
+        SetWindowTextA(hWnd, title.c_str());
+        frameCount = 0;
+        return true;
+        });
+
+    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
+
+    TextBlock* CPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 0.f, 0.f, 200.f, 100.f }, StringColor::Black, "NotoSansKR");
+    IntervalTimer CPUTimer{};
+
+    TextBlock* GPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 0.f, 30.f, 200.f, 200.f }, StringColor::Black, "NotoSansKR");
+    IntervalTimer GPUTimer{};
+
+
+	MessageBoxA(hWnd, "Initialize Finished!", "Information", MB_OK | MB_ICONINFORMATION);
+    // 기본 메시지 루프입니다:
+    while (true) {
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+            if (msg.message == WM_QUIT) break;
+            if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+
+        }
+        else {
+            CPUTimer.Start();
+
+            Time.AdvanceTime();
+            Input.Update();
+
+            scene->ProcessNetwork();
+            scene->Update();
+            scene->SendNetwork();
+
+            renderer.Render();
+            CPUTimer.End();
+
+            GPUTimer.Start();
+            renderer.ExecuteRender();
+            GPUTimer.End();
+
+            CPUTime->GetText() = std::format(L"CPU Time : {:.2f}us", CPUTimer.Microseconds());
+            GPUTime->GetText() = std::format(L"GPU Time : {:.2f}us", GPUTimer.Microseconds());
+
+            // 게임 루프... 
+            frameCount++;
+        }
     }
+
+    ::DestroyWindow(hWnd);
+    gDevice.WaitForTerminate();
+
+
     return (int) msg.wParam;
 }
 

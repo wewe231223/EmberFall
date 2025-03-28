@@ -117,7 +117,9 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 
 			}
 			else {
-				mPlayerIndexmap[packet->objId]->SetActiveState(true);
+				if (mPlayerIndexmap[packet->objId] != nullptr) {
+					mPlayerIndexmap[packet->objId]->SetActiveState(true);
+				}
 			}
 		}
 		// 다른 플레이어 등장 
@@ -125,14 +127,18 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 			// 그 플레이어 인스턴스가 없다면  
 			if (not mPlayerIndexmap.contains(packet->objId)) {
 				auto nextLoc = FindNextPlayerLoc();
-				if (nextLoc == mPlayers.end()) Crash("There is no more space for Other Player!!");
+				if (nextLoc == mPlayers.end()) { 
+					Crash("There is no more space for Other Player!!"); 
+				}
 
 				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
 				mPlayerIndexmap[packet->objId] = &(*nextLoc);
 
 			}
 			else {
-				mPlayerIndexmap[packet->objId]->SetActiveState(true);
+				if (mPlayerIndexmap[packet->objId] != nullptr) {
+					mPlayerIndexmap[packet->objId]->SetActiveState(true);
+				}
 			}
 		}
 	}
@@ -144,13 +150,16 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 				Crash("There is no more space for Other Object!!");
 			}
 
-			*nextLoc = GameObject{};
-			mGameObjectMap[packet->objId] = nextLoc;
+
 
 			switch (packet->entity) {
 			case MONSTER1:
 			case MONSTER2:
 			case MONSTER3:
+			{
+				*nextLoc = GameObject{};
+				mGameObjectMap[packet->objId] = &(*nextLoc);
+
 				nextLoc->mShader = mShaderMap["SkinnedShader"].get();
 				nextLoc->mMesh = mMeshMap["MonsterType1"].get();
 				nextLoc->mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
@@ -160,29 +169,40 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 
 				nextLoc->GetTransform().Scaling(0.3f, 0.3f, 0.3f);
 				nextLoc->GetTransform().SetPosition(packet->position);
+			}
 				break;
 			case CORRUPTED_GEM:
+			{
+				*nextLoc = GameObject{};
+				mGameObjectMap[packet->objId] = &(*nextLoc);
 				nextLoc->mShader = mShaderMap["StandardShader"].get();
 				nextLoc->mMesh = mMeshMap["CorruptedGem"].get();
 				nextLoc->mMaterial = mMaterialManager->GetMaterial("CorruptedGemMaterial");
 				nextLoc->SetActiveState(true);
 
 				nextLoc->GetTransform().SetPosition(packet->position);
-
+			}
 				break;
 			default:
+			{
+				*nextLoc = GameObject{};
+				mGameObjectMap[packet->objId] = &(*nextLoc);
 				nextLoc->mShader = mShaderMap["StandardShader"].get();
 				nextLoc->mMesh = mMeshMap["Cube"].get();
 				nextLoc->mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
 				nextLoc->SetActiveState(true);
 
 				nextLoc->GetTransform().SetPosition(packet->position);
+			}
 				break;
 			}
 		}
 		else {
-			mGameObjectMap[packet->objId]->SetActiveState(true);
+			if (mGameObjectMap[packet->objId] != nullptr) {
+				mGameObjectMap[packet->objId]->SetActiveState(true);
+			}
 		}
+
 	}
 }
 
