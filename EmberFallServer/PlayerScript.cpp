@@ -69,8 +69,18 @@ void PlayerScript::Update(const float deltaTime) {
         moveDir.z += 1.0f;
     }
 
-    if (mInput->IsActiveKey(VK_SPACE)) {
+    if (mInput->IsDown(VK_SPACE)) {
         physics->Jump(deltaTime);
+        auto animPacket = PacketSC::PacketAnimationState{ 
+            sizeof(PacketSC::PacketAnimationState),
+            PacketType::PACKET_ANIM_STATE,
+            static_cast<SessionIdType>(GetOwner()->GetId()) 
+        };
+
+        animPacket.objId = GetOwner()->GetId();
+        animPacket.animState = AnimationState::JUMP;
+
+        gServerCore->SendAll(&animPacket);
     }
 
     if (mInput->IsUp(VK_F1)) {
