@@ -71,6 +71,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
+	Console.Log("Application Start!",LogType::Info);
+
     Renderer renderer{ hWnd };
     Input.Initialize(hWnd);
 
@@ -105,7 +107,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     IntervalTimer GPUTimer{};
 
 
-	MessageBoxA(hWnd, "Initialize Finished!", "Information", MB_OK | MB_ICONINFORMATION);
     // 기본 메시지 루프입니다:
     while (true) {
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
@@ -142,8 +143,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     ::DestroyWindow(hWnd);
-    gDevice.WaitForTerminate();
-
 
     return (int) msg.wParam;
 }

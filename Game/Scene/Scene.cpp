@@ -110,8 +110,10 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 				mMyPlayer->SetWeapon(mWeapons[0]);
 				mMyPlayer->SetMyPlayer();
 			
+				// mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
 				mCameraMode->Enter();
+
 				Scene::SetInputBaseAnimMode();
 
 
@@ -352,7 +354,11 @@ void Scene::ProcessNetwork() {
 }
 
 void Scene::Update() {
-	mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().y, mMyPlayer->GetTransform().GetPosition().z);
+
+	if (mMyPlayer != nullptr) {
+		mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().y, mMyPlayer->GetTransform().GetPosition().z);
+	}
+
 
 	if (mCameraMode) {
 		mCameraMode->Update();
