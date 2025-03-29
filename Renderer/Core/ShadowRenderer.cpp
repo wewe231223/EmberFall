@@ -39,7 +39,10 @@ void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, Defau
 	std::memcpy(&worldCamera, *worldCameraBuffer, sizeof(CameraConstants));
 
 	CameraParameter cameraParam{};
-	float farZ = 40.0f;
+	
+	//그림자 맵에 담을 프러스텀의 원평면 까지의 거리
+	float farZ = 10.0f;
+	
 	SimpleMath::Matrix invView = worldCamera.view.Transpose().Invert();
 	SimpleMath::Matrix invProj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(cameraParam.fov, cameraParam.aspect, cameraParam.nearZ, farZ).Invert();
 

@@ -88,8 +88,12 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     float bias = 0.002f;
 
     //float shadowFactor = 0.3f;
-    //float shadowFactor = GBuffers[3].SampleCmpLevelZero(PCFSampler, texPos.xy, texPos.z); //2x2 PCF
-    float shadowFactor = ComputeShadowFactor(texPos, bias); //3x3 PCF
+    
+    //2x2 PCF
+    //float shadowFactor = GBuffers[3].SampleCmpLevelZero(PCFSampler, texPos.xy, texPos.z); 
+    
+    //3x3 PCF
+    float shadowFactor = ComputeShadowFactor(texPos, bias); 
 
 
 
