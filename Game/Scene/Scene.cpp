@@ -212,6 +212,11 @@ void Scene::ProcessObjectDisappeared(PacketHeader* header) {
 	auto packet = reinterpret_cast<PacketSC::PacketObjectDisappeared*>(header);
 
 	if (packet->objId < OBJECT_ID_START) {
+
+		if (packet->objId == gClientCore->GetSessionId()) {
+			return; 
+		}
+
 		if (mPlayerIndexmap.contains(packet->objId)) {
 			mPlayerIndexmap[packet->objId]->SetActiveState(false);
 		}
