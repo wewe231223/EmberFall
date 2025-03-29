@@ -253,6 +253,9 @@ void Scene::ProcessPacketAnimation(PacketHeader* header) {
 			mPlayerIndexmap[packet->objId]->GetBoneMaskController().Transition(static_cast<size_t>(packet->animState), 0.09);
 		}
 	}
+	else {
+		
+	}
 
 }
 #pragma endregion 
