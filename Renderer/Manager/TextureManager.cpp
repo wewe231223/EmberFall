@@ -42,6 +42,8 @@ TextureManager::TextureManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graphic
 		pair = std::make_pair(++count, Texture(device, commandList, path));
 
 		srvDesc.Format = pair.second.GetResource()->GetDesc().Format;
+		srvDesc.Texture2D.MipLevels = pair.second.GetResource()->GetDesc().MipLevels;
+		srvDesc.Texture2D.MostDetailedMip = 0; 
 		handle = mTextureHeap->GetCPUDescriptorHandleForHeapStart();
 		handle.Offset(count, increasement);
 

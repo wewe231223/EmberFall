@@ -506,7 +506,7 @@ void Scene::BuildMaterial() {
 	mMaterialManager->CreateMaterial("TreeLeavesMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Rolling Hills");
-	mat.mDiffuseTexture[1] = mTextureManager->GetTexture("Detail_Texture_7");
+	mat.mDiffuseTexture[1] = mTextureManager->GetTexture("dirt_2");
 	mMaterialManager->CreateMaterial("TerrainMaterial", mat);
 
 
