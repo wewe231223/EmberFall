@@ -10,7 +10,8 @@
 MonsterScript::MonsterScript(std::shared_ptr<class GameObject> owner)
     : Script{ owner, ObjectTag::MONSTER } {
     owner->SetEntityType(EntityType::MONSTER1);
-    owner->RestoreHealth(1000.0f);
+    owner->RestoreHealth(10.0f);
+    owner->GetPhysics()->mFactor.maxMoveSpeed = 1.3mps;
 }
 
 MonsterScript::~MonsterScript() { }

@@ -116,6 +116,7 @@ void PlayerScript::Update(const float deltaTime) {
     }
 
     moveDir.Normalize();
+    moveDir = SimpleMath::Vector3::Transform(moveDir, GetOwner()->GetTransform()->GetRotation());
     physics->Acceleration(moveDir, deltaTime);
 }
 

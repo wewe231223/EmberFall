@@ -117,7 +117,7 @@ void Physics::Update(const float deltaTime) {
     UpdateGravity(deltaTime, moveDir, speed);   // 중력 적용
 
     auto transform = mTransform.lock();
-    transform->Move(mVelocity * deltaTime);
+    transform->Translate(mVelocity * deltaTime);
 }
 
 void Physics::LateUpdate(const float deltaTime) { }
