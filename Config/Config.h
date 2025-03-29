@@ -57,7 +57,7 @@ struct Config {
 	constexpr static T GBUFFER_COUNT{ static_cast<T>(3) };
 
 	template<typename T = size_t> 
-	constexpr static T MAX_BONE_COUNT_PER_INSTANCE{ static_cast<T>(150) };
+	constexpr static T MAX_BONE_COUNT_PER_INSTANCE{ static_cast<T>(100) };
 
 	constexpr static bool ALLOW_TEARING{ true };
 	constexpr static D3D_FEATURE_LEVEL DIRECTX_FEATURE_LEVEL{ D3D_FEATURE_LEVEL_11_0 };

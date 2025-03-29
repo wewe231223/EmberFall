@@ -149,6 +149,7 @@
     <ClCompile Include="Core\ShadowRenderer.cpp" />
     <ClCompile Include="Core\StringRenderer.cpp" />
     <ClCompile Include="Manager\MeshRenderManager.cpp" />
+    <ClCompile Include="Manager\ParticleManager.cpp" />
     <ClCompile Include="Manager\SceneManager.cpp" />
     <ClCompile Include="Manager\TextureManager.cpp" />
     <ClCompile Include="pch.cpp">
@@ -167,6 +168,7 @@
     <ClInclude Include="Core\ShadowRenderer.h" />
     <ClInclude Include="Core\StringRenderer.h" />
     <ClInclude Include="Manager\MeshRenderManager.h" />
+    <ClInclude Include="Manager\ParticleManager.h" />
     <ClInclude Include="Manager\SceneManager.h" />
     <ClInclude Include="Manager\TextureManager.h" />
     <ClInclude Include="pch.h" />

@@ -4,6 +4,7 @@
 #include <bitset>
 #include <array>
 #include "../Utility/DirectXInclude.h"
+#include "../Config/Config.h"
 template <typename T>
 concept HasIndex = requires {
 	{ T::index } -> std::convertible_to<size_t>;
@@ -34,7 +35,7 @@ struct AnimationModelContext {
 };
 
 struct BoneTransformBuffer {
-	std::array<SimpleMath::Matrix, 150>	boneTransforms;
+	std::array< SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<size_t> >	boneTransforms;
 	UINT boneCount;
 };
 
@@ -55,6 +56,44 @@ template<size_t N>
 bool IsSubSet(const std::bitset<N>& a, const std::bitset<N>& b) {
 	return (a & b) == b;
 }
+
+enum : UINT {
+	ParticleType_emit = 1,
+	ParticleType_shell = 2,
+	ParticleType_ember = 3,
+};
+
+
+// 계층 구조를 따르는 Emit 파티클의 경우, 부모의 정보가 필요하다. 
+// 이미 만들어져 있는 월드 행렬에는 위치, 로컬 축 3개가 포함되어 있다. 이정도면 충분. 
+// 만약 계층 구조를 이루는 파티클을 만들고 싶은 경우, Transform* 를 받아와서, 부모의 위치를 업데이트 하여 사용한다.
+// 부모의 계층만 사용하여 계산하며, offset 을 통해 계층 구조 파티클을 구현한다. 
+// 이 때 계층 구조를 가지는 파티클의 개수는 512개로 제한한다. 
+// 만약 parentID 가 활성화 되어 있는 경우, 방향&속도 에 따른 위치 계산을 하지 않고, 부모의 위치 + offset 을 위치로 삼는다.
+// 이 외의 계산 과정은 동일. 
+
+struct ParticleVertex {
+	DirectX::XMFLOAT3 position{ 0.f,0.f,0.f };
+	float halfWidth{ 0.f };
+	float halfheight{ 0.f };
+	UINT material{};
+#pragma region Sprite 
+	UINT spritable{ 0 };
+	UINT spriteFrameInRow{ 0 };
+	UINT spriteFrameInCol{ 0 };
+	float spriteDuration{ 0 };
+#pragma endregion Sprite 
+	DirectX::XMFLOAT3 direction{ 0.f,0.f,0.f };
+
+	float velocity{ 0.f };
+	float totalLifeTime{ 0.f };
+	float lifeTime{ 0.f };
+
+	UINT type{ ParticleType_ember };
+	UINT emitType{ ParticleType_ember };
+	UINT remainEmit{ 0 };
+};
+
 
 
 enum class StringColor : DWORD {

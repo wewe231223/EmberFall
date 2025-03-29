@@ -66,6 +66,9 @@
     <ClCompile Include="Core\ShadowRenderer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Manager\ParticleManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -106,6 +109,9 @@
     </ClInclude>
     <ClInclude Include="Core\ShadowRenderer.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Manager\ParticleManager.h">
+      <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

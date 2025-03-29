@@ -14,7 +14,7 @@
 class MeshRenderManager {
 public:
 	template<typename T>
-	static constexpr T MAX_INSTANCE_COUNT = static_cast<T>(2048);
+	static constexpr T MAX_INSTANCE_COUNT = static_cast<T>(1024);
 
 	template<typename T> 
 	static constexpr T MAX_BONE_COUNT = static_cast<T>(MAX_INSTANCE_COUNT<T> * Config::MAX_BONE_COUNT_PER_INSTANCE<T>);
