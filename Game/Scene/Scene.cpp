@@ -272,7 +272,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mNetworkSign = NonReplacementSampler::GetInstance().Sample();
 	
 	gClientCore->Init();
-	auto res = gClientCore->Start("192.168.200.25", 7777);
+	auto res = gClientCore->Start("127.0.0.1", 7777);
 	if (false == res) {
 		DebugBreak(); 
 		Crash(false);
