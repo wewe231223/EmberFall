@@ -54,6 +54,7 @@ private:
 	void ProcessObjectAttacked(PacketHeader* header);
 	void ProcessUseItem(PacketHeader* header);
 	void ProcessRestoreHP(PacketHeader* header);
+	void ProcessPacketAnimation(PacketHeader* header);
 private:
 	std::shared_ptr<TextureManager> mTextureManager{ nullptr };
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{ nullptr };

@@ -245,6 +245,16 @@ void Scene::ProcessUseItem(PacketHeader* header) {
 void Scene::ProcessRestoreHP(PacketHeader* header) {
 
 }
+void Scene::ProcessPacketAnimation(PacketHeader* header) {
+	auto packet = reinterpret_cast<PacketSC::PacketAnimationState*>(header);
+	// 플레이어인 경우 
+	if (packet->objId < OBJECT_ID_START) {
+		if (mPlayerIndexmap.contains(packet->objId)) {
+			mPlayerIndexmap[packet->objId]->GetBoneMaskController().Transition(static_cast<size_t>(packet->animState), 0.09);
+		}
+	}
+
+}
 #pragma endregion 
 
 
@@ -254,7 +264,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mNetworkSign = NonReplacementSampler::GetInstance().Sample();
 	
 	gClientCore->Init();
-	auto res = gClientCore->Start("127.0.0.1", 7777);
+	auto res = gClientCore->Start("192.168.200.25", 7777);
 	if (false == res) {
 		DebugBreak(); 
 		Crash(false);
@@ -435,6 +445,7 @@ void Scene::BuildPacketProcessor() {
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_PLAYER_EXIT, [this](PacketHeader* header) { ProcessPlayerExit(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_ATTACKED, [this](PacketHeader* header) { ProcessObjectAttacked(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_ACQUIRED_ITEM, [this](PacketHeader* header) { ProcessAcquiredItem(header); });
+	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_ANIM_STATE, [this](PacketHeader* header) { ProcessPacketAnimation(header); });
 }
 
 void Scene::BuildSendKeyList() {

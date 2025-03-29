@@ -188,6 +188,7 @@ namespace AnimatorGraph {
 
         const AnimationParameter* GetParameter(const std::string& name) const;
 
+		void Transition(size_t targretIndex, double transitionDuration = 0.09);
     private:
         void EvaluateTransitions();
     
@@ -293,6 +294,7 @@ namespace AnimatorGraph {
         void ResetTrigger(const std::string& name);
         const AnimationParameter* GetParameter(const std::string& name) const;
 
+        void Transition(size_t targretIndex, double transitionDuration = 0.09);
     private:
         void EvaluateTransitions();
     private:

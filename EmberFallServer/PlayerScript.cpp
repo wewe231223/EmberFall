@@ -106,7 +106,7 @@ void PlayerScript::Update(const float deltaTime) {
             };
 
             interactionPacket.playerId = GetOwner()->GetId();
-            gServerCore->Send(static_cast<SessionIdtype>(GetOwner()->GetId()), &interactionPacket);
+            gServerCore->Send(static_cast<SessionIdType>(GetOwner()->GetId()), &interactionPacket);
             mInteractionObj = INVALID_OBJ_ID;
         }
     }
