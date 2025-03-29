@@ -7,6 +7,8 @@
 #include "GameEventManager.h"
 #include "ObjectSpawner.h"
 
+#include "GameEventFactory.h"
+
 PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input)
     : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ static_cast<SessionIdType>(owner->GetId()) } {
     owner->SetEntityType(EntityType::PLAYER);
@@ -30,7 +32,7 @@ void PlayerScript::Update(const float deltaTime) {
     mViewList.Update();
     mViewList.Send();
 
-    auto physics = GetPhysics();
+    auto physics{ GetPhysics() };
 
     SimpleMath::Vector3 moveDir{ SimpleMath::Vector3::Zero };
     if (mInput->IsUp('P')) {
@@ -71,35 +73,44 @@ void PlayerScript::Update(const float deltaTime) {
 
     if (mInput->IsDown(VK_SPACE)) {
         physics->Jump(deltaTime);
-        auto animPacket = PacketSC::PacketAnimationState{ 
-            sizeof(PacketSC::PacketAnimationState),
-            PacketType::PACKET_ANIM_STATE,
-            static_cast<SessionIdType>(GetOwner()->GetId()) 
-        };
+        
+        auto ownerId = static_cast<SessionIdType>(GetOwner()->GetId());
+        auto packet = GetPacket<PacketSC::PacketAnimationState>(
+            ownerId,
+            ownerId,
+            AnimationState::JUMP
+        );
 
-        animPacket.objId = GetOwner()->GetId();
-        animPacket.animState = AnimationState::JUMP;
-
-        gServerCore->SendAll(&animPacket);
+        gServerCore->SendAll(&packet);
     }
 
     if (mInput->IsUp(VK_F1)) {
-        gObjectSpawner->SpawnProjectile(ObjectTag::ARROW, GetOwner()->GetPosition(),
-            GetOwner()->GetTransform()->Forward(), GameProtocol::Unit::DEFAULT_PROJECTILE_SPEED); // temp speed
+        gObjectSpawner->SpawnProjectile(
+            ObjectTag::ARROW, 
+            GetOwner()->GetPosition(),
+            GetOwner()->GetTransform()->Forward(), 
+            GameProtocol::Unit::DEFAULT_PROJECTILE_SPEED        // temp speed
+        ); 
     }
 
     if (mInput->IsDown(VK_LSHIFT)) {
         auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(GameProtocol::Unit::PLAYER_RUN_SPEED);
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h",
+        gLogConsole->PushLog(
+            DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h",
             GetOwner()->GetId(),
-            maxSpeed.Count());
+            maxSpeed.Count()
+        );
+
         physics->mFactor.maxMoveSpeed = maxSpeed;
     }
     else if (mInput->IsUp(VK_LSHIFT)) {
         auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(GameProtocol::Unit::PLAYER_WALK_SPEED);
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h", 
+        gLogConsole->PushLog(
+            DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h", 
             GetOwner()->GetId(),
-            maxSpeed.Count());
+            maxSpeed.Count()
+        );
+
         physics->mFactor.maxMoveSpeed = maxSpeed;
     }
 
@@ -109,14 +120,13 @@ void PlayerScript::Update(const float deltaTime) {
     else if (mInput->IsUp('F')) {
         if (mInteractionObj != INVALID_OBJ_ID) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Cancel");
-            auto interactionPacket = PacketSC::PacketInteractCancel{
-                sizeof(PacketSC::PacketInteractCancel),
-                PacketType::PACKET_INTERACTION_CANCEL,
-                static_cast<uint8_t>(GetOwner()->GetId())
-            };
+            auto ownerId{ static_cast<SessionIdType>(GetOwner()->GetId()) };
+            auto packet = GetPacket<PacketSC::PacketInteractCancel>(
+                ownerId,
+                ownerId
+            );
 
-            interactionPacket.playerId = GetOwner()->GetId();
-            gServerCore->Send(static_cast<SessionIdType>(GetOwner()->GetId()), &interactionPacket);
+            gServerCore->Send(ownerId, &packet);
             mInteractionObj = INVALID_OBJ_ID;
         }
     }
@@ -151,20 +161,19 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
         break;
 
     case GameEventType::DESTROY_GEM_COMPLETE:
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Finish");
         {
-            auto interactionPacket = PacketSC::PacketInteractFinished{
-                sizeof(PacketSC::PacketInteractFinished),
-                PacketType::PACKET_INTERACTION_FINISH,
-                static_cast<uint8_t>(GetOwner()->GetId())
-            };
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Finish");
+            auto ownerId = static_cast<SessionIdType>(GetOwner()->GetId());
+            auto packet = GetPacket<PacketSC::PacketInteractFinished>(
+                ownerId,
+                EntityType::CORRUPTED_GEM,
+                ownerId,
+                event->sender
+            );
 
-            interactionPacket.interactionEntityType = EntityType::CORRUPTED_GEM;
-            interactionPacket.playerId = GetOwner()->GetId();
-            interactionPacket.interactObjId = event->sender;
-            gServerCore->Send(GetOwner()->GetId(), &interactionPacket);
+            gServerCore->Send(ownerId, &packet);
+            mInteractionObj = INVALID_OBJ_ID;
         }
-        mInteractionObj = INVALID_OBJ_ID;
         break;
     }
 }
@@ -203,16 +212,15 @@ void PlayerScript::Interaction(const float deltaTime, const std::shared_ptr<Game
 
     if (target->GetId() != mInteractionObj and EntityType::CORRUPTED_GEM == target->GetEntityType()) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Start");
-        auto interactionPacket = PacketSC::PacketInteractStart{
-            sizeof(PacketSC::PacketInteractStart),
-            PacketType::PACKET_INTERACTION_START,
-            static_cast<uint8_t>(GetOwner()->GetId())
-        };
+        auto ownerId = static_cast<SessionIdType>(GetOwner()->GetId());
+        auto packet = GetPacket<PacketSC::PacketInteractStart>(
+            ownerId, 
+            target->GetEntityType(), 
+            ownerId, 
+            target->GetId()
+        );
 
-        interactionPacket.interactionEntityType = target->GetEntityType();
-        interactionPacket.playerId = GetOwner()->GetId();
-        interactionPacket.interactObjId = target->GetId();
-        gServerCore->Send(GetOwner()->GetId(), &interactionPacket);
+        gServerCore->Send(ownerId, &packet);
     }
 
     mInteractionObj = target->GetId();
@@ -240,11 +248,11 @@ void PlayerScript::DestroyGem(const float deltaTime, const std::shared_ptr<GameO
         holdStart = 0.0f;
     }
 
-    std::shared_ptr<GemDestroyEvent> event = std::make_shared<GemDestroyEvent>();
-    event->type = GameEventType::DESTROY_GEM_EVENT;
-    event->receiver = gem->GetId();
-    event->holdTime = holdStart;
-    gEventManager->PushEvent(event);
+    gEventManager->PushEvent<GemDestroyStart>(
+        GetOwner()->GetId(),
+        gemId,
+        holdStart
+    );
 }
 
 void PlayerScript::AcquireItem(const float deltaTime, const std::shared_ptr<GameObject>& item) {

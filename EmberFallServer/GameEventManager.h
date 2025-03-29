@@ -14,7 +14,7 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "Events.h"
+#include "GameEventFactory.h"
 
 class GameObject;
 
@@ -31,6 +31,11 @@ public:
 public:
     void SetCurrentGameScene(std::shared_ptr<class IServerGameScene> gameScene);
     void PushEvent(std::shared_ptr<GameEvent> event);
+    
+    template <typename EventType, typename... Args> requires std::derived_from<EventType, GameEvent>
+    void PushEvent(NetworkObjectIdType sender, NetworkObjectIdType receiver, Args&&... args) {
+        PushEvent(GameEventFactory::GetEvent<EventType>(sender, receiver, std::forward<Args>(args)...));
+    }
 
     void Update();
 

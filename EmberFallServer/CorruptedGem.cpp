@@ -26,7 +26,7 @@ void CorruptedGemScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>
 void CorruptedGemScript::DispatchGameEvent(GameEvent* event) { 
     switch (event->type) {
     case GameEventType::DESTROY_GEM_EVENT:
-        OnDestroy(reinterpret_cast<GemDestroyEvent*>(event));
+        OnDestroy(reinterpret_cast<GemDestroyStart*>(event));
         break;
 
     default:
@@ -34,15 +34,13 @@ void CorruptedGemScript::DispatchGameEvent(GameEvent* event) {
     }
 }
 
-void CorruptedGemScript::OnDestroy(GemDestroyEvent* event) {
+void CorruptedGemScript::OnDestroy(GemDestroyStart* event) {
     auto owner = GetOwner();
     if (event->holdTime > mDesytoyingTime) {
-        auto gameEvent = std::make_shared<GemDestroyed>();
-        gameEvent->sender = event->receiver;
-        gameEvent->receiver = event->sender;
-        gameEvent->type = GameEventType::DESTROY_GEM_COMPLETE;
-
-        gEventManager->PushEvent(gameEvent);
+        gEventManager->PushEvent<GemDestroyed>(
+            event->receiver,
+            event->sender
+        );
 
         owner->SetActive(false);
     }

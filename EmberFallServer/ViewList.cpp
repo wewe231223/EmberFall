@@ -47,18 +47,13 @@ void ViewList::Update() {
 }
 
 void ViewList::Send() {
-    PacketSC::PacketObject objectPacket{
-        sizeof(PacketSC::PacketObject),
-        PacketType::PACKET_OBJECT,
-        mOwnerId
-    };
+    auto packet = GetPacket<PacketSC::PacketObject>(mOwnerId);
 
-    NetworkObjectIdType objectId{ };
     for (const auto& object : mObjectInRange) {
-        objectPacket.objId = object->GetId();
-        objectPacket.position = object->GetPosition();
-        objectPacket.rotationYaw = object->GetEulerRotation().y;
-        gServerCore->Send(mOwnerId, &objectPacket);
+        packet.objId = object->GetId();
+        packet.position = object->GetPosition();
+        packet.rotationYaw = object->GetEulerRotation().y;
+        gServerCore->Send(mOwnerId, &packet);
     }
 }
 
@@ -68,17 +63,13 @@ void ViewList::AddInRange(std::shared_ptr<GameObject> obj) {
         return;
     }
 
-    PacketSC::PacketObjectAppeared objectPacket{
-        sizeof(PacketSC::PacketObject),
-        PacketType::PACKET_OBJECT_APPEARED,
-        mOwnerId
-    };
-
-    objectPacket.objId = obj->GetId();
-    objectPacket.entity = obj->GetEntityType();
-    objectPacket.position = obj->GetPosition();
-    objectPacket.rotationYaw = obj->GetEulerRotation().y;
-    gServerCore->Send(mOwnerId, &objectPacket);
+    auto packet = GetPacket<PacketSC::PacketObjectAppeared>(
+        mOwnerId,
+        obj->GetId(),
+        obj->GetEntityType(),
+        obj->GetEulerRotation().y
+    );
+    gServerCore->Send(mOwnerId, &packet);
 }
 
 bool ViewList::EraseFromRange(std::shared_ptr<GameObject> obj) {
@@ -86,14 +77,11 @@ bool ViewList::EraseFromRange(std::shared_ptr<GameObject> obj) {
         return false;
     }
    
-    PacketSC::PacketObjectDisappeared objectPacket{
-        sizeof(PacketSC::PacketObject),
-        PacketType::PACKET_OBJECT_DISAPPEARED,
-        mOwnerId
-    };
-
-    objectPacket.objId = obj->GetId();
-    gServerCore->Send(mOwnerId, &objectPacket);   
+    auto packet = GetPacket<PacketSC::PacketObjectDisappeared>(
+        mOwnerId,
+        obj->GetId()
+    );
+    gServerCore->Send(mOwnerId, &packet);   
 
     mObjectInRange.erase(obj);
 

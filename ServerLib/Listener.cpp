@@ -4,6 +4,8 @@
 #include "SessionManager.h"
 #include "NetworkCore.h"
 
+#include "PacketFactory.h"
+
 Listener::Listener(const UINT16 port, std::shared_ptr<INetworkCore> coreService)
     : INetworkObject{ coreService }, mLocalPort{ port } {
     mListenSocket = NetworkUtil::CreateSocket();
@@ -94,14 +96,12 @@ void Listener::ProcessAccept() {
         session->InitSessionNetAddress(mOverlappedAccept.buffer.data());
         auto [ip, port] = session->GetAddress();
         
-        PacketSC::PacketNotifyId notifyingId{ 
-            sizeof(PacketSC::PacketNotifyId), PacketType::PACKET_NOTIFY_ID, session->GetId() 
-        };
+        auto notifyingId = GetPacket<PacketSC::PacketNotifyId>(session->GetId());
         sessionManager->Send(session->GetId(), &notifyingId);
 
-        PacketProtocolVersion protocolVersion{ sizeof(PacketProtocolVersion), PacketType::PACKET_PROTOCOL_VERSION, { } };
+        auto protocolVersion = GetPacket<PacketProtocolVersion>(session->GetId());
         sessionManager->Send(session->GetId(), &protocolVersion);
-
+        
         gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Client [IP: {}, PORT: {}] Connected", ip, port);
     }
     else {

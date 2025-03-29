@@ -28,7 +28,7 @@ public:
     virtual void DispatchGameEvent(struct GameEvent* event) override;
 
 private:
-    void OnDestroy(struct GemDestroyEvent* event);
+    void OnDestroy(struct GemDestroyStart* event);
 
 private:
     float mDesytoyingTime{ 3.0f };

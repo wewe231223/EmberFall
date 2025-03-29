@@ -13,9 +13,14 @@
 
 class GameEventFactory {
 public:
-    template <typename EventType, typename... EventArgs>
-    static std::shared_ptr<GameEvent> GetEvent(EventArgs&&... args) {
-        return std::make_shared<EventType>(EventType{ args... });
+    template <typename EventType, typename... EventArgs> requires std::derived_from<EventType, GameEvent>
+    static std::shared_ptr<GameEvent> GetEvent(NetworkObjectIdType sender, NetworkObjectIdType receiver, EventArgs&&... args) {
+        return std::make_shared<EventType>(
+            ConvertEventTypeToEnum<EventType>(),
+            sender,
+            receiver, 
+            std::forward<EventArgs>(args)...
+       );
     }
 
     static std::shared_ptr<GameEvent> CloneEvent(std::shared_ptr<GameEvent> event);

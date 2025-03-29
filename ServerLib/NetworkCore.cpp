@@ -65,8 +65,7 @@ bool ServerCore::Start(const std::string& ip, const UINT16 port) {
 
     for (size_t i = 0; i < mWorkerThreadNum; ++i) {
         mWorkerThreads.emplace_back(
-            [=]()
-            {
+            [=]() {
                 GetIOCPCore()->IOWorker();
             }
         );
@@ -88,9 +87,6 @@ void ServerCore::End() {
 }
 
 void ServerCore::Send(SessionIdType to, void* packet) {
-    if (PacketType::PACKET_ANIM_STATE == reinterpret_cast<PacketHeader*>(packet)->type) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Send Anim Packet");
-    }
     mSessionManager->Send(to, packet);
 }
 
