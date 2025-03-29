@@ -110,14 +110,18 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 				mMyPlayer->SetWeapon(mWeapons[0]);
 				mMyPlayer->SetMyPlayer();
 			
+				// mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
 				mCameraMode->Enter();
+
 				Scene::SetInputBaseAnimMode();
 
 
 			}
 			else {
-				mPlayerIndexmap[packet->objId]->SetActiveState(true);
+				if (mPlayerIndexmap[packet->objId] != nullptr) {
+					mPlayerIndexmap[packet->objId]->SetActiveState(true);
+				}
 			}
 		}
 		// 다른 플레이어 등장 
@@ -125,14 +129,18 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 			// 그 플레이어 인스턴스가 없다면  
 			if (not mPlayerIndexmap.contains(packet->objId)) {
 				auto nextLoc = FindNextPlayerLoc();
-				if (nextLoc == mPlayers.end()) Crash("There is no more space for Other Player!!");
+				if (nextLoc == mPlayers.end()) { 
+					Crash("There is no more space for Other Player!!"); 
+				}
 
 				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
 				mPlayerIndexmap[packet->objId] = &(*nextLoc);
 
 			}
 			else {
-				mPlayerIndexmap[packet->objId]->SetActiveState(true);
+				if (mPlayerIndexmap[packet->objId] != nullptr) {
+					mPlayerIndexmap[packet->objId]->SetActiveState(true);
+				}
 			}
 		}
 	}
@@ -144,13 +152,16 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 				Crash("There is no more space for Other Object!!");
 			}
 
-			*nextLoc = GameObject{};
-			mGameObjectMap[packet->objId] = nextLoc;
+
 
 			switch (packet->entity) {
 			case MONSTER1:
 			case MONSTER2:
 			case MONSTER3:
+			{
+				*nextLoc = GameObject{};
+				mGameObjectMap[packet->objId] = &(*nextLoc);
+
 				nextLoc->mShader = mShaderMap["SkinnedShader"].get();
 				nextLoc->mMesh = mMeshMap["MonsterType1"].get();
 				nextLoc->mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
@@ -160,29 +171,40 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 
 				nextLoc->GetTransform().Scaling(0.3f, 0.3f, 0.3f);
 				nextLoc->GetTransform().SetPosition(packet->position);
+			}
 				break;
 			case CORRUPTED_GEM:
+			{
+				*nextLoc = GameObject{};
+				mGameObjectMap[packet->objId] = &(*nextLoc);
 				nextLoc->mShader = mShaderMap["StandardShader"].get();
 				nextLoc->mMesh = mMeshMap["CorruptedGem"].get();
 				nextLoc->mMaterial = mMaterialManager->GetMaterial("CorruptedGemMaterial");
 				nextLoc->SetActiveState(true);
 
 				nextLoc->GetTransform().SetPosition(packet->position);
-
+			}
 				break;
 			default:
+			{
+				*nextLoc = GameObject{};
+				mGameObjectMap[packet->objId] = &(*nextLoc);
 				nextLoc->mShader = mShaderMap["StandardShader"].get();
 				nextLoc->mMesh = mMeshMap["Cube"].get();
 				nextLoc->mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
 				nextLoc->SetActiveState(true);
 
 				nextLoc->GetTransform().SetPosition(packet->position);
+			}
 				break;
 			}
 		}
 		else {
-			mGameObjectMap[packet->objId]->SetActiveState(true);
+			if (mGameObjectMap[packet->objId] != nullptr) {
+				mGameObjectMap[packet->objId]->SetActiveState(true);
+			}
 		}
+
 	}
 }
 
@@ -190,6 +212,11 @@ void Scene::ProcessObjectDisappeared(PacketHeader* header) {
 	auto packet = reinterpret_cast<PacketSC::PacketObjectDisappeared*>(header);
 
 	if (packet->objId < OBJECT_ID_START) {
+
+		if (packet->objId == gClientCore->GetSessionId()) {
+			return; 
+		}
+
 		if (mPlayerIndexmap.contains(packet->objId)) {
 			mPlayerIndexmap[packet->objId]->SetActiveState(false);
 		}
@@ -223,6 +250,19 @@ void Scene::ProcessUseItem(PacketHeader* header) {
 void Scene::ProcessRestoreHP(PacketHeader* header) {
 
 }
+void Scene::ProcessPacketAnimation(PacketHeader* header) {
+	auto packet = reinterpret_cast<PacketSC::PacketAnimationState*>(header);
+	// 플레이어인 경우 
+	if (packet->objId < OBJECT_ID_START) {
+		if (mPlayerIndexmap.contains(packet->objId)) {
+			mPlayerIndexmap[packet->objId]->GetBoneMaskController().Transition(static_cast<size_t>(packet->animState), 0.09);
+		}
+	}
+	else {
+		
+	}
+
+}
 #pragma endregion 
 
 
@@ -232,7 +272,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mNetworkSign = NonReplacementSampler::GetInstance().Sample();
 	
 	gClientCore->Init();
-	auto res = gClientCore->Start("127.0.0.1", 7777);
+	auto res = gClientCore->Start("192.168.200.25", 7777);
 	if (false == res) {
 		DebugBreak(); 
 		Crash(false);
@@ -332,7 +372,11 @@ void Scene::ProcessNetwork() {
 }
 
 void Scene::Update() {
-	mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().y, mMyPlayer->GetTransform().GetPosition().z);
+
+	if (mMyPlayer != nullptr) {
+		mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().y, mMyPlayer->GetTransform().GetPosition().z);
+	}
+
 
 	if (mMyPlayer) {
 		mMyPlayer->GetTransform().GetPosition() = { mMyPlayer->GetTransform().GetPosition().x, tCollider.GetHeight(mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().z), mMyPlayer->GetTransform().GetPosition().z };
@@ -412,6 +456,7 @@ void Scene::BuildPacketProcessor() {
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_PLAYER_EXIT, [this](PacketHeader* header) { ProcessPlayerExit(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_ATTACKED, [this](PacketHeader* header) { ProcessObjectAttacked(header); });
 	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_ACQUIRED_ITEM, [this](PacketHeader* header) { ProcessAcquiredItem(header); });
+	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_ANIM_STATE, [this](PacketHeader* header) { ProcessPacketAnimation(header); });
 }
 
 void Scene::BuildSendKeyList() {
@@ -483,7 +528,7 @@ void Scene::BuildMaterial() {
 	mMaterialManager->CreateMaterial("TreeLeavesMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Rolling Hills");
-	mat.mDiffuseTexture[1] = mTextureManager->GetTexture("Detail_Texture_7");
+	mat.mDiffuseTexture[1] = mTextureManager->GetTexture("dirt_2");
 	mMaterialManager->CreateMaterial("TerrainMaterial", mat);
 
 

@@ -22,7 +22,7 @@ bool Player::GetActiveState() const {
 }
 
 void Player::SetActiveState(bool state) {
-	mActiveState = true; 
+	mActiveState = false; 
 }
 
 void Player::SetWeapon(const GameObject& weapon) {

@@ -48,7 +48,7 @@ private:
 
     // range to detecting player 
     std::shared_ptr<class GameObject> mChaseTarget{ nullptr };
-    GameUnits::GameUnit<GameUnits::Meter> mPlayerDetectRange{ 0.0m };
+    GameUnits::GameUnit<GameUnits::Meter> mPlayerDetectRange{ 10.0m };
 
     BT::BehaviorTreeMonster mMonsterBT{ };
 };

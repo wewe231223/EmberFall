@@ -656,6 +656,12 @@ namespace AnimatorGraph {
         return nullptr;
     }
 
+    void AnimationGraphController::Transition(size_t targretIndex, double transitionDuration) {
+        mAnimator.SetTransitionDuration(transitionDuration);
+		mAnimator.TransitionToClip(targretIndex);
+		mCurrentStateIndex = targretIndex;
+    }
+
     void AnimationGraphController::EvaluateTransitions() {
         const AnimationState& currentState = mStates[mCurrentStateIndex];
         for (const auto& transition : currentState.transitions) {
@@ -1164,6 +1170,14 @@ namespace AnimatorGraph {
             return &(it->second);
         }
         return nullptr;
+    }
+
+    void BoneMaskAnimationGraphController::Transition(size_t targetIndex, double transitionDuration) {
+		const BoneMaskAnimationState& target = mStates[targetIndex];
+		mAnimator.SetTransitionDuration(transitionDuration);
+		mAnimator.TransitionMaskedToClip(target.maskedClipIndex);
+		mAnimator.TransitionNonMaskedToClip(target.nonMaskedClipIndex);
+        mCurrentStateIndex = targetIndex; 
     }
 
     void BoneMaskAnimationGraphController::EvaluateTransitions() {

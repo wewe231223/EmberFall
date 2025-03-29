@@ -53,6 +53,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
+    MSG msg{};
+    
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
@@ -64,81 +66,83 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MyRegisterClass(hInstance);
 
     // 애플리케이션 초기화를 수행합니다:
-    if (!InitInstance (hInstance, nCmdShow))
+    if (!InitInstance(hInstance, nCmdShow))
     {
         return FALSE;
     }
 
-	Renderer renderer{ hWnd };
-	Input.Initialize(hWnd);
+	Console.Log("Application Start!",LogType::Info);
 
-	Scene scene{ renderer.GetDevice(), renderer.GetCommandList(), renderer.GetManagers(), renderer.GetMainCameraBuffer() };
+    Renderer renderer{ hWnd };
+    Input.Initialize(hWnd);
+
+    std::unique_ptr<Scene> scene{}; 
+    scene = std::make_unique<Scene>(renderer.GetDevice(), renderer.GetCommandList(), renderer.GetManagers(), renderer.GetMainCameraBuffer()); 
 
     renderer.UploadResource();
 
     int n = NonReplacementSampler::GetInstance().Sample();
 
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::Escape, n, []() {
-		PostQuitMessage(0);
-		});
+    Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::Escape, n, []() {
+        PostQuitMessage(0);
+        });
 
     Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F2, n, []() {Input.ToggleVirtualMouse(); });
 
-	size_t frameCount = 0;
+    size_t frameCount = 0;
 
-	Time.AddEvent(1s, [&frameCount]() {
+    Time.AddEvent(1s, [&frameCount]() {
         std::string title = "FPS : " + std::to_string(frameCount);
-		SetWindowTextA(hWnd, title.c_str());
+        SetWindowTextA(hWnd, title.c_str());
         frameCount = 0;
-		return true;
-		});
+        return true;
+        });
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
-    MSG msg{};
-    
-	TextBlock* CPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 0.f, 0.f, 200.f, 100.f }, StringColor::Black, "NotoSansKR");
+
+    TextBlock* CPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 0.f, 0.f, 200.f, 100.f }, StringColor::Black, "NotoSansKR");
     IntervalTimer CPUTimer{};
 
-	TextBlock* GPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 0.f, 30.f, 200.f, 200.f }, StringColor::Black, "NotoSansKR");
-	IntervalTimer GPUTimer{};
+    TextBlock* GPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 0.f, 30.f, 200.f, 200.f }, StringColor::Black, "NotoSansKR");
+    IntervalTimer GPUTimer{};
+
 
     // 기본 메시지 루프입니다:
     while (true) {
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-			if (msg.message == WM_QUIT) break;
-			if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) {
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-			
+            if (msg.message == WM_QUIT) break;
+            if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg)) {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+
         }
         else {
-            CPUTimer.Start(); 
+            CPUTimer.Start();
 
             Time.AdvanceTime();
             Input.Update();
 
-            scene.ProcessNetwork(); 
-            scene.Update();
-            scene.SendNetwork(); 
+            scene->ProcessNetwork();
+            scene->Update();
+            scene->SendNetwork();
 
             renderer.Render();
-            CPUTimer.End(); 
+            CPUTimer.End();
 
-			GPUTimer.Start();
-            renderer.ExecuteRender(); 
-			GPUTimer.End();
+            GPUTimer.Start();
+            renderer.ExecuteRender();
+            GPUTimer.End();
 
-			CPUTime->GetText() = std::format(L"CPU Time : {:.2f}us", CPUTimer.Microseconds());
-			GPUTime->GetText() = std::format(L"GPU Time : {:.2f}us", GPUTimer.Microseconds());
+            CPUTime->GetText() = std::format(L"CPU Time : {:.2f}us", CPUTimer.Microseconds());
+            GPUTime->GetText() = std::format(L"GPU Time : {:.2f}us", GPUTimer.Microseconds());
 
             // 게임 루프... 
             frameCount++;
         }
     }
 
-	::DestroyWindow(hWnd);
-	gDevice.WaitForTerminate();
+    ::DestroyWindow(hWnd);
 
     return (int) msg.wParam;
 }

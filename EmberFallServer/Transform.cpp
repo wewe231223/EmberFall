@@ -90,7 +90,11 @@ void Transform::Move(const SimpleMath::Vector3& moveVec) {
 }
 
 void Transform::SetLook(const SimpleMath::Vector3& lookVec) {
-    mRotation = MathUtil::GetQuatFromLook(lookVec);
+    //mRotation = MathUtil::GetQuatFromLook(lookVec);
+    auto look = MathUtil::Normalize(lookVec);
+    
+    mRotation = SimpleMath::Quaternion::Concatenate(SimpleMath::Quaternion::FromToRotation(Forward(), lookVec), mRotation);
+    mRotation.Normalize();
 }
 
 void Transform::LookAt(const SimpleMath::Vector3& target) {

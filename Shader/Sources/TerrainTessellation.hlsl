@@ -228,11 +228,11 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
     float4 Color = float4(1.f, 1.f, 1.f, 1.f);
     
     float4 BaseColor = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord1);
-    float4 DetailColor = textures[materialConstants[input.material].diffuseTexture[1]].Sample(linearWrapSampler, input.texcoord2);
+    float4 DetailColor = textures[materialConstants[input.material].diffuseTexture[1]].Sample(anisotropicWrapSampler, input.texcoord2);
     
     // DetailColor = GetBlendedDetail(textures[materialConstants[input.material].diffuseTexture[1]], linearWrapSampler, input.texcoord1, 10.f);
     
-    Color = saturate(BaseColor * 0.6f + DetailColor * 0.4f);
+    Color = saturate(BaseColor * 0.4f + DetailColor * 0.6f);
     
     output.diffuse = Color;
     output.position = float4(input.wPosition, 1.f);

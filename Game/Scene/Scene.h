@@ -54,6 +54,7 @@ private:
 	void ProcessObjectAttacked(PacketHeader* header);
 	void ProcessUseItem(PacketHeader* header);
 	void ProcessRestoreHP(PacketHeader* header);
+	void ProcessPacketAnimation(PacketHeader* header);
 private:
 	std::shared_ptr<TextureManager> mTextureManager{ nullptr };
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{ nullptr };
@@ -70,7 +71,7 @@ private:
 	std::unique_ptr<CameraMode> mCameraMode{ nullptr };
 
 
-	std::unordered_map<NetworkObjectIdType, std::vector<GameObject>::iterator> mGameObjectMap{};
+	std::unordered_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
 	std::vector<GameObject> mGameObjects{};
 
 	int mNetworkSign{};
