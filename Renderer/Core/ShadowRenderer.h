@@ -5,7 +5,7 @@
 #include "../Utility/DirectXInclude.h"
 
 class ShadowRenderer {
-	static constexpr SimpleMath::Vector3 LIGHTDIRECTION{ 1.f, -1.f, 1.f };
+	static constexpr SimpleMath::Vector3 LIGHTDIRECTION{ 1.f, -1.f, -1.f };
 
 	template<typename T>
 	static constexpr T SHADOWMAPSIZE = static_cast<T>(2000);

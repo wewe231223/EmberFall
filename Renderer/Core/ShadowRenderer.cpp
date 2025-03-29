@@ -78,13 +78,13 @@ void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, Defau
 		maxPoint.z = std::max(maxPoint.z, position.z);
 	}
 
-
+	
 
 
 
 	float projectionSize = std::max(maxPoint.x - minPoint.x, maxPoint.y - minPoint.y);
 
-	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize, projectionSize, 1.0f, 1500.0f);
+	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize, projectionSize, cameraParam.nearZ, 50.0f);
 
 
 
