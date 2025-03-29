@@ -75,6 +75,9 @@ inline constexpr auto ConvertPacketTypeToEnum() noexcept
     else if constexpr (std::is_same_v<PacketT, PacketSC::PacketInteractFinished>) {
         return PacketType::PacketSC::PACKET_INTERACTION_FINISH;
     }
+    else if constexpr (std::is_same_v<PacketT, PacketSC::PacketAnimationState>) {
+        return PacketType::PacketSC::PACKET_ANIM_STATE;
+    }
     else {
         static_assert(false, "Packet Type is not exists!!!");
     }

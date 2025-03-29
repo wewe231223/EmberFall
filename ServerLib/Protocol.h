@@ -1,70 +1,14 @@
 #pragma once
 
-using PacketSizeT = uint16_t; // 65535
-using PacketTypeT = uint8_t;  // 255
-using SenderIdType = SessionIdType;
+#include "ProtocolEnums.h"
 
 // Protocol version - ver 1.0
 inline constexpr uint8_t PROTOCOL_VERSION_MAJOR = 1;
-inline constexpr uint8_t PROTOCOL_VERSION_MINOR = 2;
+inline constexpr uint8_t PROTOCOL_VERSION_MINOR = 3;
 inline constexpr PacketTypeT PACKET_CS_START = 0x00;
 inline constexpr PacketTypeT PACKET_SC_START = 0x81;
 
-// 0x00 ~ Client To Server
-// 0x81 ~ Server To Client
-namespace PacketType {
-    enum PacketCS : PacketTypeT {
-        PACKET_KEYINPUT = 0x00,
-        PACKET_CAMERA,
-        PACKET_REQUEST_ATTACK,
-        PACKET_SELECT_ROLE,
-        PACKET_SELECT_WEAPON,
-        PACKET_EXIT,
-        PACKET_CS_COUNT // Count Enum
-    };
-
-    enum PacketSC : PacketTypeT {
-        PACKET_PROTOCOL_VERSION = 0x81,
-        PACKET_NOTIFY_ID,
-        PACKET_OBJECT,
-        PACKET_OBJECT_APPEARED,
-        PACKET_OBJECT_DISAPPEARED,
-        PACKET_ATTACKED,
-        PACKET_OBJECT_DEAD,
-        PACKET_ACQUIRED_ITEM,
-        PACKET_USE_ITEM,
-        PACKET_RESTORE_HEALTH,
-        PACKET_PLAYER_EXIT,
-        PACKET_INTERACTION_START,
-        PACKET_INTERACTION_CANCEL,
-        PACKET_INTERACTION_FINISH,
-        PACKET_SC_COUNT // Count Enum
-    };
-}
-
 #pragma pack(push, 1)
-enum Weapon : uint8_t {
-    STAFF,
-    SWORD,
-    BOW,
-    SPEAR,
-    NONE
-};
-
-enum EntityType : uint8_t {
-    ENV,
-    BOSS,
-    PLAYER,
-    CORRUPTED_GEM,
-    MONSTER1,
-    MONSTER2,
-    MONSTER3,
-    ITEM_HOLYWATER,
-    ITEM_CROSS,
-    ITEM_POTION,
-    PROJECTILE_ARROW,
-};
-
 struct PacketHeader {
     PacketSizeT size;
     PacketTypeT type;
@@ -133,6 +77,11 @@ namespace PacketSC { // Server To Client
         EntityType interactionEntityType;
         NetworkObjectIdType playerId;
         NetworkObjectIdType interactObjId;
+    };
+
+    struct PacketAnimationState : public PacketHeader {
+        NetworkObjectIdType objId;
+        AnimationState animState;
     };
 
     struct PacketPlayerExit : public PacketHeader { };

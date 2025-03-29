@@ -100,6 +100,9 @@
     <ClCompile Include="SendBuffers.cpp">
       <Filter>Common\Packets</Filter>
     </ClCompile>
+    <ClCompile Include="ProtocolEnums.cpp">
+      <Filter>Common\Protocol</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkUtils.h">
@@ -170,6 +173,9 @@
     </ClInclude>
     <ClInclude Include="SendBuffers.h">
       <Filter>Common\Packets</Filter>
+    </ClInclude>
+    <ClInclude Include="ProtocolEnums.h">
+      <Filter>Common\Protocol</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
