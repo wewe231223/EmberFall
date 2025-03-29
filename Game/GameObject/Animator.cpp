@@ -1176,7 +1176,7 @@ namespace AnimatorGraph {
 		const BoneMaskAnimationState& target = mStates[targetIndex];
 		mAnimator.SetTransitionDuration(transitionDuration);
 		mAnimator.TransitionMaskedToClip(target.maskedClipIndex);
-		mAnimator.TransitionMaskedToClip(target.nonMaskedClipIndex);
+		mAnimator.TransitionNonMaskedToClip(target.nonMaskedClipIndex);
         mCurrentStateIndex = targetIndex; 
     }
 
