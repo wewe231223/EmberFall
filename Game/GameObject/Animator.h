@@ -81,7 +81,6 @@ namespace AnimatorGraph {
     };
 
     struct AnimationState {
-        size_t stateIndex;
         std::string name;
         const AnimationClip* clip;
         double speed{ 1.0 };
@@ -166,6 +165,14 @@ namespace AnimatorGraph {
         AnimationGraphController(const std::vector<AnimationState>& states);
         ~AnimationGraphController() = default;
 
+		AnimationGraphController(const AnimationGraphController&) = default;
+		AnimationGraphController& operator=(const AnimationGraphController&) = default;
+
+		AnimationGraphController(AnimationGraphController&&) = default;
+		AnimationGraphController& operator=(AnimationGraphController&&) = default;
+
+		operator bool() const;
+    public:
         void Update(double deltaTime, BoneTransformBuffer& boneTransforms);
 
         void AddParameter(const std::string& name, ParameterType type);
@@ -183,6 +190,9 @@ namespace AnimatorGraph {
 
     private:
         void EvaluateTransitions();
+    
+    private:
+        bool mActiveState{ false };
 
         std::vector<AnimationState> mStates{};
 
@@ -197,7 +207,9 @@ namespace AnimatorGraph {
     public:
         BoneMaskAnimator() = default;
         BoneMaskAnimator(const std::vector<const AnimationClip*>& clips, const std::vector<unsigned int>& boneMask);
-
+        
+		~BoneMaskAnimator() = default;
+    public:
         void UpdateBoneTransforms(double deltaTime, BoneTransformBuffer& boneTransforms);
         void TransitionMaskedToClip(size_t clipIndex);
         void TransitionNonMaskedToClip(size_t clipIndex);
@@ -257,6 +269,14 @@ namespace AnimatorGraph {
         BoneMaskAnimationGraphController(const std::vector<const AnimationClip*>& clips, const std::vector<UINT>& boneMask, const std::vector<BoneMaskAnimationState>& states);
         ~BoneMaskAnimationGraphController() = default;
 
+		BoneMaskAnimationGraphController(const BoneMaskAnimationGraphController&) = default;
+		BoneMaskAnimationGraphController& operator=(const BoneMaskAnimationGraphController&) = default;
+
+		BoneMaskAnimationGraphController(BoneMaskAnimationGraphController&&) = default;
+		BoneMaskAnimationGraphController& operator=(BoneMaskAnimationGraphController&&) = default;
+    public:
+        operator bool() const; 
+
         void Update(double deltaTime, BoneTransformBuffer& boneTransforms);
 
         void AddParameter(const std::string& name, ParameterType type);
@@ -275,6 +295,8 @@ namespace AnimatorGraph {
 
     private:
         void EvaluateTransitions();
+    private:
+        bool mActiveState{ false };
 
         std::vector<BoneMaskAnimationState> mStates{};
 

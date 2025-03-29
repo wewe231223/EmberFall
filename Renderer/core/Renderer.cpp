@@ -32,8 +32,6 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitCoreResources(); 
 	Renderer::InitDefferedRenderer();
 
-
-	static auto text = TextBlockManager::GetInstance().CreateTextBlock(L"Hello, World!", { 50, 50, 140, 140 }, StringColor::Seashell, "NotoSansKR");
 }
 
 Renderer::~Renderer() {
@@ -78,25 +76,20 @@ void Renderer::Render() {
 	Renderer::ResetCommandList();
 	D3D12_VIEWPORT viewport{};
 
+
+
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	viewport.Width = 1000.f;
-	viewport.Height = 1000.f;
+	viewport.Width = ShadowRenderer::GetShadowMapSize<float>();
+	viewport.Height = ShadowRenderer::GetShadowMapSize<float>();
 	viewport.MinDepth = 0.f;
 	viewport.MaxDepth = 1.f;
-
-	//viewport.TopLeftX = 0;
-	//viewport.TopLeftY = 0;
-	//viewport.Width = Config::WINDOW_WIDTH<float>;
-	//viewport.Height = Config::WINDOW_HEIGHT<float>;
-	//viewport.MinDepth = 0.f;
-	//viewport.MaxDepth = 1.f;
 
 	D3D12_RECT scissorRect{};
 	scissorRect.left = 0;
 	scissorRect.top = 0;
-	scissorRect.right = Config::WINDOW_WIDTH<LONG>;
-	scissorRect.bottom = Config::WINDOW_HEIGHT<LONG>;
+	scissorRect.right = ShadowRenderer::GetShadowMapSize<LONG>();
+	scissorRect.bottom = ShadowRenderer::GetShadowMapSize<LONG>();
 
 	mCommandList->RSSetViewports(1, &viewport);
 	mCommandList->RSSetScissorRects(1, &scissorRect);
@@ -110,6 +103,21 @@ void Renderer::Render() {
 
 	mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer.GetShadowCameraBuffer());
 	// mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
+
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.Width = Config::WINDOW_WIDTH<float>;
+	viewport.Height = Config::WINDOW_HEIGHT<float>;
+	viewport.MinDepth = 0.f;
+	viewport.MaxDepth = 1.f;
+
+	scissorRect.left = 0;
+	scissorRect.top = 0;
+	scissorRect.right = Config::WINDOW_WIDTH<LONG>;
+	scissorRect.bottom = Config::WINDOW_HEIGHT<LONG>;
+
+	mCommandList->RSSetViewports(1, &viewport);
+	mCommandList->RSSetScissorRects(1, &scissorRect);
 
 	// G-Buffer Pass 
 	auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
@@ -145,6 +153,9 @@ void Renderer::Render() {
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
 	mDefferedRenderer.Render(mCommandList, mShadowRenderer.GetShadowCameraBuffer());
+}
+
+void Renderer::ExecuteRender() {
 #ifndef DIRECTWRITE 
 	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 

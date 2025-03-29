@@ -18,6 +18,7 @@
 #include "Game/Scene/Scene.h"
 #include "Utility/NonReplacementSampler.h"
 #include "MeshLoader/Loader/MeshLoader.h"
+#include "Utility/IntervalTimer.h"
 
 #ifdef _DEBUG
 #pragma comment(lib,"out/debug/EditorInterface.lib")
@@ -95,6 +96,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
     MSG msg{};
     
+	TextBlock* CPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 0.f, 0.f, 200.f, 100.f }, StringColor::Black, "NotoSansKR");
+    IntervalTimer CPUTimer{};
+
+	TextBlock* GPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 0.f, 30.f, 200.f, 200.f }, StringColor::Black, "NotoSansKR");
+	IntervalTimer GPUTimer{};
 
     // 기본 메시지 루프입니다:
     while (true) {
@@ -107,6 +113,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			
         }
         else {
+            CPUTimer.Start(); 
 
             Time.AdvanceTime();
             Input.Update();
@@ -116,6 +123,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             scene.SendNetwork(); 
 
             renderer.Render();
+            CPUTimer.End(); 
+
+			GPUTimer.Start();
+            renderer.ExecuteRender(); 
+			GPUTimer.End();
+
+			CPUTime->GetText() = std::format(L"CPU Time : {:.2f}us", CPUTimer.Microseconds());
+			GPUTime->GetText() = std::format(L"GPU Time : {:.2f}us", GPUTimer.Microseconds());
 
             // 게임 루프... 
             frameCount++;

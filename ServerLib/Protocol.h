@@ -6,7 +6,7 @@ using SenderIdType = SessionIdType;
 
 // Protocol version - ver 1.0
 inline constexpr uint8_t PROTOCOL_VERSION_MAJOR = 1;
-inline constexpr uint8_t PROTOCOL_VERSION_MINOR = 1;
+inline constexpr uint8_t PROTOCOL_VERSION_MINOR = 2;
 inline constexpr PacketTypeT PACKET_CS_START = 0x00;
 inline constexpr PacketTypeT PACKET_SC_START = 0x81;
 
@@ -35,6 +35,9 @@ namespace PacketType {
         PACKET_USE_ITEM,
         PACKET_RESTORE_HEALTH,
         PACKET_PLAYER_EXIT,
+        PACKET_INTERACTION_START,
+        PACKET_INTERACTION_CANCEL,
+        PACKET_INTERACTION_FINISH,
         PACKET_SC_COUNT // Count Enum
     };
 }
@@ -52,6 +55,7 @@ enum EntityType : uint8_t {
     ENV,
     BOSS,
     PLAYER,
+    CORRUPTED_GEM,
     MONSTER1,
     MONSTER2,
     MONSTER3,
@@ -113,6 +117,22 @@ namespace PacketSC { // Server To Client
 
     struct PacketRestoreHP : public PacketHeader {
         float HP;
+    };
+
+    struct PacketInteractStart : public PacketHeader {
+        EntityType interactionEntityType;
+        NetworkObjectIdType playerId;
+        NetworkObjectIdType interactObjId;
+    };
+
+    struct PacketInteractCancel : public PacketHeader { // 도중에 취소
+        NetworkObjectIdType playerId;
+    };
+
+    struct PacketInteractFinished : public PacketHeader {
+        EntityType interactionEntityType;
+        NetworkObjectIdType playerId;
+        NetworkObjectIdType interactObjId;
     };
 
     struct PacketPlayerExit : public PacketHeader { };

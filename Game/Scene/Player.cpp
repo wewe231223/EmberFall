@@ -21,8 +21,8 @@ bool Player::GetActiveState() const {
 	return mActiveState;
 }
 
-void Player::SetInactive() {
-	mActiveState = false; 
+void Player::SetActiveState(bool state) {
+	mActiveState = true; 
 }
 
 void Player::SetWeapon(const GameObject& weapon) {

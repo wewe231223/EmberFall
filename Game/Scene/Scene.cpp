@@ -38,69 +38,30 @@ void Scene::ProcessPlayerPacket(PacketHeader* header) {
 }
 
 void Scene::ProcessObjectPacket(PacketHeader* header) {
-	static auto FindNextPlayerLoc = [this]()  {
-		for (auto iter = mPlayers.begin(); iter != mPlayers.end(); ++iter) {
-			if (not iter->GetActiveState()) {
-				return iter;
-			}
-		}
-		return mPlayers.end();
-	};
-	
 	auto packet = reinterpret_cast<PacketSC::PacketObject*>(header);
 	
 	// 플레이어 영역에 해당한다면
 	if (packet->objId < OBJECT_ID_START) {
-		// 그게 만약 나라면 
-		if (packet->objId == gClientCore->GetSessionId()) {
-			// 플레이어 인스턴스가 없다면 
-			if (not mIndexMap.contains(packet->objId)) {
-				if (mNextPlayerLoc == mPlayers.end()) Crash("There is no more space for My Player!!");
-				
-				*mNextPlayerLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-				mIndexMap[packet->objId] = mNextPlayerLoc; 
-				mMyPlayer = mNextPlayerLoc;
+		if (mPlayerIndexmap.contains(packet->objId)) {
+			mPlayerIndexmap[packet->objId]->GetTransform().GetPosition() = packet->position;
 
-				mMyPlayer->GetTransform().Scaling(10.f, 10.f, 10.f);
-
-				mNextPlayerLoc = FindNextPlayerLoc();
-
-
-
-				mMyPlayer->SetWeapon(mGameObjects.back().Clone()); 
-				mMyPlayer->SetMyPlayer();
-				
-				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
-				mCameraMode->Enter();
-			}
-			// 플레이어 인스턴스가 있다면 
-			else {
-				mIndexMap[packet->objId]->GetTransform().GetPosition() = packet->position;
-			}
-		}
-		// 아니라면 ( 다른 플레이어 라면 ) 
-		else {
-			// 그 플레이어 인스턴스가 없다면  
-			if (not mIndexMap.contains(packet->objId)) {
-				if (mNextPlayerLoc == mPlayers.end()) Crash("There is no more space for Other Player!!");
-
-				*mNextPlayerLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-				mIndexMap[packet->objId] = mNextPlayerLoc;
-
-				mNextPlayerLoc = FindNextPlayerLoc(); 
-			}
-			// 그 플레이어 인스턴스가 있다면 
-			else {
-				mIndexMap[packet->objId]->GetTransform().GetPosition() = packet->position;
-				auto euler = mIndexMap[packet->objId]->GetTransform().GetRotation().ToEuler(); 
+			if (packet->objId != gClientCore->GetSessionId()) {
+				auto euler = mPlayerIndexmap[packet->objId]->GetTransform().GetRotation().ToEuler();
 				euler.y = packet->rotationYaw;
-				mIndexMap[packet->objId]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
+				mPlayerIndexmap[packet->objId]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
 			}
+
 		}
 	}
 	// 그게 아니라면 기타 게임 오브젝트이다. 
 	else {
-		
+		if (mGameObjectMap.contains(packet->objId)) {
+			mGameObjectMap[packet->objId]->GetTransform().GetPosition() = packet->position;
+			auto euler = mGameObjectMap[packet->objId]->GetTransform().GetRotation().ToEuler();
+			euler.y = packet->rotationYaw;
+			mGameObjectMap[packet->objId]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
+		}
+
 	}
 }
 
@@ -109,17 +70,141 @@ void Scene::ProcessObjectDead(PacketHeader* header) {
 }
 
 void Scene::ProcessObjectAppeared(PacketHeader* header) {
+	auto FindNextPlayerLoc = [this]() {
+		for (auto iter = mPlayers.begin(); iter != mPlayers.end(); ++iter) {
+			if (not iter->GetActiveState()) {
+				return iter;
+			}
+		}
+		return mPlayers.end();
+		};
 
+	auto FindNextObjectLoc = [this]() {
+		for (auto iter = mGameObjects.begin(); iter != mGameObjects.end(); ++iter) {
+			if (not *iter) {
+				return iter;
+			}
+		}
+		return mGameObjects.end();
+		};
+
+
+	auto packet = reinterpret_cast<PacketSC::PacketObjectAppeared*>(header);
+	// 플레이어 등장 
+	if (packet->objId < OBJECT_ID_START) {
+		// 내 플레이어 등장 
+		if (packet->objId == gClientCore->GetSessionId()) {
+			// 플레이어 인스턴스가 없다면 
+			if (not mPlayerIndexmap.contains(packet->objId)) {
+
+				auto nextLoc = FindNextPlayerLoc();
+
+				if (nextLoc == mPlayers.end()) {
+					Crash("There is no more space for My Player!!");
+				}
+
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				mPlayerIndexmap[packet->objId] = &(*nextLoc);
+				mMyPlayer = &(*nextLoc);
+
+				mMyPlayer->SetWeapon(mWeapons[0]);
+				mMyPlayer->SetMyPlayer();
+			
+				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
+				mCameraMode->Enter();
+				Scene::SetInputBaseAnimMode();
+
+
+			}
+			else {
+				mPlayerIndexmap[packet->objId]->SetActiveState(true);
+			}
+		}
+		// 다른 플레이어 등장 
+		else {
+			// 그 플레이어 인스턴스가 없다면  
+			if (not mPlayerIndexmap.contains(packet->objId)) {
+				auto nextLoc = FindNextPlayerLoc();
+				if (nextLoc == mPlayers.end()) Crash("There is no more space for Other Player!!");
+
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				mPlayerIndexmap[packet->objId] = &(*nextLoc);
+
+			}
+			else {
+				mPlayerIndexmap[packet->objId]->SetActiveState(true);
+			}
+		}
+	}
+	// 이외 오브젝트 등장 
+	else {
+		if (not mGameObjectMap.contains(packet->objId)) {
+			auto nextLoc = FindNextObjectLoc();
+			if (nextLoc == mGameObjects.end()) {
+				Crash("There is no more space for Other Object!!");
+			}
+
+			*nextLoc = GameObject{};
+			mGameObjectMap[packet->objId] = nextLoc;
+
+			switch (packet->entity) {
+			case MONSTER1:
+			case MONSTER2:
+			case MONSTER3:
+				nextLoc->mShader = mShaderMap["SkinnedShader"].get();
+				nextLoc->mMesh = mMeshMap["MonsterType1"].get();
+				nextLoc->mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
+				nextLoc->mGraphController = mMonsterType1AnimationController;
+				nextLoc->mAnimated = true;
+				nextLoc->SetActiveState(true);
+
+				nextLoc->GetTransform().Scaling(0.3f, 0.3f, 0.3f);
+				nextLoc->GetTransform().SetPosition(packet->position);
+				break;
+			case CORRUPTED_GEM:
+				nextLoc->mShader = mShaderMap["StandardShader"].get();
+				nextLoc->mMesh = mMeshMap["CorruptedGem"].get();
+				nextLoc->mMaterial = mMaterialManager->GetMaterial("CorruptedGemMaterial");
+				nextLoc->SetActiveState(true);
+
+				nextLoc->GetTransform().SetPosition(packet->position);
+
+				break;
+			default:
+				nextLoc->mShader = mShaderMap["StandardShader"].get();
+				nextLoc->mMesh = mMeshMap["Cube"].get();
+				nextLoc->mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+				nextLoc->SetActiveState(true);
+
+				nextLoc->GetTransform().SetPosition(packet->position);
+				break;
+			}
+		}
+		else {
+			mGameObjectMap[packet->objId]->SetActiveState(true);
+		}
+	}
 }
 
 void Scene::ProcessObjectDisappeared(PacketHeader* header) {
+	auto packet = reinterpret_cast<PacketSC::PacketObjectDisappeared*>(header);
 
+	if (packet->objId < OBJECT_ID_START) {
+		if (mPlayerIndexmap.contains(packet->objId)) {
+			mPlayerIndexmap[packet->objId]->SetActiveState(false);
+		}
+	}
+	else {
+		if (mGameObjectMap.contains(packet->objId)) {
+			mGameObjectMap[packet->objId]->SetActiveState(false);
+		}
+	}
 }
 
 void Scene::ProcessPlayerExit(PacketHeader* header) {
-	if (mIndexMap.contains(header->id)) {
-		mIndexMap[header->id]->SetInactive();
-		mIndexMap.erase(header->id);
+	if (mPlayerIndexmap.contains(header->id)) {
+		mPlayerIndexmap[header->id]->SetActiveState(false);
+		mPlayerIndexmap.erase(header->id);
 	}
 }
 
@@ -162,6 +247,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	Scene::BuildMesh(device, commandList);
 	Scene::BuildMaterial();
 	Scene::BuildPacketProcessor();
+	Scene::BuildAniamtionController();
 
 	// SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", "Resources/Binarys/Terrain/TerrainBaked.bin");
 	tCollider.LoadFromFile("Resources/Binarys/Terrain/TerrainBaked.bin");
@@ -170,48 +256,56 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
 	mSkyBox.mMaterial = mMaterialManager->GetMaterial("SkyBoxMaterial");
 
+	mGameObjects.resize(MeshRenderManager::MAX_INSTANCE_COUNT<size_t>, GameObject{});
 
 	{
-		auto& object = mGameObjects.emplace_back();
+		auto& object = mGameObjects[0];
 		object.mShader = mShaderMap["TerrainShader"].get();
 		object.mMesh = mMeshMap["Terrain"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("TerrainMaterial");
-		
+		object.SetActiveState(true);
+
 		object.GetTransform().GetPosition() = { 0.f, 0.f, 0.f };
 		object.GetTransform().Scaling(1.f, 1.f, 1.f);
 	}
 
 
 	{
-		auto& object = mGameObjects.emplace_back(); 
+		auto& object = mGameObjects[1];
 		object.mShader = mShaderMap["StandardShader"].get();
 		object.mMesh = mMeshMap["Mountain"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
 		object.mCollider = mColliderMap["Mountain"];
+		object.SetActiveState(true);
 
 		object.GetTransform().GetPosition() = { 370.f,tCollider.GetHeight(370.f, 300.f) - 10.f ,300.f };
 		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(-35.f), 0.f);
 	}
 
-
 	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Sword"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("SwordMaterial");
-		object.mCollider = mColliderMap["Sword"];
-		
+		auto& object = mGameObjects[2];
+		object.mShader = mShaderMap["SkinnedShader"].get();
+		object.mMesh = mMeshMap["MonsterType1"].get();
+		object.mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
+		object.mGraphController = mMonsterType1AnimationController;
+		object.mAnimated = true;
+		object.SetActiveState(true);
 
 		object.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 0.f), 0.f };
-	
 
 	}
 
 
+	{
+		mWeapons[0].mShader = mShaderMap["StandardShader"].get();
+		mWeapons[0].mMesh = mMeshMap["Sword"].get();
+		mWeapons[0].mMaterial = mMaterialManager->GetMaterial("SwordMaterial");
+		mWeapons[0].mCollider = mColliderMap["Sword"];
+		mWeapons[0].SetActiveState(true);
+	}
 
 
-	Scene::BuildAniamtionController(); 
-	Scene::SetInputBaseAnimMode(); 
+
 
 	mCamera = Camera(mainCameraBufferLocation);
 	
@@ -238,24 +332,29 @@ void Scene::ProcessNetwork() {
 }
 
 void Scene::Update() {
-	// mMyPlayer->GetTransform().GetPosition().y = tCollider.GetHeight(mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().z);
-	
 	mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().y, mMyPlayer->GetTransform().GetPosition().z);
 
+	if (mMyPlayer) {
+		mMyPlayer->GetTransform().GetPosition() = { mMyPlayer->GetTransform().GetPosition().x, tCollider.GetHeight(mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().z), mMyPlayer->GetTransform().GetPosition().z };
+	}
 	if (mCameraMode) {
 		mCameraMode->Update();
 	}
 
-	for (auto& gameObject : mGameObjects | std::views::take(mGameObjects.size() - 1)) {
+	static BoneTransformBuffer boneTransformBuffer{};
+
+	for (auto& gameObject : mGameObjects) {
 		if (gameObject) {
-			gameObject.UpdateShaderVariables();
-			auto [mesh, shader, modelContext] = gameObject.GetRenderData();
-
-			if (shader == nullptr) {
-				DebugBreak(); 
+			if (gameObject.mAnimated) {
+				gameObject.UpdateShaderVariables(boneTransformBuffer); 
+				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
+				mMeshRenderManager->AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
 			}
-
-			mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+			else {
+				gameObject.UpdateShaderVariables();
+				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
+				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+			}
 		}
 	}
  
@@ -355,13 +454,21 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	data = Loader.Load("Resources/Assets/Mountain/Mountain.gltf");
 	mMeshMap["Mountain"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Mountain"] = Collider{ data.position };
+
+	data = Loader.Load("Resources/Assets/Monster/MonsterType1.gltf");
+	mMeshMap["MonsterType1"] = std::make_unique<Mesh>(device, commandList, data);
 	
 	data = Loader.Load("Resources/Assets/Weapon/sword/LongSword.glb");
 	mMeshMap["Sword"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Sword"] = Collider{ data.position };
 
-	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
+	data = Loader.Load("Resources/Assets/CorruptedGem/CorruptedGem.glb");
+	mMeshMap["CorruptedGem"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["CorruptedGem"] = Collider{ data.position };
 
+
+
+	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, data);
 	mMeshMap["SkyBox"] = std::make_unique<Mesh>(device, commandList, 100.f);
 
@@ -403,6 +510,12 @@ void Scene::BuildMaterial() {
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("SwordA_v004_Default_AlbedoTransparency");
 	mMaterialManager->CreateMaterial("SwordMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Creep_BaseColor");
+	mMaterialManager->CreateMaterial("MonsterType1Material", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("CorrupedGem_BaseColor");
+	mMaterialManager->CreateMaterial("CorruptedGemMaterial", mat);
 }
 
 void Scene::BuildShader(ComPtr<ID3D12Device> device) {
@@ -425,6 +538,17 @@ void Scene::BuildShader(ComPtr<ID3D12Device> device) {
 
 
 void Scene::BuildAniamtionController() {
+	Scene::BuildBaseAnimationController();
+
+	Scene::BuildSwordManAnimationController(); 
+	Scene::BuildArcherAnimationController();
+	Scene::BuildMageAnimationController(); 
+
+	Scene::BuildMonsterType1AnimationController(); 
+
+}
+
+void Scene::BuildBaseAnimationController() {
 	// Base Anim 
 	{
 		mAnimationMap["HumanBase"].Load("Resources/Assets/Knight/BaseAnim/BaseAnim.gltf");
@@ -531,8 +655,8 @@ void Scene::BuildAniamtionController() {
 		AnimatorGraph::BoneMaskAnimationState backwardState{};
 		backwardState.maskedClipIndex = 2;
 		backwardState.nonMaskedClipIndex = 2;
-		backwardState.speed = 1.2; 
-		backwardState.name = "BackWard"; 
+		backwardState.speed = 1.2;
+		backwardState.name = "BackWard";
 
 		{
 			AnimatorGraph::AnimationTransition toIdle{};
@@ -628,7 +752,7 @@ void Scene::BuildAniamtionController() {
 		rightState.maskedClipIndex = 3;
 		rightState.nonMaskedClipIndex = 3;
 		rightState.speed = 0.7;
-		rightState.name = "Right"; 
+		rightState.name = "Right";
 
 		{
 			AnimatorGraph::AnimationTransition toIdle{};
@@ -727,13 +851,93 @@ void Scene::BuildAniamtionController() {
 		mBaseAnimationController.AddParameter("True", AnimatorGraph::ParameterType::Always);
 
 	}
+}
 
+void Scene::BuildArcherAnimationController() {
+	// Archer 
+	{
+		mAnimationMap["Archer"].Load("Resources/Assets/Knight/archer.gltf");
+
+		std::vector<const AnimationClip*> clips{ mAnimationMap["Archer"].GetClip(0), mAnimationMap["Archer"].GetClip(1), mAnimationMap["Archer"].GetClip(16), mAnimationMap["Archer"].GetClip(3) };
+
+		std::vector<UINT> boneMask(69);
+		std::iota(boneMask.begin(), boneMask.begin() + 59, 0);
+		AnimatorGraph::BoneMaskAnimationState idleState{};
+		idleState.maskedClipIndex = 0;
+		idleState.nonMaskedClipIndex = 0;
+		idleState.name = "Idle";
+
+		{
+			AnimatorGraph::AnimationTransition idleToRun{};
+			idleToRun.targetStateIndex = 1;
+			idleToRun.blendDuration = 0.09;
+			idleToRun.parameterName = "Move";
+			idleToRun.expectedValue = true;
+			idleToRun.triggerOnEnd = false;
+			idleState.transitions.emplace_back(idleToRun);
+		}
+
+		AnimatorGraph::BoneMaskAnimationState runState{};
+		runState.maskedClipIndex = 3;
+		runState.nonMaskedClipIndex = 3;
+		runState.name = "Move";
+
+		{
+			AnimatorGraph::AnimationTransition runToIdle{};
+			runToIdle.targetStateIndex = 0;
+			runToIdle.blendDuration = 0.09;
+			runToIdle.parameterName = "Move";
+			runToIdle.expectedValue = false;
+			runToIdle.triggerOnEnd = false;
+			runState.transitions.emplace_back(runToIdle);
+
+			AnimatorGraph::AnimationTransition runToAttack{};
+			runToAttack.targetStateIndex = 2;
+			runToAttack.blendDuration = 0.09;
+			runToAttack.parameterName = "Attack";
+			runToAttack.expectedValue = true;
+			runToAttack.triggerOnEnd = false;
+			runState.transitions.emplace_back(runToAttack);
+		}
+
+		AnimatorGraph::BoneMaskAnimationState runAttack{};
+		runAttack.maskedClipIndex = 2;
+		runAttack.nonMaskedClipIndex = 1;
+		runAttack.name = "Attack";
+
+		{
+			AnimatorGraph::AnimationTransition attackToRun{};
+			attackToRun.targetStateIndex = 1;
+			attackToRun.blendDuration = 0.3;
+			attackToRun.parameterName = "Move";
+			attackToRun.expectedValue = true;
+			attackToRun.triggerOnEnd = true;
+			runAttack.transitions.emplace_back(attackToRun);
+
+			AnimatorGraph::AnimationTransition attackToIdle{};
+			attackToIdle.targetStateIndex = 0;
+			attackToIdle.blendDuration = 0.2;
+			attackToIdle.parameterName = "Move";
+			attackToIdle.expectedValue = false;
+			attackToIdle.triggerOnEnd = false;
+			runAttack.transitions.emplace_back(attackToIdle);
+		}
+
+		std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, runState,  runAttack };
+
+		mArcherAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
+		mArcherAnimationController.AddParameter("Move", AnimatorGraph::ParameterType::Bool);
+		mArcherAnimationController.AddParameter("Attack", AnimatorGraph::ParameterType::Trigger);
+	}
+}
+
+void Scene::BuildSwordManAnimationController() {
 	// LongSword
 	{
 		mAnimationMap["LongSword"].Load("Resources/Assets/Knight/LongSword/LongSword.gltf");
 		auto& loader = mAnimationMap["LongSword"];
 
-		std::vector<const AnimationClip*> clips {
+		std::vector<const AnimationClip*> clips{
 			loader.GetClip(0), // Idle
 			loader.GetClip(1), // Forward Run
 			loader.GetClip(2), // Backward Run
@@ -746,7 +950,7 @@ void Scene::BuildAniamtionController() {
 			loader.GetClip(9), // Attack 1 
 			loader.GetClip(10),// Attack 2
 			loader.GetClip(11),// Death 
-		}; 
+		};
 
 		std::vector<UINT> boneMask(69);
 		std::iota(boneMask.begin(), boneMask.begin() + 59, 0);
@@ -1014,8 +1218,8 @@ void Scene::BuildAniamtionController() {
 
 		}
 
-		AnimatorGraph::BoneMaskAnimationState runningJump{}; 
-		runningJump.maskedClipIndex = 6; 
+		AnimatorGraph::BoneMaskAnimationState runningJump{};
+		runningJump.maskedClipIndex = 6;
 		runningJump.nonMaskedClipIndex = 6;
 		runningJump.name = "RunningJump";
 
@@ -1107,83 +1311,60 @@ void Scene::BuildAniamtionController() {
 		mSwordManAnimationController.AddParameter("Attack", AnimatorGraph::ParameterType::Trigger);
 		mSwordManAnimationController.AddParameter("True", AnimatorGraph::ParameterType::Always);
 	}
+}
+
+void Scene::BuildMageAnimationController() {
+
+}
+
+void Scene::BuildMonsterType1AnimationController() {
+	mAnimationMap["MonsterType1"].Load("Resources/Assets/Monster/MonsterType1.gltf");
+	auto& loader = mAnimationMap["MonsterType1"];
+
+	std::vector<AnimationClip*> clips = {
+		loader.GetClip(0), // Bite 
+		loader.GetClip(1), // Crouch 
+		loader.GetClip(2), // Death
+		loader.GetClip(3), // Eat
+		loader.GetClip(4), // Idle1
+		loader.GetClip(5), // Idle2 
+		loader.GetClip(6), // Punch 
+		loader.GetClip(7), // Roar 
+		loader.GetClip(8), // Sniff 
+		loader.GetClip(9), // Walk1 
+		loader.GetClip(10) // Walk2 
+	};
 
 
-	// Archer 
+	AnimatorGraph::AnimationState Idle{}; 
+	Idle.clip = clips[4];
+	Idle.name = "Idle";
+	
 	{
-		mAnimationMap["Archer"].Load("Resources/Assets/Knight/archer.gltf");
+		AnimatorGraph::AnimationTransition toWalk{};
+		toWalk.targetStateIndex = 1;
+		toWalk.blendDuration = 0.09;
+		toWalk.parameterName = "Move";
+		toWalk.expectedValue = 1;
+		toWalk.triggerOnEnd = false;
+		Idle.transitions.emplace_back(toWalk);
+	};
 
-		std::vector<const AnimationClip*> clips{ mAnimationMap["Archer"].GetClip(0), mAnimationMap["Archer"].GetClip(1), mAnimationMap["Archer"].GetClip(16), mAnimationMap["Archer"].GetClip(3) };
+	AnimatorGraph::AnimationState Walk{};
+	Walk.clip = clips[9];
+	Walk.name = "Walk";
 
-		std::vector<UINT> boneMask(69);
-		std::iota(boneMask.begin(), boneMask.begin() + 59, 0);
-		AnimatorGraph::BoneMaskAnimationState idleState{};
-		idleState.maskedClipIndex = 0;
-		idleState.nonMaskedClipIndex = 0;
-		idleState.name = "Idle";
+	{
+		AnimatorGraph::AnimationTransition toIdle{};
+		toIdle.targetStateIndex = 0;
+		toIdle.blendDuration = 0.09;
+		toIdle.parameterName = "Move";
+		toIdle.expectedValue = 0;
+		toIdle.triggerOnEnd = false;
+		Walk.transitions.emplace_back(toIdle);
+	};
 
-		{
-			AnimatorGraph::AnimationTransition idleToRun{};
-			idleToRun.targetStateIndex = 1;
-			idleToRun.blendDuration = 0.09;
-			idleToRun.parameterName = "Move";
-			idleToRun.expectedValue = true;
-			idleToRun.triggerOnEnd = false;
-			idleState.transitions.emplace_back(idleToRun);
-		}
-
-		AnimatorGraph::BoneMaskAnimationState runState{};
-		runState.maskedClipIndex = 3;
-		runState.nonMaskedClipIndex = 3;
-		runState.name = "Move";
-
-		{
-			AnimatorGraph::AnimationTransition runToIdle{};
-			runToIdle.targetStateIndex = 0;
-			runToIdle.blendDuration = 0.09;
-			runToIdle.parameterName = "Move";
-			runToIdle.expectedValue = false;
-			runToIdle.triggerOnEnd = false;
-			runState.transitions.emplace_back(runToIdle);
-
-			AnimatorGraph::AnimationTransition runToAttack{};
-			runToAttack.targetStateIndex = 2;
-			runToAttack.blendDuration = 0.09;
-			runToAttack.parameterName = "Attack";
-			runToAttack.expectedValue = true;
-			runToAttack.triggerOnEnd = false;
-			runState.transitions.emplace_back(runToAttack);
-		}
-
-		AnimatorGraph::BoneMaskAnimationState runAttack{};
-		runAttack.maskedClipIndex = 2;
-		runAttack.nonMaskedClipIndex = 1;
-		runAttack.name = "Attack";
-
-		{
-			AnimatorGraph::AnimationTransition attackToRun{};
-			attackToRun.targetStateIndex = 1;
-			attackToRun.blendDuration = 0.3;
-			attackToRun.parameterName = "Move";
-			attackToRun.expectedValue = true;
-			attackToRun.triggerOnEnd = true;
-			runAttack.transitions.emplace_back(attackToRun);
-
-			AnimatorGraph::AnimationTransition attackToIdle{};
-			attackToIdle.targetStateIndex = 0;
-			attackToIdle.blendDuration = 0.2;
-			attackToIdle.parameterName = "Move";
-			attackToIdle.expectedValue = false;
-			attackToIdle.triggerOnEnd = false;
-			runAttack.transitions.emplace_back(attackToIdle);
-		}
-
-		std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, runState,  runAttack };
-
-		mArcherAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
-		mArcherAnimationController.AddParameter("Move", AnimatorGraph::ParameterType::Bool);
-		mArcherAnimationController.AddParameter("Attack", AnimatorGraph::ParameterType::Trigger);
-	}
+	mMonsterType1AnimationController = AnimatorGraph::AnimationGraphController({ Idle, Walk });
 
 }
 
@@ -1252,7 +1433,7 @@ void Scene::SetInputBaseAnimMode() {
 		mMyPlayer->GetBoneMaskController().SetTrigger("Jump");
 		});
 
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F, mInputSign, [this]() {
+	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::P, mInputSign, [this]() {
 		mMyPlayer->GetBoneMaskController().SetTrigger("Attack");
 		});
 

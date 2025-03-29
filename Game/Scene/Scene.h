@@ -30,6 +30,13 @@ private:
 	void BuildShader(ComPtr<ID3D12Device> device);
 	void BuildAniamtionController(); 
 
+	void BuildBaseAnimationController();
+	void BuildArcherAnimationController();
+	void BuildSwordManAnimationController();
+	void BuildMageAnimationController();
+
+	void BuildMonsterType1AnimationController();
+
 	void SetInputBaseAnimMode(); 
 	void SetInputArcherMode(); 
 	void SetInputSwordManMode();
@@ -62,30 +69,31 @@ private:
 	Camera mCamera{};
 	std::unique_ptr<CameraMode> mCameraMode{ nullptr };
 
+
+	std::unordered_map<NetworkObjectIdType, std::vector<GameObject>::iterator> mGameObjectMap{};
 	std::vector<GameObject> mGameObjects{};
 
 	int mNetworkSign{};
+	int mInputSign{}; 
 	std::vector<DirectX::Keyboard::Keys> mSendKeyList{};
 
-
-	int mInputSign{}; 
-
-
-
-	std::unordered_map<NetworkObjectIdType, std::array<Player, 5>::iterator> mIndexMap{};
-	std::array<Player, 5> mPlayers{};
+	std::unordered_map<NetworkObjectIdType, Player*> mPlayerIndexmap{};
+	std::array<Player, 5> mPlayers{ Player{}, };
 	
-	std::array<Player, 5>::iterator mNextPlayerLoc{ mPlayers.begin() };
-	std::array<Player, 5>::iterator mMyPlayer{};
+	Player* mMyPlayer{ nullptr };
 
+	
 
+	std::array<GameObject, 3> mWeapons{}; 
 	
 	AnimatorGraph::BoneMaskAnimationGraphController mBaseAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mArcherAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mSwordManAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mMageAnimationController{};
 
-	GameObject mSkyBox{}; 
+	AnimatorGraph::AnimationGraphController mMonsterType1AnimationController{}; 
+
+	GameObject mSkyBox{};
 
 	TerrainLoader tLoader{}; 
 	TerrainCollider tCollider{};

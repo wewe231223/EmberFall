@@ -2,9 +2,11 @@
 #include "CorruptedGem.h"
 #include "GameObject.h"
 
+#include "GameEventManager.h"
+
 CorruptedGemScript::CorruptedGemScript(std::shared_ptr<GameObject> owner) 
-    : Script{ owner, ObjectTag::NONE } { 
-    owner->SetEntityType(EntityType::ENV);
+    : Script{ owner, ObjectTag::CORRUPTED_GEM } { 
+    owner->SetEntityType(EntityType::CORRUPTED_GEM);
 }
 
 CorruptedGemScript::~CorruptedGemScript() { }
@@ -33,12 +35,15 @@ void CorruptedGemScript::DispatchGameEvent(GameEvent* event) {
 }
 
 void CorruptedGemScript::OnDestroy(GemDestroyEvent* event) {
-    if (event->receiver != GetOwner()->GetId()) {
-        return;
-    }
-
     auto owner = GetOwner();
     if (event->holdTime > mDesytoyingTime) {
+        auto gameEvent = std::make_shared<GemDestroyed>();
+        gameEvent->sender = event->receiver;
+        gameEvent->receiver = event->sender;
+        gameEvent->type = GameEventType::DESTROY_GEM_COMPLETE;
+
+        gEventManager->PushEvent(gameEvent);
+
         owner->SetActive(false);
     }
 }

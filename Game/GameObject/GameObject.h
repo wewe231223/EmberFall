@@ -26,6 +26,8 @@ public:
 
 	void UpdateShaderVariables(); 
 	void UpdateShaderVariables(SimpleMath::Matrix& parent);
+	void UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer);
+
 	bool GetAnimatorState() const;
 
 	GameObject Clone(); 
@@ -44,7 +46,7 @@ private:
 
 	Transform mTransform{};
 
-	bool mActiveState{ true };
+	bool mActiveState{ false };
 };
 #else 
 

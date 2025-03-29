@@ -590,6 +590,12 @@ namespace AnimatorGraph {
             clips.push_back(state.clip);
         }
         mAnimator = Animator(clips);
+
+        mActiveState = true;
+    }
+
+    AnimationGraphController::operator bool() const {
+        return mActiveState; 
     }
 
     void AnimationGraphController::Update(double deltaTime, BoneTransformBuffer& boneTransforms) {
@@ -721,7 +727,7 @@ namespace AnimatorGraph {
             mBoneMask.insert(id);
         }
 
-        mRootNode = mDefaultClip->root;
+        mRootNode = mDefaultClip->root; 
     }
 
     void BoneMaskAnimator::CaptureTransitionComponents(BoneNode* node, const SimpleMath::Matrix& parentTransform, double animTime, double blendFactor, bool masked) {
@@ -1094,7 +1100,11 @@ namespace AnimatorGraph {
     }
 
     BoneMaskAnimationGraphController::BoneMaskAnimationGraphController(const std::vector<const AnimationClip*>& clips, const std::vector<UINT>& boneMask, const std::vector<BoneMaskAnimationState>& states) : mAnimator(clips, boneMask), mStates(states), mCurrentStateIndex(0) {
-       
+        mActiveState = true; 
+    }
+
+    BoneMaskAnimationGraphController::operator bool() const {
+        return mActiveState; 
     }
 
     void BoneMaskAnimationGraphController::Update(double deltaTime, BoneTransformBuffer& boneTransforms) {

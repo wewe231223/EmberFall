@@ -110,6 +110,10 @@ void PlayScene::Init() {
 
     for (int32_t i = 0; i < 3; ++i) {
         gObjectSpawner->SpawnObject(ObjectTag::MONSTER);
+        if (0 == i) {
+            decltype(auto) obj = gObjectSpawner->SpawnObject(ObjectTag::CORRUPTED_GEM);
+        }
+        //obj->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -50.0f, 0.f, -50.0f }, SimpleMath::Vector3{ 50.0f, 0.f, 50.0f }));
     }
 }
 

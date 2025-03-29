@@ -74,6 +74,8 @@ BT::NodeStatus MonsterScript::SetRandomTargetLocation(const float deltaTime) {
 
 BT::NodeStatus MonsterScript::MoveTo(const float deltaTime) {
     auto owner = GetOwner();
+    auto transform = owner->GetTransform();
+
     auto moveDir = mTargetPos - owner->GetPosition();
     moveDir.y = 0.0f;
     moveDir.Normalize();
@@ -127,6 +129,7 @@ BT::NodeStatus MonsterScript::ChaseDetectedPlayer(const float deltaTime) {
         return BT::NodeStatus::FAIL;
     }
 
+    owner->GetTransform()->SetLook(moveDir);
     owner->GetPhysics()->Acceleration(moveDir, deltaTime);
     return BT::NodeStatus::RUNNING;
 }

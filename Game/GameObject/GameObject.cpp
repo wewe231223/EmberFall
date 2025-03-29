@@ -46,6 +46,23 @@ void GameObject::UpdateShaderVariables(SimpleMath::Matrix& parent) {
 	mModelContext.world = mTransform.GetWorldMatrix();
 }
 
+void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer) {
+	mTransform.UpdateWorldMatrix();
+
+	if (mCollider.GetActiveState()) {
+		mCollider.UpdateBox(mTransform.GetWorldMatrix());
+	}
+
+	mModelContext.world = mTransform.GetWorldMatrix();
+
+	if (mGraphController) {
+		mGraphController.Update(Time.GetDeltaTime(), boneTransformBuffer);
+	}
+	else if (mBoneMaskGraphController) {
+		mBoneMaskGraphController.Update(Time.GetDeltaTime(), boneTransformBuffer);
+	}
+}
+
 bool GameObject::GetAnimatorState() const {
 	return mAnimated; 
 }

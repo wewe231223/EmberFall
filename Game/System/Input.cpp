@@ -5,28 +5,24 @@
 
 
 std::array<unsigned char, DirectX::Keyboard::Keys::END>  keys{};
-GInput::GInput()
-{
+GInput::GInput() {
 	std::iota(keys.begin(), keys.end(), 0);
 }
 
-GInput::~GInput()
-{
+GInput::~GInput() {
 #ifdef VIRTUAL_MOUSE
 	ShowCursor(true);
 #endif // VIRTUAL_MOUSE
 }
 
-void GInput::Initialize(HWND hWnd)
-{
+void GInput::Initialize(HWND hWnd) {
 	mWindowHandle = hWnd;
 
 	// GInput::EnableVirtualMouse();
 
 }
 
-void GInput::Update()
-{
+void GInput::Update() {
 	mMouseState = mMouse->GetState();
 #ifdef VIRTUAL_MOUSE
 	if (mWindowFocused and mVirtualMouse) {
@@ -78,8 +74,7 @@ void GInput::ToggleVirtualMouse() {
 #endif
 }
 
-void GInput::DisableVirtualMouse()
-{
+void GInput::DisableVirtualMouse() {
 #ifdef VIRTUAL_MOUSE
 	if (mVirtualMouse) {
 		ShowCursor(true);
@@ -88,8 +83,7 @@ void GInput::DisableVirtualMouse()
 #endif // VIRTUAL_MOUSE
 }
 
-void GInput::EnableVirtualMouse()
-{
+void GInput::EnableVirtualMouse() {
 #ifdef VIRTUAL_MOUSE
 	if (not mVirtualMouse) {
 		ShowCursor(false);
@@ -101,8 +95,7 @@ void GInput::EnableVirtualMouse()
 
 
 
-void GInput::UpdateFocus(UINT msg)
-{
+void GInput::UpdateFocus(UINT msg) {
 	if (msg == WM_KILLFOCUS) {
 		mWindowFocused = false;
 	}
@@ -111,8 +104,7 @@ void GInput::UpdateFocus(UINT msg)
 	}
 }
 
-void GInput::UpdateWindowCenter()
-{
+void GInput::UpdateWindowCenter() {
 	mWindowCenter = { 0,0 };
 	ClientToScreen(mWindowHandle, &mWindowCenter);
 
@@ -121,44 +113,36 @@ void GInput::UpdateWindowCenter()
 
 }
 
-DirectX::Keyboard::State& GInput::GetKeyboardState()
-{
+DirectX::Keyboard::State& GInput::GetKeyboardState() {
 	return std::ref(mKeyboardState);
 }
 
-DirectX::Mouse::State& GInput::GetMouseState()
-{
+DirectX::Mouse::State& GInput::GetMouseState() {
 	return std::ref(mMouseState);
 }
 
-DirectX::Keyboard::KeyboardStateTracker& GInput::GetKeyboardTracker()
-{
+DirectX::Keyboard::KeyboardStateTracker& GInput::GetKeyboardTracker() {
 	return std::ref(mKeyboardTracker);
 }
 
-DirectX::Mouse::ButtonStateTracker& GInput::GetMouseTracker()
-{
+DirectX::Mouse::ButtonStateTracker& GInput::GetMouseTracker() {
 	return std::ref(mMouseTracker);
 }
 
-void GInput::RegisterKeyPressCallBack(DirectX::Keyboard::Keys key, int sign, std::function<void()>&& callback)
-{
+void GInput::RegisterKeyPressCallBack(DirectX::Keyboard::Keys key, int sign, std::function<void()>&& callback) {
 	mKeyPressCallbacks[key].emplace_back(callback, sign);
 
 }
 
-void GInput::RegisterKeyDownCallBack(DirectX::Keyboard::Keys key, int sign, std::function<void()>&& callback)
-{
+void GInput::RegisterKeyDownCallBack(DirectX::Keyboard::Keys key, int sign, std::function<void()>&& callback) {
 	mKeyDownCallbacks[key].emplace_back(callback, sign);
 }
 
-void GInput::RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys key, int sign, std::function<void()>&& callback)
-{
+void GInput::RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys key, int sign, std::function<void()>&& callback) {
 	mKeyReleaseCallbacks[key].emplace_back(callback, sign);
 }
 
-float GInput::GetDeltaMouseX() const
-{
+float GInput::GetDeltaMouseX() const {
 #ifdef VIRTUAL_MOUSE
 	if ((not mWindowFocused) or (not mVirtualMouse)) {
 		return 0.f;
@@ -169,8 +153,7 @@ float GInput::GetDeltaMouseX() const
 #endif // VIRTUAL_MOUSE
 }
 
-float GInput::GetDeltaMouseY() const
-{
+float GInput::GetDeltaMouseY() const {
 #ifdef VIRTUAL_MOUSE
 	if ((not mWindowFocused) or (not mVirtualMouse)) {
 		return 0.f;
@@ -181,8 +164,7 @@ float GInput::GetDeltaMouseY() const
 #endif // VIRTUAL_MOUSE
 }
 
-void GInput::EraseCallBack(int sign)
-{
+void GInput::EraseCallBack(int sign) {
 	for (auto& callbacks : mKeyPressCallbacks) {
 		std::erase_if(callbacks, [sign](auto& callback) {return callback.second == sign; });
 	}

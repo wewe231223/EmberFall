@@ -12,7 +12,7 @@ void ObjectSpawner::SetCurrentScene(std::shared_ptr<class IServerGameScene> game
     mCurrentScene = gameScene;
 }
 
-void ObjectSpawner::SpawnObject(ObjectTag objectType, bool terrainCollision) {
+std::shared_ptr<GameObject>& ObjectSpawner::SpawnObject(ObjectTag objectType, bool terrainCollision) {
     decltype(auto) object = mCurrentScene->GetInvalidObject();
     ObjectBuilder::BuildObjectComponent(object, objectType);
     
@@ -21,26 +21,30 @@ void ObjectSpawner::SpawnObject(ObjectTag objectType, bool terrainCollision) {
     if (true == terrainCollision) {
         mCurrentScene->GetTerrainCollider().AddObjectInTerrainGroup(object);
     }
+
+    return object;
 }
 
-void ObjectSpawner::SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
+std::shared_ptr<GameObject>& ObjectSpawner::SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
     const SimpleMath::Vector3& pos, const SimpleMath::Vector3& size, const SimpleMath::Vector3& dir) {
 
     decltype(auto) object = mCurrentScene->GetInvalidObject();
     ObjectBuilder::BuildTrigger(object, event, lifeTime, eventDelay, eventCount, pos, size, dir);
 
     object->SetActive(true);
+    return object;
 }
 
-void ObjectSpawner::SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
+std::shared_ptr<GameObject>& ObjectSpawner::SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
     const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir, std::shared_ptr<Collider> collider) {
     decltype(auto) object = mCurrentScene->GetInvalidObject();
     ObjectBuilder::BuildTrigger(object, event, lifeTime, eventDelay, eventCount, pos, dir, collider);
 
     object->SetActive(true);
+    return object;
 }
 
-void ObjectSpawner::SpawnProjectile(ObjectTag objectType, const SimpleMath::Vector3& pos,
+std::shared_ptr<GameObject>& ObjectSpawner::SpawnProjectile(ObjectTag objectType, const SimpleMath::Vector3& pos,
     const SimpleMath::Vector3& dir, GameUnits::GameUnit<GameUnits::StandardSpeed> speed, bool terraincollision) {
     decltype(auto) object = mCurrentScene->GetInvalidObject();
     ObjectBuilder::BuildProjectile(object, objectType, pos, dir, speed);
@@ -50,4 +54,5 @@ void ObjectSpawner::SpawnProjectile(ObjectTag objectType, const SimpleMath::Vect
     }
 
     object->SetActive(true);
+    return object;
 }
