@@ -39,7 +39,7 @@ void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, Defau
 	std::memcpy(&worldCamera, *worldCameraBuffer, sizeof(CameraConstants));
 
 	CameraParameter cameraParam{};
-	float farZ = 20.0f;
+	float farZ = 40.0f;
 	SimpleMath::Matrix invView = worldCamera.view.Transpose().Invert();
 	SimpleMath::Matrix invProj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(cameraParam.fov, cameraParam.aspect, cameraParam.nearZ, farZ).Invert();
 
@@ -83,8 +83,10 @@ void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, Defau
 
 
 	float projectionSize = std::max(maxPoint.x - minPoint.x, maxPoint.y - minPoint.y);
-
-	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize, projectionSize, cameraParam.nearZ, 50.0f);
+	float padding = 10.0f;  // 조명 투영행렬의 근,원평면에 약간의 여유 공간을 추가할때 사용.
+	float nearPlane = minPoint.z - padding;
+	float farPlane = maxPoint.z + padding;
+	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize, projectionSize, nearPlane, farPlane);
 
 
 

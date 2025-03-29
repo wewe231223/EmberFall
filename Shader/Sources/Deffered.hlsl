@@ -67,7 +67,8 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 
 
     //return float4(GBuffers[3].Sample(linearWrapSampler, input.texcoord).rrr, 1.0f);
-
+    //return float4(GBuffers[2].Sample(linearWrapSampler, input.texcoord).rgb, 1.0f);
+    
     float4 diffuse = GBuffers[0].Sample(linearWrapSampler, input.texcoord);
     float4 worldPos = GBuffers[2].Sample(linearWrapSampler, input.texcoord);
     if (worldPos.x == 0.0f)
