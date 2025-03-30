@@ -33,7 +33,7 @@ class GameObject : public std::enable_shared_from_this<GameObject> {
 public:
     GameObject(std::shared_ptr<IServerGameScene> gameScene);
     ~GameObject();
-    
+
 public:
     bool IsActive() const;
     NetworkObjectIdType GetId() const;
@@ -53,6 +53,7 @@ public:
     SimpleMath::Matrix GetWorld() const;
     ObjectTag GetTag() const;
     EntityType GetEntityType() const;
+    AnimationState GetAnimationState() const;
 
     bool IsCollidingObject() const;
 
@@ -81,6 +82,8 @@ public:
 
     void ClearComponents();
     void Attack();
+
+    void ChangeAnimationState(AnimationState state);
 
     template <typename ColliderType, typename... Args>
         requires std::derived_from<ColliderType, Collider> and std::is_constructible_v<ColliderType, Args...>
@@ -119,12 +122,13 @@ private:
 private:
     bool mActive{ true };
     EntityType mEntityType{ EntityType::ENV };
+    ObjectTag mTag{ ObjectTag::NONE };
+    AnimationState mAnimationState{ AnimationState::IDLE };
 
     NetworkObjectIdType mId{ INVALID_SESSION_ID };                      // network id
 
     float mHP{ };
 
-    ObjectTag mTag{ ObjectTag::NONE };
     std::shared_ptr<Transform> mTransform{ };                           // Transform
     std::shared_ptr<class Physics> mPhysics{ };                         // Physics
     std::shared_ptr<Collider> mCollider{ nullptr };                     // 

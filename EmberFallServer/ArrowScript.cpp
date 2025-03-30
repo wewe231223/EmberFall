@@ -33,4 +33,6 @@ void ArrowScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& oppon
 
 void ArrowScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
+void ArrowScript::OnCollisionTerrain(const float height) { }
+
 void ArrowScript::DispatchGameEvent(GameEvent* event) { }

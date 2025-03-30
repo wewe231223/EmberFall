@@ -46,7 +46,7 @@ public:
     void Disable();
     void Reset();
 
-    void Jump(const float deltaTime);
+    void CheckAndJump(const float deltaTime);
 
     void ResizeVelocity(float speed);
     void Acceleration(const SimpleMath::Vector3& dir, const float acceleration, const float deltaTime);

@@ -53,6 +53,8 @@ void MonsterScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opp
 
 void MonsterScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
+void MonsterScript::OnCollisionTerrain(const float height) { }
+
 void MonsterScript::DispatchGameEvent(GameEvent* event) { 
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
@@ -74,6 +76,8 @@ BT::NodeStatus MonsterScript::SetRandomTargetLocation(const float deltaTime) {
 }
 
 BT::NodeStatus MonsterScript::MoveTo(const float deltaTime) {
+    GetOwner()->ChangeAnimationState(AnimationState::MOVE_FORWARD);
+
     auto owner = GetOwner();
     auto transform = owner->GetTransform();
 
@@ -114,6 +118,8 @@ BT::NodeStatus MonsterScript::DetectPlayerInRange(const float deltaTime) {
 }
 
 BT::NodeStatus MonsterScript::ChaseDetectedPlayer(const float deltaTime) {
+    GetOwner()->ChangeAnimationState(AnimationState::MOVE_FORWARD);
+
     auto owner = GetOwner();
     auto targetPos = mChaseTarget->GetPosition();
     auto moveDir = targetPos - owner->GetPosition();

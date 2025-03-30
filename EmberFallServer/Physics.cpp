@@ -56,13 +56,16 @@ void Physics::SetTransform(const std::shared_ptr<Transform>& transform) {
     mTransform = transform;
 }
 
-void Physics::Jump(const float deltaTime) {
+void Physics::CheckAndJump(const float deltaTime) {
     if (false == IsOnGround() and false == IsOnOtherObject()) {
         return;
     }
 
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player Jump");
+    
     mOnGround = false;
     mOnOtherObject = false;
+    
     // v = F / mess * time (m/s)
     auto accel = mFactor.jumpForce / mFactor.mass;
     mVelocity.y = (accel * GameUnits::ToUnit<GameUnits::StandardTime>(deltaTime)).Count(); 
@@ -112,9 +115,8 @@ void Physics::Update(const float deltaTime) {
     float speed = mVelocity.Length();
     SimpleMath::Vector3 moveDir = mVelocity;
     moveDir.Normalize();
-
-    UpdateFriction(deltaTime, moveDir, speed);
     UpdateGravity(deltaTime, moveDir, speed);   // 중력 적용
+    UpdateFriction(deltaTime, moveDir, speed);
 
     auto transform = mTransform.lock();
     transform->Translate(mVelocity * deltaTime);

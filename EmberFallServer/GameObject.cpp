@@ -69,6 +69,10 @@ EntityType GameObject::GetEntityType() const {
     return mEntityType;
 }
 
+AnimationState GameObject::GetAnimationState() const {
+    return mAnimationState;
+}
+
 bool GameObject::IsCollidingObject() const {
     return nullptr != mCollider;
 }
@@ -180,6 +184,10 @@ void GameObject::OnCollision(std::shared_ptr<GameObject>& opponent, const Simple
 
 void GameObject::OnCollisionTerrain(const float height) {
     mTransform->SetY(height);
+
+    for (auto& component : mComponents) {
+        component->OnCollisionTerrain(height);
+    }
 }
 
 void GameObject::DispatchGameEvent(GameEvent* event) {
@@ -194,6 +202,22 @@ void GameObject::ClearComponents() {
 
 void GameObject::Attack() {
     mWeaponSystem.Attack(mTransform->GetPosition(), mTransform->Forward());
+}
+
+void GameObject::ChangeAnimationState(AnimationState state) {
+    if (state == mAnimationState) {
+        return;
+    }
+
+    mAnimationState = state;
+
+    auto packet = GetPacket<PacketSC::PacketAnimationState>(
+        INVALID_SESSION_ID,
+        GetId(),
+        mAnimationState
+    );
+
+    gServerCore->SendAll(&packet);
 }
 
 void GameObject::OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 

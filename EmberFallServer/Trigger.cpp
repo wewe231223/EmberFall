@@ -54,4 +54,6 @@ void Trigger::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent,
 
 void Trigger::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse){ }
 
+void Trigger::OnCollisionTerrain(const float height) { }
+
 void Trigger::DispatchGameEvent(GameEvent* event) { }

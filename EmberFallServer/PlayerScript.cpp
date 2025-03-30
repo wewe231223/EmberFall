@@ -32,13 +32,10 @@ void PlayerScript::Update(const float deltaTime) {
     mViewList.Update();
     mViewList.Send();
 
-    auto physics{ GetPhysics() };
+    CheckAndJump(deltaTime);
+    CheckAndMove(deltaTime);
 
-    SimpleMath::Vector3 moveDir{ SimpleMath::Vector3::Zero };
-    if (mInput->IsUp('P')) {
-        GetOwner()->Attack();
-    }
-
+    // Change Weapon
     if (mInput->IsUp('1')) {
         GetOwner()->ChangeWeapon(Weapon::NONE);
     }
@@ -55,89 +52,25 @@ void PlayerScript::Update(const float deltaTime) {
         GetOwner()->ChangeWeapon(Weapon::BOW);
     }
 
-    if (mInput->IsActiveKey('A')) {
-        moveDir.x += 1.0f;
+    // Attack
+    if (mInput->IsUp('P')) {
+        GetOwner()->ChangeAnimationState(AnimationState::ATTACK);
+        GetOwner()->Attack();
     }
 
-    if (mInput->IsActiveKey('D')) {
-        moveDir.x -= 1.0f;
-    }
-
-    if (mInput->IsActiveKey('W')) {
-        moveDir.z -= 1.0f;
-    }
-
-    if (mInput->IsActiveKey('S')) {
-        moveDir.z += 1.0f;
-    }
-
-    if (mInput->IsDown(VK_SPACE)) {
-        physics->Jump(deltaTime);
-        
-        auto ownerId = static_cast<SessionIdType>(GetOwner()->GetId());
-        auto packet = GetPacket<PacketSC::PacketAnimationState>(
-            ownerId,
-            ownerId,
-            AnimationState::JUMP
-        );
-
-        gServerCore->SendAll(&packet);
-    }
-
-    if (mInput->IsUp(VK_F1)) {
-        gObjectSpawner->SpawnProjectile(
-            ObjectTag::ARROW, 
-            GetOwner()->GetPosition(),
-            GetOwner()->GetTransform()->Forward(), 
-            GameProtocol::Unit::DEFAULT_PROJECTILE_SPEED        // temp speed
-        ); 
-    }
-
-    if (mInput->IsDown(VK_LSHIFT)) {
-        auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(GameProtocol::Unit::PLAYER_RUN_SPEED);
-        gLogConsole->PushLog(
-            DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h",
-            GetOwner()->GetId(),
-            maxSpeed.Count()
-        );
-
-        physics->mFactor.maxMoveSpeed = maxSpeed;
-    }
-    else if (mInput->IsUp(VK_LSHIFT)) {
-        auto maxSpeed = GameUnits::UnitCast<GameUnits::KilloMeterPerHour>(GameProtocol::Unit::PLAYER_WALK_SPEED);
-        gLogConsole->PushLog(
-            DebugLevel::LEVEL_DEBUG, "Player [{}] Change Max Speed to {} km/h", 
-            GetOwner()->GetId(),
-            maxSpeed.Count()
-        );
-
-        physics->mFactor.maxMoveSpeed = maxSpeed;
-    }
-
+    // Interact
     if (mInput->IsActiveKey('F')) {
-        Interaction(deltaTime, GetNearestObject());
+        DoInteraction(deltaTime, GetNearestObject());
     }
-    else if (mInput->IsUp('F')) {
-        if (mInteractionObj != INVALID_OBJ_ID) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Cancel");
-            auto ownerId{ static_cast<SessionIdType>(GetOwner()->GetId()) };
-            auto packet = GetPacket<PacketSC::PacketInteractCancel>(
-                ownerId,
-                ownerId
-            );
-
-            gServerCore->Send(ownerId, &packet);
-            mInteractionObj = INVALID_OBJ_ID;
-        }
+    
+    if (mInput->IsUp('F')) {
+        CancelInteraction(deltaTime);
     }
 
+    // Item
     if (mInput->IsUp('U')) {
         UseItem();
     }
-
-    moveDir.Normalize();
-    moveDir = SimpleMath::Vector3::Transform(moveDir, GetOwner()->GetTransform()->GetRotation());
-    physics->Acceleration(moveDir, deltaTime);
 }
 
 void PlayerScript::LateUpdate(const float deltaTime) {
@@ -149,6 +82,12 @@ void PlayerScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opp
 void PlayerScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
 void PlayerScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
+
+void PlayerScript::OnCollisionTerrain(const float height) {
+    if (AnimationState::JUMP == GetOwner()->GetAnimationState()) {
+        GetOwner()->ChangeAnimationState(AnimationState::IDLE);
+    }
+}
 
 void PlayerScript::DispatchGameEvent(GameEvent* event) { 
     switch (event->type) {
@@ -204,7 +143,57 @@ std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
     return nullptr;
 }
 
-void PlayerScript::Interaction(const float deltaTime, const std::shared_ptr<GameObject>& target) {
+void PlayerScript::CheckAndMove(const float deltaTime) {
+    auto currState = GetOwner()->GetAnimationState();
+    if (AnimationState::MOVE_RIGHT < currState) {
+        return;
+    }
+
+    auto physics{ GetPhysics() };
+
+    SimpleMath::Vector3 moveDir{ SimpleMath::Vector3::Zero };
+    if (mInput->IsActiveKey('D')) {
+        moveDir.x -= 1.0f;
+    }
+
+    if (mInput->IsActiveKey('W')) {
+        moveDir.z -= 1.0f;
+    }
+
+    if (mInput->IsActiveKey('A')) {
+        moveDir.x += 1.0f;
+    }
+
+    if (mInput->IsActiveKey('S')) {
+        moveDir.z += 1.0f;
+    }
+
+    if (MathUtil::IsVectorZero(moveDir)) {
+        GetOwner()->ChangeAnimationState(AnimationState::IDLE);
+        return;
+    }
+
+    if (not MathUtil::IsZero(moveDir.z)) {
+        auto changeState = moveDir.z > 0.0f ? AnimationState::MOVE_FORWARD : AnimationState::MOVE_BACKWARD;
+        GetOwner()->ChangeAnimationState(changeState);
+    }
+
+    moveDir.Normalize();
+    moveDir = SimpleMath::Vector3::Transform(moveDir, GetOwner()->GetTransform()->GetRotation());
+    physics->Acceleration(moveDir, deltaTime);
+}
+
+void PlayerScript::CheckAndJump(const float deltaTime) {
+    auto physics{ GetPhysics() };
+
+    // Jump
+    if (mInput->IsDown(VK_SPACE) and physics->IsOnGround()) {
+        GetOwner()->ChangeAnimationState(AnimationState::JUMP);
+        physics->CheckAndJump(deltaTime);
+    }
+}
+
+void PlayerScript::DoInteraction(const float deltaTime, const std::shared_ptr<GameObject>& target) {
     if (nullptr == target or not target->IsActive()) {
         mInteractionObj = INVALID_OBJ_ID;
         return;
@@ -236,6 +225,22 @@ void PlayerScript::Interaction(const float deltaTime, const std::shared_ptr<Game
     default:
         break;
     }
+}
+
+void PlayerScript::CancelInteraction(const float deltaTime) {
+    if (INVALID_OBJ_ID == mInteractionObj) {
+        return;
+    }
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Cancel");
+    auto ownerId{ static_cast<SessionIdType>(GetOwner()->GetId()) };
+    auto packet = GetPacket<PacketSC::PacketInteractCancel>(
+        ownerId,
+        ownerId
+    );
+
+    gServerCore->Send(ownerId, &packet);
+    mInteractionObj = INVALID_OBJ_ID;
 }
 
 void PlayerScript::DestroyGem(const float deltaTime, const std::shared_ptr<GameObject>& gem) {

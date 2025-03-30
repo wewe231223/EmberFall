@@ -33,7 +33,7 @@ public:
 
     void SetY(const float y);
     void Translate(const SimpleMath::Vector3& v);
-    void Move(const SimpleMath::Vector3& moveVec);
+    void CheckAndMove(const SimpleMath::Vector3& moveVec);
     //void Move(const SimpleMath::Vector3& dir, float force);
 
     void SetLook(const SimpleMath::Vector3& lookVec);

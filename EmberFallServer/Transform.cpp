@@ -80,7 +80,7 @@ void Transform::Translate(const SimpleMath::Vector3& v) {
     mPosition += v;
 }
 
-void Transform::Move(const SimpleMath::Vector3& moveVec) {
+void Transform::CheckAndMove(const SimpleMath::Vector3& moveVec) {
     mPrevPosition = mPosition;
 
     Translate(SimpleMath::Vector3{ 0.0f, moveVec.y, 0.0f });

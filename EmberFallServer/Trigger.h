@@ -30,6 +30,9 @@ public:
     virtual void OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override final;
     virtual void OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override final;
     virtual void OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override final;
+
+    virtual void OnCollisionTerrain(const float height) override;
+
     virtual void DispatchGameEvent(struct GameEvent* event) override;
 
 private:

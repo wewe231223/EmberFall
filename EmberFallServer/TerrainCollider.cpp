@@ -30,6 +30,7 @@ void TerrainCollider::HandleTerrainCollision() {
     bool onGround{ false };
     for (auto& object : mCollisionTerrainList) {
         onGround = false;
+        object->GetPhysics()->mFactor.friction = 0.0f;
         if (mTerrain->Contains(object->GetCollider(), terrainHeight)) {
             onGround = true;
             object->GetPhysics()->mFactor.friction = 1.0f;

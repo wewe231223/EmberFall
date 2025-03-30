@@ -61,12 +61,6 @@
     <Filter Include="GameEvent">
       <UniqueIdentifier>{149a7731-ffbf-4ec3-9a90-4cc613b668e4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Weapon">
-      <UniqueIdentifier>{5bdb23f0-7f45-49b4-bdd9-2dd54094a7ae}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="AttackSystem">
-      <UniqueIdentifier>{0ec17123-8f6e-4463-a8b6-70e1a3f77296}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Script\Trigger">
       <UniqueIdentifier>{563c1ba7-e3f0-4d09-856a-ede8cdde952c}</UniqueIdentifier>
     </Filter>
@@ -94,6 +88,15 @@
     </Filter>
     <Filter Include="Script\User\Common">
       <UniqueIdentifier>{e64cda37-1c0a-469a-9c94-e2f10fa65cb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Attack">
+      <UniqueIdentifier>{0ec17123-8f6e-4463-a8b6-70e1a3f77296}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Attack\Weapon">
+      <UniqueIdentifier>{5bdb23f0-7f45-49b4-bdd9-2dd54094a7ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Attack\AttackSystem">
+      <UniqueIdentifier>{95a3be85-1cf0-41f1-82ae-8c70dfcccaed}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -160,9 +163,6 @@
     <ClCompile Include="PathFinder.cpp">
       <Filter>PathFinding</Filter>
     </ClCompile>
-    <ClCompile Include="GraphBase.cpp">
-      <Filter>PathFinding\Graph\GraphBase</Filter>
-    </ClCompile>
     <ClCompile Include="GraphSearch.cpp">
       <Filter>PathFinding\Graph\GraphSearch</Filter>
     </ClCompile>
@@ -191,10 +191,7 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="Weapon.cpp">
-      <Filter>Weapon</Filter>
-    </ClCompile>
-    <ClCompile Include="AttackSystem.cpp">
-      <Filter>AttackSystem</Filter>
+      <Filter>Attack\Weapon</Filter>
     </ClCompile>
     <ClCompile Include="Trigger.cpp">
       <Filter>Script\Trigger</Filter>
@@ -206,7 +203,7 @@
       <Filter>GameEvent</Filter>
     </ClCompile>
     <ClCompile Include="WeaponSystem.cpp">
-      <Filter>Weapon</Filter>
+      <Filter>Attack\Weapon</Filter>
     </ClCompile>
     <ClCompile Include="ObjectSpawner.cpp">
       <Filter>Object</Filter>
@@ -228,6 +225,12 @@
     </ClCompile>
     <ClCompile Include="BoundingBoxImporter.cpp">
       <Filter>Collision\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="AttackSystem.cpp">
+      <Filter>Attack\AttackSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphBase.cpp">
+      <Filter>GameEvent</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -309,9 +312,6 @@
     <ClInclude Include="Events.h">
       <Filter>GameEvent</Filter>
     </ClInclude>
-    <ClInclude Include="GameEventManager.h">
-      <Filter>GameEvent</Filter>
-    </ClInclude>
     <ClInclude Include="ItemScript.h">
       <Filter>Script\Item&amp;Skill</Filter>
     </ClInclude>
@@ -322,10 +322,7 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Weapon.h">
-      <Filter>Weapon</Filter>
-    </ClInclude>
-    <ClInclude Include="AttackSystem.h">
-      <Filter>AttackSystem</Filter>
+      <Filter>Attack\Weapon</Filter>
     </ClInclude>
     <ClInclude Include="Trigger.h">
       <Filter>Script\Trigger</Filter>
@@ -337,7 +334,7 @@
       <Filter>GameEvent</Filter>
     </ClInclude>
     <ClInclude Include="WeaponSystem.h">
-      <Filter>Weapon</Filter>
+      <Filter>Attack\Weapon</Filter>
     </ClInclude>
     <ClInclude Include="ObjectSpawner.h">
       <Filter>Object</Filter>
@@ -359,6 +356,12 @@
     </ClInclude>
     <ClInclude Include="BoundingBoxImporter.h">
       <Filter>Collision\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="AttackSystem.h">
+      <Filter>Attack\AttackSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEventManager.h">
+      <Filter>PathFinding\Graph\GraphBase</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
