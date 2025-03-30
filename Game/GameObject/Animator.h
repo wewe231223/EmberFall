@@ -85,6 +85,8 @@ namespace AnimatorGraph {
         const AnimationClip* clip;
         double speed{ 1.0 };
         std::vector<AnimationTransition> transitions;
+
+        bool loop{ true };
     };
 
     class AnimationParameter {
@@ -106,6 +108,8 @@ namespace AnimatorGraph {
         double speed{ 1.0 };
         std::string name;
         std::vector<AnimationTransition> transitions;
+
+        bool loop{ true };
     };
 
     inline bool DecomposeMatrix(SimpleMath::Matrix& mat, TransformComponents& outComponents) {
@@ -122,6 +126,8 @@ namespace AnimatorGraph {
         void UpdateBoneTransform(double deltaTime, BoneTransformBuffer& boneTransforms);
         void TransitionToClip(size_t clipIndex);
         void SetTransitionDuration(double duration = 0.09);
+		void SetLoop(bool loop);    
+
         double GetNormalizedTime();
 
     private:
@@ -153,6 +159,8 @@ namespace AnimatorGraph {
 
         std::unordered_map<unsigned int, TransformComponents> mStoredTransitionComponents{};
         bool mHasStoredTransition{ false };
+
+		bool mLoop{ true };
     };
 
 
@@ -215,16 +223,16 @@ namespace AnimatorGraph {
         void TransitionMaskedToClip(size_t clipIndex);
         void TransitionNonMaskedToClip(size_t clipIndex);
         void SetTransitionDuration(double duration = 0.09);
+		void SetLoop(bool loop);
 
         double GetNormalizedTimeNonMasked();
         double GetNormalizedTimeMasked();
 
     private:
         void ComputeBoneTransforms(double animTimeMasked, double animTimeNonMasked, BoneTransformBuffer& boneTransforms);
-        void ReadNodeHeirarchyTransition(double currentAnimTimeMasked, double currentAnimTimeNonMasked, double blendFactorMasked, double blendFactorNonMasked,
-            BoneNode* node, const DirectX::SimpleMath::Matrix& parentTransform, BoneTransformBuffer& boneTransforms);
-        void ReadNodeHeirarchy(double animTimeMasked, double animTimeNonMasked,
-            BoneNode* node, const DirectX::SimpleMath::Matrix& parentTransform, BoneTransformBuffer& boneTransforms);
+        void ReadNodeHeirarchyTransition(double currentAnimTimeMasked, double currentAnimTimeNonMasked, double blendFactorMasked, double blendFactorNonMasked, BoneNode* node, const DirectX::SimpleMath::Matrix& parentTransform, BoneTransformBuffer& boneTransforms);
+        void ReadNodeHeirarchy(double animTimeMasked, double animTimeNonMasked, BoneNode* node, const DirectX::SimpleMath::Matrix& parentTransform, BoneTransformBuffer& boneTransforms);
+
         unsigned int FindPosition(double AnimationTime, const BoneAnimation& boneAnim);
         unsigned int FindRotation(double AnimationTime, const BoneAnimation& boneAnim);
         unsigned int FindScaling(double AnimationTime, const BoneAnimation& boneAnim);
@@ -261,6 +269,8 @@ namespace AnimatorGraph {
 
         bool mHasStoredTransitionMasked{ false };
         bool mHasStoredTransitionNonMasked{ false };
+
+        bool mLoop{ true };
     };
 
 

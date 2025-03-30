@@ -305,9 +305,17 @@ namespace AnimatorGraph {
         }
         else {
             mCurrentTime += deltaTime;
+
             double tick = mCurrentTime * clip->ticksPerSecond;
             double normTime = std::fmod(tick / clip->duration, 1.0);
+            
+			if (not mLoop and tick >= clip->duration) {
+                normTime = 1.0;
+			}
+
             double animationTime = normTime * clip->duration;
+            
+            
             ComputeBoneTransforms(clip, animationTime, boneTransforms);
         }
     }
@@ -336,6 +344,10 @@ namespace AnimatorGraph {
 
     void Animator::SetTransitionDuration(double duration) {
         mTransitionDuration = duration;
+    }
+
+    void Animator::SetLoop(bool loop) {
+		mLoop = loop;
     }
 
     double Animator::GetNormalizedTime() {
@@ -832,12 +844,24 @@ namespace AnimatorGraph {
             mCurrentTimeMasked += deltaTime;
             mCurrentTimeNonMasked += deltaTime;
 
+
+
             double tickMasked = mCurrentTimeMasked * mClipMasked->ticksPerSecond;
             double normTimeMasked = std::fmod(tickMasked / mClipMasked->duration, 1.0);
+
+			if (not mLoop and tickMasked >= mClipMasked->duration) {
+				normTimeMasked = 1.0;
+			}
+
             double animationTimeMasked = normTimeMasked * mClipMasked->duration;
 
             double tickNonMasked = mCurrentTimeNonMasked * mClipNonMasked->ticksPerSecond;
             double normTimeNonMasked = std::fmod(tickNonMasked / mClipNonMasked->duration, 1.0);
+
+			if (not mLoop and tickNonMasked >= mClipNonMasked->duration) {
+				normTimeNonMasked = 1.0;
+			}
+
             double animationTimeNonMasked = normTimeNonMasked * mClipNonMasked->duration;
 
             ComputeBoneTransforms(animationTimeMasked, animationTimeNonMasked, boneTransforms);
@@ -895,6 +919,10 @@ namespace AnimatorGraph {
         mTransitionDuration = duration;
     }
 
+    void BoneMaskAnimator::SetLoop(bool loop) {
+		mLoop = loop;
+    }
+
     double BoneMaskAnimator::GetNormalizedTimeNonMasked() {
         double tickNonMasked = mCurrentTimeNonMasked * mClipNonMasked->ticksPerSecond;
         double normTimeNonMasked = std::fmod(tickNonMasked / mClipNonMasked->duration, 1.0);
@@ -935,7 +963,9 @@ namespace AnimatorGraph {
             else {
                 auto itCurrent = currentClip->boneAnimations.find(node->index);
                 if (itCurrent != currentClip->boneAnimations.end()) {
+
                     const BoneAnimation& currentBoneAnim = itCurrent->second;
+
                     currentComp.translation = InterpolatePosition(animTime, currentBoneAnim);
                     currentComp.rotation = InterpolateRotation(animTime, currentBoneAnim);
                     currentComp.scale = InterpolateScaling(animTime, currentBoneAnim);
@@ -987,9 +1017,7 @@ namespace AnimatorGraph {
         }
 
         for (auto& child : node->children) {
-            ReadNodeHeirarchyTransition(currentAnimTimeMasked, currentAnimTimeNonMasked,
-                blendFactorMasked, blendFactorNonMasked,
-                child.get(), globalTransform, boneTransforms);
+            ReadNodeHeirarchyTransition(currentAnimTimeMasked, currentAnimTimeNonMasked, blendFactorMasked, blendFactorNonMasked, child.get(), globalTransform, boneTransforms);
         }
     }
 
@@ -1175,6 +1203,7 @@ namespace AnimatorGraph {
     void BoneMaskAnimationGraphController::Transition(size_t targetIndex, double transitionDuration) {
 		const BoneMaskAnimationState& target = mStates[targetIndex];
 		mAnimator.SetTransitionDuration(transitionDuration);
+		mAnimator.SetLoop(target.loop);
 		mAnimator.TransitionMaskedToClip(target.maskedClipIndex);
 		mAnimator.TransitionNonMaskedToClip(target.nonMaskedClipIndex);
         mCurrentStateIndex = targetIndex; 

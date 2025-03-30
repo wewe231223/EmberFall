@@ -83,3 +83,7 @@ GameObject GameObject::Clone() {
 	
 	return clone; 
 }
+
+AnimatorGraph::AnimationGraphController& GameObject::GetAnimationController() {
+	return mGraphController; 
+}

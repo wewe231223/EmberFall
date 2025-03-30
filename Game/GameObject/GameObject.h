@@ -31,6 +31,8 @@ public:
 	bool GetAnimatorState() const;
 
 	GameObject Clone(); 
+
+	AnimatorGraph::AnimationGraphController& GetAnimationController();
 public:
 	Mesh* mMesh{ nullptr };
 	GraphicsShaderBase* mShader{ nullptr };
