@@ -213,7 +213,15 @@ public:
 
 	void Upload(ComPtr<ID3D12GraphicsCommandList> commandList);
 	void Upload(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator begin, DefaultBufferCPUIterator end, size_t dstBegin = 0);
-	
+
+	void Upload(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_RESOURCE_STATES currentState);
+	void Upload(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_RESOURCE_STATES currentState, DefaultBufferCPUIterator begin, DefaultBufferCPUIterator end, size_t dstBegin = 0);
+
+
+	ID3D12Resource* Get(); 
+
+	void TransitionState(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
+
 private:
 	ComPtr<ID3D12Resource> mBuffer{ nullptr };
 	ComPtr<ID3D12Resource> mUploadBuffer{ nullptr };

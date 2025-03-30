@@ -136,6 +136,12 @@
     <FxCompile Include="..\Shader\Sources\StandardBoundingBoxRender.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="..\Shader\Sources\ParticleGS.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\ParticleSO.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\Shader\ShaderMetadata.txt">

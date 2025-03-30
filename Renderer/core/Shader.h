@@ -241,3 +241,14 @@ protected:
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
 };
+
+// 파티클 내일 여기부터.. 
+class ParticleSOShader : public GraphicsShaderBase {
+public:
+	ParticleSOShader();
+	virtual ~ParticleSOShader() = default;
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+protected:
+
+};

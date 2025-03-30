@@ -11,11 +11,11 @@
 #include <dxgiformat.h>
 #include "IdentityConfig.h"
 
-#ifdef 김승범컴퓨터 
+#ifdef KSB
 #define FHD
-#elif defined(김성준컴퓨터) 
+#elif defined(KSJ) 
 #define HD
-#elif defined(정영기컴퓨터) 
+#elif defined(JYK) 
 #define HD
 #endif 
 

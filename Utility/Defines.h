@@ -5,6 +5,11 @@
 #include <array>
 #include "../Utility/DirectXInclude.h"
 #include "../Config/Config.h"
+
+#ifdef max
+#undef max
+#endif
+
 template <typename T>
 concept HasIndex = requires {
 	{ T::index } -> std::convertible_to<size_t>;
@@ -92,6 +97,7 @@ struct ParticleVertex {
 	UINT type{ ParticleType_ember };
 	UINT emitType{ ParticleType_ember };
 	UINT remainEmit{ 0 };
+    UINT emitIndex{ std::numeric_limits<UINT>::max() };
 };
 
 

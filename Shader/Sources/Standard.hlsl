@@ -88,11 +88,8 @@ Deffered_POUT Standard_PS(Standard_VOUT input) {
     float4 color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(anisotropicWrapSampler, input.texcoord);
     // color += materialConstants[input.material].diffuse;
     
-    if (color.a < 0.1f)
-    {
-        discard;
-    }
-    
+    clip(color.a - 0.1f);
+
     output.diffuse = color;
     //output.position = float4(input.wPosition, 1.0f);
     
