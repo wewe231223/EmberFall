@@ -54,7 +54,7 @@ void PlayerScript::Update(const float deltaTime) {
 
     // Attack
     if (mInput->IsUp('P')) {
-        GetOwner()->ChangeAnimationState(AnimationState::ATTACK);
+        GetOwner()->mAnimationStateMachine.ChangeState(AnimationState::ATTACK);
         GetOwner()->Attack();
     }
 
@@ -84,8 +84,8 @@ void PlayerScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& oppo
 void PlayerScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
 void PlayerScript::OnCollisionTerrain(const float height) {
-    if (AnimationState::JUMP == GetOwner()->GetAnimationState()) {
-        GetOwner()->ChangeAnimationState(AnimationState::IDLE);
+    if (AnimationState::JUMP == GetOwner()->mAnimationStateMachine.GetCurrState()) {
+        GetOwner()->mAnimationStateMachine.ChangeState(AnimationState::IDLE);
     }
 }
 
@@ -144,7 +144,7 @@ std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
 }
 
 void PlayerScript::CheckAndMove(const float deltaTime) {
-    auto currState = GetOwner()->GetAnimationState();
+    auto currState = GetOwner()->mAnimationStateMachine.GetCurrState();
     if (AnimationState::MOVE_RIGHT < currState) {
         return;
     }
@@ -185,7 +185,7 @@ void PlayerScript::CheckAndMove(const float deltaTime) {
         }
     }
 
-    GetOwner()->ChangeAnimationState(changeState);
+    GetOwner()->mAnimationStateMachine.ChangeState(changeState);
 
     moveDir.Normalize();
     moveDir = SimpleMath::Vector3::Transform(moveDir, GetOwner()->GetTransform()->GetRotation());
@@ -197,7 +197,7 @@ void PlayerScript::CheckAndJump(const float deltaTime) {
 
     // Jump
     if (mInput->IsDown(VK_SPACE) and physics->IsOnGround()) {
-        GetOwner()->ChangeAnimationState(AnimationState::JUMP);
+        GetOwner()->mAnimationStateMachine.ChangeState(AnimationState::JUMP);
         physics->CheckAndJump(deltaTime);
     }
 }

@@ -98,6 +98,9 @@
     <Filter Include="Attack\AttackSystem">
       <UniqueIdentifier>{95a3be85-1cf0-41f1-82ae-8c70dfcccaed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Animation">
+      <UniqueIdentifier>{ca2a0725-a3e9-4bce-a7fc-4becb610673a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -232,6 +235,9 @@
     <ClCompile Include="GraphBase.cpp">
       <Filter>GameEvent</Filter>
     </ClCompile>
+    <ClCompile Include="AnimationStateMachine.cpp">
+      <Filter>Animation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -362,6 +368,9 @@
     </ClInclude>
     <ClInclude Include="GameEventManager.h">
       <Filter>PathFinding\Graph\GraphBase</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationStateMachine.h">
+      <Filter>Animation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

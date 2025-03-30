@@ -16,6 +16,7 @@
 #include "Collider.h"
 #include "GameObjectComponent.h"
 #include "WeaponSystem.h"
+#include "AnimationStateMachine.h"
 
 class IServerGameScene;
 
@@ -53,7 +54,6 @@ public:
     SimpleMath::Matrix GetWorld() const;
     ObjectTag GetTag() const;
     EntityType GetEntityType() const;
-    AnimationState GetAnimationState() const;
 
     bool IsCollidingObject() const;
 
@@ -82,8 +82,6 @@ public:
 
     void ClearComponents();
     void Attack();
-
-    void ChangeAnimationState(AnimationState state);
 
     template <typename ColliderType, typename... Args>
         requires std::derived_from<ColliderType, Collider> and std::is_constructible_v<ColliderType, Args...>
@@ -119,15 +117,17 @@ private:
     void OnCollisionStay(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
     void OnCollisionExit(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
 
+public:
+    AnimationStateMachine mAnimationStateMachine{ };
+
 private:
     bool mActive{ true };
     EntityType mEntityType{ EntityType::ENV };
     ObjectTag mTag{ ObjectTag::NONE };
-    AnimationState mAnimationState{ AnimationState::IDLE };
-
-    NetworkObjectIdType mId{ INVALID_SESSION_ID };                      // network id
 
     float mHP{ };
+
+    NetworkObjectIdType mId{ INVALID_SESSION_ID };                      // network id
 
     std::shared_ptr<Transform> mTransform{ };                           // Transform
     std::shared_ptr<class Physics> mPhysics{ };                         // Physics

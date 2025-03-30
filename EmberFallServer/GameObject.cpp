@@ -69,10 +69,6 @@ EntityType GameObject::GetEntityType() const {
     return mEntityType;
 }
 
-AnimationState GameObject::GetAnimationState() const {
-    return mAnimationState;
-}
-
 bool GameObject::IsCollidingObject() const {
     return nullptr != mCollider;
 }
@@ -123,6 +119,7 @@ void GameObject::RestoreHealth(float hp) {
 }
 
 void GameObject::Init() {
+    mAnimationStateMachine.SetOwner(shared_from_this());
     for (auto& component : mComponents) {
         component->Init();
     }
@@ -132,6 +129,8 @@ void GameObject::Update(const float deltaTime) {
     if (not IsActive()) {
         return;
     }
+
+    mAnimationStateMachine.Update(deltaTime);
 
     for (auto& component : mComponents) {
         component->Update(deltaTime);
@@ -202,22 +201,6 @@ void GameObject::ClearComponents() {
 
 void GameObject::Attack() {
     mWeaponSystem.Attack(mTransform->GetPosition(), mTransform->Forward());
-}
-
-void GameObject::ChangeAnimationState(AnimationState state) {
-    if (state == mAnimationState) {
-        return;
-    }
-
-    mAnimationState = state;
-
-    auto packet = GetPacket<PacketSC::PacketAnimationState>(
-        INVALID_SESSION_ID,
-        GetId(),
-        mAnimationState
-    );
-
-    gServerCore->SendAll(&packet);
 }
 
 void GameObject::OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 
