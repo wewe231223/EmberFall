@@ -71,14 +71,15 @@ void MonsterScript::DispatchGameEvent(GameEvent* event) {
 }
 
 BT::NodeStatus MonsterScript::SetRandomTargetLocation(const float deltaTime) {
+    GetOwner()->ChangeAnimationState(AnimationState::IDLE);
     mTargetPos = Random::GetRandomVec3(SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f }, SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f });
     return BT::NodeStatus::SUCCESS;
 }
 
 BT::NodeStatus MonsterScript::MoveTo(const float deltaTime) {
-    GetOwner()->ChangeAnimationState(AnimationState::MOVE_FORWARD);
-
     auto owner = GetOwner();
+    owner->ChangeAnimationState(AnimationState::MOVE_FORWARD);
+
     auto transform = owner->GetTransform();
 
     auto moveDir = mTargetPos - owner->GetPosition();
@@ -98,6 +99,7 @@ BT::NodeStatus MonsterScript::MoveTo(const float deltaTime) {
 
 BT::NodeStatus MonsterScript::DetectPlayerInRange(const float deltaTime) {
     auto owner = GetOwner();
+    owner->ChangeAnimationState(AnimationState::IDLE);
 
     auto gameWorld = owner->GetOwnGameScene();
     if (nullptr == gameWorld) {
@@ -118,9 +120,9 @@ BT::NodeStatus MonsterScript::DetectPlayerInRange(const float deltaTime) {
 }
 
 BT::NodeStatus MonsterScript::ChaseDetectedPlayer(const float deltaTime) {
-    GetOwner()->ChangeAnimationState(AnimationState::MOVE_FORWARD);
-
     auto owner = GetOwner();
+    owner->ChangeAnimationState(AnimationState::MOVE_FORWARD);
+
     auto targetPos = mChaseTarget->GetPosition();
     auto moveDir = targetPos - owner->GetPosition();
     moveDir.y = 0.0f;

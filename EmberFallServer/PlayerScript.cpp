@@ -168,15 +168,24 @@ void PlayerScript::CheckAndMove(const float deltaTime) {
         moveDir.z += 1.0f;
     }
 
-    if (MathUtil::IsVectorZero(moveDir)) {
-        GetOwner()->ChangeAnimationState(AnimationState::IDLE);
-        return;
+    AnimationState changeState{ AnimationState::IDLE };
+    if (not MathUtil::IsZero(moveDir.x)) {
+        physics->mFactor.maxMoveSpeed = 1.5mps;
+        changeState = moveDir.x > 0.0f ? AnimationState::MOVE_LEFT : AnimationState::MOVE_RIGHT;
     }
 
     if (not MathUtil::IsZero(moveDir.z)) {
-        auto changeState = moveDir.z > 0.0f ? AnimationState::MOVE_FORWARD : AnimationState::MOVE_BACKWARD;
-        GetOwner()->ChangeAnimationState(changeState);
+        if (moveDir.z > 0.0f) {
+            physics->mFactor.maxMoveSpeed = 1.5mps;
+            changeState = AnimationState::MOVE_BACKWARD;
+        }
+        else {
+            physics->mFactor.maxMoveSpeed = 3.3mps;
+            changeState = AnimationState::MOVE_FORWARD;
+        }
     }
+
+    GetOwner()->ChangeAnimationState(changeState);
 
     moveDir.Normalize();
     moveDir = SimpleMath::Vector3::Transform(moveDir, GetOwner()->GetTransform()->GetRotation());

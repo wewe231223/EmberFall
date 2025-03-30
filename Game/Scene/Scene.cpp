@@ -260,7 +260,6 @@ void Scene::ProcessPacketAnimation(PacketHeader* header) {
 	}
 	else {
 		if (mGameObjectMap.contains(packet->objId)) {
-			DebugBreak();
 			mGameObjectMap[packet->objId]->GetAnimationController().Transition(static_cast<size_t>(packet->animState), 0.09);
 		}
 	}
