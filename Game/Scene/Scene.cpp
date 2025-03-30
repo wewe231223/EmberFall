@@ -782,12 +782,29 @@ void Scene::BuildSwordManAnimationController() {
 		runningJump.nonMaskedClipIndex = 6;
 		runningJump.name = "RunningJump";
 
+		AnimatorGraph::BoneMaskAnimationState attacked{};
+		attacked.maskedClipIndex = 7;
+		attacked.nonMaskedClipIndex = 7;
+		attacked.name = "Attacked1";
+
 		AnimatorGraph::BoneMaskAnimationState attack{};
 		attack.maskedClipIndex = 9;
 		attack.nonMaskedClipIndex = 9;
 		attack.name = "Attack";
+		attack.loop = false;
 
-		mSwordManAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, { idleState, forwardState, backwardState, leftState, rightState, jumpState, attack });
+		AnimatorGraph::BoneMaskAnimationState interaction{};
+		interaction.maskedClipIndex = 10;
+		interaction.nonMaskedClipIndex = 10;
+		interaction.name = "Interaction";
+
+		AnimatorGraph::BoneMaskAnimationState death{};
+		death.maskedClipIndex = 11;
+		death.nonMaskedClipIndex = 11;
+		death.name = "Death";
+		death.loop = false;
+
+		mSwordManAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, { idleState, forwardState, backwardState, leftState, rightState, jumpState, attacked, attack, interaction, death });
 	}
 }
 
