@@ -37,40 +37,42 @@ public:
 
 public:
     bool IsActive() const;
-    NetworkObjectIdType GetId() const;
+    bool IsInteractable() const;
+    bool IsCollidingObject() const;
 
     float HP() const;
+    ObjectTag GetTag() const;
+    NetworkObjectIdType GetId() const;
+    EntityType GetEntityType() const;
 
     std::shared_ptr<Transform> GetTransform() const;
     std::shared_ptr<Physics> GetPhysics() const;
     std::shared_ptr<Collider> GetCollider() const;
-
-    std::shared_ptr<IServerGameScene> GetOwnGameScene() const;
 
     SimpleMath::Vector3 GetPosition() const;
     SimpleMath::Quaternion GetRotation() const;
     SimpleMath::Vector3 GetEulerRotation() const;
     SimpleMath::Vector3 GetScale() const;
     SimpleMath::Matrix GetWorld() const;
-    ObjectTag GetTag() const;
-    EntityType GetEntityType() const;
 
-    bool IsCollidingObject() const;
+    std::shared_ptr<IServerGameScene> GetOwnGameScene() const;
 
+    void Init();
     void InitId(NetworkObjectIdType id);
+
     void SetActive(bool active);
+    void SetInteractable(bool interactable);
     void SetTag(ObjectTag tag);
     void SetEntityType(EntityType type);
+
     void SetCollider(std::shared_ptr<Collider> collider);
-    void ChangeWeapon(Weapon weapon);
     void DisablePhysics();
 
     void Reset();
 
+    void ChangeWeapon(Weapon weapon);
     void ReduceHealth(float hp);
     void RestoreHealth(float hp);
-
-    void Init();
 
     void Update(const float deltaTime);
     void LateUpdate(const float deltaTime);
@@ -122,6 +124,7 @@ public:
 
 private:
     bool mActive{ true };
+    bool mInteractable{ false };
     EntityType mEntityType{ EntityType::ENV };
     ObjectTag mTag{ ObjectTag::NONE };
 

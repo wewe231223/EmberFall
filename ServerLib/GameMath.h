@@ -87,6 +87,17 @@ namespace MathUtil {
         }
     }
 
+    template <typename T> requires std::is_arithmetic_v<T>
+    inline bool IsMax(T val)
+    {
+        if constexpr (std::is_integral_v<T>) {
+            return std::numeric_limits<T>::max() == val;
+        }
+        else {
+            return std::fabs(std::numeric_limits<T>::max() - val) < EPSILON;
+        }
+    }
+
     // Projection Vector to Axis
     inline float Projection(const SimpleMath::Vector3& vector, SimpleMath::Vector3 axis)
     {

@@ -15,4 +15,3 @@ namespace BT {
         virtual void Build(const std::shared_ptr<Script>& ownerScript) override;
     };
 }
-

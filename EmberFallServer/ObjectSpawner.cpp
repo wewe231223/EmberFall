@@ -25,20 +25,36 @@ std::shared_ptr<GameObject>& ObjectSpawner::SpawnObject(ObjectTag objectType, bo
     return object;
 }
 
-std::shared_ptr<GameObject>& ObjectSpawner::SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
-    const SimpleMath::Vector3& pos, const SimpleMath::Vector3& size, const SimpleMath::Vector3& dir) {
-
+std::shared_ptr<GameObject>& ObjectSpawner::SpawnTrigger(float lifeTime, const SimpleMath::Vector3& pos, const SimpleMath::Vector3 extents) {
     decltype(auto) object = mCurrentScene->GetInvalidObject();
-    ObjectBuilder::BuildTrigger(object, event, lifeTime, eventDelay, eventCount, pos, size, dir);
+    ObjectBuilder::BuildTrigger(object, lifeTime, pos, extents);
 
     object->SetActive(true);
     return object;
 }
 
-std::shared_ptr<GameObject>& ObjectSpawner::SpawnTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
+std::shared_ptr<GameObject>& ObjectSpawner::SpawnTrigger(float lifeTime, const SimpleMath::Vector3& pos, std::shared_ptr<Collider> collider) {
+    decltype(auto) object = mCurrentScene->GetInvalidObject();
+    ObjectBuilder::BuildTrigger(object, lifeTime, pos, collider);
+
+    object->SetActive(true);
+    return object;
+}
+
+std::shared_ptr<GameObject>& ObjectSpawner::SpawnEventTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
+    const SimpleMath::Vector3& pos, const SimpleMath::Vector3& size, const SimpleMath::Vector3& dir) {
+
+    decltype(auto) object = mCurrentScene->GetInvalidObject();
+    ObjectBuilder::BuildEventTrigger(object, event, lifeTime, eventDelay, eventCount, pos, size, dir);
+
+    object->SetActive(true);
+    return object;
+}
+
+std::shared_ptr<GameObject>& ObjectSpawner::SpawnEventTrigger(std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
     const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir, std::shared_ptr<Collider> collider) {
     decltype(auto) object = mCurrentScene->GetInvalidObject();
-    ObjectBuilder::BuildTrigger(object, event, lifeTime, eventDelay, eventCount, pos, dir, collider);
+    ObjectBuilder::BuildEventTrigger(object, event, lifeTime, eventDelay, eventCount, pos, dir, collider);
 
     object->SetActive(true);
     return object;

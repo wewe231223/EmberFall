@@ -51,17 +51,21 @@ private:
     void CheckAndJump(const float deltaTime);
 
     void DoInteraction(const float deltaTime, const std::shared_ptr<GameObject>& target);
+
     void CancelInteraction(const float deltaTime);
     void DestroyGem(const float deltaTime, const std::shared_ptr<GameObject>& gem);
     void AcquireItem(const float deltaTime, const std::shared_ptr<GameObject>& item);
     void UseItem();
 
 private:
-    std::shared_ptr<Input> mInput{ };
+    bool mInteraction{ false };
+    ViewList mViewList;
     Inventory mInventory{ };
+
     NetworkObjectIdType mInteractionObj{ };
 
-    ViewList mViewList;
+    std::shared_ptr<Input> mInput{ };
     std::shared_ptr<IServerGameScene> mGameScene{ };
+    std::shared_ptr<GameObject> mInteractionTrigger{ };
 };
 

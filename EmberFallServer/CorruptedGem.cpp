@@ -7,6 +7,7 @@
 CorruptedGemScript::CorruptedGemScript(std::shared_ptr<GameObject> owner) 
     : Script{ owner, ObjectTag::CORRUPTED_GEM } { 
     owner->SetEntityType(EntityType::CORRUPTED_GEM);
+    owner->SetInteractable(true);
 }
 
 CorruptedGemScript::~CorruptedGemScript() { }

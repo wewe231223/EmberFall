@@ -35,6 +35,10 @@ void ViewList::Update() {
 
     auto& objectList = mCurrentScene->GetObjects();
     for (const auto& object : objectList) {
+        if (ObjectTag::TRIGGER == object->GetTag()) {
+            return;
+        }
+
         auto objectPos = object->GetPosition();
 
         if (MathUtil::IsInRange(mPosition, mViewRange, objectPos) and object->IsActive()) {

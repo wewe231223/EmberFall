@@ -17,6 +17,10 @@ bool GameObject::IsActive() const {
     return true == mActive;
 }
 
+bool GameObject::IsInteractable() const {
+    return mInteractable;
+}
+
 NetworkObjectIdType GameObject::GetId() const {
     return mId;
 }
@@ -81,6 +85,10 @@ void GameObject::SetActive(bool active) {
     mActive = active;
 }
 
+void GameObject::SetInteractable(bool interactable) {
+    mInteractable = interactable;
+}
+
 void GameObject::SetTag(ObjectTag tag) {
     mTag = tag;
 }
@@ -104,6 +112,7 @@ void GameObject::DisablePhysics() {
 
 void GameObject::Reset() {
     ClearComponents();
+    mInteractable = false;
     mHP = 0.0f;
     mCollider.reset();
     mTransform->Reset();

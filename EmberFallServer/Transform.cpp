@@ -72,6 +72,10 @@ void Transform::Reset() {
     mWorld = SimpleMath::Matrix::Identity;
 }
 
+void Transform::SetPosition(const SimpleMath::Vector3& pos) {
+    mPosition = pos;
+}
+
 void Transform::SetY(const float y) {
     mPosition.y = y;
 }

@@ -31,6 +31,7 @@ public:
 
     void Reset();
 
+    void SetPosition(const SimpleMath::Vector3& pos);
     void SetY(const float y);
     void Translate(const SimpleMath::Vector3& v);
     void CheckAndMove(const SimpleMath::Vector3& moveVec);

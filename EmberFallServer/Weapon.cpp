@@ -36,7 +36,7 @@ void Spear::Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& di
     std::shared_ptr<AttackEvent> event = std::make_shared<AttackEvent>();
     event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
 
-    gObjectSpawner->SpawnTrigger(event, 5.0f, 1.0f, 5, pos, dir, mHitbox);
+    gObjectSpawner->SpawnEventTrigger(event, 5.0f, 1.0f, 5, pos, dir, mHitbox);
 }
 
 Bow::Bow(const SimpleMath::Vector3& hitBoxSize)
@@ -61,7 +61,7 @@ void Sword::Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& di
     std::shared_ptr<AttackEvent> event = std::make_shared<AttackEvent>();
     event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
 
-    gObjectSpawner->SpawnTrigger(event, 0.5f, 0.5f, 1, pos, dir, mHitbox);
+    gObjectSpawner->SpawnEventTrigger(event, 0.5f, 0.5f, 1, pos, dir, mHitbox);
 }
 
 Staff::Staff(const SimpleMath::Vector3& hitBoxSize)
@@ -75,5 +75,5 @@ void Staff::Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& di
     std::shared_ptr<AttackEvent> event = std::make_shared<AttackEvent>();
     event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
 
-    gObjectSpawner->SpawnTrigger(event, 5.0f, 1.0f, 5, pos, dir, mHitbox);
+    gObjectSpawner->SpawnEventTrigger(event, 5.0f, 1.0f, 5, pos, dir, mHitbox);
 }

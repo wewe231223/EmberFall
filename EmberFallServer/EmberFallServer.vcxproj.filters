@@ -238,6 +238,12 @@
     <ClCompile Include="AnimationStateMachine.cpp">
       <Filter>Animation</Filter>
     </ClCompile>
+    <ClCompile Include="BT_MonsterAttack.cpp">
+      <Filter>BehaviorTree\TestMonster</Filter>
+    </ClCompile>
+    <ClCompile Include="EventTrigger.cpp">
+      <Filter>Script\Trigger</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -371,6 +377,12 @@
     </ClInclude>
     <ClInclude Include="AnimationStateMachine.h">
       <Filter>Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="BT_MonsterAttack.h">
+      <Filter>BehaviorTree\TestMonster</Filter>
+    </ClInclude>
+    <ClInclude Include="EventTrigger.h">
+      <Filter>Script\Trigger</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
