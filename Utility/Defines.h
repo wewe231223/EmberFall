@@ -100,7 +100,17 @@ struct ParticleVertex {
     UINT emitIndex{ std::numeric_limits<UINT>::max() };
 };
 
+/*
+* Flags!
+* 0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 - Common 
+* 0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001 - Deactivated
+* 0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0010 - Delete
+*/
 
+struct EmitParticleContext {
+    DirectX::XMFLOAT3 position{ 0.f,0.f,0.f };
+	UINT Flags{ 0 };
+};
 
 enum class StringColor : DWORD {
     AliceBlue, AntiqueWhite, Aqua, Aquamarine, Azure,

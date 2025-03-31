@@ -13,7 +13,15 @@ cbuffer GlobalCB : register(b0)
 
 
 StructuredBuffer<float> RandomBuffer : register(t0);
-StructuredBuffer<float3> EmitPosition : register(t1);
+
+
+struct EmitParticleContext
+{
+    float3 position;
+    uint flag; 
+};
+
+StructuredBuffer<EmitParticleContext> EmitPosition : register(t1);
 
 struct ParticleVertex
 {
@@ -156,7 +164,7 @@ void AppendVertex(inout ParticleVertex vertex, inout PointStream<ParticleVertex>
 
 void EmitParticleUpdate(inout ParticleVertex vertex, uint vertexID, inout PointStream<ParticleVertex> stream)
 {
-    vertex.position = EmitPosition[vertex.emitIndex]; 
+    // vertex.position = EmitPosition[vertex.emitIndex]; 
     
     if (length(vertex.position) == 0.f)
     {
@@ -222,6 +230,7 @@ void ParticleSOPassGS(point ParticleSO_GS_IN input[1], inout PointStream<Particl
     outPoint.emitType = input[0].emitType;
     outPoint.remainEmit = input[0].remainEmit;
    
+
     if (outPoint.type == ParticleType_emit)
         EmitParticleUpdate(outPoint, input[0].vertexID, output);
     else if (outPoint.type == ParticleType_ember)

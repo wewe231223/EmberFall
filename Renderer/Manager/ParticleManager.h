@@ -3,11 +3,6 @@
 #include "../Renderer/Resource/DefaultBuffer.h"
 #include "../Renderer/Core/Shader.h"
 
-
-/*
-
-
-*/
 class ParticleManager {
 	static constexpr size_t MAX_PARTICLE_COUNT = 10000;
 	static constexpr size_t EMIT_PARTICLE_COUNT = 100;
@@ -26,7 +21,7 @@ public:
 public:
 	void RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList);
 	void RenderGS(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator cameraBuffer, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS material);
-	void PostRender(ComPtr<ID3D12GraphicsCommandList> commandList);
+	void PostRender();
 private:
 	void BuildRandomBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
 	
@@ -50,4 +45,6 @@ private:
 	ComPtr<ID3D12Resource> mParticleCountReadbackBuffer{};
 
 	UINT32 mParticleCount{ 0 };
+
+	std::array<EmitParticleContext, EMIT_PARTICLE_COUNT> mEmitParticleContexts{};
 };

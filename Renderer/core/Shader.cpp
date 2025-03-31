@@ -1063,11 +1063,13 @@ GraphicsShaderBase::RootParameters ParticleSOShader::CreateRootParameters() {
 	result.Parameters[0].Constants.RegisterSpace = 0;
 	result.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
+	// RandomBuffer 
 	result.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 	result.Parameters[1].Descriptor.ShaderRegister = 0;
 	result.Parameters[1].Descriptor.RegisterSpace = 0;
 	result.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
+	// Emit Buffer 
 	result.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 	result.Parameters[2].Descriptor.ShaderRegister = 1;
 	result.Parameters[2].Descriptor.RegisterSpace = 0;
@@ -1255,10 +1257,6 @@ GraphicsShaderBase::RootParameters ParticleGSShader::CreateRootParameters() {
 	result.ParameterCount = 4; 
 
 	return result;
-}
-
-D3D12_BLEND_DESC ParticleGSShader::CreateBlendState() {
-	return D3D12_BLEND_DESC();
 }
 
 D3D12_PRIMITIVE_TOPOLOGY_TYPE ParticleGSShader::CreatePrimitiveTopologyType() {

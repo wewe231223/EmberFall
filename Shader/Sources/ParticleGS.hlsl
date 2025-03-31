@@ -71,6 +71,12 @@ struct Particle_PS_IN
     float4 color : Color;
 };
 
+struct Deffered_POUT
+{
+    float4 diffuse : SV_TARGET0;
+    float4 normal : SV_TARGET1;
+    float4 position : SV_TARGET2;
+};
 
 ParticleVertex ParticleGSPassVS(ParticleVertex input)
 {
@@ -158,10 +164,12 @@ void ParticleGSPassGS(point ParticleVertex input[1], inout TriangleStream<Partic
     CreateBillBoard(input[0], output);
 }
 
-float4 ParticleGSPassPS(Particle_PS_IN input) : SV_TARGET1
+Deffered_POUT ParticleGSPassPS(Particle_PS_IN input) 
 {
-    float4 Color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.uv);
+    Deffered_POUT output = (Deffered_POUT) 0;
     
+    // float4 Color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.uv);
+    float4 Color = float4(1.f, 1.f, 1.f, 1.f);
     if (Color.a < 0.25f)
     {
         discard;
@@ -170,6 +178,6 @@ float4 ParticleGSPassPS(Particle_PS_IN input) : SV_TARGET1
     
     Color.a *= input.color.a;
     
-    
-    return Color;
+    output.diffuse = Color;
+    return output;
 }

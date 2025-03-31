@@ -2,6 +2,7 @@
 #include "ParticleManager.h"
 #include <random>
 #include "../Utility/Exceptions.h"
+#include "../Game/System/Timer.h"
 
 ParticleManager::ParticleManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	mParticleVertexBuffer = DefaultBuffer(device, sizeof(ParticleVertex), MAX_PARTICLE_COUNT);
@@ -10,8 +11,7 @@ ParticleManager::ParticleManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graph
 	mParticleSOTargetBuffer = DefaultBuffer(device, sizeof(ParticleVertex), MAX_PARTICLE_COUNT);
 	mParticleSOTargetBuffer.TransitionState(commandList, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_STREAM_OUT);
 
-	mEmitParticleBuffer = DefaultBuffer(device, sizeof(DirectX::XMFLOAT3), EMIT_PARTICLE_COUNT);
-	mEmitParticleBuffer.TransitionState(commandList, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
+	mEmitParticleBuffer = DefaultBuffer(device, sizeof(EmitParticleContext), EMIT_PARTICLE_COUNT);
 
 	mParticleCountBuffer = DefaultBuffer(device, sizeof(UINT64), 1);
 	mParticleCountBuffer.TransitionState(commandList, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_STREAM_OUT);
@@ -35,7 +35,31 @@ ParticleManager::ParticleManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graph
 	mParticleGSShader = std::make_unique<ParticleGSShader>();
 	mParticleGSShader->CreateShader(device);
 
-	DebugBreak();
+
+
+	ParticleVertex v{};
+
+	v.position = DirectX::XMFLOAT3(10.f, 10.f, 10.f);
+	v.halfheight = 1.f;
+	v.halfWidth = 1.f;
+	v.material = 0;
+
+	v.spritable = false;
+
+
+	v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+	v.velocity = 1.f;
+	v.totalLifeTime = 0.1f;
+	v.lifeTime = 0.1f;
+
+	v.type = ParticleType_emit;
+	v.emitType = ParticleType_ember;
+	v.remainEmit = 100000;
+	v.emitIndex = 0;
+
+	std::memcpy(*mParticleVertexBuffer.CPUBegin(), &v, sizeof(ParticleVertex));
+	mParticleVertexBuffer.Upload(commandList, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+	mParticleCount++; 
 }
 
 void ParticleManager::RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList) {
@@ -58,8 +82,13 @@ void ParticleManager::RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 
 	// Resource Set, Draw Call 
+	DirectX::XMFLOAT2 time{ Time.GetTimeSinceStarted<float>(), Time.GetDeltaTime<float>() };
 
+	commandList->SetGraphicsRoot32BitConstants(0, 2, &time, 0);
+	commandList->SetGraphicsRootShaderResourceView(1, *mRandomBuffer.GPUBegin());
+	commandList->SetGraphicsRootShaderResourceView(2, *mEmitParticleBuffer.GPUBegin());
 
+	commandList->DrawInstanced(mParticleCount, 1, 0, 0); 
 
 	mParticleCountBuffer.TransitionState(commandList, D3D12_RESOURCE_STATE_STREAM_OUT, D3D12_RESOURCE_STATE_COPY_SOURCE);
 	commandList->CopyResource(mParticleCountReadbackBuffer.Get(), mParticleCountBuffer.Get());
@@ -84,13 +113,25 @@ void ParticleManager::RenderGS(ComPtr<ID3D12GraphicsCommandList> commandList, De
 
 
 	// Resource Set, Draw Call 
+	UINT time = Time.GetTimeSinceStarted<UINT, std::chrono::milliseconds>();
+
+	commandList->SetGraphicsRootConstantBufferView(0, *cameraBuffer);
+	commandList->SetGraphicsRoot32BitConstants(1, 1, &time, 0);
+	commandList->SetGraphicsRootShaderResourceView(2, material);
+	commandList->SetGraphicsRootDescriptorTable(3, tex);
+
+	commandList->DrawInstanced(mParticleCount, 1, 0, 0);
 }
 
-void ParticleManager::PostRender(ComPtr<ID3D12GraphicsCommandList> commandList) {
+void ParticleManager::PostRender() {
 	UINT64* data = nullptr;
 	CheckHR(mParticleCountReadbackBuffer->Map(0, nullptr, reinterpret_cast<void**>(&data)));
 	mParticleCount = static_cast<UINT32>((*data) / sizeof(ParticleVertex));
 	mParticleCountReadbackBuffer->Unmap(0, nullptr);
+
+	if (mParticleCount == 0) {
+		DebugBreak(); 
+	}
 }
 
 void ParticleManager::BuildRandomBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
