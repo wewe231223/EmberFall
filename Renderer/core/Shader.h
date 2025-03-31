@@ -57,6 +57,16 @@ protected:
 
 		std::array<D3D12_DESCRIPTOR_RANGE, 16> Ranges{};
 	};
+
+	struct StreamOutputState {
+		std::array<D3D12_SO_DECLARATION_ENTRY, 64> SODeclaration{};
+		UINT SODeclarationCount{ 0 };
+
+		std::array<UINT, 4> BufferStrides{};
+		UINT BufferCount{ 0 };
+
+		UINT RasterizedStream{ 0 };
+	};
 public:
 	GraphicsShaderBase(); 
 	virtual ~GraphicsShaderBase(); 
@@ -87,6 +97,7 @@ protected:
 	virtual UINT CreateNumOfRenderTarget(); 
 	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&);
 	virtual DXGI_FORMAT CreateDSVFormat();
+	virtual StreamOutputState CreateStreamOutputState();
 
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader();
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader();
@@ -242,7 +253,7 @@ protected:
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
 };
 
-// 파티클 내일 여기부터.. 
+
 class ParticleSOShader : public GraphicsShaderBase {
 public:
 	ParticleSOShader();
@@ -250,5 +261,44 @@ public:
 public:
 	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
 protected:
+	virtual InputLayout CreateInputLayout() override;
+	virtual RootParameters CreateRootParameters() override;
 
+	virtual D3D12_RASTERIZER_DESC CreateRasterizerState() override;
+	virtual D3D12_BLEND_DESC CreateBlendState() override;
+	virtual D3D12_DEPTH_STENCIL_DESC CreateDepthStencilState() override;
+
+	virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE CreatePrimitiveTopologyType() override;
+
+	virtual StreamOutputState CreateStreamOutputState() override;
+
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
+	virtual D3D12_SHADER_BYTECODE CreateGeometryShader() override;
+
+	virtual UINT CreateNumOfRenderTarget() override;
+	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&) override;
+
+	virtual D3D12_ROOT_SIGNATURE_FLAGS CreateRootSignatureFlag() override;
+};
+
+class ParticleGSShader : public GraphicsShaderBase {
+public:
+	ParticleGSShader();
+	virtual ~ParticleGSShader() = default;
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+protected:
+	virtual InputLayout CreateInputLayout() override;
+	virtual RootParameters CreateRootParameters() override;
+
+	virtual D3D12_BLEND_DESC CreateBlendState() override;
+
+	virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE CreatePrimitiveTopologyType() override;
+
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
+	virtual D3D12_SHADER_BYTECODE CreateGeometryShader() override;
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
+
+	virtual UINT CreateNumOfRenderTarget() override;
+	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&) override;
 };

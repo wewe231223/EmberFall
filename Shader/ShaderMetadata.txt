@@ -5,3 +5,5 @@ SkyBox.hlsl { vs vs_5_1 SkyBox_VS ps ps_5_1 SkyBox_PS }
 Deffered.hlsl { vs vs_5_1 Deffered_VS ps ps_5_1 Deffered_PS }
 SkeletonBoundingBoxRender.hlsl { vs vs_5_1 BB_VS gs gs_5_1 BB_GS ps ps_5_1 BB_PS }
 StandardBoundingBoxRender.hlsl { vs vs_5_1 BB_VS gs gs_5_1 BB_GS ps ps_5_1 BB_PS }
+ParticleSO.hlsl { vs vs_5_1 ParticleSOPassVS gs gs_5_1 ParticleSOPassGS }
+ParticleGS.hlsl { vs vs_5_1 ParticleGSPassVS gs gs_5_1 ParticleGSPassGS ps ps_5_1 ParticleGSPassPS }

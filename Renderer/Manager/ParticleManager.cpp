@@ -28,6 +28,14 @@ ParticleManager::ParticleManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graph
 	));
 	
 	ParticleManager::BuildRandomBuffer(device, commandList);
+
+	mParticleSOShader = std::make_unique<ParticleSOShader>();
+	mParticleSOShader->CreateShader(device); 
+
+	mParticleGSShader = std::make_unique<ParticleGSShader>();
+	mParticleGSShader->CreateShader(device);
+
+	DebugBreak();
 }
 
 void ParticleManager::RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList) {

@@ -13,6 +13,7 @@
 #include "../Utility/Exceptions.h"
 #include "../Utility/Crash.h"
 #include "../EditorInterface/Console/Console.h"
+#include "../Utility/Defines.h"
 
 #undef max 
 
@@ -308,6 +309,10 @@ DXGI_FORMAT GraphicsShaderBase::CreateDSVFormat() {
 	return DXGI_FORMAT_D24_UNORM_S8_UINT;
 }
 
+GraphicsShaderBase::StreamOutputState GraphicsShaderBase::CreateStreamOutputState() {
+	return StreamOutputState();
+}
+
 D3D12_SHADER_BYTECODE GraphicsShaderBase::CreateVertexShader() {
 	return D3D12_SHADER_BYTECODE();
 }
@@ -384,6 +389,9 @@ void GraphicsShaderBase::CreateShader(ComPtr<ID3D12Device> device) {
 	psoDesc.SampleDesc.Quality = 0;
 	psoDesc.DSVFormat = CreateDSVFormat();
 	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+	
+	auto soState = CreateStreamOutputState();
+	psoDesc.StreamOutput = { soState.SODeclaration.data(), soState.SODeclarationCount, soState.BufferStrides.data(), soState.BufferCount, soState.RasterizedStream };
 
 	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPipelineState)));
 
@@ -1011,3 +1019,273 @@ D3D12_PRIMITIVE_TOPOLOGY_TYPE StandardBBShader::CreatePrimitiveTopologyType() {
 	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
 }
 
+ParticleSOShader::ParticleSOShader() {
+}
+
+void ParticleSOShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+}
+
+GraphicsShaderBase::InputLayout ParticleSOShader::CreateInputLayout() {
+	InputLayout result{}; 
+
+	result.InputElements[0] = { "POSITION",			0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[1] = { "WIDTH",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[2] = { "HEIGHT",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[3] = { "MATERIAL",			0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.InputElements[4] = { "SPRITABLE",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[5] = { "SPRITEFRAMEINROW", 0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[6] = { "SPRITEFRAMEINCOL", 0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[7] = { "SPRITEDURATION",	0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.InputElements[8] = { "DIRECTION",		0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[9] = { "VELOCITY",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[10] = { "TOTALLIFETIME",	0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[11] = { "LIFETIME",		0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.InputElements[12] = { "PARTICLETYPE",	0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[13] = { "EMITTYPE",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[14] = { "REMAINEMIT",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[15] = { "EMITINDEX",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.ElementCount = 16;
+
+	return result;
+}
+
+GraphicsShaderBase::RootParameters ParticleSOShader::CreateRootParameters() {
+	RootParameters result{};
+
+	result.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	result.Parameters[0].Constants.Num32BitValues = 2;
+	result.Parameters[0].Constants.ShaderRegister = 0;
+	result.Parameters[0].Constants.RegisterSpace = 0;
+	result.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	result.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	result.Parameters[1].Descriptor.ShaderRegister = 0;
+	result.Parameters[1].Descriptor.RegisterSpace = 0;
+	result.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	result.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	result.Parameters[2].Descriptor.ShaderRegister = 1;
+	result.Parameters[2].Descriptor.RegisterSpace = 0;
+	result.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	result.ParameterCount = 3; 
+
+	return result;
+}
+
+D3D12_RASTERIZER_DESC ParticleSOShader::CreateRasterizerState() {
+	D3D12_RASTERIZER_DESC result{};
+
+	result.FillMode = D3D12_FILL_MODE_SOLID;
+	result.CullMode = D3D12_CULL_MODE_NONE;
+	result.FrontCounterClockwise = FALSE;
+	result.DepthBias = 0;
+	result.DepthBiasClamp = 0.0f;
+	result.SlopeScaledDepthBias = 0.0f;
+	result.DepthClipEnable = TRUE;
+	result.MultisampleEnable = FALSE;
+	result.AntialiasedLineEnable = FALSE;
+	result.ForcedSampleCount = 0;
+	result.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	return result;
+}
+
+D3D12_BLEND_DESC ParticleSOShader::CreateBlendState() {
+	D3D12_BLEND_DESC result{}; 
+
+	// Deffered! 
+
+	return result;
+}
+
+D3D12_DEPTH_STENCIL_DESC ParticleSOShader::CreateDepthStencilState() {
+	D3D12_DEPTH_STENCIL_DESC result{};
+
+	result.DepthEnable = FALSE;
+	result.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	result.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+	result.StencilEnable = FALSE;
+	result.StencilReadMask = 0x00;
+	result.StencilWriteMask = 0x00;
+	result.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	result.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	result.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	result.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+	result.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	result.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	result.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	result.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+
+	return result;
+}
+
+D3D12_PRIMITIVE_TOPOLOGY_TYPE ParticleSOShader::CreatePrimitiveTopologyType() {
+	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+}
+
+GraphicsShaderBase::StreamOutputState ParticleSOShader::CreateStreamOutputState() {
+	StreamOutputState result{};
+
+	result.SODeclaration[0]		= { 0, "POSITION",			0, 0, 3, 0 };
+	result.SODeclaration[1]		= { 0, "WIDTH",				0, 0, 1, 0 };
+	result.SODeclaration[2]		= { 0, "HEIGHT",			0, 0, 1, 0 };
+	result.SODeclaration[3]		= { 0, "MATERIAL",			0, 0, 1, 0 };
+
+	result.SODeclaration[4]		= { 0, "SPRITABLE",			0, 0, 1, 0 };
+	result.SODeclaration[5]		= { 0, "SPRITEFRAMEINROW",	0, 0, 1, 0 };
+	result.SODeclaration[6]		= { 0, "SPRITEFRAMEINCOL",	0, 0, 1, 0 };
+	result.SODeclaration[7]		= { 0, "SPRITEDURATION",	0, 0, 1, 0 };
+
+	result.SODeclaration[8]		= { 0, "DIRECTION",			0, 0, 3, 0 };
+	result.SODeclaration[9]		= { 0, "VELOCITY",			0, 0, 1, 0 };
+	result.SODeclaration[10]	= { 0, "TOTALLIFETIME",		0, 0, 1, 0 };
+	result.SODeclaration[11]	= { 0, "LIFETIME",			0, 0, 1, 0 };
+
+	result.SODeclaration[12]	= { 0, "PARTICLETYPE",		0, 0, 1, 0 };
+	result.SODeclaration[13]	= { 0, "EMITTYPE",			0, 0, 1, 0 };
+	result.SODeclaration[14]	= { 0, "REMAINEMIT",		0, 0, 1, 0 };
+	result.SODeclaration[15]	= { 0, "EMITINDEX",			0, 0, 1, 0 };
+
+	result.SODeclarationCount = 16;
+
+	result.BufferStrides[0] = sizeof(ParticleVertex);
+
+	result.BufferCount = 1; 
+
+	result.RasterizedStream = D3D12_SO_NO_RASTERIZED_STREAM; 
+
+	return result; 
+}
+
+D3D12_SHADER_BYTECODE ParticleSOShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("ParticleSO", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE ParticleSOShader::CreateGeometryShader() {
+	auto& blob = gShaderManager.GetShaderBlob("ParticleSO", ShaderType::GeometryShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+UINT ParticleSOShader::CreateNumOfRenderTarget() {
+	return 0;
+}
+
+void ParticleSOShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& targets) {
+	targets[0] = DXGI_FORMAT_UNKNOWN;
+}
+
+D3D12_ROOT_SIGNATURE_FLAGS ParticleSOShader::CreateRootSignatureFlag() {
+	return D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | D3D12_ROOT_SIGNATURE_FLAG_ALLOW_STREAM_OUTPUT;
+}
+
+
+
+ParticleGSShader::ParticleGSShader() {
+}
+
+void ParticleGSShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+}
+
+GraphicsShaderBase::InputLayout ParticleGSShader::CreateInputLayout() {
+	InputLayout result{};
+
+	result.InputElements[0] = { "POSITION",			0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[1] = { "WIDTH",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[2] = { "HEIGHT",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[3] = { "MATERIAL",			0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.InputElements[4] = { "SPRITABLE",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[5] = { "SPRITEFRAMEINROW", 0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[6] = { "SPRITEFRAMEINCOL", 0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[7] = { "SPRITEDURATION",	0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.InputElements[8] = { "DIRECTION",		0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[9] = { "VELOCITY",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[10] = { "TOTALLIFETIME",	0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[11] = { "LIFETIME",		0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.InputElements[12] = { "PARTICLETYPE",	0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[13] = { "EMITTYPE",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[14] = { "REMAINEMIT",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[15] = { "EMITINDEX",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.ElementCount = 16;
+
+	return result;
+}
+
+GraphicsShaderBase::RootParameters ParticleGSShader::CreateRootParameters() {
+	RootParameters result{};
+
+	result.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	result.Parameters[0].Descriptor.ShaderRegister = 0;
+	result.Parameters[0].Descriptor.RegisterSpace = 0;
+	result.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	result.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	result.Parameters[1].Constants.Num32BitValues = 1;
+	result.Parameters[1].Constants.ShaderRegister = 1;
+	result.Parameters[1].Constants.RegisterSpace = 0;
+	result.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	result.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	result.Parameters[2].Descriptor.ShaderRegister = 0;
+	result.Parameters[2].Descriptor.RegisterSpace = 0;
+	result.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	result.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	result.Ranges[0].NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
+	result.Ranges[0].BaseShaderRegister = 1;
+	result.Ranges[0].RegisterSpace = 0;
+	result.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	
+	result.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	result.Parameters[3].DescriptorTable.NumDescriptorRanges = 1;
+	result.Parameters[3].DescriptorTable.pDescriptorRanges = result.Ranges.data();
+	result.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	result.ParameterCount = 4; 
+
+	return result;
+}
+
+D3D12_BLEND_DESC ParticleGSShader::CreateBlendState() {
+	return D3D12_BLEND_DESC();
+}
+
+D3D12_PRIMITIVE_TOPOLOGY_TYPE ParticleGSShader::CreatePrimitiveTopologyType() {
+	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+}
+
+D3D12_SHADER_BYTECODE ParticleGSShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("ParticleGS", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE ParticleGSShader::CreateGeometryShader() {
+	auto& blob = gShaderManager.GetShaderBlob("ParticleGS", ShaderType::GeometryShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE ParticleGSShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("ParticleGS", ShaderType::PixelShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+UINT ParticleGSShader::CreateNumOfRenderTarget() {
+	return 3;
+}
+
+void ParticleGSShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& targets) {
+	targets[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	targets[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	targets[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+}

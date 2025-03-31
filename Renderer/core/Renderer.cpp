@@ -10,9 +10,6 @@
 Renderer::Renderer(HWND rendererWindowHandle)
 	: mRendererWindow(rendererWindowHandle) {
 
-
-
-
 	// 셰이더 매니저 테스트용.. 
 	gShaderManager.Test();
 
@@ -31,6 +28,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 
 	Renderer::InitCoreResources(); 
 	Renderer::InitDefferedRenderer();
+	Renderer::InitParticleManager();
 
 }
 
@@ -382,6 +380,10 @@ void Renderer::InitFonts() {
 
 void Renderer::InitShadowRenderer() {
 	mShadowRenderer = ShadowRenderer(mDevice);
+}
+
+void Renderer::InitParticleManager() {
+	mParticleManager = std::make_shared<ParticleManager>(mDevice, mCommandList);
 }
 
 void Renderer::InitCoreResources() {

@@ -20,6 +20,7 @@
 #include "../Resource/Mesh.h"
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Renderer/Core/ShadowRenderer.h"
+#include "../Renderer/Manager/ParticleManager.h"
 
 class Renderer {
 public:
@@ -59,6 +60,7 @@ private:
 	void InitFonts(); 
 
 	void InitShadowRenderer();
+	void InitParticleManager(); 
 
 	void InitCoreResources(); 
 	void InitDefferedRenderer();
@@ -111,6 +113,7 @@ private:
 	std::shared_ptr<TextureManager> mTextureManager{};
 	std::shared_ptr<MaterialManager> mMaterialManager{};
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{};
+	std::shared_ptr<ParticleManager> mParticleManager{};
 
 	DefaultBuffer mMainCameraBuffer{};
 };
