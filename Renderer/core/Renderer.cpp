@@ -37,8 +37,8 @@ Renderer::~Renderer() {
 }
 
 
-std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> Renderer::GetManagers() {
-	return std::make_tuple(mMeshRenderManager, mTextureManager, mMaterialManager);
+std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> Renderer::GetManagers() {
+	return std::make_tuple(mMeshRenderManager, mTextureManager, mMaterialManager, mParticleManager);
 }
 
 DefaultBufferCPUIterator Renderer::GetMainCameraBuffer() {

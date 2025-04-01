@@ -1,4 +1,5 @@
 #pragma once 
+#include "../Utility/Defines.h"
 
 class Particle {
 public:
@@ -6,6 +7,6 @@ public:
 	~Particle();
 
 private:
-
+	EmitParticleContext* context{}; 
 
 };

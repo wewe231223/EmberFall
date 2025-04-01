@@ -33,7 +33,7 @@ public:
 	Renderer(Renderer&& other) = delete;
 	Renderer& operator=(Renderer&& other) = delete;
 public:
-	std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> GetManagers();
+	std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> GetManagers();
 	DefaultBufferCPUIterator GetMainCameraBuffer();
 
 	ComPtr<ID3D12Device> GetDevice();

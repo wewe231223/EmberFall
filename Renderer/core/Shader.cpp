@@ -1063,19 +1063,31 @@ GraphicsShaderBase::RootParameters ParticleSOShader::CreateRootParameters() {
 	result.Parameters[0].Constants.RegisterSpace = 0;
 	result.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	// RandomBuffer 
-	result.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	result.Parameters[1].Descriptor.ShaderRegister = 0;
+	// TerrainHeader 
+	result.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	result.Parameters[1].Descriptor.ShaderRegister = 1;
 	result.Parameters[1].Descriptor.RegisterSpace = 0;
 	result.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	// Emit Buffer 
+	// RandomBuffer 
 	result.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	result.Parameters[2].Descriptor.ShaderRegister = 1;
+	result.Parameters[2].Descriptor.ShaderRegister = 0;
 	result.Parameters[2].Descriptor.RegisterSpace = 0;
 	result.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	
+	// Emit Buffer 
+	result.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	result.Parameters[3].Descriptor.ShaderRegister = 1;
+	result.Parameters[3].Descriptor.RegisterSpace = 0;
+	result.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	result.ParameterCount = 3; 
+	// Terrain Buffer 
+	result.Parameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	result.Parameters[4].Descriptor.ShaderRegister = 2;
+	result.Parameters[4].Descriptor.RegisterSpace = 0;
+	result.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	result.ParameterCount = 5; 
 
 	return result;
 }

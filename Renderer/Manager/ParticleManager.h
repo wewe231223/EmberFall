@@ -2,6 +2,7 @@
 #include "../Utility/Defines.h"
 #include "../Renderer/Resource/DefaultBuffer.h"
 #include "../Renderer/Core/Shader.h"
+#include "../Renderer/Resource/Particle.h"
 
 class ParticleManager {
 	static constexpr size_t MAX_PARTICLE_COUNT = 10000;
@@ -19,6 +20,11 @@ public:
 	ParticleManager& operator=(ParticleManager&&) = default;
 
 public:
+	void SetTerrain(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList,TerrainHeader& header, std::vector<SimpleMath::Vector3>& data); 
+
+	void ValidateParticle(); 
+	Particle CreateEmitParticle(); 
+
 	void RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList);
 	void RenderGS(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator cameraBuffer, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS material);
 	void PostRender();
@@ -39,12 +45,15 @@ private:
 	DefaultBuffer mEmitParticleBuffer{}; 
 
 	DefaultBuffer mParticleCountBuffer{};
-
 	DefaultBuffer mRandomBuffer{}; 
+
+	DefaultBuffer mTerrainHeaderBuffer{};
+	DefaultBuffer mTerrainDataBuffer{}; 
 
 	ComPtr<ID3D12Resource> mParticleCountReadbackBuffer{};
 
 	UINT32 mParticleCount{ 0 };
 
 	std::array<EmitParticleContext, EMIT_PARTICLE_COUNT> mEmitParticleContexts{};
+	UINT mNextEmitParticleIndex{ 0 };
 };

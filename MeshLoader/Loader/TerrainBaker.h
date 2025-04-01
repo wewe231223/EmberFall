@@ -5,6 +5,7 @@
 #include <cassert>
 #include "../MeshLoader/Loader/TerrainLoader.h"
 #include "../Utility/DirectXInclude.h" 
+#include "../Utility/Defines.h"
 
 static float BernsteinBasis(int i, float t) {
     switch (i) {
@@ -54,14 +55,6 @@ static std::vector<::DirectX::SimpleMath::Vector3> SimulateTessellationForPatch(
     }
     return tessellated;
 }
-
-struct TerrainHeader {
-    int gridWidth;     
-    int gridHeight;    
-    float gridSpacing; 
-    float minX;        
-    float minZ;        
-};
 
 bool SimulateGlobalTessellationAndWriteFile(const std::filesystem::path& heightMapPath, const std::filesystem::path& outputFilePath) {
     TerrainLoader loader;

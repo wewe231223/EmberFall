@@ -266,7 +266,7 @@ void Scene::ProcessPacketAnimation(PacketHeader* header) {
 #pragma endregion 
 
 
-Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
+Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
 	
 	mInputSign = NonReplacementSampler::GetInstance().Sample(); 
 	mNetworkSign = NonReplacementSampler::GetInstance().Sample();
@@ -282,6 +282,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mMeshRenderManager = std::get<0>(managers);
 	mTextureManager = std::get<1>(managers);
 	mMaterialManager = std::get<2>(managers);
+	mParticleManager = std::get<3>(managers);
 
 	Scene::BuildShader(device); 
 	Scene::BuildMesh(device, commandList);
@@ -291,6 +292,8 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	// SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", "Resources/Binarys/Terrain/TerrainBaked.bin");
 	tCollider.LoadFromFile("Resources/Binarys/Terrain/TerrainBaked.bin");
+
+	mParticleManager->SetTerrain(device, commandList, tCollider.GetHeader(), tCollider.GetData());
 
 	mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
@@ -372,6 +375,10 @@ void Scene::ProcessNetwork() {
 }
 
 void Scene::Update() {
+	//if (mMyPlayer != nullptr) {
+	//	auto& pos = mMyPlayer->GetTransform().GetPosition();
+	//	pos.y = tCollider.GetHeight(pos.x, pos.z);
+	//}
 
 	if (mMyPlayer != nullptr) {
 		mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().y, mMyPlayer->GetTransform().GetPosition().z);

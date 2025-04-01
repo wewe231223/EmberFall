@@ -44,6 +44,14 @@ struct BoneTransformBuffer {
 	UINT boneCount;
 };
 
+struct TerrainHeader {
+    int globalWidth;
+    int globalHeight;
+    float gridSpacing;
+    float minX;
+    float minZ;
+};
+
 template<typename T>
 constexpr size_t GetCBVSize() {
 	return (sizeof(T) + 255) & ~255;

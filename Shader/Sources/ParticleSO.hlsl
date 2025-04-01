@@ -23,6 +23,17 @@ struct EmitParticleContext
 
 StructuredBuffer<EmitParticleContext> EmitPosition : register(t1);
 
+cbuffer TerrainGlobal : register(b1)
+{
+    int globalWidth;
+    int globalHeight;
+    float gridSpacing;
+    float minX;
+    float minZ;
+};
+
+StructuredBuffer<float3> TerrainVertices : register(t2);
+
 struct ParticleVertex
 {
     float3 position : POSITION;
@@ -133,6 +144,48 @@ float3 GenerateRandomDirection(uint seed)
 }
 //----------------------------------------------------------[ Random ]----------------------------------------------------------
 
+float GetHeight(float x, float z)
+{
+    // 로컬 좌표 계산
+    float localX = x - minX;
+    float localZ = z - minZ;
+
+    // 그리드상의 부동소수점 좌표
+    float fcol = localX / gridSpacing;
+    float frow = localZ / gridSpacing;
+
+    // 정수 인덱스는 소수점 부분을 버림(floor) 처리
+    int col = (int) fcol;
+    int row = (int) frow;
+
+    // 인덱스를 범위 내로 제한 (분기 없는 clamp 함수 사용)
+    col = clamp(col, 0, globalWidth - 2);
+    row = clamp(row, 0, globalHeight - 2);
+
+    // 보간 계수 계산
+    float t = fcol - col;
+    float u = frow - row;
+
+    // 인덱스 계산
+    int index00 = row * globalWidth + col;
+    int index10 = index00 + 1;
+    int index01 = index00 + globalWidth;
+    int index11 = index01 + 1;
+
+    // x 방향 선형 보간
+    float y0 = lerp(TerrainVertices[index00].y, TerrainVertices[index10].y, t);
+    float y1 = lerp(TerrainVertices[index01].y, TerrainVertices[index11].y, t);
+
+    // z 방향 보간하여 최종 높이 산출
+    return lerp(y0, y1, u);
+}
+
+
+
+
+
+
+
 ParticleSO_GS_IN ParticleSOPassVS(ParticleVertex input, uint vertedID : SV_VertexID)
 {
     ParticleSO_GS_IN output = (ParticleSO_GS_IN) 0;
@@ -183,9 +236,11 @@ void EmitParticleUpdate(inout ParticleVertex vertex, uint vertexID, inout PointS
         newParticle.spriteFrameInCol = vertex.spriteFrameInCol;
         newParticle.spriteDuration = vertex.spriteDuration;
         newParticle.direction = GenerateRandomDirection(vertexID);
+        newParticle.direction.y = 1.f; 
+        newParticle.direction = normalize(newParticle.direction);
         newParticle.velocity = GenerateRandomInRange(5.f, 3.f, vertexID);
-        newParticle.totalLifetime = GenerateRandomInRange(3.f, 6.f, vertexID);
-        newParticle.lifetime = newParticle.totalLifetime;
+        newParticle.totalLifetime = GenerateRandomInRange(1.f, 3.f, vertexID);
+        newParticle.lifetime = newParticle.totalLifetime + globalTime;
         newParticle.type = ParticleType_ember;
         newParticle.emitType = ParticleType_ember;
         newParticle.remainEmit = 0;
@@ -205,7 +260,19 @@ void EmberParticleUpdate(inout ParticleVertex vertex, inout PointStream<Particle
 {
     if (vertex.lifetime >= 0.f)
     {
-        stream.Append(vertex);
+        ParticleVertex n = vertex; 
+        
+        n.position.y -= 9.8 * deltaTime;
+        
+        float h = GetHeight(n.position.x, n.position.z);
+        
+        if (n.position.y < h + n.halfHeight)
+        {
+            n.position.y = h + n.halfHeight;
+            n.velocity = 0.f;
+        }
+        
+        stream.Append(n);
     }
 }
 

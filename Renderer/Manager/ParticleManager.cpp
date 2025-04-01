@@ -62,6 +62,13 @@ ParticleManager::ParticleManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graph
 	mParticleCount++; 
 }
 
+
+
+void ParticleManager::SetTerrain(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, TerrainHeader& header, std::vector<SimpleMath::Vector3>& data) {
+	mTerrainHeaderBuffer = DefaultBuffer(device, commandList, sizeof(TerrainHeader), 1, &header, true);
+	mTerrainDataBuffer = DefaultBuffer(device, commandList, sizeof(SimpleMath::Vector3), data.size(), data.data());
+}
+
 void ParticleManager::RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList) {
 
 	std::memset(*mParticleCountBuffer.CPUBegin(), 0, sizeof(UINT64));
@@ -85,8 +92,10 @@ void ParticleManager::RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	DirectX::XMFLOAT2 time{ Time.GetTimeSinceStarted<float>(), Time.GetDeltaTime<float>() };
 
 	commandList->SetGraphicsRoot32BitConstants(0, 2, &time, 0);
-	commandList->SetGraphicsRootShaderResourceView(1, *mRandomBuffer.GPUBegin());
-	commandList->SetGraphicsRootShaderResourceView(2, *mEmitParticleBuffer.GPUBegin());
+	commandList->SetGraphicsRootConstantBufferView(1, *mTerrainHeaderBuffer.GPUBegin());
+	commandList->SetGraphicsRootShaderResourceView(2, *mRandomBuffer.GPUBegin());
+	commandList->SetGraphicsRootShaderResourceView(3, *mEmitParticleBuffer.GPUBegin());
+	commandList->SetGraphicsRootShaderResourceView(4, *mTerrainDataBuffer.GPUBegin());
 
 	commandList->DrawInstanced(mParticleCount, 1, 0, 0); 
 

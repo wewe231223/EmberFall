@@ -3,6 +3,7 @@
 #include <filesystem>
 #include "../MeshLoader/Base/MeshData.h"
 #include "../Utility/DirectXInclude.h"
+#include "../Utility/Defines.h"
 #include <vector>
 
 class TerrainLoader {
@@ -27,15 +28,13 @@ class TerrainCollider {
 public:
 	TerrainCollider() = default;
 	~TerrainCollider() = default;
-
-
+public:
 	bool LoadFromFile(const std::filesystem::path& filePath);
 	float GetHeight(float x, float z) const;
+
+	TerrainHeader& GetHeader();
+	std::vector<SimpleMath::Vector3>& GetData();
 private:
 	std::vector<SimpleMath::Vector3> mGlobalVertices;
-	int  mGlobalWidth = 0;  
-	int  mGlobalHeight = 0;   
-	float mGridSpacing = 0.0f; 
-	float mMinX = 0.0f;        
-	float mMinZ = 0.0f;        
+	TerrainHeader mHeader{}; 
 };
