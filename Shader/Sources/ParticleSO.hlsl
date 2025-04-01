@@ -180,6 +180,16 @@ float GetHeight(float x, float z)
     return lerp(y0, y1, u);
 }
 
+void Gravity(inout ParticleVertex vertex)
+{
+    float3 gravity = float3(0.f, -9.8f, 0.f);
+    float3 velocity = vertex.direction * vertex.velocity;
+    velocity += gravity * deltaTime;
+    vertex.direction = normalize(velocity);
+    vertex.velocity = length(velocity);
+    vertex.position += velocity * deltaTime;
+}
+
 
 ParticleSO_GS_IN ParticleSOPassVS(ParticleVertex input, uint vertedID : SV_VertexID)
 {
@@ -226,12 +236,14 @@ void EmitParticleUpdate(inout ParticleVertex vertex, uint vertexID, inout PointS
         newParticle.spriteFrameInRow = vertex.spriteFrameInRow;
         newParticle.spriteFrameInCol = vertex.spriteFrameInCol;
         newParticle.spriteDuration = vertex.spriteDuration;
+        
         newParticle.direction = GenerateRandomDirection(vertexID);
         newParticle.direction.y = 1.f; 
         newParticle.direction = normalize(newParticle.direction);
-        newParticle.velocity = GenerateRandomInRange(5.f, 3.f, vertexID);
+        
+        newParticle.velocity = GenerateRandomInRange(15.f, 20.f, vertexID);
         newParticle.totalLifetime = GenerateRandomInRange(1.f, 3.f, vertexID);
-        newParticle.lifetime = newParticle.totalLifetime + globalTime;
+        newParticle.lifetime = newParticle.totalLifetime;
         newParticle.type = ParticleType_ember;
         newParticle.emitType = ParticleType_ember;
         newParticle.remainEmit = 0;
@@ -253,7 +265,7 @@ void EmberParticleUpdate(inout ParticleVertex vertex, inout PointStream<Particle
     {
         ParticleVertex n = vertex; 
         
-        // n.position.y -= 9.8 * deltaTime;
+        Gravity(n);
         
         float h = GetHeight(n.position.x, n.position.z);
         
@@ -267,12 +279,14 @@ void EmberParticleUpdate(inout ParticleVertex vertex, inout PointStream<Particle
     }
 }
 
+
 [maxvertexcount(16)]
 void ParticleSOPassGS(point ParticleSO_GS_IN input[1], inout PointStream<ParticleVertex> output)
 {
     ParticleVertex outPoint = (ParticleVertex) 0;
     
-    outPoint.position = input[0].position + input[0].direction * input[0].velocity * deltaTime;
+    outPoint.position = input[0].position;
+    
     outPoint.halfWidth = input[0].halfWidth;
     outPoint.halfHeight = input[0].halfHeight;
     outPoint.material = input[0].material;

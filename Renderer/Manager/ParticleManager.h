@@ -5,7 +5,7 @@
 #include "../Renderer/Resource/Particle.h"
 
 class ParticleManager {
-	static constexpr size_t MAX_PARTICLE_COUNT = 10000;
+	static constexpr size_t MAX_PARTICLE_COUNT = 10'0000;
 	static constexpr size_t EMIT_PARTICLE_COUNT = 100;
 public:
 	ParticleManager() = default;

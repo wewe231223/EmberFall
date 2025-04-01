@@ -374,7 +374,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
 	v.velocity = 0.f;
-	v.totalLifeTime = 0.5f;
+	v.totalLifeTime = 0.01f;
 	v.lifeTime = 0.1f;
 
 	v.type = ParticleType_emit;
