@@ -101,5 +101,9 @@ private:
 	TerrainLoader tLoader{}; 
 	TerrainCollider tCollider{};
 
+	Particle test{};
+	Particle test1{};
+	Particle test2{}; 
+
 	TextBlock* mNetworkInfoText{ TextBlockManager::GetInstance().CreateTextBlock(L"",D2D1_RECT_F{100.f,0.f,800.f,100.f},StringColor::Black, "NotoSansKR") };
 };

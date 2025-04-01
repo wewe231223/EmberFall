@@ -175,6 +175,7 @@ void Renderer::ExecuteRender() {
 
 	mStringRenderer.Render();
 	mParticleManager->PostRender();
+	mParticleManager->ValidateParticle();
 
 	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
 	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;

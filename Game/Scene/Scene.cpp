@@ -359,7 +359,33 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 	//mCameraMode->Enter(); 
 
-	
+
+
+
+	ParticleVertex v{};
+
+	v.position = DirectX::XMFLOAT3(10.f, 10.f, 10.f);
+	v.halfheight = 0.1f;
+	v.halfWidth = 0.1f;
+	v.material = 0;
+
+	v.spritable = false;
+
+
+	v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+	v.velocity = 0.f;
+	v.totalLifeTime = 0.5f;
+	v.lifeTime = 0.1f;
+
+	v.type = ParticleType_emit;
+	v.emitType = ParticleType_ember;
+	v.remainEmit = 100000;
+	v.emitIndex = 0;
+
+
+	test = mParticleManager->CreateEmitParticle(commandList, v);
+	test1 = mParticleManager->CreateEmitParticle(commandList, v);
+	test2 = mParticleManager->CreateEmitParticle(commandList, v);
 
 }
 
@@ -382,6 +408,14 @@ void Scene::Update() {
 
 	if (mMyPlayer != nullptr) {
 		mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().y, mMyPlayer->GetTransform().GetPosition().z);
+
+
+		// test.Get()->position = mMyPlayer->GetTransform().GetPosition(); 
+		test.Get()->position = mGameObjects[3].GetTransform().GetPosition();
+		test1.Get()->position = mGameObjects[4].GetTransform().GetPosition();
+		test2.Get()->position = mGameObjects[5].GetTransform().GetPosition();
+
+
 	}
 
 

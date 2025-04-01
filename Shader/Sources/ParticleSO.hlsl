@@ -181,11 +181,6 @@ float GetHeight(float x, float z)
 }
 
 
-
-
-
-
-
 ParticleSO_GS_IN ParticleSOPassVS(ParticleVertex input, uint vertedID : SV_VertexID)
 {
     ParticleSO_GS_IN output = (ParticleSO_GS_IN) 0;
@@ -205,6 +200,7 @@ ParticleSO_GS_IN ParticleSOPassVS(ParticleVertex input, uint vertedID : SV_Verte
     output.type = input.type;
     output.emitType = input.emitType;
     output.remainEmit = input.remainEmit;
+    output.emitIndex = input.emitIndex;
     output.vertexID = vertedID;
     
     return output;
@@ -217,12 +213,7 @@ void AppendVertex(inout ParticleVertex vertex, inout PointStream<ParticleVertex>
 
 void EmitParticleUpdate(inout ParticleVertex vertex, uint vertexID, inout PointStream<ParticleVertex> stream)
 {
-    // vertex.position = EmitPosition[vertex.emitIndex]; 
-    
-    if (length(vertex.position) == 0.f)
-    {
-        return; 
-    }
+    //vertex.position = EmitPosition[vertex.emitIndex].position; 
     
     ParticleVertex newParticle = (ParticleVertex) 0;
     if (vertex.lifetime <= 0.f)
@@ -262,7 +253,7 @@ void EmberParticleUpdate(inout ParticleVertex vertex, inout PointStream<Particle
     {
         ParticleVertex n = vertex; 
         
-        n.position.y -= 9.8 * deltaTime;
+        // n.position.y -= 9.8 * deltaTime;
         
         float h = GetHeight(n.position.x, n.position.z);
         
@@ -296,10 +287,11 @@ void ParticleSOPassGS(point ParticleSO_GS_IN input[1], inout PointStream<Particl
     outPoint.type = input[0].type;
     outPoint.emitType = input[0].emitType;
     outPoint.remainEmit = input[0].remainEmit;
+    outPoint.emitIndex = input[0].emitIndex;
    
 
     if (outPoint.type == ParticleType_emit)
         EmitParticleUpdate(outPoint, input[0].vertexID, output);
-    else if (outPoint.type == ParticleType_ember)
-        EmberParticleUpdate(outPoint, output);
+    //else if (outPoint.type == ParticleType_ember)
+        // EmberParticleUpdate(outPoint, output);
 }

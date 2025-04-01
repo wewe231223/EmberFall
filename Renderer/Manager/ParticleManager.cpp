@@ -34,32 +34,6 @@ ParticleManager::ParticleManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graph
 
 	mParticleGSShader = std::make_unique<ParticleGSShader>();
 	mParticleGSShader->CreateShader(device);
-
-
-
-	ParticleVertex v{};
-
-	v.position = DirectX::XMFLOAT3(10.f, 10.f, 10.f);
-	v.halfheight = 1.f;
-	v.halfWidth = 1.f;
-	v.material = 0;
-
-	v.spritable = false;
-
-
-	v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
-	v.velocity = 1.f;
-	v.totalLifeTime = 0.1f;
-	v.lifeTime = 0.1f;
-
-	v.type = ParticleType_emit;
-	v.emitType = ParticleType_ember;
-	v.remainEmit = 100000;
-	v.emitIndex = 0;
-
-	std::memcpy(*mParticleVertexBuffer.CPUBegin(), &v, sizeof(ParticleVertex));
-	mParticleVertexBuffer.Upload(commandList, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-	mParticleCount++; 
 }
 
 
@@ -69,10 +43,39 @@ void ParticleManager::SetTerrain(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graph
 	mTerrainDataBuffer = DefaultBuffer(device, commandList, sizeof(SimpleMath::Vector3), data.size(), data.data());
 }
 
+Particle ParticleManager::CreateEmitParticle(ComPtr<ID3D12GraphicsCommandList> commandList, ParticleVertex& newParticle) {
+	newParticle.emitIndex = mNextEmitParticleIndex;
+	
+	auto dest = mParticleVertexBuffer.CPUBegin() + mParticleCount; 
+	auto end = mParticleVertexBuffer.CPUBegin() + mParticleCount + 1;
+	std::memcpy(*dest, &newParticle, sizeof(ParticleVertex));
+
+	mParticleVertexBuffer.Upload(commandList,D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, dest, end, mParticleCount * sizeof(ParticleVertex) );
+
+
+	auto& next = mEmitParticleContexts[mNextEmitParticleIndex];
+	next.Flags = static_cast<UINT>(ParticleFlag::Common);
+	Particle result{ &next };
+	
+	for (auto& context : mEmitParticleContexts) {
+		if (context.Flags & static_cast<UINT>(ParticleFlag::Empty)) {
+			mNextEmitParticleIndex = static_cast<UINT>(GetIndexFromAddress(mEmitParticleContexts, &context));
+			break;
+		}
+	}
+
+	mParticleCount++;
+
+	return result;
+}
+
 void ParticleManager::RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList) {
 
 	std::memset(*mParticleCountBuffer.CPUBegin(), 0, sizeof(UINT64));
 	mParticleCountBuffer.Upload(commandList, D3D12_RESOURCE_STATE_STREAM_OUT);
+
+	std::memcpy(*mEmitParticleBuffer.CPUBegin(), mEmitParticleContexts.data(), sizeof(EmitParticleContext) * EMIT_PARTICLE_COUNT);
+	mEmitParticleBuffer.Upload(commandList);
 
 	mParticleSOShader->SetGPassShader(commandList);
 
@@ -138,8 +141,18 @@ void ParticleManager::PostRender() {
 	mParticleCount = static_cast<UINT32>((*data) / sizeof(ParticleVertex));
 	mParticleCountReadbackBuffer->Unmap(0, nullptr);
 
-	if (mParticleCount == 0) {
+	if (mParticleCount == 1) {
 		DebugBreak(); 
+	}
+}
+
+void ParticleManager::ValidateParticle() {
+	for (auto& context : mEmitParticleContexts) {
+		if (context.Flags & static_cast<UINT>(ParticleFlag::Delete)) {
+			// 삭제 플래그를 올렸을 때.. 
+			auto index = GetIndexFromAddress(mEmitParticleContexts, &context);
+			mNextEmitParticleIndex = static_cast<UINT>(index);
+		}
 	}
 }
 

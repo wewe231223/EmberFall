@@ -22,12 +22,13 @@ public:
 public:
 	void SetTerrain(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList,TerrainHeader& header, std::vector<SimpleMath::Vector3>& data); 
 
-	void ValidateParticle(); 
-	Particle CreateEmitParticle(); 
+	Particle CreateEmitParticle(ComPtr<ID3D12GraphicsCommandList> commandList, ParticleVertex& newParticle); 
 
 	void RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList);
 	void RenderGS(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator cameraBuffer, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS material);
 	void PostRender();
+
+	void ValidateParticle(); 
 private:
 	void BuildRandomBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
 	

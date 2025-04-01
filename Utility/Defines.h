@@ -115,10 +115,23 @@ struct ParticleVertex {
 * 0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0010 - Delete
 */
 
+enum class ParticleFlag : UINT {
+    Common      = 0b0000'0000'0000'0000'0000'0000'0000'0000,
+    Deactive    = 0b0000'0000'0000'0000'0000'0000'0000'0010,
+    Delete      = 0b0000'0000'0000'0000'0000'0000'0000'0100,
+    Empty       = 0b1111'1111'1111'1111'1111'1111'1111'1111,
+};
+
 struct EmitParticleContext {
     DirectX::XMFLOAT3 position{ 0.f,0.f,0.f };
-	UINT Flags{ 0 };
+    UINT Flags{ static_cast<UINT>(ParticleFlag::Empty) };
 };
+
+template<typename T, std::size_t N>
+std::size_t GetIndexFromAddress(const std::array<T, N>& arr, const T* addr) {
+    const T* start = arr.data();
+    return static_cast<std::size_t>(addr - start);
+}
 
 enum class StringColor : DWORD {
     AliceBlue, AntiqueWhite, Aqua, Aquamarine, Azure,
