@@ -38,6 +38,8 @@ private:
 	std::unique_ptr<GraphicsShaderBase> mParticleGSShader{};
 
 	DefaultBuffer mParticleVertexBuffer{};
+	DefaultBufferCPUIterator mNewParticleUploadLoc{};
+	UINT32 mNewParticleCount{ 0 };
 	D3D12_VERTEX_BUFFER_VIEW mParticleVertexBufferView{};
 
 	DefaultBuffer mParticleSOTargetBuffer{};

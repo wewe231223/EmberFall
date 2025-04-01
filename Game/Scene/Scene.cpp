@@ -384,7 +384,11 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 
 	test = mParticleManager->CreateEmitParticle(commandList, v);
+
+	v.position = DirectX::XMFLOAT3(10.f, 20.f, 10.f);
 	test1 = mParticleManager->CreateEmitParticle(commandList, v);
+
+	v.position = DirectX::XMFLOAT3(10.f, 30.f, 10.f);
 	test2 = mParticleManager->CreateEmitParticle(commandList, v);
 
 }

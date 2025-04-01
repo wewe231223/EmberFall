@@ -34,6 +34,8 @@ ParticleManager::ParticleManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graph
 
 	mParticleGSShader = std::make_unique<ParticleGSShader>();
 	mParticleGSShader->CreateShader(device);
+
+	mNewParticleUploadLoc = mParticleVertexBuffer.CPUBegin();
 }
 
 
@@ -46,12 +48,8 @@ void ParticleManager::SetTerrain(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graph
 Particle ParticleManager::CreateEmitParticle(ComPtr<ID3D12GraphicsCommandList> commandList, ParticleVertex& newParticle) {
 	newParticle.emitIndex = mNextEmitParticleIndex;
 	
-	auto dest = mParticleVertexBuffer.CPUBegin() + mParticleCount; 
-	auto end = mParticleVertexBuffer.CPUBegin() + mParticleCount + 1;
-	std::memcpy(*dest, &newParticle, sizeof(ParticleVertex));
-
-	mParticleVertexBuffer.Upload(commandList,D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, dest, end, mParticleCount * sizeof(ParticleVertex) );
-
+	std::memcpy(*mNewParticleUploadLoc, &newParticle, sizeof(ParticleVertex));
+	mNewParticleUploadLoc++; 
 
 	auto& next = mEmitParticleContexts[mNextEmitParticleIndex];
 	next.Flags = static_cast<UINT>(ParticleFlag::Common);
@@ -64,7 +62,7 @@ Particle ParticleManager::CreateEmitParticle(ComPtr<ID3D12GraphicsCommandList> c
 		}
 	}
 
-	mParticleCount++;
+	mNewParticleCount++;
 
 	return result;
 }
@@ -76,6 +74,12 @@ void ParticleManager::RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList) {
 
 	std::memcpy(*mEmitParticleBuffer.CPUBegin(), mEmitParticleContexts.data(), sizeof(EmitParticleContext) * EMIT_PARTICLE_COUNT);
 	mEmitParticleBuffer.Upload(commandList);
+
+	if (mNewParticleUploadLoc != mParticleVertexBuffer.CPUBegin()) {
+		mParticleVertexBuffer.Upload(commandList, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, mParticleVertexBuffer.CPUBegin(), mNewParticleUploadLoc, mParticleCount * sizeof(ParticleVertex));
+		mParticleCount += mNewParticleCount; 
+		mNewParticleCount = 0; 
+	}
 
 	mParticleSOShader->SetGPassShader(commandList);
 
@@ -112,6 +116,7 @@ void ParticleManager::RenderGS(ComPtr<ID3D12GraphicsCommandList> commandList, De
 	mParticleSOTargetBuffer.TransitionState(commandList, D3D12_RESOURCE_STATE_STREAM_OUT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
 
 	ParticleManager::SwapBuffer(); 
+	mNewParticleUploadLoc = mParticleVertexBuffer.CPUBegin();
 
 	mParticleGSShader->SetGPassShader(commandList);
 
@@ -141,7 +146,7 @@ void ParticleManager::PostRender() {
 	mParticleCount = static_cast<UINT32>((*data) / sizeof(ParticleVertex));
 	mParticleCountReadbackBuffer->Unmap(0, nullptr);
 
-	if (mParticleCount == 1) {
+	if (mParticleCount == 0) {
 		DebugBreak(); 
 	}
 }

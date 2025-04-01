@@ -213,7 +213,7 @@ void AppendVertex(inout ParticleVertex vertex, inout PointStream<ParticleVertex>
 
 void EmitParticleUpdate(inout ParticleVertex vertex, uint vertexID, inout PointStream<ParticleVertex> stream)
 {
-    //vertex.position = EmitPosition[vertex.emitIndex].position; 
+    vertex.position = EmitPosition[vertex.emitIndex].position; 
     
     ParticleVertex newParticle = (ParticleVertex) 0;
     if (vertex.lifetime <= 0.f)
@@ -290,10 +290,9 @@ void ParticleSOPassGS(point ParticleSO_GS_IN input[1], inout PointStream<Particl
     outPoint.emitIndex = input[0].emitIndex;
    
     
-    output.Append(outPoint);
-
-    //if (outPoint.type == ParticleType_emit)
-    //    EmitParticleUpdate(outPoint, input[0].vertexID, output);
-    //else if (outPoint.type == ParticleType_ember)
-        // EmberParticleUpdate(outPoint, output);
+    
+    if (outPoint.type == ParticleType_emit)
+        EmitParticleUpdate(outPoint, input[0].vertexID, output);
+    else if (outPoint.type == ParticleType_ember)
+        EmberParticleUpdate(outPoint, output);
 }
