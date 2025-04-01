@@ -289,9 +289,11 @@ void ParticleSOPassGS(point ParticleSO_GS_IN input[1], inout PointStream<Particl
     outPoint.remainEmit = input[0].remainEmit;
     outPoint.emitIndex = input[0].emitIndex;
    
+    
+    output.Append(outPoint);
 
-    if (outPoint.type == ParticleType_emit)
-        EmitParticleUpdate(outPoint, input[0].vertexID, output);
+    //if (outPoint.type == ParticleType_emit)
+    //    EmitParticleUpdate(outPoint, input[0].vertexID, output);
     //else if (outPoint.type == ParticleType_ember)
         // EmberParticleUpdate(outPoint, output);
 }

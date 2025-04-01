@@ -152,6 +152,7 @@ void ParticleManager::ValidateParticle() {
 			// 삭제 플래그를 올렸을 때.. 
 			auto index = GetIndexFromAddress(mEmitParticleContexts, &context);
 			mNextEmitParticleIndex = static_cast<UINT>(index);
+			context.Flags = static_cast<UINT>(ParticleFlag::Empty);
 		}
 	}
 }
