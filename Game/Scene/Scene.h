@@ -9,6 +9,7 @@
 #include "../Game/GameObject/GameObject.h"
 #include "../Game/Scene/Camera.h"
 #include "../Game/GameObject/Animator.h"
+#include "../Game/GameObject/EquipmentObject.h"
 #include "../MeshLoader/Loader/TerrainLoader.h"
 #include "../Game/Scene/Player.h"
 #include "../ServerLib/PacketProcessor.h"
@@ -85,10 +86,10 @@ private:
 	
 	Player* mMyPlayer{ nullptr };
 
-	
 
-	std::array<GameObject, 3> mWeapons{}; 
 	
+	std::unordered_map<std::string, EquipmentObject> mEquipments{}; 
+
 	AnimatorGraph::BoneMaskAnimationGraphController mBaseAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mArcherAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mSwordManAnimationController{};

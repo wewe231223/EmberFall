@@ -107,7 +107,7 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 				mPlayerIndexmap[packet->objId] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
 
-				mMyPlayer->SetWeapon(mWeapons[0]);
+				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
 				mMyPlayer->SetMyPlayer();
 			
 				// mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
@@ -287,7 +287,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	Scene::BuildShader(device); 
 	Scene::BuildMesh(device, commandList);
 	Scene::BuildMaterial();
-	Scene::BuildPacketProcessor();
 	Scene::BuildAniamtionController();
 
 	// SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", "Resources/Binarys/Terrain/TerrainBaked.bin");
@@ -340,11 +339,14 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 
 	{
-		mWeapons[0].mShader = mShaderMap["StandardShader"].get();
-		mWeapons[0].mMesh = mMeshMap["Sword"].get();
-		mWeapons[0].mMaterial = mMaterialManager->GetMaterial("SwordMaterial");
-		mWeapons[0].mCollider = mColliderMap["Sword"];
-		mWeapons[0].SetActiveState(true);
+		mEquipments["Sword"] = EquipmentObject{}; 
+		mEquipments["Sword"].mMesh = mMeshMap["Sword"].get();
+		mEquipments["Sword"].mShader = mShaderMap["StandardShader"].get(); 
+		mEquipments["Sword"].mMaterial = mMaterialManager->GetMaterial("SwordMaterial");
+		mEquipments["Sword"].mCollider = mColliderMap["Sword"];
+		mEquipments["Sword"].mEquipJointIndex = 58;
+		mEquipments["Sword"].SetActiveState(true);
+
 	}
 
 
@@ -391,6 +393,8 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	v.position = DirectX::XMFLOAT3(10.f, 30.f, 10.f);
 	test2 = mParticleManager->CreateEmitParticle(commandList, v);
 
+
+	Scene::BuildPacketProcessor();
 }
 
 Scene::~Scene() {
