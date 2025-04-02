@@ -38,6 +38,7 @@ private:
 	void BuildMageAnimationController();
 
 	void BuildMonsterType1AnimationController();
+	void BuildDemonAnimationController(); 
 
 	void SetInputBaseAnimMode(); 
 	void SetInputArcherMode(); 

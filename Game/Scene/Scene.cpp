@@ -327,8 +327,8 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	{
 		auto& object = mGameObjects[2];
 		object.mShader = mShaderMap["SkinnedShader"].get();
-		object.mMesh = mMeshMap["MonsterType1"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
+		object.mMesh = mMeshMap["Demon"].get();
+		object.mMaterial = mMaterialManager->GetMaterial("DemonMaterial");
 		object.mGraphController = mMonsterType1AnimationController;
 		object.mAnimated = true;
 		object.SetActiveState(true);
@@ -558,7 +558,8 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mMeshMap["CorruptedGem"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["CorruptedGem"] = Collider{ data.position };
 
-
+	data = Loader.Load("Resources/Assets/Demon/Demon.glb");
+	mMeshMap["Demon"] = std::make_unique<Mesh>(device, commandList, data);
 
 	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, data);
@@ -608,6 +609,9 @@ void Scene::BuildMaterial() {
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("CorrupedGem_BaseColor");
 	mMaterialManager->CreateMaterial("CorruptedGemMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("T_BigDemonWarrior_Body_Albedo_Skin_3");
+	mMaterialManager->CreateMaterial("DemonMaterial", mat);
 }
 
 void Scene::BuildShader(ComPtr<ID3D12Device> device) {
@@ -1458,6 +1462,25 @@ void Scene::BuildMonsterType1AnimationController() {
 
 	mMonsterType1AnimationController = AnimatorGraph::AnimationGraphController({ Idle, Walk });
 
+}
+
+void Scene::BuildDemonAnimationController() {
+	mAnimationMap["Demon"].Load("Resources/Assets/Demon/Demon.glb");
+	auto& loader = mAnimationMap["MonsterType1"];
+
+	std::vector<AnimationClip*> clips = {
+		loader.GetClip(0), // Bite 
+		loader.GetClip(1), // Crouch 
+		loader.GetClip(2), // Death
+		loader.GetClip(3), // Eat
+		loader.GetClip(4), // Idle1
+		loader.GetClip(5), // Idle2 
+		loader.GetClip(6), // Punch 
+		loader.GetClip(7), // Roar 
+		loader.GetClip(8), // Sniff 
+		loader.GetClip(9), // Walk1 
+		loader.GetClip(10) // Walk2 
+	};
 }
 
 
