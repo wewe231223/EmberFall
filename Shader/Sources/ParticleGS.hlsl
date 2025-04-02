@@ -161,7 +161,11 @@ void CreateBillBoard(ParticleVertex vertex, inout TriangleStream<Particle_PS_IN>
 [maxvertexcount(4)]
 void ParticleGSPassGS(point ParticleVertex input[1], inout TriangleStream<Particle_PS_IN> output)
 {
-    CreateBillBoard(input[0], output);
+    [branch]
+    if (input[0].type != ParticleType_emit)
+    {
+        CreateBillBoard(input[0], output);
+    }
 }
 
 Deffered_POUT ParticleGSPassPS(Particle_PS_IN input) 

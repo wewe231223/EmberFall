@@ -365,8 +365,8 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	ParticleVertex v{};
 
 	v.position = DirectX::XMFLOAT3(10.f, 10.f, 10.f);
-	v.halfheight = 0.1f;
-	v.halfWidth = 0.1f;
+	v.halfheight = 0.5f;
+	v.halfWidth = 0.5f;
 	v.material = 0;
 
 	v.spritable = false;
@@ -374,7 +374,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
 	v.velocity = 0.f;
-	v.totalLifeTime = 0.01f;
+	v.totalLifeTime = 0.1f;
 	v.lifeTime = 0.1f;
 
 	v.type = ParticleType_emit;

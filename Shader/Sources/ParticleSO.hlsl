@@ -191,6 +191,35 @@ void Gravity(inout ParticleVertex vertex)
 }
 
 
+void FoggyEmberParticleUpdate(inout ParticleVertex vertex, inout PointStream<ParticleVertex> stream, uint vertexID)
+{
+    if (vertex.lifetime >= 0.f)
+    {
+        ParticleVertex n = vertex;
+
+        // 아주 약한 부력처럼 천천히 위로
+        float riseSpeed = 0.5f; // 천천히 상승 (초당 0.5m)
+        float3 velocity = n.direction * n.velocity;
+        velocity.y = riseSpeed;
+
+        // 약간의 랜덤 흔들림 (바람 효과)
+        float randomX = GenerateRandomInRange(-0.1f, 0.1f, vertexID * 13);
+        float randomZ = GenerateRandomInRange(-0.1f, 0.1f, vertexID * 17);
+        velocity.x += randomX;
+        velocity.z += randomZ;
+
+        n.position += velocity * deltaTime;
+
+        // (옵션) lifetime에 따라 점점 velocity 줄이기
+        float lifeRatio = saturate(n.lifetime / n.totalLifetime);
+        n.velocity *= lifeRatio;
+
+        stream.Append(n);
+    }
+}
+
+
+
 ParticleSO_GS_IN ParticleSOPassVS(ParticleVertex input, uint vertedID : SV_VertexID)
 {
     ParticleSO_GS_IN output = (ParticleSO_GS_IN) 0;
@@ -242,7 +271,7 @@ void EmitParticleUpdate(inout ParticleVertex vertex, uint vertexID, inout PointS
         newParticle.direction = normalize(newParticle.direction);
         
         newParticle.velocity = GenerateRandomInRange(15.f, 20.f, vertexID);
-        newParticle.totalLifetime = GenerateRandomInRange(1.f, 3.f, vertexID);
+        newParticle.totalLifetime = GenerateRandomInRange(5.f, 7.f, vertexID);
         newParticle.lifetime = newParticle.totalLifetime;
         newParticle.type = ParticleType_ember;
         newParticle.emitType = ParticleType_ember;
@@ -308,5 +337,5 @@ void ParticleSOPassGS(point ParticleSO_GS_IN input[1], inout PointStream<Particl
     if (outPoint.type == ParticleType_emit)
         EmitParticleUpdate(outPoint, input[0].vertexID, output);
     else if (outPoint.type == ParticleType_ember)
-        EmberParticleUpdate(outPoint, output);
+        FoggyEmberParticleUpdate(outPoint, output, input[0].vertexID);
 }
