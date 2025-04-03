@@ -42,6 +42,6 @@ void AnimationStateMachine::Update(const float deltaTime) {
 
     mAnimationCounter += deltaTime;
     if (mAnimationCounter > mCurrState.duration) {
-        ChangeState(AnimationState::IDLE);
+        ChangeState(mDefaultState.state);
     }
 }

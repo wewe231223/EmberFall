@@ -151,7 +151,7 @@ void PlayScene::Update(const float deltaTime) {
     }
 
     mTerrainCollider.HandleTerrainCollision();
-    mGridWorld.Update(mObjects);
+    mGridWorld.Update(shared_from_this());
 
     gEventManager->Update();
 }

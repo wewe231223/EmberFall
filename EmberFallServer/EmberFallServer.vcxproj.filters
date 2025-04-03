@@ -244,6 +244,9 @@
     <ClCompile Include="EventTrigger.cpp">
       <Filter>Script\Trigger</Filter>
     </ClCompile>
+    <ClCompile Include="BossPlayerScript.cpp">
+      <Filter>Script\User\Boss</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -383,6 +386,9 @@
     </ClInclude>
     <ClInclude Include="EventTrigger.h">
       <Filter>Script\Trigger</Filter>
+    </ClInclude>
+    <ClInclude Include="BossPlayerScript.h">
+      <Filter>Script\User\Boss</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

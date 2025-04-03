@@ -131,7 +131,7 @@ void Physics::SolvePenetration(const SimpleMath::Vector3& penetrationVec, const 
     float opponentMass = opponent->GetPhysics()->mFactor.mass.Count();
     // 내가 무거울 수록 덜 밀려나는 구조.
     float coefficient = opponentMass / (myMass + opponentMass); // 0.0f ~ 1.0f 사이 값.
-    auto repulsiveVec = penetrationVec;
+    auto repulsiveVec = coefficient * penetrationVec;
     transform->Translate(repulsiveVec);
 
     bool onOtherObject{ false };
@@ -142,6 +142,7 @@ void Physics::SolvePenetration(const SimpleMath::Vector3& penetrationVec, const 
     //    onOtherObject = true;
     //    transform->SetY(obb1.Extents.y + obb2.Center.y + obb2.Extents.y);
     //}
+
     SetOnOtherObject(onOtherObject);
 }
 

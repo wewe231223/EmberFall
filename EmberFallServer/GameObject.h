@@ -21,6 +21,8 @@
 class IServerGameScene;
 
 enum class ObjectTag : uint8_t {
+    ENV,
+    BOSSPLAYER,
     PLAYER, 
     MONSTER,
     CORRUPTED_GEM,

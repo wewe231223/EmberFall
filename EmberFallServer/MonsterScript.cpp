@@ -44,6 +44,7 @@ void MonsterScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opp
         break;
 
     case ObjectTag::PLAYER:
+        GetOwner()->GetPhysics()->SolvePenetration(impulse, opponent);
         break;
 
     default:

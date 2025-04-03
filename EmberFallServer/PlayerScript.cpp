@@ -88,7 +88,24 @@ void PlayerScript::LateUpdate(const float deltaTime) {
 
 void PlayerScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
-void PlayerScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
+void PlayerScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+    switch (opponent->GetTag()) {
+    case ObjectTag::MONSTER:
+        GetOwner()->GetPhysics()->SolvePenetration(impulse, opponent);
+        break;
+
+    case ObjectTag::PLAYER:
+        GetOwner()->GetPhysics()->SolvePenetration(impulse, opponent);
+        break;
+
+    case ObjectTag::CORRUPTED_GEM:
+        GetOwner()->GetPhysics()->SolvePenetration(impulse, opponent);
+        break;
+
+    default:
+        break;
+    }
+}
 
 void PlayerScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
