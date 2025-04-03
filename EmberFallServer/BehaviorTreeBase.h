@@ -132,8 +132,15 @@ namespace BT {
 
     class BehaviorTree abstract {
     public:
-        virtual void Build(const std::shared_ptr<Script>& ownerScript) abstract;
+        BehaviorTree() = default;
+        virtual ~BehaviorTree() = default;
 
+    public:
+        virtual float CalculateDecideValue(const std::shared_ptr<Script>& ownerScript) const abstract;
+        virtual void Build(const std::shared_ptr<Script>& ownerScript) abstract;
+        virtual void DispatchGameEvent(GameEvent* event) abstract;
+
+        void Start();
         void Update(float deltaTime);
 
     protected:

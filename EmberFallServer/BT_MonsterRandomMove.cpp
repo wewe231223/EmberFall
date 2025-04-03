@@ -1,22 +1,19 @@
 #include "pch.h"
-#include "BehaviorTreeMonster.h"
+#include "BT_MonsterRandomMove.h"
 #include "MonsterScript.h"
 
-#include "BT_MonsterChase.h"
+float BT::BT_MonsterRandomMove::CalculateDecideValue(const std::shared_ptr<Script>& ownerScript) const {
+    return 0.3f;
+}
 
-void BT::BehaviorTreeMonster::Build(const std::shared_ptr<Script>& ownerScript) {
+void BT::BT_MonsterRandomMove::Build(const std::shared_ptr<Script>& ownerScript) {
     auto owner = std::static_pointer_cast<MonsterScript>(ownerScript);
-
-    BT_MonsterChase chase;
-    chase.Build(ownerScript);
 
     auto sequenceMoveRandomLoc = std::make_unique<SequenceNode>();
     sequenceMoveRandomLoc->AddChild<ActionNode>(std::bind_front(&MonsterScript::SetRandomTargetLocation, owner.get()));
     sequenceMoveRandomLoc->AddChild<ActionNode>(std::bind_front(&MonsterScript::MoveTo, owner.get()));
 
-    auto selectorNode = std::make_unique<SelectorNode>();
-    SetRoot(std::move(selectorNode));
-
-    SetOtherTree(chase);
-    SetChild(std::move(sequenceMoveRandomLoc));
+    SetRoot(std::move(sequenceMoveRandomLoc));
 }
+
+void BT::BT_MonsterRandomMove::DispatchGameEvent(GameEvent* event) { }

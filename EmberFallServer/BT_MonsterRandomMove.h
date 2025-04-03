@@ -1,12 +1,11 @@
 #pragma once
-
 #include "BehaviorTreeBase.h"
 
 namespace BT {
-    class BT_MonsterAttack : public BehaviorTree {
+    class BT_MonsterRandomMove : public BehaviorTree {
     public:
-        BT_MonsterAttack() = default;
-        virtual ~BT_MonsterAttack() = default;
+        BT_MonsterRandomMove() = default;
+        virtual ~BT_MonsterRandomMove() = default;
 
     public:
         virtual float CalculateDecideValue(const std::shared_ptr<Script>& ownerScript) const override;
@@ -14,3 +13,4 @@ namespace BT {
         virtual void DispatchGameEvent(GameEvent* event) override;
     };
 }
+

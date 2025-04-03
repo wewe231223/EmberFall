@@ -10,7 +10,9 @@ SequenceNode::SequenceNode() { }
 
 SequenceNode::~SequenceNode() { }
 
-void SequenceNode::Start() { }
+void SequenceNode::Start() { 
+    mCurrentNode = 0;
+}
 
 NodeStatus SequenceNode::Update(const float deltaTime) {
     if (mChildren.size() == mCurrentNode) {
@@ -43,7 +45,9 @@ SelectorNode::SelectorNode() { }
 
 SelectorNode::~SelectorNode() { }
 
-void SelectorNode::Start() { }
+void SelectorNode::Start() { 
+    mCurrentNode = 0;
+}
 
 NodeStatus SelectorNode::Update(const float deltaTime) {
     if (mChildren.size() == mCurrentNode) {
@@ -103,6 +107,14 @@ NodeStatus BT::ActionNode::Update(const float deltaTime) {
 void BT::ActionNode::DispatchGameEvent(GameEvent* event) { }
 // ActionNode end
 // ---------------------------------------------------
+
+void BT::BehaviorTree::DispatchGameEvent(GameEvent* event) {
+    mRoot->DispatchGameEvent(event);
+}
+
+void BT::BehaviorTree::Start() {
+    mRoot->Start();
+}
 
 void BT::BehaviorTree::Update(float deltaTime) {
     auto updateResult = mRoot->Update(deltaTime);

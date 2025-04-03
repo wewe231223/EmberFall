@@ -76,3 +76,6 @@ inline constexpr bool IsAnyOf = (std::is_same_v<T, Types> || ...);
 
 template <typename T, typename... Types>
 inline constexpr bool IsAllOf = (std::is_same_v<T, Types> and ...);
+
+template <typename Base, typename... Types>
+inline constexpr bool IsDerivedFrom = (std::derived_from<Types, Base> and ...);

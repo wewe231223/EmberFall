@@ -15,7 +15,7 @@
 
 
 #include "Script.h"
-#include "BehaviorTreeMonster.h"
+#include "BT_Monster.h"
 
 class MonsterScript : public Script {
 public:
@@ -37,12 +37,18 @@ public:
     virtual void DispatchGameEvent(struct GameEvent* event) override;
 
 public:
+    std::shared_ptr<GameObject> GetChaseTarget() const;
+    std::shared_ptr<GameObject>& GetChaseTarget();
+
     // 행동트리 관련 함수들 return NodeStatus
     BT::NodeStatus SetRandomTargetLocation(const float deltaTime);
     BT::NodeStatus MoveTo(const float deltaTime);
 
     BT::NodeStatus DetectPlayerInRange(const float deltaTime);
     BT::NodeStatus ChaseDetectedPlayer(const float deltaTime);
+
+    BT::NodeStatus CheckPlayerInAttackRange(const float deltaTime, const float attackRange);
+    BT::NodeStatus Attack(const float deltaTime);
 
 private:
     SimpleMath::Vector3 mMoveDir{ SimpleMath::Vector3::Zero };
@@ -52,5 +58,5 @@ private:
     std::shared_ptr<class GameObject> mChaseTarget{ nullptr };
     GameUnits::GameUnit<GameUnits::Meter> mPlayerDetectRange{ 10.0m };
 
-    BT::BehaviorTreeMonster mMonsterBT{ };
+    BT_Monster mMonsterBT{ };
 };

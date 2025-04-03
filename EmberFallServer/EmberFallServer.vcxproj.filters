@@ -31,9 +31,6 @@
     <Filter Include="BehaviorTree">
       <UniqueIdentifier>{95ed22be-e650-4d9c-81d8-f9f77195b696}</UniqueIdentifier>
     </Filter>
-    <Filter Include="BehaviorTree\TestMonster">
-      <UniqueIdentifier>{1b526a72-8971-4d1e-8236-7986ba6ffdd1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="PathFinding">
       <UniqueIdentifier>{d73b7875-f5ee-4c83-bf48-22772279a75c}</UniqueIdentifier>
     </Filter>
@@ -101,6 +98,9 @@
     <Filter Include="Animation">
       <UniqueIdentifier>{ca2a0725-a3e9-4bce-a7fc-4becb610673a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="BehaviorTree\BT_Monster">
+      <UniqueIdentifier>{1b526a72-8971-4d1e-8236-7986ba6ffdd1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -151,17 +151,11 @@
     <ClCompile Include="Collider.cpp">
       <Filter>Collision\Collider</Filter>
     </ClCompile>
-    <ClCompile Include="BehaviorTreeBase.cpp">
-      <Filter>BehaviorTree</Filter>
-    </ClCompile>
-    <ClCompile Include="BehaviorTreeMonster.cpp">
-      <Filter>BehaviorTree\TestMonster</Filter>
-    </ClCompile>
     <ClCompile Include="TerrainCollider.cpp">
       <Filter>Collision\Collider</Filter>
     </ClCompile>
     <ClCompile Include="BT_MonsterChase.cpp">
-      <Filter>BehaviorTree\TestMonster</Filter>
+      <Filter>BehaviorTree\BT_Monster</Filter>
     </ClCompile>
     <ClCompile Include="PathFinder.cpp">
       <Filter>PathFinding</Filter>
@@ -239,13 +233,25 @@
       <Filter>Animation</Filter>
     </ClCompile>
     <ClCompile Include="BT_MonsterAttack.cpp">
-      <Filter>BehaviorTree\TestMonster</Filter>
+      <Filter>BehaviorTree\BT_Monster</Filter>
     </ClCompile>
     <ClCompile Include="EventTrigger.cpp">
       <Filter>Script\Trigger</Filter>
     </ClCompile>
     <ClCompile Include="BossPlayerScript.cpp">
       <Filter>Script\User\Boss</Filter>
+    </ClCompile>
+    <ClCompile Include="BT_MonsterRandomMove.cpp">
+      <Filter>BehaviorTree\BT_Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="BehaviorTreeBase.cpp">
+      <Filter>BehaviorTree</Filter>
+    </ClCompile>
+    <ClCompile Include="BT_Monster.cpp">
+      <Filter>BehaviorTree\BT_Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="BT_Decider.cpp">
+      <Filter>BehaviorTree</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -291,9 +297,6 @@
     <ClInclude Include="BehaviorTreeBase.h">
       <Filter>BehaviorTree</Filter>
     </ClInclude>
-    <ClInclude Include="BehaviorTreeMonster.h">
-      <Filter>BehaviorTree\TestMonster</Filter>
-    </ClInclude>
     <ClInclude Include="ServerFrame.h">
       <Filter>Frame</Filter>
     </ClInclude>
@@ -301,7 +304,7 @@
       <Filter>Collision\Collider</Filter>
     </ClInclude>
     <ClInclude Include="BT_MonsterChase.h">
-      <Filter>BehaviorTree\TestMonster</Filter>
+      <Filter>BehaviorTree\BT_Monster</Filter>
     </ClInclude>
     <ClInclude Include="PathFinder.h">
       <Filter>PathFinding</Filter>
@@ -382,13 +385,22 @@
       <Filter>Animation</Filter>
     </ClInclude>
     <ClInclude Include="BT_MonsterAttack.h">
-      <Filter>BehaviorTree\TestMonster</Filter>
+      <Filter>BehaviorTree\BT_Monster</Filter>
     </ClInclude>
     <ClInclude Include="EventTrigger.h">
       <Filter>Script\Trigger</Filter>
     </ClInclude>
     <ClInclude Include="BossPlayerScript.h">
       <Filter>Script\User\Boss</Filter>
+    </ClInclude>
+    <ClInclude Include="BT_MonsterRandomMove.h">
+      <Filter>BehaviorTree\BT_Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="BT_Monster.h">
+      <Filter>BehaviorTree\BT_Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="BT_Decider.h">
+      <Filter>BehaviorTree</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

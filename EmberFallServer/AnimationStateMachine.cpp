@@ -6,6 +6,10 @@ AnimationStateMachine::AnimationStateMachine() { }
 
 AnimationStateMachine::~AnimationStateMachine() { }
 
+bool AnimationStateMachine::IsChangable() const {
+    return mAnimationChangable;
+}
+
 AnimationState AnimationStateMachine::GetCurrState() const {
     return mCurrState.state;
 }
@@ -23,8 +27,10 @@ void AnimationStateMachine::ChangeState(AnimationState nextState) {
         return;
     }
 
-    mAnimationCounter = 0.0f;
     mCurrState = mAnimationInfo[static_cast<size_t>(nextState)];
+
+    mAnimationChangable = mCurrState.loop;
+    mAnimationCounter = 0.0f;
 
     auto packet = GetPacket<PacketSC::PacketAnimationState>(
         INVALID_SESSION_ID,
@@ -43,5 +49,6 @@ void AnimationStateMachine::Update(const float deltaTime) {
     mAnimationCounter += deltaTime;
     if (mAnimationCounter > mCurrState.duration) {
         ChangeState(mDefaultState.state);
+        mAnimationChangable = true;
     }
 }

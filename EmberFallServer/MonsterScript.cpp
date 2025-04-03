@@ -71,6 +71,14 @@ void MonsterScript::DispatchGameEvent(GameEvent* event) {
     }
 }
 
+std::shared_ptr<GameObject> MonsterScript::GetChaseTarget() const {
+    return mChaseTarget;
+}
+
+std::shared_ptr<GameObject>& MonsterScript::GetChaseTarget() {
+    return mChaseTarget;
+}
+
 BT::NodeStatus MonsterScript::SetRandomTargetLocation(const float deltaTime) {
     GetOwner()->mAnimationStateMachine.ChangeState(AnimationState::IDLE);
     mTargetPos = Random::GetRandomVec3(SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f }, SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f });
@@ -100,7 +108,6 @@ BT::NodeStatus MonsterScript::MoveTo(const float deltaTime) {
 
 BT::NodeStatus MonsterScript::DetectPlayerInRange(const float deltaTime) {
     auto owner = GetOwner();
-    owner->mAnimationStateMachine.ChangeState(AnimationState::IDLE);
 
     auto gameWorld = owner->GetOwnGameScene();
     if (nullptr == gameWorld) {
@@ -135,11 +142,59 @@ BT::NodeStatus MonsterScript::ChaseDetectedPlayer(const float deltaTime) {
     if (SimpleMath::Vector3::DistanceSquared(targetPos, compareXZ) < 0.5f * 0.5f) {
         return BT::NodeStatus::SUCCESS;
     }
-    else if (SimpleMath::Vector3::DistanceSquared(targetPos, compareXZ) > mPlayerDetectRange.Count() * mPlayerDetectRange.Count()) {
+    
+    if (SimpleMath::Vector3::DistanceSquared(targetPos, compareXZ) > mPlayerDetectRange.Count() * mPlayerDetectRange.Count()) {
         return BT::NodeStatus::FAIL;
     }
 
     owner->GetTransform()->SetLook(moveDir);
     owner->GetPhysics()->Acceleration(moveDir, deltaTime);
+    return BT::NodeStatus::RUNNING;
+}
+
+BT::NodeStatus MonsterScript::CheckPlayerInAttackRange(const float deltaTime, const float attackRange) {
+    if (nullptr == mChaseTarget) {
+        return BT::NodeStatus::FAIL;
+    }
+
+    auto owner = GetOwner();
+
+    auto targetPos = mChaseTarget->GetPosition();
+    auto moveDir = targetPos - owner->GetPosition();
+    moveDir.y = 0.0f;
+    moveDir.Normalize();
+
+    targetPos.y = 0.0f;
+    auto compareXZ = owner->GetPosition();
+    compareXZ.y = 0.0f;
+    if (SimpleMath::Vector3::DistanceSquared(targetPos, compareXZ) < attackRange * attackRange) {
+        return BT::NodeStatus::SUCCESS;
+    }
+
+    return BT::NodeStatus::SUCCESS;
+}
+
+BT::NodeStatus MonsterScript::Attack(const float deltaTime) {
+    if (nullptr == mChaseTarget) {
+        return BT::NodeStatus::FAIL;
+    }
+
+    auto owner = GetOwner();
+
+    auto currState = owner->mAnimationStateMachine.GetCurrState();
+    if (AnimationState::IDLE != currState and not owner->mAnimationStateMachine.IsChangable()) {
+        return BT::NodeStatus::FAIL;
+    }
+
+    if (AnimationState::ATTACK == currState and owner->mAnimationStateMachine.IsChangable()) {
+        return BT::NodeStatus::SUCCESS;
+    }
+
+    if (owner->mAnimationStateMachine.IsChangable()) {
+        owner->mAnimationStateMachine.ChangeState(ATTACK);
+        owner->Attack();
+        return BT::NodeStatus::RUNNING;
+    }
+
     return BT::NodeStatus::RUNNING;
 }

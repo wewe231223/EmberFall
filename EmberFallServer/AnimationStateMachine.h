@@ -25,6 +25,7 @@ public:
     ~AnimationStateMachine();
 
 public:
+    bool IsChangable() const;
     AnimationState GetCurrState() const;
 
     void SetOwner(std::shared_ptr<class GameObject> owner);
@@ -34,6 +35,7 @@ public:
     void Update(const float deltaTime);
 
 private:
+    bool mAnimationChangable{ true };
     float mAnimationCounter{ };
     AnimationInfo mDefaultState{ AnimationState::IDLE };
     AnimationInfo mCurrState{ AnimationState::IDLE };
