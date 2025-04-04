@@ -253,6 +253,9 @@
     <ClCompile Include="BT_Decider.cpp">
       <Filter>BehaviorTree</Filter>
     </ClCompile>
+    <ClCompile Include="BT_MonsterAttacked.cpp">
+      <Filter>BehaviorTree\BT_Monster</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -401,6 +404,9 @@
     </ClInclude>
     <ClInclude Include="BT_Decider.h">
       <Filter>BehaviorTree</Filter>
+    </ClInclude>
+    <ClInclude Include="BT_MonsterAttacked.h">
+      <Filter>BehaviorTree\BT_Monster</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

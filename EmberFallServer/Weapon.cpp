@@ -31,7 +31,7 @@ void Fist::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, c
 
     auto attackPos = pos + SimpleMath::Vector3::Transform(SimpleMath::Vector3::Forward * mHitbox->GetForwardExtents(),
          SimpleMath::Quaternion::FromToRotation(SimpleMath::Vector3::Forward, dir));
-    gObjectSpawner->SpawnEventTrigger(event, 2.3f, 2.3f, 1, attackPos, dir, mHitbox);
+    gObjectSpawner->SpawnEventTrigger(event, 0.5f, 0.5f, 1, attackPos, dir, mHitbox);
 }
 
 Spear::Spear(const SimpleMath::Vector3& hitBoxSize)
@@ -48,7 +48,7 @@ void Spear::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
 
     auto attackPos = pos + SimpleMath::Vector3::Transform(SimpleMath::Vector3::Forward * mHitbox->GetForwardExtents(),
         SimpleMath::Quaternion::FromToRotation(SimpleMath::Vector3::Forward, dir));
-    gObjectSpawner->SpawnEventTrigger(event, 5.0f, 1.0f, 5, attackPos, dir, mHitbox);
+    gObjectSpawner->SpawnEventTrigger(event, 0.5f, 0.5f, 1, attackPos, dir, mHitbox);
 }
 
 Bow::Bow(const SimpleMath::Vector3& hitBoxSize)
@@ -77,7 +77,7 @@ void Sword::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
 
     auto attackPos = pos + SimpleMath::Vector3::Transform(SimpleMath::Vector3::Forward * mHitbox->GetForwardExtents(),
         SimpleMath::Quaternion::FromToRotation(SimpleMath::Vector3::Forward, dir));
-    gObjectSpawner->SpawnEventTrigger(event, 2.3f, 2.3f, 1, attackPos, dir, mHitbox);
+    gObjectSpawner->SpawnEventTrigger(event, 0.5f, 0.5f, 1, attackPos, dir, mHitbox);
 }
 
 Staff::Staff(const SimpleMath::Vector3& hitBoxSize)
@@ -94,5 +94,5 @@ void Staff::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
 
     auto attackPos = pos + SimpleMath::Vector3::Transform(SimpleMath::Vector3::Forward * mHitbox->GetForwardExtents(),
         SimpleMath::Quaternion::FromToRotation(SimpleMath::Vector3::Forward, dir));
-    gObjectSpawner->SpawnEventTrigger(event, 5.0f, 1.0f, 5, attackPos, dir, mHitbox);
+    gObjectSpawner->SpawnEventTrigger(event, 0.5f, 0.5f, 5, attackPos, dir, mHitbox);
 }

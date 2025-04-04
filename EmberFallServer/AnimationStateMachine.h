@@ -27,10 +27,12 @@ public:
 public:
     bool IsChangable() const;
     AnimationState GetCurrState() const;
+    float GetDuration(AnimationState state) const;
+    float GetRemainDuration() const;
 
     void SetOwner(std::shared_ptr<class GameObject> owner);
     void SetDefaultState(AnimationState state);
-    void ChangeState(AnimationState nextState);
+    void ChangeState(AnimationState nextState, bool force=false);
 
     void Update(const float deltaTime);
 

@@ -12,6 +12,7 @@
 PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input)
     : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ static_cast<SessionIdType>(owner->GetId()) } {
     owner->SetEntityType(EntityType::PLAYER);
+    owner->ChangeWeapon(Weapon::SWORD);
 }
 
 PlayerScript::~PlayerScript() { }
@@ -60,7 +61,7 @@ void PlayerScript::Update(const float deltaTime) {
 
     // Attack
     if (mInput->IsUp('P')) {
-        owner->mAnimationStateMachine.ChangeState(AnimationState::ATTACK);
+        //owner->mAnimationStateMachine.ChangeState(AnimationState::ATTACK);
         owner->Attack();
     }
 }
@@ -108,7 +109,7 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
         if (event->sender != event->receiver) {
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
             GetOwner()->ReduceHealth(attackEvent->damage);
-            GetOwner()->mAnimationStateMachine.ChangeState(AnimationState::ATTACKED);
+            GetOwner()->mAnimationStateMachine.ChangeState(AnimationState::ATTACKED, true);
             GetOwner()->GetPhysics()->AddForce(attackEvent->knockBackForce);
 
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!", GetOwner()->GetId());

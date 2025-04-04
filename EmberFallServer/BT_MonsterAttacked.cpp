@@ -1,0 +1,26 @@
+#include "pch.h"
+#include "BT_MonsterAttacked.h"
+
+float BT::BT_MonsterAttacked::CalculateDecideValue(const std::shared_ptr<Script>& ownerScript) const {
+    auto state = ownerScript->GetOwner()->mAnimationStateMachine.GetCurrState();
+    if (AnimationState::ATTACKED == state) {
+        return 1.5f;
+    }
+
+    return 0.0f;
+}
+
+void BT::BT_MonsterAttacked::Build(const std::shared_ptr<Script>& ownerScript) {
+    static auto waitingFn = [=](std::shared_ptr<Script>& owner, const float deltaTime) {
+        if (owner->GetOwner()->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Waiting Attacked Animation End");
+            return NodeStatus::SUCCESS;
+        }
+
+        return NodeStatus::RUNNING;
+    };
+
+    SetRoot(std::make_unique<ActionNode>(std::bind_front(waitingFn, ownerScript)));
+}
+
+void BT::BT_MonsterAttacked::DispatchGameEvent(GameEvent* event) { }

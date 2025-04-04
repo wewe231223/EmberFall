@@ -151,6 +151,7 @@
     <ClCompile Include="BT_Decider.cpp" />
     <ClCompile Include="BT_Monster.cpp" />
     <ClCompile Include="BT_MonsterAttack.cpp" />
+    <ClCompile Include="BT_MonsterAttacked.cpp" />
     <ClCompile Include="BT_MonsterChase.cpp" />
     <ClCompile Include="BT_MonsterRandomMove.cpp" />
     <ClCompile Include="Collider.cpp" />
@@ -205,6 +206,7 @@
     <ClInclude Include="BT_Decider.h" />
     <ClInclude Include="BT_Monster.h" />
     <ClInclude Include="BT_MonsterAttack.h" />
+    <ClInclude Include="BT_MonsterAttacked.h" />
     <ClInclude Include="BT_MonsterChase.h" />
     <ClInclude Include="BT_MonsterRandomMove.h" />
     <ClInclude Include="Collider.h" />

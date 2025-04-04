@@ -35,6 +35,8 @@ namespace BT {
 
     public:
         void Build(std::shared_ptr<Script> ownerScript) {
+            mRoots.reserve(sizeof...(Args));
+
             mOwner = ownerScript;
             (BuildTree<Args>(), ...);
 
@@ -70,17 +72,14 @@ namespace BT {
         }
 
         void DispatchGameEvent(GameEvent* event) {
-            if (GameEventType::ATTACK_EVENT == event->type) {
-
-            }
-
             (*mCurrNode)->DispatchGameEvent(event);
         }
 
-    private:
         void Interrupt() {
             Decide();
         }
+
+    public:
 
         void Start() {
             auto maxNode = std::ranges::max_element(mRoots, [this](const auto& node1, const auto& node2) {

@@ -14,6 +14,14 @@ AnimationState AnimationStateMachine::GetCurrState() const {
     return mCurrState.state;
 }
 
+float AnimationStateMachine::GetDuration(AnimationState state) const {
+    return mAnimationInfo[static_cast<size_t>(state)].duration;
+}
+
+float AnimationStateMachine::GetRemainDuration() const {
+    return mCurrState.duration - mAnimationCounter;
+}
+
 void AnimationStateMachine::SetOwner(std::shared_ptr<class GameObject> owner) {
     mOwner = owner;
 }
@@ -22,21 +30,26 @@ void AnimationStateMachine::SetDefaultState(AnimationState state) {
     mDefaultState = mAnimationInfo[static_cast<size_t>(state)];
 }
 
-void AnimationStateMachine::ChangeState(AnimationState nextState) {
-    if (mCurrState.state == nextState) {
+void AnimationStateMachine::ChangeState(AnimationState nextState, bool force) {
+    if (false == force and mCurrState.state == nextState) {
         return;
     }
-
-    mCurrState = mAnimationInfo[static_cast<size_t>(nextState)];
-
-    mAnimationChangable = mCurrState.loop;
-    mAnimationCounter = 0.0f;
 
     auto packet = GetPacket<PacketSC::PacketAnimationState>(
         INVALID_SESSION_ID,
         mOwner->GetId(),
         mCurrState.state
     );
+    if (force) {
+        packet.animState = AnimationState::IDLE;
+        gServerCore->SendAll(&packet);
+    }
+
+    mCurrState = mAnimationInfo[static_cast<size_t>(nextState)];
+
+    mAnimationChangable = mCurrState.loop;
+    mAnimationCounter = 0.0f;
+    packet.animState = mCurrState.state;
 
     gServerCore->SendAll(&packet);
 }

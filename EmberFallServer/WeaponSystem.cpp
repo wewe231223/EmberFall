@@ -30,8 +30,8 @@ void WeaponSystem::SetWeapon(Weapon weapon) {
         break;
 
     case Weapon::SWORD:
-        mWeapon = std::make_shared<Weapons::Sword>(BoundingBoxImporter::GetBoundingBox(EntryKeys::SWORD_BOUNDING_BOX).Extents);
-        //mWeapon = std::make_shared<Weapons::Sword>(SimpleMath::Vector3{ 0.5f });
+        //mWeapon = std::make_shared<Weapons::Sword>(BoundingBoxImporter::GetBoundingBox(EntryKeys::SWORD_BOUNDING_BOX).Extents);
+        mWeapon = std::make_shared<Weapons::Sword>(SimpleMath::Vector3{ 1.0f, 1.0f, 5.0f });
         break;
 
     case Weapon::SPEAR:

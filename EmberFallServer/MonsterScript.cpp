@@ -10,11 +10,15 @@
 MonsterScript::MonsterScript(std::shared_ptr<class GameObject> owner)
     : Script{ owner, ObjectTag::MONSTER } {
     owner->SetEntityType(EntityType::MONSTER1);
-    owner->RestoreHealth(10.0f);
+    owner->RestoreHealth(100.0f);
     owner->GetPhysics()->mFactor.maxMoveSpeed = 1.3mps;
 }
 
 MonsterScript::~MonsterScript() { }
+
+bool MonsterScript::IsDead() const {
+    return AnimationState::DEAD == GetOwner()->mAnimationStateMachine.GetCurrState();
+}
 
 void MonsterScript::Init() {
     mMonsterBT.Build(std::static_pointer_cast<MonsterScript>(shared_from_this()));
@@ -49,7 +53,7 @@ void MonsterScript::LateUpdate(const float deltaTime) {
 void MonsterScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
 void MonsterScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    if (AnimationState::DEAD == opponent->mAnimationStateMachine.GetCurrState() or AnimationState::DEAD == GetOwner()->mAnimationStateMachine.GetCurrState()) {
+    if (AnimationState::DEAD == opponent->mAnimationStateMachine.GetCurrState() or IsDead()) {
         return;
     }
 
@@ -76,11 +80,23 @@ void MonsterScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opp
 void MonsterScript::OnCollisionTerrain(const float height) { }
 
 void MonsterScript::DispatchGameEvent(GameEvent* event) { 
+    if (IsDead()) {
+        return;
+    }
+
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
         if (event->sender != event->receiver) {
+            if (GetOwner()->GetOwnGameScene()->GetObjectFromId(event->sender)->GetTag() == ObjectTag::MONSTER) {
+                return;
+            }
+
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
             GetOwner()->ReduceHealth(attackEvent->damage);
+            
+            GetOwner()->mAnimationStateMachine.ChangeState(AnimationState::ATTACKED);
+
+            mMonsterBT.Interrupt();
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster [{}] Attacked!!, HP: {}", GetOwner()->GetId(), GetOwner()->HP());
         }
         break;
@@ -88,6 +104,8 @@ void MonsterScript::DispatchGameEvent(GameEvent* event) {
     default:
         break;
     }
+
+    mMonsterBT.DispatchGameEvent(event);
 }
 
 std::shared_ptr<GameObject> MonsterScript::GetChaseTarget() const {
