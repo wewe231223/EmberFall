@@ -6,6 +6,7 @@
 
 CorruptedGemScript::CorruptedGemScript(std::shared_ptr<GameObject> owner) 
     : Script{ owner, ObjectTag::CORRUPTED_GEM } { 
+    owner->GetPhysics()->mFactor.mass = 10000.0f;
     owner->SetEntityType(EntityType::CORRUPTED_GEM);
     owner->SetInteractable(true);
 }

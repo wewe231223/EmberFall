@@ -13,7 +13,7 @@ inline static auto GRAVITY_ACCELERATION = 1.0G;
 inline static auto DEFAULT_ACCELERATION = 20.0mps2;
 inline static auto DEFAULT_MASS = 70.0kg;       // kg
 inline static auto DEFAULT_MAX_MOVE_SPEED = 5.0mps; // m/s
-inline static auto DEFAULT_JUMP_FORCE = 20000.0N; // N = F = Mess * accel = kg * m / s^2
+inline static auto DEFAULT_JUMP_FORCE = 10000.0N; // N = F = Mess * accel = kg * m / s^2
 inline static auto DEFAULT_JUMP_TIME = 0.2sec;
 
 struct PhysicsFactor {
@@ -49,10 +49,13 @@ public:
     void CheckAndJump(const float deltaTime);
 
     void ResizeVelocity(float speed);
-    void Acceleration(const SimpleMath::Vector3& dir, const float acceleration, const float deltaTime);
-    void Acceleration(const SimpleMath::Vector3& dir, const float deltaTime);
+
+    void Accelerate(const SimpleMath::Vector3& dir);
+    void Accelerate(const SimpleMath::Vector3& dir, const float acceleration);
+
     void AddVelocity(const SimpleMath::Vector3& velocity);
-    void AddForce(const SimpleMath::Vector3& force, const float deltaTime);
+    void AddForce(const SimpleMath::Vector3& force);
+    void AddForce(const SimpleMath::Vector3& dir, const float force);
     void Update(const float deltaTime);
     void LateUpdate(const float deltaTime);
 

@@ -135,7 +135,7 @@ void BossPlayerScript::CheckAndMove(const float deltaTime) {
 
     moveDir.Normalize();
     moveDir = SimpleMath::Vector3::Transform(moveDir, GetOwner()->GetTransform()->GetRotation());
-    physics->Acceleration(moveDir, deltaTime);
+    physics->Accelerate(moveDir);
 }
 
 void BossPlayerScript::CheckAndJump(const float deltaTime) {

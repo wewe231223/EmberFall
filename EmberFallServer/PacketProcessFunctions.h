@@ -38,12 +38,12 @@ inline void ProcessPacketAttack(PacketHeader* header, PlayerMap& players)
 
 inline void ProcessPacketSelectRoll(PacketHeader* header, PlayerMap& players)
 {
-    // Todo... ?
     auto selectRoll = reinterpret_cast<PacketCS::PacketSelectRole*>(header);
 }
 
 inline void ProcessPacketSelectWeapon(PacketHeader* header, PlayerMap& players)
 {
     auto selectWeapon = reinterpret_cast<PacketCS::PacketSelectWeapon*>(header);
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}]: Change Weapon", selectWeapon->id);
     players[selectWeapon->id]->ChangeWeapon(selectWeapon->weapon);
 }

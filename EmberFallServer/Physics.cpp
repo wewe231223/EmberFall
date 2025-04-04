@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Physics.h"
 #include "GameObject.h"
+#include "GameTimer.h"
 
 Physics::Physics() { }
 
@@ -61,8 +62,6 @@ void Physics::CheckAndJump(const float deltaTime) {
         return;
     }
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player Jump");
-    
     mOnGround = false;
     mOnOtherObject = false;
     
@@ -82,14 +81,14 @@ void Physics::ResizeVelocity(float speed) {
     mVelocity.z = velocityXZ.z;
 }
 
-void Physics::Acceleration(const SimpleMath::Vector3& dir, const float acceleration, const float deltaTime) {
-    mVelocity += dir * acceleration * deltaTime;
+void Physics::Accelerate(const SimpleMath::Vector3& dir, const float acceleration) {
+    mVelocity += dir * acceleration * StaticTimer::GetDeltaTime();
 
     ClampVelocity();
 }
 
-void Physics::Acceleration(const SimpleMath::Vector3& dir, const float deltaTime) {
-    auto speed = mFactor.acceleration * GameUnits::ToUnit<GameUnits::StandardTime>(deltaTime);
+void Physics::Accelerate(const SimpleMath::Vector3& dir) {
+    auto speed = mFactor.acceleration * GameUnits::ToUnit<GameUnits::StandardTime>(StaticTimer::GetDeltaTime());
     mVelocity += GameUnits::ToVelocity(dir, speed);
 
     ClampVelocity();
@@ -101,9 +100,15 @@ void Physics::AddVelocity(const SimpleMath::Vector3& speed) {
     ClampVelocity();
 }
 
-void Physics::AddForce(const SimpleMath::Vector3& force, const float deltaTime) {
-    mVelocity += (force / mFactor.mass.Count()) * deltaTime;
+void Physics::AddForce(const SimpleMath::Vector3& force) {
+    mVelocity += (force / mFactor.mass.Count()) * StaticTimer::GetDeltaTime();
     
+    ClampVelocity();
+}
+
+void Physics::AddForce(const SimpleMath::Vector3& dir, const float force) {
+    mVelocity += ((dir * force) / mFactor.mass.Count()) * StaticTimer::GetDeltaTime();
+
     ClampVelocity();
 }
 
@@ -165,8 +170,8 @@ void Physics::UpdateFriction(const float deltaTime, const SimpleMath::Vector3& m
 
     auto inverseDir = -moveDir;
     auto normalForce = mFactor.mass * GRAVITY_ACCELERATION;
-    //SimpleMath::Vector3 frictionForce = GameUnits::ToDirForce(inverseDir, (normalForce * mFactor.friction));
     SimpleMath::Vector3 frictionForce = inverseDir * normalForce.Count() * mFactor.friction;
+
     frictionForce.y = 0.0f; // Y축 계산 X
     SimpleMath::Vector3 frictionAcc = frictionForce / mFactor.mass.Count();
     SimpleMath::Vector3 resultVelocity = mVelocity + frictionAcc * deltaTime;
@@ -180,8 +185,8 @@ void Physics::UpdateGravity(const float deltaTime, const SimpleMath::Vector3& mo
         return;
     }
 
-    //SimpleMath::Vector3 dragForce = SimpleMath::Vector3::Up * mFactor.dragCoeffi * speed * speed;
-    //SimpleMath::Vector3 dragAcceleration = dragForce / mFactor.mass.Count();
+    SimpleMath::Vector3 dragForce = SimpleMath::Vector3::Up * mFactor.dragCoeffi * speed * speed;
+    SimpleMath::Vector3 dragAcceleration = dragForce / mFactor.mass.Count();
 
     // 최종 가속도 = 중력 + 공기 저항
     SimpleMath::Vector3 acceleration = SimpleMath::Vector3::Down * GRAVITY_ACCELERATION.Count()/* + dragAcceleration*/;

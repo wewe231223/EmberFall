@@ -209,7 +209,10 @@ void GameObject::ClearComponents() {
 }
 
 void GameObject::Attack() {
-    mWeaponSystem.Attack(mTransform->GetPosition(), mTransform->Forward());
+    auto changable = mAnimationStateMachine.IsChangable();
+    if (changable) {
+        mWeaponSystem.Attack(mTransform->GetPosition(), mTransform->Forward());
+    }
 }
 
 void GameObject::OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 

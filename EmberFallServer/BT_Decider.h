@@ -22,6 +22,11 @@ namespace BT {
     template <typename... Args> requires IsDerivedFrom<BehaviorTree, Args...>
     class BT_Decider {
     public:
+        using TreeNode = std::unique_ptr<BehaviorTree>;
+        using TreeList = std::vector<TreeNode>;
+        using TreeListIter = TreeList::iterator;
+
+    public:
         BT_Decider() {}
 
         ~BT_Decider() {
@@ -52,20 +57,27 @@ namespace BT {
         }
 
         void Update(const float deltaTime) {
-            static float tempCounter{ 0.0f };
-            tempCounter += deltaTime;
-            if (tempCounter > mDecideTimeInterval) {
+            mDecideTimeCounter += deltaTime;
+            if (mDecideTimeCounter > mDecideTimeInterval) {
                 Decide();
-                tempCounter = 0.0f;
+                mDecideTimeCounter = 0.0f;
             }
             (*mCurrNode)->Update(deltaTime);
         }
 
         void DispatchGameEvent(GameEvent* event) {
+            if (GameEventType::ATTACK_EVENT == event->type) {
+
+            }
+
             (*mCurrNode)->DispatchGameEvent(event);
         }
 
     private:
+        void Interrupt() {
+            Decide();
+        }
+
         void Start() {
             auto maxNode = std::ranges::max_element(mRoots, [this](const auto& node1, const auto& node2) {
                 float val1 = node1->CalculateDecideValue(mOwner);
@@ -80,20 +92,21 @@ namespace BT {
 
         template <typename T>
         void BuildTree() {
-            std::unique_ptr<T> tree = std::make_unique<T>();
+            TreeNode tree = std::make_unique<T>();
             tree->Build(mOwner);
             mRoots.emplace_back(std::move(tree));
         }
 
-        void ChangeTargetRoot(std::vector<std::unique_ptr<BehaviorTree>>::iterator node) {
+        void ChangeTargetRoot(TreeListIter node) {
             mCurrNode = node;
             (*mCurrNode)->Start();
         }
 
     private:
-        float mDecideTimeInterval{ 1.0f };
-        std::vector<std::unique_ptr<BehaviorTree>>::iterator mCurrNode{ };
-        std::vector<std::unique_ptr<BehaviorTree>> mRoots{ };
+        TreeList mRoots{ };
+        TreeListIter mCurrNode{ };
+        float mDecideTimeCounter{ 0.0f };
+        float mDecideTimeInterval{ 3.0f };
         std::shared_ptr<Script> mOwner{ nullptr };
     };
 }

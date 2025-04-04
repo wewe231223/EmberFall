@@ -58,23 +58,6 @@ void PlayerScript::Update(const float deltaTime) {
     CheckAndJump(deltaTime);
     CheckAndMove(deltaTime);
 
-    // Change Weapon
-    if (mInput->IsUp('1')) {
-        owner->ChangeWeapon(Weapon::NONE);
-    }
-
-    if (mInput->IsUp('2')) {
-        owner->ChangeWeapon(Weapon::SWORD);
-    }
-
-    if (mInput->IsUp('3')) {
-        owner->ChangeWeapon(Weapon::SPEAR);
-    }
-
-    if (mInput->IsUp('4')) {
-        owner->ChangeWeapon(Weapon::BOW);
-    }
-
     // Attack
     if (mInput->IsUp('P')) {
         owner->mAnimationStateMachine.ChangeState(AnimationState::ATTACK);
@@ -121,6 +104,9 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
         if (event->sender != event->receiver) {
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
             GetOwner()->ReduceHealth(attackEvent->damage);
+            GetOwner()->mAnimationStateMachine.ChangeState(AnimationState::ATTACKED);
+            GetOwner()->GetPhysics()->AddForce(attackEvent->knockBackForce);
+
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!", GetOwner()->GetId());
         }
         break;
@@ -233,7 +219,7 @@ void PlayerScript::CheckAndMove(const float deltaTime) {
 
     moveDir.Normalize();
     moveDir = SimpleMath::Vector3::Transform(moveDir, GetOwner()->GetTransform()->GetRotation());
-    physics->Acceleration(moveDir, deltaTime);
+    physics->Accelerate(moveDir);
 }
 
 void PlayerScript::CheckAndJump(const float deltaTime) {

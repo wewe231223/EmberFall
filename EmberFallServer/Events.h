@@ -50,10 +50,12 @@ struct GameEvent {
 
 struct AttackEvent : public GameEvent {
     float damage;
+    SimpleMath::Vector3 knockBackForce;
 
     AttackEvent() = default;
-    AttackEvent(GameEventType type, NetworkObjectIdType sender, NetworkObjectIdType receiver, float damage)
-        : GameEvent{ type, sender, receiver }, damage{ damage } { }
+    AttackEvent(GameEventType type, NetworkObjectIdType sender, NetworkObjectIdType receiver, 
+        float damage, SimpleMath::Vector3 knockBackForce=SimpleMath::Vector3::Zero)
+        : GameEvent{ type, sender, receiver }, damage{ damage }, knockBackForce{ knockBackForce } { }
 };
 
 struct GemDestroyStart : public GameEvent {

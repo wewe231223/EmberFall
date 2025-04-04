@@ -43,6 +43,10 @@ void MonsterScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opp
         GetOwner()->GetPhysics()->SolvePenetration(impulse, opponent);
         break;
 
+    case ObjectTag::CORRUPTED_GEM:
+        GetOwner()->GetPhysics()->SolvePenetration(impulse, opponent);
+        break;
+
     case ObjectTag::PLAYER:
         GetOwner()->GetPhysics()->SolvePenetration(impulse, opponent);
         break;
@@ -102,7 +106,7 @@ BT::NodeStatus MonsterScript::MoveTo(const float deltaTime) {
     }
 
     owner->GetTransform()->SetLook(moveDir);
-    owner->GetPhysics()->Acceleration(moveDir, deltaTime);
+    owner->GetPhysics()->Accelerate(moveDir);
     return BT::NodeStatus::RUNNING;
 }
 
@@ -148,7 +152,7 @@ BT::NodeStatus MonsterScript::ChaseDetectedPlayer(const float deltaTime) {
     }
 
     owner->GetTransform()->SetLook(moveDir);
-    owner->GetPhysics()->Acceleration(moveDir, deltaTime);
+    owner->GetPhysics()->Accelerate(moveDir);
     return BT::NodeStatus::RUNNING;
 }
 
