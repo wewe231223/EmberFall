@@ -834,32 +834,27 @@ void Scene::BuildMonsterType1AnimationController() {
 	AnimatorGraph::AnimationState Idle{}; 
 	Idle.clip = clips[4];
 	Idle.name = "Idle";
-	
-	{
-		AnimatorGraph::AnimationTransition toWalk{};
-		toWalk.targetStateIndex = 1;
-		toWalk.blendDuration = 0.09;
-		toWalk.parameterName = "Move";
-		toWalk.expectedValue = 1;
-		toWalk.triggerOnEnd = false;
-		Idle.transitions.emplace_back(toWalk);
-	};
 
 	AnimatorGraph::AnimationState Walk{};
 	Walk.clip = clips[9];
 	Walk.name = "Walk";
 
-	{
-		AnimatorGraph::AnimationTransition toIdle{};
-		toIdle.targetStateIndex = 0;
-		toIdle.blendDuration = 0.09;
-		toIdle.parameterName = "Move";
-		toIdle.expectedValue = 0;
-		toIdle.triggerOnEnd = false;
-		Walk.transitions.emplace_back(toIdle);
-	};
+	AnimatorGraph::AnimationState Jump{}; 
+	Jump.clip = clips[5];
 
-	mMonsterType1AnimationController = AnimatorGraph::AnimationGraphController({ Idle, Walk });
+	AnimatorGraph::AnimationState Attacked{};
+	Attacked.clip = clips[6];
+
+	AnimatorGraph::AnimationState Attack{};
+	Attack.clip = clips[0];
+
+	AnimatorGraph::AnimationState Interaction{};
+	Interaction.clip = clips[7];
+
+	AnimatorGraph::AnimationState Death{};
+	Death.clip = clips[2];
+
+	mMonsterType1AnimationController = AnimatorGraph::AnimationGraphController({ Idle, Walk, Walk, Walk, Walk,Walk, Attacked, Attack,Interaction, Death });
 
 }
 
