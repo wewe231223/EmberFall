@@ -36,8 +36,8 @@ void GridWorld::Update(const std::shared_ptr<class IServerGameScene>& gameScene)
             }
 
             decltype(auto) obb = std::static_pointer_cast<OrientedBoxCollider>(object->GetCollider())->GetBoundingBox();
-            auto aabbMin = obb.Center - (SimpleMath::Vector3{ obb.Extents } *1.415f); // root 2 (OBB를 감싸는 최소한의 AABB)
-            auto aabbMax = obb.Center + (SimpleMath::Vector3{ obb.Extents } *1.415f);
+            auto aabbMin = obb.Center - (SimpleMath::Vector3{ obb.Extents } * 1.415f); // root 2 (OBB를 감싸는 최소한의 AABB 2D 기준)
+            auto aabbMax = obb.Center + (SimpleMath::Vector3{ obb.Extents } * 1.415f);
 
             INT32 minX = std::max(static_cast<INT32>(aabbMin.x / mGridWidth), 0);
             INT32 maxX = std::min(static_cast<INT32>(aabbMax.x / mGridWidth), mWidth);

@@ -30,6 +30,7 @@ bool BoundingBoxImporter::LoadFromFile(const std::filesystem::path& filePath) {
 
 DirectX::BoundingBox BoundingBoxImporter::GetBoundingBox(const std::string& key) {
     if (not mBoundingBoxes.contains(key)) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GetBoundingBox Failed");
         return DirectX::BoundingBox{ };
     }
 

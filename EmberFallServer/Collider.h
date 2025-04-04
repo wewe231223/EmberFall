@@ -48,6 +48,7 @@ public:
     void SetTransform(const std::shared_ptr<Transform>& transform);
     CollisionState GetState(NetworkObjectIdType id) const;
 
+    virtual float GetForwardExtents() abstract;
     virtual void Update() abstract;
     virtual void LateUpdate() abstract;
     virtual bool CheckCollision(const std::shared_ptr<Collider>& other) abstract;
@@ -72,6 +73,7 @@ public:
 
 public:
     DirectX::BoundingBox& GetBoundingBox();
+    virtual float GetForwardExtents() override;
 
     virtual void Update() override;
     virtual void LateUpdate() override;
@@ -90,6 +92,7 @@ public:
 
 public:
     DirectX::BoundingSphere& GetBoundingSphere();
+    virtual float GetForwardExtents() override;
 
     virtual void Update() override;
     virtual void LateUpdate() override;
@@ -110,6 +113,7 @@ public:
 
 public:
     DirectX::BoundingOrientedBox& GetBoundingBox();
+    virtual float GetForwardExtents() override;
 
     virtual void Update() override;
     virtual void LateUpdate() override;

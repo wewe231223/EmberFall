@@ -21,13 +21,18 @@ NodeStatus SequenceNode::Update(const float deltaTime) {
     }
 
     NodeStatus updateResult = mChildren[mCurrentNode]->Update(deltaTime);
-    if (NodeStatus::SUCCESS == updateResult) {
+
+    switch (updateResult) {
+    case NodeStatus::SUCCESS:
         ++mCurrentNode;
-        return NodeStatus::RUNNING;
-    }
-    else if (NodeStatus::FAIL == updateResult) {
+        break;
+
+    case NodeStatus::FAIL:
         mCurrentNode = 0;
-        return NodeStatus::FAIL;
+        break;
+
+    default:
+        break;
     }
 
     return updateResult;
@@ -56,13 +61,18 @@ NodeStatus SelectorNode::Update(const float deltaTime) {
     }
 
     NodeStatus updateResult = mChildren[mCurrentNode]->Update(deltaTime);
-    if (NodeStatus::FAIL == updateResult) {
+
+    switch (updateResult) {
+    case NodeStatus::FAIL:
         ++mCurrentNode;
-        return NodeStatus::RUNNING;
-    }
-    else if (NodeStatus::SUCCESS == updateResult) {
+        break;
+
+    case NodeStatus::SUCCESS:
         mCurrentNode = 0;
-        return NodeStatus::SUCCESS;
+        break;
+
+    default:
+        break;
     }
 
     return updateResult;

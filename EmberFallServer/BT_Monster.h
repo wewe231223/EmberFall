@@ -5,4 +5,4 @@
 #include "BT_MonsterChase.h"
 #include "BT_MonsterRandomMove.h"
 
-using BT_Monster = BT::BT_Decider<BT::BT_MonsterRandomMove, BT::BT_MonsterChase>;
+using BT_Monster = BT::BT_Decider<BT::BT_MonsterRandomMove, BT::BT_MonsterChase, BT::BT_MonsterAttack>;

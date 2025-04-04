@@ -9,6 +9,7 @@ EventTrigger::EventTrigger(std::shared_ptr<GameObject> owner, std::shared_ptr<Ga
     if (0 == mProduceEventCount) {
         mProduceEventCount = static_cast<int32_t>(mLifeTime / mProduceEventDelay);
     }
+    auto pos = GetOwner()->GetPosition();
 }
 
 EventTrigger::~EventTrigger() { }
@@ -17,21 +18,25 @@ void EventTrigger::Init() {
     Trigger::Init();
 }
 
-void EventTrigger::Update(const float deltaTime) { }
+void EventTrigger::Update(const float deltaTime) { 
+    auto col = std::static_pointer_cast<OrientedBoxCollider>(GetOwner()->GetCollider());
+    auto colpos = col->GetBoundingBox().Center;
+    auto colex = col->GetBoundingBox().Extents;
+}
 
 void EventTrigger::LateUpdate(const float deltaTime) { }
 
 void EventTrigger::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
     auto opponentId = opponent->GetId();
-    if (mProducedEventCounter.contains(opponentId)) {
+    if (mProducedEventCounter.contains(opponentId) or ObjectTag::TRIGGER == opponent->GetTag()) {
         return;
     }
 
-    mProducedEventCounter[opponentId] = std::make_pair(0.0f, 0);
+    mProducedEventCounter[opponentId] = std::make_pair(mProduceEventDelay, 0);
 }
 
 void EventTrigger::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    if (not GetOwner()->IsActive()) {
+    if (not GetOwner()->IsActive() or ObjectTag::TRIGGER == opponent->GetTag()) {
         return;
     }
 
@@ -44,6 +49,7 @@ void EventTrigger::OnHandleCollisionStay(const std::shared_ptr<GameObject>& oppo
     delayCounter += StaticTimer::GetDeltaTime();
     if (mProduceEventDelay < delayCounter) {
         auto cloneEvent = GameEventFactory::CloneEvent(mEvent);
+
         cloneEvent->receiver = opponentId;
         gEventManager->PushEvent(cloneEvent);
 

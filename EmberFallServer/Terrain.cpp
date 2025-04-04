@@ -56,29 +56,36 @@ bool Terrain::Contains(const SimpleMath::Vector3& position) {
 }
 
 bool Terrain::Contains(const std::shared_ptr<Collider>& collider, float& height) {
+    if (nullptr == collider) {
+        return 0.0f;
+    }
+
     switch (collider->GetType()) {
     case ColliderType::BOX:
         {
             auto boxCollider = std::static_pointer_cast<BoxCollider>(collider);
             auto center = boxCollider->GetBoundingBox().Center;
-            height = GetHeight(center, boxCollider->GetBoundingBox().Extents.y);
-            return center.y < height;
+            auto extents = boxCollider->GetBoundingBox().Extents;
+            height = GetHeight(center);
+            return center.y < height + MathUtil::EPSILON;
         }
 
     case ColliderType::SPHERE:
         {
             auto sphereCollider = std::static_pointer_cast<SphereCollider>(collider);
             auto center = sphereCollider->GetBoundingSphere().Center;
-            height = GetHeight(center, sphereCollider->GetBoundingSphere().Radius);
-            return center.y < height;
+            auto radius = sphereCollider->GetBoundingSphere().Radius;
+            height = GetHeight(center);
+            return center.y < height + MathUtil::EPSILON;
         }
 
     case ColliderType::ORIENTED_BOX:
         {
             auto orientedBoxCollider = std::static_pointer_cast<OrientedBoxCollider>(collider);
             auto center = orientedBoxCollider->GetBoundingBox().Center;
-            height = GetHeight(center, orientedBoxCollider->GetBoundingBox().Extents.y);
-            return center.y < height;
+            auto extents = orientedBoxCollider->GetBoundingBox().Extents;
+            height = GetHeight(center);
+            return center.y < height + MathUtil::EPSILON;
         }
 
     default:

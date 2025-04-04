@@ -36,5 +36,7 @@ public:
 
 private:
     SessionIdType mOwnerId{ };
+    float mSendTimeCounter{ };
+    float mSendTimeInterval{ 0.0f };
     std::set<std::shared_ptr<class GameObject>> mObjectInRange{ };
 };

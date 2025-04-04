@@ -47,7 +47,7 @@ public:
     BT::NodeStatus DetectPlayerInRange(const float deltaTime);
     BT::NodeStatus ChaseDetectedPlayer(const float deltaTime);
 
-    BT::NodeStatus CheckPlayerInAttackRange(const float deltaTime, const float attackRange);
+    BT::NodeStatus CheckPlayerInAttackRange(const float deltaTime);
     BT::NodeStatus Attack(const float deltaTime);
 
 private:
@@ -56,6 +56,7 @@ private:
 
     // range to detecting player 
     std::shared_ptr<class GameObject> mChaseTarget{ nullptr };
+    GameUnits::GameUnit<GameUnits::Meter> mAttackRange{ 3.0m };
     GameUnits::GameUnit<GameUnits::Meter> mPlayerDetectRange{ 10.0m };
 
     BT_Monster mMonsterBT{ };

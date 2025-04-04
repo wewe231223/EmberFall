@@ -68,6 +68,8 @@ void Physics::CheckAndJump(const float deltaTime) {
     // v = F / mess * time (m/s)
     auto accel = mFactor.jumpForce / mFactor.mass;
     mVelocity.y = (accel * GameUnits::ToUnit<GameUnits::StandardTime>(deltaTime)).Count(); 
+    
+    mTransform.lock()->Translate(SimpleMath::Vector3{ 0.0f, 1.0f, 0.0f });
 }
 
 void Physics::ResizeVelocity(float speed) {
@@ -189,6 +191,6 @@ void Physics::UpdateGravity(const float deltaTime, const SimpleMath::Vector3& mo
     SimpleMath::Vector3 dragAcceleration = dragForce / mFactor.mass.Count();
 
     // 최종 가속도 = 중력 + 공기 저항
-    SimpleMath::Vector3 acceleration = SimpleMath::Vector3::Down * GRAVITY_ACCELERATION.Count()/* + dragAcceleration*/;
+    SimpleMath::Vector3 acceleration = SimpleMath::Vector3::Down * GRAVITY_ACCELERATION.Count() + dragAcceleration;
     mVelocity += acceleration * deltaTime;
 }

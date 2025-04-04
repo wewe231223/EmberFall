@@ -132,14 +132,14 @@ private:
 
     float mHP{ };
 
-    NetworkObjectIdType mId{ INVALID_SESSION_ID };                      // network id
+    NetworkObjectIdType mId{ INVALID_OBJ_ID };                      // network id
 
     std::shared_ptr<Transform> mTransform{ };                           // Transform
     std::shared_ptr<class Physics> mPhysics{ };                         // Physics
     std::shared_ptr<Collider> mCollider{ nullptr };                     // 
     std::vector<std::shared_ptr<GameObjectComponent>> mComponents{ };   // Components
 
-    WeaponSystem mWeaponSystem{ };
+    WeaponSystem mWeaponSystem{ INVALID_OBJ_ID };
 
     std::shared_ptr<IServerGameScene> mGameScene{ };
 };

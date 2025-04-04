@@ -13,7 +13,7 @@ inline std::array<AnimationInfo, AnimationState::DEAD + 1> DEFAULT_ANIM_INFO{
     AnimationInfo{ 3.0f, true, AnimationState::MOVE_LEFT },
     AnimationInfo{ 3.0f, true, AnimationState::MOVE_RIGHT },
     AnimationInfo{ 3.0f, false, AnimationState::JUMP },
-    AnimationInfo{ 3.0f, false, AnimationState::ATTACKED },
+    AnimationInfo{ 2.3f, false, AnimationState::ATTACKED },
     AnimationInfo{ 2.3f, false, AnimationState::ATTACK },
     AnimationInfo{ 3.0f, true, AnimationState::INTERACTION },
     AnimationInfo{ 3.0f, false, AnimationState::DEAD }

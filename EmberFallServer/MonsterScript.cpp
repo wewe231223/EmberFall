@@ -25,19 +25,34 @@ void MonsterScript::Update(const float deltaTime) {
 }
 
 void MonsterScript::LateUpdate(const float deltaTime) { 
-    if (GetOwner()->HP() <= MathUtil::EPSILON) {
+    if (GetOwner()->HP() > MathUtil::EPSILON) {
+        return;
+    }
+
+    auto currState = GetOwner()->mAnimationStateMachine.GetCurrState();
+    if (AnimationState::DEAD == currState and GetOwner()->mAnimationStateMachine.IsChangable()) {
+
         PacketSC::PacketObjectDead packet{ sizeof(PacketSC::PacketObjectDead), PacketType::PACKET_OBJECT_DEAD };
         packet.objId = GetOwner()->GetId();
 
         gServerCore->SendAll(&packet);
 
         GetOwner()->SetActive(false);
+        return;
+    }
+
+    if (AnimationState::DEAD != currState) {
+        GetOwner()->mAnimationStateMachine.ChangeState(AnimationState::DEAD);
     }
 }
 
 void MonsterScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
 void MonsterScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+    if (AnimationState::DEAD == opponent->mAnimationStateMachine.GetCurrState() or AnimationState::DEAD == GetOwner()->mAnimationStateMachine.GetCurrState()) {
+        return;
+    }
+
     switch (opponent->GetTag()) {
     case ObjectTag::MONSTER:
         GetOwner()->GetPhysics()->SolvePenetration(impulse, opponent);
@@ -85,7 +100,7 @@ std::shared_ptr<GameObject>& MonsterScript::GetChaseTarget() {
 
 BT::NodeStatus MonsterScript::SetRandomTargetLocation(const float deltaTime) {
     GetOwner()->mAnimationStateMachine.ChangeState(AnimationState::IDLE);
-    mTargetPos = Random::GetRandomVec3(SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f }, SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f });
+    mTargetPos = Random::GetRandomVec3(SimpleMath::Vector3{ -100.0f, 0.0f, -100.0f }, SimpleMath::Vector3{ 100.0f, 0.0f, 100.0f });
     return BT::NodeStatus::SUCCESS;
 }
 
@@ -143,7 +158,7 @@ BT::NodeStatus MonsterScript::ChaseDetectedPlayer(const float deltaTime) {
     targetPos.y = 0.0f;
     auto compareXZ = owner->GetPosition();
     compareXZ.y = 0.0f;
-    if (SimpleMath::Vector3::DistanceSquared(targetPos, compareXZ) < 0.5f * 0.5f) {
+    if (SimpleMath::Vector3::DistanceSquared(targetPos, compareXZ) < mAttackRange.Count() * mAttackRange.Count()) {
         return BT::NodeStatus::SUCCESS;
     }
     
@@ -156,7 +171,7 @@ BT::NodeStatus MonsterScript::ChaseDetectedPlayer(const float deltaTime) {
     return BT::NodeStatus::RUNNING;
 }
 
-BT::NodeStatus MonsterScript::CheckPlayerInAttackRange(const float deltaTime, const float attackRange) {
+BT::NodeStatus MonsterScript::CheckPlayerInAttackRange(const float deltaTime) {
     if (nullptr == mChaseTarget) {
         return BT::NodeStatus::FAIL;
     }
@@ -171,10 +186,13 @@ BT::NodeStatus MonsterScript::CheckPlayerInAttackRange(const float deltaTime, co
     targetPos.y = 0.0f;
     auto compareXZ = owner->GetPosition();
     compareXZ.y = 0.0f;
-    if (SimpleMath::Vector3::DistanceSquared(targetPos, compareXZ) < attackRange * attackRange) {
-        return BT::NodeStatus::SUCCESS;
+
+    float attackRange = mAttackRange.Count();
+    if (SimpleMath::Vector3::DistanceSquared(targetPos, compareXZ) > attackRange * attackRange) {
+        return BT::NodeStatus::FAIL;
     }
 
+    owner->mAnimationStateMachine.ChangeState(AnimationState::IDLE);
     return BT::NodeStatus::SUCCESS;
 }
 
@@ -186,7 +204,8 @@ BT::NodeStatus MonsterScript::Attack(const float deltaTime) {
     auto owner = GetOwner();
 
     auto currState = owner->mAnimationStateMachine.GetCurrState();
-    if (AnimationState::IDLE != currState and not owner->mAnimationStateMachine.IsChangable()) {
+    if ((AnimationState::IDLE != currState and AnimationState::ATTACK != currState) 
+        and not owner->mAnimationStateMachine.IsChangable()) {
         return BT::NodeStatus::FAIL;
     }
 
@@ -195,7 +214,8 @@ BT::NodeStatus MonsterScript::Attack(const float deltaTime) {
     }
 
     if (owner->mAnimationStateMachine.IsChangable()) {
-        owner->mAnimationStateMachine.ChangeState(ATTACK);
+        auto toTargetLook = MathUtil::Normalize(mChaseTarget->GetPosition() - owner->GetPosition());
+        owner->GetTransform()->SetLook(toTargetLook);
         owner->Attack();
         return BT::NodeStatus::RUNNING;
     }

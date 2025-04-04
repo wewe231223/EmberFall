@@ -57,6 +57,10 @@ namespace BT {
         }
 
         void Update(const float deltaTime) {
+            if (AnimationState::DEAD == mOwner->GetOwner()->mAnimationStateMachine.GetCurrState()) {
+                return;
+            }
+
             mDecideTimeCounter += deltaTime;
             if (mDecideTimeCounter > mDecideTimeInterval) {
                 Decide();
@@ -106,7 +110,7 @@ namespace BT {
         TreeList mRoots{ };
         TreeListIter mCurrNode{ };
         float mDecideTimeCounter{ 0.0f };
-        float mDecideTimeInterval{ 3.0f };
+        float mDecideTimeInterval{ 2.0f };
         std::shared_ptr<Script> mOwner{ nullptr };
     };
 }

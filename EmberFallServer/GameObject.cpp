@@ -79,6 +79,7 @@ bool GameObject::IsCollidingObject() const {
 
 void GameObject::InitId(NetworkObjectIdType id) {
     mId = id;
+    mWeaponSystem.SetOwnerId(mId);
 }
 
 void GameObject::SetActive(bool active) {
@@ -103,7 +104,6 @@ void GameObject::SetCollider(std::shared_ptr<Collider> collider) {
 
 void GameObject::ChangeWeapon(Weapon weapon) {
     mWeaponSystem.SetWeapon(weapon);
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player Change Weapon : {}", static_cast<int>(weapon));
 }
 
 void GameObject::DisablePhysics() {
@@ -112,6 +112,8 @@ void GameObject::DisablePhysics() {
 
 void GameObject::Reset() {
     ClearComponents();
+    SetTag(ObjectTag::NONE);
+    SetEntityType(EntityType::ENV);
     mInteractable = false;
     mHP = 0.0f;
     mCollider.reset();
@@ -211,7 +213,9 @@ void GameObject::ClearComponents() {
 void GameObject::Attack() {
     auto changable = mAnimationStateMachine.IsChangable();
     if (changable) {
-        mWeaponSystem.Attack(mTransform->GetPosition(), mTransform->Forward());
+        mAnimationStateMachine.ChangeState(AnimationState::ATTACK);
+        auto extentsZ = SimpleMath::Vector3::Forward * mCollider->GetForwardExtents();
+        mWeaponSystem.Attack(mTransform->GetPosition() + extentsZ, mTransform->Forward());
     }
 }
 

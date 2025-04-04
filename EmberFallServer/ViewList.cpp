@@ -2,6 +2,7 @@
 #include "ViewList.h"
 #include "ServerGameScene.h"
 #include "GameObject.h"
+#include "GameTimer.h"
 
 ViewList::ViewList(SessionIdType ownerId) 
     : mOwnerId{ ownerId } { }
@@ -35,7 +36,8 @@ void ViewList::Update() {
 
     auto& objectList = mCurrentScene->GetObjects();
     for (const auto& object : objectList) {
-        if (ObjectTag::TRIGGER == object->GetTag()) {
+        auto tag = object->GetTag();
+        if (ObjectTag::NONE == tag or ObjectTag::TRIGGER == tag or ObjectTag::ENV == tag) {
             return;
         }
 
@@ -51,6 +53,11 @@ void ViewList::Update() {
 }
 
 void ViewList::Send() {
+    mSendTimeCounter += StaticTimer::GetDeltaTime();
+    if (mSendTimeCounter < mSendTimeInterval) {
+        return;
+    }
+
     auto packet = GetPacket<PacketSC::PacketObject>(mOwnerId);
 
     for (const auto& object : mObjectInRange) {
@@ -59,6 +66,8 @@ void ViewList::Send() {
         packet.rotationYaw = object->GetEulerRotation().y;
         gServerCore->Send(mOwnerId, &packet);
     }
+
+    mSendTimeCounter = 0.0f;
 }
 
 void ViewList::AddInRange(std::shared_ptr<GameObject> obj) {
