@@ -1,17 +1,76 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="소스 파일">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="헤더 파일">
+    <Filter Include="Protocol">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="리소스 파일">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Fbs">
+      <UniqueIdentifier>{86bc38f0-c996-4259-9aab-35dbf6aa0d74}</UniqueIdentifier>
     </Filter>
+    <Filter Include="FlatBuffers">
+      <UniqueIdentifier>{1158e9eb-b811-4a10-a37f-6bd26b9a3273}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AttackSystem.fbs">
+      <Filter>Fbs</Filter>
+    </None>
+    <None Include="BaseStructures.fbs">
+      <Filter>Fbs</Filter>
+    </None>
+    <None Include="CorruptedGem.fbs">
+      <Filter>Fbs</Filter>
+    </None>
+    <None Include="Enums.fbs">
+      <Filter>Fbs</Filter>
+    </None>
+    <None Include="Items.fbs">
+      <Filter>Fbs</Filter>
+    </None>
+    <None Include="Monsters.fbs">
+      <Filter>Fbs</Filter>
+    </None>
+    <None Include="Networks.fbs">
+      <Filter>Fbs</Filter>
+    </None>
+    <None Include="PacketHeader.fbs">
+      <Filter>Fbs</Filter>
+    </None>
+    <None Include="PacketProtocol.fbs">
+      <Filter>Fbs</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AttackSystem_generated.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseStructures_generated.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="CorruptedGem_generated.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="Enums_generated.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="Items_generated.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="Monsters_generated.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="Networks_generated.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketHeader_generated.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketProtocol_generated.h">
+      <Filter>Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\flexbuffers.h">
+      <Filter>FlatBuffers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
