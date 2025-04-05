@@ -96,7 +96,7 @@ Deffered_POUT Standard_PS(Standard_VOUT input) {
     float4 color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(anisotropicWrapSampler, input.texcoord);
     // color += materialConstants[input.material].diffuse;
     
-    clip(color.a - 0.1f);
+    clip(color.a - 0.2f);
 
     output.diffuse = Fog(color, input.vPosition.z, 50.f, 100.f);
     output.position = float4(input.wPosition, 1.0f);

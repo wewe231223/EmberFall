@@ -132,6 +132,7 @@ protected:
 };
 
 
+
 class TerrainShader : public GraphicsShaderBase {
 public:
 	TerrainShader();
@@ -299,4 +300,24 @@ protected:
 
 	virtual UINT CreateNumOfRenderTarget() override;
 	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&) override;
+};
+
+
+class TreeShader : public GraphicsShaderBase {
+public:
+	TreeShader();
+	virtual ~TreeShader() = default;
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+protected:
+	virtual InputLayout CreateInputLayout() override;
+	virtual RootParameters CreateRootParameters() override;
+
+	virtual D3D12_RASTERIZER_DESC CreateRasterizerState() override;
+
+	virtual UINT CreateNumOfRenderTarget() override;
+	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&) override;
+
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
 };

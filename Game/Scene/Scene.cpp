@@ -110,8 +110,8 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
 				mMyPlayer->SetMyPlayer();
 			
-				// mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
-				 mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
+				 // mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
 				mCameraMode->Enter();
 
 				Scene::SetInputBaseAnimMode();
@@ -299,9 +299,9 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mSkyBox.mMaterial = mMaterialManager->GetMaterial("SkyBoxMaterial");
 
 
-	 Scene::BuildEnvironment("Resources/Binarys/Terrain/Environment.bin");
-	// std::thread bakeThread{ [this]() {BakeEnvironment("Resources/Binarys/Terrain/Environment.bin");  } };
-	// bakeThread.detach(); 
+	  Scene::BuildEnvironment("Resources/Binarys/Terrain/Environment.bin");
+	 //std::thread bakeThread{ [this]() {BakeEnvironment("Resources/Binarys/Terrain/Environment.bin");  } };
+	 //bakeThread.detach(); 
 
 
 
@@ -598,6 +598,18 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mMeshMap["Pine2"] = std::make_unique<Mesh>(device, commandList, data); 
 	mColliderMap["Pine2"] = Collider{ data.position };
 
+	data = Loader.Load("Resources/Assets/Tree/pine2/pine3.glb", 0);
+	mMeshMap["Pine3_Stem"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Pine3_Stem"] = Collider{ data.position };
+
+	data = Loader.Load("Resources/Assets/Tree/pine2/pine3.glb", 1);
+	mMeshMap["Pine3_Leaves"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Tree/pine2/pine4.glb");
+	mMeshMap["Pine4"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Pine4"] = Collider{ data.position };
+
+
 	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, data);
 	mMeshMap["SkyBox"] = std::make_unique<Mesh>(device, commandList, 100.f);
@@ -661,6 +673,12 @@ void Scene::BuildMaterial() {
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("pinetree-albedo");
 	mMaterialManager->CreateMaterial("Pine2Material", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("bark01");
+	mMaterialManager->CreateMaterial("Pine3StemMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("pinebranch");
+	mMaterialManager->CreateMaterial("Pine3LeavesMaterial", mat);
 }
 
 void Scene::BuildShader(ComPtr<ID3D12Device> device) {
@@ -679,6 +697,10 @@ void Scene::BuildShader(ComPtr<ID3D12Device> device) {
 	shader = std::make_unique<SkinnedShader>();
 	shader->CreateShader(device);
 	mShaderMap["SkinnedShader"] = std::move(shader);
+
+	shader = std::make_unique<TreeShader>();
+	shader->CreateShader(device);
+	mShaderMap["TreeShader"] = std::move(shader);
 }
 
 
@@ -705,93 +727,89 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 	GameObject stem{};
 	GameObject leaves{};
 
-	stem.mShader = mShaderMap["StandardShader"].get();
-	stem.mMesh = mMeshMap["PineTree_Stem"].get();
-	stem.mMaterial = mMaterialManager->GetMaterial("PineTreeStemMaterial");
+	stem.mShader = mShaderMap["TreeShader"].get();
+	stem.mMesh = mMeshMap["Pine3_Stem"].get();
+	stem.mMaterial = mMaterialManager->GetMaterial("Pine3StemMaterial");
 	stem.SetActiveState(true);
 	stem.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
-	stem.mCollider = mColliderMap["PineTree_Stem"];
+	stem.mCollider = mColliderMap["Pine3_Stem"];
 
-
-	leaves.mShader = mShaderMap["StandardShader"].get();
-	leaves.mMesh = mMeshMap["PineTree_Leaves"].get();
-	leaves.mMaterial = mMaterialManager->GetMaterial("PineTreeLeavesMaterial");
+	leaves.mShader = mShaderMap["TreeShader"].get();
+	leaves.mMesh = mMeshMap["Pine3_Leaves"].get();
+	leaves.mMaterial = mMaterialManager->GetMaterial("Pine3LeavesMaterial");
 	leaves.SetActiveState(true);
 	leaves.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
-	leaves.mCollider = mColliderMap["PineTree_Stem"];
-
-	GameObject stem1{};
-	GameObject leaves1{};
-
-	stem1.mShader = mShaderMap["StandardShader"].get();
-	stem1.mMesh = mMeshMap["Tree_Stem"].get();
-	stem1.mMaterial = mMaterialManager->GetMaterial("TreeMaterial");
-	stem1.SetActiveState(true);
-	stem1.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
-	stem1.mCollider = mColliderMap["Tree_Stem"];
+	leaves.mCollider = mColliderMap["Pine3_Stem"];
 
 
-	leaves1.mShader = mShaderMap["StandardShader"].get();
-	leaves1.mMesh = mMeshMap["Tree_Leaves"].get();
-	leaves1.mMaterial = mMaterialManager->GetMaterial("TreeLeavesMaterial");
-	leaves1.SetActiveState(true);
-	leaves1.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
-	leaves1.mCollider = mColliderMap["Tree_Stem"];
 
 	GameObject pinetree{};
-	pinetree.mShader = mShaderMap["StandardShader"].get();
+	pinetree.mShader = mShaderMap["TreeShader"].get();
 	pinetree.mMesh = mMeshMap["Pine2"].get();
 	pinetree.SetActiveState(true);
 	pinetree.mMaterial = mMaterialManager->GetMaterial("Pine2Material");
 	pinetree.mCollider = mColliderMap["Pine2"];
 
+	GameObject pinetree2{}; 
+	pinetree2.mShader = mShaderMap["TreeShader"].get();
+	pinetree2.mMesh = mMeshMap["Pine4"].get();
+	pinetree2.SetActiveState(true);
+	pinetree2.mMaterial = mMaterialManager->GetMaterial("Pine2Material");
+	pinetree2.mCollider = mColliderMap["Pine4"];
+
+
 	GameObject fern{};
-	fern.mShader = mShaderMap["StandardShader"].get();
+	fern.mShader = mShaderMap["TreeShader"].get();
 	fern.mMesh = mMeshMap["Fern"].get();
 	fern.mMaterial = mMaterialManager->GetMaterial("FernMaterial");
 	fern.SetActiveState(true);
 
 
 
-	std::vector<TreeData> treePoses(2500);
+	std::vector<TreeData> treePoses(3000);
 	std::ifstream ifs(envFile, std::ios::binary);
 	if (!ifs) {
 		return;
 	}
 
-	ifs.read(reinterpret_cast<char*>(treePoses.data()), sizeof(TreeData) * 2000);
+	ifs.read(reinterpret_cast<char*>(treePoses.data()), sizeof(TreeData) * 3000);
 	
 
 	// 이후 나무 객체를 생성하는 부분 (stem, leaves 복제)
 	std::vector<GameObject> treeObjects{};
 	for (auto& treedata : treePoses) {
-
-		if (treedata.treeType == 0) {
+		switch (treedata.treeType){ 
+		case 0:
+		{
 			{
 				auto& object = treeObjects.emplace_back();
-				object = fern.Clone();
+				object = stem.Clone();
 				object.GetTransform().SetPosition(treedata.position);
-				//object.GetTransform().Scaling(3.f, 3.f, 3.f);
 			}
-
-			//{
-			//	auto& object = treeObjects.emplace_back();
-			//	object = leaves.Clone();
-			//	object.GetTransform().SetPosition(treedata.position);
-			//	object.GetTransform().Scaling(3.f, 3.f, 3.f);
-			//}
-		}
-		else {
 			{
 				auto& object = treeObjects.emplace_back();
-				object = pinetree.Clone();
+				object = leaves.Clone();
 				object.GetTransform().SetPosition(treedata.position);
 			}
-
 		}
-
-
-		
+		break;
+		case 1:
+		{
+			auto& object = treeObjects.emplace_back();
+			object = pinetree.Clone();
+			object.GetTransform().SetPosition(treedata.position);
+		}
+		break;
+		case 2:
+		{
+			auto& object = treeObjects.emplace_back();
+			object = pinetree2.Clone();
+			object.GetTransform().SetPosition(treedata.position);
+		}
+		break;
+		default:
+			break;
+		}
 	}
 
 	std::move(treeObjects.begin(), treeObjects.end(), std::back_inserter(mGameObjects));
@@ -800,7 +818,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 
 void Scene::BakeEnvironment(const std::filesystem::path& path) {
 	const float minDistance = 2.f;    // 최소 간격
-	const int treeCount = 2500;         // 생성할 나무 개수
+	const int treeCount = 3000;         // 생성할 나무 개수
 	std::vector<SimpleMath::Vector3> treePoses;
 	treePoses.reserve(treeCount);
 
@@ -808,7 +826,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 	std::default_random_engine dre(std::random_device{}());
 	std::uniform_real_distribution<float> xPos(-250.f, 250.f);
 	std::uniform_real_distribution<float> zPos(-250.f, 250.f);
-	std::uniform_int_distribution<int> typeDist(0, 1); // 0 또는 1
+	std::uniform_int_distribution<int> typeDist(0, 2); // 0 또는 1
 
 	// 위치 선정 알고리즘 (x,z 평면에서 최소 간격 유지 및 높이 조건: 40 미만)
 	for (int i = 0; i < treeCount; i++) {
@@ -817,7 +835,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 		while (!validPos) {
 			pos.x = xPos(dre);
 			pos.z = zPos(dre);
-			pos.y = tCollider.GetHeight(pos.x, pos.z);  // 지형의 높이 가져오기
+			pos.y = tCollider.GetHeight(pos.x, pos.z) - 0.5f;  // 지형의 높이 가져오기
 
 			// 높이가 40 이상이면 사용하지 않음
 			if (pos.y >= 40.f)

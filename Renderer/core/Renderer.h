@@ -47,7 +47,10 @@ public:
 	void ExecuteRender();
 private:
 	void InitFactory();
+	
 	ComPtr<IDXGIAdapter1> GetBestAdapter();
+	bool CheckMeshShaderSupport();
+
 	void InitDevice();
 	void InitCommandQueue();
 	void InitFence();
@@ -89,7 +92,7 @@ private:
 	ComPtr<IDXGISwapChain1> mSwapChain{ nullptr };
 
 	ComPtr<ID3D12CommandAllocator> mAllocator{ nullptr };
-	ComPtr<ID3D12GraphicsCommandList> mCommandList{ nullptr };
+	ComPtr<ID3D12GraphicsCommandList6> mCommandList{ nullptr };
 
 	ComPtr<ID3D12DescriptorHeap> mRTVHeap{ nullptr };
 	std::array<Texture, Config::BACKBUFFER_COUNT<UINT>> mRenderTargets{};
