@@ -1,0 +1,80 @@
+include "PacketHeader.fbs";
+
+namespace Packets;
+
+//////////////////////////////////////////////////////////////
+// Server To Client 
+//		Basic communication packets
+//////////////////////////////////////////////////////////////
+
+table ProtocolVersionSC {
+	major: ubyte = 2;
+	minor: ubyte = 0;
+}
+
+// notify id to client
+table NotifyIdSC {
+	header: PacketHeaderSC;
+	playerId: ubyte;
+}
+
+table PlayerExitSC { 
+	header: PacketHeaderSC;
+	playerId: ubyte;
+}
+
+table PlayerAppearedSC {
+	header: PacketHeaderSC;
+	playerId: ubyte;
+}
+
+table PlayerDisappearedSC {
+	header: PacketHeaderSC;
+	playerId: ubyte;
+}
+
+table PlayerInfoSC {
+	header: PacketHeaderSC;
+	playerId: ubyte;
+	pos: Vec3;
+	animation: AnimationState;
+}
+
+//////////////////////////////////////////////////////////////
+// Cliuent To Server
+//		Basic communication packets
+//////////////////////////////////////////////////////////////
+
+table PlayerExitCS { 
+	header: PacketHeaderSC;
+	playerId: ubyte; 
+}
+
+table PlayerLook {
+	header: PacketHeaderCS;
+	look: Vec3;
+}
+
+// In Lobby
+table PlayerSelectWeaponCS {
+	header: PacketHeaderCS;
+    weapon: Weapon;
+}
+
+table PlayerSelectRollCS {
+	header: PacketHeaderCS;
+}
+
+//////////////////////////////////////////////////////////////
+// Latency Packet 
+//////////////////////////////////////////////////////////////
+
+table PacketLatencyCS {
+	header: PacketHeaderCS;
+	latency: ulong;
+}
+
+table PacketLatencySC {
+	header: PacketHeaderCS;
+	latency: ulong;
+}

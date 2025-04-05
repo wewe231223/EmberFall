@@ -29,8 +29,7 @@ void Fist::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, c
     event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
     event->knockBackForce = dir * 5000.0f;
 
-    auto attackPos = pos + SimpleMath::Vector3::Transform(SimpleMath::Vector3::Forward * mHitbox->GetForwardExtents(),
-         SimpleMath::Quaternion::FromToRotation(SimpleMath::Vector3::Forward, dir));
+    auto attackPos = pos + dir * mHitbox->GetForwardExtents();
     gObjectSpawner->SpawnEventTrigger(event, 0.5f, 0.5f, 1, attackPos, dir, mHitbox);
 }
 
@@ -46,8 +45,7 @@ void Spear::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
     event->sender = ownerId;
     event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
 
-    auto attackPos = pos + SimpleMath::Vector3::Transform(SimpleMath::Vector3::Forward * mHitbox->GetForwardExtents(),
-        SimpleMath::Quaternion::FromToRotation(SimpleMath::Vector3::Forward, dir));
+    auto attackPos = pos + dir * mHitbox->GetForwardExtents();
     gObjectSpawner->SpawnEventTrigger(event, 0.5f, 0.5f, 1, attackPos, dir, mHitbox);
 }
 
@@ -75,8 +73,7 @@ void Sword::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
     event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
     event->knockBackForce = dir * 5000.0f;
 
-    auto attackPos = pos + SimpleMath::Vector3::Transform(SimpleMath::Vector3::Forward * mHitbox->GetForwardExtents(),
-        SimpleMath::Quaternion::FromToRotation(SimpleMath::Vector3::Forward, dir));
+    auto attackPos = pos + dir * mHitbox->GetForwardExtents();
     gObjectSpawner->SpawnEventTrigger(event, 0.5f, 0.5f, 1, attackPos, dir, mHitbox);
 }
 
@@ -92,7 +89,6 @@ void Staff::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
     event->sender = ownerId;
     event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
 
-    auto attackPos = pos + SimpleMath::Vector3::Transform(SimpleMath::Vector3::Forward * mHitbox->GetForwardExtents(),
-        SimpleMath::Quaternion::FromToRotation(SimpleMath::Vector3::Forward, dir));
+    auto attackPos = pos + dir * mHitbox->GetForwardExtents();
     gObjectSpawner->SpawnEventTrigger(event, 0.5f, 0.5f, 5, attackPos, dir, mHitbox);
 }

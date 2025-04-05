@@ -1,0 +1,47 @@
+namespace Packets;
+
+enum PacketTypes : ubyte {
+    // Client To Server
+    //      Networks Packet    
+
+    // Server To Client
+    //      Networks&Player Packet (Networks.fbs)
+    PT_PROTOCOL_VERSION_SC = 0x80,
+    PT_NOTIFY_ID_SC,
+    PT_PLAYER_EXIT_SC,
+    PT_PLAYER_APPEARED_SC,
+    PT_PLAYER_DISAPPEARED_SC,
+
+    //      Monster Packet (Monsters.fbs)
+    PT_MONSTER_
+}
+
+enum AnimationState : ubyte {
+    IDLE = 0,
+    MOVE_FORWARD,
+    MOVE_BACKWARD,
+    MOVE_LEFT,
+    MOVE_RIGHT,
+    JUMP,
+    ATTACKED,
+    ATTACK,
+    INTERACTION,
+    DEAD
+}
+
+enum Weapon : ubyte {
+    SWORD = 0,
+    BOW,
+    SPEAR,
+    STAFF
+}
+
+enum ItemType : ubyte {
+	POTION = 0,
+	CROSS,
+	HOLY_WATER
+}
+
+enum ProjectileTypes : ubyte {
+    ARROW = 0
+}

@@ -67,7 +67,7 @@ bool Terrain::Contains(const std::shared_ptr<Collider>& collider, float& height)
             auto center = boxCollider->GetBoundingBox().Center;
             auto extents = boxCollider->GetBoundingBox().Extents;
             height = GetHeight(center);
-            return center.y < height + MathUtil::EPSILON;
+            return (extents.y - center.y) < height + MathUtil::EPSILON;
         }
 
     case ColliderType::SPHERE:
@@ -76,7 +76,7 @@ bool Terrain::Contains(const std::shared_ptr<Collider>& collider, float& height)
             auto center = sphereCollider->GetBoundingSphere().Center;
             auto radius = sphereCollider->GetBoundingSphere().Radius;
             height = GetHeight(center);
-            return center.y < height + MathUtil::EPSILON;
+            return (radius + center.y) < height + MathUtil::EPSILON;
         }
 
     case ColliderType::ORIENTED_BOX:
@@ -85,7 +85,7 @@ bool Terrain::Contains(const std::shared_ptr<Collider>& collider, float& height)
             auto center = orientedBoxCollider->GetBoundingBox().Center;
             auto extents = orientedBoxCollider->GetBoundingBox().Extents;
             height = GetHeight(center);
-            return center.y < height + MathUtil::EPSILON;
+            return (extents.y - center.y) < height + MathUtil::EPSILON;
         }
 
     default:

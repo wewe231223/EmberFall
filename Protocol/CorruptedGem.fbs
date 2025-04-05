@@ -1,0 +1,32 @@
+include "PacketHeader.fbs";
+
+namespace Packets;
+
+//////////////////////////////////////////////////////////////
+// Server To Client 
+//      Define Interaction Packets
+//          - Interacte Player With CorruptedGem
+//////////////////////////////////////////////////////////////
+
+table GemInteractSC {
+    header: PacketHeaderSC;
+    objectId: ushort;
+    playerId: ubyte;
+}
+
+table GemInteractionCancelSC {
+    header: PacketHeaderSC;
+    playerId: ubyte;
+    objectId: ushort;
+}
+
+table GemDestroyedSC {
+    header: PacketHeaderSC;
+    objectId: ushort;
+    pos: Vec3;
+}
+
+table GemRemoveSC {
+    header: PacketHeaderSC;
+    objectId: ushort;
+}

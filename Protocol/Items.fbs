@@ -1,0 +1,32 @@
+include "PacketHeader.fbs";
+
+namespace Packets;
+
+//////////////////////////////////////////////////////////////
+// Client To Server
+//      Define Interaction Packets
+//          - Interacte Player With Item
+//////////////////////////////////////////////////////////////
+
+table RequestUseItemCS {
+	header: PacketHeaderCS;
+	item: ItemType;
+}
+
+//////////////////////////////////////////////////////////////
+// Server To Client 
+//      Define Interaction Packets
+//          - Interacte Player With Item
+//////////////////////////////////////////////////////////////
+
+table UseItemSC {
+	header: PacketHeaderSC;
+	playerId: ubyte;
+	item: ItemType;
+}
+
+table AcquiredItemSC {
+	header: PacketHeaderSC;
+	playerId: ubyte;
+	item: ItemType;
+}

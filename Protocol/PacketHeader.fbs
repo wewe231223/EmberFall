@@ -1,0 +1,21 @@
+include "BaseStructures.fbs";
+include "Enums.fbs";
+
+namespace Packets;
+
+//////////////////////////////////////////////////////////////
+// Declare Packet Headers
+//		Server to Client : size - packet type
+//		Client to Server : size - packet type - sender id (Network id)
+//////////////////////////////////////////////////////////////
+
+table PacketHeaderSC {
+	size: short;
+	type: ubyte;
+}
+
+table PacketHeaderCS {
+	size: short;
+	type: ubyte;
+	id: ubyte;
+}

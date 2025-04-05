@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Protocol">
+      <UniqueIdentifier>{1199fb0c-6687-4d0b-acaf-381b9b282244}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FlatBuffer">
+      <UniqueIdentifier>{72661907-4b3c-4f1b-aaed-8032a5250d96}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
