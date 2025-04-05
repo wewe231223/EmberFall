@@ -16,45 +16,95 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
 namespace Packets {
 
 enum PacketTypes : uint8_t {
+  PacketTypes_PT_PLAYER_EXIT_CS = 0,
+  PacketTypes_PT_PLAYER_LOOK_CS = 1,
+  PacketTypes_PT_PLAYER_SELECT_WEAPON_CS = 2,
+  PacketTypes_PT_PLAYER_SELECT_ROLL_CS = 3,
+  PacketTypes_PT_LATENCY_CS = 4,
+  PacketTypes_PT_REQUEST_USE_ITEM_CS = 5,
+  PacketTypes_PT_REQUEST_ATTACK_CS = 6,
+  PacketTypes_PT_REQUEST_FIRE_CS = 7,
   PacketTypes_PT_PROTOCOL_VERSION_SC = 128,
   PacketTypes_PT_NOTIFY_ID_SC = 129,
   PacketTypes_PT_PLAYER_EXIT_SC = 130,
-  PacketTypes_PT_PLAYER_APPEARED_SC = 131,
-  PacketTypes_PT_PLAYER_DISAPPEARED_SC = 132,
-  PacketTypes_PT_MONSTER_ = 133,
-  PacketTypes_MIN = PacketTypes_PT_PROTOCOL_VERSION_SC,
-  PacketTypes_MAX = PacketTypes_PT_MONSTER_
+  PacketTypes_PT_LATENCT_SC = 131,
+  PacketTypes_PT_OBJECT_APPEARED_SC = 132,
+  PacketTypes_PT_OBJECT_DISAPPEARED_SC = 133,
+  PacketTypes_PT_OBJECT_REMOVED_SC = 134,
+  PacketTypes_PT_OBJECT_MOVE_SC = 135,
+  PacketTypes_PT_OBJECT_ATTACKED_SC = 136,
+  PacketTypes_PT_OBJECT_ANIMATION_CHANGED_SC = 137,
+  PacketTypes_PT_GEM_INTERACT_SC = 138,
+  PacketTypes_PT_GEM_CANCEL_INTERACTOIN_SC = 139,
+  PacketTypes_PT_GEM_DESTROYED_SC = 140,
+  PacketTypes_PT_USE_ITEM_SC = 141,
+  PacketTypes_PT_ACQUIRED_ITEM_SC = 142,
+  PacketTypes_PT_FIRE_PROJECTILE_SC = 143,
+  PacketTypes_PT_PROJECTILE_MOVE_SC = 144,
+  PacketTypes_MIN = PacketTypes_PT_PLAYER_EXIT_CS,
+  PacketTypes_MAX = PacketTypes_PT_PROJECTILE_MOVE_SC
 };
 
-inline const PacketTypes (&EnumValuesPacketTypes())[6] {
+inline const PacketTypes (&EnumValuesPacketTypes())[25] {
   static const PacketTypes values[] = {
+    PacketTypes_PT_PLAYER_EXIT_CS,
+    PacketTypes_PT_PLAYER_LOOK_CS,
+    PacketTypes_PT_PLAYER_SELECT_WEAPON_CS,
+    PacketTypes_PT_PLAYER_SELECT_ROLL_CS,
+    PacketTypes_PT_LATENCY_CS,
+    PacketTypes_PT_REQUEST_USE_ITEM_CS,
+    PacketTypes_PT_REQUEST_ATTACK_CS,
+    PacketTypes_PT_REQUEST_FIRE_CS,
     PacketTypes_PT_PROTOCOL_VERSION_SC,
     PacketTypes_PT_NOTIFY_ID_SC,
     PacketTypes_PT_PLAYER_EXIT_SC,
-    PacketTypes_PT_PLAYER_APPEARED_SC,
-    PacketTypes_PT_PLAYER_DISAPPEARED_SC,
-    PacketTypes_PT_MONSTER_
+    PacketTypes_PT_LATENCT_SC,
+    PacketTypes_PT_OBJECT_APPEARED_SC,
+    PacketTypes_PT_OBJECT_DISAPPEARED_SC,
+    PacketTypes_PT_OBJECT_REMOVED_SC,
+    PacketTypes_PT_OBJECT_MOVE_SC,
+    PacketTypes_PT_OBJECT_ATTACKED_SC,
+    PacketTypes_PT_OBJECT_ANIMATION_CHANGED_SC,
+    PacketTypes_PT_GEM_INTERACT_SC,
+    PacketTypes_PT_GEM_CANCEL_INTERACTOIN_SC,
+    PacketTypes_PT_GEM_DESTROYED_SC,
+    PacketTypes_PT_USE_ITEM_SC,
+    PacketTypes_PT_ACQUIRED_ITEM_SC,
+    PacketTypes_PT_FIRE_PROJECTILE_SC,
+    PacketTypes_PT_PROJECTILE_MOVE_SC
   };
   return values;
 }
 
-inline const char * const *EnumNamesPacketTypes() {
-  static const char * const names[7] = {
-    "PT_PROTOCOL_VERSION_SC",
-    "PT_NOTIFY_ID_SC",
-    "PT_PLAYER_EXIT_SC",
-    "PT_PLAYER_APPEARED_SC",
-    "PT_PLAYER_DISAPPEARED_SC",
-    "PT_MONSTER_",
-    nullptr
-  };
-  return names;
-}
-
 inline const char *EnumNamePacketTypes(PacketTypes e) {
-  if (::flatbuffers::IsOutRange(e, PacketTypes_PT_PROTOCOL_VERSION_SC, PacketTypes_PT_MONSTER_)) return "";
-  const size_t index = static_cast<size_t>(e) - static_cast<size_t>(PacketTypes_PT_PROTOCOL_VERSION_SC);
-  return EnumNamesPacketTypes()[index];
+  switch (e) {
+    case PacketTypes_PT_PLAYER_EXIT_CS: return "PT_PLAYER_EXIT_CS";
+    case PacketTypes_PT_PLAYER_LOOK_CS: return "PT_PLAYER_LOOK_CS";
+    case PacketTypes_PT_PLAYER_SELECT_WEAPON_CS: return "PT_PLAYER_SELECT_WEAPON_CS";
+    case PacketTypes_PT_PLAYER_SELECT_ROLL_CS: return "PT_PLAYER_SELECT_ROLL_CS";
+    case PacketTypes_PT_LATENCY_CS: return "PT_LATENCY_CS";
+    case PacketTypes_PT_REQUEST_USE_ITEM_CS: return "PT_REQUEST_USE_ITEM_CS";
+    case PacketTypes_PT_REQUEST_ATTACK_CS: return "PT_REQUEST_ATTACK_CS";
+    case PacketTypes_PT_REQUEST_FIRE_CS: return "PT_REQUEST_FIRE_CS";
+    case PacketTypes_PT_PROTOCOL_VERSION_SC: return "PT_PROTOCOL_VERSION_SC";
+    case PacketTypes_PT_NOTIFY_ID_SC: return "PT_NOTIFY_ID_SC";
+    case PacketTypes_PT_PLAYER_EXIT_SC: return "PT_PLAYER_EXIT_SC";
+    case PacketTypes_PT_LATENCT_SC: return "PT_LATENCT_SC";
+    case PacketTypes_PT_OBJECT_APPEARED_SC: return "PT_OBJECT_APPEARED_SC";
+    case PacketTypes_PT_OBJECT_DISAPPEARED_SC: return "PT_OBJECT_DISAPPEARED_SC";
+    case PacketTypes_PT_OBJECT_REMOVED_SC: return "PT_OBJECT_REMOVED_SC";
+    case PacketTypes_PT_OBJECT_MOVE_SC: return "PT_OBJECT_MOVE_SC";
+    case PacketTypes_PT_OBJECT_ATTACKED_SC: return "PT_OBJECT_ATTACKED_SC";
+    case PacketTypes_PT_OBJECT_ANIMATION_CHANGED_SC: return "PT_OBJECT_ANIMATION_CHANGED_SC";
+    case PacketTypes_PT_GEM_INTERACT_SC: return "PT_GEM_INTERACT_SC";
+    case PacketTypes_PT_GEM_CANCEL_INTERACTOIN_SC: return "PT_GEM_CANCEL_INTERACTOIN_SC";
+    case PacketTypes_PT_GEM_DESTROYED_SC: return "PT_GEM_DESTROYED_SC";
+    case PacketTypes_PT_USE_ITEM_SC: return "PT_USE_ITEM_SC";
+    case PacketTypes_PT_ACQUIRED_ITEM_SC: return "PT_ACQUIRED_ITEM_SC";
+    case PacketTypes_PT_FIRE_PROJECTILE_SC: return "PT_FIRE_PROJECTILE_SC";
+    case PacketTypes_PT_PROJECTILE_MOVE_SC: return "PT_PROJECTILE_MOVE_SC";
+    default: return "";
+  }
 }
 
 enum AnimationState : uint8_t {

@@ -2,6 +2,12 @@ include "PacketHeader.fbs";
 
 namespace Packets;
 
+//////////////////////////////////////////////////////////////
+// Server To Client
+//      Define Projectile&Attack Packets
+//          
+//////////////////////////////////////////////////////////////
+
 table FireProjectileSC {
 	header: PacketHeaderSC;
 	objectId: ushort;
@@ -18,6 +24,12 @@ table ProjectileMoveSC {
 	dir: Vec3;
 	speed: float;
 }
+
+//////////////////////////////////////////////////////////////
+// Client To Server
+//      Define Projectile&Attack Packets
+//
+//////////////////////////////////////////////////////////////
 
 table RequestAttackCS {
 	header: PacketHeaderCS;

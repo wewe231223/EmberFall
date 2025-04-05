@@ -23,23 +23,6 @@ table PlayerExitSC {
 	playerId: ubyte;
 }
 
-table PlayerAppearedSC {
-	header: PacketHeaderSC;
-	playerId: ubyte;
-}
-
-table PlayerDisappearedSC {
-	header: PacketHeaderSC;
-	playerId: ubyte;
-}
-
-table PlayerInfoSC {
-	header: PacketHeaderSC;
-	playerId: ubyte;
-	pos: Vec3;
-	animation: AnimationState;
-}
-
 //////////////////////////////////////////////////////////////
 // Cliuent To Server
 //		Basic communication packets
@@ -50,7 +33,7 @@ table PlayerExitCS {
 	playerId: ubyte; 
 }
 
-table PlayerLook {
+table PlayerLookCS {
 	header: PacketHeaderCS;
 	look: Vec3;
 }

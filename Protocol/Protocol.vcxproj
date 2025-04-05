@@ -129,10 +129,10 @@
   <ItemGroup>
     <None Include="AttackSystem.fbs" />
     <None Include="BaseStructures.fbs" />
+    <None Include="CommonObjects.fbs" />
     <None Include="CorruptedGem.fbs" />
     <None Include="Enums.fbs" />
     <None Include="Items.fbs" />
-    <None Include="Monsters.fbs" />
     <None Include="Networks.fbs" />
     <None Include="PacketHeader.fbs" />
     <None Include="PacketProtocol.fbs" />

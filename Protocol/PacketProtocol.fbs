@@ -1,6 +1,6 @@
-include "Monsters.fbs";
 include "BaseStructures.fbs";
-include "Items.fbs";
 include "Networks.fbs";
+include "CommonObjects.fbs";
+include "Items.fbs";
 include "AttackSystem.fbs";
 include "CorruptedGem.fbs";

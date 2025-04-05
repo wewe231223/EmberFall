@@ -15,9 +15,9 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
 
 #include "AttackSystem_generated.h"
 #include "BaseStructures_generated.h"
+#include "CommonObjects_generated.h"
 #include "CorruptedGem_generated.h"
 #include "Items_generated.h"
-#include "Monsters_generated.h"
 #include "Networks_generated.h"
 
 #endif  // FLATBUFFERS_GENERATED_PACKETPROTOCOL_H_

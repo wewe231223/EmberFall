@@ -29,6 +29,8 @@ struct RequestAttackCSBuilder;
 struct RequestFireCS;
 struct RequestFireCSBuilder;
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 struct FireProjectileSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef FireProjectileSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -207,6 +209,8 @@ inline ::flatbuffers::Offset<ProjectileMoveSC> CreateProjectileMoveSC(
   return builder_.Finish();
 }
 
+//////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
 struct RequestAttackCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef RequestAttackCSBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {

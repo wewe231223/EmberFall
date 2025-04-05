@@ -28,9 +28,6 @@
     <None Include="Items.fbs">
       <Filter>Fbs</Filter>
     </None>
-    <None Include="Monsters.fbs">
-      <Filter>Fbs</Filter>
-    </None>
     <None Include="Networks.fbs">
       <Filter>Fbs</Filter>
     </None>
@@ -38,6 +35,9 @@
       <Filter>Fbs</Filter>
     </None>
     <None Include="PacketProtocol.fbs">
+      <Filter>Fbs</Filter>
+    </None>
+    <None Include="CommonObjects.fbs">
       <Filter>Fbs</Filter>
     </None>
   </ItemGroup>

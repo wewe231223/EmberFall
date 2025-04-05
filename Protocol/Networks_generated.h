@@ -26,20 +26,11 @@ struct NotifyIdSCBuilder;
 struct PlayerExitSC;
 struct PlayerExitSCBuilder;
 
-struct PlayerAppearedSC;
-struct PlayerAppearedSCBuilder;
-
-struct PlayerDisappearedSC;
-struct PlayerDisappearedSCBuilder;
-
-struct PlayerInfoSC;
-struct PlayerInfoSCBuilder;
-
 struct PlayerExitCS;
 struct PlayerExitCSBuilder;
 
-struct PlayerLook;
-struct PlayerLookBuilder;
+struct PlayerLookCS;
+struct PlayerLookCSBuilder;
 
 struct PlayerSelectWeaponCS;
 struct PlayerSelectWeaponCSBuilder;
@@ -210,183 +201,6 @@ inline ::flatbuffers::Offset<PlayerExitSC> CreatePlayerExitSC(
   return builder_.Finish();
 }
 
-struct PlayerAppearedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef PlayerAppearedSCBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_PLAYERID = 6
-  };
-  const Packets::PacketHeaderSC *header() const {
-    return GetPointer<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
-  uint8_t playerId() const {
-    return GetField<uint8_t>(VT_PLAYERID, 0);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
-           VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
-           verifier.EndTable();
-  }
-};
-
-struct PlayerAppearedSCBuilder {
-  typedef PlayerAppearedSC Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderSC> header) {
-    fbb_.AddOffset(PlayerAppearedSC::VT_HEADER, header);
-  }
-  void add_playerId(uint8_t playerId) {
-    fbb_.AddElement<uint8_t>(PlayerAppearedSC::VT_PLAYERID, playerId, 0);
-  }
-  explicit PlayerAppearedSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<PlayerAppearedSC> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<PlayerAppearedSC>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<PlayerAppearedSC> CreatePlayerAppearedSC(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderSC> header = 0,
-    uint8_t playerId = 0) {
-  PlayerAppearedSCBuilder builder_(_fbb);
-  builder_.add_header(header);
-  builder_.add_playerId(playerId);
-  return builder_.Finish();
-}
-
-struct PlayerDisappearedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef PlayerDisappearedSCBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_PLAYERID = 6
-  };
-  const Packets::PacketHeaderSC *header() const {
-    return GetPointer<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
-  uint8_t playerId() const {
-    return GetField<uint8_t>(VT_PLAYERID, 0);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
-           VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
-           verifier.EndTable();
-  }
-};
-
-struct PlayerDisappearedSCBuilder {
-  typedef PlayerDisappearedSC Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderSC> header) {
-    fbb_.AddOffset(PlayerDisappearedSC::VT_HEADER, header);
-  }
-  void add_playerId(uint8_t playerId) {
-    fbb_.AddElement<uint8_t>(PlayerDisappearedSC::VT_PLAYERID, playerId, 0);
-  }
-  explicit PlayerDisappearedSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<PlayerDisappearedSC> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<PlayerDisappearedSC>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<PlayerDisappearedSC> CreatePlayerDisappearedSC(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderSC> header = 0,
-    uint8_t playerId = 0) {
-  PlayerDisappearedSCBuilder builder_(_fbb);
-  builder_.add_header(header);
-  builder_.add_playerId(playerId);
-  return builder_.Finish();
-}
-
-struct PlayerInfoSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef PlayerInfoSCBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_PLAYERID = 6,
-    VT_POS = 8,
-    VT_ANIMATION = 10
-  };
-  const Packets::PacketHeaderSC *header() const {
-    return GetPointer<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
-  uint8_t playerId() const {
-    return GetField<uint8_t>(VT_PLAYERID, 0);
-  }
-  const Packets::Vec3 *pos() const {
-    return GetPointer<const Packets::Vec3 *>(VT_POS);
-  }
-  Packets::AnimationState animation() const {
-    return static_cast<Packets::AnimationState>(GetField<uint8_t>(VT_ANIMATION, 0));
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
-           VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
-           VerifyOffset(verifier, VT_POS) &&
-           verifier.VerifyTable(pos()) &&
-           VerifyField<uint8_t>(verifier, VT_ANIMATION, 1) &&
-           verifier.EndTable();
-  }
-};
-
-struct PlayerInfoSCBuilder {
-  typedef PlayerInfoSC Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderSC> header) {
-    fbb_.AddOffset(PlayerInfoSC::VT_HEADER, header);
-  }
-  void add_playerId(uint8_t playerId) {
-    fbb_.AddElement<uint8_t>(PlayerInfoSC::VT_PLAYERID, playerId, 0);
-  }
-  void add_pos(::flatbuffers::Offset<Packets::Vec3> pos) {
-    fbb_.AddOffset(PlayerInfoSC::VT_POS, pos);
-  }
-  void add_animation(Packets::AnimationState animation) {
-    fbb_.AddElement<uint8_t>(PlayerInfoSC::VT_ANIMATION, static_cast<uint8_t>(animation), 0);
-  }
-  explicit PlayerInfoSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<PlayerInfoSC> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<PlayerInfoSC>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<PlayerInfoSC> CreatePlayerInfoSC(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderSC> header = 0,
-    uint8_t playerId = 0,
-    ::flatbuffers::Offset<Packets::Vec3> pos = 0,
-    Packets::AnimationState animation = Packets::AnimationState_IDLE) {
-  PlayerInfoSCBuilder builder_(_fbb);
-  builder_.add_pos(pos);
-  builder_.add_header(header);
-  builder_.add_animation(animation);
-  builder_.add_playerId(playerId);
-  return builder_.Finish();
-}
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 struct PlayerExitCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -441,8 +255,8 @@ inline ::flatbuffers::Offset<PlayerExitCS> CreatePlayerExitCS(
   return builder_.Finish();
 }
 
-struct PlayerLook FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef PlayerLookBuilder Builder;
+struct PlayerLookCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PlayerLookCSBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_HEADER = 4,
     VT_LOOK = 6
@@ -463,32 +277,32 @@ struct PlayerLook FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
 };
 
-struct PlayerLookBuilder {
-  typedef PlayerLook Table;
+struct PlayerLookCSBuilder {
+  typedef PlayerLookCS Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
   void add_header(::flatbuffers::Offset<Packets::PacketHeaderCS> header) {
-    fbb_.AddOffset(PlayerLook::VT_HEADER, header);
+    fbb_.AddOffset(PlayerLookCS::VT_HEADER, header);
   }
   void add_look(::flatbuffers::Offset<Packets::Vec3> look) {
-    fbb_.AddOffset(PlayerLook::VT_LOOK, look);
+    fbb_.AddOffset(PlayerLookCS::VT_LOOK, look);
   }
-  explicit PlayerLookBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+  explicit PlayerLookCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ::flatbuffers::Offset<PlayerLook> Finish() {
+  ::flatbuffers::Offset<PlayerLookCS> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<PlayerLook>(end);
+    auto o = ::flatbuffers::Offset<PlayerLookCS>(end);
     return o;
   }
 };
 
-inline ::flatbuffers::Offset<PlayerLook> CreatePlayerLook(
+inline ::flatbuffers::Offset<PlayerLookCS> CreatePlayerLookCS(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<Packets::PacketHeaderCS> header = 0,
     ::flatbuffers::Offset<Packets::Vec3> look = 0) {
-  PlayerLookBuilder builder_(_fbb);
+  PlayerLookCSBuilder builder_(_fbb);
   builder_.add_look(look);
   builder_.add_header(header);
   return builder_.Finish();

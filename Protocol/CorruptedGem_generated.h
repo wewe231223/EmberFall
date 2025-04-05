@@ -26,9 +26,6 @@ struct GemInteractionCancelSCBuilder;
 struct GemDestroyedSC;
 struct GemDestroyedSCBuilder;
 
-struct GemRemoveSC;
-struct GemRemoveSCBuilder;
-
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
 struct GemInteractSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
@@ -213,58 +210,6 @@ inline ::flatbuffers::Offset<GemDestroyedSC> CreateGemDestroyedSC(
     ::flatbuffers::Offset<Packets::Vec3> pos = 0) {
   GemDestroyedSCBuilder builder_(_fbb);
   builder_.add_pos(pos);
-  builder_.add_header(header);
-  builder_.add_objectId(objectId);
-  return builder_.Finish();
-}
-
-struct GemRemoveSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef GemRemoveSCBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_OBJECTID = 6
-  };
-  const Packets::PacketHeaderSC *header() const {
-    return GetPointer<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
-  uint16_t objectId() const {
-    return GetField<uint16_t>(VT_OBJECTID, 0);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
-           VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
-           verifier.EndTable();
-  }
-};
-
-struct GemRemoveSCBuilder {
-  typedef GemRemoveSC Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderSC> header) {
-    fbb_.AddOffset(GemRemoveSC::VT_HEADER, header);
-  }
-  void add_objectId(uint16_t objectId) {
-    fbb_.AddElement<uint16_t>(GemRemoveSC::VT_OBJECTID, objectId, 0);
-  }
-  explicit GemRemoveSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<GemRemoveSC> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<GemRemoveSC>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<GemRemoveSC> CreateGemRemoveSC(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderSC> header = 0,
-    uint16_t objectId = 0) {
-  GemRemoveSCBuilder builder_(_fbb);
   builder_.add_header(header);
   builder_.add_objectId(objectId);
   return builder_.Finish();
