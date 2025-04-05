@@ -32,6 +32,9 @@ private:
 	void BuildShader(ComPtr<ID3D12Device> device);
 	void BuildAniamtionController(); 
 
+	void BuildEnvironment(const std::filesystem::path& envFile);
+	void BakeEnvironment(const std::filesystem::path& path);
+
 	void BuildBaseAnimationController();
 	void BuildArcherAnimationController();
 	void BuildSwordManAnimationController();

@@ -6,8 +6,9 @@
 #include "../EditorInterface/Console/Console.h"
 
 Camera::Camera(DefaultBufferCPUIterator bufferLocation) : mCameraBufferCPU(bufferLocation) {
-
 	mCameraConstant.proj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(CameraParam.fov, CameraParam.aspect, CameraParam.nearZ, CameraParam.farZ).Transpose();
+	DirectX::BoundingFrustum::CreateFromMatrix(mViewFrustum, mCameraConstant.proj.Transpose());
+
 }
 
 void Camera::UpdateBuffer() {
@@ -16,7 +17,21 @@ void Camera::UpdateBuffer() {
 	mCameraConstant.viewProj = mCameraConstant.proj * mCameraConstant.view;
 	mCameraConstant.cameraPos = mTransform.GetPosition();
 
+	mViewFrustum.Transform(mWorldFrustum, SimpleMath::Matrix::CreateLookAt(mTransform.GetPosition(), mTransform.GetPosition() + mTransform.GetForward(), SimpleMath::Vector3::Up).Invert());
+
 	::memcpy(*mCameraBufferCPU, &mCameraConstant, sizeof(CameraConstant));
+}
+
+bool Camera::FrustumCulling(Collider& other) const {
+
+	auto& box = other.GetWorldBox();
+
+
+	if (SimpleMath::Vector3::DistanceSquared(mTransform.GetPosition(), box.Center) > 130.f * 130.f) {
+		return false;
+	}
+
+	return mWorldFrustum.Intersects(box);
 }
 
 CameraMode::CameraMode(Camera* camera) : mCamera(camera) {

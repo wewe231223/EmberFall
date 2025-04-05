@@ -56,7 +56,8 @@ struct Terrain_DIN
 struct Terrain_PIN
 {
     float4 position : SV_POSITION;
-    float3 wPosition : POSITION;
+    float3 wPosition : POSITION1;
+    float3 vPosition : POSITION2;
     float2 texcoord1 : TEXCOORD0;
     float2 texcoord2 : TEXCOORD1;
     uint material : MATERIALID;
@@ -202,6 +203,7 @@ Terrain_PIN Terrain_DS(PatchTessFactor patchTess, float2 uv : SV_DomainLocation,
     output.position = float4(CubicBezierSum(patch, basisU, basisV), 1.f);
     output.position = mul(output.position, world);
     output.wPosition = output.position.xyz;
+    output.vPosition = mul(output.position, view).xyz;
     output.position = mul(output.position, viewProjection);
     output.material = material;
     
@@ -219,7 +221,11 @@ Terrain_PIN Terrain_DS(PatchTessFactor patchTess, float2 uv : SV_DomainLocation,
     return output;
 }
 
-
+float4 Fog(float4 Color, float Distance, float fogStart, float fogEnd)
+{
+    float fogFactor = saturate((fogEnd - Distance) / (fogEnd - fogStart));
+    return lerp(Color, float4(0.5, 0.5, 0.5, 1.0), 1 - fogFactor);
+}
 
 Deffered_POUT Terrain_PS(Terrain_PIN input) 
 {
@@ -234,7 +240,7 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
     
     Color = saturate(BaseColor * 0.4f + DetailColor * 0.6f);
     
-    output.diffuse = Color;
+    output.diffuse = Fog(Color, input.vPosition.z, 50.f, 100.f);
     output.position = float4(input.wPosition, 1.f);
     
     return output;

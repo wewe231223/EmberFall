@@ -33,3 +33,7 @@ SimpleMath::Vector3 Collider::GetExtents() const {
 bool Collider::CheckCollision(Collider& other) {
 	return mWorld.Intersects(other.mWorld);
 }
+
+const DirectX::BoundingOrientedBox& Collider::GetWorldBox() const {
+	return mWorld;
+}

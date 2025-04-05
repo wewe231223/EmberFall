@@ -39,7 +39,8 @@ struct Standard_VIN
 struct Standard_VOUT
 {
     float4 position : SV_POSITION;
-    float3 wPosition : POSITION;
+    float3 wPosition : POSITION1;
+    float3 vPosition : POSITION2;
     float3 normal : NORMAL;
     float2 texcoord : TEXCOORD;
     uint material : MATERIALID;
@@ -70,7 +71,7 @@ Standard_VOUT Standard_VS(Standard_VIN input) {
     Standard_VOUT output;
     output.position = mul(float4(input.position, 1.f), modelContext.world);
     output.wPosition = output.position.xyz; 
-    //output.position = mul(output.position, view);
+    output.vPosition = mul(output.position, view).xyz; 
     //output.position = mul(output.position, projection);
     output.position = mul(output.position, viewProjection);
     
@@ -82,6 +83,13 @@ Standard_VOUT Standard_VS(Standard_VIN input) {
     return output;
 }
 
+
+float4 Fog(float4 Color, float Distance, float fogStart, float fogEnd)
+{
+    float fogFactor = saturate((fogEnd - Distance) / (fogEnd - fogStart));
+    return lerp(Color, float4(0.5, 0.5, 0.5, 1.0), 1 - fogFactor);
+}
+
 Deffered_POUT Standard_PS(Standard_VOUT input) {
     Deffered_POUT output = (Deffered_POUT) 0;
     
@@ -90,8 +98,8 @@ Deffered_POUT Standard_PS(Standard_VOUT input) {
     
     clip(color.a - 0.1f);
 
-    output.diffuse = color;
-    //output.position = float4(input.wPosition, 1.0f);
+    output.diffuse = Fog(color, input.vPosition.z, 50.f, 100.f);
+    output.position = float4(input.wPosition, 1.0f);
     
     return output;
 }

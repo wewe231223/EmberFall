@@ -34,7 +34,6 @@ public:
 	SimpleMath::Matrix& GetWorldMatrix();
 	
 	Transform& GetChild(int index);
-
 public:
 	void Translate(const SimpleMath::Vector3&);
 	void SetPosition(const SimpleMath::Vector3&);

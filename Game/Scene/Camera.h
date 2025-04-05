@@ -2,12 +2,13 @@
 #include "../Renderer/Resource/DefaultBuffer.h"
 #include "../Game/GameObject/Transform.h"
 #include "../Config/Config.h"
+#include "../Game/GameObject/Collider.h"
 
 struct CameraParameter {
 	float aspect{Config::WINDOW_WIDTH<float> / Config::WINDOW_HEIGHT<float> };
 	float fov{ DirectX::XMConvertToRadians(60.f) };
 	float nearZ{ 0.1f };
-	float farZ{ 2000.f };
+	float farZ{ 500.f };
 };
 
 struct CameraConstant {
@@ -25,10 +26,14 @@ public:
 public:
 	void UpdateBuffer();
 	Transform& GetTransform() { return mTransform; }
+	bool FrustumCulling(Collider& other) const; 
 public:
 	CameraParameter CameraParam{};
 private:
 	DefaultBufferCPUIterator mCameraBufferCPU{};
+
+	DirectX::BoundingFrustum mViewFrustum{};
+	DirectX::BoundingFrustum mWorldFrustum{};
 
 	CameraConstant mCameraConstant{};
 	Transform mTransform{};

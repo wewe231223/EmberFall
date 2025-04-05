@@ -18,6 +18,8 @@ public:
 	SimpleMath::Vector3 GetExtents() const;
 
 	bool CheckCollision(Collider& other);
+
+	const DirectX::BoundingOrientedBox& GetWorldBox() const;
 private:
 	DirectX::BoundingOrientedBox mOrigin{};
 	DirectX::BoundingOrientedBox mWorld{};

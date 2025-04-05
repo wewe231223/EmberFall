@@ -12,7 +12,6 @@ struct ModelContext
     float3 BBcenter; 
     float3 BBExtents;
     uint material;
-    uint boneStart;
 };
 
 struct BB_VIN

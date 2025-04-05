@@ -201,6 +201,8 @@ void MeshRenderManager::RenderGPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> c
 	}
 
 
+#ifdef RENDER_BB
+
 	gpuIt = mPlainMeshBuffer.GPUBegin() + static_cast<std::ptrdiff_t>(MeshRenderManager::RESERVED_CONTEXT_SLOT);
 
 
@@ -220,6 +222,7 @@ void MeshRenderManager::RenderGPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> c
 			gpuIt += worlds.size();
 		}
 	}
+#endif 
 
 }
 
@@ -253,6 +256,8 @@ void MeshRenderManager::RenderGPassBonedMesh(ComPtr<ID3D12GraphicsCommandList> c
 		}
 	}
 
+#ifdef RENDER_BB
+
 	gpuIt = mBonedMeshBuffer.GPUBegin(); 
 
 
@@ -272,5 +277,6 @@ void MeshRenderManager::RenderGPassBonedMesh(ComPtr<ID3D12GraphicsCommandList> c
 			gpuIt += worlds.size(); 
 		}
 	}
+#endif RENDER_BB
 
 }

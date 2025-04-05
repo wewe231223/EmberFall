@@ -298,10 +298,16 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
 	mSkyBox.mMaterial = mMaterialManager->GetMaterial("SkyBoxMaterial");
 
-	mGameObjects.resize(MeshRenderManager::MAX_INSTANCE_COUNT<size_t>, GameObject{});
+
+	 Scene::BuildEnvironment("Resources/Binarys/Terrain/Environment.bin");
+	// std::thread bakeThread{ [this]() {BakeEnvironment("Resources/Binarys/Terrain/Environment.bin");  } };
+	// bakeThread.detach(); 
+
+
+
 
 	{
-		auto& object = mGameObjects[0];
+		auto& object = mGameObjects.emplace_back(); 
 		object.mShader = mShaderMap["TerrainShader"].get();
 		object.mMesh = mMeshMap["Terrain"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("TerrainMaterial");
@@ -313,7 +319,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 
 	{
-		auto& object = mGameObjects[1];
+		auto& object = mGameObjects.emplace_back();
 		object.mShader = mShaderMap["StandardShader"].get();
 		object.mMesh = mMeshMap["Mountain"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
@@ -324,19 +330,16 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(-35.f), 0.f);
 	}
 
+
 	{
-		auto& object = mGameObjects[2];
-		object.mShader = mShaderMap["SkinnedShader"].get();
-		object.mMesh = mMeshMap["Demon"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("DemonMaterial");
-		object.mGraphController = mMonsterType1AnimationController;
-		object.mAnimated = true;
+		auto& object = mGameObjects.emplace_back();
+		object.mShader = mShaderMap["StandardShader"].get();
+		object.mMesh = mMeshMap["Cube"].get();
+		object.mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
 		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 0.f), 0.f };
-
+		object.GetTransform().GetPosition() = { 0.f, 0.f, 0.f };
+		object.GetTransform().Scaling(500.f, 500.f, 500.f);
 	}
-
 
 	{
 		mEquipments["Sword"] = EquipmentObject{}; 
@@ -349,6 +352,9 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	}
 
+
+
+	mGameObjects.resize(MeshRenderManager::MAX_INSTANCE_COUNT<size_t>, GameObject{});
 
 
 
@@ -409,10 +415,10 @@ void Scene::ProcessNetwork() {
 }
 
 void Scene::Update() {
-	//if (mMyPlayer != nullptr) {
-	//	auto& pos = mMyPlayer->GetTransform().GetPosition();
-	//	pos.y = tCollider.GetHeight(pos.x, pos.z);
-	//}
+	if (mMyPlayer != nullptr) {
+		auto& pos = mMyPlayer->GetTransform().GetPosition();
+		pos.y = tCollider.GetHeight(pos.x, pos.z);
+	}
 
 	if (mMyPlayer != nullptr) {
 		mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mMyPlayer->GetTransform().GetPosition().x, mMyPlayer->GetTransform().GetPosition().y, mMyPlayer->GetTransform().GetPosition().z);
@@ -431,6 +437,7 @@ void Scene::Update() {
 	if (mCameraMode) {
 		mCameraMode->Update();
 	}
+	mCamera.UpdateBuffer(); 
 
 	static BoneTransformBuffer boneTransformBuffer{};
 
@@ -443,25 +450,35 @@ void Scene::Update() {
 			}
 			else {
 				gameObject.UpdateShaderVariables();
+
+				if (gameObject.mCollider.GetActiveState()) {
+					if (!mCamera.FrustumCulling(gameObject.mCollider)) {
+						continue;
+					}
+				}
+
 				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
 			}
 		}
 	}
  
+
+
 	for (auto& player : mPlayers) {
 		if (player.GetActiveState()) {
 			player.Update(mMeshRenderManager);
 		}
 	}
 
+
+
+
+
 	mSkyBox.GetTransform().GetPosition() = mCamera.GetTransform().GetPosition();
 	mSkyBox.UpdateShaderVariables();
 	auto [skyBoxMesh, skyBoxShader, skyBoxModelContext] = mSkyBox.GetRenderData();
 	mMeshRenderManager->AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);
-
-	mCamera.UpdateBuffer(); 
-
 }
 
 void Scene::SendNetwork() {
@@ -519,6 +536,7 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 	data = Loader.Load("Resources/Assets/Tree/stem/Ash1.gltf");
 	mMeshMap["Tree_Stem"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Tree_Stem"] = Collider{ data.position };
 
 	data = Loader.Load("Resources/Assets/Tree/leaves1/Ash1.gltf");
 	mMeshMap["Tree_Leaves"] = std::make_unique<Mesh>(device, commandList, data);
@@ -560,6 +578,14 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 	data = Loader.Load("Resources/Assets/Demon/Demon.glb");
 	mMeshMap["Demon"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Tree/PineTree/PineTree.glb", 0);
+	mMeshMap["PineTree_Stem"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["PineTree_Stem"] = Collider{ data.position };
+
+	data = Loader.Load("Resources/Assets/Tree/PineTree/PineTree.glb", 1);
+	mMeshMap["PineTree_Leaves"] = std::make_unique<Mesh>(device, commandList, data);
+
 
 	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, data);
@@ -612,6 +638,13 @@ void Scene::BuildMaterial() {
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("T_BigDemonWarrior_Body_Albedo_Skin_3");
 	mMaterialManager->CreateMaterial("DemonMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Tree_0Mat_baseColor");
+	mMaterialManager->CreateMaterial("PineTreeStemMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Tree_1Mat_baseColor");
+	mMaterialManager->CreateMaterial("PineTreeLeavesMaterial", mat);
+
 }
 
 void Scene::BuildShader(ComPtr<ID3D12Device> device) {
@@ -642,6 +675,160 @@ void Scene::BuildAniamtionController() {
 
 	Scene::BuildMonsterType1AnimationController(); 
 
+}
+
+void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
+
+	struct TreeData {
+		UINT treeType;
+		SimpleMath::Vector3 position; 
+	};
+
+	GameObject stem{};
+	GameObject leaves{};
+
+	stem.mShader = mShaderMap["StandardShader"].get();
+	stem.mMesh = mMeshMap["PineTree_Stem"].get();
+	stem.mMaterial = mMaterialManager->GetMaterial("PineTreeStemMaterial");
+	stem.SetActiveState(true);
+	stem.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
+	stem.mCollider = mColliderMap["PineTree_Stem"];
+
+
+	leaves.mShader = mShaderMap["StandardShader"].get();
+	leaves.mMesh = mMeshMap["PineTree_Leaves"].get();
+	leaves.mMaterial = mMaterialManager->GetMaterial("PineTreeLeavesMaterial");
+	leaves.SetActiveState(true);
+	leaves.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
+	leaves.mCollider = mColliderMap["PineTree_Stem"];
+
+	GameObject stem1{};
+	GameObject leaves1{};
+
+	stem1.mShader = mShaderMap["StandardShader"].get();
+	stem1.mMesh = mMeshMap["Tree_Stem"].get();
+	stem1.mMaterial = mMaterialManager->GetMaterial("TreeMaterial");
+	stem1.SetActiveState(true);
+	stem1.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
+	stem1.mCollider = mColliderMap["Tree_Stem"];
+
+
+	leaves1.mShader = mShaderMap["StandardShader"].get();
+	leaves1.mMesh = mMeshMap["Tree_Leaves"].get();
+	leaves1.mMaterial = mMaterialManager->GetMaterial("TreeLeavesMaterial");
+	leaves1.SetActiveState(true);
+	leaves1.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
+	leaves1.mCollider = mColliderMap["Tree_Stem"];
+
+
+	std::vector<TreeData> treePoses(2000);
+	std::ifstream ifs(envFile, std::ios::binary);
+	if (!ifs) {
+		return;
+	}
+
+	ifs.read(reinterpret_cast<char*>(treePoses.data()), sizeof(TreeData) * 2000);
+	
+
+	// 이후 나무 객체를 생성하는 부분 (stem, leaves 복제)
+	std::vector<GameObject> treeObjects{};
+	for (auto& treedata : treePoses) {
+
+		if (treedata.treeType == 0) {
+			{
+				auto& object = treeObjects.emplace_back();
+				object = stem1.Clone();
+				object.GetTransform().SetPosition(treedata.position);
+				object.GetTransform().Scaling(3.f, 3.f, 3.f);
+			}
+
+			//{
+			//	auto& object = treeObjects.emplace_back();
+			//	object = leaves.Clone();
+			//	object.GetTransform().SetPosition(treedata.position);
+			//	object.GetTransform().Scaling(3.f, 3.f, 3.f);
+			//}
+		}
+		else {
+			{
+				auto& object = treeObjects.emplace_back();
+				object = stem1.Clone();
+				object.GetTransform().SetPosition(treedata.position);
+				object.GetTransform().Scaling(3.f, 3.f, 3.f);
+			}
+
+			{
+				auto& object = treeObjects.emplace_back();
+				object = leaves1.Clone();
+				object.GetTransform().SetPosition(treedata.position);
+				object.GetTransform().Scaling(3.f, 3.f, 3.f);
+			}
+		}
+
+
+		
+	}
+
+	std::move(treeObjects.begin(), treeObjects.end(), std::back_inserter(mGameObjects));
+
+}
+
+void Scene::BakeEnvironment(const std::filesystem::path& path) {
+	const float minDistance = 2.f;    // 최소 간격
+	const int treeCount = 2500;         // 생성할 나무 개수
+	std::vector<SimpleMath::Vector3> treePoses;
+	treePoses.reserve(treeCount);
+
+	// 난수 생성기 설정
+	std::default_random_engine dre(std::random_device{}());
+	std::uniform_real_distribution<float> xPos(-250.f, 250.f);
+	std::uniform_real_distribution<float> zPos(-250.f, 250.f);
+	std::uniform_int_distribution<int> typeDist(0, 1); // 0 또는 1
+
+	// 위치 선정 알고리즘 (x,z 평면에서 최소 간격 유지 및 높이 조건: 40 미만)
+	for (int i = 0; i < treeCount; i++) {
+		SimpleMath::Vector3 pos;
+		bool validPos = false;
+		while (!validPos) {
+			pos.x = xPos(dre);
+			pos.z = zPos(dre);
+			pos.y = tCollider.GetHeight(pos.x, pos.z);  // 지형의 높이 가져오기
+
+			// 높이가 40 이상이면 사용하지 않음
+			if (pos.y >= 40.f)
+				continue;
+
+			validPos = true;
+			// 기존 위치들과의 거리 검사 (x,z 평면 상)
+			for (const auto& other : treePoses) {
+				float dx = pos.x - other.x;
+				float dz = pos.z - other.z;
+				if ((dx * dx + dz * dz) < (minDistance * minDistance)) {
+					validPos = false;
+					break;
+				}
+			}
+		}
+		treePoses.push_back(pos);
+	}
+
+	// 파일에 바이너리 형식으로 기록
+	// 각 레코드: BYTE (0 또는 1) + X (float) + Y (float) + Z (float)
+	std::ofstream ofs(path, std::ios::binary);
+	if (!ofs) {
+		// 파일 열기 실패 처리
+		return;
+	}
+	for (const auto& pos : treePoses) {
+		UINT type = static_cast<UINT>(typeDist(dre));  // 0 또는 1
+		ofs.write(reinterpret_cast<const char*>(&type), sizeof(type));
+		ofs.write(reinterpret_cast<const char*>(&pos.x), sizeof(pos.x));
+		ofs.write(reinterpret_cast<const char*>(&pos.y), sizeof(pos.y));
+		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
+	}
+	ofs.close();
+
+	MessageBox(nullptr, L"Environment Baked", L"Success", MB_OK);
 }
 
 void Scene::BuildBaseAnimationController() {
