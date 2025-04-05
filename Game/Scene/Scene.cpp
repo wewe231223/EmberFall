@@ -111,7 +111,7 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 				mMyPlayer->SetMyPlayer();
 			
 				// mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
-				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
+				 mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
 				mCameraMode->Enter();
 
 				Scene::SetInputBaseAnimMode();
@@ -442,6 +442,8 @@ void Scene::Update() {
 	static BoneTransformBuffer boneTransformBuffer{};
 
 	for (auto& gameObject : mGameObjects) {
+
+
 		if (gameObject) {
 			if (gameObject.mAnimated) {
 				gameObject.UpdateShaderVariables(boneTransformBuffer); 
@@ -461,6 +463,9 @@ void Scene::Update() {
 				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
 			}
 		}
+
+
+
 	}
  
 
@@ -586,6 +591,12 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	data = Loader.Load("Resources/Assets/Tree/PineTree/PineTree.glb", 1);
 	mMeshMap["PineTree_Leaves"] = std::make_unique<Mesh>(device, commandList, data);
 
+	data = Loader.Load("Resources/Assets/Env/Fern.glb");
+	mMeshMap["Fern"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Tree/pine2/pine2.glb");
+	mMeshMap["Pine2"] = std::make_unique<Mesh>(device, commandList, data); 
+	mColliderMap["Pine2"] = Collider{ data.position };
 
 	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, data);
@@ -645,6 +656,11 @@ void Scene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Tree_1Mat_baseColor");
 	mMaterialManager->CreateMaterial("PineTreeLeavesMaterial", mat);
 
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("ferns");
+	mMaterialManager->CreateMaterial("FernMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("pinetree-albedo");
+	mMaterialManager->CreateMaterial("Pine2Material", mat);
 }
 
 void Scene::BuildShader(ComPtr<ID3D12Device> device) {
@@ -674,6 +690,8 @@ void Scene::BuildAniamtionController() {
 	Scene::BuildMageAnimationController(); 
 
 	Scene::BuildMonsterType1AnimationController(); 
+
+
 
 }
 
@@ -720,8 +738,22 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 	leaves1.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
 	leaves1.mCollider = mColliderMap["Tree_Stem"];
 
+	GameObject pinetree{};
+	pinetree.mShader = mShaderMap["StandardShader"].get();
+	pinetree.mMesh = mMeshMap["Pine2"].get();
+	pinetree.SetActiveState(true);
+	pinetree.mMaterial = mMaterialManager->GetMaterial("Pine2Material");
+	pinetree.mCollider = mColliderMap["Pine2"];
 
-	std::vector<TreeData> treePoses(2000);
+	GameObject fern{};
+	fern.mShader = mShaderMap["StandardShader"].get();
+	fern.mMesh = mMeshMap["Fern"].get();
+	fern.mMaterial = mMaterialManager->GetMaterial("FernMaterial");
+	fern.SetActiveState(true);
+
+
+
+	std::vector<TreeData> treePoses(2500);
 	std::ifstream ifs(envFile, std::ios::binary);
 	if (!ifs) {
 		return;
@@ -737,9 +769,9 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 		if (treedata.treeType == 0) {
 			{
 				auto& object = treeObjects.emplace_back();
-				object = stem1.Clone();
+				object = fern.Clone();
 				object.GetTransform().SetPosition(treedata.position);
-				object.GetTransform().Scaling(3.f, 3.f, 3.f);
+				//object.GetTransform().Scaling(3.f, 3.f, 3.f);
 			}
 
 			//{
@@ -752,17 +784,10 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 		else {
 			{
 				auto& object = treeObjects.emplace_back();
-				object = stem1.Clone();
+				object = pinetree.Clone();
 				object.GetTransform().SetPosition(treedata.position);
-				object.GetTransform().Scaling(3.f, 3.f, 3.f);
 			}
 
-			{
-				auto& object = treeObjects.emplace_back();
-				object = leaves1.Clone();
-				object.GetTransform().SetPosition(treedata.position);
-				object.GetTransform().Scaling(3.f, 3.f, 3.f);
-			}
 		}
 
 
