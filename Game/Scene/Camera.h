@@ -3,19 +3,13 @@
 #include "../Game/GameObject/Transform.h"
 #include "../Config/Config.h"
 #include "../Game/GameObject/Collider.h"
+#include "../Utility/Defines.h"
 
 struct CameraParameter {
 	float aspect{Config::WINDOW_WIDTH<float> / Config::WINDOW_HEIGHT<float> };
 	float fov{ DirectX::XMConvertToRadians(60.f) };
 	float nearZ{ 0.1f };
 	float farZ{ 500.f };
-};
-
-struct CameraConstant {
-	SimpleMath::Matrix view{};
-	SimpleMath::Matrix proj{};
-	SimpleMath::Matrix viewProj{};
-	SimpleMath::Vector3 cameraPos{};
 };
 
 class Camera {
@@ -35,7 +29,7 @@ private:
 	DirectX::BoundingFrustum mViewFrustum{};
 	DirectX::BoundingFrustum mWorldFrustum{};
 
-	CameraConstant mCameraConstant{};
+	CameraConstants mCameraConstant{};
 	Transform mTransform{};
 };
 

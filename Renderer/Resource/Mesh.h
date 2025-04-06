@@ -18,6 +18,10 @@ public:
 	Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, EmbeddedMeshType type, UINT size = 1);
 	// SkyBox Ctor!
 	Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, float size = 1.f);
+
+	// 내부 실린더 생성, 내일 여기부터 
+	Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, float radius, float height, UINT segments, const SimpleMath::Vector4& color);
+
 	Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const MeshData& meshData);
 	Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const std::filesystem::path& binPath);
 	~Mesh();

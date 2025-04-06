@@ -110,8 +110,8 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
 				mMyPlayer->SetMyPlayer();
 			
-				 // mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
-				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f,2.5f,5.f });
+				 mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+			    //mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
 				mCameraMode->Enter();
 
 				Scene::SetInputBaseAnimMode();
@@ -299,7 +299,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mSkyBox.mMaterial = mMaterialManager->GetMaterial("SkyBoxMaterial");
 
 
-	  Scene::BuildEnvironment("Resources/Binarys/Terrain/Environment.bin");
+	 Scene::BuildEnvironment("Resources/Binarys/Terrain/Environment.bin");
 	 //std::thread bakeThread{ [this]() {BakeEnvironment("Resources/Binarys/Terrain/Environment.bin");  } };
 	 //bakeThread.detach(); 
 
@@ -539,12 +539,6 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	MeshLoader Loader{};
 	MeshData data{}; 
 
-	data = Loader.Load("Resources/Assets/Tree/stem/Ash1.gltf");
-	mMeshMap["Tree_Stem"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Tree_Stem"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Tree/leaves1/Ash1.gltf");
-	mMeshMap["Tree_Leaves"] = std::make_unique<Mesh>(device, commandList, data);
 
 	mMeshMap["Cube"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Cube, 1);
 
@@ -556,15 +550,6 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 	data = Loader.Load("Resources/Assets/Knight/LongSword/LongSword.gltf");
 	mMeshMap["SwordMan"] = std::make_unique<Mesh>(device, commandList, data);
-
-	data = Loader.Load("Resources/Assets/Stone/Stone1.gltf");
-	mMeshMap["Stone1"] = std::make_unique<Mesh>(device, commandList, data);
-
-	data = Loader.Load("Resources/Assets/Stone/Stone2.gltf");
-	mMeshMap["Stone2"] = std::make_unique<Mesh>(device, commandList, data);
-
-	data = Loader.Load("Resources/Assets/Stone/Stone3.gltf");
-	mMeshMap["Stone3"] = std::make_unique<Mesh>(device, commandList, data);
 
 	data = Loader.Load("Resources/Assets/Mountain/Mountain.gltf");
 	mMeshMap["Mountain"] = std::make_unique<Mesh>(device, commandList, data);
@@ -609,6 +594,29 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mMeshMap["Pine4"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Pine4"] = Collider{ data.position };
 
+	data = Loader.Load("Resources/Assets/Env/Rocks.glb", 0);
+	mMeshMap["Rock_1"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Rock_1"] = Collider{ data.position };
+
+	data = Loader.Load("Resources/Assets/Env/Rocks.glb", 1);
+	mMeshMap["Rock_2"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Rock_2"] = Collider{ data.position };
+
+	data = Loader.Load("Resources/Assets/Env/Rocks.glb", 2);
+	mMeshMap["Rock_3"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Rock_3"] = Collider{ data.position };
+
+	data = Loader.Load("Resources/Assets/Env/Rocks.glb", 3);
+	mMeshMap["Rock_4"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Rock_4"] = Collider{ data.position };
+
+	data = Loader.Load("Resources/Assets/Env/LargeRocks.glb", 0);
+	mMeshMap["LargeRock1"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["LargeRock1"] = Collider{ data.position };
+
+	data = Loader.Load("Resources/Assets/Env/LargeRocks.glb", 1);
+	mMeshMap["LargeRock2"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["LargeRock2"] = Collider{ data.position };
 
 	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, data);
@@ -618,11 +626,6 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 void Scene::BuildMaterial() {
 	MaterialConstants mat{};
-
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Ash_BarkM");
-	mMaterialManager->CreateMaterial("TreeMaterial", mat);
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Leaf_2");
-	mMaterialManager->CreateMaterial("TreeLeavesMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Rolling Hills");
 	mat.mDiffuseTexture[1] = mTextureManager->GetTexture("dirt_2");
@@ -679,6 +682,21 @@ void Scene::BuildMaterial() {
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("pinebranch");
 	mMaterialManager->CreateMaterial("Pine3LeavesMaterial", mat);
+
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Small Rock 1 RFS_DefaultMaterial_AlbedoTransparency");
+	mMaterialManager->CreateMaterial("Rock_1_Material", mat);
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Small Rock 2 RFS_DefaultMaterial_AlbedoTransparency");
+	mMaterialManager->CreateMaterial("Rock_2_Material", mat);
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Small Rock 3 RFS_DefaultMaterial_AlbedoTransparency");
+	mMaterialManager->CreateMaterial("Rock_3_Material", mat);
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Small Rock 4 Moss RFS_DefaultMaterial_AlbedoTransparency");
+	mMaterialManager->CreateMaterial("Rock_4_Material", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Large Rock 1 RFS_DefaultMaterial_AlbedoTransparency");
+	mMaterialManager->CreateMaterial("LargeRock1_Material", mat);
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Large Rock 2 RFS_DefaultMaterial_AlbedoTransparency");
+	mMaterialManager->CreateMaterial("LargeRock2_Material", mat);
 }
 
 void Scene::BuildShader(ComPtr<ID3D12Device> device) {
@@ -719,8 +737,8 @@ void Scene::BuildAniamtionController() {
 
 void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 
-	struct TreeData {
-		UINT treeType;
+	struct EnvData {
+		UINT envType;
 		SimpleMath::Vector3 position; 
 	};
 
@@ -757,6 +775,47 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 	pinetree2.mMaterial = mMaterialManager->GetMaterial("Pine2Material");
 	pinetree2.mCollider = mColliderMap["Pine4"];
 
+	GameObject rock1{};
+	rock1.mShader = mShaderMap["StandardShader"].get();
+	rock1.mMesh = mMeshMap["Rock_1"].get();
+	rock1.mMaterial = mMaterialManager->GetMaterial("Rock_1_Material");
+	rock1.SetActiveState(true);
+	rock1.mCollider = mColliderMap["Rock_1"];
+
+	GameObject rock2{};
+	rock2.mShader = mShaderMap["StandardShader"].get();
+	rock2.mMesh = mMeshMap["Rock_2"].get();
+	rock2.mMaterial = mMaterialManager->GetMaterial("Rock_2_Material");
+	rock2.SetActiveState(true);
+	rock2.mCollider = mColliderMap["Rock_2"];
+
+	GameObject rock3{};
+	rock3.mShader = mShaderMap["StandardShader"].get();
+	rock3.mMesh = mMeshMap["Rock_3"].get();
+	rock3.mMaterial = mMaterialManager->GetMaterial("Rock_3_Material");
+	rock3.SetActiveState(true);
+	rock3.mCollider = mColliderMap["Rock_3"];
+
+	GameObject rock4{};
+	rock4.mShader = mShaderMap["StandardShader"].get();
+	rock4.mMesh = mMeshMap["Rock_4"].get();
+	rock4.mMaterial = mMaterialManager->GetMaterial("Rock_4_Material");
+	rock4.SetActiveState(true);
+	rock4.mCollider = mColliderMap["Rock_4"];
+
+	GameObject bigrock1{};
+	bigrock1.mShader = mShaderMap["StandardShader"].get();
+	bigrock1.mMesh = mMeshMap["LargeRock1"].get();
+	bigrock1.mMaterial = mMaterialManager->GetMaterial("LargeRock1_Material");
+	bigrock1.SetActiveState(true);
+	bigrock1.mCollider = mColliderMap["LargeRock1"];
+
+	GameObject bigrock2{};
+	bigrock2.mShader = mShaderMap["StandardShader"].get();
+	bigrock2.mMesh = mMeshMap["LargeRock2"].get();
+	bigrock2.mMaterial = mMaterialManager->GetMaterial("LargeRock2_Material");
+	bigrock2.SetActiveState(true);
+	bigrock2.mCollider = mColliderMap["LargeRock2"];
 
 	GameObject fern{};
 	fern.mShader = mShaderMap["TreeShader"].get();
@@ -764,89 +823,157 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 	fern.mMaterial = mMaterialManager->GetMaterial("FernMaterial");
 	fern.SetActiveState(true);
 
-
-
-	std::vector<TreeData> treePoses(3000);
 	std::ifstream ifs(envFile, std::ios::binary);
 	if (!ifs) {
 		return;
 	}
 
-	ifs.read(reinterpret_cast<char*>(treePoses.data()), sizeof(TreeData) * 3000);
+	UINT envCount{};
+	ifs.read(reinterpret_cast<char*>(&envCount), sizeof(UINT));
+
+	std::vector<EnvData> envPoses(envCount);
+	ifs.read(reinterpret_cast<char*>(envPoses.data()), sizeof(EnvData) * envCount);
 	
 
 	// 이후 나무 객체를 생성하는 부분 (stem, leaves 복제)
-	std::vector<GameObject> treeObjects{};
-	for (auto& treedata : treePoses) {
-		switch (treedata.treeType){ 
+	std::vector<GameObject> envObjects{};
+	for (auto& envData : envPoses) {
+		switch (envData.envType){ 
 		case 0:
 		{
 			{
-				auto& object = treeObjects.emplace_back();
+				auto& object = envObjects.emplace_back();
 				object = stem.Clone();
-				object.GetTransform().SetPosition(treedata.position);
+				object.GetTransform().SetPosition(envData.position);
 			}
 			{
-				auto& object = treeObjects.emplace_back();
+				auto& object = envObjects.emplace_back();
 				object = leaves.Clone();
-				object.GetTransform().SetPosition(treedata.position);
+				object.GetTransform().SetPosition(envData.position);
 			}
 		}
 		break;
 		case 1:
 		{
-			auto& object = treeObjects.emplace_back();
+			auto& object = envObjects.emplace_back();
 			object = pinetree.Clone();
-			object.GetTransform().SetPosition(treedata.position);
+			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
 		case 2:
 		{
-			auto& object = treeObjects.emplace_back();
+			auto& object = envObjects.emplace_back();
 			object = pinetree2.Clone();
-			object.GetTransform().SetPosition(treedata.position);
+			object.GetTransform().SetPosition(envData.position);
 		}
+		break;
+		case 3:
+		{
+			auto& object = envObjects.emplace_back();
+			object = rock1.Clone();
+			object.GetTransform().SetPosition(envData.position);
+		}
+			break;
+		case 4:
+		{
+			auto& object = envObjects.emplace_back();
+			object = rock2.Clone();
+			object.GetTransform().SetPosition(envData.position);
+		}
+		break;
+		case 5:
+		{
+			auto& object = envObjects.emplace_back();
+			object = rock3.Clone();
+			object.GetTransform().SetPosition(envData.position);
+		}
+		break;
+		case 6:
+		{
+			auto& object = envObjects.emplace_back();
+			object = rock4.Clone();
+			object.GetTransform().SetPosition(envData.position);
+		}
+		case 7:
+		{
+			auto& object = envObjects.emplace_back();
+			object = bigrock1.Clone();
+			object.GetTransform().SetPosition(envData.position);
+		}
+		break;
+		case 8:
+		{
+			auto& object = envObjects.emplace_back();
+			object = bigrock2.Clone();
+			object.GetTransform().SetPosition(envData.position);
+		}
+		break;
+		case 9:
+		{
+			auto& object = envObjects.emplace_back();
+			object = fern.Clone();
+			object.GetTransform().SetPosition(envData.position);
+		}
+		break;
+
 		break;
 		default:
 			break;
 		}
 	}
 
-	std::move(treeObjects.begin(), treeObjects.end(), std::back_inserter(mGameObjects));
+	std::move(envObjects.begin(), envObjects.end(), std::back_inserter(mGameObjects));
 
 }
 
 void Scene::BakeEnvironment(const std::filesystem::path& path) {
-	const float minDistance = 2.f;    // 최소 간격
-	const int treeCount = 3000;         // 생성할 나무 개수
+	// [1] 나무 레이어 설정
+	const float treeMinDistance = 2.f;   // 나무 사이 최소 간격
+	const int treeCount = 2000;            // 생성할 나무 개수
 	std::vector<SimpleMath::Vector3> treePoses;
 	treePoses.reserve(treeCount);
 
-	// 난수 생성기 설정
+	// [2] 돌 레이어 설정
+	const float rockMinDistance = 1.f;     // 돌 사이 최소 간격
+	const int rockCount = 2000;            // 생성할 돌 개수
+	std::vector<SimpleMath::Vector3> rockPoses;
+	rockPoses.reserve(rockCount);
+
+	// [3] 큰 바위 레이어 설정
+	const float bigRockMinDistance = 5.f;  // 큰 바위는 모든 오브젝트와 최소 2.f 간격
+	const int bigRockCount = 100;          // 생성할 큰 바위 개수
+	std::vector<SimpleMath::Vector3> bigRockPoses;
+	bigRockPoses.reserve(bigRockCount);
+
+	// [4] 풀 레이어 설정
+	const int grassCount = 3000;           // 생성할 풀 개수 (필요에 따라 조정)
+	std::vector<SimpleMath::Vector3> grassPoses;
+	grassPoses.reserve(grassCount);
+
+	// 난수 생성기 및 좌표 분포 설정 (x, z 좌표 범위 동일)
 	std::default_random_engine dre(std::random_device{}());
 	std::uniform_real_distribution<float> xPos(-250.f, 250.f);
 	std::uniform_real_distribution<float> zPos(-250.f, 250.f);
-	std::uniform_int_distribution<int> typeDist(0, 2); // 0 또는 1
+	std::uniform_int_distribution<int> treeTypeDist(0, 2);   // 나무 타입: 0, 1, 2
+	std::uniform_int_distribution<int> rockTypeDist(3, 6);     // 돌 타입: 3, 4, 5, 6
+	std::uniform_int_distribution<int> bigRockTypeDist(7, 8);  // 큰 바위 타입: 7 또는 8
+	const UINT grassType = 9;                                // 풀 타입: 9
 
-	// 위치 선정 알고리즘 (x,z 평면에서 최소 간격 유지 및 높이 조건: 40 미만)
+	// [A] 나무 배치 (높이 조건: 40 미만, 최소 거리 조건)
 	for (int i = 0; i < treeCount; i++) {
 		SimpleMath::Vector3 pos;
 		bool validPos = false;
 		while (!validPos) {
 			pos.x = xPos(dre);
 			pos.z = zPos(dre);
-			pos.y = tCollider.GetHeight(pos.x, pos.z) - 0.5f;  // 지형의 높이 가져오기
-
-			// 높이가 40 이상이면 사용하지 않음
-			if (pos.y >= 40.f)
-				continue;
+			pos.y = tCollider.GetHeight(pos.x, pos.z) - 0.5f;
 
 			validPos = true;
-			// 기존 위치들과의 거리 검사 (x,z 평면 상)
+			// 기존 나무들과의 최소 거리 검사 (x,z 평면)
 			for (const auto& other : treePoses) {
 				float dx = pos.x - other.x;
 				float dz = pos.z - other.z;
-				if ((dx * dx + dz * dz) < (minDistance * minDistance)) {
+				if ((dx * dx + dz * dz) < (treeMinDistance * treeMinDistance)) {
 					validPos = false;
 					break;
 				}
@@ -855,16 +982,178 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 		treePoses.push_back(pos);
 	}
 
-	// 파일에 바이너리 형식으로 기록
-	// 각 레코드: BYTE (0 또는 1) + X (float) + Y (float) + Z (float)
+	// [B] 돌 배치 (자신들 사이 최소 거리 조건 + 나무와 겹침 방지)
+	for (int i = 0; i < rockCount; i++) {
+		SimpleMath::Vector3 pos;
+		bool validPos = false;
+		while (!validPos) {
+			pos.x = xPos(dre);
+			pos.z = zPos(dre);
+			pos.y = tCollider.GetHeight(pos.x, pos.z);
+			validPos = true;
+			// 돌들 사이 최소 거리 검사
+			for (const auto& other : rockPoses) {
+				float dx = pos.x - other.x;
+				float dz = pos.z - other.z;
+				if ((dx * dx + dz * dz) < (rockMinDistance * rockMinDistance)) {
+					validPos = false;
+					break;
+				}
+			}
+			if (!validPos)
+				continue;
+			// 나무와 겹치지 않도록 (아주 작은 허용 오차)
+			const float epsilon = 0.01f;
+			for (const auto& tree : treePoses) {
+				float dx = pos.x - tree.x;
+				float dz = pos.z - tree.z;
+				if ((dx * dx + dz * dz) < (epsilon * epsilon)) {
+					validPos = false;
+					break;
+				}
+			}
+		}
+		rockPoses.push_back(pos);
+	}
+
+	// [C] 큰 바위 배치 (모든 기존 오브젝트와 최소 2.f 간격)
+	for (int i = 0; i < bigRockCount; i++) {
+		SimpleMath::Vector3 pos;
+		bool validPos = false;
+		while (!validPos) {
+			pos.x = xPos(dre);
+			pos.z = zPos(dre);
+			pos.y = tCollider.GetHeight(pos.x, pos.z);
+			validPos = true;
+			// 나무와의 최소 거리 검사
+			for (const auto& tree : treePoses) {
+				float dx = pos.x - tree.x;
+				float dz = pos.z - tree.z;
+				if ((dx * dx + dz * dz) < (bigRockMinDistance * bigRockMinDistance)) {
+					validPos = false;
+					break;
+				}
+			}
+			if (!validPos) continue;
+			// 돌과의 최소 거리 검사
+			for (const auto& rock : rockPoses) {
+				float dx = pos.x - rock.x;
+				float dz = pos.z - rock.z;
+				if ((dx * dx + dz * dz) < (bigRockMinDistance * bigRockMinDistance)) {
+					validPos = false;
+					break;
+				}
+			}
+			if (!validPos) continue;
+			// 이미 배치된 큰 바위와의 최소 거리 검사
+			for (const auto& bRock : bigRockPoses) {
+				float dx = pos.x - bRock.x;
+				float dz = pos.z - bRock.z;
+				if ((dx * dx + dz * dz) < (bigRockMinDistance * bigRockMinDistance)) {
+					validPos = false;
+					break;
+				}
+			}
+		}
+		bigRockPoses.push_back(pos);
+	}
+
+	// [D] 풀 배치 (큰 바위와는 최소 2.f, 나머지 오브젝트(나무, 돌, 이미 배치된 풀)와는 정확히 겹치지 않도록)
+	for (int i = 0; i < grassCount; i++) {
+		SimpleMath::Vector3 pos;
+		bool validPos = false;
+		while (!validPos) {
+			pos.x = xPos(dre);
+			pos.z = zPos(dre);
+			pos.y = tCollider.GetHeight(pos.x, pos.z);
+			validPos = true;
+			const float epsilon = 0.01f;  // 아주 작은 허용 오차
+
+			// 나무와의 위치 검사 (정확히 겹치지 않도록)
+			for (const auto& tree : treePoses) {
+				float dx = pos.x - tree.x;
+				float dz = pos.z - tree.z;
+				if ((dx * dx + dz * dz) < (epsilon * epsilon)) {
+					validPos = false;
+					break;
+				}
+			}
+			if (!validPos)
+				continue;
+			// 돌과의 위치 검사 (정확히 겹치지 않도록)
+			for (const auto& rock : rockPoses) {
+				float dx = pos.x - rock.x;
+				float dz = pos.z - rock.z;
+				if ((dx * dx + dz * dz) < (epsilon * epsilon)) {
+					validPos = false;
+					break;
+				}
+			}
+			if (!validPos)
+				continue;
+			// 큰 바위와의 최소 거리 검사 (2.f)
+			for (const auto& bRock : bigRockPoses) {
+				float dx = pos.x - bRock.x;
+				float dz = pos.z - bRock.z;
+				if ((dx * dx + dz * dz) < (2.f * 2.f)) {
+					validPos = false;
+					break;
+				}
+			}
+			if (!validPos)
+				continue;
+			// 이미 배치된 풀과의 위치 검사 (정확히 겹치지 않도록)
+			for (const auto& grass : grassPoses) {
+				float dx = pos.x - grass.x;
+				float dz = pos.z - grass.z;
+				if ((dx * dx + dz * dz) < (epsilon * epsilon)) {
+					validPos = false;
+					break;
+				}
+			}
+		}
+		grassPoses.push_back(pos);
+	}
+
+	// [E] 파일에 기록 (파일 맨 앞에 총 오브젝트 개수 기록)
 	std::ofstream ofs(path, std::ios::binary);
 	if (!ofs) {
 		// 파일 열기 실패 처리
 		return;
 	}
+	UINT totalObjects = treeCount + rockCount + bigRockCount + grassCount;
+	ofs.write(reinterpret_cast<const char*>(&totalObjects), sizeof(totalObjects));
+
+	// 나무 레이어 기록 (타입: 0 ~ 2)
 	for (const auto& pos : treePoses) {
-		UINT type = static_cast<UINT>(typeDist(dre));  // 0 또는 1
+		UINT type = static_cast<UINT>(treeTypeDist(dre));
 		ofs.write(reinterpret_cast<const char*>(&type), sizeof(type));
+		ofs.write(reinterpret_cast<const char*>(&pos.x), sizeof(pos.x));
+		ofs.write(reinterpret_cast<const char*>(&pos.y), sizeof(pos.y));
+		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
+	}
+
+	// 돌 레이어 기록 (타입: 3 ~ 6)
+	for (const auto& pos : rockPoses) {
+		UINT type = static_cast<UINT>(rockTypeDist(dre));
+		ofs.write(reinterpret_cast<const char*>(&type), sizeof(type));
+		ofs.write(reinterpret_cast<const char*>(&pos.x), sizeof(pos.x));
+		ofs.write(reinterpret_cast<const char*>(&pos.y), sizeof(pos.y));
+		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
+	}
+
+	// 큰 바위 레이어 기록 (타입: 7 또는 8)
+	for (const auto& pos : bigRockPoses) {
+		UINT type = static_cast<UINT>(bigRockTypeDist(dre));
+		ofs.write(reinterpret_cast<const char*>(&type), sizeof(type));
+		ofs.write(reinterpret_cast<const char*>(&pos.x), sizeof(pos.x));
+		ofs.write(reinterpret_cast<const char*>(&pos.y), sizeof(pos.y));
+		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
+	}
+
+	// 풀 레이어 기록 (타입 고정: 9)
+	for (const auto& pos : grassPoses) {
+		ofs.write(reinterpret_cast<const char*>(&grassType), sizeof(grassType));
 		ofs.write(reinterpret_cast<const char*>(&pos.x), sizeof(pos.x));
 		ofs.write(reinterpret_cast<const char*>(&pos.y), sizeof(pos.y));
 		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
@@ -873,6 +1162,8 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 
 	MessageBox(nullptr, L"Environment Baked", L"Success", MB_OK);
 }
+
+
 
 void Scene::BuildBaseAnimationController() {
 	// Base Anim 
