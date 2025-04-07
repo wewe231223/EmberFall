@@ -337,6 +337,19 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	{
 		auto& object = mGameObjects.emplace_back();
 		object.mShader = mShaderMap["StandardShader"].get();
+		object.mMesh = mMeshMap["Mountain1"].get();
+		object.mMaterial = mMaterialManager->GetMaterial("Mountain1Material");
+		object.mCollider = mColliderMap["Mountain1"];
+		object.SetActiveState(true);
+
+		object.GetTransform().GetPosition() = { 261.f,tCollider.GetHeight(261.f, 284.f) - 10.f, 284.f };
+		object.GetTransform().Scaling(2.f, 2.f, 2.f);
+	}
+
+
+	{
+		auto& object = mGameObjects.emplace_back();
+		object.mShader = mShaderMap["StandardShader"].get();
 		object.mMesh = mMeshMap["Mountain"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
 		object.mCollider = mColliderMap["Mountain"];
@@ -443,6 +456,32 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.GetTransform().Scaling(50.f, 1.f, 50.f);
 	}
 
+
+	{
+		auto& object = mGameObjects.emplace_back();
+		object.mShader = mShaderMap["StandardShader"].get();
+		object.mMesh = mMeshMap["Mountain"].get();
+		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
+		object.mCollider = mColliderMap["Mountain"];
+		object.SetActiveState(true);
+
+		object.GetTransform().GetPosition() = { -83.f,tCollider.GetHeight(-83.f, 300.f) - 10.f, 300.f };
+		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
+	}
+
+
+
+	{
+		auto& object = mGameObjects.emplace_back();
+		object.mShader = mShaderMap["StandardShader"].get();
+		object.mMesh = mMeshMap["Mountain"].get();
+		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
+		object.mCollider = mColliderMap["Mountain"];
+		object.SetActiveState(true);
+
+		object.GetTransform().GetPosition() = { -240.f,tCollider.GetHeight(-240.f, 300.f) - 20.f, 300.f };
+		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
+	}
 
 	{
 		mEquipments["Sword"] = EquipmentObject{}; 
