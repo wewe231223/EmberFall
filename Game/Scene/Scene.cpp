@@ -110,8 +110,8 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
 				mMyPlayer->SetMyPlayer();
 			
-				mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
-			    //mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
+				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+			    mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
 				mCameraMode->Enter();
 
 				Scene::SetInputBaseAnimMode();
@@ -905,7 +905,7 @@ void Scene::BuildAniamtionController() {
 void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 
 	struct EnvData {
-		UINT envType;
+		EnvironmentType envType;
 		SimpleMath::Vector3 position; 
 	};
 
@@ -1007,7 +1007,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 	std::vector<GameObject> envObjects{};
 	for (auto& envData : envPoses) {
 		switch (envData.envType){ 
-		case 0:
+		case EnvironmentType::Tree1:
 		{
 			{
 				auto& object = envObjects.emplace_back();
@@ -1021,63 +1021,63 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 			}
 		}
 		break;
-		case 1:
+		case EnvironmentType::Tree2:
 		{
 			auto& object = envObjects.emplace_back();
 			object = pinetree.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case 2:
+		case EnvironmentType::Tree3:
 		{
 			auto& object = envObjects.emplace_back();
 			object = pinetree2.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case 3:
+		case EnvironmentType::Rock1:
 		{
 			auto& object = envObjects.emplace_back();
 			object = rock1.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case 4:
+		case EnvironmentType::Rock2:
 		{
 			auto& object = envObjects.emplace_back();
 			object = rock2.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case 5:
+		case EnvironmentType::Rock3:
 		{
 			auto& object = envObjects.emplace_back();
 			object = rock3.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case 6:
+		case EnvironmentType::Rock4:
 		{
 			auto& object = envObjects.emplace_back();
 			object = rock4.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break; 
-		case 7:
+		case EnvironmentType::LargeRock1:
 		{
 			auto& object = envObjects.emplace_back();
 			object = bigrock1.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case 8:
+		case EnvironmentType::LargeRock2:
 		{
 			auto& object = envObjects.emplace_back();
 			object = bigrock2.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case 9:
+		case EnvironmentType::Fern:
 		{
 			auto& object = envObjects.emplace_back();
 			object = fern.Clone();
@@ -1099,46 +1099,40 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 }
 
 void Scene::BakeEnvironment(const std::filesystem::path& path) {
-	// [1] 내부 나무 (Interior Trees)
-	const float treeMinDistance = 2.f;         // 나무 간 최소 간격
-	const int interiorTreeCount = 1000;          // 내부 나무 개수 (총 2000개 중 80%)
+
+	const float treeMinDistance = 2.f;         
+	const int interiorTreeCount = 1000;          
 	std::vector<SimpleMath::Vector3> interiorTreePoses;
 	interiorTreePoses.reserve(interiorTreeCount);
 
-	// [2] 외곽 나무 (Border Trees)
-	// 전체 영역은 [-512,512]이고, 내부 영역([-250,250])를 제외한 곳에 배치
-	// 외곽 나무는 400개 (총 2000개 중 20%)
+
 	const int borderTreeCount = 300;
 	std::vector<SimpleMath::Vector3> borderTreePoses;
 	borderTreePoses.reserve(borderTreeCount);
 
-	// [3] 돌 레이어 (Rock)
-	const float rockMinDistance = 1.f;           // 돌 간 최소 간격
+	const float rockMinDistance = 1.f;           
 	const int rockCount = 500;
 	std::vector<SimpleMath::Vector3> rockPoses;
 	rockPoses.reserve(rockCount);
 
-	// [4] 큰 바위 레이어 (Big Rock)
-	const float bigRockMinDistance = 5.f;        // 큰 바위 간 최소 간격
+	const float bigRockMinDistance = 5.f;        
 	const int bigRockCount = 300;
 	std::vector<SimpleMath::Vector3> bigRockPoses;
 	bigRockPoses.reserve(bigRockCount);
 
-	// [5] 풀 레이어 (Grass)
 	const int grassCount = 1000;
 	std::vector<SimpleMath::Vector3> grassPoses;
 	grassPoses.reserve(grassCount);
 
-	// 난수 생성기 및 좌표 분포 설정
+
 	std::default_random_engine dre(std::random_device{}());
-	// 내부 나무용: x,z ∈ [-250,250]
+
 	std::uniform_real_distribution<float> xPosInterior(-250.f, 250.f);
 	std::uniform_real_distribution<float> zPosInterior(-250.f, 250.f);
-	// 외곽 나무용: x,z ∈ [-512,512]
+
 	std::uniform_real_distribution<float> xPosBorder(-512.f, 512.f);
 	std::uniform_real_distribution<float> zPosBorder(-512.f, 512.f);
 
-	// 내부 나무 배치 (높이 제한 없이, 서로 최소 간격 유지)
 	std::uniform_int_distribution<int> interiorTreeTypeDist(0, 2);
 	for (int i = 0; i < interiorTreeCount; i++) {
 		SimpleMath::Vector3 pos;
@@ -1160,22 +1154,20 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 		interiorTreePoses.push_back(pos);
 	}
 
-	// 외곽 나무 배치
-	// 전체 영역 [-512,512]에서 내부 영역([-250,250])를 제외한 곳에서 랜덤하게 배치
-	// 단, 배치할 때 tCollider.GetHeight(x,z)-0.5f가 110 이상인 곳에만 설치합니다.
+
 	while (static_cast<int>(borderTreePoses.size()) < borderTreeCount) {
 		SimpleMath::Vector3 pos;
 		pos.x = xPosBorder(dre);
 		pos.z = zPosBorder(dre);
-		// 내부 영역에 속하면 건너뜀
+
 		if (pos.x >= -250.f && pos.x <= 250.f &&
 			pos.z >= -250.f && pos.z <= 250.f)
 			continue;
 		pos.y = tCollider.GetHeight(pos.x, pos.z) - 0.5f;
-		// 외곽 나무는 지형 높이가 110 이상인 곳에서만 설치
+
 		if (pos.y < 110.f)
 			continue;
-		// 외곽 나무들 간 최소 간격 검사
+
 		bool validPos = true;
 		for (const auto& other : borderTreePoses) {
 			float dx = pos.x - other.x;
@@ -1190,8 +1182,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 		borderTreePoses.push_back(pos);
 	}
 
-	// 돌 배치 (Rock)
-	// 내부 영역에서 배치하며, 내부 나무와 겹치지 않도록 아주 작은 허용 오차 사용
+
 	std::uniform_int_distribution<int> rockTypeDist(3, 6);
 	for (int i = 0; i < rockCount; i++) {
 		SimpleMath::Vector3 pos;
@@ -1201,7 +1192,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 			pos.z = zPosInterior(dre);
 			pos.y = tCollider.GetHeight(pos.x, pos.z);
 			validPos = true;
-			// 돌들 간 최소 간격 검사
+
 			for (const auto& other : rockPoses) {
 				float dx = pos.x - other.x;
 				float dz = pos.z - other.z;
@@ -1212,7 +1203,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 			}
 			if (!validPos)
 				continue;
-			// 내부 나무와 중복되지 않도록 아주 작은 허용 오차 검사
+
 			const float epsilon = 0.01f;
 			for (const auto& tree : interiorTreePoses) {
 				float dx = pos.x - tree.x;
@@ -1226,7 +1217,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 		rockPoses.push_back(pos);
 	}
 
-	// 큰 바위 배치 (Big Rock)
+
 	std::uniform_int_distribution<int> bigRockTypeDist(7, 8);
 	for (int i = 0; i < bigRockCount; i++) {
 		SimpleMath::Vector3 pos;
@@ -1236,7 +1227,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 			pos.z = zPosInterior(dre);
 			pos.y = tCollider.GetHeight(pos.x, pos.z);
 			validPos = true;
-			// 내부 나무와의 간격 검사
+
 			for (const auto& tree : interiorTreePoses) {
 				float dx = pos.x - tree.x;
 				float dz = pos.z - tree.z;
@@ -1247,7 +1238,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 			}
 			if (!validPos)
 				continue;
-			// 돌과의 간격 검사
+
 			for (const auto& rock : rockPoses) {
 				float dx = pos.x - rock.x;
 				float dz = pos.z - rock.z;
@@ -1258,7 +1249,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 			}
 			if (!validPos)
 				continue;
-			// 이미 배치된 큰 바위와의 간격 검사
+
 			for (const auto& bRock : bigRockPoses) {
 				float dx = pos.x - bRock.x;
 				float dz = pos.z - bRock.z;
@@ -1271,7 +1262,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 		bigRockPoses.push_back(pos);
 	}
 
-	// 풀 배치 (Grass)
+
 	for (int i = 0; i < grassCount; i++) {
 		SimpleMath::Vector3 pos;
 		bool validPos = false;
@@ -1329,7 +1320,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 	region1TreePoses.reserve(region1TreeCount);
 	std::uniform_real_distribution<float> xPosRegion1(250.f, 260.f);
 	std::uniform_real_distribution<float> zPosRegion1(60.f, -244.f);
-	std::uniform_int_distribution<int> treeTypeDist(1, 2); // 타입 1,2만 사용
+	std::uniform_int_distribution<int> treeTypeDist(1, 2);
 
 	for (int i = 0; i < region1TreeCount; i++) {
 		SimpleMath::Vector3 pos;
@@ -1355,16 +1346,16 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 	}
 
 
-	// [E] 파일 기록 (맨 앞에 총 오브젝트 개수 기록)
+
 	std::ofstream ofs(path, std::ios::binary);
 	if (!ofs) {
 		return;
 	}
-	// 총 오브젝트 수 = 내부 나무 + 외곽 나무 + 돌 + 큰 바위 + 풀
+
 	UINT totalObjects = interiorTreeCount + borderTreeCount + rockCount + bigRockCount + grassCount + region1TreeCount + region2TreeCount;
 	ofs.write(reinterpret_cast<const char*>(&totalObjects), sizeof(totalObjects));
 
-	// 내부 나무 기록 (타입: 0, 1, 2 중 무작위)
+
 	for (const auto& pos : interiorTreePoses) {
 		UINT type = static_cast<UINT>(interiorTreeTypeDist(dre));
 		ofs.write(reinterpret_cast<const char*>(&type), sizeof(type));
@@ -1373,7 +1364,6 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
 	}
 
-	// 외곽 나무 기록 (타입: 1 또는 2)
 	std::uniform_int_distribution<int> borderTreeTypeDist(1, 2);
 	for (const auto& pos : borderTreePoses) {
 		UINT type = static_cast<UINT>(borderTreeTypeDist(dre));
@@ -1383,7 +1373,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
 	}
 
-	// 돌 기록 (타입: 3 ~ 6)
+
 	for (const auto& pos : rockPoses) {
 		UINT type = static_cast<UINT>(rockTypeDist(dre));
 		ofs.write(reinterpret_cast<const char*>(&type), sizeof(type));
@@ -1392,7 +1382,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
 	}
 
-	// 큰 바위 기록 (타입: 7 또는 8)
+
 	for (const auto& pos : bigRockPoses) {
 		UINT type = static_cast<UINT>(bigRockTypeDist(dre));
 		ofs.write(reinterpret_cast<const char*>(&type), sizeof(type));
@@ -1401,7 +1391,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
 	}
 
-	// 풀 기록 (타입 고정: 9)
+
 	const UINT grassType = 9;
 	for (const auto& pos : grassPoses) {
 		ofs.write(reinterpret_cast<const char*>(&grassType), sizeof(grassType));
@@ -1410,7 +1400,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
 	}
 
-	// 영역 1 나무 기록 (타입: 1 또는 2)
+
 	for (const auto& pos : region1TreePoses) {
 		UINT type = static_cast<UINT>(borderTreeTypeDist(dre));
 		ofs.write(reinterpret_cast<const char*>(&type), sizeof(type));
@@ -1419,7 +1409,7 @@ void Scene::BakeEnvironment(const std::filesystem::path& path) {
 		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
 	}
 
-	// 영역 2 나무 기록 (타입: 1 또는 2)
+
 	for (const auto& pos : region2TreePoses) {
 		UINT type = static_cast<UINT>(borderTreeTypeDist(dre));
 		ofs.write(reinterpret_cast<const char*>(&type), sizeof(type));
