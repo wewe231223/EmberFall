@@ -53,13 +53,14 @@ float ComputeShadowFactor(float4 shadowPosH, float bias)
         float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
         float2(-dx, dy), float2(0.0f, dy), float2(dx, dy)
     };
-    float percentLit = 0.5f;
+    float percentLit = 0.0f;
     [unroll]
     for (int i = 0; i < 9; ++i)
     {
         percentLit += GBuffers[3].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
     }
-    return (percentLit) / 9.0f;
+    float litRatio = percentLit / 9.0f;
+    return lerp(0.5f, 1.0f, litRatio);
 }
 
 float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
