@@ -98,7 +98,7 @@ Deffered_POUT Standard_PS(Standard_VOUT input) {
     
     clip(color.a - 0.2f);
 
-    output.diffuse = Fog(color, input.vPosition.z, 50.f, 100.f);
+    output.diffuse = color; 
     output.position = float4(input.wPosition, 1.0f);
     
     return output;

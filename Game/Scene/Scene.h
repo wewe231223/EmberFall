@@ -81,6 +81,8 @@ private:
 	std::unordered_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
 	std::vector<GameObject> mGameObjects{};
 
+	std::vector<GameObject> mEnvironmentObjects{};
+
 	int mNetworkSign{};
 	int mInputSign{}; 
 	std::vector<DirectX::Keyboard::Keys> mSendKeyList{};
@@ -102,6 +104,7 @@ private:
 	AnimatorGraph::AnimationGraphController mMonsterType1AnimationController{}; 
 
 	GameObject mSkyBox{};
+	GameObject mSkyFog{};
 
 	TerrainLoader tLoader{}; 
 	TerrainCollider tCollider{};

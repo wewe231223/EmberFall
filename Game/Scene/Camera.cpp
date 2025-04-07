@@ -22,13 +22,7 @@ void Camera::UpdateBuffer() {
 }
 
 bool Camera::FrustumCulling(Collider& other) const {
-
 	auto& box = other.GetWorldBox();
-
-
-	if (SimpleMath::Vector3::DistanceSquared(mTransform.GetPosition(), box.Center) > 130.f * 130.f) {
-		return false;
-	}
 
 	return mWorldFrustum.Intersects(box);
 }
@@ -39,7 +33,7 @@ CameraMode::CameraMode(Camera* camera) : mCamera(camera) {
 FreeCameraMode::FreeCameraMode(Camera* camera) : CameraMode(camera) {
 }
 
-constexpr float FREE_CAMERA_SPEED = 50.f;
+constexpr float FREE_CAMERA_SPEED = 90.f;
 void FreeCameraMode::Enter() {
 	mInputCallBackSign = NonReplacementSampler::GetInstance().Sample();
 

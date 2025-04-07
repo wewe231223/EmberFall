@@ -29,7 +29,7 @@ Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comman
 		};
 
 		UINT planeIndices[] = {
-			0, 1, 2, 0, 2, 3
+			0, 2, 1, 0, 3, 2
 		};
 
 		positions.assign(planePositions, planePositions + 4);
@@ -473,6 +473,64 @@ Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comman
 
 	mUnitCount = static_cast<UINT>(indices.size());
 	mIndexed = true;
+	mPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+}
+
+Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, float radius, float height, UINT segments) {
+
+	std::vector<SimpleMath::Vector3> positions{};
+
+	std::vector<UINT> indices{}; 
+
+
+	for (unsigned int i = 0; i < segments; ++i) {
+		float angle = 2.0f * static_cast<float>(DirectX::XM_PI) * i / segments;
+		float x = radius * std::cos(angle);
+		float z = radius * std::sin(angle);
+		float yBottom = -height / 2.0f;
+		float yTop = height / 2.0f;
+
+		positions.emplace_back( x, yBottom, z );
+		positions.emplace_back( x, yTop, z );
+	}
+
+	for (unsigned int i = 0; i < segments; ++i) {
+		unsigned int next = (i + 1) % segments;
+
+		unsigned int bottom_i = 2 * i;
+		unsigned int top_i = 2 * i + 1;
+		unsigned int bottom_next = 2 * next;
+		unsigned int top_next = 2 * next + 1;
+
+		// 삼각형 1: (bottom_i, bottom_next, top_i)
+		indices.push_back(bottom_i);
+		indices.push_back(bottom_next);
+		indices.push_back(top_i);
+
+		// 삼각형 2: (top_i, bottom_next, top_next)
+		indices.push_back(top_i);
+		indices.push_back(bottom_next);
+		indices.push_back(top_next);
+	}
+
+	{
+		auto& buffer = mVertexBuffers.emplace_back(device, commandList, sizeof(SimpleMath::Vector3), positions.size(), positions.data());
+		D3D12_VERTEX_BUFFER_VIEW view{};
+		view.BufferLocation = *buffer.GPUBegin();
+		view.StrideInBytes = sizeof(SimpleMath::Vector3);
+		view.SizeInBytes = static_cast<UINT>(positions.size()) * sizeof(SimpleMath::Vector3);
+
+		mVertexBufferViews[0] = view;
+		mAttribute.set(0);
+	}
+
+	mIndexed = true;
+	mIndexBuffer = DefaultBuffer{ device, commandList, sizeof(UINT), indices.size(), indices.data() };
+	mIndexBufferView.BufferLocation = *mIndexBuffer.GPUBegin();
+	mIndexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	mIndexBufferView.SizeInBytes = static_cast<UINT>(indices.size()) * sizeof(UINT);
+
+	mUnitCount = static_cast<UINT>(indices.size());
 	mPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 }
 

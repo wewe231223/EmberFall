@@ -148,6 +148,9 @@
     <FxCompile Include="..\Shader\Sources\ParticleSO.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="..\Shader\Sources\SkyFog.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\Shader\ShaderMetadata.txt">
