@@ -32,6 +32,9 @@
     <Filter Include="Common\Packets">
       <UniqueIdentifier>{e2d23796-4f9b-4a94-8f64-71bc3fb8aa34}</UniqueIdentifier>
     </Filter>
+    <Filter Include="NewFilter1">
+      <UniqueIdentifier>{44f33d66-3009-4536-bab7-197a8f87ca78}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetworkUtils.cpp">
@@ -102,6 +105,9 @@
     </ClCompile>
     <ClCompile Include="ProtocolEnums.cpp">
       <Filter>Common\Protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="FbsPacketFactory.cpp">
+      <Filter>NewFilter1</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -176,6 +182,9 @@
     </ClInclude>
     <ClInclude Include="ProtocolEnums.h">
       <Filter>Common\Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="FbsPacketFactory.h">
+      <Filter>NewFilter1</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -9,7 +9,6 @@ namespace Packets;
 //////////////////////////////////////////////////////////////
 
 table FireProjectileSC {
-	header: PacketHeaderSC;
 	objectId: ushort;
 	dir: Vec3;
 	startPos: Vec3;
@@ -18,7 +17,6 @@ table FireProjectileSC {
 }
 
 table ProjectileMoveSC {
-	header: PacketHeaderSC;
 	objectId:ushort;
 	pos: Vec3;
 	dir: Vec3;
@@ -32,12 +30,10 @@ table ProjectileMoveSC {
 //////////////////////////////////////////////////////////////
 
 table RequestAttackCS {
-	header: PacketHeaderCS;
 	dir: Vec3;
 }
 
 table RequestFireCS {
-	header: PacketHeaderCS;
 	dir: Vec3;	
 	projectileType: ProjectileTypes;
 }

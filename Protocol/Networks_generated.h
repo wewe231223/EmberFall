@@ -100,19 +100,13 @@ inline ::flatbuffers::Offset<ProtocolVersionSC> CreateProtocolVersionSC(
 struct NotifyIdSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef NotifyIdSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_PLAYERID = 6
+    VT_PLAYERID = 4
   };
-  const Packets::PacketHeaderSC *header() const {
-    return GetPointer<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
   uint8_t playerId() const {
     return GetField<uint8_t>(VT_PLAYERID, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
            VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
            verifier.EndTable();
   }
@@ -122,9 +116,6 @@ struct NotifyIdSCBuilder {
   typedef NotifyIdSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderSC> header) {
-    fbb_.AddOffset(NotifyIdSC::VT_HEADER, header);
-  }
   void add_playerId(uint8_t playerId) {
     fbb_.AddElement<uint8_t>(NotifyIdSC::VT_PLAYERID, playerId, 0);
   }
@@ -141,10 +132,8 @@ struct NotifyIdSCBuilder {
 
 inline ::flatbuffers::Offset<NotifyIdSC> CreateNotifyIdSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderSC> header = 0,
     uint8_t playerId = 0) {
   NotifyIdSCBuilder builder_(_fbb);
-  builder_.add_header(header);
   builder_.add_playerId(playerId);
   return builder_.Finish();
 }
@@ -152,19 +141,13 @@ inline ::flatbuffers::Offset<NotifyIdSC> CreateNotifyIdSC(
 struct PlayerExitSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PlayerExitSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_PLAYERID = 6
+    VT_PLAYERID = 4
   };
-  const Packets::PacketHeaderSC *header() const {
-    return GetPointer<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
   uint8_t playerId() const {
     return GetField<uint8_t>(VT_PLAYERID, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
            VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
            verifier.EndTable();
   }
@@ -174,9 +157,6 @@ struct PlayerExitSCBuilder {
   typedef PlayerExitSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderSC> header) {
-    fbb_.AddOffset(PlayerExitSC::VT_HEADER, header);
-  }
   void add_playerId(uint8_t playerId) {
     fbb_.AddElement<uint8_t>(PlayerExitSC::VT_PLAYERID, playerId, 0);
   }
@@ -193,10 +173,8 @@ struct PlayerExitSCBuilder {
 
 inline ::flatbuffers::Offset<PlayerExitSC> CreatePlayerExitSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderSC> header = 0,
     uint8_t playerId = 0) {
   PlayerExitSCBuilder builder_(_fbb);
-  builder_.add_header(header);
   builder_.add_playerId(playerId);
   return builder_.Finish();
 }
@@ -205,21 +183,8 @@ inline ::flatbuffers::Offset<PlayerExitSC> CreatePlayerExitSC(
 //////////////////////////////////////////////////////////////
 struct PlayerExitCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PlayerExitCSBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_PLAYERID = 6
-  };
-  const Packets::PacketHeaderSC *header() const {
-    return GetPointer<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
-  uint8_t playerId() const {
-    return GetField<uint8_t>(VT_PLAYERID, 0);
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
-           VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
            verifier.EndTable();
   }
 };
@@ -228,12 +193,6 @@ struct PlayerExitCSBuilder {
   typedef PlayerExitCS Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderSC> header) {
-    fbb_.AddOffset(PlayerExitCS::VT_HEADER, header);
-  }
-  void add_playerId(uint8_t playerId) {
-    fbb_.AddElement<uint8_t>(PlayerExitCS::VT_PLAYERID, playerId, 0);
-  }
   explicit PlayerExitCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -246,33 +205,22 @@ struct PlayerExitCSBuilder {
 };
 
 inline ::flatbuffers::Offset<PlayerExitCS> CreatePlayerExitCS(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderSC> header = 0,
-    uint8_t playerId = 0) {
+    ::flatbuffers::FlatBufferBuilder &_fbb) {
   PlayerExitCSBuilder builder_(_fbb);
-  builder_.add_header(header);
-  builder_.add_playerId(playerId);
   return builder_.Finish();
 }
 
 struct PlayerLookCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PlayerLookCSBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_LOOK = 6
+    VT_LOOK = 4
   };
-  const Packets::PacketHeaderCS *header() const {
-    return GetPointer<const Packets::PacketHeaderCS *>(VT_HEADER);
-  }
   const Packets::Vec3 *look() const {
-    return GetPointer<const Packets::Vec3 *>(VT_LOOK);
+    return GetStruct<const Packets::Vec3 *>(VT_LOOK);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
-           VerifyOffset(verifier, VT_LOOK) &&
-           verifier.VerifyTable(look()) &&
+           VerifyField<Packets::Vec3>(verifier, VT_LOOK, 4) &&
            verifier.EndTable();
   }
 };
@@ -281,11 +229,8 @@ struct PlayerLookCSBuilder {
   typedef PlayerLookCS Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderCS> header) {
-    fbb_.AddOffset(PlayerLookCS::VT_HEADER, header);
-  }
-  void add_look(::flatbuffers::Offset<Packets::Vec3> look) {
-    fbb_.AddOffset(PlayerLookCS::VT_LOOK, look);
+  void add_look(const Packets::Vec3 *look) {
+    fbb_.AddStruct(PlayerLookCS::VT_LOOK, look);
   }
   explicit PlayerLookCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -300,30 +245,22 @@ struct PlayerLookCSBuilder {
 
 inline ::flatbuffers::Offset<PlayerLookCS> CreatePlayerLookCS(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderCS> header = 0,
-    ::flatbuffers::Offset<Packets::Vec3> look = 0) {
+    const Packets::Vec3 *look = nullptr) {
   PlayerLookCSBuilder builder_(_fbb);
   builder_.add_look(look);
-  builder_.add_header(header);
   return builder_.Finish();
 }
 
 struct PlayerSelectWeaponCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PlayerSelectWeaponCSBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_WEAPON = 6
+    VT_WEAPON = 4
   };
-  const Packets::PacketHeaderCS *header() const {
-    return GetPointer<const Packets::PacketHeaderCS *>(VT_HEADER);
-  }
   Packets::Weapon weapon() const {
     return static_cast<Packets::Weapon>(GetField<uint8_t>(VT_WEAPON, 0));
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
            VerifyField<uint8_t>(verifier, VT_WEAPON, 1) &&
            verifier.EndTable();
   }
@@ -333,9 +270,6 @@ struct PlayerSelectWeaponCSBuilder {
   typedef PlayerSelectWeaponCS Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderCS> header) {
-    fbb_.AddOffset(PlayerSelectWeaponCS::VT_HEADER, header);
-  }
   void add_weapon(Packets::Weapon weapon) {
     fbb_.AddElement<uint8_t>(PlayerSelectWeaponCS::VT_WEAPON, static_cast<uint8_t>(weapon), 0);
   }
@@ -352,26 +286,16 @@ struct PlayerSelectWeaponCSBuilder {
 
 inline ::flatbuffers::Offset<PlayerSelectWeaponCS> CreatePlayerSelectWeaponCS(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderCS> header = 0,
     Packets::Weapon weapon = Packets::Weapon_SWORD) {
   PlayerSelectWeaponCSBuilder builder_(_fbb);
-  builder_.add_header(header);
   builder_.add_weapon(weapon);
   return builder_.Finish();
 }
 
 struct PlayerSelectRollCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PlayerSelectRollCSBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4
-  };
-  const Packets::PacketHeaderCS *header() const {
-    return GetPointer<const Packets::PacketHeaderCS *>(VT_HEADER);
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
            verifier.EndTable();
   }
 };
@@ -380,9 +304,6 @@ struct PlayerSelectRollCSBuilder {
   typedef PlayerSelectRollCS Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderCS> header) {
-    fbb_.AddOffset(PlayerSelectRollCS::VT_HEADER, header);
-  }
   explicit PlayerSelectRollCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -395,10 +316,8 @@ struct PlayerSelectRollCSBuilder {
 };
 
 inline ::flatbuffers::Offset<PlayerSelectRollCS> CreatePlayerSelectRollCS(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderCS> header = 0) {
+    ::flatbuffers::FlatBufferBuilder &_fbb) {
   PlayerSelectRollCSBuilder builder_(_fbb);
-  builder_.add_header(header);
   return builder_.Finish();
 }
 
@@ -407,19 +326,13 @@ inline ::flatbuffers::Offset<PlayerSelectRollCS> CreatePlayerSelectRollCS(
 struct PacketLatencyCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PacketLatencyCSBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_LATENCY = 6
+    VT_LATENCY = 4
   };
-  const Packets::PacketHeaderCS *header() const {
-    return GetPointer<const Packets::PacketHeaderCS *>(VT_HEADER);
-  }
   uint64_t latency() const {
     return GetField<uint64_t>(VT_LATENCY, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
            VerifyField<uint64_t>(verifier, VT_LATENCY, 8) &&
            verifier.EndTable();
   }
@@ -429,9 +342,6 @@ struct PacketLatencyCSBuilder {
   typedef PacketLatencyCS Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderCS> header) {
-    fbb_.AddOffset(PacketLatencyCS::VT_HEADER, header);
-  }
   void add_latency(uint64_t latency) {
     fbb_.AddElement<uint64_t>(PacketLatencyCS::VT_LATENCY, latency, 0);
   }
@@ -448,30 +358,22 @@ struct PacketLatencyCSBuilder {
 
 inline ::flatbuffers::Offset<PacketLatencyCS> CreatePacketLatencyCS(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderCS> header = 0,
     uint64_t latency = 0) {
   PacketLatencyCSBuilder builder_(_fbb);
   builder_.add_latency(latency);
-  builder_.add_header(header);
   return builder_.Finish();
 }
 
 struct PacketLatencySC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PacketLatencySCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_LATENCY = 6
+    VT_LATENCY = 4
   };
-  const Packets::PacketHeaderCS *header() const {
-    return GetPointer<const Packets::PacketHeaderCS *>(VT_HEADER);
-  }
   uint64_t latency() const {
     return GetField<uint64_t>(VT_LATENCY, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
            VerifyField<uint64_t>(verifier, VT_LATENCY, 8) &&
            verifier.EndTable();
   }
@@ -481,9 +383,6 @@ struct PacketLatencySCBuilder {
   typedef PacketLatencySC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderCS> header) {
-    fbb_.AddOffset(PacketLatencySC::VT_HEADER, header);
-  }
   void add_latency(uint64_t latency) {
     fbb_.AddElement<uint64_t>(PacketLatencySC::VT_LATENCY, latency, 0);
   }
@@ -500,11 +399,9 @@ struct PacketLatencySCBuilder {
 
 inline ::flatbuffers::Offset<PacketLatencySC> CreatePacketLatencySC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderCS> header = 0,
     uint64_t latency = 0) {
   PacketLatencySCBuilder builder_(_fbb);
   builder_.add_latency(latency);
-  builder_.add_header(header);
   return builder_.Finish();
 }
 

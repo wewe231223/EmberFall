@@ -9,12 +9,12 @@ namespace Packets;
 //		Client to Server : size - packet type - sender id (Network id)
 //////////////////////////////////////////////////////////////
 
-table PacketHeaderSC {
+struct PacketHeaderSC {
 	size: short;
 	type: ubyte;
 }
 
-table PacketHeaderCS {
+struct PacketHeaderCS {
 	size: short;
 	type: ubyte;
 	id: ubyte;

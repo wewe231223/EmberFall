@@ -36,7 +36,7 @@ struct GemInteractSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_PLAYERID = 8
   };
   const Packets::PacketHeaderSC *header() const {
-    return GetPointer<const Packets::PacketHeaderSC *>(VT_HEADER);
+    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
   }
   uint16_t objectId() const {
     return GetField<uint16_t>(VT_OBJECTID, 0);
@@ -46,8 +46,7 @@ struct GemInteractSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
+           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
            VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
            verifier.EndTable();
@@ -58,8 +57,8 @@ struct GemInteractSCBuilder {
   typedef GemInteractSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderSC> header) {
-    fbb_.AddOffset(GemInteractSC::VT_HEADER, header);
+  void add_header(const Packets::PacketHeaderSC *header) {
+    fbb_.AddStruct(GemInteractSC::VT_HEADER, header);
   }
   void add_objectId(uint16_t objectId) {
     fbb_.AddElement<uint16_t>(GemInteractSC::VT_OBJECTID, objectId, 0);
@@ -80,7 +79,7 @@ struct GemInteractSCBuilder {
 
 inline ::flatbuffers::Offset<GemInteractSC> CreateGemInteractSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderSC> header = 0,
+    const Packets::PacketHeaderSC *header = nullptr,
     uint16_t objectId = 0,
     uint8_t playerId = 0) {
   GemInteractSCBuilder builder_(_fbb);
@@ -98,7 +97,7 @@ struct GemInteractionCancelSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::T
     VT_OBJECTID = 8
   };
   const Packets::PacketHeaderSC *header() const {
-    return GetPointer<const Packets::PacketHeaderSC *>(VT_HEADER);
+    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
   }
   uint8_t playerId() const {
     return GetField<uint8_t>(VT_PLAYERID, 0);
@@ -108,8 +107,7 @@ struct GemInteractionCancelSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::T
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
+           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
            verifier.EndTable();
@@ -120,8 +118,8 @@ struct GemInteractionCancelSCBuilder {
   typedef GemInteractionCancelSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderSC> header) {
-    fbb_.AddOffset(GemInteractionCancelSC::VT_HEADER, header);
+  void add_header(const Packets::PacketHeaderSC *header) {
+    fbb_.AddStruct(GemInteractionCancelSC::VT_HEADER, header);
   }
   void add_playerId(uint8_t playerId) {
     fbb_.AddElement<uint8_t>(GemInteractionCancelSC::VT_PLAYERID, playerId, 0);
@@ -142,7 +140,7 @@ struct GemInteractionCancelSCBuilder {
 
 inline ::flatbuffers::Offset<GemInteractionCancelSC> CreateGemInteractionCancelSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderSC> header = 0,
+    const Packets::PacketHeaderSC *header = nullptr,
     uint8_t playerId = 0,
     uint16_t objectId = 0) {
   GemInteractionCancelSCBuilder builder_(_fbb);
@@ -160,21 +158,19 @@ struct GemDestroyedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_POS = 8
   };
   const Packets::PacketHeaderSC *header() const {
-    return GetPointer<const Packets::PacketHeaderSC *>(VT_HEADER);
+    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
   }
   uint16_t objectId() const {
     return GetField<uint16_t>(VT_OBJECTID, 0);
   }
   const Packets::Vec3 *pos() const {
-    return GetPointer<const Packets::Vec3 *>(VT_POS);
+    return GetStruct<const Packets::Vec3 *>(VT_POS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
+           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
-           VerifyOffset(verifier, VT_POS) &&
-           verifier.VerifyTable(pos()) &&
+           VerifyField<Packets::Vec3>(verifier, VT_POS, 4) &&
            verifier.EndTable();
   }
 };
@@ -183,14 +179,14 @@ struct GemDestroyedSCBuilder {
   typedef GemDestroyedSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderSC> header) {
-    fbb_.AddOffset(GemDestroyedSC::VT_HEADER, header);
+  void add_header(const Packets::PacketHeaderSC *header) {
+    fbb_.AddStruct(GemDestroyedSC::VT_HEADER, header);
   }
   void add_objectId(uint16_t objectId) {
     fbb_.AddElement<uint16_t>(GemDestroyedSC::VT_OBJECTID, objectId, 0);
   }
-  void add_pos(::flatbuffers::Offset<Packets::Vec3> pos) {
-    fbb_.AddOffset(GemDestroyedSC::VT_POS, pos);
+  void add_pos(const Packets::Vec3 *pos) {
+    fbb_.AddStruct(GemDestroyedSC::VT_POS, pos);
   }
   explicit GemDestroyedSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -205,9 +201,9 @@ struct GemDestroyedSCBuilder {
 
 inline ::flatbuffers::Offset<GemDestroyedSC> CreateGemDestroyedSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderSC> header = 0,
+    const Packets::PacketHeaderSC *header = nullptr,
     uint16_t objectId = 0,
-    ::flatbuffers::Offset<Packets::Vec3> pos = 0) {
+    const Packets::Vec3 *pos = nullptr) {
   GemDestroyedSCBuilder builder_(_fbb);
   builder_.add_pos(pos);
   builder_.add_header(header);

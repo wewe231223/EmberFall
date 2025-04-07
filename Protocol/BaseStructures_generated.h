@@ -16,124 +16,62 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
 namespace Packets {
 
 struct Vec2;
-struct Vec2Builder;
 
 struct Vec3;
-struct Vec3Builder;
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-struct Vec2 FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef Vec2Builder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_X = 4,
-    VT_Y = 6
-  };
+FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Vec2 FLATBUFFERS_FINAL_CLASS {
+ private:
+  float x_;
+  float y_;
+
+ public:
+  Vec2()
+      : x_(0),
+        y_(0) {
+  }
+  Vec2(float _x, float _y)
+      : x_(::flatbuffers::EndianScalar(_x)),
+        y_(::flatbuffers::EndianScalar(_y)) {
+  }
   float x() const {
-    return GetField<float>(VT_X, 0.0f);
+    return ::flatbuffers::EndianScalar(x_);
   }
   float y() const {
-    return GetField<float>(VT_Y, 0.0f);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<float>(verifier, VT_X, 4) &&
-           VerifyField<float>(verifier, VT_Y, 4) &&
-           verifier.EndTable();
+    return ::flatbuffers::EndianScalar(y_);
   }
 };
+FLATBUFFERS_STRUCT_END(Vec2, 8);
 
-struct Vec2Builder {
-  typedef Vec2 Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_x(float x) {
-    fbb_.AddElement<float>(Vec2::VT_X, x, 0.0f);
-  }
-  void add_y(float y) {
-    fbb_.AddElement<float>(Vec2::VT_Y, y, 0.0f);
-  }
-  explicit Vec2Builder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<Vec2> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<Vec2>(end);
-    return o;
-  }
-};
+FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(4) Vec3 FLATBUFFERS_FINAL_CLASS {
+ private:
+  float x_;
+  float y_;
+  float z_;
 
-inline ::flatbuffers::Offset<Vec2> CreateVec2(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    float x = 0.0f,
-    float y = 0.0f) {
-  Vec2Builder builder_(_fbb);
-  builder_.add_y(y);
-  builder_.add_x(x);
-  return builder_.Finish();
-}
-
-struct Vec3 FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef Vec3Builder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_X = 4,
-    VT_Y = 6,
-    VT_Z = 8
-  };
+ public:
+  Vec3()
+      : x_(0),
+        y_(0),
+        z_(0) {
+  }
+  Vec3(float _x, float _y, float _z)
+      : x_(::flatbuffers::EndianScalar(_x)),
+        y_(::flatbuffers::EndianScalar(_y)),
+        z_(::flatbuffers::EndianScalar(_z)) {
+  }
   float x() const {
-    return GetField<float>(VT_X, 0.0f);
+    return ::flatbuffers::EndianScalar(x_);
   }
   float y() const {
-    return GetField<float>(VT_Y, 0.0f);
+    return ::flatbuffers::EndianScalar(y_);
   }
   float z() const {
-    return GetField<float>(VT_Z, 0.0f);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<float>(verifier, VT_X, 4) &&
-           VerifyField<float>(verifier, VT_Y, 4) &&
-           VerifyField<float>(verifier, VT_Z, 4) &&
-           verifier.EndTable();
+    return ::flatbuffers::EndianScalar(z_);
   }
 };
-
-struct Vec3Builder {
-  typedef Vec3 Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_x(float x) {
-    fbb_.AddElement<float>(Vec3::VT_X, x, 0.0f);
-  }
-  void add_y(float y) {
-    fbb_.AddElement<float>(Vec3::VT_Y, y, 0.0f);
-  }
-  void add_z(float z) {
-    fbb_.AddElement<float>(Vec3::VT_Z, z, 0.0f);
-  }
-  explicit Vec3Builder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<Vec3> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<Vec3>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<Vec3> CreateVec3(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    float x = 0.0f,
-    float y = 0.0f,
-    float z = 0.0f) {
-  Vec3Builder builder_(_fbb);
-  builder_.add_z(z);
-  builder_.add_y(y);
-  builder_.add_x(x);
-  return builder_.Finish();
-}
+FLATBUFFERS_STRUCT_END(Vec3, 12);
 
 }  // namespace Packets
 

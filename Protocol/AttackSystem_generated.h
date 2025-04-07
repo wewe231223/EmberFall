@@ -42,16 +42,16 @@ struct FireProjectileSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_PROJECTILETYPE = 14
   };
   const Packets::PacketHeaderSC *header() const {
-    return GetPointer<const Packets::PacketHeaderSC *>(VT_HEADER);
+    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
   }
   uint16_t objectId() const {
     return GetField<uint16_t>(VT_OBJECTID, 0);
   }
   const Packets::Vec3 *dir() const {
-    return GetPointer<const Packets::Vec3 *>(VT_DIR);
+    return GetStruct<const Packets::Vec3 *>(VT_DIR);
   }
   const Packets::Vec3 *startPos() const {
-    return GetPointer<const Packets::Vec3 *>(VT_STARTPOS);
+    return GetStruct<const Packets::Vec3 *>(VT_STARTPOS);
   }
   float startSpeed() const {
     return GetField<float>(VT_STARTSPEED, 0.0f);
@@ -61,13 +61,10 @@ struct FireProjectileSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
+           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
-           VerifyOffset(verifier, VT_DIR) &&
-           verifier.VerifyTable(dir()) &&
-           VerifyOffset(verifier, VT_STARTPOS) &&
-           verifier.VerifyTable(startPos()) &&
+           VerifyField<Packets::Vec3>(verifier, VT_DIR, 4) &&
+           VerifyField<Packets::Vec3>(verifier, VT_STARTPOS, 4) &&
            VerifyField<float>(verifier, VT_STARTSPEED, 4) &&
            VerifyField<uint8_t>(verifier, VT_PROJECTILETYPE, 1) &&
            verifier.EndTable();
@@ -78,17 +75,17 @@ struct FireProjectileSCBuilder {
   typedef FireProjectileSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderSC> header) {
-    fbb_.AddOffset(FireProjectileSC::VT_HEADER, header);
+  void add_header(const Packets::PacketHeaderSC *header) {
+    fbb_.AddStruct(FireProjectileSC::VT_HEADER, header);
   }
   void add_objectId(uint16_t objectId) {
     fbb_.AddElement<uint16_t>(FireProjectileSC::VT_OBJECTID, objectId, 0);
   }
-  void add_dir(::flatbuffers::Offset<Packets::Vec3> dir) {
-    fbb_.AddOffset(FireProjectileSC::VT_DIR, dir);
+  void add_dir(const Packets::Vec3 *dir) {
+    fbb_.AddStruct(FireProjectileSC::VT_DIR, dir);
   }
-  void add_startPos(::flatbuffers::Offset<Packets::Vec3> startPos) {
-    fbb_.AddOffset(FireProjectileSC::VT_STARTPOS, startPos);
+  void add_startPos(const Packets::Vec3 *startPos) {
+    fbb_.AddStruct(FireProjectileSC::VT_STARTPOS, startPos);
   }
   void add_startSpeed(float startSpeed) {
     fbb_.AddElement<float>(FireProjectileSC::VT_STARTSPEED, startSpeed, 0.0f);
@@ -109,10 +106,10 @@ struct FireProjectileSCBuilder {
 
 inline ::flatbuffers::Offset<FireProjectileSC> CreateFireProjectileSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderSC> header = 0,
+    const Packets::PacketHeaderSC *header = nullptr,
     uint16_t objectId = 0,
-    ::flatbuffers::Offset<Packets::Vec3> dir = 0,
-    ::flatbuffers::Offset<Packets::Vec3> startPos = 0,
+    const Packets::Vec3 *dir = nullptr,
+    const Packets::Vec3 *startPos = nullptr,
     float startSpeed = 0.0f,
     Packets::ProjectileTypes projectileType = Packets::ProjectileTypes_ARROW) {
   FireProjectileSCBuilder builder_(_fbb);
@@ -135,29 +132,26 @@ struct ProjectileMoveSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_SPEED = 12
   };
   const Packets::PacketHeaderSC *header() const {
-    return GetPointer<const Packets::PacketHeaderSC *>(VT_HEADER);
+    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
   }
   uint16_t objectId() const {
     return GetField<uint16_t>(VT_OBJECTID, 0);
   }
   const Packets::Vec3 *pos() const {
-    return GetPointer<const Packets::Vec3 *>(VT_POS);
+    return GetStruct<const Packets::Vec3 *>(VT_POS);
   }
   const Packets::Vec3 *dir() const {
-    return GetPointer<const Packets::Vec3 *>(VT_DIR);
+    return GetStruct<const Packets::Vec3 *>(VT_DIR);
   }
   float speed() const {
     return GetField<float>(VT_SPEED, 0.0f);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
+           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
-           VerifyOffset(verifier, VT_POS) &&
-           verifier.VerifyTable(pos()) &&
-           VerifyOffset(verifier, VT_DIR) &&
-           verifier.VerifyTable(dir()) &&
+           VerifyField<Packets::Vec3>(verifier, VT_POS, 4) &&
+           VerifyField<Packets::Vec3>(verifier, VT_DIR, 4) &&
            VerifyField<float>(verifier, VT_SPEED, 4) &&
            verifier.EndTable();
   }
@@ -167,17 +161,17 @@ struct ProjectileMoveSCBuilder {
   typedef ProjectileMoveSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderSC> header) {
-    fbb_.AddOffset(ProjectileMoveSC::VT_HEADER, header);
+  void add_header(const Packets::PacketHeaderSC *header) {
+    fbb_.AddStruct(ProjectileMoveSC::VT_HEADER, header);
   }
   void add_objectId(uint16_t objectId) {
     fbb_.AddElement<uint16_t>(ProjectileMoveSC::VT_OBJECTID, objectId, 0);
   }
-  void add_pos(::flatbuffers::Offset<Packets::Vec3> pos) {
-    fbb_.AddOffset(ProjectileMoveSC::VT_POS, pos);
+  void add_pos(const Packets::Vec3 *pos) {
+    fbb_.AddStruct(ProjectileMoveSC::VT_POS, pos);
   }
-  void add_dir(::flatbuffers::Offset<Packets::Vec3> dir) {
-    fbb_.AddOffset(ProjectileMoveSC::VT_DIR, dir);
+  void add_dir(const Packets::Vec3 *dir) {
+    fbb_.AddStruct(ProjectileMoveSC::VT_DIR, dir);
   }
   void add_speed(float speed) {
     fbb_.AddElement<float>(ProjectileMoveSC::VT_SPEED, speed, 0.0f);
@@ -195,10 +189,10 @@ struct ProjectileMoveSCBuilder {
 
 inline ::flatbuffers::Offset<ProjectileMoveSC> CreateProjectileMoveSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderSC> header = 0,
+    const Packets::PacketHeaderSC *header = nullptr,
     uint16_t objectId = 0,
-    ::flatbuffers::Offset<Packets::Vec3> pos = 0,
-    ::flatbuffers::Offset<Packets::Vec3> dir = 0,
+    const Packets::Vec3 *pos = nullptr,
+    const Packets::Vec3 *dir = nullptr,
     float speed = 0.0f) {
   ProjectileMoveSCBuilder builder_(_fbb);
   builder_.add_speed(speed);
@@ -218,17 +212,15 @@ struct RequestAttackCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_DIR = 6
   };
   const Packets::PacketHeaderCS *header() const {
-    return GetPointer<const Packets::PacketHeaderCS *>(VT_HEADER);
+    return GetStruct<const Packets::PacketHeaderCS *>(VT_HEADER);
   }
   const Packets::Vec3 *dir() const {
-    return GetPointer<const Packets::Vec3 *>(VT_DIR);
+    return GetStruct<const Packets::Vec3 *>(VT_DIR);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
-           VerifyOffset(verifier, VT_DIR) &&
-           verifier.VerifyTable(dir()) &&
+           VerifyField<Packets::PacketHeaderCS>(verifier, VT_HEADER, 2) &&
+           VerifyField<Packets::Vec3>(verifier, VT_DIR, 4) &&
            verifier.EndTable();
   }
 };
@@ -237,11 +229,11 @@ struct RequestAttackCSBuilder {
   typedef RequestAttackCS Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderCS> header) {
-    fbb_.AddOffset(RequestAttackCS::VT_HEADER, header);
+  void add_header(const Packets::PacketHeaderCS *header) {
+    fbb_.AddStruct(RequestAttackCS::VT_HEADER, header);
   }
-  void add_dir(::flatbuffers::Offset<Packets::Vec3> dir) {
-    fbb_.AddOffset(RequestAttackCS::VT_DIR, dir);
+  void add_dir(const Packets::Vec3 *dir) {
+    fbb_.AddStruct(RequestAttackCS::VT_DIR, dir);
   }
   explicit RequestAttackCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -256,8 +248,8 @@ struct RequestAttackCSBuilder {
 
 inline ::flatbuffers::Offset<RequestAttackCS> CreateRequestAttackCS(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderCS> header = 0,
-    ::flatbuffers::Offset<Packets::Vec3> dir = 0) {
+    const Packets::PacketHeaderCS *header = nullptr,
+    const Packets::Vec3 *dir = nullptr) {
   RequestAttackCSBuilder builder_(_fbb);
   builder_.add_dir(dir);
   builder_.add_header(header);
@@ -272,20 +264,18 @@ struct RequestFireCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_PROJECTILETYPE = 8
   };
   const Packets::PacketHeaderCS *header() const {
-    return GetPointer<const Packets::PacketHeaderCS *>(VT_HEADER);
+    return GetStruct<const Packets::PacketHeaderCS *>(VT_HEADER);
   }
   const Packets::Vec3 *dir() const {
-    return GetPointer<const Packets::Vec3 *>(VT_DIR);
+    return GetStruct<const Packets::Vec3 *>(VT_DIR);
   }
   Packets::ProjectileTypes projectileType() const {
     return static_cast<Packets::ProjectileTypes>(GetField<uint8_t>(VT_PROJECTILETYPE, 0));
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
-           VerifyOffset(verifier, VT_DIR) &&
-           verifier.VerifyTable(dir()) &&
+           VerifyField<Packets::PacketHeaderCS>(verifier, VT_HEADER, 2) &&
+           VerifyField<Packets::Vec3>(verifier, VT_DIR, 4) &&
            VerifyField<uint8_t>(verifier, VT_PROJECTILETYPE, 1) &&
            verifier.EndTable();
   }
@@ -295,11 +285,11 @@ struct RequestFireCSBuilder {
   typedef RequestFireCS Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(::flatbuffers::Offset<Packets::PacketHeaderCS> header) {
-    fbb_.AddOffset(RequestFireCS::VT_HEADER, header);
+  void add_header(const Packets::PacketHeaderCS *header) {
+    fbb_.AddStruct(RequestFireCS::VT_HEADER, header);
   }
-  void add_dir(::flatbuffers::Offset<Packets::Vec3> dir) {
-    fbb_.AddOffset(RequestFireCS::VT_DIR, dir);
+  void add_dir(const Packets::Vec3 *dir) {
+    fbb_.AddStruct(RequestFireCS::VT_DIR, dir);
   }
   void add_projectileType(Packets::ProjectileTypes projectileType) {
     fbb_.AddElement<uint8_t>(RequestFireCS::VT_PROJECTILETYPE, static_cast<uint8_t>(projectileType), 0);
@@ -317,8 +307,8 @@ struct RequestFireCSBuilder {
 
 inline ::flatbuffers::Offset<RequestFireCS> CreateRequestFireCS(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<Packets::PacketHeaderCS> header = 0,
-    ::flatbuffers::Offset<Packets::Vec3> dir = 0,
+    const Packets::PacketHeaderCS *header = nullptr,
+    const Packets::Vec3 *dir = nullptr,
     Packets::ProjectileTypes projectileType = Packets::ProjectileTypes_ARROW) {
   RequestFireCSBuilder builder_(_fbb);
   builder_.add_dir(dir);

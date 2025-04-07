@@ -8,8 +8,8 @@
     <Filter Include="Fbs">
       <UniqueIdentifier>{86bc38f0-c996-4259-9aab-35dbf6aa0d74}</UniqueIdentifier>
     </Filter>
-    <Filter Include="FlatBuffers">
-      <UniqueIdentifier>{1158e9eb-b811-4a10-a37f-6bd26b9a3273}</UniqueIdentifier>
+    <Filter Include="Flatbuffers">
+      <UniqueIdentifier>{2ce4b877-a962-4d07-8195-8b09df46ff38}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -54,9 +54,6 @@
     <ClInclude Include="Enums_generated.h">
       <Filter>Protocol</Filter>
     </ClInclude>
-    <ClInclude Include="Items_generated.h">
-      <Filter>Protocol</Filter>
-    </ClInclude>
     <ClInclude Include="Monsters_generated.h">
       <Filter>Protocol</Filter>
     </ClInclude>
@@ -69,8 +66,95 @@
     <ClInclude Include="PacketProtocol_generated.h">
       <Filter>Protocol</Filter>
     </ClInclude>
+    <ClInclude Include="flatbuffers\allocator.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\array.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\base.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\buffer.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\buffer_ref.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\code_generator.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\code_generators.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\default_allocator.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\detached_buffer.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\file_manager.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\flatbuffer_builder.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\flatbuffers.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\flatc.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\flex_flat_util.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
     <ClInclude Include="flatbuffers\flexbuffers.h">
-      <Filter>FlatBuffers</Filter>
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\grpc.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\hash.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\idl.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\minireflect.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\reflection.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\reflection_generated.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\registry.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\stl_emulation.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\string.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\struct.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\table.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\util.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\vector.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\vector_downward.h">
+      <Filter>Flatbuffers</Filter>
+    </ClInclude>
+    <ClInclude Include="flatbuffers\verifier.h">
+      <Filter>Flatbuffers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -19,124 +19,67 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
 namespace Packets {
 
 struct PacketHeaderSC;
-struct PacketHeaderSCBuilder;
 
 struct PacketHeaderCS;
-struct PacketHeaderCSBuilder;
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
-struct PacketHeaderSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef PacketHeaderSCBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_SIZE = 4,
-    VT_TYPE = 6
-  };
+FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(2) PacketHeaderSC FLATBUFFERS_FINAL_CLASS {
+ private:
+  int16_t size_;
+  uint8_t type_;
+  int8_t padding0__;
+
+ public:
+  PacketHeaderSC()
+      : size_(0),
+        type_(0),
+        padding0__(0) {
+    (void)padding0__;
+  }
+  PacketHeaderSC(int16_t _size, uint8_t _type)
+      : size_(::flatbuffers::EndianScalar(_size)),
+        type_(::flatbuffers::EndianScalar(_type)),
+        padding0__(0) {
+    (void)padding0__;
+  }
   int16_t size() const {
-    return GetField<int16_t>(VT_SIZE, 0);
+    return ::flatbuffers::EndianScalar(size_);
   }
   uint8_t type() const {
-    return GetField<uint8_t>(VT_TYPE, 0);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<int16_t>(verifier, VT_SIZE, 2) &&
-           VerifyField<uint8_t>(verifier, VT_TYPE, 1) &&
-           verifier.EndTable();
+    return ::flatbuffers::EndianScalar(type_);
   }
 };
+FLATBUFFERS_STRUCT_END(PacketHeaderSC, 4);
 
-struct PacketHeaderSCBuilder {
-  typedef PacketHeaderSC Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_size(int16_t size) {
-    fbb_.AddElement<int16_t>(PacketHeaderSC::VT_SIZE, size, 0);
-  }
-  void add_type(uint8_t type) {
-    fbb_.AddElement<uint8_t>(PacketHeaderSC::VT_TYPE, type, 0);
-  }
-  explicit PacketHeaderSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<PacketHeaderSC> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<PacketHeaderSC>(end);
-    return o;
-  }
-};
+FLATBUFFERS_MANUALLY_ALIGNED_STRUCT(2) PacketHeaderCS FLATBUFFERS_FINAL_CLASS {
+ private:
+  int16_t size_;
+  uint8_t type_;
+  uint8_t id_;
 
-inline ::flatbuffers::Offset<PacketHeaderSC> CreatePacketHeaderSC(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    int16_t size = 0,
-    uint8_t type = 0) {
-  PacketHeaderSCBuilder builder_(_fbb);
-  builder_.add_size(size);
-  builder_.add_type(type);
-  return builder_.Finish();
-}
-
-struct PacketHeaderCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef PacketHeaderCSBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_SIZE = 4,
-    VT_TYPE = 6,
-    VT_ID = 8
-  };
+ public:
+  PacketHeaderCS()
+      : size_(0),
+        type_(0),
+        id_(0) {
+  }
+  PacketHeaderCS(int16_t _size, uint8_t _type, uint8_t _id)
+      : size_(::flatbuffers::EndianScalar(_size)),
+        type_(::flatbuffers::EndianScalar(_type)),
+        id_(::flatbuffers::EndianScalar(_id)) {
+  }
   int16_t size() const {
-    return GetField<int16_t>(VT_SIZE, 0);
+    return ::flatbuffers::EndianScalar(size_);
   }
   uint8_t type() const {
-    return GetField<uint8_t>(VT_TYPE, 0);
+    return ::flatbuffers::EndianScalar(type_);
   }
   uint8_t id() const {
-    return GetField<uint8_t>(VT_ID, 0);
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<int16_t>(verifier, VT_SIZE, 2) &&
-           VerifyField<uint8_t>(verifier, VT_TYPE, 1) &&
-           VerifyField<uint8_t>(verifier, VT_ID, 1) &&
-           verifier.EndTable();
+    return ::flatbuffers::EndianScalar(id_);
   }
 };
-
-struct PacketHeaderCSBuilder {
-  typedef PacketHeaderCS Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_size(int16_t size) {
-    fbb_.AddElement<int16_t>(PacketHeaderCS::VT_SIZE, size, 0);
-  }
-  void add_type(uint8_t type) {
-    fbb_.AddElement<uint8_t>(PacketHeaderCS::VT_TYPE, type, 0);
-  }
-  void add_id(uint8_t id) {
-    fbb_.AddElement<uint8_t>(PacketHeaderCS::VT_ID, id, 0);
-  }
-  explicit PacketHeaderCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<PacketHeaderCS> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<PacketHeaderCS>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<PacketHeaderCS> CreatePacketHeaderCS(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    int16_t size = 0,
-    uint8_t type = 0,
-    uint8_t id = 0) {
-  PacketHeaderCSBuilder builder_(_fbb);
-  builder_.add_size(size);
-  builder_.add_id(id);
-  builder_.add_type(type);
-  return builder_.Finish();
-}
+FLATBUFFERS_STRUCT_END(PacketHeaderCS, 4);
 
 }  // namespace Packets
 

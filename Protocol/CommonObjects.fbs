@@ -9,7 +9,6 @@ namespace Packets;
 //////////////////////////////////////////////////////////////
 
 table ObjectAppearedSC {  
-	header: PacketHeaderSC;
 	objectId: ushort;
 	animation: AnimationState;
 	hp: float;
@@ -17,17 +16,14 @@ table ObjectAppearedSC {
 }
 
 table ObjectDisappearedSC {
-	header: PacketHeaderSC;
 	objectId: ushort;
 }
 
 table ObjectRemovedSC {
-	header: PacketHeaderSC;
 	objectId: ushort;
 }
 
 table ObjectMoveSC {
-	header: PacketHeaderSC;
 	objectId: ushort;
 	pos: Vec3;
 	dir: Vec3;
@@ -35,13 +31,11 @@ table ObjectMoveSC {
 }
 
 table ObjectAttackedSC {
-	header: PacketHeaderSC;
 	objectId: ushort;
 	hp: float;
 }
 
 table ObjectAnimationChangedSC {
-	header: PacketHeaderSC;
 	objectId: ushort;
 	animation: AnimationState;
 }

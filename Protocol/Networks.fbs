@@ -14,12 +14,10 @@ table ProtocolVersionSC {
 
 // notify id to client
 table NotifyIdSC {
-	header: PacketHeaderSC;
 	playerId: ubyte;
 }
 
 table PlayerExitSC { 
-	header: PacketHeaderSC;
 	playerId: ubyte;
 }
 
@@ -28,36 +26,27 @@ table PlayerExitSC {
 //		Basic communication packets
 //////////////////////////////////////////////////////////////
 
-table PlayerExitCS { 
-	header: PacketHeaderSC;
-	playerId: ubyte; 
-}
+table PlayerExitCS { }
 
 table PlayerLookCS {
-	header: PacketHeaderCS;
 	look: Vec3;
 }
 
 // In Lobby
 table PlayerSelectWeaponCS {
-	header: PacketHeaderCS;
     weapon: Weapon;
 }
 
-table PlayerSelectRollCS {
-	header: PacketHeaderCS;
-}
+table PlayerSelectRollCS { }
 
 //////////////////////////////////////////////////////////////
 // Latency Packet 
 //////////////////////////////////////////////////////////////
 
 table PacketLatencyCS {
-	header: PacketHeaderCS;
 	latency: ulong;
 }
 
 table PacketLatencySC {
-	header: PacketHeaderCS;
 	latency: ulong;
 }

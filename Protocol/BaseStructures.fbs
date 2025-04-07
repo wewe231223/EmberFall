@@ -4,12 +4,12 @@ namespace Packets;
 // Structures
 //////////////////////////////////////////////////////////////
 
-table Vec2 {
+struct Vec2 {
 	x: float;
 	y: float;
 }
 
-table Vec3 {
+struct Vec3 {
 	x: float;
 	y: float;
 	z: float;

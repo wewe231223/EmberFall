@@ -9,7 +9,6 @@ namespace Packets;
 //////////////////////////////////////////////////////////////
 
 table RequestUseItemCS {
-	header: PacketHeaderCS;
 	item: ItemType;
 }
 
@@ -20,13 +19,11 @@ table RequestUseItemCS {
 //////////////////////////////////////////////////////////////
 
 table UseItemSC {
-	header: PacketHeaderSC;
 	playerId: ubyte;
 	item: ItemType;
 }
 
 table AcquiredItemSC {
-	header: PacketHeaderSC;
 	playerId: ubyte;
 	item: ItemType;
 }
