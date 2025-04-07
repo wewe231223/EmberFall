@@ -9,6 +9,8 @@ class ShadowRenderer {
 
 	template<typename T>
 	static constexpr T SHADOWMAPSIZE = static_cast<T>(2000);
+	static constexpr float FRUSTUM_LENGTH = 10.0f;
+
 public:
 	ShadowRenderer() = default;
 	ShadowRenderer(ComPtr<ID3D12Device> device);

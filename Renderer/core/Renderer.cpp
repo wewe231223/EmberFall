@@ -26,11 +26,13 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitDepthStencilBuffer();
 	Renderer::InitStringRenderer();
 	Renderer::InitShadowRenderer();
+	Renderer::InitBlurComputeProcessor();
 
 	Renderer::ResetCommandList();
 
 	Renderer::InitCoreResources(); 
 	Renderer::InitDefferedRenderer();
+
 
 }
 
@@ -153,6 +155,19 @@ void Renderer::Render() {
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
 	mDefferedRenderer.Render(mCommandList, mShadowRenderer.GetShadowCameraBuffer());
+
+
+	// Blurring Pass
+	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
+	mBlurComputeProcessor.DispatchHorzBlur(mDevice, mCommandList, currentBackBuffer.GetResource());
+
+	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+	mBlurComputeProcessor.DispatchVertBlur(mDevice, mCommandList, currentBackBuffer.GetResource());
+	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+
+
+
 }
 
 void Renderer::ExecuteRender() {
@@ -339,6 +354,8 @@ void Renderer::InitRenderTargets() {
 	mDevice->CreateRenderTargetView(mGBuffers[2].GetResource().Get(), nullptr, gBufferHandle);
 }
 
+
+
 void Renderer::InitDepthStencilBuffer() {
 	D3D12_DESCRIPTOR_HEAP_DESC desc{};
 	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
@@ -399,6 +416,10 @@ void Renderer::InitDefferedRenderer() {
 	mDefferedRenderer.RegisterGBufferTexture(mDevice, mGBuffers);
 	mDefferedRenderer.RegisterShadowMap(mDevice, mShadowRenderer.GetShadowMap());
 
+}
+
+void Renderer::InitBlurComputeProcessor() {
+	mBlurComputeProcessor = BlurComputeProcessor(mDevice);
 }
 
 void Renderer::TransitionGBuffers(D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState) {

@@ -15,6 +15,7 @@
 #include "../Resource/Texture.h"
 #include "../Renderer/core/Shader.h"
 #include "../Renderer/Core/DefferedRenderer.h"
+#include "../Renderer/Core/BlurComputeProcessor.h"
 #include "../Manager/MeshRenderManager.h"
 #include "../Manager/TextureManager.h"
 #include "../Resource/Mesh.h"
@@ -54,7 +55,6 @@ private:
 	void InitCommandList();
 	void InitRenderTargets();
 	void InitDepthStencilBuffer();
-
 	void InitStringRenderer(); 
 	void InitFonts(); 
 
@@ -62,6 +62,7 @@ private:
 
 	void InitCoreResources(); 
 	void InitDefferedRenderer();
+	void InitBlurComputeProcessor();
 
 	void TransitionGBuffers(D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState);
 
@@ -104,6 +105,7 @@ private:
 	ComPtr<ID3D12DescriptorHeap> mGBufferHeap{ nullptr };
 
 	DefferedRenderer mDefferedRenderer{};
+	BlurComputeProcessor mBlurComputeProcessor{};
 
 	ComPtr<ID3D12DescriptorHeap> mDSHeap{ nullptr };
 	Texture mDepthStencilBuffer{};
@@ -111,6 +113,7 @@ private:
 	std::shared_ptr<TextureManager> mTextureManager{};
 	std::shared_ptr<MaterialManager> mMaterialManager{};
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{};
+	
 
 	DefaultBuffer mMainCameraBuffer{};
 };

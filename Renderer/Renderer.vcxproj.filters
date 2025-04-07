@@ -69,6 +69,9 @@
     <ClCompile Include="Manager\ParticleManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
+    <ClCompile Include="core\BlurComputeProcessor.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -113,6 +116,9 @@
     <ClInclude Include="Manager\ParticleManager.h">
       <Filter>Manager</Filter>
     </ClInclude>
+    <ClInclude Include="core\BlurComputeProcessor.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shader\Sources\Standard.hlsl">
@@ -134,6 +140,9 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="..\Shader\Sources\StandardBoundingBoxRender.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\Blur.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>

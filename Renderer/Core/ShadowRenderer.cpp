@@ -40,11 +40,8 @@ void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, Defau
 
 	CameraParameter cameraParam{};
 	
-	//그림자 맵에 담을 프러스텀의 원평면 까지의 거리
-	float farZ = 10.0f;
-	
 	SimpleMath::Matrix invView = worldCamera.view.Transpose().Invert();
-	SimpleMath::Matrix invProj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(cameraParam.fov, cameraParam.aspect, cameraParam.nearZ, farZ).Invert();
+	SimpleMath::Matrix invProj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(cameraParam.fov, cameraParam.aspect, cameraParam.nearZ, FRUSTUM_LENGTH).Invert();
 
 	SimpleMath::Matrix invViewProj = invProj * invView;
 	std::array<SimpleMath::Vector3, 8> frustumPosition = ComputeFrustumCorners(invViewProj);
@@ -53,7 +50,7 @@ void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, Defau
 
 	SimpleMath::Vector3 directionNormalized = LIGHTDIRECTION;
 	directionNormalized.Normalize();
-	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (farZ - cameraParam.nearZ));
+	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (FRUSTUM_LENGTH - cameraParam.nearZ));
 
 
 	SimpleMath::Matrix view = SimpleMath::Matrix::CreateLookAt(cameraPos, centerFrustum, DirectX::SimpleMath::Vector3::Up);
