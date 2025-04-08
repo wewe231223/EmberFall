@@ -304,7 +304,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 
 	 //Scene::BakeEnvironment ("Resources/Binarys/Terrain/Environment.bin");
-	 Scene::BuildEnvironment("Resources/Binarys/Terrain/Environment.bin");
+	 Scene::BuildEnvironment("Resources/Binarys/Terrain/filtered_environment.bin");
 
 
 
@@ -322,466 +322,140 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	}
 
 
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Mountain"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
-		object.mCollider = mColliderMap["Mountain"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { 295.f,tCollider.GetHeight(295.f, 220.f) - 10.f ,220.f };
-		// object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(-35.f), 0.f);
-	}
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Mountain1"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("Mountain1Material");
-		object.mCollider = mColliderMap["Mountain1"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { 261.f,tCollider.GetHeight(261.f, 284.f) - 10.f, 284.f };
-	}
-
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Mountain"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
-		object.mCollider = mColliderMap["Mountain"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { 295.f,tCollider.GetHeight(295.f, 130.f) - 10.f , 130.f };
-		// object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(-35.f), 0.f);
-	}
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Mountain"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
-		object.mCollider = mColliderMap["Mountain"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { -70.f,tCollider.GetHeight(-70.f, -300.f) - 40.f , -300.f };
-		object.GetTransform().Rotate(0.f, -DirectX::XMConvertToRadians(110.f), 0.f);
-	}
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Mountain"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
-		object.mCollider = mColliderMap["Mountain"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { -200.f,tCollider.GetHeight(-200.f, -300.f) - 10.f , -300.f };
-		object.GetTransform().Rotate(0.f, -DirectX::XMConvertToRadians(90.f), 0.f);
-	}
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Mountain"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
-		object.mCollider = mColliderMap["Mountain"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { -300.f,tCollider.GetHeight(-300.f, -230.f) - 40.f, -230.f };
-		object.GetTransform().Rotate(0.f, -DirectX::XMConvertToRadians(15.f), 0.f);
-	}
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Mountain"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
-		object.mCollider = mColliderMap["Mountain"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { -300.f,tCollider.GetHeight(-300.f, -100.f) - 10.f, -100.f };
-	}
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Mountain1"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("Mountain1Material");
-		object.mCollider = mColliderMap["Mountain1"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { -275.f,tCollider.GetHeight(-275.f, -22.f) - 5.f, -22.f };
-	}
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Mountain1"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("Mountain1Material");
-		object.mCollider = mColliderMap["Mountain1"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { -362.f,tCollider.GetHeight(-362.f, -53.f) - 5.f, -53.f };
-	}
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Mountain1"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("Mountain1Material");
-		object.mCollider = mColliderMap["Mountain1"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { -268.f,tCollider.GetHeight(-268.f, 91.f) - 10.f, 91.f };
-		object.GetTransform().Rotate(0.f, -DirectX::XMConvertToRadians(90.f), 0.f);
-
-	}
-
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Plane"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("WaterMaterial");
-		object.SetActiveState(true);
-		
-		object.GetTransform().GetPosition() = { -502.f, 37.f, 212.f };
-		object.GetTransform().Scaling(50.f, 1.f, 50.f);
-	}
-
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Mountain"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
-		object.mCollider = mColliderMap["Mountain"];
-		object.SetActiveState(true);
 
-		object.GetTransform().GetPosition() = { -83.f,tCollider.GetHeight(-83.f, 300.f) - 10.f, 300.f };
-		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
-	}
-
-
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["Mountain"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
-		object.mCollider = mColliderMap["Mountain"];
-		object.SetActiveState(true);
+	// 원형 오브젝트 정의
+	GameObject baseMountain;
+	baseMountain.mShader = mShaderMap["StandardShader"].get();
+	baseMountain.mMesh = mMeshMap["Mountain"].get();
+	baseMountain.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
+	baseMountain.mCollider = mColliderMap["Mountain"];
+
+	GameObject baseMountain1 = baseMountain.Clone();
+	baseMountain1.mMesh = mMeshMap["Mountain1"].get();
+	baseMountain1.mMaterial = mMaterialManager->GetMaterial("Mountain1Material");
+	baseMountain1.mCollider = mColliderMap["Mountain1"];
+
+	GameObject baseMountain2 = baseMountain.Clone();
+	baseMountain2.mMesh = mMeshMap["Mountain3"].get();
+	baseMountain2.mMaterial = mMaterialManager->GetMaterial("Mountain3Material");
+	baseMountain2.mCollider = mColliderMap["Mountain3"];
+
+	GameObject baseTimberHouse;
+	baseTimberHouse.mShader = mShaderMap["StandardShader"].get();
+	baseTimberHouse.mMesh = mMeshMap["TimberHouse"].get();
+	baseTimberHouse.mMaterial = mMaterialManager->GetMaterial("TimberHouseMaterial");
+	baseTimberHouse.mCollider = mColliderMap["TimberHouse"];
+
+	GameObject baseStoneHouse = baseTimberHouse.Clone();
+	baseStoneHouse.mMesh = mMeshMap["StoneHouse"].get();
+	baseStoneHouse.mMaterial = mMaterialManager->GetMaterial("StoneHouseMaterial");
+	baseStoneHouse.mCollider = mColliderMap["StoneHouse"];
+
+	GameObject baseLogHouse = baseTimberHouse.Clone();
+	baseLogHouse.mMesh = mMeshMap["LogHouse"].get();
+	baseLogHouse.mMaterial = mMaterialManager->GetMaterial("LogHouseMaterial");
+	baseLogHouse.mCollider = mColliderMap["LogHouse"];
+
+	GameObject baseLogHouseDoor = baseLogHouse.Clone();
+	baseLogHouseDoor.mMesh = mMeshMap["LogHouseDoor"].get();
+	baseLogHouseDoor.mMaterial = mMaterialManager->GetMaterial("LogHouseDoorMaterial");
+	//baseLogHouseDoor.mCollider = mColliderMap["LogHouse"];
+
+	GameObject baseWindMill;
+	baseWindMill.mShader = mShaderMap["StandardShader"].get();
+	baseWindMill.mMesh = mMeshMap["WindMill"].get();
+	baseWindMill.mMaterial = mMaterialManager->GetMaterial("WindMillMaterial");
+	baseWindMill.mCollider = mColliderMap["WindMill"];
+
+	GameObject baseWindMillBlade = baseWindMill.Clone();
+	baseWindMillBlade.mShader = mShaderMap["TreeShader"].get();
+	baseWindMillBlade.mMesh = mMeshMap["WindMillBlade"].get();
+	baseWindMillBlade.mMaterial = mMaterialManager->GetMaterial("WindMillBladeMaterial");
+	//baseWindMillBlade.mCollider = mColliderMap["WindMill"];
+
+	GameObject baseWater;
+	baseWater.mShader = mShaderMap["StandardShader"].get();
+	baseWater.mMesh = mMeshMap["Plane"].get();
+	baseWater.mMaterial = mMaterialManager->GetMaterial("WaterMaterial");
+
+	GameObject baseWell = baseTimberHouse.Clone();
+	baseWell.mMesh = mMeshMap["Well"].get();
+	baseWell.mMaterial = mMaterialManager->GetMaterial("WellMaterial");
+	baseWell.mCollider = mColliderMap["Well"];
+
+	// 배치 함수
+	auto Place = [&](GameObject& base, float x, float z, float rotYDeg = 0.f, float yOffset = 0.f, bool isEnv = true)
+		{
+			auto& list = isEnv ? mEnvironmentObjects : mGameObjects;
+			auto& obj = list.emplace_back(base.Clone());
+			obj.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(rotYDeg), 0.f);
+			obj.GetTransform().GetPosition() = { x, tCollider.GetHeight(x, z) + yOffset, z };
+		};
+
+	// 실제 배치
+	Place(baseMountain, 295.f, 220.f, 0.f, -10.f);
+	Place(baseMountain1, 261.f, 284.f, 0.f, -10.f);
+	Place(baseMountain, 295.f, 130.f, 0.f, -10.f);
+	Place(baseMountain, -70.f, -300.f, -110.f, -40.f);
+	Place(baseMountain, -200.f, -300.f, -90.f, -10.f);
+	Place(baseMountain, -300.f, -230.f, -15.f, -40.f);
+	Place(baseMountain, -300.f, -100.f, 0.f, -10.f);
+	Place(baseMountain1, -275.f, -22.f, 0.f, -5.f);
+	Place(baseMountain1, -362.f, -53.f, 0.f, -5.f);
+	Place(baseMountain1, -268.f, 91.f, -90.f, -10.f);
+	Place(baseMountain1, -19.f, 293.f, 0.f, -20.f);
+	Place(baseMountain1,  16.f, 289.f, 0.f, -20.f);
+	Place(baseMountain1, -28.f, 309.f, 0.f, +20.f);
+	Place(baseMountain, 166.f, 310.f, 90.f, -30.f);
+	Place(baseMountain1, 55.f, 240.f, 0.f, -23.f);
+	Place(baseMountain1, 48.f, 274.f, 0.f, -10.f);
+	Place(baseMountain1, 105.f, 294.f, -45.f, -15.f);
+	Place(baseMountain, 290.f, 320.f, -90.f, 0.f);
+	Place(baseMountain, 358.f, 213.f, 0.f, 40.f);
+	Place(baseMountain1, 342.f, 76.f, 0.f, -18.f);
+
+	//{
+	//	auto& obj = mEnvironmentObjects.emplace_back(baseWater.Clone());
+	//	obj.GetTransform().GetPosition() = { -502.f, 37.f, 212.f };
+	//	obj.GetTransform().Scaling(50.f, 1.f, 50.f);
+	//}
+
+	Place(baseMountain, -83.f, 300.f, 90.f, -10.f);
+	Place(baseMountain, -240.f, 300.f, 90.f, -20.f);
+	Place(baseTimberHouse, 154.f, 17.f);
+	Place(baseStoneHouse, 159.f, 31.f, 135.f);
+	Place(baseLogHouse, 170.f, 17.f, 180.f);
+	Place(baseLogHouseDoor, 170.f, 17.f, 180.f);
+	Place(baseTimberHouse, 160.f, 1.f, -90.f);
+	Place(baseStoneHouse, 137.f, 13.f, -90.f);
+	Place(baseLogHouse, 136.f, 24.f, 90.f);
+	Place(baseLogHouseDoor, 136.f, 24.f, 90.f);
+	Place(baseTimberHouse, 147.f, 43.f, 90.f);
+	Place(baseTimberHouse, 125.f, 19.f);
+	Place(baseLogHouse, 136.f, 43.f, 90.f);
+	Place(baseLogHouseDoor, 136.f, 43.f, 90.f);
+	Place(baseStoneHouse, 160.f, 52.f, 90.f);
+	Place(baseStoneHouse, 168.f, 6.f, 225.f);
+	Place(baseLogHouse, 119.f, 40.f);
+	Place(baseLogHouseDoor, 119.f, 40.f);
+	Place(baseWindMill, 110.f, 28.f);
+	Place(baseWindMillBlade, 110.f, 28.f);
+	Place(baseStoneHouse, -51.f, -113.f, 90.f);
+	Place(baseLogHouse, -59.f, -136.f);
+	Place(baseLogHouseDoor, -59.f, -136.f);
+	Place(baseTimberHouse, -42.f, -144.f, 180.f);
+	Place(baseTimberHouse, -54.f, -160.f, -90.f);
+	Place(baseStoneHouse, -80.f, -151.f, 90.f);
+	Place(baseLogHouse, -32.f, -130.f, 180.f);
+	Place(baseLogHouseDoor, -32.f, -130.f, 180.f);
+	Place(baseTimberHouse, -46.f, -129.f, -90.f);
+	Place(baseStoneHouse, -28.f, -117.f, 135.f);
+	Place(baseLogHouse, -48.f, -153.f, 225.f, -0.2f);
+	Place(baseLogHouseDoor, -48.f, -153.f, 225.f, -0.2f);
+	Place(baseTimberHouse, -37.f, -112.f, 90.f);
+	Place(baseWell, 146.f, 27.f);
+	Place(baseWell, -50.f, -140.f);
 
-		object.GetTransform().GetPosition() = { -240.f,tCollider.GetHeight(-240.f, 300.f) - 20.f, 300.f };
-		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
-	}
-
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["TimberHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("TimberHouseMaterial");
-		object.mCollider = mColliderMap["TimberHouse"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { 154.f,tCollider.GetHeight(154.f,17.f), 17.f };
-	}
-
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["StoneHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("StoneHouseMaterial");
-		object.mCollider = mColliderMap["StoneHouse"];
-		object.SetActiveState(true);
-
-		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
-		object.GetTransform().GetPosition() = { 159.f,tCollider.GetHeight(159.f,31.f), 31.f };
-	}
-
-	// 170 17
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["LogHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("LogHouseMaterial");
-		object.mCollider = mColliderMap["LogHouse"];
-		object.SetActiveState(true);
-
-		//object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
-		object.GetTransform().GetPosition() = { 170.f,tCollider.GetHeight(170.f,17.f), 17.f };
-	}
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["LogHouseDoor"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("LogHouseDoorMaterial");
-		object.mCollider = mColliderMap["LogHouseDoor"];
-		object.SetActiveState(true);
-
-		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(180.f), 0.f);
-		object.GetTransform().GetPosition() = { 170.f,tCollider.GetHeight(170.f,17.f), 17.f };
-	}
-
-
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["TimberHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("TimberHouseMaterial");
-		object.mCollider = mColliderMap["TimberHouse"];
-		object.SetActiveState(true);
-
-		object.GetTransform().Rotate(0.f, -DirectX::XMConvertToRadians(90.f), 0.f);
-		object.GetTransform().GetPosition() = { 160.f,tCollider.GetHeight(160.f,1.f), 1.f };
-	}
-
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["StoneHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("StoneHouseMaterial");
-		object.mCollider = mColliderMap["StoneHouse"];
-		object.SetActiveState(true);
-
-		object.GetTransform().Rotate(0.f, -DirectX::XMConvertToRadians(90.f), 0.f);
-		object.GetTransform().GetPosition() = { 137.f,tCollider.GetHeight(137.f,13.f), 13.f };
-	}
-
-
-
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["LogHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("LogHouseMaterial");
-		object.mCollider = mColliderMap["LogHouse"];
-		object.SetActiveState(true);
-
-		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
-		object.GetTransform().GetPosition() = { 136.f,tCollider.GetHeight(136.f,24.f), 24.f };
-	}
-
-
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["LogHouseDoor"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("LogHouseDoorMaterial");
-		object.mCollider = mColliderMap["LogHouseDoor"];
-		object.SetActiveState(true);
-
-		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
-		object.GetTransform().GetPosition() = { 136.f,tCollider.GetHeight(136.f,24.f), 24.f };
-	}
-
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["TimberHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("TimberHouseMaterial");
-		object.mCollider = mColliderMap["TimberHouse"];
-		object.SetActiveState(true);
-
-		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
-		object.GetTransform().GetPosition() = { 147.f,tCollider.GetHeight(147.f,43.f), 43.f };
-	}
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["TimberHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("TimberHouseMaterial");
-		object.mCollider = mColliderMap["TimberHouse"];
-		object.SetActiveState(true);
-
-		//object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
-		object.GetTransform().GetPosition() = { 125.f,tCollider.GetHeight(125.f,19.f), 19.f };
-	}
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["LogHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("LogHouseMaterial");
-		object.mCollider = mColliderMap["LogHouse"];
-		object.SetActiveState(true);
-
-		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
-		object.GetTransform().GetPosition() = { 136.f,tCollider.GetHeight(136.f,43.f), 43.f };
-	}
-
-
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["LogHouseDoor"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("LogHouseDoorMaterial");
-		object.mCollider = mColliderMap["LogHouseDoor"];
-		object.SetActiveState(true);
-
-		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
-		object.GetTransform().GetPosition() = { 136.f,tCollider.GetHeight(136.f,43.f), 43.f };
-	}
-
-
-	// 160 52 
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["StoneHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("StoneHouseMaterial");
-		object.mCollider = mColliderMap["StoneHouse"];
-		object.SetActiveState(true);
-
-		object.GetTransform().Rotate(0.f, -DirectX::XMConvertToRadians(90.f), 0.f);
-		object.GetTransform().GetPosition() = { 160.f,tCollider.GetHeight(160.f,52.f), 52.f };
-	}
-
-	// 119 40 
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["LogHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("LogHouseMaterial");
-		object.mCollider = mColliderMap["LogHouse"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { 119.f, tCollider.GetHeight(119.f,40.f), 40.f };
-	}
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["LogHouseDoor"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("LogHouseDoorMaterial");
-		object.mCollider = mColliderMap["LogHouseDoor"];
-		object.SetActiveState(true);
-
-
-		object.GetTransform().GetPosition() = { 119.f, tCollider.GetHeight(119.f,40.f), 40.f };
-	}
-
-
-
-	// 40 54 
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["WindMill"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("WindMillMaterial");
-		object.mCollider = mColliderMap["WindMill"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { 110.f, tCollider.GetHeight(110.f,28.f), 28.f };
-	}
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["TreeShader"].get();
-		object.mMesh = mMeshMap["WindMillBlade"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("WindMillBladeMaterial");
-		object.mCollider = mColliderMap["WindMill"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { 110.f, tCollider.GetHeight(110.f,28.f), 28.f };
-	}
-
-
-
-
-
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["StoneHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("StoneHouseMaterial");
-		object.mCollider = mColliderMap["StoneHouse"];
-		object.SetActiveState(true);
-
-		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
-		object.GetTransform().GetPosition() = { -51.f,tCollider.GetHeight(-51.f,-113.f), -113.f };
-	}
-
-	// -59 -136
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["LogHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("LogHouseMaterial");
-		object.mCollider = mColliderMap["LogHouse"];
-		object.SetActiveState(true);
-
-		object.GetTransform().GetPosition() = { -59.f, tCollider.GetHeight(-59.f,-136.f), -136.f };
-	}
-
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["LogHouseDoor"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("LogHouseDoorMaterial");
-		object.mCollider = mColliderMap["LogHouseDoor"];
-		object.SetActiveState(true);
-
-
-		object.GetTransform().GetPosition() = { -59.f, tCollider.GetHeight(-59.f,-136.f), -136.f };
-	}
-
-	// -42 -144
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["TimberHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("TimberHouseMaterial");
-		object.mCollider = mColliderMap["TimberHouse"];
-		object.SetActiveState(true);
-
-		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(180.f), 0.f);
-		object.GetTransform().GetPosition() = { -42.f,tCollider.GetHeight(-42.f,-144.f), -144.f };
-	}
-
-
-	// -54 -160
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["TimberHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("TimberHouseMaterial");
-		object.mCollider = mColliderMap["TimberHouse"];
-		object.SetActiveState(true);
-
-		object.GetTransform().Rotate(0.f, -DirectX::XMConvertToRadians(90.f), 0.f);
-		object.GetTransform().GetPosition() = { -54.f,tCollider.GetHeight(-54.f,-160.f), -160.f };
-	}
-
-
-	// -80 -151
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["StandardShader"].get();
-		object.mMesh = mMeshMap["StoneHouse"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("StoneHouseMaterial");
-		object.mCollider = mColliderMap["StoneHouse"];
-		object.SetActiveState(true);
-
-		object.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(90.f), 0.f);
-		object.GetTransform().GetPosition() = { -80.f,tCollider.GetHeight(-80.f,-151.f), -151.f };
-	}
 
 
 	{
@@ -795,6 +469,11 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	}
 
+
+
+	for (auto& environment : mEnvironmentObjects) {
+		environment.UpdateShaderVariables(); 
+	}
 
 
 	mGameObjects.resize(MeshRenderManager::MAX_INSTANCE_COUNT<size_t>, GameObject{});
@@ -1004,6 +683,10 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mMeshMap["Mountain1"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Mountain1"] = Collider{ data.position };
 
+	data = Loader.Load("Resources/Assets/Mountain/Mountain3.glb");
+	mMeshMap["Mountain3"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Mountain3"] = Collider{ data.position };
+
 	data = Loader.Load("Resources/Assets/Monster/MonsterType1.gltf");
 	mMeshMap["MonsterType1"] = std::make_unique<Mesh>(device, commandList, data);
 	
@@ -1035,8 +718,8 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 
 	//// 파일에 기록할 크기 
-	//mColliderMap["Pine2"].SetExtents(0.33f, 10.797011f, 0.33f);
-	//mColliderMap["Pine2"].SetCenter(0.f, 10.7970114f, 0.f);
+	mColliderMap["Pine2"].SetExtents(0.33f, 10.797011f, 0.33f);
+	mColliderMap["Pine2"].SetCenter(0.f, 10.7970114f, 0.f);
 
 
 	data = Loader.Load("Resources/Assets/Tree/pine2/pine3.glb", 0);
@@ -1045,7 +728,7 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 
 	// 파일에 기록할 크기 
-	//mColliderMap["Pine3_Stem"].SetExtents(0.3f, 7.51479626f, 0.3f);
+	mColliderMap["Pine3_Stem"].SetExtents(0.3f, 7.51479626f, 0.3f);
 
 
 	data = Loader.Load("Resources/Assets/Tree/pine2/pine3.glb", 1);
@@ -1057,8 +740,8 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 
 	// 파일에 기록할 크기 
-	//mColliderMap["Pine4"].SetCenter(0.f, 10.7723713f, 0.f);
-	//mColliderMap["Pine4"].SetExtents(0.35f, 10.7723713f, 0.35f);
+	mColliderMap["Pine4"].SetCenter(0.f, 10.7723713f, 0.f);
+	mColliderMap["Pine4"].SetExtents(0.35f, 10.7723713f, 0.35f);
 
 
 	data = Loader.Load("Resources/Assets/Env/Rocks.glb", 0);
@@ -1107,6 +790,9 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	data = Loader.Load("Resources/Assets/Env/WindMill.glb", 0);
 	mMeshMap["WindMillBlade"] = std::make_unique<Mesh>(device, commandList, data);
 	
+	data = Loader.Load("Resources/Assets/Env/Well.glb");
+	mMeshMap["Well"] = std::make_unique<Mesh>(device, commandList, data);
+
 	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, data);
 
@@ -1213,6 +899,12 @@ void Scene::BuildMaterial() {
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("windmill_001_lopatky_COL");
 	mMaterialManager->CreateMaterial("WindMillBladeMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("well_albedo");
+	mMaterialManager->CreateMaterial("WellMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Mountain3_Diffuse");
+	mMaterialManager->CreateMaterial("Mountain3Material", mat);
 } 
 
 void Scene::BuildShader(ComPtr<ID3D12Device> device) {
@@ -1277,7 +969,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 	leaves.mMaterial = mMaterialManager->GetMaterial("Pine3LeavesMaterial");
 	leaves.SetActiveState(true);
 	leaves.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
-	leaves.mCollider = mColliderMap["Pine3_Stem"];
+	// leaves.mCollider = mColliderMap["Pine3_Stem"];
 
 
 
@@ -1445,10 +1137,6 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 	}
 
 	std::move(envObjects.begin(), envObjects.end(), std::back_inserter(mEnvironmentObjects));
-
-	for (auto& object : mEnvironmentObjects) {
-		object.UpdateShaderVariables();
-	}
 }
 
 void Scene::BakeEnvironment(const std::filesystem::path& path) {
