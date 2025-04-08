@@ -30,6 +30,14 @@ SimpleMath::Vector3 Collider::GetExtents() const {
 	return mWorld.Extents;
 }
 
+void Collider::SetExtents(float x, float y, float z) {
+	mOrigin.Extents = { x, y, z };
+}
+
+void Collider::SetCenter(float x, float y, float z) {
+	mOrigin.Center = { x, y, z };
+}
+
 bool Collider::CheckCollision(Collider& other) {
 	return mWorld.Intersects(other.mWorld);
 }
