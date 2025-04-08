@@ -58,6 +58,20 @@ enum AnimationState : ubyte {
     DEAD
 }
 
+enum PlayerRoll : ubyte {
+    HUMAN = 0,
+    BOSS
+}
+
+enum EntityType : ubyte {
+    ENV = 0,
+    HUMAN,
+    BOSS,
+    MONSTER,
+    CORRUPTED_GEM,
+    PROJECTILE
+}
+
 enum Weapon : ubyte {
     SWORD = 0,
     BOW,

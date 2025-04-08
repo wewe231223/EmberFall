@@ -13,7 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 24,
              "Non-compatible flatbuffers version included");
 
-#include "PacketHeader_generated.h"
+#include "BaseStructures_generated.h"
+#include "Enums_generated.h"
 
 namespace Packets {
 
@@ -294,8 +295,15 @@ inline ::flatbuffers::Offset<PlayerSelectWeaponCS> CreatePlayerSelectWeaponCS(
 
 struct PlayerSelectRollCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PlayerSelectRollCSBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ROLL = 4
+  };
+  Packets::PlayerRoll roll() const {
+    return static_cast<Packets::PlayerRoll>(GetField<uint8_t>(VT_ROLL, 0));
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_ROLL, 1) &&
            verifier.EndTable();
   }
 };
@@ -304,6 +312,9 @@ struct PlayerSelectRollCSBuilder {
   typedef PlayerSelectRollCS Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_roll(Packets::PlayerRoll roll) {
+    fbb_.AddElement<uint8_t>(PlayerSelectRollCS::VT_ROLL, static_cast<uint8_t>(roll), 0);
+  }
   explicit PlayerSelectRollCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -316,8 +327,10 @@ struct PlayerSelectRollCSBuilder {
 };
 
 inline ::flatbuffers::Offset<PlayerSelectRollCS> CreatePlayerSelectRollCS(
-    ::flatbuffers::FlatBufferBuilder &_fbb) {
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    Packets::PlayerRoll roll = Packets::PlayerRoll_HUMAN) {
   PlayerSelectRollCSBuilder builder_(_fbb);
+  builder_.add_roll(roll);
   return builder_.Finish();
 }
 

@@ -13,7 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 24,
              "Non-compatible flatbuffers version included");
 
-#include "PacketHeader_generated.h"
+#include "BaseStructures_generated.h"
+#include "Enums_generated.h"
 
 namespace Packets {
 
@@ -31,13 +32,9 @@ struct GemDestroyedSCBuilder;
 struct GemInteractSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef GemInteractSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_OBJECTID = 6,
-    VT_PLAYERID = 8
+    VT_OBJECTID = 4,
+    VT_PLAYERID = 6
   };
-  const Packets::PacketHeaderSC *header() const {
-    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
   uint16_t objectId() const {
     return GetField<uint16_t>(VT_OBJECTID, 0);
   }
@@ -46,7 +43,6 @@ struct GemInteractSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
            VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
            verifier.EndTable();
@@ -57,9 +53,6 @@ struct GemInteractSCBuilder {
   typedef GemInteractSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(const Packets::PacketHeaderSC *header) {
-    fbb_.AddStruct(GemInteractSC::VT_HEADER, header);
-  }
   void add_objectId(uint16_t objectId) {
     fbb_.AddElement<uint16_t>(GemInteractSC::VT_OBJECTID, objectId, 0);
   }
@@ -79,11 +72,9 @@ struct GemInteractSCBuilder {
 
 inline ::flatbuffers::Offset<GemInteractSC> CreateGemInteractSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const Packets::PacketHeaderSC *header = nullptr,
     uint16_t objectId = 0,
     uint8_t playerId = 0) {
   GemInteractSCBuilder builder_(_fbb);
-  builder_.add_header(header);
   builder_.add_objectId(objectId);
   builder_.add_playerId(playerId);
   return builder_.Finish();
@@ -92,13 +83,9 @@ inline ::flatbuffers::Offset<GemInteractSC> CreateGemInteractSC(
 struct GemInteractionCancelSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef GemInteractionCancelSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_PLAYERID = 6,
-    VT_OBJECTID = 8
+    VT_PLAYERID = 4,
+    VT_OBJECTID = 6
   };
-  const Packets::PacketHeaderSC *header() const {
-    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
   uint8_t playerId() const {
     return GetField<uint8_t>(VT_PLAYERID, 0);
   }
@@ -107,7 +94,6 @@ struct GemInteractionCancelSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::T
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
            verifier.EndTable();
@@ -118,9 +104,6 @@ struct GemInteractionCancelSCBuilder {
   typedef GemInteractionCancelSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(const Packets::PacketHeaderSC *header) {
-    fbb_.AddStruct(GemInteractionCancelSC::VT_HEADER, header);
-  }
   void add_playerId(uint8_t playerId) {
     fbb_.AddElement<uint8_t>(GemInteractionCancelSC::VT_PLAYERID, playerId, 0);
   }
@@ -140,11 +123,9 @@ struct GemInteractionCancelSCBuilder {
 
 inline ::flatbuffers::Offset<GemInteractionCancelSC> CreateGemInteractionCancelSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const Packets::PacketHeaderSC *header = nullptr,
     uint8_t playerId = 0,
     uint16_t objectId = 0) {
   GemInteractionCancelSCBuilder builder_(_fbb);
-  builder_.add_header(header);
   builder_.add_objectId(objectId);
   builder_.add_playerId(playerId);
   return builder_.Finish();
@@ -153,13 +134,9 @@ inline ::flatbuffers::Offset<GemInteractionCancelSC> CreateGemInteractionCancelS
 struct GemDestroyedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef GemDestroyedSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_OBJECTID = 6,
-    VT_POS = 8
+    VT_OBJECTID = 4,
+    VT_POS = 6
   };
-  const Packets::PacketHeaderSC *header() const {
-    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
   uint16_t objectId() const {
     return GetField<uint16_t>(VT_OBJECTID, 0);
   }
@@ -168,7 +145,6 @@ struct GemDestroyedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
            VerifyField<Packets::Vec3>(verifier, VT_POS, 4) &&
            verifier.EndTable();
@@ -179,9 +155,6 @@ struct GemDestroyedSCBuilder {
   typedef GemDestroyedSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(const Packets::PacketHeaderSC *header) {
-    fbb_.AddStruct(GemDestroyedSC::VT_HEADER, header);
-  }
   void add_objectId(uint16_t objectId) {
     fbb_.AddElement<uint16_t>(GemDestroyedSC::VT_OBJECTID, objectId, 0);
   }
@@ -201,12 +174,10 @@ struct GemDestroyedSCBuilder {
 
 inline ::flatbuffers::Offset<GemDestroyedSC> CreateGemDestroyedSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const Packets::PacketHeaderSC *header = nullptr,
     uint16_t objectId = 0,
     const Packets::Vec3 *pos = nullptr) {
   GemDestroyedSCBuilder builder_(_fbb);
   builder_.add_pos(pos);
-  builder_.add_header(header);
   builder_.add_objectId(objectId);
   return builder_.Finish();
 }

@@ -161,6 +161,78 @@ inline const char *EnumNameAnimationState(AnimationState e) {
   return EnumNamesAnimationState()[index];
 }
 
+enum PlayerRoll : uint8_t {
+  PlayerRoll_HUMAN = 0,
+  PlayerRoll_BOSS = 1,
+  PlayerRoll_MIN = PlayerRoll_HUMAN,
+  PlayerRoll_MAX = PlayerRoll_BOSS
+};
+
+inline const PlayerRoll (&EnumValuesPlayerRoll())[2] {
+  static const PlayerRoll values[] = {
+    PlayerRoll_HUMAN,
+    PlayerRoll_BOSS
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesPlayerRoll() {
+  static const char * const names[3] = {
+    "HUMAN",
+    "BOSS",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNamePlayerRoll(PlayerRoll e) {
+  if (::flatbuffers::IsOutRange(e, PlayerRoll_HUMAN, PlayerRoll_BOSS)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesPlayerRoll()[index];
+}
+
+enum EntityType : uint8_t {
+  EntityType_ENV = 0,
+  EntityType_HUMAN = 1,
+  EntityType_BOSS = 2,
+  EntityType_MONSTER = 3,
+  EntityType_CORRUPTED_GEM = 4,
+  EntityType_PROJECTILE = 5,
+  EntityType_MIN = EntityType_ENV,
+  EntityType_MAX = EntityType_PROJECTILE
+};
+
+inline const EntityType (&EnumValuesEntityType())[6] {
+  static const EntityType values[] = {
+    EntityType_ENV,
+    EntityType_HUMAN,
+    EntityType_BOSS,
+    EntityType_MONSTER,
+    EntityType_CORRUPTED_GEM,
+    EntityType_PROJECTILE
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesEntityType() {
+  static const char * const names[7] = {
+    "ENV",
+    "HUMAN",
+    "BOSS",
+    "MONSTER",
+    "CORRUPTED_GEM",
+    "PROJECTILE",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameEntityType(EntityType e) {
+  if (::flatbuffers::IsOutRange(e, EntityType_ENV, EntityType_PROJECTILE)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesEntityType()[index];
+}
+
 enum Weapon : uint8_t {
   Weapon_SWORD = 0,
   Weapon_BOW = 1,

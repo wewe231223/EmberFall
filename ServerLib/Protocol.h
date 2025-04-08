@@ -15,6 +15,17 @@ struct PacketHeader {
     SenderIdType id;
 };
 
+struct PacketHeaderSC {
+    PacketSizeT size;
+    PacketTypeT type;
+};
+
+struct PacketHeaderCS {
+    PacketSizeT size;
+    PacketTypeT type;
+    SenderIdType senderId;
+};
+
 struct PacketProtocolVersion : public PacketHeader {
     uint8_t major{ PROTOCOL_VERSION_MAJOR };
     uint8_t minor{ PROTOCOL_VERSION_MINOR };

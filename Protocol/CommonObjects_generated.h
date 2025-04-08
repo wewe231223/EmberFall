@@ -13,7 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 24,
              "Non-compatible flatbuffers version included");
 
-#include "PacketHeader_generated.h"
+#include "BaseStructures_generated.h"
+#include "Enums_generated.h"
 
 namespace Packets {
 
@@ -40,17 +41,17 @@ struct ObjectAnimationChangedSCBuilder;
 struct ObjectAppearedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ObjectAppearedSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_OBJECTID = 6,
+    VT_OBJECTID = 4,
+    VT_ENTITY = 6,
     VT_ANIMATION = 8,
     VT_HP = 10,
     VT_POS = 12
   };
-  const Packets::PacketHeaderSC *header() const {
-    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
   uint16_t objectId() const {
     return GetField<uint16_t>(VT_OBJECTID, 0);
+  }
+  Packets::EntityType entity() const {
+    return static_cast<Packets::EntityType>(GetField<uint8_t>(VT_ENTITY, 0));
   }
   Packets::AnimationState animation() const {
     return static_cast<Packets::AnimationState>(GetField<uint8_t>(VT_ANIMATION, 0));
@@ -63,8 +64,8 @@ struct ObjectAppearedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
+           VerifyField<uint8_t>(verifier, VT_ENTITY, 1) &&
            VerifyField<uint8_t>(verifier, VT_ANIMATION, 1) &&
            VerifyField<float>(verifier, VT_HP, 4) &&
            VerifyField<Packets::Vec3>(verifier, VT_POS, 4) &&
@@ -76,11 +77,11 @@ struct ObjectAppearedSCBuilder {
   typedef ObjectAppearedSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(const Packets::PacketHeaderSC *header) {
-    fbb_.AddStruct(ObjectAppearedSC::VT_HEADER, header);
-  }
   void add_objectId(uint16_t objectId) {
     fbb_.AddElement<uint16_t>(ObjectAppearedSC::VT_OBJECTID, objectId, 0);
+  }
+  void add_entity(Packets::EntityType entity) {
+    fbb_.AddElement<uint8_t>(ObjectAppearedSC::VT_ENTITY, static_cast<uint8_t>(entity), 0);
   }
   void add_animation(Packets::AnimationState animation) {
     fbb_.AddElement<uint8_t>(ObjectAppearedSC::VT_ANIMATION, static_cast<uint8_t>(animation), 0);
@@ -104,35 +105,30 @@ struct ObjectAppearedSCBuilder {
 
 inline ::flatbuffers::Offset<ObjectAppearedSC> CreateObjectAppearedSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const Packets::PacketHeaderSC *header = nullptr,
     uint16_t objectId = 0,
+    Packets::EntityType entity = Packets::EntityType_ENV,
     Packets::AnimationState animation = Packets::AnimationState_IDLE,
     float hp = 0.0f,
     const Packets::Vec3 *pos = nullptr) {
   ObjectAppearedSCBuilder builder_(_fbb);
   builder_.add_pos(pos);
   builder_.add_hp(hp);
-  builder_.add_header(header);
   builder_.add_objectId(objectId);
   builder_.add_animation(animation);
+  builder_.add_entity(entity);
   return builder_.Finish();
 }
 
 struct ObjectDisappearedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ObjectDisappearedSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_OBJECTID = 6
+    VT_OBJECTID = 4
   };
-  const Packets::PacketHeaderSC *header() const {
-    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
   uint16_t objectId() const {
     return GetField<uint16_t>(VT_OBJECTID, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
            verifier.EndTable();
   }
@@ -142,9 +138,6 @@ struct ObjectDisappearedSCBuilder {
   typedef ObjectDisappearedSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(const Packets::PacketHeaderSC *header) {
-    fbb_.AddStruct(ObjectDisappearedSC::VT_HEADER, header);
-  }
   void add_objectId(uint16_t objectId) {
     fbb_.AddElement<uint16_t>(ObjectDisappearedSC::VT_OBJECTID, objectId, 0);
   }
@@ -161,10 +154,8 @@ struct ObjectDisappearedSCBuilder {
 
 inline ::flatbuffers::Offset<ObjectDisappearedSC> CreateObjectDisappearedSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const Packets::PacketHeaderSC *header = nullptr,
     uint16_t objectId = 0) {
   ObjectDisappearedSCBuilder builder_(_fbb);
-  builder_.add_header(header);
   builder_.add_objectId(objectId);
   return builder_.Finish();
 }
@@ -172,18 +163,13 @@ inline ::flatbuffers::Offset<ObjectDisappearedSC> CreateObjectDisappearedSC(
 struct ObjectRemovedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ObjectRemovedSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_OBJECTID = 6
+    VT_OBJECTID = 4
   };
-  const Packets::PacketHeaderSC *header() const {
-    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
   uint16_t objectId() const {
     return GetField<uint16_t>(VT_OBJECTID, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
            verifier.EndTable();
   }
@@ -193,9 +179,6 @@ struct ObjectRemovedSCBuilder {
   typedef ObjectRemovedSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(const Packets::PacketHeaderSC *header) {
-    fbb_.AddStruct(ObjectRemovedSC::VT_HEADER, header);
-  }
   void add_objectId(uint16_t objectId) {
     fbb_.AddElement<uint16_t>(ObjectRemovedSC::VT_OBJECTID, objectId, 0);
   }
@@ -212,10 +195,8 @@ struct ObjectRemovedSCBuilder {
 
 inline ::flatbuffers::Offset<ObjectRemovedSC> CreateObjectRemovedSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const Packets::PacketHeaderSC *header = nullptr,
     uint16_t objectId = 0) {
   ObjectRemovedSCBuilder builder_(_fbb);
-  builder_.add_header(header);
   builder_.add_objectId(objectId);
   return builder_.Finish();
 }
@@ -223,15 +204,11 @@ inline ::flatbuffers::Offset<ObjectRemovedSC> CreateObjectRemovedSC(
 struct ObjectMoveSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ObjectMoveSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_OBJECTID = 6,
-    VT_POS = 8,
-    VT_DIR = 10,
-    VT_SPEED = 12
+    VT_OBJECTID = 4,
+    VT_POS = 6,
+    VT_DIR = 8,
+    VT_SPEED = 10
   };
-  const Packets::PacketHeaderSC *header() const {
-    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
   uint16_t objectId() const {
     return GetField<uint16_t>(VT_OBJECTID, 0);
   }
@@ -246,7 +223,6 @@ struct ObjectMoveSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
            VerifyField<Packets::Vec3>(verifier, VT_POS, 4) &&
            VerifyField<Packets::Vec3>(verifier, VT_DIR, 4) &&
@@ -259,9 +235,6 @@ struct ObjectMoveSCBuilder {
   typedef ObjectMoveSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(const Packets::PacketHeaderSC *header) {
-    fbb_.AddStruct(ObjectMoveSC::VT_HEADER, header);
-  }
   void add_objectId(uint16_t objectId) {
     fbb_.AddElement<uint16_t>(ObjectMoveSC::VT_OBJECTID, objectId, 0);
   }
@@ -287,7 +260,6 @@ struct ObjectMoveSCBuilder {
 
 inline ::flatbuffers::Offset<ObjectMoveSC> CreateObjectMoveSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const Packets::PacketHeaderSC *header = nullptr,
     uint16_t objectId = 0,
     const Packets::Vec3 *pos = nullptr,
     const Packets::Vec3 *dir = nullptr,
@@ -296,7 +268,6 @@ inline ::flatbuffers::Offset<ObjectMoveSC> CreateObjectMoveSC(
   builder_.add_speed(speed);
   builder_.add_dir(dir);
   builder_.add_pos(pos);
-  builder_.add_header(header);
   builder_.add_objectId(objectId);
   return builder_.Finish();
 }
@@ -304,13 +275,9 @@ inline ::flatbuffers::Offset<ObjectMoveSC> CreateObjectMoveSC(
 struct ObjectAttackedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ObjectAttackedSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_OBJECTID = 6,
-    VT_HP = 8
+    VT_OBJECTID = 4,
+    VT_HP = 6
   };
-  const Packets::PacketHeaderSC *header() const {
-    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
   uint16_t objectId() const {
     return GetField<uint16_t>(VT_OBJECTID, 0);
   }
@@ -319,7 +286,6 @@ struct ObjectAttackedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
            VerifyField<float>(verifier, VT_HP, 4) &&
            verifier.EndTable();
@@ -330,9 +296,6 @@ struct ObjectAttackedSCBuilder {
   typedef ObjectAttackedSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(const Packets::PacketHeaderSC *header) {
-    fbb_.AddStruct(ObjectAttackedSC::VT_HEADER, header);
-  }
   void add_objectId(uint16_t objectId) {
     fbb_.AddElement<uint16_t>(ObjectAttackedSC::VT_OBJECTID, objectId, 0);
   }
@@ -352,12 +315,10 @@ struct ObjectAttackedSCBuilder {
 
 inline ::flatbuffers::Offset<ObjectAttackedSC> CreateObjectAttackedSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const Packets::PacketHeaderSC *header = nullptr,
     uint16_t objectId = 0,
     float hp = 0.0f) {
   ObjectAttackedSCBuilder builder_(_fbb);
   builder_.add_hp(hp);
-  builder_.add_header(header);
   builder_.add_objectId(objectId);
   return builder_.Finish();
 }
@@ -365,13 +326,9 @@ inline ::flatbuffers::Offset<ObjectAttackedSC> CreateObjectAttackedSC(
 struct ObjectAnimationChangedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ObjectAnimationChangedSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_OBJECTID = 6,
-    VT_ANIMATION = 8
+    VT_OBJECTID = 4,
+    VT_ANIMATION = 6
   };
-  const Packets::PacketHeaderSC *header() const {
-    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
   uint16_t objectId() const {
     return GetField<uint16_t>(VT_OBJECTID, 0);
   }
@@ -380,7 +337,6 @@ struct ObjectAnimationChangedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers:
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
            VerifyField<uint8_t>(verifier, VT_ANIMATION, 1) &&
            verifier.EndTable();
@@ -391,9 +347,6 @@ struct ObjectAnimationChangedSCBuilder {
   typedef ObjectAnimationChangedSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(const Packets::PacketHeaderSC *header) {
-    fbb_.AddStruct(ObjectAnimationChangedSC::VT_HEADER, header);
-  }
   void add_objectId(uint16_t objectId) {
     fbb_.AddElement<uint16_t>(ObjectAnimationChangedSC::VT_OBJECTID, objectId, 0);
   }
@@ -413,11 +366,9 @@ struct ObjectAnimationChangedSCBuilder {
 
 inline ::flatbuffers::Offset<ObjectAnimationChangedSC> CreateObjectAnimationChangedSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const Packets::PacketHeaderSC *header = nullptr,
     uint16_t objectId = 0,
     Packets::AnimationState animation = Packets::AnimationState_IDLE) {
   ObjectAnimationChangedSCBuilder builder_(_fbb);
-  builder_.add_header(header);
   builder_.add_objectId(objectId);
   builder_.add_animation(animation);
   return builder_.Finish();

@@ -79,13 +79,42 @@ void Session::RegisterRecv() {
     }
 }
 
+void Session::RegisterSend(OverlappedSend* const overlappedSend) {
+    if (false == mConnected.load()) {
+        return;
+    }
+
+    if (nullptr == overlappedSend) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Get Overlapped Send Failure");
+        return;
+    }
+
+    overlappedSend->owner = shared_from_this();
+    auto result = ::WSASend(
+        mSocket,
+        &overlappedSend->wsaBuf,
+        1,
+        0,
+        0,
+        overlappedSend,
+        nullptr
+    );
+
+    if (SOCKET_ERROR == result) {
+        auto errorCode = ::WSAGetLastError();
+        if (WSA_IO_PENDING != errorCode) {
+            HandleSocketError(errorCode);
+        }
+    }
+}
+
 void Session::RegisterSend(void* packet) {
     if (false == mConnected.load()) {
         return;
     }
 
     auto sendBufferFactory = GetCore()->GetSendBufferFactory();
-    auto overlappedSend = sendBufferFactory->GetOverlapped(packet, reinterpret_cast<char*>(packet)[0]);
+    auto overlappedSend = sendBufferFactory->GetOverlapped(packet, reinterpret_cast<PacketSizeT*>(packet)[0]);
     if (nullptr == overlappedSend) {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Get Overlapped Send Failure");
         return;

@@ -31,9 +31,6 @@
     <None Include="Networks.fbs">
       <Filter>Fbs</Filter>
     </None>
-    <None Include="PacketHeader.fbs">
-      <Filter>Fbs</Filter>
-    </None>
     <None Include="PacketProtocol.fbs">
       <Filter>Fbs</Filter>
     </None>
@@ -42,30 +39,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AttackSystem_generated.h">
-      <Filter>Protocol</Filter>
-    </ClInclude>
-    <ClInclude Include="BaseStructures_generated.h">
-      <Filter>Protocol</Filter>
-    </ClInclude>
-    <ClInclude Include="CorruptedGem_generated.h">
-      <Filter>Protocol</Filter>
-    </ClInclude>
-    <ClInclude Include="Enums_generated.h">
-      <Filter>Protocol</Filter>
-    </ClInclude>
-    <ClInclude Include="Monsters_generated.h">
-      <Filter>Protocol</Filter>
-    </ClInclude>
-    <ClInclude Include="Networks_generated.h">
-      <Filter>Protocol</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketHeader_generated.h">
-      <Filter>Protocol</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketProtocol_generated.h">
-      <Filter>Protocol</Filter>
-    </ClInclude>
     <ClInclude Include="flatbuffers\allocator.h">
       <Filter>Flatbuffers</Filter>
     </ClInclude>

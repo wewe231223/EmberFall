@@ -142,14 +142,9 @@
     <None Include="Enums.fbs" />
     <None Include="Items.fbs" />
     <None Include="Networks.fbs" />
-    <None Include="PacketHeader.fbs" />
     <None Include="PacketProtocol.fbs" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AttackSystem_generated.h" />
-    <ClInclude Include="BaseStructures_generated.h" />
-    <ClInclude Include="CorruptedGem_generated.h" />
-    <ClInclude Include="Enums_generated.h" />
     <ClInclude Include="flatbuffers\allocator.h" />
     <ClInclude Include="flatbuffers\array.h" />
     <ClInclude Include="flatbuffers\base.h" />
@@ -180,10 +175,6 @@
     <ClInclude Include="flatbuffers\vector.h" />
     <ClInclude Include="flatbuffers\vector_downward.h" />
     <ClInclude Include="flatbuffers\verifier.h" />
-    <ClInclude Include="Monsters_generated.h" />
-    <ClInclude Include="Networks_generated.h" />
-    <ClInclude Include="PacketHeader_generated.h" />
-    <ClInclude Include="PacketProtocol_generated.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

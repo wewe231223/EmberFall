@@ -13,7 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 24,
              "Non-compatible flatbuffers version included");
 
-#include "PacketHeader_generated.h"
+#include "BaseStructures_generated.h"
+#include "Enums_generated.h"
 
 namespace Packets {
 
@@ -31,18 +32,13 @@ struct AcquiredItemSCBuilder;
 struct RequestUseItemCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef RequestUseItemCSBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_ITEM = 6
+    VT_ITEM = 4
   };
-  const Packets::PacketHeaderCS *header() const {
-    return GetStruct<const Packets::PacketHeaderCS *>(VT_HEADER);
-  }
   Packets::ItemType item() const {
     return static_cast<Packets::ItemType>(GetField<uint8_t>(VT_ITEM, 0));
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<Packets::PacketHeaderCS>(verifier, VT_HEADER, 2) &&
            VerifyField<uint8_t>(verifier, VT_ITEM, 1) &&
            verifier.EndTable();
   }
@@ -52,9 +48,6 @@ struct RequestUseItemCSBuilder {
   typedef RequestUseItemCS Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(const Packets::PacketHeaderCS *header) {
-    fbb_.AddStruct(RequestUseItemCS::VT_HEADER, header);
-  }
   void add_item(Packets::ItemType item) {
     fbb_.AddElement<uint8_t>(RequestUseItemCS::VT_ITEM, static_cast<uint8_t>(item), 0);
   }
@@ -71,10 +64,8 @@ struct RequestUseItemCSBuilder {
 
 inline ::flatbuffers::Offset<RequestUseItemCS> CreateRequestUseItemCS(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const Packets::PacketHeaderCS *header = nullptr,
     Packets::ItemType item = Packets::ItemType_POTION) {
   RequestUseItemCSBuilder builder_(_fbb);
-  builder_.add_header(header);
   builder_.add_item(item);
   return builder_.Finish();
 }
@@ -84,13 +75,9 @@ inline ::flatbuffers::Offset<RequestUseItemCS> CreateRequestUseItemCS(
 struct UseItemSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef UseItemSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_PLAYERID = 6,
-    VT_ITEM = 8
+    VT_PLAYERID = 4,
+    VT_ITEM = 6
   };
-  const Packets::PacketHeaderSC *header() const {
-    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
   uint8_t playerId() const {
     return GetField<uint8_t>(VT_PLAYERID, 0);
   }
@@ -99,7 +86,6 @@ struct UseItemSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
            VerifyField<uint8_t>(verifier, VT_ITEM, 1) &&
            verifier.EndTable();
@@ -110,9 +96,6 @@ struct UseItemSCBuilder {
   typedef UseItemSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(const Packets::PacketHeaderSC *header) {
-    fbb_.AddStruct(UseItemSC::VT_HEADER, header);
-  }
   void add_playerId(uint8_t playerId) {
     fbb_.AddElement<uint8_t>(UseItemSC::VT_PLAYERID, playerId, 0);
   }
@@ -132,11 +115,9 @@ struct UseItemSCBuilder {
 
 inline ::flatbuffers::Offset<UseItemSC> CreateUseItemSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const Packets::PacketHeaderSC *header = nullptr,
     uint8_t playerId = 0,
     Packets::ItemType item = Packets::ItemType_POTION) {
   UseItemSCBuilder builder_(_fbb);
-  builder_.add_header(header);
   builder_.add_item(item);
   builder_.add_playerId(playerId);
   return builder_.Finish();
@@ -145,13 +126,9 @@ inline ::flatbuffers::Offset<UseItemSC> CreateUseItemSC(
 struct AcquiredItemSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef AcquiredItemSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_PLAYERID = 6,
-    VT_ITEM = 8
+    VT_PLAYERID = 4,
+    VT_ITEM = 6
   };
-  const Packets::PacketHeaderSC *header() const {
-    return GetStruct<const Packets::PacketHeaderSC *>(VT_HEADER);
-  }
   uint8_t playerId() const {
     return GetField<uint8_t>(VT_PLAYERID, 0);
   }
@@ -160,7 +137,6 @@ struct AcquiredItemSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<Packets::PacketHeaderSC>(verifier, VT_HEADER, 2) &&
            VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
            VerifyField<uint8_t>(verifier, VT_ITEM, 1) &&
            verifier.EndTable();
@@ -171,9 +147,6 @@ struct AcquiredItemSCBuilder {
   typedef AcquiredItemSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_header(const Packets::PacketHeaderSC *header) {
-    fbb_.AddStruct(AcquiredItemSC::VT_HEADER, header);
-  }
   void add_playerId(uint8_t playerId) {
     fbb_.AddElement<uint8_t>(AcquiredItemSC::VT_PLAYERID, playerId, 0);
   }
@@ -193,11 +166,9 @@ struct AcquiredItemSCBuilder {
 
 inline ::flatbuffers::Offset<AcquiredItemSC> CreateAcquiredItemSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const Packets::PacketHeaderSC *header = nullptr,
     uint8_t playerId = 0,
     Packets::ItemType item = Packets::ItemType_POTION) {
   AcquiredItemSCBuilder builder_(_fbb);
-  builder_.add_header(header);
   builder_.add_item(item);
   builder_.add_playerId(playerId);
   return builder_.Finish();
