@@ -396,23 +396,45 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	Place(baseMountain, 295.f, 220.f, 0.f, -10.f);
 	Place(baseMountain1, 261.f, 284.f, 0.f, -10.f);
 	Place(baseMountain, 295.f, 130.f, 0.f, -10.f);
-	Place(baseMountain, -70.f, -300.f, -110.f, -40.f);
+
+	Place(baseMountain1, -58.f, -295.f,0.f, -20.f);
+	
 	Place(baseMountain, -200.f, -300.f, -90.f, -10.f);
-	Place(baseMountain, -300.f, -230.f, -15.f, -40.f);
-	Place(baseMountain, -300.f, -100.f, 0.f, -10.f);
-	Place(baseMountain1, -275.f, -22.f, 0.f, -5.f);
-	Place(baseMountain1, -362.f, -53.f, 0.f, -5.f);
-	Place(baseMountain1, -268.f, 91.f, -90.f, -10.f);
-	Place(baseMountain1, -19.f, 293.f, 0.f, -20.f);
+	Place(baseMountain, -300.f, -230.f, -15.f, -30.f);
+	Place(baseMountain, -2.f, 310.f, 130.f, -30.f);
+	
+	Place(baseMountain, 22.f, -341.f, 90.f, -50.f);
+	Place(baseMountain1, 68.f, -300.f, 0.f, -10.f);
+	Place(baseMountain1, 125.f, -300.f, 0.f, -10.f);
+
+	Place(baseMountain, -315.f, -115.f, 0.f, -10.f);
+	Place(baseMountain, -315.f, -17.f, 0.f, -5.f);
+	Place(baseMountain, -315.f, 65.f, 0.f, -5.f);
+
+	/*Place(baseMountain1, -19.f, 293.f, 0.f, -20.f);
 	Place(baseMountain1,  16.f, 289.f, 0.f, -20.f);
-	Place(baseMountain1, -28.f, 309.f, 0.f, +20.f);
+	Place(baseMountain1, -28.f, 309.f, 0.f, +20.f);*/
+
+
 	Place(baseMountain, 166.f, 310.f, 90.f, -30.f);
 	Place(baseMountain1, 55.f, 240.f, 0.f, -23.f);
 	Place(baseMountain1, 48.f, 274.f, 0.f, -10.f);
 	Place(baseMountain1, 105.f, 294.f, -45.f, -15.f);
 	Place(baseMountain, 290.f, 320.f, -90.f, 0.f);
+	
 	Place(baseMountain, 358.f, 213.f, 0.f, 40.f);
 	Place(baseMountain1, 342.f, 76.f, 0.f, -18.f);
+	Place(baseMountain, -62.f, -346.f, 90.f);
+	Place(baseMountain, -138.f, -312.f, 90.f);
+ 
+	Place(baseMountain, -147.f, 369.f, 90.f, 20.f);
+	Place(baseMountain, -309.f, 164.f);
+	Place(baseMountain, -317.f, 254.f);
+
+	Place(baseMountain, -83.f, 320.f, 90.f, -10.f);
+	Place(baseMountain, -240.f, 320.f, 90.f, -20.f);
+
+
 
 	//{
 	//	auto& obj = mEnvironmentObjects.emplace_back(baseWater.Clone());
@@ -420,8 +442,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	//	obj.GetTransform().Scaling(50.f, 1.f, 50.f);
 	//}
 
-	Place(baseMountain, -83.f, 300.f, 90.f, -10.f);
-	Place(baseMountain, -240.f, 300.f, 90.f, -20.f);
+
 	Place(baseTimberHouse, 154.f, 17.f);
 	Place(baseStoneHouse, 159.f, 31.f, 135.f);
 	Place(baseLogHouse, 170.f, 17.f, 180.f);
