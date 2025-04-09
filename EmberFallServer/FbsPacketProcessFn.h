@@ -13,7 +13,7 @@ inline void ProcessPlayerSelectWeaponCS(const Packets::PlayerSelectWeaponCS* con
 
 inline void ProcessPlayerSelectRollCS(const Packets::PlayerSelectRollCS* const roll, std::shared_ptr<GameObject>& player);
 
-inline void ProcessLatencyCS(const Packets::PacketLatencyCS* const latency, std::shared_ptr<GameObject>& player);
+inline void ProcessLatencyCS(const Packets::PacketLatencyCS* const latency);
 
 inline void ProcessRequestAttackCS(const Packets::RequestAttackCS* const attack, std::shared_ptr<GameObject>& player);
 

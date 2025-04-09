@@ -158,6 +158,7 @@
     <ClCompile Include="BT_MonsterRandomMove.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="EventTrigger.cpp" />
+    <ClCompile Include="FbsPacketProcessFn.cpp" />
     <ClCompile Include="GameEventFactory.cpp" />
     <ClCompile Include="GraphBase.cpp" />
     <ClCompile Include="GraphMap.cpp" />
@@ -213,6 +214,7 @@
     <ClInclude Include="BT_MonsterRandomMove.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="EventTrigger.h" />
+    <ClInclude Include="FbsPacketProcessFn.h" />
     <ClInclude Include="GameEventFactory.h" />
     <ClInclude Include="GraphBase.h" />
     <ClInclude Include="GraphMap.h" />

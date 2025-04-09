@@ -256,6 +256,9 @@
     <ClCompile Include="BT_MonsterAttacked.cpp">
       <Filter>BehaviorTree\BT_Monster</Filter>
     </ClCompile>
+    <ClCompile Include="FbsPacketProcessFn.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -407,6 +410,9 @@
     </ClInclude>
     <ClInclude Include="BT_MonsterAttacked.h">
       <Filter>BehaviorTree\BT_Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="FbsPacketProcessFn.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
