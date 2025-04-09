@@ -32,7 +32,6 @@ private:
 	void BuildAniamtionController(); 
 
 	void BuildEnvironment(const std::filesystem::path& envFile);
-	void BakeEnvironment(const std::filesystem::path& path);
 
 	void BuildBaseAnimationController();
 	void BuildArcherAnimationController();
@@ -50,19 +49,25 @@ private:
 	void ProcessPackets(const uint8_t* buffer, size_t size); 
 	const uint8_t* ProcessPacket(const uint8_t* buffer);
 
-	//void ProcessNotifyId(PacketHeader* header);
-	//void ProcessPacketProtocolVersion(PacketHeader* header);
-	//void ProcessPlayerPacket(PacketHeader* header);
-	//void ProcessObjectPacket(PacketHeader* header);
-	//void ProcessObjectDead(PacketHeader* header);
-	//void ProcessObjectAppeared(PacketHeader* header);
-	//void ProcessObjectDisappeared(PacketHeader* header);
-	//void ProcessPlayerExit(PacketHeader* header);
-	//void ProcessAcquiredItem(PacketHeader* header);
-	//void ProcessObjectAttacked(PacketHeader* header);
-	//void ProcessUseItem(PacketHeader* header);
-	//void ProcessRestoreHP(PacketHeader* header);
-	//void ProcessPacketAnimation(PacketHeader* header);
+
+	void ProcessPacketProtocolVersion(const uint8_t* buffer);
+	void ProcessNotifyId(const uint8_t* buffer);
+	void ProcessPlayerExit(const uint8_t* buffer);
+	void ProcessLatency(const uint8_t* buffer);
+	void ProcessObjectAppeared(const uint8_t* buffer);
+	void ProcessObjectDisappeared(const uint8_t* buffer);
+	void ProcessObjectRemoved(const uint8_t* buffer);
+	void ProcessObjectMove(const uint8_t* buffer);
+	void ProcessObjectAttacked(const uint8_t* buffer);
+	void ProcessPacketAnimation(const uint8_t* buffer);
+	void ProcessGemInteraction(const uint8_t* buffer);
+	void ProcessGemCancelInteraction(const uint8_t* buffer);
+	void ProcessGemDestroyed(const uint8_t* buffer);
+	void ProcessUseItem(const uint8_t* buffer);
+	void ProcessAcquiredItem(const uint8_t* buffer);
+	void ProcessFireProjectile(const uint8_t* buffer);
+	void ProcessProjectileMove(const uint8_t* buffer);
+
 private:
 	std::shared_ptr<TextureManager> mTextureManager{ nullptr };
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{ nullptr };

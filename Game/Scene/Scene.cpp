@@ -265,6 +265,102 @@
 //	}
 //
 //}
+
+
+void Scene::ProcessPacketProtocolVersion(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ProtocolVersionSC>(buffer);
+	if (PROTOCOL_VERSION_MAJOR != data->major() or
+		PROTOCOL_VERSION_MINOR != data->minor()) {
+		gClientCore->CloseSession();
+		MessageBox(nullptr, L"ERROR!!!!!\nProtocolVersion Mismatching", L"", MB_OK | MB_ICONERROR);
+		::exit(0);
+	}
+}
+
+void Scene::ProcessNotifyId(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::NotifyIdSC>(buffer);
+	gClientCore->InitSessionId(data->playerId());
+}
+
+void Scene::ProcessPlayerExit(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::PlayerExitSC>(buffer);
+
+
+}
+
+void Scene::ProcessLatency(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::PacketLatencySC>(buffer);
+
+}
+
+void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAppearedSC>(buffer);
+
+}
+
+void Scene::ProcessObjectDisappeared(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectDisappearedSC>(buffer);
+
+
+}
+
+void Scene::ProcessObjectRemoved(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectRemovedSC>(buffer);
+
+
+}
+
+void Scene::ProcessObjectMove(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectMoveSC>(buffer);
+
+}
+
+void Scene::ProcessObjectAttacked(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAttackedSC>(buffer);
+
+}
+
+void Scene::ProcessPacketAnimation(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAnimationChangedSC>(buffer);
+
+}
+
+void Scene::ProcessGemInteraction(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GemInteractSC>(buffer);
+
+
+}
+
+void Scene::ProcessGemCancelInteraction(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GemInteractionCancelSC>(buffer);
+}
+
+void Scene::ProcessGemDestroyed(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GemDestroyedSC>(buffer);
+
+}
+
+void Scene::ProcessUseItem(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::UseItemSC>(buffer);
+
+}
+
+void Scene::ProcessAcquiredItem(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::AcquiredItemSC>(buffer);
+
+
+}
+
+void Scene::ProcessFireProjectile(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::FireProjectileSC>(buffer);
+
+}
+
+void Scene::ProcessProjectileMove(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ProjectileMoveSC>(buffer);
+}
+
+
 #pragma endregion 
 
 
@@ -569,32 +665,96 @@ const uint8_t* Scene::ProcessPacket(const uint8_t* buffer) {
 	switch (header->type) {
 	case Packets::PacketTypes_PT_PROTOCOL_VERSION_SC:
 	{
-		decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ProtocolVersionSC>(buffer); 
-		if (PROTOCOL_VERSION_MAJOR != data->major() or
-			PROTOCOL_VERSION_MINOR != data->minor()) {
-					gClientCore->CloseSession();
-					MessageBox(nullptr, L"ERROR!!!!!\nProtocolVersion Mismatching", L"", MB_OK | MB_ICONERROR);
-					::exit(0);
-		}
+		Scene::ProcessPacketProtocolVersion(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_NOTIFY_ID_SC:
 	{
-
+		Scene::ProcessNotifyId(buffer);
 	}
 	break; 
 	case Packets::PacketTypes_PT_OBJECT_REMOVED_SC:
 	{
-
+		Scene::ProcessObjectRemoved(buffer);
 	}
 	break;
-
+	case Packets::PacketTypes_PT_PLAYER_EXIT_SC:
+	{
+		Scene::ProcessPlayerExit(buffer);
+	}
+	break;
+	case Packets::PacketTypes_PT_LATENCT_SC:
+	{
+		Scene::ProcessLatency(buffer);
+	}
+	break; 
+	case Packets::PacketTypes_PT_OBJECT_APPEARED_SC:
+	{
+		Scene::ProcessObjectAppeared(buffer);
+	}
+	break;
+	case Packets::PacketTypes_PT_OBJECT_DISAPPEARED_SC:
+	{
+		Scene::ProcessObjectDisappeared(buffer);
+	}
+	break;
+	case Packets::PacketTypes_PT_OBJECT_MOVE_SC:
+	{
+		Scene::ProcessObjectMove(buffer);
+	}
+	break;
+	case Packets::PacketTypes_PT_OBJECT_ATTACKED_SC:
+	{
+		Scene::ProcessObjectAttacked(buffer);
+	}
+	break;
+	case Packets::PacketTypes_PT_OBJECT_ANIMATION_CHANGED_SC:
+	{
+		Scene::ProcessPacketAnimation(buffer);
+	}
+	break;
+	case Packets::PacketTypes_PT_GEM_INTERACT_SC:
+	{
+		Scene::ProcessGemInteraction(buffer);
+	}
+	break;
+	case Packets::PacketTypes_PT_GEM_CANCEL_INTERACTOIN_SC:
+	{
+		Scene::ProcessGemCancelInteraction(buffer);
+	}
+	break;
+	case Packets::PacketTypes_PT_GEM_DESTROYED_SC:
+	{
+		Scene::ProcessGemDestroyed(buffer);
+	}
+	break;
+	case Packets::PacketTypes_PT_USE_ITEM_SC:
+	{
+		Scene::ProcessUseItem(buffer);
+	}
+	break;
+	case Packets::PacketTypes_PT_ACQUIRED_ITEM_SC:
+	{
+		Scene::ProcessAcquiredItem(buffer);
+	}
+	break;
+	case Packets::PacketTypes_PT_FIRE_PROJECTILE_SC:
+	{
+		Scene::ProcessFireProjectile(buffer);
+	}
+	break;
+	case Packets::PacketTypes_PT_PROJECTILE_MOVE_SC:
+	{
+		Scene::ProcessProjectileMove(buffer);
+	}
+	break;
 	default:
 		break;
 	}
 
 	return buffer + header->size; 
 }
+
 
 
 void Scene::Update() {
@@ -1312,333 +1472,6 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 
 	std::move(envObjects.begin(), envObjects.end(), std::back_inserter(mEnvironmentObjects));
 }
-void Scene::BakeEnvironment(const std::filesystem::path& path) {
-
-	const float treeMinDistance = 2.f;         
-	const int interiorTreeCount = 1000;          
-	std::vector<SimpleMath::Vector3> interiorTreePoses;
-	interiorTreePoses.reserve(interiorTreeCount);
-
-
-	const int borderTreeCount = 300;
-	std::vector<SimpleMath::Vector3> borderTreePoses;
-	borderTreePoses.reserve(borderTreeCount);
-
-	const float rockMinDistance = 1.f;           
-	const int rockCount = 500;
-	std::vector<SimpleMath::Vector3> rockPoses;
-	rockPoses.reserve(rockCount);
-
-	const float bigRockMinDistance = 5.f;        
-	const int bigRockCount = 300;
-	std::vector<SimpleMath::Vector3> bigRockPoses;
-	bigRockPoses.reserve(bigRockCount);
-
-	const int grassCount = 1000;
-	std::vector<SimpleMath::Vector3> grassPoses;
-	grassPoses.reserve(grassCount);
-
-
-	std::default_random_engine dre(std::random_device{}());
-
-	std::uniform_real_distribution<float> xPosInterior(-250.f, 250.f);
-	std::uniform_real_distribution<float> zPosInterior(-250.f, 250.f);
-
-	std::uniform_real_distribution<float> xPosBorder(-512.f, 512.f);
-	std::uniform_real_distribution<float> zPosBorder(-512.f, 512.f);
-
-	std::uniform_int_distribution<int> interiorTreeTypeDist(0, 2);
-	for (int i = 0; i < interiorTreeCount; i++) {
-		SimpleMath::Vector3 pos;
-		bool validPos = false;
-		while (!validPos) {
-			pos.x = xPosInterior(dre);
-			pos.z = zPosInterior(dre);
-			pos.y = tCollider.GetHeight(pos.x, pos.z) - 0.5f;
-			validPos = true;
-			for (const auto& other : interiorTreePoses) {
-				float dx = pos.x - other.x;
-				float dz = pos.z - other.z;
-				if ((dx * dx + dz * dz) < (treeMinDistance * treeMinDistance)) {
-					validPos = false;
-					break;
-				}
-			}
-		}
-		interiorTreePoses.push_back(pos);
-	}
-
-
-	while (static_cast<int>(borderTreePoses.size()) < borderTreeCount) {
-		SimpleMath::Vector3 pos;
-		pos.x = xPosBorder(dre);
-		pos.z = zPosBorder(dre);
-
-		if (pos.x >= -250.f && pos.x <= 250.f &&
-			pos.z >= -250.f && pos.z <= 250.f)
-			continue;
-		pos.y = tCollider.GetHeight(pos.x, pos.z) - 0.5f;
-
-		if (pos.y < 110.f)
-			continue;
-
-		bool validPos = true;
-		for (const auto& other : borderTreePoses) {
-			float dx = pos.x - other.x;
-			float dz = pos.z - other.z;
-			if ((dx * dx + dz * dz) < (treeMinDistance * treeMinDistance)) {
-				validPos = false;
-				break;
-			}
-		}
-		if (!validPos)
-			continue;
-		borderTreePoses.push_back(pos);
-	}
-
-
-	std::uniform_int_distribution<int> rockTypeDist(3, 6);
-	for (int i = 0; i < rockCount; i++) {
-		SimpleMath::Vector3 pos;
-		bool validPos = false;
-		while (!validPos) {
-			pos.x = xPosInterior(dre);
-			pos.z = zPosInterior(dre);
-			pos.y = tCollider.GetHeight(pos.x, pos.z);
-			validPos = true;
-
-			for (const auto& other : rockPoses) {
-				float dx = pos.x - other.x;
-				float dz = pos.z - other.z;
-				if ((dx * dx + dz * dz) < (rockMinDistance * rockMinDistance)) {
-					validPos = false;
-					break;
-				}
-			}
-			if (!validPos)
-				continue;
-
-			const float epsilon = 0.01f;
-			for (const auto& tree : interiorTreePoses) {
-				float dx = pos.x - tree.x;
-				float dz = pos.z - tree.z;
-				if ((dx * dx + dz * dz) < (epsilon * epsilon)) {
-					validPos = false;
-					break;
-				}
-			}
-		}
-		rockPoses.push_back(pos);
-	}
-
-
-	std::uniform_int_distribution<int> bigRockTypeDist(7, 8);
-	for (int i = 0; i < bigRockCount; i++) {
-		SimpleMath::Vector3 pos;
-		bool validPos = false;
-		while (!validPos) {
-			pos.x = xPosInterior(dre);
-			pos.z = zPosInterior(dre);
-			pos.y = tCollider.GetHeight(pos.x, pos.z);
-			validPos = true;
-
-			for (const auto& tree : interiorTreePoses) {
-				float dx = pos.x - tree.x;
-				float dz = pos.z - tree.z;
-				if ((dx * dx + dz * dz) < (bigRockMinDistance * bigRockMinDistance)) {
-					validPos = false;
-					break;
-				}
-			}
-			if (!validPos)
-				continue;
-
-			for (const auto& rock : rockPoses) {
-				float dx = pos.x - rock.x;
-				float dz = pos.z - rock.z;
-				if ((dx * dx + dz * dz) < (bigRockMinDistance * bigRockMinDistance)) {
-					validPos = false;
-					break;
-				}
-			}
-			if (!validPos)
-				continue;
-
-			for (const auto& bRock : bigRockPoses) {
-				float dx = pos.x - bRock.x;
-				float dz = pos.z - bRock.z;
-				if ((dx * dx + dz * dz) < (bigRockMinDistance * bigRockMinDistance)) {
-					validPos = false;
-					break;
-				}
-			}
-		}
-		bigRockPoses.push_back(pos);
-	}
-
-
-	for (int i = 0; i < grassCount; i++) {
-		SimpleMath::Vector3 pos;
-		bool validPos = false;
-		while (!validPos) {
-			pos.x = xPosInterior(dre);
-			pos.z = zPosInterior(dre);
-			pos.y = tCollider.GetHeight(pos.x, pos.z);
-			validPos = true;
-			const float epsilon = 0.01f;
-			for (const auto& tree : interiorTreePoses) {
-				float dx = pos.x - tree.x;
-				float dz = pos.z - tree.z;
-				if ((dx * dx + dz * dz) < (epsilon * epsilon)) {
-					validPos = false;
-					break;
-				}
-			}
-			if (!validPos)
-				continue;
-			for (const auto& rock : rockPoses) {
-				float dx = pos.x - rock.x;
-				float dz = pos.z - rock.z;
-				if ((dx * dx + dz * dz) < (epsilon * epsilon)) {
-					validPos = false;
-					break;
-				}
-			}
-			if (!validPos)
-				continue;
-			for (const auto& bRock : bigRockPoses) {
-				float dx = pos.x - bRock.x;
-				float dz = pos.z - bRock.z;
-				if ((dx * dx + dz * dz) < (epsilon * epsilon)) {
-					validPos = false;
-					break;
-				}
-			}
-			if (!validPos)
-				continue;
-			for (const auto& grass : grassPoses) {
-				float dx = pos.x - grass.x;
-				float dz = pos.z - grass.z;
-				if ((dx * dx + dz * dz) < (epsilon * epsilon)) {
-					validPos = false;
-					break;
-				}
-			}
-		}
-		grassPoses.push_back(pos);
-	}
-
-
-	const int region1TreeCount = 230;
-	std::vector<SimpleMath::Vector3> region1TreePoses;
-	region1TreePoses.reserve(region1TreeCount);
-	std::uniform_real_distribution<float> xPosRegion1(250.f, 260.f);
-	std::uniform_real_distribution<float> zPosRegion1(60.f, -244.f);
-	std::uniform_int_distribution<int> treeTypeDist(1, 2);
-
-	for (int i = 0; i < region1TreeCount; i++) {
-		SimpleMath::Vector3 pos;
-		pos.x = xPosRegion1(dre);
-		pos.z = zPosRegion1(dre);
-		pos.y = tCollider.GetHeight(pos.x, pos.z) - 0.5f;
-		region1TreePoses.push_back(pos);
-	}
-
-
-	const int region2TreeCount = 120;
-	std::vector<SimpleMath::Vector3> region2TreePoses;
-	region2TreePoses.reserve(region2TreeCount);
-	std::uniform_real_distribution<float> xPosRegion2(55.f, 201.f);
-	std::uniform_real_distribution<float> zPosRegion2(-250.f, -260.f);
-
-	for (int i = 0; i < region2TreeCount; i++) {
-		SimpleMath::Vector3 pos;
-		pos.x = xPosRegion2(dre);
-		pos.z = zPosRegion2(dre);
-		pos.y = tCollider.GetHeight(pos.x, pos.z) - 0.5f;
-		region2TreePoses.push_back(pos);
-	}
-
-
-
-	std::ofstream ofs(path, std::ios::binary);
-	if (!ofs) {
-		return;
-	}
-
-	UINT totalObjects = interiorTreeCount + borderTreeCount + rockCount + bigRockCount + grassCount + region1TreeCount + region2TreeCount;
-	ofs.write(reinterpret_cast<const char*>(&totalObjects), sizeof(totalObjects));
-
-
-	for (const auto& pos : interiorTreePoses) {
-		UINT type = static_cast<UINT>(interiorTreeTypeDist(dre));
-		ofs.write(reinterpret_cast<const char*>(&type), sizeof(type));
-		ofs.write(reinterpret_cast<const char*>(&pos.x), sizeof(pos.x));
-		ofs.write(reinterpret_cast<const char*>(&pos.y), sizeof(pos.y));
-		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
-	}
-
-	std::uniform_int_distribution<int> borderTreeTypeDist(1, 2);
-	for (const auto& pos : borderTreePoses) {
-		UINT type = static_cast<UINT>(borderTreeTypeDist(dre));
-		ofs.write(reinterpret_cast<const char*>(&type), sizeof(type));
-		ofs.write(reinterpret_cast<const char*>(&pos.x), sizeof(pos.x));
-		ofs.write(reinterpret_cast<const char*>(&pos.y), sizeof(pos.y));
-		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
-	}
-
-
-	for (const auto& pos : rockPoses) {
-		UINT type = static_cast<UINT>(rockTypeDist(dre));
-		ofs.write(reinterpret_cast<const char*>(&type), sizeof(type));
-		ofs.write(reinterpret_cast<const char*>(&pos.x), sizeof(pos.x));
-		ofs.write(reinterpret_cast<const char*>(&pos.y), sizeof(pos.y));
-		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
-	}
-
-
-	for (const auto& pos : bigRockPoses) {
-		UINT type = static_cast<UINT>(bigRockTypeDist(dre));
-		ofs.write(reinterpret_cast<const char*>(&type), sizeof(type));
-		ofs.write(reinterpret_cast<const char*>(&pos.x), sizeof(pos.x));
-		ofs.write(reinterpret_cast<const char*>(&pos.y), sizeof(pos.y));
-		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
-	}
-
-
-	const UINT grassType = 9;
-	for (const auto& pos : grassPoses) {
-		ofs.write(reinterpret_cast<const char*>(&grassType), sizeof(grassType));
-		ofs.write(reinterpret_cast<const char*>(&pos.x), sizeof(pos.x));
-		ofs.write(reinterpret_cast<const char*>(&pos.y), sizeof(pos.y));
-		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
-	}
-
-
-	for (const auto& pos : region1TreePoses) {
-		UINT type = static_cast<UINT>(borderTreeTypeDist(dre));
-		ofs.write(reinterpret_cast<const char*>(&type), sizeof(type));
-		ofs.write(reinterpret_cast<const char*>(&pos.x), sizeof(pos.x));
-		ofs.write(reinterpret_cast<const char*>(&pos.y), sizeof(pos.y));
-		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
-	}
-
-
-	for (const auto& pos : region2TreePoses) {
-		UINT type = static_cast<UINT>(borderTreeTypeDist(dre));
-		ofs.write(reinterpret_cast<const char*>(&type), sizeof(type));
-		ofs.write(reinterpret_cast<const char*>(&pos.x), sizeof(pos.x));
-		ofs.write(reinterpret_cast<const char*>(&pos.y), sizeof(pos.y));
-		ofs.write(reinterpret_cast<const char*>(&pos.z), sizeof(pos.z));
-	}
-
-	ofs.close();
-
-	MessageBox(nullptr, L"Environment Baked", L"Success", MB_OK);
-}
-
-
-
 
 void Scene::BuildBaseAnimationController() {
 	// Base Anim 
