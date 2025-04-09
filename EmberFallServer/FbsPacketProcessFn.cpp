@@ -1,7 +1,5 @@
 #include "pch.h"
 #include "FbsPacketProcessFn.h"
-#include "ServerGameScene.h"
-
 #include "PlayerScript.h"
 
 inline void ProcessPackets(std::shared_ptr<IServerGameScene>& gameScene, const uint8_t* buffer, size_t bufSize) {

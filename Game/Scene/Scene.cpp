@@ -15,256 +15,256 @@
 #include "../ServerLib/GameProtocol.h"
 
 #pragma region PacketProcessFn 
-void Scene::ProcessNotifyId(PacketHeader* header) {
-	gClientCore->InitSessionId(header->id);
-	mNetworkInfoText->GetText() = std::format(L"My Session ID : {}", header->id);
-}
-
-void Scene::ProcessPacketProtocolVersion(PacketHeader* header) {
-	auto protocolVersion = reinterpret_cast<PacketProtocolVersion*>(header);
-	if (PROTOCOL_VERSION_MAJOR != protocolVersion->major or
-		PROTOCOL_VERSION_MINOR != protocolVersion->minor) {
-
-		gClientCore->CloseSession();
-
-		MessageBox(nullptr, L"ERROR!!!!!\nProtocolVersion Mismatching", L"", MB_OK | MB_ICONERROR);
-		::exit(0);
-	}
-}	
-
-// Deprecated 
-void Scene::ProcessPlayerPacket(PacketHeader* header) {
-
-}
-
-void Scene::ProcessObjectPacket(PacketHeader* header) {
-	auto packet = reinterpret_cast<PacketSC::PacketObject*>(header);
-	
-	// 플레이어 영역에 해당한다면
-	if (packet->objId < OBJECT_ID_START) {
-		if (mPlayerIndexmap.contains(packet->objId)) {
-			mPlayerIndexmap[packet->objId]->GetTransform().GetPosition() = packet->position;
-
-			if (packet->objId != gClientCore->GetSessionId()) {
-				auto euler = mPlayerIndexmap[packet->objId]->GetTransform().GetRotation().ToEuler();
-				euler.y = packet->rotationYaw;
-				mPlayerIndexmap[packet->objId]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
-			}
-
-		}
-	}
-	// 그게 아니라면 기타 게임 오브젝트이다. 
-	else {
-		if (mGameObjectMap.contains(packet->objId)) {
-			mGameObjectMap[packet->objId]->GetTransform().GetPosition() = packet->position;
-			auto euler = mGameObjectMap[packet->objId]->GetTransform().GetRotation().ToEuler();
-			euler.y = packet->rotationYaw;
-			mGameObjectMap[packet->objId]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
-		}
-
-	}
-}
-
-void Scene::ProcessObjectDead(PacketHeader* header) {
-
-}
-
-void Scene::ProcessObjectAppeared(PacketHeader* header) {
-	auto FindNextPlayerLoc = [this]() {
-		for (auto iter = mPlayers.begin(); iter != mPlayers.end(); ++iter) {
-			if (not iter->GetActiveState()) {
-				return iter;
-			}
-		}
-		return mPlayers.end();
-		};
-
-	auto FindNextObjectLoc = [this]() {
-		for (auto iter = mGameObjects.begin(); iter != mGameObjects.end(); ++iter) {
-			if (not *iter) {
-				return iter;
-			}
-		}
-		return mGameObjects.end();
-		};
-
-
-	auto packet = reinterpret_cast<PacketSC::PacketObjectAppeared*>(header);
-	// 플레이어 등장 
-	if (packet->objId < OBJECT_ID_START) {
-		// 내 플레이어 등장 
-		if (packet->objId == gClientCore->GetSessionId()) {
-			// 플레이어 인스턴스가 없다면 
-			if (not mPlayerIndexmap.contains(packet->objId)) {
-
-				auto nextLoc = FindNextPlayerLoc();
-
-				if (nextLoc == mPlayers.end()) {
-					Crash("There is no more space for My Player!!");
-				}
-
-				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-				mPlayerIndexmap[packet->objId] = &(*nextLoc);
-				mMyPlayer = &(*nextLoc);
-
-				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
-				mMyPlayer->SetMyPlayer();
-			
-				mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
-			    //mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
-				mCameraMode->Enter();
-
-				//Scene::SetInputBaseAnimMode();
-
-
-			}
-			else {
-				if (mPlayerIndexmap[packet->objId] != nullptr) {
-					mPlayerIndexmap[packet->objId]->SetActiveState(true);
-				}
-			}
-		}
-		// 다른 플레이어 등장 
-		else {
-			// 그 플레이어 인스턴스가 없다면  
-			if (not mPlayerIndexmap.contains(packet->objId)) {
-				auto nextLoc = FindNextPlayerLoc();
-				if (nextLoc == mPlayers.end()) { 
-					Crash("There is no more space for Other Player!!"); 
-				}
-
-				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-				mPlayerIndexmap[packet->objId] = &(*nextLoc);
-
-			}
-			else {
-				if (mPlayerIndexmap[packet->objId] != nullptr) {
-					mPlayerIndexmap[packet->objId]->SetActiveState(true);
-				}
-			}
-		}
-	}
-	// 이외 오브젝트 등장 
-	else {
-		if (not mGameObjectMap.contains(packet->objId)) {
-			auto nextLoc = FindNextObjectLoc();
-			if (nextLoc == mGameObjects.end()) {
-				Crash("There is no more space for Other Object!!");
-			}
-
-
-
-			switch (packet->entity) {
-			case MONSTER1:
-			case MONSTER2:
-			case MONSTER3:
-			{
-				*nextLoc = GameObject{};
-				mGameObjectMap[packet->objId] = &(*nextLoc);
-
-				nextLoc->mShader = mShaderMap["SkinnedShader"].get();
-				nextLoc->mMesh = mMeshMap["MonsterType1"].get();
-				nextLoc->mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
-				nextLoc->mGraphController = mMonsterType1AnimationController;
-				nextLoc->mAnimated = true;
-				nextLoc->SetActiveState(true);
-
-				nextLoc->GetTransform().Scaling(0.3f, 0.3f, 0.3f);
-				nextLoc->GetTransform().SetPosition(packet->position);
-			}
-				break;
-			case CORRUPTED_GEM:
-			{
-				*nextLoc = GameObject{};
-				mGameObjectMap[packet->objId] = &(*nextLoc);
-				nextLoc->mShader = mShaderMap["StandardShader"].get();
-				nextLoc->mMesh = mMeshMap["CorruptedGem"].get();
-				nextLoc->mMaterial = mMaterialManager->GetMaterial("CorruptedGemMaterial");
-				nextLoc->SetActiveState(true);
-
-				nextLoc->GetTransform().SetPosition(packet->position);
-			}
-				break;
-			default:
-			{
-				*nextLoc = GameObject{};
-				mGameObjectMap[packet->objId] = &(*nextLoc);
-				nextLoc->mShader = mShaderMap["StandardShader"].get();
-				nextLoc->mMesh = mMeshMap["Cube"].get();
-				nextLoc->mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-				nextLoc->SetActiveState(true);
-
-				nextLoc->GetTransform().SetPosition(packet->position);
-			}
-				break;
-			}
-		}
-		else {
-			if (mGameObjectMap[packet->objId] != nullptr) {
-				mGameObjectMap[packet->objId]->SetActiveState(true);
-			}
-		}
-
-	}
-}
-
-void Scene::ProcessObjectDisappeared(PacketHeader* header) {
-	auto packet = reinterpret_cast<PacketSC::PacketObjectDisappeared*>(header);
-
-	if (packet->objId < OBJECT_ID_START) {
-
-		if (packet->objId == gClientCore->GetSessionId()) {
-			return; 
-		}
-
-		if (mPlayerIndexmap.contains(packet->objId)) {
-			mPlayerIndexmap[packet->objId]->SetActiveState(false);
-		}
-	}
-	else {
-		if (mGameObjectMap.contains(packet->objId)) {
-			mGameObjectMap[packet->objId]->SetActiveState(false);
-		}
-	}
-}
-
-void Scene::ProcessPlayerExit(PacketHeader* header) {
-	if (mPlayerIndexmap.contains(header->id)) {
-		mPlayerIndexmap[header->id]->SetActiveState(false);
-		mPlayerIndexmap.erase(header->id);
-	}
-}
-
-void Scene::ProcessAcquiredItem(PacketHeader* header) {
-
-}
-
-void Scene::ProcessObjectAttacked(PacketHeader* header) {
-
-}
-
-void Scene::ProcessUseItem(PacketHeader* header) {
-
-}
-
-void Scene::ProcessRestoreHP(PacketHeader* header) {
-
-}
-void Scene::ProcessPacketAnimation(PacketHeader* header) {
-	auto packet = reinterpret_cast<PacketSC::PacketAnimationState*>(header);
-	// 플레이어인 경우 
-	if (packet->objId < OBJECT_ID_START) {
-		if (mPlayerIndexmap.contains(packet->objId)) {
-			mPlayerIndexmap[packet->objId]->GetBoneMaskController().Transition(static_cast<size_t>(packet->animState), 0.09);
-		}
-	}
-	else {
-		if (mGameObjectMap.contains(packet->objId)) {
-			mGameObjectMap[packet->objId]->GetAnimationController().Transition(static_cast<size_t>(packet->animState), 0.09);
-		}
-	}
-
-}
+//void Scene::ProcessNotifyId(PacketHeader* header) {
+//	gClientCore->InitSessionId(header->id);
+//	mNetworkInfoText->GetText() = std::format(L"My Session ID : {}", header->id);
+//}
+//
+//void Scene::ProcessPacketProtocolVersion(PacketHeader* header) {
+//	auto protocolVersion = reinterpret_cast<PacketProtocolVersion*>(header);
+//	if (PROTOCOL_VERSION_MAJOR != protocolVersion->major or
+//		PROTOCOL_VERSION_MINOR != protocolVersion->minor) {
+//
+//		gClientCore->CloseSession();
+//
+//		MessageBox(nullptr, L"ERROR!!!!!\nProtocolVersion Mismatching", L"", MB_OK | MB_ICONERROR);
+//		::exit(0);
+//	}
+//}	
+//
+//// Deprecated 
+//void Scene::ProcessPlayerPacket(PacketHeader* header) {
+//
+//}
+//
+//void Scene::ProcessObjectPacket(PacketHeader* header) {
+//	auto packet = reinterpret_cast<PacketSC::PacketObject*>(header);
+//	
+//	// 플레이어 영역에 해당한다면
+//	if (packet->objId < OBJECT_ID_START) {
+//		if (mPlayerIndexmap.contains(packet->objId)) {
+//			mPlayerIndexmap[packet->objId]->GetTransform().GetPosition() = packet->position;
+//
+//			if (packet->objId != gClientCore->GetSessionId()) {
+//				auto euler = mPlayerIndexmap[packet->objId]->GetTransform().GetRotation().ToEuler();
+//				euler.y = packet->rotationYaw;
+//				mPlayerIndexmap[packet->objId]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
+//			}
+//
+//		}
+//	}
+//	// 그게 아니라면 기타 게임 오브젝트이다. 
+//	else {
+//		if (mGameObjectMap.contains(packet->objId)) {
+//			mGameObjectMap[packet->objId]->GetTransform().GetPosition() = packet->position;
+//			auto euler = mGameObjectMap[packet->objId]->GetTransform().GetRotation().ToEuler();
+//			euler.y = packet->rotationYaw;
+//			mGameObjectMap[packet->objId]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
+//		}
+//
+//	}
+//}
+//
+//void Scene::ProcessObjectDead(PacketHeader* header) {
+//
+//}
+//
+//void Scene::ProcessObjectAppeared(PacketHeader* header) {
+//	auto FindNextPlayerLoc = [this]() {
+//		for (auto iter = mPlayers.begin(); iter != mPlayers.end(); ++iter) {
+//			if (not iter->GetActiveState()) {
+//				return iter;
+//			}
+//		}
+//		return mPlayers.end();
+//		};
+//
+//	auto FindNextObjectLoc = [this]() {
+//		for (auto iter = mGameObjects.begin(); iter != mGameObjects.end(); ++iter) {
+//			if (not *iter) {
+//				return iter;
+//			}
+//		}
+//		return mGameObjects.end();
+//		};
+//
+//
+//	auto packet = reinterpret_cast<PacketSC::PacketObjectAppeared*>(header);
+//	// 플레이어 등장 
+//	if (packet->objId < OBJECT_ID_START) {
+//		// 내 플레이어 등장 
+//		if (packet->objId == gClientCore->GetSessionId()) {
+//			// 플레이어 인스턴스가 없다면 
+//			if (not mPlayerIndexmap.contains(packet->objId)) {
+//
+//				auto nextLoc = FindNextPlayerLoc();
+//
+//				if (nextLoc == mPlayers.end()) {
+//					Crash("There is no more space for My Player!!");
+//				}
+//
+//				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+//				mPlayerIndexmap[packet->objId] = &(*nextLoc);
+//				mMyPlayer = &(*nextLoc);
+//
+//				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
+//				mMyPlayer->SetMyPlayer();
+//			
+//				mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+//			    //mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
+//				mCameraMode->Enter();
+//
+//				//Scene::SetInputBaseAnimMode();
+//
+//
+//			}
+//			else {
+//				if (mPlayerIndexmap[packet->objId] != nullptr) {
+//					mPlayerIndexmap[packet->objId]->SetActiveState(true);
+//				}
+//			}
+//		}
+//		// 다른 플레이어 등장 
+//		else {
+//			// 그 플레이어 인스턴스가 없다면  
+//			if (not mPlayerIndexmap.contains(packet->objId)) {
+//				auto nextLoc = FindNextPlayerLoc();
+//				if (nextLoc == mPlayers.end()) { 
+//					Crash("There is no more space for Other Player!!"); 
+//				}
+//
+//				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+//				mPlayerIndexmap[packet->objId] = &(*nextLoc);
+//
+//			}
+//			else {
+//				if (mPlayerIndexmap[packet->objId] != nullptr) {
+//					mPlayerIndexmap[packet->objId]->SetActiveState(true);
+//				}
+//			}
+//		}
+//	}
+//	// 이외 오브젝트 등장 
+//	else {
+//		if (not mGameObjectMap.contains(packet->objId)) {
+//			auto nextLoc = FindNextObjectLoc();
+//			if (nextLoc == mGameObjects.end()) {
+//				Crash("There is no more space for Other Object!!");
+//			}
+//
+//
+//
+//			switch (packet->entity) {
+//			case MONSTER1:
+//			case MONSTER2:
+//			case MONSTER3:
+//			{
+//				*nextLoc = GameObject{};
+//				mGameObjectMap[packet->objId] = &(*nextLoc);
+//
+//				nextLoc->mShader = mShaderMap["SkinnedShader"].get();
+//				nextLoc->mMesh = mMeshMap["MonsterType1"].get();
+//				nextLoc->mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
+//				nextLoc->mGraphController = mMonsterType1AnimationController;
+//				nextLoc->mAnimated = true;
+//				nextLoc->SetActiveState(true);
+//
+//				nextLoc->GetTransform().Scaling(0.3f, 0.3f, 0.3f);
+//				nextLoc->GetTransform().SetPosition(packet->position);
+//			}
+//				break;
+//			case CORRUPTED_GEM:
+//			{
+//				*nextLoc = GameObject{};
+//				mGameObjectMap[packet->objId] = &(*nextLoc);
+//				nextLoc->mShader = mShaderMap["StandardShader"].get();
+//				nextLoc->mMesh = mMeshMap["CorruptedGem"].get();
+//				nextLoc->mMaterial = mMaterialManager->GetMaterial("CorruptedGemMaterial");
+//				nextLoc->SetActiveState(true);
+//
+//				nextLoc->GetTransform().SetPosition(packet->position);
+//			}
+//				break;
+//			default:
+//			{
+//				*nextLoc = GameObject{};
+//				mGameObjectMap[packet->objId] = &(*nextLoc);
+//				nextLoc->mShader = mShaderMap["StandardShader"].get();
+//				nextLoc->mMesh = mMeshMap["Cube"].get();
+//				nextLoc->mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+//				nextLoc->SetActiveState(true);
+//
+//				nextLoc->GetTransform().SetPosition(packet->position);
+//			}
+//				break;
+//			}
+//		}
+//		else {
+//			if (mGameObjectMap[packet->objId] != nullptr) {
+//				mGameObjectMap[packet->objId]->SetActiveState(true);
+//			}
+//		}
+//
+//	}
+//}
+//
+//void Scene::ProcessObjectDisappeared(PacketHeader* header) {
+//	auto packet = reinterpret_cast<PacketSC::PacketObjectDisappeared*>(header);
+//
+//	if (packet->objId < OBJECT_ID_START) {
+//
+//		if (packet->objId == gClientCore->GetSessionId()) {
+//			return; 
+//		}
+//
+//		if (mPlayerIndexmap.contains(packet->objId)) {
+//			mPlayerIndexmap[packet->objId]->SetActiveState(false);
+//		}
+//	}
+//	else {
+//		if (mGameObjectMap.contains(packet->objId)) {
+//			mGameObjectMap[packet->objId]->SetActiveState(false);
+//		}
+//	}
+//}
+//
+//void Scene::ProcessPlayerExit(PacketHeader* header) {
+//	if (mPlayerIndexmap.contains(header->id)) {
+//		mPlayerIndexmap[header->id]->SetActiveState(false);
+//		mPlayerIndexmap.erase(header->id);
+//	}
+//}
+//
+//void Scene::ProcessAcquiredItem(PacketHeader* header) {
+//
+//}
+//
+//void Scene::ProcessObjectAttacked(PacketHeader* header) {
+//
+//}
+//
+//void Scene::ProcessUseItem(PacketHeader* header) {
+//
+//}
+//
+//void Scene::ProcessRestoreHP(PacketHeader* header) {
+//
+//}
+//void Scene::ProcessPacketAnimation(PacketHeader* header) {
+//	auto packet = reinterpret_cast<PacketSC::PacketAnimationState*>(header);
+//	// 플레이어인 경우 
+//	if (packet->objId < OBJECT_ID_START) {
+//		if (mPlayerIndexmap.contains(packet->objId)) {
+//			mPlayerIndexmap[packet->objId]->GetBoneMaskController().Transition(static_cast<size_t>(packet->animState), 0.09);
+//		}
+//	}
+//	else {
+//		if (mGameObjectMap.contains(packet->objId)) {
+//			mGameObjectMap[packet->objId]->GetAnimationController().Transition(static_cast<size_t>(packet->animState), 0.09);
+//		}
+//	}
+//
+//}
 #pragma endregion 
 
 
@@ -550,8 +550,52 @@ void Scene::ProcessNetwork() {
 	auto packetHandler = gClientCore->GetPacketHandler(); 
 	decltype(auto) buffer = packetHandler->GetBuffer(); 
 
-	mPacketProcessor.ProcessPackets(buffer);
+
+	
 }
+
+void Scene::ProcessPackets(const uint8_t* buffer, size_t size) { 
+	const uint8_t* iter = buffer; 
+	
+	while (iter < buffer + size) {
+		iter = ProcessPacket(iter);
+	}
+
+}
+
+const uint8_t* Scene::ProcessPacket(const uint8_t* buffer) {
+	decltype(auto) header = FbsPacketFactory::GetHeaderPtrSC(buffer); 
+	
+	switch (header->type) {
+	case Packets::PacketTypes_PT_PROTOCOL_VERSION_SC:
+	{
+		decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ProtocolVersionSC>(buffer); 
+		if (PROTOCOL_VERSION_MAJOR != data->major() or
+			PROTOCOL_VERSION_MINOR != data->minor()) {
+					gClientCore->CloseSession();
+					MessageBox(nullptr, L"ERROR!!!!!\nProtocolVersion Mismatching", L"", MB_OK | MB_ICONERROR);
+					::exit(0);
+		}
+	}
+	break;
+	case Packets::PacketTypes_PT_NOTIFY_ID_SC:
+	{
+
+	}
+	break; 
+	case Packets::PacketTypes_PT_OBJECT_REMOVED_SC:
+	{
+
+	}
+	break;
+
+	default:
+		break;
+	}
+
+	return buffer + header->size; 
+}
+
 
 void Scene::Update() {
 	if (mMyPlayer != nullptr) {
@@ -629,8 +673,6 @@ void Scene::Update() {
 
 void Scene::SendNetwork() {
 	auto id = gClientCore->GetSessionId();
-	PacketCS::PacketKeyInput packetInput{ sizeof(PacketCS::PacketKeyInput), PacketType::PACKET_KEYINPUT, id};
-
 	auto& keyTracker = Input.GetKeyboardTracker();
 
 	for (const auto& key : std::views::iota(static_cast<uint8_t>(0), static_cast<uint8_t>(255))) {
@@ -1983,6 +2025,7 @@ void Scene::SetInputSwordManMode() {
 void Scene::SetInputMageMode() {
 
 }
+
 
 
 

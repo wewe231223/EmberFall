@@ -1,9 +1,7 @@
 #pragma once
+#include "ServerGameScene.h"
 
-#include "../Protocol/PacketProtocol_generated.h"
-#include "GameObject.h"
-
-inline void ProcessPackets(std::shared_ptr<class IServerGameScene>& gameScene, const uint8_t* buffer, size_t bufSize);
+inline void ProcessPackets(std::shared_ptr<IServerGameScene>& gameScene, const uint8_t* buffer, size_t bufSize);
 
 inline const uint8_t* ProcessPacket(std::shared_ptr<IServerGameScene>& gameScene, const uint8_t* buffer);
 

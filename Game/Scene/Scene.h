@@ -47,19 +47,22 @@ private:
 	void SetInputSwordManMode();
 	void SetInputMageMode();
 private:
-	void ProcessNotifyId(PacketHeader* header);
-	void ProcessPacketProtocolVersion(PacketHeader* header);
-	void ProcessPlayerPacket(PacketHeader* header);
-	void ProcessObjectPacket(PacketHeader* header);
-	void ProcessObjectDead(PacketHeader* header);
-	void ProcessObjectAppeared(PacketHeader* header);
-	void ProcessObjectDisappeared(PacketHeader* header);
-	void ProcessPlayerExit(PacketHeader* header);
-	void ProcessAcquiredItem(PacketHeader* header);
-	void ProcessObjectAttacked(PacketHeader* header);
-	void ProcessUseItem(PacketHeader* header);
-	void ProcessRestoreHP(PacketHeader* header);
-	void ProcessPacketAnimation(PacketHeader* header);
+	void ProcessPackets(const uint8_t* buffer, size_t size); 
+	const uint8_t* ProcessPacket(const uint8_t* buffer);
+
+	//void ProcessNotifyId(PacketHeader* header);
+	//void ProcessPacketProtocolVersion(PacketHeader* header);
+	//void ProcessPlayerPacket(PacketHeader* header);
+	//void ProcessObjectPacket(PacketHeader* header);
+	//void ProcessObjectDead(PacketHeader* header);
+	//void ProcessObjectAppeared(PacketHeader* header);
+	//void ProcessObjectDisappeared(PacketHeader* header);
+	//void ProcessPlayerExit(PacketHeader* header);
+	//void ProcessAcquiredItem(PacketHeader* header);
+	//void ProcessObjectAttacked(PacketHeader* header);
+	//void ProcessUseItem(PacketHeader* header);
+	//void ProcessRestoreHP(PacketHeader* header);
+	//void ProcessPacketAnimation(PacketHeader* header);
 private:
 	std::shared_ptr<TextureManager> mTextureManager{ nullptr };
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{ nullptr };
@@ -70,8 +73,6 @@ private:
 	std::unordered_map<std::string, std::unique_ptr<Mesh>> mMeshMap{};
 	std::unordered_map<std::string, std::unique_ptr<GraphicsShaderBase>> mShaderMap{};
 	std::unordered_map<std::string, AnimationLoader> mAnimationMap{};
-
-	ClientPacketProcessor mPacketProcessor{};
 
 	Camera mCamera{};
 	std::unique_ptr<CameraMode> mCameraMode{ nullptr };

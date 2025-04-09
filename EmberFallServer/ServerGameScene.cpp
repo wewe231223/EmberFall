@@ -3,12 +3,9 @@
 #include "GameEventManager.h"
 #include "Terrain.h"
 #include "Input.h"
-
 #include "PlayerScript.h"
 #include "ServerFrame.h"
-
 #include "FbsPacketProcessFn.h"
-
 #include "ObjectSpawner.h"
 
 IServerGameScene::IServerGameScene() { }
@@ -119,7 +116,7 @@ void PlayScene::Update(const float deltaTime) {
     auto& buffer = packetHandler->GetBuffer();
 
     decltype(auto) sharedThis = shared_from_this();
-    ProcessPackets(sharedThis, reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
+    // ProcessPackets(sharedThis, reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
 
     for (auto& [id, obj] : mPlayers) {
         obj->Update(deltaTime);
