@@ -17,13 +17,14 @@ namespace Packets {
 
 enum PacketTypes : uint8_t {
   PacketTypes_PT_PLAYER_EXIT_CS = 0,
-  PacketTypes_PT_PLAYER_LOOK_CS = 1,
-  PacketTypes_PT_PLAYER_SELECT_WEAPON_CS = 2,
-  PacketTypes_PT_PLAYER_SELECT_ROLL_CS = 3,
-  PacketTypes_PT_LATENCY_CS = 4,
-  PacketTypes_PT_REQUEST_USE_ITEM_CS = 5,
-  PacketTypes_PT_REQUEST_ATTACK_CS = 6,
-  PacketTypes_PT_REQUEST_FIRE_CS = 7,
+  PacketTypes_PT_PLAYER_INPUT_CS = 1,
+  PacketTypes_PT_PLAYER_LOOK_CS = 2,
+  PacketTypes_PT_PLAYER_SELECT_WEAPON_CS = 3,
+  PacketTypes_PT_PLAYER_SELECT_ROLE_CS = 4,
+  PacketTypes_PT_LATENCY_CS = 5,
+  PacketTypes_PT_REQUEST_USE_ITEM_CS = 6,
+  PacketTypes_PT_REQUEST_ATTACK_CS = 7,
+  PacketTypes_PT_REQUEST_FIRE_CS = 8,
   PacketTypes_PT_PROTOCOL_VERSION_SC = 128,
   PacketTypes_PT_NOTIFY_ID_SC = 129,
   PacketTypes_PT_PLAYER_EXIT_SC = 130,
@@ -45,12 +46,13 @@ enum PacketTypes : uint8_t {
   PacketTypes_MAX = PacketTypes_PT_PROJECTILE_MOVE_SC
 };
 
-inline const PacketTypes (&EnumValuesPacketTypes())[25] {
+inline const PacketTypes (&EnumValuesPacketTypes())[26] {
   static const PacketTypes values[] = {
     PacketTypes_PT_PLAYER_EXIT_CS,
+    PacketTypes_PT_PLAYER_INPUT_CS,
     PacketTypes_PT_PLAYER_LOOK_CS,
     PacketTypes_PT_PLAYER_SELECT_WEAPON_CS,
-    PacketTypes_PT_PLAYER_SELECT_ROLL_CS,
+    PacketTypes_PT_PLAYER_SELECT_ROLE_CS,
     PacketTypes_PT_LATENCY_CS,
     PacketTypes_PT_REQUEST_USE_ITEM_CS,
     PacketTypes_PT_REQUEST_ATTACK_CS,
@@ -79,9 +81,10 @@ inline const PacketTypes (&EnumValuesPacketTypes())[25] {
 inline const char *EnumNamePacketTypes(PacketTypes e) {
   switch (e) {
     case PacketTypes_PT_PLAYER_EXIT_CS: return "PT_PLAYER_EXIT_CS";
+    case PacketTypes_PT_PLAYER_INPUT_CS: return "PT_PLAYER_INPUT_CS";
     case PacketTypes_PT_PLAYER_LOOK_CS: return "PT_PLAYER_LOOK_CS";
     case PacketTypes_PT_PLAYER_SELECT_WEAPON_CS: return "PT_PLAYER_SELECT_WEAPON_CS";
-    case PacketTypes_PT_PLAYER_SELECT_ROLL_CS: return "PT_PLAYER_SELECT_ROLL_CS";
+    case PacketTypes_PT_PLAYER_SELECT_ROLE_CS: return "PT_PLAYER_SELECT_ROLE_CS";
     case PacketTypes_PT_LATENCY_CS: return "PT_LATENCY_CS";
     case PacketTypes_PT_REQUEST_USE_ITEM_CS: return "PT_REQUEST_USE_ITEM_CS";
     case PacketTypes_PT_REQUEST_ATTACK_CS: return "PT_REQUEST_ATTACK_CS";
@@ -161,22 +164,22 @@ inline const char *EnumNameAnimationState(AnimationState e) {
   return EnumNamesAnimationState()[index];
 }
 
-enum PlayerRoll : uint8_t {
-  PlayerRoll_HUMAN = 0,
-  PlayerRoll_BOSS = 1,
-  PlayerRoll_MIN = PlayerRoll_HUMAN,
-  PlayerRoll_MAX = PlayerRoll_BOSS
+enum PlayerRole : uint8_t {
+  PlayerRole_HUMAN = 0,
+  PlayerRole_BOSS = 1,
+  PlayerRole_MIN = PlayerRole_HUMAN,
+  PlayerRole_MAX = PlayerRole_BOSS
 };
 
-inline const PlayerRoll (&EnumValuesPlayerRoll())[2] {
-  static const PlayerRoll values[] = {
-    PlayerRoll_HUMAN,
-    PlayerRoll_BOSS
+inline const PlayerRole (&EnumValuesPlayerRole())[2] {
+  static const PlayerRole values[] = {
+    PlayerRole_HUMAN,
+    PlayerRole_BOSS
   };
   return values;
 }
 
-inline const char * const *EnumNamesPlayerRoll() {
+inline const char * const *EnumNamesPlayerRole() {
   static const char * const names[3] = {
     "HUMAN",
     "BOSS",
@@ -185,10 +188,10 @@ inline const char * const *EnumNamesPlayerRoll() {
   return names;
 }
 
-inline const char *EnumNamePlayerRoll(PlayerRoll e) {
-  if (::flatbuffers::IsOutRange(e, PlayerRoll_HUMAN, PlayerRoll_BOSS)) return "";
+inline const char *EnumNamePlayerRole(PlayerRole e) {
+  if (::flatbuffers::IsOutRange(e, PlayerRole_HUMAN, PlayerRole_BOSS)) return "";
   const size_t index = static_cast<size_t>(e);
-  return EnumNamesPlayerRoll()[index];
+  return EnumNamesPlayerRole()[index];
 }
 
 enum EntityType : uint8_t {

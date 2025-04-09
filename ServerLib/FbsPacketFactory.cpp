@@ -65,12 +65,12 @@ OverlappedSend* FbsPacketFactory::PacketLatencySC(uint64_t time) {
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::ObjectAppearedSC(NetworkObjectIdType id, Packets::EntityType entity,
+OverlappedSend* FbsPacketFactory::ObjectAppearedSC(NetworkObjectIdType id, Packets::EntityType entity, float yaw,
     Packets::AnimationState animation, float hp, const SimpleMath::Vector3& pos) {
     flatbuffers::FlatBufferBuilder builder{ };
 
     Packets::Vec3 fbsPos = GetVec3(pos);
-    auto offset = Packets::CreateObjectAppearedSC(builder, id, entity, animation, hp, &fbsPos);
+    auto offset = Packets::CreateObjectAppearedSC(builder, id, entity, animation, hp, yaw, &fbsPos);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();
@@ -106,12 +106,13 @@ OverlappedSend* FbsPacketFactory::ObjectRemoveSC(NetworkObjectIdType id) {
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::ObjectMoveSC(NetworkObjectIdType id, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir, float speed) {
+OverlappedSend* FbsPacketFactory::ObjectMoveSC(NetworkObjectIdType id, float yaw,
+    const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir, float speed) {
     flatbuffers::FlatBufferBuilder builder{ };
 
     Packets::Vec3 fbsPos = GetVec3(pos);
     Packets::Vec3 fbsDir = GetVec3(dir);
-    auto offset = Packets::CreateObjectMoveSC(builder, id, &fbsPos, &fbsDir, speed);
+    auto offset = Packets::CreateObjectMoveSC(builder, id, yaw, &fbsPos, &fbsDir, speed);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();
@@ -238,11 +239,24 @@ OverlappedSend* FbsPacketFactory::PlayerExitCS(SessionIdType id) {
     const uint8_t* payload = builder.GetBufferPointer();
     const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
 
-    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes::PacketTypes_PT_PLAYER_EXIT_CS };
-    return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
+    PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes::PacketTypes_PT_PLAYER_EXIT_CS, id };
+    return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::PlayerLookCS(const SimpleMath::Vector3& look) {
+OverlappedSend* FbsPacketFactory::PlayerInputCS(SessionIdType id, uint8_t key, bool down) {
+    flatbuffers::FlatBufferBuilder builder{ };
+
+    auto offset = Packets::CreatePlayerInput(builder, key, down);
+    builder.Finish(offset);
+
+    const uint8_t* payload = builder.GetBufferPointer();
+    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
+
+    PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes::PacketTypes_PT_PLAYER_INPUT_CS, id };
+    return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
+}
+
+OverlappedSend* FbsPacketFactory::PlayerLookCS(SessionIdType id, const SimpleMath::Vector3& look) {
     flatbuffers::FlatBufferBuilder builder{ };
 
     Packets::Vec3 fbsLook = GetVec3(look);
@@ -252,11 +266,11 @@ OverlappedSend* FbsPacketFactory::PlayerLookCS(const SimpleMath::Vector3& look) 
     const uint8_t* payload = builder.GetBufferPointer();
     const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
 
-    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes::PacketTypes_PT_PLAYER_LOOK_CS };
-    return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
+    PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes::PacketTypes_PT_PLAYER_LOOK_CS, id };
+    return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::PlayerSelectWeapon(Packets::Weapon weapon) {
+OverlappedSend* FbsPacketFactory::PlayerSelectWeapon(SessionIdType id, Packets::Weapon weapon) {
     flatbuffers::FlatBufferBuilder builder{ };
 
     auto offset = Packets::CreatePlayerSelectWeaponCS(builder, weapon);
@@ -265,11 +279,24 @@ OverlappedSend* FbsPacketFactory::PlayerSelectWeapon(Packets::Weapon weapon) {
     const uint8_t* payload = builder.GetBufferPointer();
     const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
 
-    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes::PacketTypes_PT_PLAYER_SELECT_WEAPON_CS };
-    return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
+    PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes::PacketTypes_PT_PLAYER_SELECT_WEAPON_CS, id };
+    return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::LatencyCS(uint64_t time) {
+OverlappedSend* FbsPacketFactory::PlayerSelectRole(SessionIdType id, Packets::PlayerRole role) {
+    flatbuffers::FlatBufferBuilder builder{ };
+
+    auto offset = Packets::CreatePlayerSelectRoleCS(builder, role);
+    builder.Finish(offset);
+
+    const uint8_t* payload = builder.GetBufferPointer();
+    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
+
+    PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes::PacketTypes_PT_PLAYER_SELECT_ROLE_CS, id };
+    return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
+}
+
+OverlappedSend* FbsPacketFactory::LatencyCS(SessionIdType id, uint64_t time) {
     flatbuffers::FlatBufferBuilder builder{ };
 
     auto offset = Packets::CreatePacketLatencyCS(builder, time);
@@ -278,11 +305,11 @@ OverlappedSend* FbsPacketFactory::LatencyCS(uint64_t time) {
     const uint8_t* payload = builder.GetBufferPointer();
     const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
 
-    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes::PacketTypes_PT_LATENCY_CS };
-    return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
+    PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes::PacketTypes_PT_LATENCY_CS, id };
+    return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::RequestUseItemCS(Packets::ItemType item) {
+OverlappedSend* FbsPacketFactory::RequestUseItemCS(SessionIdType id, Packets::ItemType item) {
     flatbuffers::FlatBufferBuilder builder{ };
 
     auto offset = Packets::CreateRequestUseItemCS(builder, item);
@@ -291,11 +318,11 @@ OverlappedSend* FbsPacketFactory::RequestUseItemCS(Packets::ItemType item) {
     const uint8_t* payload = builder.GetBufferPointer();
     const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());    
 
-    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes::PacketTypes_PT_REQUEST_USE_ITEM_CS };
-    return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
+    PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes::PacketTypes_PT_REQUEST_USE_ITEM_CS, id };
+    return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::RequestAttackCS(const SimpleMath::Vector3& dir) {
+OverlappedSend* FbsPacketFactory::RequestAttackCS(SessionIdType id, const SimpleMath::Vector3& dir) {
     flatbuffers::FlatBufferBuilder builder{ };
 
     Packets::Vec3 fbsDir = GetVec3(dir);
@@ -305,11 +332,11 @@ OverlappedSend* FbsPacketFactory::RequestAttackCS(const SimpleMath::Vector3& dir
     const uint8_t* payload = builder.GetBufferPointer();
     const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
 
-    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes::PacketTypes_PT_REQUEST_ATTACK_CS };
-    return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
+    PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes::PacketTypes_PT_REQUEST_ATTACK_CS, id };
+    return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::RequestFireCS(const SimpleMath::Vector3& dir, Packets::ProjectileTypes projectile) {
+OverlappedSend* FbsPacketFactory::RequestFireCS(SessionIdType id, const SimpleMath::Vector3& dir, Packets::ProjectileTypes projectile) {
     flatbuffers::FlatBufferBuilder builder{ };
 
     Packets::Vec3 fbsDir = GetVec3(dir);
@@ -319,8 +346,8 @@ OverlappedSend* FbsPacketFactory::RequestFireCS(const SimpleMath::Vector3& dir, 
     const uint8_t* payload = builder.GetBufferPointer();
     const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
 
-    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes::PacketTypes_PT_REQUEST_FIRE_CS };
-    return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
+    PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes::PacketTypes_PT_REQUEST_FIRE_CS, id };
+    return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
 }
 
 Packets::Vec3 FbsPacketFactory::GetVec3(const SimpleMath::Vector3& vec) {

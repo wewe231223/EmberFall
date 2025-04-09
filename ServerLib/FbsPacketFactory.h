@@ -37,11 +37,11 @@ public:
     static OverlappedSend* PlayerExitSC(SessionIdType id);
     static OverlappedSend* PacketLatencySC(uint64_t time);
 
-    static OverlappedSend* ObjectAppearedSC(NetworkObjectIdType id, Packets::EntityType entity,
+    static OverlappedSend* ObjectAppearedSC(NetworkObjectIdType id, Packets::EntityType entity, float yaw,
         Packets::AnimationState animation, float hp, const SimpleMath::Vector3& pos);
     static OverlappedSend* ObjectDisappearedSC(NetworkObjectIdType id);
     static OverlappedSend* ObjectRemoveSC(NetworkObjectIdType id);
-    static OverlappedSend* ObjectMoveSC(NetworkObjectIdType id, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir, float speed);
+    static OverlappedSend* ObjectMoveSC(NetworkObjectIdType id, float yaw, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir, float speed);
     static OverlappedSend* ObjectAttackedSC(NetworkObjectIdType id, float hp);
     static OverlappedSend* ObjectAnimationChangedSC(NetworkObjectIdType id, AnimationState animation);
 
@@ -57,14 +57,16 @@ public:
 
     // Client to Server
     static OverlappedSend* PlayerExitCS(SessionIdType id);
-    static OverlappedSend* PlayerLookCS(const SimpleMath::Vector3& look);
-    static OverlappedSend* PlayerSelectWeapon(Packets::Weapon weapon);
-    static OverlappedSend* LatencyCS(uint64_t time);
+    static OverlappedSend* PlayerInputCS(SessionIdType id, uint8_t key, bool down);
+    static OverlappedSend* PlayerLookCS(SessionIdType id, const SimpleMath::Vector3& look);
+    static OverlappedSend* PlayerSelectWeapon(SessionIdType id, Packets::Weapon weapon);
+    static OverlappedSend* PlayerSelectRole(SessionIdType id, Packets::PlayerRole role);
+    static OverlappedSend* LatencyCS(SessionIdType id, uint64_t time);
            
-    static OverlappedSend* RequestUseItemCS(Packets::ItemType item);
+    static OverlappedSend* RequestUseItemCS(SessionIdType id, Packets::ItemType item);
            
-    static OverlappedSend* RequestAttackCS(const SimpleMath::Vector3& dir);
-    static OverlappedSend* RequestFireCS(const SimpleMath::Vector3& dir, Packets::ProjectileTypes projectile);
+    static OverlappedSend* RequestAttackCS(SessionIdType id, const SimpleMath::Vector3& dir);
+    static OverlappedSend* RequestFireCS(SessionIdType id, const SimpleMath::Vector3& dir, Packets::ProjectileTypes projectile);
 
 public:
     static Packets::Vec3 GetVec3(const SimpleMath::Vector3& vec);

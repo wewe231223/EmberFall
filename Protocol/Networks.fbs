@@ -27,6 +27,11 @@ table PlayerExitSC {
 //		Basic communication packets
 //////////////////////////////////////////////////////////////
 
+table PlayerInput { 
+	key: ubyte;
+	down: bool;
+}
+
 table PlayerExitCS { }
 
 table PlayerLookCS {
@@ -38,8 +43,8 @@ table PlayerSelectWeaponCS {
     weapon: Weapon;
 }
 
-table PlayerSelectRollCS { 
-	roll: PlayerRoll;
+table PlayerSelectRoleCS { 
+	role: PlayerRole;
 }
 
 //////////////////////////////////////////////////////////////

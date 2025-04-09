@@ -11,7 +11,7 @@ inline void ProcessPlayerLookCS(const Packets::PlayerLookCS* const look, std::sh
 
 inline void ProcessPlayerSelectWeaponCS(const Packets::PlayerSelectWeaponCS* const weapon, std::shared_ptr<GameObject>& player);
 
-inline void ProcessPlayerSelectRollCS(const Packets::PlayerSelectRollCS* const roll, std::shared_ptr<GameObject>& player);
+inline void ProcessPlayerSelectRoleCS(const Packets::PlayerSelectRoleCS* const roll, std::shared_ptr<GameObject>& player);
 
 inline void ProcessLatencyCS(const Packets::PacketLatencyCS* const latency);
 

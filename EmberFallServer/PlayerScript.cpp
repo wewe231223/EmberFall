@@ -27,13 +27,15 @@ std::shared_ptr<IServerGameScene> PlayerScript::GetCurrentScene() const {
 }
 
 void PlayerScript::Init() { 
-    mInteractionTrigger = gObjectSpawner->SpawnTrigger(std::numeric_limits<float>::max(), GetOwner()->GetPosition(), SimpleMath::Vector3{15.0f});
+    auto triggerBoxExt = SimpleMath::Vector3{ 1.0f, 1.0f, 5.0f };
+    mInteractionTrigger = gObjectSpawner->SpawnTrigger(std::numeric_limits<float>::max(), GetOwner()->GetPosition(), triggerBoxExt);
 }
 
 void PlayerScript::Update(const float deltaTime) {
     decltype(auto) owner = GetOwner();
 
     mInteractionTrigger->GetTransform()->SetPosition(owner->GetPosition());
+    mInteractionTrigger->GetTransform()->Rotation(owner->GetRotation());
     mViewList.mPosition = owner->GetPosition();
     mViewList.Update();
     mViewList.Send();

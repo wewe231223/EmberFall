@@ -4,9 +4,10 @@ enum PacketTypes : ubyte {
     // Client To Server
     //      Networks Packet (Networks.fbs)
     PT_PLAYER_EXIT_CS = 0x00,
+    PT_PLAYER_INPUT_CS,
     PT_PLAYER_LOOK_CS,
     PT_PLAYER_SELECT_WEAPON_CS,
-    PT_PLAYER_SELECT_ROLL_CS,
+    PT_PLAYER_SELECT_ROLE_CS,
     PT_LATENCY_CS,
 
     //      Item Packet (Items.fbs)
@@ -58,7 +59,7 @@ enum AnimationState : ubyte {
     DEAD
 }
 
-enum PlayerRoll : ubyte {
+enum PlayerRole : ubyte {
     HUMAN = 0,
     BOSS
 }
