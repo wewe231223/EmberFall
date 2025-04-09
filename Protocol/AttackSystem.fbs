@@ -1,0 +1,40 @@
+include "BaseStructures.fbs";
+include "Enums.fbs";
+
+namespace Packets;
+
+//////////////////////////////////////////////////////////////
+// Server To Client
+//      Define Projectile&Attack Packets
+//          
+//////////////////////////////////////////////////////////////
+
+table FireProjectileSC {
+	objectId: ushort;
+	dir: Vec3;
+	startPos: Vec3;
+	startSpeed: float;
+	projectileType: ProjectileTypes;
+}
+
+table ProjectileMoveSC {
+	objectId:ushort;
+	pos: Vec3;
+	dir: Vec3;
+	speed: float;
+}
+
+//////////////////////////////////////////////////////////////
+// Client To Server
+//      Define Projectile&Attack Packets
+//
+//////////////////////////////////////////////////////////////
+
+table RequestAttackCS {
+	dir: Vec3;
+}
+
+table RequestFireCS {
+	dir: Vec3;	
+	projectileType: ProjectileTypes;
+}

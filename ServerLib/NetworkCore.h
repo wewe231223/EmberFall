@@ -60,8 +60,10 @@ public:
     virtual void End() override;
 
     void Send(SessionIdType to, void* packet);
+    void Send(SessionIdType to, OverlappedSend* overlappedSend);
     void SendAll(void* packet);
     void SendAll(void* data, size_t size);
+    void SendAll(OverlappedSend* const overlappedSend);
 
 private:
     std::shared_ptr<class Listener> mListener{ nullptr };
@@ -85,6 +87,7 @@ public:
     OverlappedConnect* GetOverlappedConnect();
     void Send(void* packet);
     void Send(void* data, size_t dataSize);
+    void Send(OverlappedSend* const overlappedSend);
     void CloseSession();
 
 private:

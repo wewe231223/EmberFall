@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Physics.h"
 #include "GameObject.h"
+#include "GameTimer.h"
 
 Physics::Physics() { }
 
@@ -13,6 +14,14 @@ bool Physics::IsMoving() const {
 bool Physics::IsMovingXZ() const {
     SimpleMath::Vector3 xzVelocity{ mVelocity.x, 0.0f, mVelocity.z };
     return false == MathUtil::IsVectorZero(mVelocity);
+}
+
+float Physics::GetSpeed() const {
+    return mVelocity.Length();
+}
+
+SimpleMath::Vector3 Physics::GetMoveDir() const {
+    return MathUtil::Normalize(mVelocity);
 }
 
 void Physics::Disable() {
@@ -56,16 +65,19 @@ void Physics::SetTransform(const std::shared_ptr<Transform>& transform) {
     mTransform = transform;
 }
 
-void Physics::Jump(const float deltaTime) {
+void Physics::CheckAndJump(const float deltaTime) {
     if (false == IsOnGround() and false == IsOnOtherObject()) {
         return;
     }
 
     mOnGround = false;
     mOnOtherObject = false;
+    
     // v = F / mess * time (m/s)
     auto accel = mFactor.jumpForce / mFactor.mass;
     mVelocity.y = (accel * GameUnits::ToUnit<GameUnits::StandardTime>(deltaTime)).Count(); 
+    
+    mTransform.lock()->Translate(SimpleMath::Vector3{ 0.0f, 1.0f, 0.0f });
 }
 
 void Physics::ResizeVelocity(float speed) {
@@ -79,14 +91,14 @@ void Physics::ResizeVelocity(float speed) {
     mVelocity.z = velocityXZ.z;
 }
 
-void Physics::Acceleration(const SimpleMath::Vector3& dir, const float acceleration, const float deltaTime) {
-    mVelocity += dir * acceleration * deltaTime;
+void Physics::Accelerate(const SimpleMath::Vector3& dir, const float acceleration) {
+    mVelocity += dir * acceleration * StaticTimer::GetDeltaTime();
 
     ClampVelocity();
 }
 
-void Physics::Acceleration(const SimpleMath::Vector3& dir, const float deltaTime) {
-    auto speed = mFactor.acceleration * GameUnits::ToUnit<GameUnits::StandardTime>(deltaTime);
+void Physics::Accelerate(const SimpleMath::Vector3& dir) {
+    auto speed = mFactor.acceleration * GameUnits::ToUnit<GameUnits::StandardTime>(StaticTimer::GetDeltaTime());
     mVelocity += GameUnits::ToVelocity(dir, speed);
 
     ClampVelocity();
@@ -98,9 +110,15 @@ void Physics::AddVelocity(const SimpleMath::Vector3& speed) {
     ClampVelocity();
 }
 
-void Physics::AddForce(const SimpleMath::Vector3& force, const float deltaTime) {
-    mVelocity += (force / mFactor.mass.Count()) * deltaTime;
+void Physics::AddForce(const SimpleMath::Vector3& force) {
+    mVelocity += (force / mFactor.mass.Count()) * StaticTimer::GetDeltaTime();
     
+    ClampVelocity();
+}
+
+void Physics::AddForce(const SimpleMath::Vector3& dir, const float force) {
+    mVelocity += ((dir * force) / mFactor.mass.Count()) * StaticTimer::GetDeltaTime();
+
     ClampVelocity();
 }
 
@@ -112,9 +130,8 @@ void Physics::Update(const float deltaTime) {
     float speed = mVelocity.Length();
     SimpleMath::Vector3 moveDir = mVelocity;
     moveDir.Normalize();
-
-    UpdateFriction(deltaTime, moveDir, speed);
     UpdateGravity(deltaTime, moveDir, speed);   // 중력 적용
+    UpdateFriction(deltaTime, moveDir, speed);
 
     auto transform = mTransform.lock();
     transform->Translate(mVelocity * deltaTime);
@@ -129,7 +146,7 @@ void Physics::SolvePenetration(const SimpleMath::Vector3& penetrationVec, const 
     float opponentMass = opponent->GetPhysics()->mFactor.mass.Count();
     // 내가 무거울 수록 덜 밀려나는 구조.
     float coefficient = opponentMass / (myMass + opponentMass); // 0.0f ~ 1.0f 사이 값.
-    auto repulsiveVec = penetrationVec;
+    auto repulsiveVec = coefficient * penetrationVec;
     transform->Translate(repulsiveVec);
 
     bool onOtherObject{ false };
@@ -140,6 +157,7 @@ void Physics::SolvePenetration(const SimpleMath::Vector3& penetrationVec, const 
     //    onOtherObject = true;
     //    transform->SetY(obb1.Extents.y + obb2.Center.y + obb2.Extents.y);
     //}
+
     SetOnOtherObject(onOtherObject);
 }
 
@@ -162,8 +180,8 @@ void Physics::UpdateFriction(const float deltaTime, const SimpleMath::Vector3& m
 
     auto inverseDir = -moveDir;
     auto normalForce = mFactor.mass * GRAVITY_ACCELERATION;
-    //SimpleMath::Vector3 frictionForce = GameUnits::ToDirForce(inverseDir, (normalForce * mFactor.friction));
     SimpleMath::Vector3 frictionForce = inverseDir * normalForce.Count() * mFactor.friction;
+
     frictionForce.y = 0.0f; // Y축 계산 X
     SimpleMath::Vector3 frictionAcc = frictionForce / mFactor.mass.Count();
     SimpleMath::Vector3 resultVelocity = mVelocity + frictionAcc * deltaTime;
@@ -177,10 +195,10 @@ void Physics::UpdateGravity(const float deltaTime, const SimpleMath::Vector3& mo
         return;
     }
 
-    //SimpleMath::Vector3 dragForce = SimpleMath::Vector3::Up * mFactor.dragCoeffi * speed * speed;
-    //SimpleMath::Vector3 dragAcceleration = dragForce / mFactor.mass.Count();
+    SimpleMath::Vector3 dragForce = SimpleMath::Vector3::Up * mFactor.dragCoeffi * speed * speed;
+    SimpleMath::Vector3 dragAcceleration = dragForce / mFactor.mass.Count();
 
     // 최종 가속도 = 중력 + 공기 저항
-    SimpleMath::Vector3 acceleration = SimpleMath::Vector3::Down * GRAVITY_ACCELERATION.Count()/* + dragAcceleration*/;
+    SimpleMath::Vector3 acceleration = SimpleMath::Vector3::Down * GRAVITY_ACCELERATION.Count() + dragAcceleration;
     mVelocity += acceleration * deltaTime;
 }

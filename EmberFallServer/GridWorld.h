@@ -20,6 +20,7 @@ public:
     ~GridWorld();
 
 public:
+    void Update(const std::shared_ptr<class IServerGameScene>& gameScene);
     void Update(const std::vector<std::shared_ptr<class GameObject>>& objects);
 
 private:

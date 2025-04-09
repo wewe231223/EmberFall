@@ -83,8 +83,9 @@ inline constexpr auto ConvertPacketTypeToEnum() noexcept
     }
 }
 
-//template <typename PacketType, typename... Args> requires std::derived_from<PacketType, PacketHeader>
-//inline PacketType GetPacket(SessionIdType id, Args&&... args) 
-//{
-//    return PacketType{ sizeof(PacketType), ConvertPacketTypeToEnum<PacketType>(), id, std::forward<Args>(args)... };
-//}
+template <typename PacketType, typename... Args> requires std::derived_from<PacketType, PacketHeader>
+inline PacketType GetPacket(SessionIdType id, Args&&... args) 
+{
+    PacketType packet = { sizeof(PacketType), ConvertPacketTypeToEnum<PacketType>(), id, std::forward<Args>(args)... };
+    return packet;
+}

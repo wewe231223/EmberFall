@@ -17,13 +17,21 @@ std::shared_ptr<Collider> IWeapon::GetHitbox() const {
 }
 
 Fist::Fist(const SimpleMath::Vector3& hitBoxSize)
-    : IWeapon{ Weapon::SPEAR } { 
+    : IWeapon{ Weapon::NONE } { 
     mHitbox = std::make_shared<OrientedBoxCollider>(SimpleMath::Vector3::Zero, hitBoxSize);
 }
 
 Fist::~Fist() { }
 
-void Fist::Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) { }
+void Fist::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
+    std::shared_ptr<AttackEvent> event = std::make_shared<AttackEvent>();
+    event->sender = ownerId;
+    event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
+    event->knockBackForce = dir * 5000.0f;
+
+    auto attackPos = pos + dir * mHitbox->GetForwardExtents();
+    gObjectSpawner->SpawnEventTrigger(event, 0.5f, 0.5f, 1, attackPos, dir, mHitbox);
+}
 
 Spear::Spear(const SimpleMath::Vector3& hitBoxSize)
     : IWeapon{ Weapon::SPEAR } {
@@ -32,11 +40,13 @@ Spear::Spear(const SimpleMath::Vector3& hitBoxSize)
 
 Spear::~Spear() { }
 
-void Spear::Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
+void Spear::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
     std::shared_ptr<AttackEvent> event = std::make_shared<AttackEvent>();
+    event->sender = ownerId;
     event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
 
-    gObjectSpawner->SpawnTrigger(event, 5.0f, 1.0f, 5, pos, dir, mHitbox);
+    auto attackPos = pos + dir * mHitbox->GetForwardExtents();
+    gObjectSpawner->SpawnEventTrigger(event, 0.5f, 0.5f, 1, attackPos, dir, mHitbox);
 }
 
 Bow::Bow(const SimpleMath::Vector3& hitBoxSize)
@@ -46,7 +56,7 @@ Bow::Bow(const SimpleMath::Vector3& hitBoxSize)
 
 Bow::~Bow() { }
 
-void Bow::Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
+void Bow::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
     gObjectSpawner->SpawnProjectile(ObjectTag::ARROW, pos, dir, mArrowSpeed);
 }
 
@@ -57,11 +67,14 @@ Sword::Sword(const SimpleMath::Vector3& hitBoxSize)
 
 Sword::~Sword() { }
 
-void Sword::Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
+void Sword::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
     std::shared_ptr<AttackEvent> event = std::make_shared<AttackEvent>();
+    event->sender = ownerId;
     event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
+    event->knockBackForce = dir * 5000.0f;
 
-    gObjectSpawner->SpawnTrigger(event, 0.5f, 0.5f, 1, pos, dir, mHitbox);
+    auto attackPos = pos + dir * mHitbox->GetForwardExtents();
+    gObjectSpawner->SpawnEventTrigger(event, 0.5f, 0.5f, 1, attackPos, dir, mHitbox);
 }
 
 Staff::Staff(const SimpleMath::Vector3& hitBoxSize)
@@ -71,9 +84,11 @@ Staff::Staff(const SimpleMath::Vector3& hitBoxSize)
 
 Staff::~Staff() { }
 
-void Staff::Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
+void Staff::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
     std::shared_ptr<AttackEvent> event = std::make_shared<AttackEvent>();
+    event->sender = ownerId;
     event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
 
-    gObjectSpawner->SpawnTrigger(event, 5.0f, 1.0f, 5, pos, dir, mHitbox);
+    auto attackPos = pos + dir * mHitbox->GetForwardExtents();
+    gObjectSpawner->SpawnEventTrigger(event, 0.5f, 0.5f, 5, attackPos, dir, mHitbox);
 }

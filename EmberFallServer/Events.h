@@ -20,7 +20,7 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-enum class GameEventType : UINT16 {
+enum class GameEventType : uint16_t {
     ATTACK_EVENT,
     DESTROY_GEM_EVENT,
     DESTROY_GEM_COMPLETE,
@@ -42,14 +42,49 @@ struct GameEvent {
     GameEventType type;
     NetworkObjectIdType sender;
     NetworkObjectIdType receiver;
+
+    GameEvent() = default;
+    GameEvent(GameEventType type, NetworkObjectIdType sender, NetworkObjectIdType receiver)
+        : type(type), sender(sender), receiver(receiver) { }
 };
 
 struct AttackEvent : public GameEvent {
     float damage;
+    SimpleMath::Vector3 knockBackForce;
+
+    AttackEvent() = default;
+    AttackEvent(GameEventType type, NetworkObjectIdType sender, NetworkObjectIdType receiver, 
+        float damage, SimpleMath::Vector3 knockBackForce=SimpleMath::Vector3::Zero)
+        : GameEvent{ type, sender, receiver }, damage{ damage }, knockBackForce{ knockBackForce } { }
 };
 
-struct GemDestroyEvent : public GameEvent {
+struct GemDestroyStart : public GameEvent {
     float holdTime; // 키 입력 유지시간.
+
+    GemDestroyStart() = default;
+    GemDestroyStart(GameEventType type, NetworkObjectIdType sender, NetworkObjectIdType receiver, float holdTime)
+        : GameEvent{ type, sender, receiver }, holdTime{ holdTime } { }
 };
 
-struct GemDestroyed : public GameEvent { };
+struct GemDestroyed : public GameEvent { 
+    using GameEvent::GameEvent;
+};
+
+// 초기화를 편하게 하기 위해 만든 함수
+template <typename EventT> requires std::derived_from<EventT, GameEvent>
+inline constexpr auto ConvertEventTypeToEnum() noexcept
+{
+    // Client To Server
+    if constexpr (std::is_same_v<EventT, AttackEvent>) {
+        return GameEventType::ATTACK_EVENT;
+    }
+    else if constexpr (std::is_same_v<EventT, GemDestroyStart>) {
+        return GameEventType::DESTROY_GEM_EVENT;
+    }
+    else if constexpr (std::is_same_v<EventT, GemDestroyed>) {
+        return GameEventType::DESTROY_GEM_COMPLETE;
+    }
+    else {
+        static_assert(false, "Packet Type is not exists!!!");
+    }
+}

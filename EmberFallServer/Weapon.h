@@ -20,7 +20,7 @@ namespace Weapons {
         Weapon GetWeaponType() const;
         std::shared_ptr<Collider> GetHitbox() const;
 
-        virtual void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) abstract;
+        virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) abstract;
 
     public:
         GameUnits::GameUnit<GameUnits::StandardTime> mAttackDelay{ };
@@ -40,7 +40,7 @@ namespace Weapons {
         virtual ~Fist();
 
     public:
-        virtual void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
+        virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
     };
 
     class Spear : public IWeapon {
@@ -49,7 +49,7 @@ namespace Weapons {
         virtual ~Spear();
 
     public:
-        virtual void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
+        virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
     };
 
     class Bow : public IWeapon {
@@ -58,7 +58,7 @@ namespace Weapons {
         virtual ~Bow();
     
     public:
-        virtual void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
+        virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
     
     private:
         GameUnits::GameUnit<GameUnits::StandardSpeed> mArrowSpeed{ };
@@ -70,7 +70,7 @@ namespace Weapons {
         virtual ~Sword();
     
     public:
-        virtual void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
+        virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
     };
 
     class Staff : public IWeapon {
@@ -79,6 +79,6 @@ namespace Weapons {
         virtual ~Staff();
 
     public:
-        virtual void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
+        virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
     };
 }

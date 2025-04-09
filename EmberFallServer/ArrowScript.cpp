@@ -20,13 +20,11 @@ void ArrowScript::Update(const float deltaTime) { }
 void ArrowScript::LateUpdate(const float deltaTime) { }
 
 void ArrowScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 
-    std::shared_ptr<AttackEvent> event = std::make_shared<AttackEvent>();
-    event->sender = GetOwner()->GetId();
-    event->receiver = opponent->GetId();
-    event->type = GameEventType::ATTACK_EVENT;
-    event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
-
-    gEventManager->PushEvent(event);
+    gEventManager->PushEvent<AttackEvent>(
+        GetOwner()->GetId(),
+        opponent->GetId(),
+        GameProtocol::Logic::DEFAULT_DAMAGE
+    );
 
     GetOwner()->SetActive(false);
 }
@@ -34,5 +32,7 @@ void ArrowScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& oppo
 void ArrowScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
 void ArrowScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
+
+void ArrowScript::OnCollisionTerrain(const float height) { }
 
 void ArrowScript::DispatchGameEvent(GameEvent* event) { }

@@ -12,15 +12,18 @@
 
 class WeaponSystem {
 public:
-    WeaponSystem();
+    WeaponSystem(NetworkObjectIdType ownerId);
     ~WeaponSystem();
 
 public:
     Weapon GetWeaponType() const;
 
-    void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir);
+    void SetOwnerId(NetworkObjectIdType id);
     void SetWeapon(Weapon weapon);
 
+    void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir);
+
 private:
+    NetworkObjectIdType mOwnerId{ };
     std::shared_ptr<Weapons::IWeapon> mWeapon{ };
 };

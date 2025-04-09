@@ -39,8 +39,10 @@ public:
 
 public:
     void Init(size_t bufferSize);
+    OverlappedSend* GetOverlapped(const PacketHeaderSC* const header, const uint8_t* const payload, const PacketSizeT payloadSize);
+    OverlappedSend* GetOverlapped(const PacketHeaderCS* const header, const uint8_t* const payload, const PacketSizeT payloadSize);
     OverlappedSend* GetOverlapped(void* data, size_t dataSize);
-    bool ReleaseOverlapped(OverlappedSend* overlapped);
+    bool ReleaseOverlapped(OverlappedSend* const overlapped);
 
 private:
     MemoryPool mPool{ };
@@ -52,8 +54,10 @@ public:
     ~SendBufferFactory();
 
 public:
+    OverlappedSend* GetOverlapped(const PacketHeaderSC* const header, const uint8_t* const payload, const PacketSizeT payloadSize);
+    OverlappedSend* GetOverlapped(const PacketHeaderCS* const header, const uint8_t* const payload, const PacketSizeT payloadSize);
     OverlappedSend* GetOverlapped(void* data, size_t dataSize);
-    bool ReleaseOverlapped(OverlappedSend* overlapped);
+    bool ReleaseOverlapped(OverlappedSend* const overlapped);
 
 private:
     std::unordered_map<size_t, SendBuffers> mBuffers{ };

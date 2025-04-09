@@ -13,7 +13,7 @@
 
 namespace Graphs {
     namespace Search {
-        enum class SearchState : BYTE {
+        enum class SearchState : uint8_t {
             COMPLETE,
             INCOMPLETE,
             TARGET_NOT_FOUND,

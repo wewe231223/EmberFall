@@ -8,6 +8,46 @@ void SendBuffers::Init(size_t bufferSize) {
     mPool.AllocMemBlocks(sizeof(OverlappedEx) + bufferSize, BUFFER_COUNT);
 }
 
+OverlappedSend* SendBuffers::GetOverlapped(const PacketHeaderSC* const header, const uint8_t* const payload, const PacketSizeT payloadSize) {
+    void* ptr = mPool.Pop();
+    if (nullptr == ptr) {
+        return nullptr;
+    }
+
+    auto buf = reinterpret_cast<char*>(ptr) + sizeof(OverlappedSend);
+    auto overlappedSend = reinterpret_cast<OverlappedSend*>(ptr);
+
+    overlappedSend->ResetOverlapped();
+    ::memcpy(buf, header, sizeof(PacketHeaderSC));
+    ::memcpy(buf + sizeof(PacketHeaderSC), payload, payloadSize);
+    ::memset(&(overlappedSend->owner), 0, sizeof(std::shared_ptr<INetworkObject>));
+    overlappedSend->type = IOType::SEND;
+    overlappedSend->wsaBuf.buf = buf;
+    overlappedSend->wsaBuf.len = static_cast<UINT32>(payloadSize + sizeof(PacketHeaderSC));
+
+    return overlappedSend;
+}
+
+OverlappedSend* SendBuffers::GetOverlapped(const PacketHeaderCS* const header, const uint8_t* const payload, const PacketSizeT payloadSize) {
+    void* ptr = mPool.Pop();
+    if (nullptr == ptr) {
+        return nullptr;
+    }
+
+    auto buf = reinterpret_cast<char*>(ptr) + sizeof(OverlappedSend);
+    auto overlappedSend = reinterpret_cast<OverlappedSend*>(ptr);
+
+    overlappedSend->ResetOverlapped();
+    ::memcpy(buf, header, sizeof(PacketHeaderCS));
+    ::memcpy(buf + sizeof(PacketHeaderCS), payload, payloadSize);
+    ::memset(&(overlappedSend->owner), 0, sizeof(std::shared_ptr<INetworkObject>));
+    overlappedSend->type = IOType::SEND;
+    overlappedSend->wsaBuf.buf = buf;
+    overlappedSend->wsaBuf.len = static_cast<UINT32>(payloadSize + sizeof(PacketHeaderCS));
+
+    return overlappedSend;
+}
+
 OverlappedSend* SendBuffers::GetOverlapped(void* data, size_t dataSize) {
     void* ptr = mPool.Pop();
     if (nullptr == ptr) {
@@ -27,7 +67,7 @@ OverlappedSend* SendBuffers::GetOverlapped(void* data, size_t dataSize) {
     return overlappedSend;
 }
 
-bool SendBuffers::ReleaseOverlapped(OverlappedSend* overlapped) {
+bool SendBuffers::ReleaseOverlapped(OverlappedSend* const overlapped) {
     return mPool.Push(overlapped);
 }
 
@@ -39,6 +79,28 @@ SendBufferFactory::SendBufferFactory() {
 
 SendBufferFactory::~SendBufferFactory() { }
 
+OverlappedSend* SendBufferFactory::GetOverlapped(const PacketHeaderSC* const header, const uint8_t* const payload, const PacketSizeT payloadSize) {
+    PacketSizeT dataSize = payloadSize + sizeof(PacketHeaderSC);
+    if (dataSize > MEM_BLOCK_SIZES[MEM_BLOCK_SIZE_CNT - 1] or 0 == dataSize) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Send buffer DataSize Error Size: {}", dataSize);
+        return nullptr;
+    }
+
+    size_t bufferSize = *std::upper_bound(MEM_BLOCK_SIZES, MEM_BLOCK_SIZES + MEM_BLOCK_SIZE_CNT, dataSize);
+    return mBuffers[bufferSize].GetOverlapped(header, payload, payloadSize);
+}
+
+OverlappedSend* SendBufferFactory::GetOverlapped(const PacketHeaderCS* const header, const uint8_t* const payload, const PacketSizeT payloadSize) {
+    PacketSizeT dataSize = payloadSize + sizeof(PacketHeaderSC);
+    if (dataSize > MEM_BLOCK_SIZES[MEM_BLOCK_SIZE_CNT - 1] or 0 == dataSize) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Send buffer DataSize Error Size: {}", dataSize);
+        return nullptr;
+    }
+
+    size_t bufferSize = *std::upper_bound(MEM_BLOCK_SIZES, MEM_BLOCK_SIZES + MEM_BLOCK_SIZE_CNT, dataSize);
+    return mBuffers[bufferSize].GetOverlapped(header, payload, payloadSize);
+}
+
 OverlappedSend* SendBufferFactory::GetOverlapped(void* data, size_t dataSize) {
     if (dataSize > MEM_BLOCK_SIZES[MEM_BLOCK_SIZE_CNT - 1] or 0 == dataSize) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Send buffer DataSize Error Size: {}", dataSize);
@@ -49,7 +111,7 @@ OverlappedSend* SendBufferFactory::GetOverlapped(void* data, size_t dataSize) {
     return mBuffers[bufferSize].GetOverlapped(data, dataSize);
 }
 
-bool SendBufferFactory::ReleaseOverlapped(OverlappedSend* overlapped) {
+bool SendBufferFactory::ReleaseOverlapped(OverlappedSend* const overlapped) {
     size_t dataSize = overlapped->wsaBuf.len;
     if (dataSize > MEM_BLOCK_SIZES[MEM_BLOCK_SIZE_CNT - 1] or 0 == dataSize) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "ReleaseFail Send buffer DataSize Error Size: {}", dataSize);

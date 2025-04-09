@@ -11,7 +11,7 @@
 #include <dxgiformat.h>
 #include "IdentityConfig.h"
 
-#ifdef KSB
+#ifdef KSB 
 #define FHD
 #elif defined(KSJ) 
 #define HD

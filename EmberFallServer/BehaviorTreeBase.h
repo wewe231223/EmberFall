@@ -25,6 +25,8 @@
 //                   그런데 매 프레임마다 Decide Function을 모두 실행하는 건 코스트가 높다.
 //                   그러면 일정 초마다 업데이트 하게 만들자.
 // 
+//          04 - 04 : Wating 노드 추가
+// 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "Script.h"
@@ -132,8 +134,15 @@ namespace BT {
 
     class BehaviorTree abstract {
     public:
-        virtual void Build(const std::shared_ptr<Script>& ownerScript) abstract;
+        BehaviorTree() = default;
+        virtual ~BehaviorTree() = default;
 
+    public:
+        virtual float CalculateDecideValue(const std::shared_ptr<Script>& ownerScript) const abstract;
+        virtual void Build(const std::shared_ptr<Script>& ownerScript) abstract;
+        virtual void DispatchGameEvent(GameEvent* event) abstract;
+
+        void Start();
         void Update(float deltaTime);
 
     protected:

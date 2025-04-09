@@ -56,29 +56,36 @@ bool Terrain::Contains(const SimpleMath::Vector3& position) {
 }
 
 bool Terrain::Contains(const std::shared_ptr<Collider>& collider, float& height) {
+    if (nullptr == collider) {
+        return 0.0f;
+    }
+
     switch (collider->GetType()) {
     case ColliderType::BOX:
         {
-            auto a = std::static_pointer_cast<BoxCollider>(collider);
-            auto center = a->GetBoundingBox().Center;
-            height = GetHeight(center, a->GetBoundingBox().Extents.y) + MathUtil::EPSILON;
-            return center.y < height;
+            auto boxCollider = std::static_pointer_cast<BoxCollider>(collider);
+            auto center = boxCollider->GetBoundingBox().Center;
+            auto extents = boxCollider->GetBoundingBox().Extents;
+            height = GetHeight(center);
+            return (extents.y - center.y) < height + MathUtil::EPSILON;
         }
 
     case ColliderType::SPHERE:
         {
-            auto a = std::static_pointer_cast<SphereCollider>(collider);
-            auto center = a->GetBoundingSphere().Center;
-            height = GetHeight(center, a->GetBoundingSphere().Radius);
-            return center.y < height;
+            auto sphereCollider = std::static_pointer_cast<SphereCollider>(collider);
+            auto center = sphereCollider->GetBoundingSphere().Center;
+            auto radius = sphereCollider->GetBoundingSphere().Radius;
+            height = GetHeight(center);
+            return (radius + center.y) < height + MathUtil::EPSILON;
         }
 
     case ColliderType::ORIENTED_BOX:
         {
-            auto a = std::static_pointer_cast<OrientedBoxCollider>(collider);
-            auto center = a->GetBoundingBox().Center;
-            height = GetHeight(center, a->GetBoundingBox().Extents.y) + MathUtil::EPSILON;
-            return center.y < height;
+            auto orientedBoxCollider = std::static_pointer_cast<OrientedBoxCollider>(collider);
+            auto center = orientedBoxCollider->GetBoundingBox().Center;
+            auto extents = orientedBoxCollider->GetBoundingBox().Extents;
+            height = GetHeight(center);
+            return (extents.y - center.y) < height + MathUtil::EPSILON;
         }
 
     default:

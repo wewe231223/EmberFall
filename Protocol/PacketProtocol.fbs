@@ -1,0 +1,6 @@
+include "BaseStructures.fbs";
+include "Networks.fbs";
+include "CommonObjects.fbs";
+include "Items.fbs";
+include "AttackSystem.fbs";
+include "CorruptedGem.fbs";

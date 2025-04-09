@@ -15,7 +15,7 @@
 
 
 #include "Script.h"
-#include "BehaviorTreeMonster.h"
+#include "BT_Monster.h"
 
 class MonsterScript : public Script {
 public:
@@ -23,6 +23,8 @@ public:
     virtual ~MonsterScript();
 
 public:
+    bool IsDead() const;
+
     virtual void Init() override;
 
     virtual void Update(const float deltaTime) override;
@@ -32,9 +34,14 @@ public:
     virtual void OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
     virtual void OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
 
+    virtual void OnCollisionTerrain(const float height) override;
+
     virtual void DispatchGameEvent(struct GameEvent* event) override;
 
 public:
+    std::shared_ptr<GameObject> GetChaseTarget() const;
+    std::shared_ptr<GameObject>& GetChaseTarget();
+
     // 행동트리 관련 함수들 return NodeStatus
     BT::NodeStatus SetRandomTargetLocation(const float deltaTime);
     BT::NodeStatus MoveTo(const float deltaTime);
@@ -42,13 +49,17 @@ public:
     BT::NodeStatus DetectPlayerInRange(const float deltaTime);
     BT::NodeStatus ChaseDetectedPlayer(const float deltaTime);
 
+    BT::NodeStatus CheckPlayerInAttackRange(const float deltaTime);
+    BT::NodeStatus Attack(const float deltaTime);
+
 private:
     SimpleMath::Vector3 mMoveDir{ SimpleMath::Vector3::Zero };
     SimpleMath::Vector3 mTargetPos{ SimpleMath::Vector3::Zero }; // TestTargetPos....
 
     // range to detecting player 
     std::shared_ptr<class GameObject> mChaseTarget{ nullptr };
+    GameUnits::GameUnit<GameUnits::Meter> mAttackRange{ 3.0m };
     GameUnits::GameUnit<GameUnits::Meter> mPlayerDetectRange{ 10.0m };
 
-    BT::BehaviorTreeMonster mMonsterBT{ };
+    BT_Monster mMonsterBT{ };
 };

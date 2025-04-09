@@ -106,6 +106,10 @@ DirectX::BoundingBox& BoxCollider::GetBoundingBox() {
     return mBoundingBox;
 }
 
+float BoxCollider::GetForwardExtents() {
+    return mBoundingBox.Extents.z;
+}
+
 void BoxCollider::Update() {
     if (mTransform.expired()) {
         return;
@@ -155,6 +159,10 @@ SphereCollider::~SphereCollider() { }
 
 DirectX::BoundingSphere& SphereCollider::GetBoundingSphere() {
     return mBoundingSphere;
+}
+
+float SphereCollider::GetForwardExtents() {
+    return mBoundingSphere.Radius;
 }
 
 void SphereCollider::Update() { 
@@ -211,6 +219,10 @@ OrientedBoxCollider::~OrientedBoxCollider() { }
 
 DirectX::BoundingOrientedBox& OrientedBoxCollider::GetBoundingBox() {
     return mBoundingBox;
+}
+
+float OrientedBoxCollider::GetForwardExtents() {
+    return mBoundingBox.Extents.z;
 }
 
 void OrientedBoxCollider::Update() {

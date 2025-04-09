@@ -5,7 +5,7 @@
 #include "ArrowScript.h"
 #include "ItemScript.h"
 #include "CorruptedGem.h"
-#include "Trigger.h"
+#include "EventTrigger.h"
 
 void ObjectBuilder::BuildObjectComponent(std::shared_ptr<GameObject>& gameObject, ObjectTag objectTag) {
     gameObject->Reset();
@@ -13,6 +13,8 @@ void ObjectBuilder::BuildObjectComponent(std::shared_ptr<GameObject>& gameObject
     switch (objectTag) {
     case ObjectTag::MONSTER:
         gameObject->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
+        gameObject->GetCollider()->SetTransform(gameObject->GetTransform());
+        gameObject->GetCollider()->Update();
         gameObject->CreateComponent<MonsterScript>(gameObject);
         break;
 
@@ -23,6 +25,8 @@ void ObjectBuilder::BuildObjectComponent(std::shared_ptr<GameObject>& gameObject
 
     case ObjectTag::CORRUPTED_GEM:
         gameObject->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
+        gameObject->GetCollider()->SetTransform(gameObject->GetTransform());
+        gameObject->GetCollider()->Update();
         gameObject->CreateComponent<CorruptedGemScript>(gameObject);
         break;
 
@@ -33,7 +37,71 @@ void ObjectBuilder::BuildObjectComponent(std::shared_ptr<GameObject>& gameObject
     gameObject->Init();
 }
 
-void ObjectBuilder::BuildTrigger(std::shared_ptr<GameObject>& gameObject, std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
+void ObjectBuilder::BuildObjectComponent(std::shared_ptr<GameObject>& gameObject, ObjectTag objectTag, std::shared_ptr<Collider> collider) {
+    gameObject->Reset();
+
+    switch (objectTag) {
+    case ObjectTag::MONSTER:
+    {
+        gameObject->SetCollider(collider);
+        gameObject->GetCollider()->SetTransform(gameObject->GetTransform());
+        gameObject->GetCollider()->Update();
+        gameObject->CreateComponent<MonsterScript>(gameObject);
+        break;
+    }
+
+    case ObjectTag::CORRUPTED_GEM:
+    {
+        gameObject->SetCollider(collider);
+        gameObject->GetCollider()->SetTransform(gameObject->GetTransform());
+        gameObject->GetCollider()->Update();
+        gameObject->CreateComponent<CorruptedGemScript>(gameObject);
+        break;
+    }
+
+    case ObjectTag::ENV:
+    {
+        gameObject->SetCollider(collider);
+        gameObject->GetCollider()->SetTransform(gameObject->GetTransform());
+        gameObject->GetCollider()->Update();
+        gameObject->GetPhysics()->mFactor.mass = FLT_MAX / 2.0f - MathUtil::EPSILON;
+        break;
+    }
+
+    default:
+        break;
+    }
+
+    gameObject->Init();
+}
+
+void ObjectBuilder::BuildTrigger(std::shared_ptr<GameObject>& gameObject, float lifeTime, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& extents) {
+    gameObject->Reset();
+    gameObject->DisablePhysics();
+
+    gameObject->GetTransform()->Translate(pos);
+    gameObject->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, extents);
+    gameObject->GetCollider()->SetTransform(gameObject->GetTransform());
+    gameObject->GetCollider()->Update();
+
+    gameObject->CreateComponent<Trigger>(gameObject, lifeTime);
+    gameObject->Init();
+}
+
+void ObjectBuilder::BuildTrigger(std::shared_ptr<GameObject>& gameObject, float lifeTime, const SimpleMath::Vector3& pos, std::shared_ptr<Collider> collider) {
+    gameObject->Reset();
+    gameObject->DisablePhysics();
+
+    gameObject->GetTransform()->Translate(pos);
+    gameObject->SetCollider(collider);
+    gameObject->GetCollider()->SetTransform(gameObject->GetTransform());
+    gameObject->GetCollider()->Update();
+
+    gameObject->CreateComponent<Trigger>(gameObject, lifeTime);
+    gameObject->Init();
+}
+
+void ObjectBuilder::BuildEventTrigger(std::shared_ptr<GameObject>& gameObject, std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
     const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents, const SimpleMath::Vector3& dir) {
     gameObject->Reset();
     gameObject->DisablePhysics();
@@ -41,20 +109,26 @@ void ObjectBuilder::BuildTrigger(std::shared_ptr<GameObject>& gameObject, std::s
     gameObject->GetTransform()->Translate(center);
     gameObject->GetTransform()->Rotation(MathUtil::GetQuatFromLook(dir));
     gameObject->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, extents);
-    gameObject->CreateComponent<Trigger>(gameObject, event, lifeTime, eventDelay, eventCount);
+    gameObject->GetCollider()->SetTransform(gameObject->GetTransform());
+    gameObject->GetCollider()->Update();
+
+    gameObject->CreateComponent<EventTrigger>(gameObject, event, lifeTime, eventDelay, eventCount);
 
     gameObject->Init();
 }
 
-void ObjectBuilder::BuildTrigger(std::shared_ptr<GameObject>& gameObject, std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
+void ObjectBuilder::BuildEventTrigger(std::shared_ptr<GameObject>& gameObject, std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount,
     const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir, std::shared_ptr<Collider> collider) {
     gameObject->Reset();
     gameObject->DisablePhysics();
 
     gameObject->GetTransform()->Translate(pos);
-    gameObject->GetTransform()->Rotation(MathUtil::GetQuatFromLook(dir));
+    gameObject->GetTransform()->Rotation(SimpleMath::Quaternion::FromToRotation(SimpleMath::Vector3::Forward, dir));
     gameObject->SetCollider(collider);
-    gameObject->CreateComponent<Trigger>(gameObject, event, lifeTime, eventDelay, eventCount);
+    gameObject->GetCollider()->SetTransform(gameObject->GetTransform());
+    gameObject->GetCollider()->Update();
+
+    gameObject->CreateComponent<EventTrigger>(gameObject, event, lifeTime, eventDelay, eventCount);
 
     gameObject->Init();
 }
@@ -66,6 +140,8 @@ void ObjectBuilder::BuildProjectile(std::shared_ptr<GameObject>& gameObject, Obj
     switch (objectTag) {
     case ObjectTag::ARROW:
         gameObject->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f });
+        gameObject->GetCollider()->SetTransform(gameObject->GetTransform());
+        gameObject->GetCollider()->Update();
         gameObject->CreateComponent<ArrowScript>(gameObject, pos, dir, speed);
         break;
 

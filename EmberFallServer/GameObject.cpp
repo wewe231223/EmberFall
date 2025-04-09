@@ -17,6 +17,10 @@ bool GameObject::IsActive() const {
     return true == mActive;
 }
 
+bool GameObject::IsInteractable() const {
+    return mInteractable;
+}
+
 NetworkObjectIdType GameObject::GetId() const {
     return mId;
 }
@@ -27,6 +31,14 @@ float GameObject::HP() const {
 
 SimpleMath::Matrix GameObject::GetWorld() const {
     return mTransform->GetWorld();
+}
+
+float GameObject::GetSpeed() const {
+    return mPhysics->GetSpeed();
+}
+
+SimpleMath::Vector3 GameObject::GetMoveDir() const {
+    return mPhysics->GetMoveDir();
 }
 
 std::shared_ptr<Transform> GameObject::GetTransform() const {
@@ -75,10 +87,15 @@ bool GameObject::IsCollidingObject() const {
 
 void GameObject::InitId(NetworkObjectIdType id) {
     mId = id;
+    mWeaponSystem.SetOwnerId(mId);
 }
 
 void GameObject::SetActive(bool active) {
     mActive = active;
+}
+
+void GameObject::SetInteractable(bool interactable) {
+    mInteractable = interactable;
 }
 
 void GameObject::SetTag(ObjectTag tag) {
@@ -95,7 +112,6 @@ void GameObject::SetCollider(std::shared_ptr<Collider> collider) {
 
 void GameObject::ChangeWeapon(Weapon weapon) {
     mWeaponSystem.SetWeapon(weapon);
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player Change Weapon : {}", static_cast<int>(weapon));
 }
 
 void GameObject::DisablePhysics() {
@@ -104,6 +120,9 @@ void GameObject::DisablePhysics() {
 
 void GameObject::Reset() {
     ClearComponents();
+    SetTag(ObjectTag::NONE);
+    SetEntityType(EntityType::ENV);
+    mInteractable = false;
     mHP = 0.0f;
     mCollider.reset();
     mTransform->Reset();
@@ -119,6 +138,7 @@ void GameObject::RestoreHealth(float hp) {
 }
 
 void GameObject::Init() {
+    mAnimationStateMachine.SetOwner(shared_from_this());
     for (auto& component : mComponents) {
         component->Init();
     }
@@ -128,6 +148,8 @@ void GameObject::Update(const float deltaTime) {
     if (not IsActive()) {
         return;
     }
+
+    mAnimationStateMachine.Update(deltaTime);
 
     for (auto& component : mComponents) {
         component->Update(deltaTime);
@@ -180,6 +202,10 @@ void GameObject::OnCollision(std::shared_ptr<GameObject>& opponent, const Simple
 
 void GameObject::OnCollisionTerrain(const float height) {
     mTransform->SetY(height);
+
+    for (auto& component : mComponents) {
+        component->OnCollisionTerrain(height);
+    }
 }
 
 void GameObject::DispatchGameEvent(GameEvent* event) {
@@ -193,7 +219,12 @@ void GameObject::ClearComponents() {
 }
 
 void GameObject::Attack() {
-    mWeaponSystem.Attack(mTransform->GetPosition(), mTransform->Forward());
+    auto changable = mAnimationStateMachine.IsChangable();
+    if (changable) {
+        mAnimationStateMachine.ChangeState(AnimationState::ATTACK);
+        auto extentsZ = SimpleMath::Vector3::Forward * mCollider->GetForwardExtents();
+        mWeaponSystem.Attack(mTransform->GetPosition() + extentsZ, mTransform->Forward());
+    }
 }
 
 void GameObject::OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 

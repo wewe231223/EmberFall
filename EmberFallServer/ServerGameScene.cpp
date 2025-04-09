@@ -108,12 +108,11 @@ void PlayScene::Init() {
         factors.mass = 10.0f;
     }
 
-    for (int32_t i = 0; i < 3; ++i) {
+    for (int32_t i = 0; i < 10; ++i) {
         gObjectSpawner->SpawnObject(ObjectTag::MONSTER);
         if (0 == i) {
             decltype(auto) obj = gObjectSpawner->SpawnObject(ObjectTag::CORRUPTED_GEM);
         }
-        //obj->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -50.0f, 0.f, -50.0f }, SimpleMath::Vector3{ 50.0f, 0.f, 50.0f }));
     }
 }
 
@@ -151,7 +150,7 @@ void PlayScene::Update(const float deltaTime) {
     }
 
     mTerrainCollider.HandleTerrainCollision();
-    mGridWorld.Update(mObjects);
+    mGridWorld.Update(shared_from_this());
 
     gEventManager->Update();
 }

@@ -1,0 +1,30 @@
+include "BaseStructures.fbs";
+include "Enums.fbs";
+
+namespace Packets;
+
+//////////////////////////////////////////////////////////////
+// Client To Server
+//      Define Interaction Packets
+//          - Interacte Player With Item
+//////////////////////////////////////////////////////////////
+
+table RequestUseItemCS {
+	item: ItemType;
+}
+
+//////////////////////////////////////////////////////////////
+// Server To Client 
+//      Define Interaction Packets
+//          - Interacte Player With Item
+//////////////////////////////////////////////////////////////
+
+table UseItemSC {
+	playerId: ubyte;
+	item: ItemType;
+}
+
+table AcquiredItemSC {
+	playerId: ubyte;
+	item: ItemType;
+}

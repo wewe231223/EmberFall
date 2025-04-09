@@ -1,0 +1,25 @@
+include "BaseStructures.fbs";
+include "Enums.fbs";
+
+namespace Packets;
+
+//////////////////////////////////////////////////////////////
+// Server To Client 
+//      Define Interaction Packets
+//          - Interacte Player With CorruptedGem
+//////////////////////////////////////////////////////////////
+
+table GemInteractSC {
+    objectId: ushort;
+    playerId: ubyte;
+}
+
+table GemInteractionCancelSC {
+    playerId: ubyte;
+    objectId: ushort;
+}
+
+table GemDestroyedSC {
+    objectId: ushort;
+    pos: Vec3;
+}

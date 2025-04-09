@@ -72,6 +72,10 @@ void Transform::Reset() {
     mWorld = SimpleMath::Matrix::Identity;
 }
 
+void Transform::SetPosition(const SimpleMath::Vector3& pos) {
+    mPosition = pos;
+}
+
 void Transform::SetY(const float y) {
     mPosition.y = y;
 }
@@ -80,7 +84,7 @@ void Transform::Translate(const SimpleMath::Vector3& v) {
     mPosition += v;
 }
 
-void Transform::Move(const SimpleMath::Vector3& moveVec) {
+void Transform::CheckAndMove(const SimpleMath::Vector3& moveVec) {
     mPrevPosition = mPosition;
 
     Translate(SimpleMath::Vector3{ 0.0f, moveVec.y, 0.0f });

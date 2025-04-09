@@ -1,0 +1,90 @@
+namespace Packets;
+
+enum PacketTypes : ubyte {
+    // Client To Server
+    //      Networks Packet (Networks.fbs)
+    PT_PLAYER_EXIT_CS = 0x00,
+    PT_PLAYER_LOOK_CS,
+    PT_PLAYER_SELECT_WEAPON_CS,
+    PT_PLAYER_SELECT_ROLL_CS,
+    PT_LATENCY_CS,
+
+    //      Item Packet (Items.fbs)
+    PT_REQUEST_USE_ITEM_CS,
+
+    //      Attack Packet (AttackSystem.fbs)
+    PT_REQUEST_ATTACK_CS,
+    PT_REQUEST_FIRE_CS,
+
+    // Server To Client
+    //      Networks&Player Packet (Networks.fbs)
+    PT_PROTOCOL_VERSION_SC = 0x80,
+    PT_NOTIFY_ID_SC,
+    PT_PLAYER_EXIT_SC,
+    PT_LATENCT_SC,
+
+    //      Common Object Packet (CommentObjects.fbs)
+    PT_OBJECT_APPEARED_SC,
+    PT_OBJECT_DISAPPEARED_SC,
+    PT_OBJECT_REMOVED_SC,
+    PT_OBJECT_MOVE_SC,
+    PT_OBJECT_ATTACKED_SC,
+    PT_OBJECT_ANIMATION_CHANGED_SC,
+
+    //      Corrupted Gem Packet (CorruptedGem.fbs)
+    PT_GEM_INTERACT_SC,
+    PT_GEM_CANCEL_INTERACTOIN_SC,
+    PT_GEM_DESTROYED_SC,
+
+    //      Item Packet (Items.fbs)
+    PT_USE_ITEM_SC,
+    PT_ACQUIRED_ITEM_SC,
+    
+   //      Attack Packet (AttackSystem.fbs)
+   PT_FIRE_PROJECTILE_SC,
+   PT_PROJECTILE_MOVE_SC
+}
+
+enum AnimationState : ubyte {
+    IDLE = 0,
+    MOVE_FORWARD,
+    MOVE_BACKWARD,
+    MOVE_LEFT,
+    MOVE_RIGHT,
+    JUMP,
+    ATTACKED,
+    ATTACK,
+    INTERACTION,
+    DEAD
+}
+
+enum PlayerRoll : ubyte {
+    HUMAN = 0,
+    BOSS
+}
+
+enum EntityType : ubyte {
+    ENV = 0,
+    HUMAN,
+    BOSS,
+    MONSTER,
+    CORRUPTED_GEM,
+    PROJECTILE
+}
+
+enum Weapon : ubyte {
+    SWORD = 0,
+    BOW,
+    SPEAR,
+    STAFF
+}
+
+enum ItemType : ubyte {
+	POTION = 0,
+	CROSS,
+	HOLY_WATER
+}
+
+enum ProjectileTypes : ubyte {
+    ARROW = 0
+}

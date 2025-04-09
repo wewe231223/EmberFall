@@ -114,6 +114,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Protocol</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,6 +133,7 @@
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Protocol</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,13 +144,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp" />
+    <ClCompile Include="AnimationStateMachine.cpp" />
     <ClCompile Include="ArrowScript.cpp" />
     <ClCompile Include="AttackSystem.cpp" />
     <ClCompile Include="BehaviorTreeBase.cpp" />
-    <ClCompile Include="BehaviorTreeMonster.cpp" />
+    <ClCompile Include="BossPlayerScript.cpp" />
     <ClCompile Include="BoundingBoxImporter.cpp" />
+    <ClCompile Include="BT_Decider.cpp" />
+    <ClCompile Include="BT_Monster.cpp" />
+    <ClCompile Include="BT_MonsterAttack.cpp" />
+    <ClCompile Include="BT_MonsterAttacked.cpp" />
     <ClCompile Include="BT_MonsterChase.cpp" />
+    <ClCompile Include="BT_MonsterRandomMove.cpp" />
     <ClCompile Include="Collider.cpp" />
+    <ClCompile Include="EventTrigger.cpp" />
+    <ClCompile Include="FbsPacketProcessFn.cpp" />
     <ClCompile Include="GameEventFactory.cpp" />
     <ClCompile Include="GraphBase.cpp" />
     <ClCompile Include="GraphMap.cpp" />
@@ -190,13 +200,21 @@
     <ClCompile Include="WeaponSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AnimationStateMachine.h" />
     <ClInclude Include="ArrowScript.h" />
     <ClInclude Include="AttackSystem.h" />
     <ClInclude Include="BehaviorTreeBase.h" />
-    <ClInclude Include="BehaviorTreeMonster.h" />
+    <ClInclude Include="BossPlayerScript.h" />
     <ClInclude Include="BoundingBoxImporter.h" />
+    <ClInclude Include="BT_Decider.h" />
+    <ClInclude Include="BT_Monster.h" />
+    <ClInclude Include="BT_MonsterAttack.h" />
+    <ClInclude Include="BT_MonsterAttacked.h" />
     <ClInclude Include="BT_MonsterChase.h" />
+    <ClInclude Include="BT_MonsterRandomMove.h" />
     <ClInclude Include="Collider.h" />
+    <ClInclude Include="EventTrigger.h" />
+    <ClInclude Include="FbsPacketProcessFn.h" />
     <ClInclude Include="GameEventFactory.h" />
     <ClInclude Include="GraphBase.h" />
     <ClInclude Include="GraphMap.h" />

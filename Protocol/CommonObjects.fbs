@@ -1,0 +1,43 @@
+include "BaseStructures.fbs";
+include "Enums.fbs";
+
+namespace Packets;
+
+//////////////////////////////////////////////////////////////
+// Server To Client
+//      Define Object Packets
+//          
+//////////////////////////////////////////////////////////////
+
+table ObjectAppearedSC {  
+	objectId: ushort;
+	entity: EntityType;
+	animation: AnimationState;
+	hp: float;
+	pos: Vec3;
+}
+
+table ObjectDisappearedSC {
+	objectId: ushort;
+}
+
+table ObjectRemovedSC {
+	objectId: ushort;
+}
+
+table ObjectMoveSC {
+	objectId: ushort;
+	pos: Vec3;
+	dir: Vec3;
+	speed: float;
+}
+
+table ObjectAttackedSC {
+	objectId: ushort;
+	hp: float;
+}
+
+table ObjectAnimationChangedSC {
+	objectId: ushort;
+	animation: AnimationState;
+}

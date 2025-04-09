@@ -29,7 +29,7 @@ bool SessionManager::AddSession(std::shared_ptr<Session> session) {
 
     mSessions[id] = session;
     session->InitId(id);
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Session[{}]: add in session map\n", id);
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Session[{}]: add in session map", id);
 
     mCoreService->GetIOCPCore()->RegisterSocket(session);
 
@@ -78,20 +78,29 @@ void SessionManager::Send(SessionIdType to, void* packet) {
     session->RegisterSend(packet);
 }
 
+void SessionManager::Send(SessionIdType to, OverlappedSend* const overlappedSend) {
+    Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
+    auto it = mSessions.find(to);
+    if (it == mSessions.end()) {
+        return;
+    }
+
+    auto session = it->second;
+    if (false == session->IsConnected()) {
+        return;
+    }
+
+    session->RegisterSend(overlappedSend);
+}
+
 void SessionManager::SendAll(void* packet) {
     Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
     for (auto& [id, session] : mSessions) {
         if (false == session->IsConnected()) {
-            if (PacketType::PACKET_PLAYER_EXIT == reinterpret_cast<PacketHeader*>(packet)->type) {
-                gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "[{}]: Session DisConnected", session->GetId());
-            }    
             continue;
         }
 
         session->RegisterSend(packet);
-        if (PacketType::PACKET_PLAYER_EXIT == reinterpret_cast<PacketHeader*>(packet)->type) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "To [{}]: Session Register Success", session->GetId());
-        }
     }
 }
 
@@ -103,6 +112,17 @@ void SessionManager::SendAll(void* data, size_t size) {
         }
 
         session->RegisterSend(data, size);
+    }
+}
+
+void SessionManager::SendAll(OverlappedSend* const overlappedSend) {
+    Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
+    for (auto& [id, session] : mSessions) {
+        if (false == session->IsConnected()) {
+            continue;
+        }
+
+        session->RegisterSend(overlappedSend);
     }
 }
 

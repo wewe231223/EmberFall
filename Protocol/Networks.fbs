@@ -1,0 +1,55 @@
+include "BaseStructures.fbs";
+include "Enums.fbs";
+
+namespace Packets;
+
+//////////////////////////////////////////////////////////////
+// Server To Client 
+//		Basic communication packets
+//////////////////////////////////////////////////////////////
+
+table ProtocolVersionSC {
+	major: ubyte = 2;
+	minor: ubyte = 0;
+}
+
+// notify id to client
+table NotifyIdSC {
+	playerId: ubyte;
+}
+
+table PlayerExitSC { 
+	playerId: ubyte;
+}
+
+//////////////////////////////////////////////////////////////
+// Cliuent To Server
+//		Basic communication packets
+//////////////////////////////////////////////////////////////
+
+table PlayerExitCS { }
+
+table PlayerLookCS {
+	look: Vec3;
+}
+
+// In Lobby
+table PlayerSelectWeaponCS {
+    weapon: Weapon;
+}
+
+table PlayerSelectRollCS { 
+	roll: PlayerRoll;
+}
+
+//////////////////////////////////////////////////////////////
+// Latency Packet 
+//////////////////////////////////////////////////////////////
+
+table PacketLatencyCS {
+	latency: ulong;
+}
+
+table PacketLatencySC {
+	latency: ulong;
+}
