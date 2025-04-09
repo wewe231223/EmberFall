@@ -1,6 +1,14 @@
 #include "pch.h"
 #include "FbsPacketFactory.h"
 
+const PacketHeaderSC* FbsPacketFactory::GetHeaderPtrSC(const uint8_t* const data) {
+    return reinterpret_cast<const PacketHeaderSC*>(data);
+}
+
+const PacketHeaderCS* FbsPacketFactory::GetHeaderPtrCS(const uint8_t* const data) {
+    return reinterpret_cast<const PacketHeaderCS*>(data);
+}
+
 void FbsPacketFactory::ReleasePacketBuf(OverlappedSend* const overlapped) {
     mSendPacketBuffers->ReleaseOverlapped(overlapped);
 }
@@ -281,7 +289,7 @@ OverlappedSend* FbsPacketFactory::RequestUseItemCS(Packets::ItemType item) {
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();
-    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
+    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());    
 
     PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes::PacketTypes_PT_REQUEST_USE_ITEM_CS };
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
@@ -325,4 +333,16 @@ Packets::Vec2 FbsPacketFactory::GetVec2(const SimpleMath::Vector2& vec) {
 
 Packets::Vec2 FbsPacketFactory::GetVec2(const SimpleMath::Vector3& vec) {
     return Packets::Vec2{ vec.x, vec.z };
+}
+
+SimpleMath::Vector3 FbsPacketFactory::GetVector3(const Packets::Vec3* vec) {
+    return SimpleMath::Vector3{ vec->x(), vec->y(), vec->z() };
+}
+
+SimpleMath::Vector2 FbsPacketFactory::GetVector2(const Packets::Vec2* vec) {
+    return SimpleMath::Vector2{ vec->x(), vec->y() };
+}
+
+SimpleMath::Vector2 FbsPacketFactory::GetVector2(const Packets::Vec3* vec) {
+    return SimpleMath::Vector2{ vec->x(), vec->z() };
 }

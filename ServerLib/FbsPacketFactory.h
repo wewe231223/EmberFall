@@ -4,7 +4,29 @@
 #include "../Protocol/PacketProtocol_generated.h"
 #include "SendBuffers.h"
 
+inline constexpr size_t FBS_PACKET_CS_START = Packets::PacketTypes_MIN;
+inline constexpr size_t FBS_PACKET_CS_END = Packets::PacketTypes::PacketTypes_PT_REQUEST_FIRE_CS;
+inline constexpr size_t FBS_PACKET_SC_START = Packets::PacketTypes_PT_PROTOCOL_VERSION_SC;
+inline constexpr size_t FBS_PACKET_SC_END = Packets::PacketTypes::PacketTypes_MAX;
+
 class FbsPacketFactory {
+public:
+    static const PacketHeaderSC* GetHeaderPtrSC(const uint8_t* const data);
+    static const PacketHeaderCS* GetHeaderPtrCS(const uint8_t* const data);
+
+    template <typename PacketType>
+    static const PacketType* GetDataPtrSC(const uint8_t* const data) {
+        auto header = GetHeaderPtrSC(data);
+        return flatbuffers::GetRoot<PacketType>(data + sizeof(PacketHeaderSC));
+    }
+
+    template <typename PacketType>
+    static const PacketType* GetDataPtrCS(const uint8_t* const data) {
+        auto header = GetHeaderPtrCS(data);
+        return flatbuffers::GetRoot<PacketType>(data + sizeof(PacketHeaderCS));
+    }
+
+
 public:
     static void ReleasePacketBuf(OverlappedSend* const overlapped);
 
@@ -44,10 +66,14 @@ public:
     static OverlappedSend* RequestAttackCS(const SimpleMath::Vector3& dir);
     static OverlappedSend* RequestFireCS(const SimpleMath::Vector3& dir, Packets::ProjectileTypes projectile);
 
-private:
+public:
     static Packets::Vec3 GetVec3(const SimpleMath::Vector3& vec);
     static Packets::Vec2 GetVec2(const SimpleMath::Vector2& vec);
     static Packets::Vec2 GetVec2(const SimpleMath::Vector3& vec);
+
+    static SimpleMath::Vector3 GetVector3(const Packets::Vec3* vec);
+    static SimpleMath::Vector2 GetVector2(const Packets::Vec2* vec);
+    static SimpleMath::Vector2 GetVector2(const Packets::Vec3* vec);
 
 private:
     inline static std::shared_ptr<SendBufferFactory> mSendPacketBuffers{ std::make_shared<SendBufferFactory>() };
