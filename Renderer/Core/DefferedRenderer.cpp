@@ -38,7 +38,7 @@ void DefferedRenderer::RegisterShadowMap(ComPtr<ID3D12Device> device, Texture& s
 	desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	desc.Texture2D.MipLevels = 1;
-	desc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE handle{ mGBufferSRVHeap->GetCPUDescriptorHandleForHeapStart() };
 

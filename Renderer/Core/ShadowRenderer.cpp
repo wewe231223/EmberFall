@@ -13,24 +13,42 @@
 #endif
 
 ShadowRenderer::ShadowRenderer(ComPtr<ID3D12Device> device) {
+	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
+	rtvHeapDesc.NumDescriptors = 1;
+	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	CheckHR(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&mShadowRTVHeap)));
+
+	mShadowMap = Texture(device, DXGI_FORMAT_R8G8B8A8_UNORM, SHADOWMAPSIZE<UINT64>, SHADOWMAPSIZE<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+	device->CreateRenderTargetView(mShadowMap.GetResource().Get(), nullptr, mShadowRTVHeap->GetCPUDescriptorHandleForHeapStart());
+
+
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
 	dsvHeapDesc.NumDescriptors = 1;
 	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	CheckHR(device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&mShadowDSVHeap)));
 
-	mShadowMap = Texture(device, DXGI_FORMAT_D24_UNORM_S8_UINT, SHADOWMAPSIZE<UINT64>, SHADOWMAPSIZE<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	mDepthStencilMap = Texture(device, DXGI_FORMAT_D24_UNORM_S8_UINT, SHADOWMAPSIZE<UINT64>, SHADOWMAPSIZE<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 
-	device->CreateDepthStencilView(mShadowMap.GetResource().Get(), nullptr, mShadowDSVHeap->GetCPUDescriptorHandleForHeapStart());
+
+
+	device->CreateDepthStencilView(mDepthStencilMap.GetResource().Get(), nullptr, mShadowDSVHeap->GetCPUDescriptorHandleForHeapStart());
+
+
+
 
 	mShadowCameraBuffer = DefaultBuffer(device, sizeof(CameraConstants), 1, true);
 }
 
 void ShadowRenderer::SetShadowDSV(ComPtr<ID3D12GraphicsCommandList> commandList) {
-	mShadowMap.Transition(commandList, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+	auto rtv = mShadowRTVHeap->GetCPUDescriptorHandleForHeapStart();
 	auto dsv = mShadowDSVHeap->GetCPUDescriptorHandleForHeapStart();
-	commandList->OMSetRenderTargets(0, nullptr, FALSE, &dsv);
+
 	commandList->ClearDepthStencilView(mShadowDSVHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	commandList->ClearRenderTargetView(mShadowRTVHeap->GetCPUDescriptorHandleForHeapStart(), DirectX::Colors::Black, 0, nullptr);
+	commandList->OMSetRenderTargets(1, &rtv, FALSE, &dsv);
+
 }
 
 void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator worldCameraBuffer) {
@@ -40,11 +58,10 @@ void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, Defau
 
 	CameraParameter cameraParam{};
 	
-	//그림자 맵에 담을 프러스텀의 원평면 까지의 거리
-	float farZ = 10.0f;
+	
 	
 	SimpleMath::Matrix invView = worldCamera.view.Transpose().Invert();
-	SimpleMath::Matrix invProj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(cameraParam.fov, cameraParam.aspect, cameraParam.nearZ, farZ).Invert();
+	SimpleMath::Matrix invProj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(cameraParam.fov, cameraParam.aspect, cameraParam.nearZ, FRUSTUMLENGTH).Invert();
 
 	SimpleMath::Matrix invViewProj = invProj * invView;
 	std::array<SimpleMath::Vector3, 8> frustumPosition = ComputeFrustumCorners(invViewProj);
@@ -53,8 +70,8 @@ void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, Defau
 
 	SimpleMath::Vector3 directionNormalized = LIGHTDIRECTION;
 	directionNormalized.Normalize();
-	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (farZ - cameraParam.nearZ));
-
+	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (350.0f));
+	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (FRUSTUMLENGTH - cameraParam.nearZ));
 
 	SimpleMath::Matrix view = SimpleMath::Matrix::CreateLookAt(cameraPos, centerFrustum, DirectX::SimpleMath::Vector3::Up);
 
@@ -89,7 +106,7 @@ void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, Defau
 	float padding = 10.0f;  // 조명 투영행렬의 근,원평면에 약간의 여유 공간을 추가할때 사용.
 	float nearPlane = minPoint.z - padding;
 	float farPlane = maxPoint.z + padding;
-	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize, projectionSize, nearPlane, farPlane);
+	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize * 2.0f, projectionSize * 2.0f, nearPlane, farPlane);
 
 
 
@@ -97,15 +114,14 @@ void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, Defau
 	mShadowCamera.proj = proj.Transpose();
 	mShadowCamera.viewProj = mShadowCamera.proj * mShadowCamera.view;
 	mShadowCamera.cameraPosition = cameraPos;
+	mShadowCamera.isShadow = 1;
 
 	std::memcpy(*mShadowCameraBuffer.CPUBegin(), &mShadowCamera, sizeof(CameraConstants));
 	mShadowCameraBuffer.Upload(commandList);
 }
 
 
-void ShadowRenderer::TransitionShadowMap(ComPtr<ID3D12GraphicsCommandList> commandList) {
-	mShadowMap.Transition(commandList, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-}
+
 
 DefaultBufferGPUIterator ShadowRenderer::GetShadowCameraBuffer() {
 	return mShadowCameraBuffer.GPUBegin(); 

@@ -110,8 +110,8 @@ void Scene::ProcessObjectAppeared(PacketHeader* header) {
 				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
 				mMyPlayer->SetMyPlayer();
 			
-				 mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
-			    //mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
+				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+			    mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
 				mCameraMode->Enter();
 
 				Scene::SetInputBaseAnimMode();

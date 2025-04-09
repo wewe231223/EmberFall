@@ -53,17 +53,20 @@ float ComputeShadowFactor(float4 shadowPosH, float bias)
         float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
         float2(-dx, dy), float2(0.0f, dy), float2(dx, dy)
     };
-    float percentLit = 0.5f;
+    float percentLit = 0.0f;
     [unroll]
     for (int i = 0; i < 9; ++i)
     {
         percentLit += GBuffers[3].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
     }
-    return (percentLit) / 9.0f;
+    float litRatio = percentLit / 9.0f;
+    return lerp(0.3f, 1.0f, litRatio);
 }
 
 float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 {
+    //return float4(GBuffers[3].Sample(linearWrapSampler, input.texcoord).xxx, 1.0f);
+    
     float4 diffuse = GBuffers[0].Sample(linearWrapSampler, input.texcoord);
     float4 worldPos = GBuffers[2].Sample(linearWrapSampler, input.texcoord);
 
@@ -78,7 +81,7 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     float validTex = insideX * insideY;
     float valid = validWorld * validTex;
 
-    float bias = 0.002f;
+    float bias = 0.004f;
 
     float shadowFactor = ComputeShadowFactor(texPos, bias);
     float depth = GBuffers[3].Sample(linearWrapSampler, texPos.xy).r;
@@ -87,5 +90,5 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 
     float finalFactor = lerp(1.0f, shadowFactor, shadowApply);
 
-    return diffuse ;
+    return diffuse * finalFactor;
 }

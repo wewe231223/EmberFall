@@ -395,9 +395,9 @@ void GraphicsShaderBase::CreateShader(ComPtr<ID3D12Device> device) {
 
 	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPipelineState)));
 
-	psoDesc.PS = { nullptr, 0 };
-	psoDesc.NumRenderTargets = 0;
+	psoDesc.NumRenderTargets = 1;
 	std::memset(psoDesc.RTVFormats, DXGI_FORMAT_UNKNOWN, sizeof(DXGI_FORMAT) * 8);
+	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mShadowPipelineState)));

@@ -4,6 +4,8 @@ cbuffer Camera : register(b0)
     matrix projection;
     matrix viewProjection;
     float3 cameraPosition;
+    int isShadow;
+
 }
 
 struct ModelContext
@@ -230,6 +232,13 @@ float4 Fog(float4 Color, float Distance, float fogStart, float fogEnd)
 Deffered_POUT Terrain_PS(Terrain_PIN input) 
 {
     Deffered_POUT output = (Deffered_POUT)0;
+    
+    if (isShadow == 1)
+    {
+        float depth = input.position.z / input.position.w;
+        output.diffuse = float4(depth, depth, depth, 1.0f);
+        return output;
+    }
     
     float4 Color = float4(1.f, 1.f, 1.f, 1.f);
     

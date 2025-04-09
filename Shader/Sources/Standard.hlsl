@@ -4,6 +4,8 @@ cbuffer Camera : register(b0)
     matrix projection;
     matrix viewProjection;
     float3 cameraPosition;
+    int isShadow;
+
 }
 
 struct ModelContext
@@ -98,8 +100,17 @@ Deffered_POUT Standard_PS(Standard_VOUT input) {
     
     clip(color.a - 0.2f);
 
+    if (isShadow == 1)
+    {
+        float depth = input.position.z / input.position.w;
+        output.diffuse = float4(depth, depth, depth, 1.0f);
+
+        return output;
+    }
+
+
     output.diffuse = Fog(color, input.vPosition.z, 50.f, 100.f);
-    output.position = float4(input.wPosition, 1.0f);
+    //output.position = float4(input.wPosition, 1.0f);
     
     return output;
 }

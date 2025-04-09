@@ -4,6 +4,7 @@ cbuffer Camera : register(b0)
     matrix projection;
     matrix viewProjection;
     float3 cameraPosition;
+
 }
 
 struct ModelContext
