@@ -25,9 +25,8 @@ void Player::SetActiveState(bool state) {
 	mActiveState = false; 
 }
 
-void Player::SetWeapon(const GameObject& weapon) {
-	mWeapon = weapon; 
-	mWeapon.SetActiveState(true);
+void Player::AddEquipment(EquipmentObject equipment) {
+	mEquipments.emplace_back(equipment);
 }
 
 void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
@@ -81,12 +80,15 @@ void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 
 	manager->AppendBonedMeshContext(mShader, mMesh, ModelContext{mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
 
-	if (mWeapon) {
-		mWeapon.GetTransform().SetLocalTransform(boneTransformBuffer.boneTransforms[58].Transpose());
-		mWeapon.UpdateShaderVariables(mTransform.GetWorldMatrix());
-		auto [mesh, shader, modelContext] = mWeapon.GetRenderData();
-		manager->AppendPlaneMeshContext(shader, mesh, modelContext);
+	for (auto& equipment : mEquipments) {
+		if (false == equipment.GetActiveState()) {
+			continue; 
+		}
+		equipment.UpdateShaderVariables(boneTransformBuffer, mTransform.GetWorldMatrix());
+		auto [mesh, shader, ModelContext] = equipment.GetRenderData();
+		manager->AppendPlaneMeshContext(shader, mesh, ModelContext);
 	}
+
 }
 
 Transform& Player::GetTransform() {

@@ -5,6 +5,11 @@
 #include <array>
 #include "../Utility/DirectXInclude.h"
 #include "../Config/Config.h"
+
+#ifdef max
+#undef max
+#endif
+
 template <typename T>
 concept HasIndex = requires {
 	{ T::index } -> std::convertible_to<size_t>;
@@ -39,6 +44,14 @@ struct BoneTransformBuffer {
 	UINT boneCount;
 };
 
+struct TerrainHeader {
+    int globalWidth;
+    int globalHeight;
+    float gridSpacing;
+    float minX;
+    float minZ;
+};
+
 template<typename T>
 constexpr size_t GetCBVSize() {
 	return (sizeof(T) + 255) & ~255;
@@ -62,7 +75,6 @@ enum : UINT {
 	ParticleType_shell = 2,
 	ParticleType_ember = 3,
 };
-
 
 // 계층 구조를 따르는 Emit 파티클의 경우, 부모의 정보가 필요하다. 
 // 이미 만들어져 있는 월드 행렬에는 위치, 로컬 축 3개가 포함되어 있다. 이정도면 충분. 
@@ -92,9 +104,33 @@ struct ParticleVertex {
 	UINT type{ ParticleType_ember };
 	UINT emitType{ ParticleType_ember };
 	UINT remainEmit{ 0 };
+    UINT emitIndex{ std::numeric_limits<UINT>::max() };
 };
 
+/*
+* Flags!
+* 0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 - Common 
+* 0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001 - Deactivated
+* 0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0010 - Delete
+*/
 
+enum class ParticleFlag : UINT {
+    Common      = 0b0000'0000'0000'0000'0000'0000'0000'0000,
+    Deactive    = 0b0000'0000'0000'0000'0000'0000'0000'0010,
+    Delete      = 0b0000'0000'0000'0000'0000'0000'0000'0100,
+    Empty       = 0b1111'1111'1111'1111'1111'1111'1111'1111,
+};
+
+struct EmitParticleContext {
+    DirectX::XMFLOAT3 position{ 0.f,0.f,0.f };
+    UINT Flags{ static_cast<UINT>(ParticleFlag::Empty) };
+};
+
+template<typename T, std::size_t N>
+std::size_t GetIndexFromAddress(const std::array<T, N>& arr, const T* addr) {
+    const T* start = arr.data();
+    return static_cast<std::size_t>(addr - start);
+}
 
 enum class StringColor : DWORD {
     AliceBlue, AntiqueWhite, Aqua, Aquamarine, Azure,

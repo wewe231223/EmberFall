@@ -20,6 +20,7 @@
 #include "../Resource/Mesh.h"
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Renderer/Core/ShadowRenderer.h"
+#include "../Renderer/Manager/ParticleManager.h"
 
 class Renderer {
 public:
@@ -32,7 +33,7 @@ public:
 	Renderer(Renderer&& other) = delete;
 	Renderer& operator=(Renderer&& other) = delete;
 public:
-	std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> GetManagers();
+	std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> GetManagers();
 	DefaultBufferCPUIterator GetMainCameraBuffer();
 
 	ComPtr<ID3D12Device> GetDevice();
@@ -46,7 +47,10 @@ public:
 	void ExecuteRender();
 private:
 	void InitFactory();
+	
 	ComPtr<IDXGIAdapter1> GetBestAdapter();
+	bool CheckMeshShaderSupport();
+
 	void InitDevice();
 	void InitCommandQueue();
 	void InitFence();
@@ -59,6 +63,7 @@ private:
 	void InitFonts(); 
 
 	void InitShadowRenderer();
+	void InitParticleManager(); 
 
 	void InitCoreResources(); 
 	void InitDefferedRenderer();
@@ -87,7 +92,7 @@ private:
 	ComPtr<IDXGISwapChain1> mSwapChain{ nullptr };
 
 	ComPtr<ID3D12CommandAllocator> mAllocator{ nullptr };
-	ComPtr<ID3D12GraphicsCommandList> mCommandList{ nullptr };
+	ComPtr<ID3D12GraphicsCommandList6> mCommandList{ nullptr };
 
 	ComPtr<ID3D12DescriptorHeap> mRTVHeap{ nullptr };
 	std::array<Texture, Config::BACKBUFFER_COUNT<UINT>> mRenderTargets{};
@@ -111,6 +116,7 @@ private:
 	std::shared_ptr<TextureManager> mTextureManager{};
 	std::shared_ptr<MaterialManager> mMaterialManager{};
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{};
+	std::shared_ptr<ParticleManager> mParticleManager{};
 
 	DefaultBuffer mMainCameraBuffer{};
 };

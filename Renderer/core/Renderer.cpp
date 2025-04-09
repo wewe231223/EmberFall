@@ -10,9 +10,6 @@
 Renderer::Renderer(HWND rendererWindowHandle)
 	: mRendererWindow(rendererWindowHandle) {
 
-
-
-
 	// 셰이더 매니저 테스트용.. 
 	gShaderManager.Test();
 
@@ -31,6 +28,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 
 	Renderer::InitCoreResources(); 
 	Renderer::InitDefferedRenderer();
+	Renderer::InitParticleManager();
 
 }
 
@@ -39,8 +37,8 @@ Renderer::~Renderer() {
 }
 
 
-std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> Renderer::GetManagers() {
-	return std::make_tuple(mMeshRenderManager, mTextureManager, mMaterialManager);
+std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> Renderer::GetManagers() {
+	return std::make_tuple(mMeshRenderManager, mTextureManager, mMaterialManager, mParticleManager);
 }
 
 DefaultBufferCPUIterator Renderer::GetMainCameraBuffer() {
@@ -143,6 +141,9 @@ void Renderer::Render() {
 	mMeshRenderManager->RenderGPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin() );
 	mMeshRenderManager->Reset();
 
+	//mParticleManager->RenderSO(mCommandList);
+	//mParticleManager->RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress());
+
 	// Deffered Rendering Pass 
 	mShadowRenderer.TransitionShadowMap(mCommandList);
 	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
@@ -173,6 +174,8 @@ void Renderer::ExecuteRender() {
 	Renderer::FlushCommandQueue();
 
 	mStringRenderer.Render();
+	//mParticleManager->PostRender();
+	//mParticleManager->ValidateParticle();
 
 	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
 	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
@@ -235,6 +238,31 @@ ComPtr<IDXGIAdapter1> Renderer::GetBestAdapter() {
 	return bestAdapter;
 }
 
+bool Renderer::CheckMeshShaderSupport() {
+	// Shader Model 6.5 이상 확인
+	D3D12_FEATURE_DATA_SHADER_MODEL shaderModel = {};
+	shaderModel.HighestShaderModel = D3D_SHADER_MODEL_6_5;
+
+	if (FAILED(mDevice->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel))) ||
+		shaderModel.HighestShaderModel < D3D_SHADER_MODEL_6_5)
+	{
+		MessageBoxW(nullptr, L"Shader Model 6.5 미지원", L"Mesh Shader 확인", MB_ICONERROR | MB_OK);
+		return false;
+	}
+
+	// Mesh Shader Tier 지원 여부 확인
+	D3D12_FEATURE_DATA_D3D12_OPTIONS7 options7 = {};
+	if (FAILED(mDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &options7, sizeof(options7))) ||
+		options7.MeshShaderTier == D3D12_MESH_SHADER_TIER_NOT_SUPPORTED)
+	{
+		MessageBoxW(nullptr, L"Mesh Shader Tier 미지원", L"Mesh Shader 확인", MB_ICONERROR | MB_OK);
+		return false;
+	}
+
+	MessageBoxW(nullptr, L"Mesh Shader 지원됨!", L"Mesh Shader 확인", MB_ICONINFORMATION | MB_OK);
+	return true;
+}
+
 void Renderer::InitDevice() {
 	ComPtr<IDXGIAdapter1> adapter = GetBestAdapter();
 
@@ -247,6 +275,9 @@ void Renderer::InitDevice() {
 		CheckHR(mFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
 		CheckHR(::D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice)));
 	}
+
+	// 메시 셰이더 지원됨 
+	// Renderer::CheckMeshShaderSupport(); 
 }
 
 void Renderer::InitCommandQueue() {
@@ -290,8 +321,14 @@ void Renderer::InitSwapChain() {
 }
 
 void Renderer::InitCommandList() {
+	ComPtr<ID3D12GraphicsCommandList> base{}; 
+
 	CheckHR(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&mAllocator)));
-	CheckHR(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mAllocator.Get(), nullptr, IID_PPV_ARGS(&mCommandList)));
+	CheckHR(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mAllocator.Get(), nullptr, IID_PPV_ARGS(&base)));
+
+
+	CheckHR(base.As(&mCommandList));
+
 
 	mCommandList->SetName(L"Main Command List");
 	mAllocator->SetName(L"Main Command Allocator");
@@ -382,6 +419,10 @@ void Renderer::InitFonts() {
 
 void Renderer::InitShadowRenderer() {
 	mShadowRenderer = ShadowRenderer(mDevice);
+}
+
+void Renderer::InitParticleManager() {
+	mParticleManager = std::make_shared<ParticleManager>(mDevice, mCommandList);
 }
 
 void Renderer::InitCoreResources() {

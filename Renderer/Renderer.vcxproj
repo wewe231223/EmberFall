@@ -158,6 +158,7 @@
     </ClCompile>
     <ClCompile Include="Resource\DefaultBuffer.cpp" />
     <ClCompile Include="Resource\Mesh.cpp" />
+    <ClCompile Include="Resource\Particle.cpp" />
     <ClCompile Include="Resource\Texture.cpp" />
     <ClCompile Include="Resource\UploadBuffer.cpp" />
   </ItemGroup>
@@ -174,10 +175,19 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource\DefaultBuffer.h" />
     <ClInclude Include="Resource\Mesh.h" />
+    <ClInclude Include="Resource\Particle.h" />
     <ClInclude Include="Resource\Texture.h" />
     <ClInclude Include="Resource\UploadBuffer.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="..\Shader\Sources\ParticleGS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\ParticleSO.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="..\Shader\Sources\SkeletonBoundingBoxRender.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -187,6 +197,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\Shader\Sources\SkyBox.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\SkyFog.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

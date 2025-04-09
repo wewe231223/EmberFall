@@ -23,8 +23,8 @@ MeshData MeshLoader::Load(const std::filesystem::path& path, UINT meshIndex) {
 		Crash("ModelLoad Failed");
 	}
 
-	if (meshIndex <= scene->mNumMeshes) {
-		aiMesh* mesh = scene->mMeshes[meshIndex - 1];
+	if (meshIndex < scene->mNumMeshes) {
+		aiMesh* mesh = scene->mMeshes[meshIndex];
 
 		if (mesh->HasPositions()) {
 			//meshData.position.reserve(meshData.position.size() + mesh->mNumVertices);

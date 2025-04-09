@@ -2,19 +2,21 @@
 #include <array>
 #include "../Renderer/Manager/TextureManager.h"
 #include "../Renderer/Manager/MeshRenderManager.h"
+#include "../Renderer/Manager/ParticleManager.h"
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Game/System/Input.h"
 #include "../Game/System/Timer.h"
 #include "../Game/GameObject/GameObject.h"
 #include "../Game/Scene/Camera.h"
 #include "../Game/GameObject/Animator.h"
+#include "../Game/GameObject/EquipmentObject.h"
 #include "../MeshLoader/Loader/TerrainLoader.h"
 #include "../Game/Scene/Player.h"
 #include "../ServerLib/PacketProcessor.h"
 #include "../ServerLib/PacketHandler.h"
 class Scene {
 public:
-	Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList ,std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation); 
+	Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList ,std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation); 
 	~Scene();
 public:
 	void ProcessNetwork(); 
@@ -30,12 +32,16 @@ private:
 	void BuildShader(ComPtr<ID3D12Device> device);
 	void BuildAniamtionController(); 
 
+	void BuildEnvironment(const std::filesystem::path& envFile);
+	void BakeEnvironment(const std::filesystem::path& path);
+
 	void BuildBaseAnimationController();
 	void BuildArcherAnimationController();
 	void BuildSwordManAnimationController();
 	void BuildMageAnimationController();
 
 	void BuildMonsterType1AnimationController();
+	void BuildDemonAnimationController(); 
 
 	void SetInputBaseAnimMode(); 
 	void SetInputArcherMode(); 
@@ -59,6 +65,7 @@ private:
 	std::shared_ptr<TextureManager> mTextureManager{ nullptr };
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{ nullptr };
 	std::shared_ptr<MaterialManager> mMaterialManager{ nullptr };
+	std::shared_ptr<ParticleManager> mParticleManager{ nullptr };
 
 	std::unordered_map<std::string, Collider> mColliderMap{};
 	std::unordered_map<std::string, std::unique_ptr<Mesh>> mMeshMap{};
@@ -74,6 +81,8 @@ private:
 	std::unordered_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
 	std::vector<GameObject> mGameObjects{};
 
+	std::vector<GameObject> mEnvironmentObjects{};
+
 	int mNetworkSign{};
 	int mInputSign{}; 
 	std::vector<DirectX::Keyboard::Keys> mSendKeyList{};
@@ -83,10 +92,10 @@ private:
 	
 	Player* mMyPlayer{ nullptr };
 
-	
 
-	std::array<GameObject, 3> mWeapons{}; 
 	
+	std::unordered_map<std::string, EquipmentObject> mEquipments{}; 
+
 	AnimatorGraph::BoneMaskAnimationGraphController mBaseAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mArcherAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mSwordManAnimationController{};
@@ -95,9 +104,14 @@ private:
 	AnimatorGraph::AnimationGraphController mMonsterType1AnimationController{}; 
 
 	GameObject mSkyBox{};
+	GameObject mSkyFog{};
 
 	TerrainLoader tLoader{}; 
 	TerrainCollider tCollider{};
+
+	Particle test{};
+	Particle test1{};
+	Particle test2{}; 
 
 	TextBlock* mNetworkInfoText{ TextBlockManager::GetInstance().CreateTextBlock(L"",D2D1_RECT_F{100.f,0.f,800.f,100.f},StringColor::Black, "NotoSansKR") };
 };

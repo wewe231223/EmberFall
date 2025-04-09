@@ -6,17 +6,25 @@
 #include "../EditorInterface/Console/Console.h"
 
 Camera::Camera(DefaultBufferCPUIterator bufferLocation) : mCameraBufferCPU(bufferLocation) {
-
 	mCameraConstant.proj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(CameraParam.fov, CameraParam.aspect, CameraParam.nearZ, CameraParam.farZ).Transpose();
+	DirectX::BoundingFrustum::CreateFromMatrix(mViewFrustum, mCameraConstant.proj.Transpose());
 }
 
 void Camera::UpdateBuffer() {
 
 	mCameraConstant.view = SimpleMath::Matrix::CreateLookAt(mTransform.GetPosition(), mTransform.GetPosition() + mTransform.GetForward(),SimpleMath::Vector3::Up).Transpose();
 	mCameraConstant.viewProj = mCameraConstant.proj * mCameraConstant.view;
-	mCameraConstant.cameraPos = mTransform.GetPosition();
+	mCameraConstant.cameraPosition = mTransform.GetPosition();
 
-	::memcpy(*mCameraBufferCPU, &mCameraConstant, sizeof(CameraConstant));
+	mViewFrustum.Transform(mWorldFrustum, SimpleMath::Matrix::CreateLookAt(mTransform.GetPosition(), mTransform.GetPosition() + mTransform.GetForward(), SimpleMath::Vector3::Up).Invert());
+
+	::memcpy(*mCameraBufferCPU, &mCameraConstant, sizeof(CameraConstants));
+}
+
+bool Camera::FrustumCulling(Collider& other) const {
+	auto& box = other.GetWorldBox();
+
+	return mWorldFrustum.Intersects(box);
 }
 
 CameraMode::CameraMode(Camera* camera) : mCamera(camera) {
@@ -25,38 +33,38 @@ CameraMode::CameraMode(Camera* camera) : mCamera(camera) {
 FreeCameraMode::FreeCameraMode(Camera* camera) : CameraMode(camera) {
 }
 
-constexpr float FREE_CAMERA_SPEED = 0.7f;
+constexpr float FREE_CAMERA_SPEED = 40.f;
 void FreeCameraMode::Enter() {
 	mInputCallBackSign = NonReplacementSampler::GetInstance().Sample();
 
 	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, mInputCallBackSign, [this]() {
-		mCamera->GetTransform().Translate(mCamera->GetTransform().GetForward() * FREE_CAMERA_SPEED);
+		mCamera->GetTransform().Translate(mCamera->GetTransform().GetForward() * FREE_CAMERA_SPEED * Time.GetSmoothDeltaTime<float>());
 		});
 
 	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::S, mInputCallBackSign, [this]() {
-		mCamera->GetTransform().Translate(mCamera->GetTransform().GetForward() * -FREE_CAMERA_SPEED);
+		mCamera->GetTransform().Translate(mCamera->GetTransform().GetForward() * -FREE_CAMERA_SPEED * Time.GetSmoothDeltaTime<float>());
 		});
 
 	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, mInputCallBackSign, [this]() {
 		auto right = mCamera->GetTransform().GetRight();
 		right.y = 0.f;
-		mCamera->GetTransform().Translate(right * -FREE_CAMERA_SPEED);
+		mCamera->GetTransform().Translate(right * -FREE_CAMERA_SPEED * Time.GetSmoothDeltaTime<float>());
 		//mCamera->GetTransform().Translate(DirectX::SimpleMath::Vector3::Right * -0.1f);
 		});
 
 	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, mInputCallBackSign, [this]() {
 		auto right = mCamera->GetTransform().GetRight();
 		right.y = 0.f;
-		mCamera->GetTransform().Translate(right * FREE_CAMERA_SPEED);
+		mCamera->GetTransform().Translate(right * FREE_CAMERA_SPEED * Time.GetSmoothDeltaTime<float>());
 		//mCamera->GetTransform().Translate(DirectX::SimpleMath::Vector3::Right * 0.1f);
 		});
 
 	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::Q, mInputCallBackSign, [this]() {
-		mCamera->GetTransform().Translate(DirectX::SimpleMath::Vector3::Up * -FREE_CAMERA_SPEED);
+		mCamera->GetTransform().Translate(DirectX::SimpleMath::Vector3::Up * -FREE_CAMERA_SPEED * Time.GetSmoothDeltaTime<float>());
 		});
 
 	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::E, mInputCallBackSign, [this]() {
-		mCamera->GetTransform().Translate(DirectX::SimpleMath::Vector3::Up * FREE_CAMERA_SPEED);
+		mCamera->GetTransform().Translate(DirectX::SimpleMath::Vector3::Up * FREE_CAMERA_SPEED * Time.GetSmoothDeltaTime<float>());
 		});
 
 	mCamera->GetTransform().GetRotation() = DirectX::SimpleMath::Quaternion::Identity;

@@ -18,6 +18,9 @@ public:
 	Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, EmbeddedMeshType type, UINT size = 1);
 	// SkyBox Ctor!
 	Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, float size = 1.f);
+
+	Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, float radius, float height, UINT segments);
+
 	Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const MeshData& meshData);
 	Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const std::filesystem::path& binPath);
 	~Mesh();
@@ -33,7 +36,7 @@ public:
 	UINT GetUnitCount() const; 
 private:
 	std::vector<DefaultBuffer> mVertexBuffers{};
-	DefaultBuffer mIndexBuffer{};
+	DefaultBuffer mIndexBuffer{};          
 
 	std::array<D3D12_VERTEX_BUFFER_VIEW, 8> mVertexBufferViews{};
 	D3D12_INDEX_BUFFER_VIEW mIndexBufferView{};

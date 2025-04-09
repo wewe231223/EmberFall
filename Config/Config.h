@@ -11,11 +11,11 @@
 #include <dxgiformat.h>
 #include "IdentityConfig.h"
 
-#ifdef 김승범컴퓨터 
+#ifdef KSB
 #define FHD
-#elif defined(김성준컴퓨터) 
+#elif defined(KSJ) 
 #define HD
-#elif defined(정영기컴퓨터) 
+#elif defined(JYK) 
 #define HD
 #endif 
 
@@ -59,7 +59,7 @@ struct Config {
 	template<typename T = size_t> 
 	constexpr static T MAX_BONE_COUNT_PER_INSTANCE{ static_cast<T>(100) };
 
-	constexpr static bool ALLOW_TEARING{ true };
+	constexpr static bool ALLOW_TEARING{ false };
 	constexpr static D3D_FEATURE_LEVEL DIRECTX_FEATURE_LEVEL{ D3D_FEATURE_LEVEL_11_0 };
 	constexpr static DXGI_FORMAT RENDER_TARGET_FORMAT{ DXGI_FORMAT_R8G8B8A8_UNORM };
 
