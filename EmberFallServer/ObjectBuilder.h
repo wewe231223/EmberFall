@@ -7,6 +7,7 @@
 class ObjectBuilder{
 public:
     static void BuildObjectComponent(std::shared_ptr<GameObject>& gameObject, ObjectTag objectTag);
+    static void BuildObjectComponent(std::shared_ptr<GameObject>& gameObject, ObjectTag objectTag, std::shared_ptr<Collider> collider);
 
     static void BuildTrigger(std::shared_ptr<GameObject>& gameObject, float lifeTime, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& extents);
     static void BuildTrigger(std::shared_ptr<GameObject>& gameObject, float lifeTime, const SimpleMath::Vector3& pos, std::shared_ptr<Collider> collider);

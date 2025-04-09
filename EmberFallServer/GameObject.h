@@ -57,6 +57,9 @@ public:
     SimpleMath::Vector3 GetScale() const;
     SimpleMath::Matrix GetWorld() const;
 
+    float GetSpeed() const;
+    SimpleMath::Vector3 GetMoveDir() const;
+
     std::shared_ptr<IServerGameScene> GetOwnGameScene() const;
 
     void Init();

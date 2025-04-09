@@ -78,6 +78,21 @@ void SessionManager::Send(SessionIdType to, void* packet) {
     session->RegisterSend(packet);
 }
 
+void SessionManager::Send(SessionIdType to, OverlappedSend* const overlappedSend) {
+    Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
+    auto it = mSessions.find(to);
+    if (it == mSessions.end()) {
+        return;
+    }
+
+    auto session = it->second;
+    if (false == session->IsConnected()) {
+        return;
+    }
+
+    session->RegisterSend(overlappedSend);
+}
+
 void SessionManager::SendAll(void* packet) {
     Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
     for (auto& [id, session] : mSessions) {
@@ -97,6 +112,17 @@ void SessionManager::SendAll(void* data, size_t size) {
         }
 
         session->RegisterSend(data, size);
+    }
+}
+
+void SessionManager::SendAll(OverlappedSend* const overlappedSend) {
+    Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
+    for (auto& [id, session] : mSessions) {
+        if (false == session->IsConnected()) {
+            continue;
+        }
+
+        session->RegisterSend(overlappedSend);
     }
 }
 

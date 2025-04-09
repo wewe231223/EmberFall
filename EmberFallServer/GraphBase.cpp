@@ -22,8 +22,7 @@ size_t Graph::GetNodeSize() const {
 
 size_t Graph::GetEdgeSize() const {
     return std::accumulate(mAdjacencyList.begin(), mAdjacencyList.end(), 0ULL, 
-        [=](size_t val, const EdgeList& list)
-        { 
+        [=](size_t val, const EdgeList& list) { 
             return val + list.size();
         }
     );

@@ -33,6 +33,14 @@ SimpleMath::Matrix GameObject::GetWorld() const {
     return mTransform->GetWorld();
 }
 
+float GameObject::GetSpeed() const {
+    return mPhysics->GetSpeed();
+}
+
+SimpleMath::Vector3 GameObject::GetMoveDir() const {
+    return mPhysics->GetMoveDir();
+}
+
 std::shared_ptr<Transform> GameObject::GetTransform() const {
     return mTransform;
 }

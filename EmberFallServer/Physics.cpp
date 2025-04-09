@@ -16,6 +16,14 @@ bool Physics::IsMovingXZ() const {
     return false == MathUtil::IsVectorZero(mVelocity);
 }
 
+float Physics::GetSpeed() const {
+    return mVelocity.Length();
+}
+
+SimpleMath::Vector3 Physics::GetMoveDir() const {
+    return MathUtil::Normalize(mVelocity);
+}
+
 void Physics::Disable() {
     mActive = false;
 }

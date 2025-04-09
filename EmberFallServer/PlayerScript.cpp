@@ -61,7 +61,6 @@ void PlayerScript::Update(const float deltaTime) {
 
     // Attack
     if (mInput->IsUp('P')) {
-        //owner->mAnimationStateMachine.ChangeState(AnimationState::ATTACK);
         owner->Attack();
     }
 }

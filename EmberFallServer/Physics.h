@@ -43,6 +43,9 @@ public:
     bool IsMoving() const;
     bool IsMovingXZ() const;
 
+    float GetSpeed() const;
+    SimpleMath::Vector3 GetMoveDir() const;
+
     void Disable();
     void Reset();
 

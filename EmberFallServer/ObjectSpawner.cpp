@@ -25,6 +25,19 @@ std::shared_ptr<GameObject>& ObjectSpawner::SpawnObject(ObjectTag objectType, bo
     return object;
 }
 
+std::shared_ptr<GameObject>& ObjectSpawner::SpawnObject(ObjectTag objectType, std::shared_ptr<Collider> collider, bool terrainCollision) {
+    decltype(auto) object = mCurrentScene->GetInvalidObject();
+    ObjectBuilder::BuildObjectComponent(object, objectType, collider);
+
+    object->SetActive(true);
+
+    if (true == terrainCollision) {
+        mCurrentScene->GetTerrainCollider().AddObjectInTerrainGroup(object);
+    }
+
+    return object;
+}
+
 std::shared_ptr<GameObject>& ObjectSpawner::SpawnTrigger(float lifeTime, const SimpleMath::Vector3& pos, const SimpleMath::Vector3 extents) {
     decltype(auto) object = mCurrentScene->GetInvalidObject();
     ObjectBuilder::BuildTrigger(object, lifeTime, pos, extents);

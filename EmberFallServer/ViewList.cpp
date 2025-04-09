@@ -61,9 +61,17 @@ void ViewList::Send() {
     auto packet = GetPacket<PacketSC::PacketObject>(mOwnerId);
 
     for (const auto& object : mObjectInRange) {
+        //auto packet = FbsPacketFactory::ObjectMoveSC(
+        //    object->GetId(),
+        //    object->GetPosition(),
+        //    object->GetMoveDir(),
+        //    object->GetSpeed()
+        //);
         packet.objId = object->GetId();
         packet.position = object->GetPosition();
         packet.rotationYaw = object->GetEulerRotation().y;
+        gServerCore->Send(mOwnerId, &packet);
+
         gServerCore->Send(mOwnerId, &packet);
     }
 

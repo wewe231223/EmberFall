@@ -12,6 +12,7 @@ public:
     void SetCurrentScene(std::shared_ptr<class IServerGameScene> gameScene);
 
     std::shared_ptr<GameObject>& SpawnObject(ObjectTag objectType, bool terrainCollision = true);
+    std::shared_ptr<GameObject>& SpawnObject(ObjectTag objectType, std::shared_ptr<Collider> colldier, bool terrainCollision = true);
     std::shared_ptr<GameObject>& SpawnTrigger(float lifeTime, const SimpleMath::Vector3& pos, const SimpleMath::Vector3 extents);
     std::shared_ptr<GameObject>& SpawnTrigger(float lifeTime, const SimpleMath::Vector3& pos, std::shared_ptr<Collider> colldier);
 

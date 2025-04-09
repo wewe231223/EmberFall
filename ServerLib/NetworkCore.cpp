@@ -90,12 +90,20 @@ void ServerCore::Send(SessionIdType to, void* packet) {
     mSessionManager->Send(to, packet);
 }
 
+void ServerCore::Send(SessionIdType to, OverlappedSend* overlappedSend) {
+    mSessionManager->Send(to, overlappedSend);
+}
+
 void ServerCore::SendAll(void* packet) {
     mSessionManager->SendAll(packet);
 }
 
 void ServerCore::SendAll(void* data, size_t size) {
     mSessionManager->SendAll(data, size);
+}
+
+void ServerCore::SendAll(OverlappedSend* const overlappedSend) {
+    mSessionManager->SendAll(overlappedSend);
 }
 
 ClientCore::ClientCore() 
@@ -155,6 +163,10 @@ void ClientCore::Send(void* packet) {
 
 void ClientCore::Send(void* data, size_t dataSize) {
     mSession->RegisterSend(data, dataSize);
+}
+
+void ClientCore::Send(OverlappedSend* const overlappedSend) {
+    mSession->RegisterSend(overlappedSend);
 }
 
 void ClientCore::CloseSession() {

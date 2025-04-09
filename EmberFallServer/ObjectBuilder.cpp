@@ -37,6 +37,44 @@ void ObjectBuilder::BuildObjectComponent(std::shared_ptr<GameObject>& gameObject
     gameObject->Init();
 }
 
+void ObjectBuilder::BuildObjectComponent(std::shared_ptr<GameObject>& gameObject, ObjectTag objectTag, std::shared_ptr<Collider> collider) {
+    gameObject->Reset();
+
+    switch (objectTag) {
+    case ObjectTag::MONSTER:
+    {
+        gameObject->SetCollider(collider);
+        gameObject->GetCollider()->SetTransform(gameObject->GetTransform());
+        gameObject->GetCollider()->Update();
+        gameObject->CreateComponent<MonsterScript>(gameObject);
+        break;
+    }
+
+    case ObjectTag::CORRUPTED_GEM:
+    {
+        gameObject->SetCollider(collider);
+        gameObject->GetCollider()->SetTransform(gameObject->GetTransform());
+        gameObject->GetCollider()->Update();
+        gameObject->CreateComponent<CorruptedGemScript>(gameObject);
+        break;
+    }
+
+    case ObjectTag::ENV:
+    {
+        gameObject->SetCollider(collider);
+        gameObject->GetCollider()->SetTransform(gameObject->GetTransform());
+        gameObject->GetCollider()->Update();
+        gameObject->GetPhysics()->mFactor.mass = FLT_MAX / 2.0f - MathUtil::EPSILON;
+        break;
+    }
+
+    default:
+        break;
+    }
+
+    gameObject->Init();
+}
+
 void ObjectBuilder::BuildTrigger(std::shared_ptr<GameObject>& gameObject, float lifeTime, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& extents) {
     gameObject->Reset();
     gameObject->DisablePhysics();

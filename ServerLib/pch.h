@@ -65,5 +65,7 @@ namespace SimpleMath = DirectX::SimpleMath;
 #include "PacketProcessor.h"
 #include "PacketFactory.h"
 
+#include "FbsPacketFactory.h"
+
 using namespace GameUnitLiterals;
 using namespace std::literals;
