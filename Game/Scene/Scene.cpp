@@ -304,7 +304,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 
 	 //Scene::BakeEnvironment ("Resources/Binarys/Terrain/Environment.bin");
-	 Scene::BuildEnvironment("Resources/Binarys/Terrain/filtered_environment.bin");
+	 Scene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
 
 
 
@@ -321,162 +321,166 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.GetTransform().Scaling(1.f, 1.f, 1.f);
 	}
 
-
-
-	// 원형 오브젝트 정의
-	GameObject baseMountain;
-	baseMountain.mShader = mShaderMap["StandardShader"].get();
-	baseMountain.mMesh = mMeshMap["Mountain"].get();
-	baseMountain.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
-	baseMountain.mCollider = mColliderMap["Mountain"];
-
-	GameObject baseMountain1 = baseMountain.Clone();
-	baseMountain1.mMesh = mMeshMap["Mountain1"].get();
-	baseMountain1.mMaterial = mMaterialManager->GetMaterial("Mountain1Material");
-	baseMountain1.mCollider = mColliderMap["Mountain1"];
-
-	GameObject baseMountain2 = baseMountain.Clone();
-	baseMountain2.mMesh = mMeshMap["Mountain3"].get();
-	baseMountain2.mMaterial = mMaterialManager->GetMaterial("Mountain3Material");
-	baseMountain2.mCollider = mColliderMap["Mountain3"];
-
-	GameObject baseTimberHouse;
-	baseTimberHouse.mShader = mShaderMap["StandardShader"].get();
-	baseTimberHouse.mMesh = mMeshMap["TimberHouse"].get();
-	baseTimberHouse.mMaterial = mMaterialManager->GetMaterial("TimberHouseMaterial");
-	baseTimberHouse.mCollider = mColliderMap["TimberHouse"];
-
-	GameObject baseStoneHouse = baseTimberHouse.Clone();
-	baseStoneHouse.mMesh = mMeshMap["StoneHouse"].get();
-	baseStoneHouse.mMaterial = mMaterialManager->GetMaterial("StoneHouseMaterial");
-	baseStoneHouse.mCollider = mColliderMap["StoneHouse"];
-
-	GameObject baseLogHouse = baseTimberHouse.Clone();
-	baseLogHouse.mMesh = mMeshMap["LogHouse"].get();
-	baseLogHouse.mMaterial = mMaterialManager->GetMaterial("LogHouseMaterial");
-	baseLogHouse.mCollider = mColliderMap["LogHouse"];
-
-	GameObject baseLogHouseDoor = baseLogHouse.Clone();
-	baseLogHouseDoor.mMesh = mMeshMap["LogHouseDoor"].get();
-	baseLogHouseDoor.mMaterial = mMaterialManager->GetMaterial("LogHouseDoorMaterial");
-	//baseLogHouseDoor.mCollider = mColliderMap["LogHouse"];
-
-	GameObject baseWindMill;
-	baseWindMill.mShader = mShaderMap["StandardShader"].get();
-	baseWindMill.mMesh = mMeshMap["WindMill"].get();
-	baseWindMill.mMaterial = mMaterialManager->GetMaterial("WindMillMaterial");
-	baseWindMill.mCollider = mColliderMap["WindMill"];
-
-	GameObject baseWindMillBlade = baseWindMill.Clone();
-	baseWindMillBlade.mShader = mShaderMap["TreeShader"].get();
-	baseWindMillBlade.mMesh = mMeshMap["WindMillBlade"].get();
-	baseWindMillBlade.mMaterial = mMaterialManager->GetMaterial("WindMillBladeMaterial");
-	//baseWindMillBlade.mCollider = mColliderMap["WindMill"];
-
-	GameObject baseWater;
-	baseWater.mShader = mShaderMap["StandardShader"].get();
-	baseWater.mMesh = mMeshMap["Plane"].get();
-	baseWater.mMaterial = mMaterialManager->GetMaterial("WaterMaterial");
-
-	GameObject baseWell = baseTimberHouse.Clone();
-	baseWell.mMesh = mMeshMap["Well"].get();
-	baseWell.mMaterial = mMaterialManager->GetMaterial("WellMaterial");
-	baseWell.mCollider = mColliderMap["Well"];
-
-	// 배치 함수
-	auto Place = [&](GameObject& base, float x, float z, float rotYDeg = 0.f, float yOffset = 0.f, bool isEnv = true)
-		{
-			auto& list = isEnv ? mEnvironmentObjects : mGameObjects;
-			auto& obj = list.emplace_back(base.Clone());
-			obj.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(rotYDeg), 0.f);
-			obj.GetTransform().GetPosition() = { x, tCollider.GetHeight(x, z) + yOffset, z };
-		};
-
-	// 실제 배치
-	Place(baseMountain, 295.f, 220.f, 0.f, -10.f);
-	Place(baseMountain1, 261.f, 284.f, 0.f, -10.f);
-	Place(baseMountain, 295.f, 130.f, 0.f, -10.f);
-
-	Place(baseMountain1, -58.f, -295.f,0.f, -20.f);
-	
-	Place(baseMountain, -200.f, -300.f, -90.f, -10.f);
-	Place(baseMountain, -300.f, -230.f, -15.f, -30.f);
-	Place(baseMountain, -2.f, 310.f, 130.f, -30.f);
-	
-	Place(baseMountain, 22.f, -341.f, 90.f, -50.f);
-	Place(baseMountain1, 68.f, -300.f, 0.f, -10.f);
-	Place(baseMountain1, 125.f, -300.f, 0.f, -10.f);
-
-	Place(baseMountain, -315.f, -115.f, 0.f, -10.f);
-	Place(baseMountain, -315.f, -17.f, 0.f, -5.f);
-	Place(baseMountain, -315.f, 65.f, 0.f, -5.f);
-
-	/*Place(baseMountain1, -19.f, 293.f, 0.f, -20.f);
-	Place(baseMountain1,  16.f, 289.f, 0.f, -20.f);
-	Place(baseMountain1, -28.f, 309.f, 0.f, +20.f);*/
-
-
-	Place(baseMountain, 166.f, 310.f, 90.f, -30.f);
-	Place(baseMountain1, 55.f, 240.f, 0.f, -23.f);
-	Place(baseMountain1, 48.f, 274.f, 0.f, -10.f);
-	Place(baseMountain1, 105.f, 294.f, -45.f, -15.f);
-	Place(baseMountain, 290.f, 320.f, -90.f, 0.f);
-	
-	Place(baseMountain, 358.f, 213.f, 0.f, 40.f);
-	Place(baseMountain1, 342.f, 76.f, 0.f, -18.f);
-	Place(baseMountain, -62.f, -346.f, 90.f);
-	Place(baseMountain, -138.f, -312.f, 90.f);
- 
-	Place(baseMountain, -147.f, 369.f, 90.f, 20.f);
-	Place(baseMountain, -309.f, 164.f);
-	Place(baseMountain, -317.f, 254.f);
-
-	Place(baseMountain, -83.f, 320.f, 90.f, -10.f);
-	Place(baseMountain, -240.f, 320.f, 90.f, -20.f);
-
-
-
+	//std::ofstream file{ "Resources/Binarys/Terrain/env_bb.bin", std::ios::binary };
 	//{
-	//	auto& obj = mEnvironmentObjects.emplace_back(baseWater.Clone());
-	//	obj.GetTransform().GetPosition() = { -502.f, 37.f, 212.f };
-	//	obj.GetTransform().Scaling(50.f, 1.f, 50.f);
+	//	auto type = static_cast<UINT>(EnvironmentType::Tree1);
+	//	auto& bb = mColliderMap["Pine3_Stem"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
 	//}
 
+	//{
+	//	auto type = static_cast<UINT>(EnvironmentType::Tree2);
+	//	auto& bb = mColliderMap["Pine2"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
 
-	Place(baseTimberHouse, 154.f, 17.f);
-	Place(baseStoneHouse, 159.f, 31.f, 135.f);
-	Place(baseLogHouse, 170.f, 17.f, 180.f);
-	Place(baseLogHouseDoor, 170.f, 17.f, 180.f);
-	Place(baseTimberHouse, 160.f, 1.f, -90.f);
-	Place(baseStoneHouse, 137.f, 13.f, -90.f);
-	Place(baseLogHouse, 136.f, 24.f, 90.f);
-	Place(baseLogHouseDoor, 136.f, 24.f, 90.f);
-	Place(baseTimberHouse, 147.f, 43.f, 90.f);
-	Place(baseTimberHouse, 125.f, 19.f);
-	Place(baseLogHouse, 136.f, 43.f, 90.f);
-	Place(baseLogHouseDoor, 136.f, 43.f, 90.f);
-	Place(baseStoneHouse, 160.f, 52.f, 90.f);
-	Place(baseStoneHouse, 168.f, 6.f, 225.f);
-	Place(baseLogHouse, 119.f, 40.f);
-	Place(baseLogHouseDoor, 119.f, 40.f);
-	Place(baseWindMill, 110.f, 28.f);
-	Place(baseWindMillBlade, 110.f, 28.f);
-	Place(baseStoneHouse, -51.f, -113.f, 90.f);
-	Place(baseLogHouse, -59.f, -136.f);
-	Place(baseLogHouseDoor, -59.f, -136.f);
-	Place(baseTimberHouse, -42.f, -144.f, 180.f);
-	Place(baseTimberHouse, -54.f, -160.f, -90.f);
-	Place(baseStoneHouse, -80.f, -151.f, 90.f);
-	Place(baseLogHouse, -32.f, -130.f, 180.f);
-	Place(baseLogHouseDoor, -32.f, -130.f, 180.f);
-	Place(baseTimberHouse, -46.f, -129.f, -90.f);
-	Place(baseStoneHouse, -28.f, -117.f, 135.f);
-	Place(baseLogHouse, -48.f, -153.f, 225.f, -0.2f);
-	Place(baseLogHouseDoor, -48.f, -153.f, 225.f, -0.2f);
-	Place(baseTimberHouse, -37.f, -112.f, 90.f);
-	Place(baseWell, 146.f, 27.f);
-	Place(baseWell, -50.f, -140.f);
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//}
 
+	//{
+	//	auto type = static_cast<UINT>(EnvironmentType::Tree3);
+	//	auto& bb = mColliderMap["Pine4"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//}
+
+	//{
+	//	auto type = static_cast<UINT>(EnvironmentType::Rock1);
+	//	auto& bb = mColliderMap["Rock_1"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//}
+
+	//{
+	//	auto type = static_cast<UINT>(EnvironmentType::Rock2);
+	//	auto& bb = mColliderMap["Rock_2"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//}
+
+	//{
+	//	auto type = static_cast<UINT>(EnvironmentType::Rock3);
+	//	auto& bb = mColliderMap["Rock_3"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//}
+
+	//{
+	//	auto type = static_cast<UINT>(EnvironmentType::Rock4);
+	//	auto& bb = mColliderMap["Rock_4"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//}
+
+	//{
+	//	auto type = static_cast<UINT>(EnvironmentType::LargeRock1);
+	//	auto& bb = mColliderMap["LargeRock1"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//}
+
+	//{
+	//	auto type = static_cast<UINT>(EnvironmentType::LargeRock2);
+	//	auto& bb = mColliderMap["LargeRock2"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//}
+
+	//{
+	//	auto type = static_cast<UINT>(EnvironmentType::Mountain1);
+	//	auto& bb = mColliderMap["Mountain"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//}
+
+	//{
+	//	auto type = static_cast<UINT>(EnvironmentType::Mountain2);
+	//	auto& bb = mColliderMap["Mountain1"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//}
+	//
+	//{
+	//	auto type = static_cast<UINT>(EnvironmentType::TimberHouse);
+	//	auto& bb = mColliderMap["TimberHouse"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//}
+
+	//{
+	//	auto type = static_cast<UINT>(EnvironmentType::StoneHouse);
+	//	auto& bb = mColliderMap["StoneHouse"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//}
+
+	//{
+	//	auto type = static_cast<UINT>(EnvironmentType::LogHouse);
+	//	auto& bb = mColliderMap["LogHouse"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//}
+
+	//{
+	//	auto type = static_cast<UINT>(EnvironmentType::WindMill);
+	//	auto& bb = mColliderMap["WindMill"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//}
+
+	//{
+	//	auto type = static_cast<UINT>(EnvironmentType::Well);
+	//	auto& bb = mColliderMap["Well"];
+	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+
+	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	//}
 
 
 	{
@@ -496,7 +500,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		environment.UpdateShaderVariables(); 
 	}
 
-
 	mGameObjects.resize(MeshRenderManager::MAX_INSTANCE_COUNT<size_t>, GameObject{});
 
 
@@ -506,12 +509,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	auto& cameraTransform = mCamera.GetTransform();
 	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
 	cameraTransform.Look({ 0.f,85.f,0.f });
-
-	//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
-	//mCameraMode->Enter(); 
-
-
-
 
 	ParticleVertex v{};
 
@@ -813,6 +810,7 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	
 	data = Loader.Load("Resources/Assets/Env/Well.glb");
 	mMeshMap["Well"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Well"] = Collider{ data.position };
 
 	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, data);
@@ -972,7 +970,8 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 
 	struct EnvData {
 		EnvironmentType envType;
-		SimpleMath::Vector3 position; 
+		SimpleMath::Vector3 position;
+		float rotation;
 	};
 
 	GameObject stem{};
@@ -1001,7 +1000,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 	pinetree.mMaterial = mMaterialManager->GetMaterial("Pine2Material");
 	pinetree.mCollider = mColliderMap["Pine2"];
 
-	GameObject pinetree2{}; 
+	GameObject pinetree2{};
 	pinetree2.mShader = mShaderMap["TreeShader"].get();
 	pinetree2.mMesh = mMeshMap["Pine4"].get();
 	pinetree2.SetActiveState(true);
@@ -1055,7 +1054,67 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 	fern.mMesh = mMeshMap["Fern"].get();
 	fern.mMaterial = mMaterialManager->GetMaterial("FernMaterial");
 	fern.SetActiveState(true);
-	fern.mCollider = mColliderMap["Fern"];
+	//fern.mCollider = mColliderMap["Fern"];
+
+	GameObject baseMountain;
+	baseMountain.mShader = mShaderMap["StandardShader"].get();
+	baseMountain.mMesh = mMeshMap["Mountain"].get();
+	baseMountain.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
+	baseMountain.mCollider = mColliderMap["Mountain"];
+
+	GameObject baseMountain1 = baseMountain.Clone();
+	baseMountain1.mMesh = mMeshMap["Mountain1"].get();
+	baseMountain1.mMaterial = mMaterialManager->GetMaterial("Mountain1Material");
+	baseMountain1.mCollider = mColliderMap["Mountain1"];
+
+	GameObject baseMountain2 = baseMountain.Clone();
+	baseMountain2.mMesh = mMeshMap["Mountain3"].get();
+	baseMountain2.mMaterial = mMaterialManager->GetMaterial("Mountain3Material");
+	baseMountain2.mCollider = mColliderMap["Mountain3"];
+
+	GameObject baseTimberHouse;
+	baseTimberHouse.mShader = mShaderMap["StandardShader"].get();
+	baseTimberHouse.mMesh = mMeshMap["TimberHouse"].get();
+	baseTimberHouse.mMaterial = mMaterialManager->GetMaterial("TimberHouseMaterial");
+	baseTimberHouse.mCollider = mColliderMap["TimberHouse"];
+
+	GameObject baseStoneHouse = baseTimberHouse.Clone();
+	baseStoneHouse.mMesh = mMeshMap["StoneHouse"].get();
+	baseStoneHouse.mMaterial = mMaterialManager->GetMaterial("StoneHouseMaterial");
+	baseStoneHouse.mCollider = mColliderMap["StoneHouse"];
+
+	GameObject baseLogHouse = baseTimberHouse.Clone();
+	baseLogHouse.mMesh = mMeshMap["LogHouse"].get();
+	baseLogHouse.mMaterial = mMaterialManager->GetMaterial("LogHouseMaterial");
+	baseLogHouse.mCollider = mColliderMap["LogHouse"];
+
+	GameObject baseLogHouseDoor = baseLogHouse.Clone();
+	baseLogHouseDoor.mMesh = mMeshMap["LogHouseDoor"].get();
+	baseLogHouseDoor.mMaterial = mMaterialManager->GetMaterial("LogHouseDoorMaterial");
+	//baseLogHouseDoor.mCollider = mColliderMap["LogHouse"];
+
+	GameObject baseWindMill;
+	baseWindMill.mShader = mShaderMap["StandardShader"].get();
+	baseWindMill.mMesh = mMeshMap["WindMill"].get();
+	baseWindMill.mMaterial = mMaterialManager->GetMaterial("WindMillMaterial");
+	baseWindMill.mCollider = mColliderMap["WindMill"];
+
+	GameObject baseWindMillBlade = baseWindMill.Clone();
+	baseWindMillBlade.mShader = mShaderMap["TreeShader"].get();
+	baseWindMillBlade.mMesh = mMeshMap["WindMillBlade"].get();
+	baseWindMillBlade.mMaterial = mMaterialManager->GetMaterial("WindMillBladeMaterial");
+	//baseWindMillBlade.mCollider = mColliderMap["WindMill"];
+
+	GameObject baseWater;
+	baseWater.mShader = mShaderMap["StandardShader"].get();
+	baseWater.mMesh = mMeshMap["Plane"].get();
+	baseWater.mMaterial = mMaterialManager->GetMaterial("WaterMaterial");
+
+	GameObject baseWell = baseTimberHouse.Clone();
+	baseWell.mMesh = mMeshMap["Well"].get();
+	baseWell.mMaterial = mMaterialManager->GetMaterial("WellMaterial");
+	baseWell.mCollider = mColliderMap["Well"];
+
 
 	std::ifstream ifs(envFile, std::ios::binary);
 	if (!ifs) {
@@ -1067,12 +1126,12 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 
 	std::vector<EnvData> envPoses(envCount);
 	ifs.read(reinterpret_cast<char*>(envPoses.data()), sizeof(EnvData) * envCount);
-	
+
 
 	// 이후 나무 객체를 생성하는 부분 (stem, leaves 복제)
 	std::vector<GameObject> envObjects{};
 	for (auto& envData : envPoses) {
-		switch (envData.envType){ 
+		switch (envData.envType) {
 		case EnvironmentType::Tree1:
 		{
 			{
@@ -1128,7 +1187,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 			object = rock4.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
-		break; 
+		break;
 		case EnvironmentType::LargeRock1:
 		{
 			auto& object = envObjects.emplace_back();
@@ -1150,7 +1209,77 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-
+		case EnvironmentType::Mountain1:
+		{
+			auto& object = envObjects.emplace_back();
+			object = baseMountain.Clone();
+			object.GetTransform().SetPosition(envData.position);
+			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
+		}
+		break;
+		case EnvironmentType::Mountain2:
+		{
+			auto& object = envObjects.emplace_back();
+			object = baseMountain1.Clone();
+			object.GetTransform().SetPosition(envData.position);
+			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
+		}
+		break;
+		case EnvironmentType::TimberHouse:
+		{
+			auto& object = envObjects.emplace_back();
+			object = baseMountain2.Clone();
+			object.GetTransform().SetPosition(envData.position);
+			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
+		}
+		break;
+		case EnvironmentType::StoneHouse:
+		{
+			auto& object = envObjects.emplace_back();
+			object = baseStoneHouse.Clone();
+			object.GetTransform().SetPosition(envData.position);
+			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
+		}
+		break;
+		case EnvironmentType::LogHouse:
+		{
+			auto& object = envObjects.emplace_back();
+			object = baseLogHouse.Clone();
+			object.GetTransform().SetPosition(envData.position);
+			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
+		}
+		break;
+		case EnvironmentType::LogHouseDoor:
+		{
+			auto& object = envObjects.emplace_back();
+			object = baseLogHouseDoor.Clone();
+			object.GetTransform().SetPosition(envData.position);
+			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
+		}
+		break;
+		case EnvironmentType::WindMill:
+		{
+			auto& object = envObjects.emplace_back();
+			object = baseWindMill.Clone();
+			object.GetTransform().SetPosition(envData.position);
+			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
+		}
+		break;
+		case EnvironmentType::WindMillBlade:
+		{
+			auto& object = envObjects.emplace_back();
+			object = baseWindMillBlade.Clone();
+			object.GetTransform().SetPosition(envData.position);
+			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
+		}
+		break;
+		case EnvironmentType::Well:
+		{
+			auto& object = envObjects.emplace_back();
+			object = baseWell.Clone();
+			object.GetTransform().SetPosition(envData.position);
+			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
+		}
 		break;
 		default:
 			break;
@@ -1159,7 +1288,6 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 
 	std::move(envObjects.begin(), envObjects.end(), std::back_inserter(mEnvironmentObjects));
 }
-
 void Scene::BakeEnvironment(const std::filesystem::path& path) {
 
 	const float treeMinDistance = 2.f;         

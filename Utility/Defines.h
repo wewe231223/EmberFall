@@ -77,16 +77,25 @@ enum : UINT {
 };
 
 enum EnvironmentType : UINT {
-	Tree1 = 0,
-	Tree2 = 1,
-	Tree3 = 2,
-	Rock1 = 3,
-	Rock2 = 4,
-	Rock3 = 5,
-	Rock4 = 6,
-	LargeRock1 = 7,
+    Tree1 = 0,
+    Tree2 = 1,
+    Tree3 = 2,
+    Rock1 = 3,
+    Rock2 = 4,
+    Rock3 = 5,
+    Rock4 = 6,
+    LargeRock1 = 7,
     LargeRock2 = 8,
     Fern = 9,
+    Mountain1 = 10,
+    Mountain2 = 11,
+    TimberHouse = 12, 
+    StoneHouse = 13,
+    LogHouse = 14, 
+    LogHouseDoor = 15, 
+	WindMill = 16,
+	WindMillBlade = 17,
+    Well = 18,
 };
 
 

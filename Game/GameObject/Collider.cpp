@@ -45,3 +45,7 @@ bool Collider::CheckCollision(Collider& other) {
 const DirectX::BoundingOrientedBox& Collider::GetWorldBox() const {
 	return mWorld;
 }
+
+DirectX::BoundingOrientedBox& Collider::GetWorldBox() {
+	return mWorld; 
+}
