@@ -12,7 +12,7 @@
 #endif
 #include "../Utility/NonReplacementSampler.h"
 #include "../MeshLoader/Loader/TerrainBaker.h"
-
+#include "../ServerLib/GameProtocol.h"
 
 #pragma region PacketProcessFn 
 void Scene::ProcessNotifyId(PacketHeader* header) {
@@ -969,7 +969,7 @@ void Scene::BuildAniamtionController() {
 void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 
 	struct EnvData {
-		EnvironmentType envType;
+		GameProtocol::EnvironmentType envType;
 		SimpleMath::Vector3 position;
 		float rotation;
 	};
@@ -1132,7 +1132,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 	std::vector<GameObject> envObjects{};
 	for (auto& envData : envPoses) {
 		switch (envData.envType) {
-		case EnvironmentType::Tree1:
+		case GameProtocol::EnvironmentType::Tree1:
 		{
 			{
 				auto& object = envObjects.emplace_back();
@@ -1146,70 +1146,70 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 			}
 		}
 		break;
-		case EnvironmentType::Tree2:
+		case GameProtocol::EnvironmentType::Tree2:
 		{
 			auto& object = envObjects.emplace_back();
 			object = pinetree.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case EnvironmentType::Tree3:
+		case GameProtocol::EnvironmentType::Tree3:
 		{
 			auto& object = envObjects.emplace_back();
 			object = pinetree2.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case EnvironmentType::Rock1:
+		case GameProtocol::EnvironmentType::Rock1:
 		{
 			auto& object = envObjects.emplace_back();
 			object = rock1.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case EnvironmentType::Rock2:
+		case GameProtocol::EnvironmentType::Rock2:
 		{
 			auto& object = envObjects.emplace_back();
 			object = rock2.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case EnvironmentType::Rock3:
+		case GameProtocol::EnvironmentType::Rock3:
 		{
 			auto& object = envObjects.emplace_back();
 			object = rock3.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case EnvironmentType::Rock4:
+		case GameProtocol::EnvironmentType::Rock4:
 		{
 			auto& object = envObjects.emplace_back();
 			object = rock4.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case EnvironmentType::LargeRock1:
+		case GameProtocol::EnvironmentType::LargeRock1:
 		{
 			auto& object = envObjects.emplace_back();
 			object = bigrock1.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case EnvironmentType::LargeRock2:
+		case GameProtocol::EnvironmentType::LargeRock2:
 		{
 			auto& object = envObjects.emplace_back();
 			object = bigrock2.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case EnvironmentType::Fern:
+		case GameProtocol::EnvironmentType::Fern:
 		{
 			auto& object = envObjects.emplace_back();
 			object = fern.Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
-		case EnvironmentType::Mountain1:
+		case GameProtocol::EnvironmentType::Mountain1:
 		{
 			auto& object = envObjects.emplace_back();
 			object = baseMountain.Clone();
@@ -1217,7 +1217,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
 		break;
-		case EnvironmentType::Mountain2:
+		case GameProtocol::EnvironmentType::Mountain2:
 		{
 			auto& object = envObjects.emplace_back();
 			object = baseMountain1.Clone();
@@ -1225,7 +1225,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
 		break;
-		case EnvironmentType::TimberHouse:
+		case GameProtocol::EnvironmentType::TimberHouse:
 		{
 			auto& object = envObjects.emplace_back();
 			object = baseMountain2.Clone();
@@ -1233,7 +1233,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
 		break;
-		case EnvironmentType::StoneHouse:
+		case GameProtocol::EnvironmentType::StoneHouse:
 		{
 			auto& object = envObjects.emplace_back();
 			object = baseStoneHouse.Clone();
@@ -1241,7 +1241,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
 		break;
-		case EnvironmentType::LogHouse:
+		case GameProtocol::EnvironmentType::LogHouse:
 		{
 			auto& object = envObjects.emplace_back();
 			object = baseLogHouse.Clone();
@@ -1249,7 +1249,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
 		break;
-		case EnvironmentType::LogHouseDoor:
+		case GameProtocol::EnvironmentType::LogHouseDoor:
 		{
 			auto& object = envObjects.emplace_back();
 			object = baseLogHouseDoor.Clone();
@@ -1257,7 +1257,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
 		break;
-		case EnvironmentType::WindMill:
+		case GameProtocol::EnvironmentType::WindMill:
 		{
 			auto& object = envObjects.emplace_back();
 			object = baseWindMill.Clone();
@@ -1265,7 +1265,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
 		break;
-		case EnvironmentType::WindMillBlade:
+		case GameProtocol::EnvironmentType::WindMillBlade:
 		{
 			auto& object = envObjects.emplace_back();
 			object = baseWindMillBlade.Clone();
@@ -1273,7 +1273,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
 		break;
-		case EnvironmentType::Well:
+		case GameProtocol::EnvironmentType::Well:
 		{
 			auto& object = envObjects.emplace_back();
 			object = baseWell.Clone();
