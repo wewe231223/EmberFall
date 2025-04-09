@@ -48,8 +48,6 @@ public:
 
     void RegisterRecv();
     void RegisterSend(OverlappedSend* const overlapped);
-    void RegisterSend(void* packet);
-    void RegisterSend(void* data, size_t size);
     void ProcessRecv(INT32 numOfBytes);
     void ProcessSend(INT32 numOfBytes, OverlappedSend* overlappedSend);
 

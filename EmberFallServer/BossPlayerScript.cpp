@@ -5,7 +5,7 @@
 
 BossPlayerScript::BossPlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input)
     : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ static_cast<SessionIdType>(owner->GetId()) } {  
-    GetOwner()->SetEntityType(EntityType::BOSS);
+    GetOwner()->SetEntityType(Packets::EntityType_BOSS);
 }
 
 BossPlayerScript::~BossPlayerScript() { }
@@ -34,26 +34,9 @@ void BossPlayerScript::Update(const float deltaTime) {
     CheckAndJump(deltaTime);
     CheckAndMove(deltaTime);
 
-    // Change Weapon
-    if (mInput->IsUp('1')) {
-        owner->ChangeWeapon(Weapon::NONE);
-    }
-
-    if (mInput->IsUp('2')) {
-        owner->ChangeWeapon(Weapon::SWORD);
-    }
-
-    if (mInput->IsUp('3')) {
-        owner->ChangeWeapon(Weapon::SPEAR);
-    }
-
-    if (mInput->IsUp('4')) {
-        owner->ChangeWeapon(Weapon::BOW);
-    }
-
     // Attack
     if (mInput->IsUp('P')) {
-        owner->mAnimationStateMachine.ChangeState(AnimationState::ATTACK);
+        owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACK);
         owner->Attack();
     }
 }
@@ -69,8 +52,8 @@ void BossPlayerScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& 
 void BossPlayerScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {}
 
 void BossPlayerScript::OnCollisionTerrain(const float height) {
-    if (AnimationState::JUMP == GetOwner()->mAnimationStateMachine.GetCurrState()) {
-        GetOwner()->mAnimationStateMachine.ChangeState(AnimationState::IDLE);
+    if (Packets::AnimationState_JUMP == GetOwner()->mAnimationStateMachine.GetCurrState()) {
+        GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE);
     }
 }
 
@@ -91,7 +74,7 @@ void BossPlayerScript::DispatchGameEvent(GameEvent* event) {
 
 void BossPlayerScript::CheckAndMove(const float deltaTime) {
     auto currState = GetOwner()->mAnimationStateMachine.GetCurrState();
-    if (AnimationState::MOVE_RIGHT < currState) {
+    if (Packets::AnimationState_MOVE_RIGHT < currState) {
         return;
     }
 
@@ -114,20 +97,20 @@ void BossPlayerScript::CheckAndMove(const float deltaTime) {
         moveDir.z += 1.0f;
     }
 
-    AnimationState changeState{ AnimationState::IDLE };
+    Packets::AnimationState changeState{ Packets::AnimationState_IDLE };
     if (not MathUtil::IsZero(moveDir.x)) {
         physics->mFactor.maxMoveSpeed = 1.5mps;
-        changeState = moveDir.x > 0.0f ? AnimationState::MOVE_LEFT : AnimationState::MOVE_RIGHT;
+        changeState = moveDir.x > 0.0f ? Packets::AnimationState_MOVE_LEFT : Packets::AnimationState_MOVE_RIGHT;
     }
 
     if (not MathUtil::IsZero(moveDir.z)) {
         if (moveDir.z > 0.0f) {
             physics->mFactor.maxMoveSpeed = 1.5mps;
-            changeState = AnimationState::MOVE_BACKWARD;
+            changeState = Packets::AnimationState_MOVE_BACKWARD;
         }
         else {
             physics->mFactor.maxMoveSpeed = 3.3mps;
-            changeState = AnimationState::MOVE_FORWARD;
+            changeState = Packets::AnimationState_MOVE_FORWARD;
         }
     }
 
@@ -143,7 +126,7 @@ void BossPlayerScript::CheckAndJump(const float deltaTime) {
 
     // Jump
     if (mInput->IsDown(VK_SPACE) and physics->IsOnGround()) {
-        GetOwner()->mAnimationStateMachine.ChangeState(AnimationState::JUMP);
+        GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_JUMP);
         physics->CheckAndJump(deltaTime);
     }
 }

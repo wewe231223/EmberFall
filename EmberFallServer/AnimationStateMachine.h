@@ -3,20 +3,20 @@
 struct AnimationInfo {
     float duration;
     bool loop;
-    AnimationState state;
+    Packets::AnimationState state;
 };
 
-inline std::array<AnimationInfo, AnimationState::DEAD + 1> DEFAULT_ANIM_INFO{
-    AnimationInfo{ 3.0f, true, AnimationState::IDLE },
-    AnimationInfo{ 3.0f, true, AnimationState::MOVE_FORWARD },
-    AnimationInfo{ 3.0f, true, AnimationState::MOVE_BACKWARD },
-    AnimationInfo{ 3.0f, true, AnimationState::MOVE_LEFT },
-    AnimationInfo{ 3.0f, true, AnimationState::MOVE_RIGHT },
-    AnimationInfo{ 3.0f, false, AnimationState::JUMP },
-    AnimationInfo{ 2.3f, false, AnimationState::ATTACKED },
-    AnimationInfo{ 2.3f, false, AnimationState::ATTACK },
-    AnimationInfo{ 3.0f, true, AnimationState::INTERACTION },
-    AnimationInfo{ 3.0f, false, AnimationState::DEAD }
+inline std::array<AnimationInfo, Packets::AnimationState_MAX + 1> DEFAULT_ANIM_INFO{
+    AnimationInfo{ 3.0f, true, Packets::AnimationState_IDLE },
+    AnimationInfo{ 3.0f, true, Packets::AnimationState_MOVE_FORWARD },
+    AnimationInfo{ 3.0f, true, Packets::AnimationState_MOVE_BACKWARD },
+    AnimationInfo{ 3.0f, true, Packets::AnimationState_MOVE_LEFT },
+    AnimationInfo{ 3.0f, true, Packets::AnimationState_MOVE_RIGHT },
+    AnimationInfo{ 3.0f, false, Packets::AnimationState_JUMP },
+    AnimationInfo{ 2.3f, false, Packets::AnimationState_ATTACKED },
+    AnimationInfo{ 2.3f, false, Packets::AnimationState_ATTACK },
+    AnimationInfo{ 3.0f, true, Packets::AnimationState_INTERACTION },
+    AnimationInfo{ 3.0f, false, Packets::AnimationState_DEAD }
 };
 
 class AnimationStateMachine {
@@ -26,22 +26,22 @@ public:
 
 public:
     bool IsChangable() const;
-    AnimationState GetCurrState() const;
-    float GetDuration(AnimationState state) const;
+    Packets::AnimationState GetCurrState() const;
+    float GetDuration(Packets::AnimationState state) const;
     float GetRemainDuration() const;
 
     void SetOwner(std::shared_ptr<class GameObject> owner);
-    void SetDefaultState(AnimationState state);
-    void ChangeState(AnimationState nextState, bool force=false);
+    void SetDefaultState(Packets::AnimationState state);
+    void ChangeState(Packets::AnimationState nextState, bool force=false);
 
     void Update(const float deltaTime);
 
 private:
     bool mAnimationChangable{ true };
     float mAnimationCounter{ };
-    AnimationInfo mDefaultState{ AnimationState::IDLE };
-    AnimationInfo mCurrState{ AnimationState::IDLE };
+    AnimationInfo mDefaultState{ Packets::AnimationState_IDLE };
+    AnimationInfo mCurrState{ Packets::AnimationState_IDLE };
 
     std::shared_ptr<class GameObject> mOwner{ nullptr };
-    std::array<AnimationInfo, AnimationState::DEAD + 1> mAnimationInfo{ DEFAULT_ANIM_INFO };
+    std::array<AnimationInfo, Packets::AnimationState_MAX + 1> mAnimationInfo{ DEFAULT_ANIM_INFO };
 };

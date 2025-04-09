@@ -58,21 +58,15 @@ void ViewList::Send() {
         return;
     }
 
-    auto packet = GetPacket<PacketSC::PacketObject>(mOwnerId);
-
     for (const auto& object : mObjectInRange) {
-        //auto packet = FbsPacketFactory::ObjectMoveSC(
-        //    object->GetId(),
-        //    object->GetPosition(),
-        //    object->GetMoveDir(),
-        //    object->GetSpeed()
-        //);
-        packet.objId = object->GetId();
-        packet.position = object->GetPosition();
-        packet.rotationYaw = object->GetEulerRotation().y;
-        gServerCore->Send(mOwnerId, &packet);
-
-        gServerCore->Send(mOwnerId, &packet);
+        auto packet = FbsPacketFactory::ObjectMoveSC(
+            object->GetId(),
+            object->GetEulerRotation().y,
+            object->GetPosition(),
+            object->GetMoveDir(),
+            object->GetSpeed()
+        );
+        gServerCore->Send(mOwnerId, packet);
     }
 
     mSendTimeCounter = 0.0f;
@@ -84,13 +78,15 @@ void ViewList::AddInRange(std::shared_ptr<GameObject> obj) {
         return;
     }
 
-    auto packet = GetPacket<PacketSC::PacketObjectAppeared>(
-        mOwnerId,
+    decltype(auto) packet = FbsPacketFactory::ObjectAppearedSC(
         obj->GetId(),
         obj->GetEntityType(),
-        obj->GetEulerRotation().y
+        obj->GetEulerRotation().y,
+        obj->mAnimationStateMachine.GetCurrState(),
+        obj->HP(),
+        obj->GetPosition()
     );
-    gServerCore->Send(mOwnerId, &packet);
+    gServerCore->Send(mOwnerId, packet);
 }
 
 bool ViewList::EraseFromRange(std::shared_ptr<GameObject> obj) {
@@ -98,11 +94,8 @@ bool ViewList::EraseFromRange(std::shared_ptr<GameObject> obj) {
         return false;
     }
    
-    auto packet = GetPacket<PacketSC::PacketObjectDisappeared>(
-        mOwnerId,
-        obj->GetId()
-    );
-    gServerCore->Send(mOwnerId, &packet);   
+    decltype(auto) packet = FbsPacketFactory::ObjectDisappearedSC(obj->GetId());
+    gServerCore->Send(mOwnerId, packet);   
 
     mObjectInRange.erase(obj);
 

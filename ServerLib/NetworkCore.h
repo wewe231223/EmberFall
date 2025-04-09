@@ -32,7 +32,6 @@ public:
     NetworkType GetType() const;
     std::shared_ptr<IOCPCore> GetIOCPCore() const;
     std::shared_ptr<PacketHandler> GetPacketHandler() const;
-    std::shared_ptr<SendBufferFactory> GetSendBufferFactory() const;
 
     virtual void Init();
     virtual bool Start(const std::string& ip, const UINT16 port) abstract;
@@ -44,7 +43,6 @@ private:
     NetworkType mType{ };
     std::shared_ptr<IOCPCore> mIocpCore{ nullptr };
     std::shared_ptr<PacketHandler> mPacketHandler{ nullptr };
-    std::shared_ptr<SendBufferFactory> mSendBufferFactory{ nullptr };
 };
 
 class ServerCore : public INetworkCore {
@@ -59,10 +57,7 @@ public:
     virtual bool Start(const std::string& ip, const UINT16 port) override;
     virtual void End() override;
 
-    void Send(SessionIdType to, void* packet);
     void Send(SessionIdType to, OverlappedSend* overlappedSend);
-    void SendAll(void* packet);
-    void SendAll(void* data, size_t size);
     void SendAll(OverlappedSend* const overlappedSend);
 
 private:
@@ -85,8 +80,6 @@ public:
     SessionIdType GetSessionId() const;
     bool IsClosedSession() const;
     OverlappedConnect* GetOverlappedConnect();
-    void Send(void* packet);
-    void Send(void* data, size_t dataSize);
     void Send(OverlappedSend* const overlappedSend);
     void CloseSession();
 

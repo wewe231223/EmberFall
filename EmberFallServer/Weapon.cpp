@@ -4,12 +4,12 @@
 
 using namespace Weapons;
 
-IWeapon::IWeapon(Weapon type) 
+IWeapon::IWeapon(Packets::Weapon type)
     : mWeaponType{ type } { }
 
 IWeapon::~IWeapon() { }
 
-Weapon IWeapon::GetWeaponType() const {
+Packets::Weapon IWeapon::GetWeaponType() const {
     return mWeaponType;
 }
 std::shared_ptr<Collider> IWeapon::GetHitbox() const {
@@ -17,7 +17,7 @@ std::shared_ptr<Collider> IWeapon::GetHitbox() const {
 }
 
 Fist::Fist(const SimpleMath::Vector3& hitBoxSize)
-    : IWeapon{ Weapon::NONE } { 
+    : IWeapon{ Packets::Weapon_SWORD } {
     mHitbox = std::make_shared<OrientedBoxCollider>(SimpleMath::Vector3::Zero, hitBoxSize);
 }
 
@@ -34,7 +34,7 @@ void Fist::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, c
 }
 
 Spear::Spear(const SimpleMath::Vector3& hitBoxSize)
-    : IWeapon{ Weapon::SPEAR } {
+    : IWeapon{ Packets::Weapon_SPEAR } {
     mHitbox = std::make_shared<OrientedBoxCollider>(SimpleMath::Vector3::Zero, hitBoxSize);
 }
 
@@ -50,7 +50,7 @@ void Spear::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
 }
 
 Bow::Bow(const SimpleMath::Vector3& hitBoxSize)
-    : IWeapon{ Weapon::BOW }, mArrowSpeed{ GameProtocol::Unit::DEFAULT_PROJECTILE_SPEED } {
+    : IWeapon{ Packets::Weapon_BOW }, mArrowSpeed{ GameProtocol::Unit::DEFAULT_PROJECTILE_SPEED } {
     mHitbox = std::make_shared<OrientedBoxCollider>(SimpleMath::Vector3::Zero, hitBoxSize);
 }
 
@@ -61,7 +61,7 @@ void Bow::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, co
 }
 
 Sword::Sword(const SimpleMath::Vector3& hitBoxSize) 
-    : IWeapon{ Weapon::SWORD } {
+    : IWeapon{ Packets::Weapon_SWORD } {
     mHitbox = std::make_shared<OrientedBoxCollider>(SimpleMath::Vector3::Zero, hitBoxSize);
 }
 
@@ -78,7 +78,7 @@ void Sword::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
 }
 
 Staff::Staff(const SimpleMath::Vector3& hitBoxSize)
-    : IWeapon{ Weapon::STAFF } {
+    : IWeapon{ Packets::Weapon_STAFF } {
     mHitbox = std::make_shared<OrientedBoxCollider>(SimpleMath::Vector3::Zero, hitBoxSize);
 }
 

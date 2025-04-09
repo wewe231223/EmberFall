@@ -11,8 +11,8 @@
 
 PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input)
     : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ static_cast<SessionIdType>(owner->GetId()) } {
-    owner->SetEntityType(EntityType::PLAYER);
-    owner->ChangeWeapon(Weapon::SWORD);
+    owner->SetEntityType(Packets::EntityType_HUMAN);
+    owner->ChangeWeapon(Packets::Weapon_SWORD);
 }
 
 PlayerScript::~PlayerScript() { }
@@ -72,7 +72,8 @@ void PlayerScript::LateUpdate(const float deltaTime) {
 void PlayerScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
 void PlayerScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    if (AnimationState::DEAD == opponent->mAnimationStateMachine.GetCurrState() or AnimationState::DEAD == GetOwner()->mAnimationStateMachine.GetCurrState()) {
+    if (Packets::AnimationState_DEAD == opponent->mAnimationStateMachine.GetCurrState() or
+        Packets::AnimationState_DEAD == GetOwner()->mAnimationStateMachine.GetCurrState()) {
         return;
     }
 
@@ -97,8 +98,8 @@ void PlayerScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& oppo
 void PlayerScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
 void PlayerScript::OnCollisionTerrain(const float height) {
-    if (AnimationState::JUMP == GetOwner()->mAnimationStateMachine.GetCurrState()) {
-        GetOwner()->mAnimationStateMachine.ChangeState(AnimationState::IDLE);
+    if (Packets::AnimationState_JUMP == GetOwner()->mAnimationStateMachine.GetCurrState()) {
+        GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE);
     }
 }
 
@@ -108,7 +109,7 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
         if (event->sender != event->receiver) {
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
             GetOwner()->ReduceHealth(attackEvent->damage);
-            GetOwner()->mAnimationStateMachine.ChangeState(AnimationState::ATTACKED, true);
+            GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED, true);
             GetOwner()->GetPhysics()->AddForce(attackEvent->knockBackForce);
 
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!", GetOwner()->GetId());
@@ -119,14 +120,9 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
         {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Finish");
             auto ownerId = static_cast<SessionIdType>(GetOwner()->GetId());
-            auto packet = GetPacket<PacketSC::PacketInteractFinished>(
-                ownerId,
-                EntityType::CORRUPTED_GEM,
-                ownerId,
-                event->sender
-            );
+            decltype(auto) destroyPacket = FbsPacketFactory::GemDestroyedSC(ownerId, GetOwner()->GetPosition());
+            gServerCore->SendAll(destroyPacket);
 
-            gServerCore->Send(ownerId, &packet);
             mInteraction = false;
             mInteractionObj = INVALID_OBJ_ID;
         }
@@ -179,7 +175,7 @@ std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
 
 void PlayerScript::CheckAndMove(const float deltaTime) {
     auto currState = GetOwner()->mAnimationStateMachine.GetCurrState();
-    if (AnimationState::MOVE_RIGHT < currState) {
+    if (Packets::AnimationState_MOVE_RIGHT < currState) {
         return;
     }
 
@@ -202,20 +198,20 @@ void PlayerScript::CheckAndMove(const float deltaTime) {
         moveDir.z += 1.0f;
     }
 
-    AnimationState changeState{ AnimationState::IDLE };
+    Packets::AnimationState changeState{ Packets::AnimationState_IDLE };
     if (not MathUtil::IsZero(moveDir.x)) {
         physics->mFactor.maxMoveSpeed = 1.5mps;
-        changeState = moveDir.x > 0.0f ? AnimationState::MOVE_LEFT : AnimationState::MOVE_RIGHT;
+        changeState = moveDir.x > 0.0f ? Packets::AnimationState_MOVE_LEFT : Packets::AnimationState_MOVE_RIGHT;
     }
 
     if (not MathUtil::IsZero(moveDir.z)) {
         if (moveDir.z > 0.0f) {
             physics->mFactor.maxMoveSpeed = 1.5mps;
-            changeState = AnimationState::MOVE_BACKWARD;
+            changeState = Packets::AnimationState_MOVE_BACKWARD;
         }
         else {
             physics->mFactor.maxMoveSpeed = 3.3mps;
-            changeState = AnimationState::MOVE_FORWARD;
+            changeState = Packets::AnimationState_MOVE_FORWARD;
         }
     }
 
@@ -231,7 +227,7 @@ void PlayerScript::CheckAndJump(const float deltaTime) {
 
     // Jump
     if (mInput->IsDown(VK_SPACE) and physics->IsOnGround()) {
-        GetOwner()->mAnimationStateMachine.ChangeState(AnimationState::JUMP);
+        GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_JUMP);
         physics->CheckAndJump(deltaTime);
     }
 }
@@ -243,17 +239,12 @@ void PlayerScript::DoInteraction(const float deltaTime, const std::shared_ptr<Ga
     }
 
     mInteraction = true;
-    if (target->GetId() != mInteractionObj and EntityType::CORRUPTED_GEM == target->GetEntityType()) {
+    if (target->GetId() != mInteractionObj and Packets::EntityType_CORRUPTED_GEM == target->GetEntityType()) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Start");
         auto ownerId = static_cast<SessionIdType>(GetOwner()->GetId());
-        auto packet = GetPacket<PacketSC::PacketInteractStart>(
-            ownerId, 
-            target->GetEntityType(), 
-            ownerId, 
-            target->GetId()
-        );
+        decltype(auto) packetInteraction = FbsPacketFactory::GemInteractSC(mInteractionObj, ownerId);
 
-        gServerCore->Send(ownerId, &packet);
+        gServerCore->SendAll(packetInteraction);
     }
 
     mInteractionObj = target->GetId();
@@ -280,12 +271,9 @@ void PlayerScript::CancelInteraction(const float deltaTime) {
 
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Cancel");
     auto ownerId{ static_cast<SessionIdType>(GetOwner()->GetId()) };
-    auto packet = GetPacket<PacketSC::PacketInteractCancel>(
-        ownerId,
-        ownerId
-    );
+    decltype(auto) packetCancelInteraction = FbsPacketFactory::GemInteractionCancelSC(mInteractionObj, ownerId);
 
-    gServerCore->Send(ownerId, &packet);
+    gServerCore->SendAll(packetCancelInteraction);
     mInteractionObj = INVALID_OBJ_ID;
 }
 

@@ -5,7 +5,7 @@
 ArrowScript::ArrowScript(std::shared_ptr<GameObject> owner, const SimpleMath::Vector3& pos,
     const SimpleMath::Vector3& dir, GameUnits::GameUnit<GameUnits::StandardSpeed> speed) 
     : Script{ owner, ObjectTag::ARROW } {
-    owner->SetEntityType(EntityType::PROJECTILE_ARROW);
+    owner->SetEntityType(Packets::EntityType_PROJECTILE);
     owner->GetTransform()->Translate(pos);
     owner->GetPhysics()->AddVelocity(dir);
     owner->GetPhysics()->ResizeVelocity(speed.Count());

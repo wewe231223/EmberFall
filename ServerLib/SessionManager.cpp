@@ -63,21 +63,6 @@ std::shared_ptr<Session> SessionManager::GetSession(SessionIdType id) {
     return mSessions[id];
 }
 
-void SessionManager::Send(SessionIdType to, void* packet) {
-    Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
-    auto it = mSessions.find(to);
-    if (it == mSessions.end()) {
-        return;
-    }
-
-    auto session = it->second;
-    if (false == session->IsConnected()) {
-        return;
-    }
-
-    session->RegisterSend(packet);
-}
-
 void SessionManager::Send(SessionIdType to, OverlappedSend* const overlappedSend) {
     Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
     auto it = mSessions.find(to);
@@ -91,28 +76,6 @@ void SessionManager::Send(SessionIdType to, OverlappedSend* const overlappedSend
     }
 
     session->RegisterSend(overlappedSend);
-}
-
-void SessionManager::SendAll(void* packet) {
-    Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
-    for (auto& [id, session] : mSessions) {
-        if (false == session->IsConnected()) {
-            continue;
-        }
-
-        session->RegisterSend(packet);
-    }
-}
-
-void SessionManager::SendAll(void* data, size_t size) {
-    Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
-    for (auto& [id, session] : mSessions) {
-        if (false == session->IsConnected()) {
-            continue;
-        }
-
-        session->RegisterSend(data, size);
-    }
 }
 
 void SessionManager::SendAll(OverlappedSend* const overlappedSend) {

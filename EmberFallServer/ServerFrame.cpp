@@ -42,7 +42,6 @@ void ServerFrame::InitGameScenes() {
     gEventManager->SetCurrentGameScene(mCurrentScene);
 
     mCurrentScene->Init();
-    mCurrentScene->RegisterPacketProcessFunctions();
 
     StaticTimer::Sync(15);
 }

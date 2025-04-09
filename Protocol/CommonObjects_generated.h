@@ -45,7 +45,8 @@ struct ObjectAppearedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ENTITY = 6,
     VT_ANIMATION = 8,
     VT_HP = 10,
-    VT_POS = 12
+    VT_YAW = 12,
+    VT_POS = 14
   };
   uint16_t objectId() const {
     return GetField<uint16_t>(VT_OBJECTID, 0);
@@ -59,6 +60,9 @@ struct ObjectAppearedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   float hp() const {
     return GetField<float>(VT_HP, 0.0f);
   }
+  float yaw() const {
+    return GetField<float>(VT_YAW, 0.0f);
+  }
   const Packets::Vec3 *pos() const {
     return GetStruct<const Packets::Vec3 *>(VT_POS);
   }
@@ -68,6 +72,7 @@ struct ObjectAppearedSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_ENTITY, 1) &&
            VerifyField<uint8_t>(verifier, VT_ANIMATION, 1) &&
            VerifyField<float>(verifier, VT_HP, 4) &&
+           VerifyField<float>(verifier, VT_YAW, 4) &&
            VerifyField<Packets::Vec3>(verifier, VT_POS, 4) &&
            verifier.EndTable();
   }
@@ -89,6 +94,9 @@ struct ObjectAppearedSCBuilder {
   void add_hp(float hp) {
     fbb_.AddElement<float>(ObjectAppearedSC::VT_HP, hp, 0.0f);
   }
+  void add_yaw(float yaw) {
+    fbb_.AddElement<float>(ObjectAppearedSC::VT_YAW, yaw, 0.0f);
+  }
   void add_pos(const Packets::Vec3 *pos) {
     fbb_.AddStruct(ObjectAppearedSC::VT_POS, pos);
   }
@@ -109,9 +117,11 @@ inline ::flatbuffers::Offset<ObjectAppearedSC> CreateObjectAppearedSC(
     Packets::EntityType entity = Packets::EntityType_ENV,
     Packets::AnimationState animation = Packets::AnimationState_IDLE,
     float hp = 0.0f,
+    float yaw = 0.0f,
     const Packets::Vec3 *pos = nullptr) {
   ObjectAppearedSCBuilder builder_(_fbb);
   builder_.add_pos(pos);
+  builder_.add_yaw(yaw);
   builder_.add_hp(hp);
   builder_.add_objectId(objectId);
   builder_.add_animation(animation);
@@ -207,7 +217,8 @@ struct ObjectMoveSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_OBJECTID = 4,
     VT_POS = 6,
     VT_DIR = 8,
-    VT_SPEED = 10
+    VT_YAW = 10,
+    VT_SPEED = 12
   };
   uint16_t objectId() const {
     return GetField<uint16_t>(VT_OBJECTID, 0);
@@ -218,6 +229,9 @@ struct ObjectMoveSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const Packets::Vec3 *dir() const {
     return GetStruct<const Packets::Vec3 *>(VT_DIR);
   }
+  float yaw() const {
+    return GetField<float>(VT_YAW, 0.0f);
+  }
   float speed() const {
     return GetField<float>(VT_SPEED, 0.0f);
   }
@@ -226,6 +240,7 @@ struct ObjectMoveSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
            VerifyField<Packets::Vec3>(verifier, VT_POS, 4) &&
            VerifyField<Packets::Vec3>(verifier, VT_DIR, 4) &&
+           VerifyField<float>(verifier, VT_YAW, 4) &&
            VerifyField<float>(verifier, VT_SPEED, 4) &&
            verifier.EndTable();
   }
@@ -243,6 +258,9 @@ struct ObjectMoveSCBuilder {
   }
   void add_dir(const Packets::Vec3 *dir) {
     fbb_.AddStruct(ObjectMoveSC::VT_DIR, dir);
+  }
+  void add_yaw(float yaw) {
+    fbb_.AddElement<float>(ObjectMoveSC::VT_YAW, yaw, 0.0f);
   }
   void add_speed(float speed) {
     fbb_.AddElement<float>(ObjectMoveSC::VT_SPEED, speed, 0.0f);
@@ -263,9 +281,11 @@ inline ::flatbuffers::Offset<ObjectMoveSC> CreateObjectMoveSC(
     uint16_t objectId = 0,
     const Packets::Vec3 *pos = nullptr,
     const Packets::Vec3 *dir = nullptr,
+    float yaw = 0.0f,
     float speed = 0.0f) {
   ObjectMoveSCBuilder builder_(_fbb);
   builder_.add_speed(speed);
+  builder_.add_yaw(yaw);
   builder_.add_dir(dir);
   builder_.add_pos(pos);
   builder_.add_objectId(objectId);

@@ -184,9 +184,6 @@
     <ClCompile Include="Item.cpp">
       <Filter>Script\Item&amp;Skill</Filter>
     </ClCompile>
-    <ClCompile Include="PacketProcessFunctions.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="Weapon.cpp">
       <Filter>Attack\Weapon</Filter>
     </ClCompile>
@@ -341,9 +338,6 @@
     </ClInclude>
     <ClInclude Include="Item.h">
       <Filter>Script\Item&amp;Skill</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketProcessFunctions.h">
-      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Weapon.h">
       <Filter>Attack\Weapon</Filter>

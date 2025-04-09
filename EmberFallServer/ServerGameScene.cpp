@@ -7,15 +7,13 @@
 #include "PlayerScript.h"
 #include "ServerFrame.h"
 
-#include "PacketProcessFunctions.h"
+#include "FbsPacketProcessFn.h"
 
 #include "ObjectSpawner.h"
 
 IServerGameScene::IServerGameScene() { }
 
-IServerGameScene::~IServerGameScene() { 
-    mPacketProcessor.Clear();
-}
+IServerGameScene::~IServerGameScene() { }
 
 PlayerList& IServerGameScene::GetPlayers() {
     return mPlayerList;
@@ -62,8 +60,8 @@ void IServerGameScene::ExitPlayer(SessionIdType id) {
 
     mPlayers.erase(it);
 
-    PacketSC::PacketPlayerExit exitPacket{ sizeof(PacketSC::PacketPlayerExit), PacketType::PACKET_PLAYER_EXIT, id };
-    gServerCore->SendAll(&exitPacket);
+    decltype(auto) packetExit = FbsPacketFactory::PlayerExitSC(id);
+    gServerCore->SendAll(packetExit);
 }
 
 PlayScene::PlayScene() { }
@@ -116,30 +114,12 @@ void PlayScene::Init() {
     }
 }
 
-void PlayScene::RegisterPacketProcessFunctions() {
-    mPacketProcessor.RegisterProcessFn(PacketType::PACKET_KEYINPUT,
-        [=](PacketHeader* header) { ProcessPacketKeyInput(header, gServerFrame->GetInputManager()); });
-
-    mPacketProcessor.RegisterProcessFn(PacketType::PACKET_CAMERA,
-        [=](PacketHeader* header) { ProcessPacketCamera(header, mPlayers); });
-
-    mPacketProcessor.RegisterProcessFn(PacketType::PACKET_EXIT,
-        [=](PacketHeader* header) { ProcessPacketCamera(header, mPlayers); });
-
-    mPacketProcessor.RegisterProcessFn(PacketType::PACKET_REQUEST_ATTACK,
-        [=](PacketHeader* header) { ProcessPacketCamera(header, mPlayers); });
-
-    mPacketProcessor.RegisterProcessFn(PacketType::PACKET_SELECT_ROLE,
-        [=](PacketHeader* header) { ProcessPacketCamera(header, mPlayers); });
-
-    mPacketProcessor.RegisterProcessFn(PacketType::PACKET_SELECT_WEAPON,
-        [=](PacketHeader* header) { ProcessPacketCamera(header, mPlayers); });
-}
-
 void PlayScene::Update(const float deltaTime) {
     auto packetHandler = gServerCore->GetPacketHandler();
     auto& buffer = packetHandler->GetBuffer();
-    mPacketProcessor.ProcessPackets(buffer);
+
+    decltype(auto) sharedThis = shared_from_this();
+    ProcessPackets(sharedThis, reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
 
     for (auto& [id, obj] : mPlayers) {
         obj->Update(deltaTime);
@@ -194,6 +174,6 @@ void PlayScene::ExitPlayer(SessionIdType id) {
     mPlayers.erase(it);
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Call Player Exit");
 
-    PacketSC::PacketPlayerExit exitPacket{ sizeof(PacketSC::PacketPlayerExit), PacketType::PACKET_PLAYER_EXIT, id };
-    gServerCore->SendAll(&exitPacket);
+    decltype(auto) packetExit = FbsPacketFactory::PlayerExitSC(id);
+    gServerCore->SendAll(packetExit);
 }

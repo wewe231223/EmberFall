@@ -59,7 +59,7 @@ namespace BT {
         }
 
         void Update(const float deltaTime) {
-            if (AnimationState::DEAD == mOwner->GetOwner()->mAnimationStateMachine.GetCurrState()) {
+            if (Packets::AnimationState_DEAD == mOwner->GetOwner()->mAnimationStateMachine.GetCurrState()) {
                 return;
             }
 

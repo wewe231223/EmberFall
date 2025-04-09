@@ -30,14 +30,17 @@ struct PlayerExitSCBuilder;
 struct PlayerExitCS;
 struct PlayerExitCSBuilder;
 
+struct PlayerInputCS;
+struct PlayerInputCSBuilder;
+
 struct PlayerLookCS;
 struct PlayerLookCSBuilder;
 
 struct PlayerSelectWeaponCS;
 struct PlayerSelectWeaponCSBuilder;
 
-struct PlayerSelectRollCS;
-struct PlayerSelectRollCSBuilder;
+struct PlayerSelectRoleCS;
+struct PlayerSelectRoleCSBuilder;
 
 struct PacketLatencyCS;
 struct PacketLatencyCSBuilder;
@@ -211,6 +214,57 @@ inline ::flatbuffers::Offset<PlayerExitCS> CreatePlayerExitCS(
   return builder_.Finish();
 }
 
+struct PlayerInputCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PlayerInputCSBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_KEY = 4,
+    VT_DOWN = 6
+  };
+  uint8_t key() const {
+    return GetField<uint8_t>(VT_KEY, 0);
+  }
+  bool down() const {
+    return GetField<uint8_t>(VT_DOWN, 0) != 0;
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_KEY, 1) &&
+           VerifyField<uint8_t>(verifier, VT_DOWN, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct PlayerInputCSBuilder {
+  typedef PlayerInputCS Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_key(uint8_t key) {
+    fbb_.AddElement<uint8_t>(PlayerInputCS::VT_KEY, key, 0);
+  }
+  void add_down(bool down) {
+    fbb_.AddElement<uint8_t>(PlayerInputCS::VT_DOWN, static_cast<uint8_t>(down), 0);
+  }
+  explicit PlayerInputCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<PlayerInputCS> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<PlayerInputCS>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<PlayerInputCS> CreatePlayerInputCS(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint8_t key = 0,
+    bool down = false) {
+  PlayerInputCSBuilder builder_(_fbb);
+  builder_.add_down(down);
+  builder_.add_key(key);
+  return builder_.Finish();
+}
+
 struct PlayerLookCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PlayerLookCSBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
@@ -293,44 +347,44 @@ inline ::flatbuffers::Offset<PlayerSelectWeaponCS> CreatePlayerSelectWeaponCS(
   return builder_.Finish();
 }
 
-struct PlayerSelectRollCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef PlayerSelectRollCSBuilder Builder;
+struct PlayerSelectRoleCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PlayerSelectRoleCSBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ROLL = 4
+    VT_ROLE = 4
   };
-  Packets::PlayerRoll roll() const {
-    return static_cast<Packets::PlayerRoll>(GetField<uint8_t>(VT_ROLL, 0));
+  Packets::PlayerRole role() const {
+    return static_cast<Packets::PlayerRole>(GetField<uint8_t>(VT_ROLE, 0));
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_ROLL, 1) &&
+           VerifyField<uint8_t>(verifier, VT_ROLE, 1) &&
            verifier.EndTable();
   }
 };
 
-struct PlayerSelectRollCSBuilder {
-  typedef PlayerSelectRollCS Table;
+struct PlayerSelectRoleCSBuilder {
+  typedef PlayerSelectRoleCS Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_roll(Packets::PlayerRoll roll) {
-    fbb_.AddElement<uint8_t>(PlayerSelectRollCS::VT_ROLL, static_cast<uint8_t>(roll), 0);
+  void add_role(Packets::PlayerRole role) {
+    fbb_.AddElement<uint8_t>(PlayerSelectRoleCS::VT_ROLE, static_cast<uint8_t>(role), 0);
   }
-  explicit PlayerSelectRollCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+  explicit PlayerSelectRoleCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ::flatbuffers::Offset<PlayerSelectRollCS> Finish() {
+  ::flatbuffers::Offset<PlayerSelectRoleCS> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<PlayerSelectRollCS>(end);
+    auto o = ::flatbuffers::Offset<PlayerSelectRoleCS>(end);
     return o;
   }
 };
 
-inline ::flatbuffers::Offset<PlayerSelectRollCS> CreatePlayerSelectRollCS(
+inline ::flatbuffers::Offset<PlayerSelectRoleCS> CreatePlayerSelectRoleCS(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    Packets::PlayerRoll roll = Packets::PlayerRoll_HUMAN) {
-  PlayerSelectRollCSBuilder builder_(_fbb);
-  builder_.add_roll(roll);
+    Packets::PlayerRole role = Packets::PlayerRole_HUMAN) {
+  PlayerSelectRoleCSBuilder builder_(_fbb);
+  builder_.add_role(role);
   return builder_.Finish();
 }
 

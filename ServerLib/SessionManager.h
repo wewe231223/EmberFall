@@ -52,10 +52,7 @@ public:
 
     std::shared_ptr<Session> GetSession(SessionIdType id);
 
-    void Send(SessionIdType to, void* packet);
     void Send(SessionIdType to, OverlappedSend* const overlappedSend);
-    void SendAll(void* packet);
-    void SendAll(void* data, size_t size);
     void SendAll(OverlappedSend* const overlappedSend);
 
 private:

@@ -45,7 +45,7 @@ public:
     float HP() const;
     ObjectTag GetTag() const;
     NetworkObjectIdType GetId() const;
-    EntityType GetEntityType() const;
+    Packets::EntityType GetEntityType() const;
 
     std::shared_ptr<Transform> GetTransform() const;
     std::shared_ptr<Physics> GetPhysics() const;
@@ -68,14 +68,14 @@ public:
     void SetActive(bool active);
     void SetInteractable(bool interactable);
     void SetTag(ObjectTag tag);
-    void SetEntityType(EntityType type);
+    void SetEntityType(Packets::EntityType type);
 
     void SetCollider(std::shared_ptr<Collider> collider);
     void DisablePhysics();
 
     void Reset();
 
-    void ChangeWeapon(Weapon weapon);
+    void ChangeWeapon(Packets::Weapon weapon);
     void ReduceHealth(float hp);
     void RestoreHealth(float hp);
 
@@ -130,7 +130,7 @@ public:
 private:
     bool mActive{ true };
     bool mInteractable{ false };
-    EntityType mEntityType{ EntityType::ENV };
+    Packets::EntityType mEntityType{ Packets::EntityType_ENV };
     ObjectTag mTag{ ObjectTag::NONE };
 
     float mHP{ };

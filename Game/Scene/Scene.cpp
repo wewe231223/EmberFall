@@ -540,9 +540,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	v.position = DirectX::XMFLOAT3(10.f, 30.f, 10.f);
 	test2 = mParticleManager->CreateEmitParticle(commandList, v);
-
-
-	Scene::BuildPacketProcessor();
 }
 
 Scene::~Scene() {
@@ -638,38 +635,21 @@ void Scene::SendNetwork() {
 
 	for (const auto& key : std::views::iota(static_cast<uint8_t>(0), static_cast<uint8_t>(255))) {
 		if (keyTracker.IsKeyPressed(static_cast<DirectX::Keyboard::Keys>(key)) or keyTracker.IsKeyReleased(static_cast<DirectX::Keyboard::Keys>(key))) {
+
 			if (keyTracker.IsKeyPressed(static_cast<DirectX::Keyboard::Keys>(key))) {
-				packetInput.key = key;
-				packetInput.down = true;
+				decltype(auto) packet = FbsPacketFactory::PlayerInputCS(id, key, true);
+				gClientCore->Send(packet);
 			}
 			else if (keyTracker.IsKeyReleased(static_cast<DirectX::Keyboard::Keys>(key))) {
-				packetInput.key = key;
-				packetInput.down = false;
+				decltype(auto) packet = FbsPacketFactory::PlayerInputCS(id, key, false);
+				gClientCore->Send(packet);
 			}
-			gClientCore->Send(&packetInput); 
+
 		}
 	}
 
-	PacketCS::PacketCamera packetCamera{ sizeof(PacketCS::PacketCamera), PacketType::PACKET_CAMERA, id };
-	packetCamera.look = mCamera.GetTransform().GetForward();
-	packetCamera.position = mCamera.GetTransform().GetPosition();
-
-	gClientCore->Send(&packetCamera);
-}
-
-void Scene::BuildPacketProcessor() {
-	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_PROTOCOL_VERSION, [this](PacketHeader* header) { ProcessPacketProtocolVersion(header); });
-	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_NOTIFY_ID, [this](PacketHeader* header) { ProcessNotifyId(header); });
-	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_OBJECT, [this](PacketHeader* header) { ProcessObjectPacket(header); });
-	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_OBJECT_APPEARED, [this](PacketHeader* header) { ProcessObjectAppeared(header); });
-	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_OBJECT_DISAPPEARED, [this](PacketHeader* header) { ProcessObjectDisappeared(header); });
-	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_OBJECT_DEAD, [this](PacketHeader* header) { ProcessObjectDead(header); });
-	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_RESTORE_HEALTH, [this](PacketHeader* header) { ProcessRestoreHP(header); });
-	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_USE_ITEM, [this](PacketHeader* header) { ProcessUseItem(header); });
-	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_PLAYER_EXIT, [this](PacketHeader* header) { ProcessPlayerExit(header); });
-	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_ATTACKED, [this](PacketHeader* header) { ProcessObjectAttacked(header); });
-	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_ACQUIRED_ITEM, [this](PacketHeader* header) { ProcessAcquiredItem(header); });
-	mPacketProcessor.RegisterProcessFn(PacketType::PACKET_ANIM_STATE, [this](PacketHeader* header) { ProcessPacketAnimation(header); });
+	decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(id, mCamera.GetTransform().GetForward());
+	gClientCore->Send(packetCamera);
 }
 
 void Scene::BuildSendKeyList() {

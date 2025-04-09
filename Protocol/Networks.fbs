@@ -29,6 +29,11 @@ table PlayerExitSC {
 
 table PlayerExitCS { }
 
+table PlayerInputCS {
+	key: ubyte;
+	down: bool;
+}
+
 table PlayerLookCS {
 	look: Vec3;
 }
@@ -38,8 +43,8 @@ table PlayerSelectWeaponCS {
     weapon: Weapon;
 }
 
-table PlayerSelectRollCS { 
-	roll: PlayerRoll;
+table PlayerSelectRoleCS { 
+	role: PlayerRole;
 }
 
 //////////////////////////////////////////////////////////////

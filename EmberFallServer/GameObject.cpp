@@ -7,7 +7,7 @@
 
 GameObject::GameObject(std::shared_ptr<IServerGameScene> gameScene)
     : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mGameScene{ gameScene } {
-    mWeaponSystem.SetWeapon(Weapon::NONE);
+    mWeaponSystem.SetWeapon(Packets::Weapon_SWORD);
     mPhysics->SetTransform(mTransform);
 }
 
@@ -77,7 +77,7 @@ ObjectTag GameObject::GetTag() const {
     return mTag;
 }
 
-EntityType GameObject::GetEntityType() const {
+Packets::EntityType GameObject::GetEntityType() const {
     return mEntityType;
 }
 
@@ -102,7 +102,7 @@ void GameObject::SetTag(ObjectTag tag) {
     mTag = tag;
 }
 
-void GameObject::SetEntityType(EntityType type) {
+void GameObject::SetEntityType(Packets::EntityType type) {
     mEntityType = type;
 }
 
@@ -110,7 +110,7 @@ void GameObject::SetCollider(std::shared_ptr<Collider> collider) {
     mCollider = collider;
 }
 
-void GameObject::ChangeWeapon(Weapon weapon) {
+void GameObject::ChangeWeapon(Packets::Weapon weapon) {
     mWeaponSystem.SetWeapon(weapon);
 }
 
@@ -121,7 +121,7 @@ void GameObject::DisablePhysics() {
 void GameObject::Reset() {
     ClearComponents();
     SetTag(ObjectTag::NONE);
-    SetEntityType(EntityType::ENV);
+    SetEntityType(Packets::EntityType_ENV);
     mInteractable = false;
     mHP = 0.0f;
     mCollider.reset();
@@ -221,7 +221,7 @@ void GameObject::ClearComponents() {
 void GameObject::Attack() {
     auto changable = mAnimationStateMachine.IsChangable();
     if (changable) {
-        mAnimationStateMachine.ChangeState(AnimationState::ATTACK);
+        mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACK);
         auto extentsZ = SimpleMath::Vector3::Forward * mCollider->GetForwardExtents();
         mWeaponSystem.Attack(mTransform->GetPosition() + extentsZ, mTransform->Forward());
     }

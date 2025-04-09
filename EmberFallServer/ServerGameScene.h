@@ -63,7 +63,6 @@ public:
 
     virtual void DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerEvent>& eventQueue);
 
-    virtual void RegisterPacketProcessFunctions() abstract;
     virtual void Update(const float deltaTime) abstract;
     virtual void LateUpdate(const float deltaTime) abstract;
 
@@ -71,7 +70,6 @@ public:
     virtual void ExitPlayer(SessionIdType id);
 
 protected:
-    ServerPacketProcessor mPacketProcessor{ };
     PlayerList mPlayerList{ };
     PlayerMap mPlayers{ };
 };
@@ -91,7 +89,6 @@ public:
 
     virtual void Init() override;
 
-    virtual void RegisterPacketProcessFunctions() override;
     virtual void Update(const float deltaTime) override;
     virtual void LateUpdate(const float deltaTime) override;
 

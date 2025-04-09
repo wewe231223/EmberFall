@@ -12,8 +12,8 @@
 #include "../Game/GameObject/EquipmentObject.h"
 #include "../MeshLoader/Loader/TerrainLoader.h"
 #include "../Game/Scene/Player.h"
-#include "../ServerLib/PacketProcessor.h"
 #include "../ServerLib/PacketHandler.h"
+
 class Scene {
 public:
 	Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList ,std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation); 
@@ -24,7 +24,6 @@ public:
 	void SendNetwork(); 
 
 private:
-	void BuildPacketProcessor(); 
 	void BuildSendKeyList(); 
 
 	void BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList); 

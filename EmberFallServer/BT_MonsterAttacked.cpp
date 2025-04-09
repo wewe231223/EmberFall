@@ -3,7 +3,7 @@
 
 float BT::BT_MonsterAttacked::CalculateDecideValue(const std::shared_ptr<Script>& ownerScript) const {
     auto state = ownerScript->GetOwner()->mAnimationStateMachine.GetCurrState();
-    if (AnimationState::ATTACKED == state) {
+    if (Packets::AnimationState_ATTACKED == state) {
         return 1.5f;
     }
 

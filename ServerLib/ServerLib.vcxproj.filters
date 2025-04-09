@@ -85,17 +85,8 @@
     <ClCompile Include="GameProtocol.cpp">
       <Filter>Common\Protocol</Filter>
     </ClCompile>
-    <ClCompile Include="Protocol.cpp">
-      <Filter>Common\Protocol</Filter>
-    </ClCompile>
     <ClCompile Include="MemoryPool.cpp">
       <Filter>Common\Memory</Filter>
-    </ClCompile>
-    <ClCompile Include="PacketFactory.cpp">
-      <Filter>Common\Packets</Filter>
-    </ClCompile>
-    <ClCompile Include="PacketProcessor.cpp">
-      <Filter>Common\Packets</Filter>
     </ClCompile>
     <ClCompile Include="OverlappedEx.cpp">
       <Filter>Common\Packets</Filter>
@@ -103,11 +94,11 @@
     <ClCompile Include="SendBuffers.cpp">
       <Filter>Common\Packets</Filter>
     </ClCompile>
-    <ClCompile Include="ProtocolEnums.cpp">
-      <Filter>Common\Protocol</Filter>
-    </ClCompile>
     <ClCompile Include="FbsPacketFactory.cpp">
       <Filter>Fbs</Filter>
+    </ClCompile>
+    <ClCompile Include="Protocol.cpp">
+      <Filter>Common\Protocol</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -162,17 +153,8 @@
     <ClInclude Include="GameProtocol.h">
       <Filter>Common\Protocol</Filter>
     </ClInclude>
-    <ClInclude Include="Protocol.h">
-      <Filter>Common\Protocol</Filter>
-    </ClInclude>
     <ClInclude Include="MemoryPool.h">
       <Filter>Common\Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketFactory.h">
-      <Filter>Common\Packets</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketProcessor.h">
-      <Filter>Common\Packets</Filter>
     </ClInclude>
     <ClInclude Include="OverlappedEx.h">
       <Filter>Common\Packets</Filter>
@@ -180,11 +162,11 @@
     <ClInclude Include="SendBuffers.h">
       <Filter>Common\Packets</Filter>
     </ClInclude>
-    <ClInclude Include="ProtocolEnums.h">
-      <Filter>Common\Protocol</Filter>
-    </ClInclude>
     <ClInclude Include="FbsPacketFactory.h">
       <Filter>Fbs</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
+      <Filter>Common\Protocol</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

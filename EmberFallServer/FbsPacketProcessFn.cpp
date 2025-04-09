@@ -36,10 +36,10 @@ inline const uint8_t* ProcessPacket(std::shared_ptr<IServerGameScene>& gameScene
         break;
     }
 
-    case Packets::PacketTypes::PacketTypes_PT_PLAYER_SELECT_ROLL_CS:
+    case Packets::PacketTypes::PacketTypes_PT_PLAYER_SELECT_ROLE_CS:
     {
-        decltype(auto) packetRoll = FbsPacketFactory::GetDataPtrCS<Packets::PlayerSelectRollCS>(buffer);
-        ProcessPlayerSelectRollCS(packetRoll, sender);
+        decltype(auto) packetRoll = FbsPacketFactory::GetDataPtrCS<Packets::PlayerSelectRoleCS>(buffer);
+        ProcessPlayerSelectRoleCS(packetRoll, sender);
         break;
     }
 
@@ -92,7 +92,7 @@ inline void ProcessPlayerSelectWeaponCS(const Packets::PlayerSelectWeaponCS* con
     //player->ChangeWeapon(weapon->weapon());
 }
 
-inline void ProcessPlayerSelectRollCS(const Packets::PlayerSelectRollCS* const roll, std::shared_ptr<GameObject>& player) {
+inline void ProcessPlayerSelectRoleCS(const Packets::PlayerSelectRoleCS* const roll, std::shared_ptr<GameObject>& player) {
     // TODO
 }
 

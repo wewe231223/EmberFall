@@ -20,14 +20,9 @@ std::shared_ptr<PacketHandler> INetworkCore::GetPacketHandler() const {
     return mPacketHandler;
 }
 
-std::shared_ptr<SendBufferFactory> INetworkCore::GetSendBufferFactory() const {
-    return mSendBufferFactory;
-}
-
 void INetworkCore::Init() {
     mIocpCore = std::make_shared<IOCPCore>(shared_from_this());
     mPacketHandler = std::make_shared<PacketHandler>();
-    mSendBufferFactory = std::make_shared<SendBufferFactory>();
 }
 
 bool INetworkCore::PQCS(INT32 transfferdBytes, ULONG_PTR completionKey, OverlappedEx* overlapped) {
@@ -86,20 +81,8 @@ void ServerCore::End() {
     ::WSACleanup();
 }
 
-void ServerCore::Send(SessionIdType to, void* packet) {
-    mSessionManager->Send(to, packet);
-}
-
 void ServerCore::Send(SessionIdType to, OverlappedSend* overlappedSend) {
     mSessionManager->Send(to, overlappedSend);
-}
-
-void ServerCore::SendAll(void* packet) {
-    mSessionManager->SendAll(packet);
-}
-
-void ServerCore::SendAll(void* data, size_t size) {
-    mSessionManager->SendAll(data, size);
 }
 
 void ServerCore::SendAll(OverlappedSend* const overlappedSend) {
@@ -155,14 +138,6 @@ bool ClientCore::IsClosedSession() const {
 
 OverlappedConnect* ClientCore::GetOverlappedConnect() {
     return &mOverlappedConnect;
-}
-
-void ClientCore::Send(void* packet) {
-    mSession->RegisterSend(packet);
-}
-
-void ClientCore::Send(void* data, size_t dataSize) {
-    mSession->RegisterSend(data, dataSize);
 }
 
 void ClientCore::Send(OverlappedSend* const overlappedSend) {
