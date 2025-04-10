@@ -213,7 +213,7 @@ void Scene::ProcessObjectMove(const uint8_t* buffer) {
 
 
 			mPlayerIndexmap[data->objectId()]->GetTransform().SetDirection(FbsPacketFactory::GetVector3(data->dir()));
-			mPlayerIndexmap[data->objectId()]->GetTransform().SetVelocity(data->speed());
+			mPlayerIndexmap[data->objectId()]->GetTransform().SetSpeed(data->speed());
 
 			if (data->objectId() == gClientCore->GetSessionId()) {
 				return;
@@ -228,7 +228,7 @@ void Scene::ProcessObjectMove(const uint8_t* buffer) {
 		if (mGameObjectMap.contains(data->objectId())) {
 			mGameObjectMap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
 			mGameObjectMap[data->objectId()]->GetTransform().SetDirection(FbsPacketFactory::GetVector3(data->dir()));
-			mGameObjectMap[data->objectId()]->GetTransform().SetVelocity(data->speed());
+			mGameObjectMap[data->objectId()]->GetTransform().SetSpeed(data->speed());
 			auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
 			euler.y = data->yaw();
 			mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);

@@ -74,8 +74,8 @@ void Transform::SetPosition(const SimpleMath::Vector3& pos) {
 	mPosition = pos;
 }
 
-void Transform::SetVelocity(float velocity) {
-	mVelocity = velocity; 
+void Transform::SetSpeed(float speed) {
+	mSpeed = speed; 
 }
 
 void Transform::SetDirection(const SimpleMath::Vector3& dir) {
@@ -128,7 +128,7 @@ void Transform::SetLocalTransform(const SimpleMath::Matrix& localMatrix) {
 }
 
 void Transform::Update(float deltaTime) {
-
+	mPosition += mDirection * mSpeed * deltaTime;
 }
 
 void Transform::UpdateWorldMatrix() {
