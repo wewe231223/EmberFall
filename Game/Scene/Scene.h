@@ -24,8 +24,6 @@ public:
 	void SendNetwork(); 
 
 private:
-	void BuildSendKeyList(); 
-
 	void BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList); 
 	void BuildMaterial();
 	void BuildShader(ComPtr<ID3D12Device> device);
@@ -40,11 +38,6 @@ private:
 
 	void BuildMonsterType1AnimationController();
 	void BuildDemonAnimationController(); 
-
-	void SetInputBaseAnimMode(); 
-	void SetInputArcherMode(); 
-	void SetInputSwordManMode();
-	void SetInputMageMode();
 private:
 	void ProcessPackets(const uint8_t* buffer, size_t size); 
 	const uint8_t* ProcessPacket(const uint8_t* buffer);

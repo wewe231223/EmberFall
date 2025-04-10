@@ -15,258 +15,6 @@
 #include "../ServerLib/GameProtocol.h"
 
 #pragma region PacketProcessFn 
-//void Scene::ProcessNotifyId(PacketHeader* header) {
-//	gClientCore->InitSessionId(header->id);
-//	mNetworkInfoText->GetText() = std::format(L"My Session ID : {}", header->id);
-//}
-//
-//void Scene::ProcessPacketProtocolVersion(PacketHeader* header) {
-//	auto protocolVersion = reinterpret_cast<PacketProtocolVersion*>(header);
-//	if (PROTOCOL_VERSION_MAJOR != protocolVersion->major or
-//		PROTOCOL_VERSION_MINOR != protocolVersion->minor) {
-//
-//		gClientCore->CloseSession();
-//
-//		MessageBox(nullptr, L"ERROR!!!!!\nProtocolVersion Mismatching", L"", MB_OK | MB_ICONERROR);
-//		::exit(0);
-//	}
-//}	
-//
-//// Deprecated 
-//void Scene::ProcessPlayerPacket(PacketHeader* header) {
-//
-//}
-//
-//void Scene::ProcessObjectPacket(PacketHeader* header) {
-//	auto packet = reinterpret_cast<PacketSC::PacketObject*>(header);
-//	
-//	// 플레이어 영역에 해당한다면
-//	if (packet->objId < OBJECT_ID_START) {
-//		if (mPlayerIndexmap.contains(packet->objId)) {
-//			mPlayerIndexmap[packet->objId]->GetTransform().GetPosition() = packet->position;
-//
-//			if (packet->objId != gClientCore->GetSessionId()) {
-//				auto euler = mPlayerIndexmap[packet->objId]->GetTransform().GetRotation().ToEuler();
-//				euler.y = packet->rotationYaw;
-//				mPlayerIndexmap[packet->objId]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
-//			}
-//
-//		}
-//	}
-//	// 그게 아니라면 기타 게임 오브젝트이다. 
-//	else {
-//		if (mGameObjectMap.contains(packet->objId)) {
-//			mGameObjectMap[packet->objId]->GetTransform().GetPosition() = packet->position;
-//			auto euler = mGameObjectMap[packet->objId]->GetTransform().GetRotation().ToEuler();
-//			euler.y = packet->rotationYaw;
-//			mGameObjectMap[packet->objId]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
-//		}
-//
-//	}
-//}
-//
-//void Scene::ProcessObjectDead(PacketHeader* header) {
-//
-//}
-//
-//void Scene::ProcessObjectAppeared(PacketHeader* header) {
-//	auto FindNextPlayerLoc = [this]() {
-//		for (auto iter = mPlayers.begin(); iter != mPlayers.end(); ++iter) {
-//			if (not iter->GetActiveState()) {
-//				return iter;
-//			}
-//		}
-//		return mPlayers.end();
-//		};
-//
-//	auto FindNextObjectLoc = [this]() {
-//		for (auto iter = mGameObjects.begin(); iter != mGameObjects.end(); ++iter) {
-//			if (not *iter) {
-//				return iter;
-//			}
-//		}
-//		return mGameObjects.end();
-//		};
-//
-//
-//	auto packet = reinterpret_cast<PacketSC::PacketObjectAppeared*>(header);
-//	// 플레이어 등장 
-//	if (packet->objId < OBJECT_ID_START) {
-//		// 내 플레이어 등장 
-//		if (packet->objId == gClientCore->GetSessionId()) {
-//			// 플레이어 인스턴스가 없다면 
-//			if (not mPlayerIndexmap.contains(packet->objId)) {
-//
-//				auto nextLoc = FindNextPlayerLoc();
-//
-//				if (nextLoc == mPlayers.end()) {
-//					Crash("There is no more space for My Player!!");
-//				}
-//
-//				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-//				mPlayerIndexmap[packet->objId] = &(*nextLoc);
-//				mMyPlayer = &(*nextLoc);
-//
-//				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
-//				mMyPlayer->SetMyPlayer();
-//			
-//				mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
-//			    //mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
-//				mCameraMode->Enter();
-//
-//				//Scene::SetInputBaseAnimMode();
-//
-//
-//			}
-//			else {
-//				if (mPlayerIndexmap[packet->objId] != nullptr) {
-//					mPlayerIndexmap[packet->objId]->SetActiveState(true);
-//				}
-//			}
-//		}
-//		// 다른 플레이어 등장 
-//		else {
-//			// 그 플레이어 인스턴스가 없다면  
-//			if (not mPlayerIndexmap.contains(packet->objId)) {
-//				auto nextLoc = FindNextPlayerLoc();
-//				if (nextLoc == mPlayers.end()) { 
-//					Crash("There is no more space for Other Player!!"); 
-//				}
-//
-//				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-//				mPlayerIndexmap[packet->objId] = &(*nextLoc);
-//
-//			}
-//			else {
-//				if (mPlayerIndexmap[packet->objId] != nullptr) {
-//					mPlayerIndexmap[packet->objId]->SetActiveState(true);
-//				}
-//			}
-//		}
-//	}
-//	// 이외 오브젝트 등장 
-//	else {
-//		if (not mGameObjectMap.contains(packet->objId)) {
-//			auto nextLoc = FindNextObjectLoc();
-//			if (nextLoc == mGameObjects.end()) {
-//				Crash("There is no more space for Other Object!!");
-//			}
-//
-//
-//
-//			switch (packet->entity) {
-//			case MONSTER1:
-//			case MONSTER2:
-//			case MONSTER3:
-//			{
-//				*nextLoc = GameObject{};
-//				mGameObjectMap[packet->objId] = &(*nextLoc);
-//
-//				nextLoc->mShader = mShaderMap["SkinnedShader"].get();
-//				nextLoc->mMesh = mMeshMap["MonsterType1"].get();
-//				nextLoc->mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
-//				nextLoc->mGraphController = mMonsterType1AnimationController;
-//				nextLoc->mAnimated = true;
-//				nextLoc->SetActiveState(true);
-//
-//				nextLoc->GetTransform().Scaling(0.3f, 0.3f, 0.3f);
-//				nextLoc->GetTransform().SetPosition(packet->position);
-//			}
-//				break;
-//			case CORRUPTED_GEM:
-//			{
-//				*nextLoc = GameObject{};
-//				mGameObjectMap[packet->objId] = &(*nextLoc);
-//				nextLoc->mShader = mShaderMap["StandardShader"].get();
-//				nextLoc->mMesh = mMeshMap["CorruptedGem"].get();
-//				nextLoc->mMaterial = mMaterialManager->GetMaterial("CorruptedGemMaterial");
-//				nextLoc->SetActiveState(true);
-//
-//				nextLoc->GetTransform().SetPosition(packet->position);
-//			}
-//				break;
-//			default:
-//			{
-//				*nextLoc = GameObject{};
-//				mGameObjectMap[packet->objId] = &(*nextLoc);
-//				nextLoc->mShader = mShaderMap["StandardShader"].get();
-//				nextLoc->mMesh = mMeshMap["Cube"].get();
-//				nextLoc->mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
-//				nextLoc->SetActiveState(true);
-//
-//				nextLoc->GetTransform().SetPosition(packet->position);
-//			}
-//				break;
-//			}
-//		}
-//		else {
-//			if (mGameObjectMap[packet->objId] != nullptr) {
-//				mGameObjectMap[packet->objId]->SetActiveState(true);
-//			}
-//		}
-//
-//	}
-//}
-//
-//void Scene::ProcessObjectDisappeared(PacketHeader* header) {
-//	auto packet = reinterpret_cast<PacketSC::PacketObjectDisappeared*>(header);
-//
-//	if (packet->objId < OBJECT_ID_START) {
-//
-//		if (packet->objId == gClientCore->GetSessionId()) {
-//			return; 
-//		}
-//
-//		if (mPlayerIndexmap.contains(packet->objId)) {
-//			mPlayerIndexmap[packet->objId]->SetActiveState(false);
-//		}
-//	}
-//	else {
-//		if (mGameObjectMap.contains(packet->objId)) {
-//			mGameObjectMap[packet->objId]->SetActiveState(false);
-//		}
-//	}
-//}
-//
-//void Scene::ProcessPlayerExit(PacketHeader* header) {
-//	if (mPlayerIndexmap.contains(header->id)) {
-//		mPlayerIndexmap[header->id]->SetActiveState(false);
-//		mPlayerIndexmap.erase(header->id);
-//	}
-//}
-//
-//void Scene::ProcessAcquiredItem(PacketHeader* header) {
-//
-//}
-//
-//void Scene::ProcessObjectAttacked(PacketHeader* header) {
-//
-//}
-//
-//void Scene::ProcessUseItem(PacketHeader* header) {
-//
-//}
-//
-//void Scene::ProcessRestoreHP(PacketHeader* header) {
-//
-//}
-//void Scene::ProcessPacketAnimation(PacketHeader* header) {
-//	auto packet = reinterpret_cast<PacketSC::PacketAnimationState*>(header);
-//	// 플레이어인 경우 
-//	if (packet->objId < OBJECT_ID_START) {
-//		if (mPlayerIndexmap.contains(packet->objId)) {
-//			mPlayerIndexmap[packet->objId]->GetBoneMaskController().Transition(static_cast<size_t>(packet->animState), 0.09);
-//		}
-//	}
-//	else {
-//		if (mGameObjectMap.contains(packet->objId)) {
-//			mGameObjectMap[packet->objId]->GetAnimationController().Transition(static_cast<size_t>(packet->animState), 0.09);
-//		}
-//	}
-//
-//}
-
-
 void Scene::ProcessPacketProtocolVersion(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ProtocolVersionSC>(buffer);
 	if (PROTOCOL_VERSION_MAJOR != data->major() or
@@ -284,11 +32,9 @@ void Scene::ProcessNotifyId(const uint8_t* buffer) {
 
 void Scene::ProcessPlayerExit(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::PlayerExitSC>(buffer);
-	
 	if (mPlayerIndexmap.contains(data->playerId())) {
 		mPlayerIndexmap[data->playerId()]->SetActiveState(false);
 	}
-
 }
 
 void Scene::ProcessLatency(const uint8_t* buffer) {
@@ -344,9 +90,6 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
 				mCameraMode->Enter();
-		
-				//Scene::SetInputBaseAnimMode();
-		
 		
 			}
 			else {
@@ -496,7 +239,7 @@ void Scene::ProcessObjectMove(const uint8_t* buffer) {
 
 void Scene::ProcessObjectAttacked(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAttackedSC>(buffer);
-
+	// HP 깍기 
 }
 
 void Scene::ProcessPacketAnimation(const uint8_t* buffer) {
@@ -515,6 +258,7 @@ void Scene::ProcessPacketAnimation(const uint8_t* buffer) {
 
 }
 
+// 보석 상호작용 전용 패킷 처리 
 void Scene::ProcessGemInteraction(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GemInteractSC>(buffer);
 }
@@ -528,6 +272,7 @@ void Scene::ProcessGemDestroyed(const uint8_t* buffer) {
 
 }
 
+// 아이템 
 void Scene::ProcessUseItem(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::UseItemSC>(buffer);
 
@@ -539,6 +284,7 @@ void Scene::ProcessAcquiredItem(const uint8_t* buffer) {
 
 }
 
+// 원거리
 void Scene::ProcessFireProjectile(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::FireProjectileSC>(buffer);
 
@@ -1042,13 +788,6 @@ void Scene::SendNetwork() {
 	gClientCore->Send(packetCamera);
 }
 
-void Scene::BuildSendKeyList() {
-	mSendKeyList.emplace_back(DirectX::Keyboard::Keys::W);
-	mSendKeyList.emplace_back(DirectX::Keyboard::Keys::A);
-	mSendKeyList.emplace_back(DirectX::Keyboard::Keys::S);
-	mSendKeyList.emplace_back(DirectX::Keyboard::Keys::D);
-}
-
 void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	MeshLoader Loader{};
 	MeshData data{}; 
@@ -1432,12 +1171,12 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 	baseMountain.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
 	baseMountain.mCollider = mColliderMap["Mountain"];
 
-	GameObject baseMountain1 = baseMountain.Clone();
+	GameObject baseMountain1;
 	baseMountain1.mMesh = mMeshMap["Mountain1"].get();
 	baseMountain1.mMaterial = mMaterialManager->GetMaterial("Mountain1Material");
 	baseMountain1.mCollider = mColliderMap["Mountain1"];
 
-	GameObject baseMountain2 = baseMountain.Clone();
+	GameObject baseMountain2;
 	baseMountain2.mMesh = mMeshMap["Mountain3"].get();
 	baseMountain2.mMaterial = mMaterialManager->GetMaterial("Mountain3Material");
 	baseMountain2.mCollider = mColliderMap["Mountain3"];
@@ -1941,112 +1680,3 @@ void Scene::BuildDemonAnimationController() {
 		loader.GetClip(10) // Walk2 
 	};
 }
-
-
-void Scene::SetInputBaseAnimMode() {
-	Input.EraseCallBack(mInputSign);
-
-	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
-
-		if (Input.GetKeyboardState().S) {
-			mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
-		}
-		else {
-			mMyPlayer->GetBoneMaskController().SetInt("Move", 1);
-		}
-
-		});
-
-	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
-		});
-
-	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::S, mInputSign, [this]() {
-
-		if (Input.GetKeyboardState().W)
-			mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
-		else {
-			mMyPlayer->GetBoneMaskController().SetInt("Move", 2);
-		}
-
-		});
-
-	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::S, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
-		});
-
-	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
-
-		if (Input.GetKeyboardState().D)
-			mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
-		else {
-			mMyPlayer->GetBoneMaskController().SetInt("Move", 3);
-		}
-
-		});
-
-	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
-		});
-
-	Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
-
-		if (Input.GetKeyboardState().A)
-			mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
-		else {
-			mMyPlayer->GetBoneMaskController().SetInt("Move", 4);
-		}
-	
-		});
-
-	Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetInt("Move", 0);
-		});
-
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::Space, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetTrigger("Jump");
-		});
-
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::P, mInputSign, [this]() {
-		mMyPlayer->GetBoneMaskController().SetTrigger("Attack");
-		});
-
-}
-
-void Scene::SetInputArcherMode() {
-
-	//Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
-	//	mMyPlayer->GetBoneMaskController().SetBool("Move", true);
-	//	});
-
-	//Input.RegisterKeyReleaseCallBack(DirectX::Keyboard::Keys::W, mInputSign, [this]() {
-	//	mMyPlayer->GetBoneMaskController().SetBool("Move", false);
-	//	});
-
-
-	//Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::A, mInputSign, [this]() {
-	//	});
-
-	//Input.RegisterKeyPressCallBack(DirectX::Keyboard::Keys::D, mInputSign, [this]() {
-	//	});
-	//
-
-	//Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F, mInputSign, [this]() {
-	//	mMyPlayer->GetBoneMaskController().SetTrigger("Attack");
-	//	});
-}
-
-void Scene::SetInputSwordManMode() {
-
-}
-
-void Scene::SetInputMageMode() {
-
-}
-
-
-
-
-
-
-
