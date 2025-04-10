@@ -90,7 +90,6 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
 				mCameraMode->Enter();
-		
 			}
 			else {
 				if (mPlayerIndexmap[data->objectId()] != nullptr) {
@@ -1173,11 +1172,13 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 
 	GameObject baseMountain1;
 	baseMountain1.mMesh = mMeshMap["Mountain1"].get();
+	baseMountain1.mShader = mShaderMap["StandardShader"].get();
 	baseMountain1.mMaterial = mMaterialManager->GetMaterial("Mountain1Material");
 	baseMountain1.mCollider = mColliderMap["Mountain1"];
 
 	GameObject baseMountain2;
 	baseMountain2.mMesh = mMeshMap["Mountain3"].get();
+	baseMountain2.mShader = mShaderMap["StandardShader"].get();
 	baseMountain2.mMaterial = mMaterialManager->GetMaterial("Mountain3Material");
 	baseMountain2.mCollider = mColliderMap["Mountain3"];
 
