@@ -138,7 +138,7 @@ OverlappedSend* FbsPacketFactory::ObjectAttackedSC(NetworkObjectIdType id, float
 OverlappedSend* FbsPacketFactory::ObjectAnimationChangedSC(NetworkObjectIdType id, Packets::AnimationState animation) {
     flatbuffers::FlatBufferBuilder builder{ };
 
-    auto offset = Packets::CreateObjectAnimationChangedSC(builder, animation);
+    auto offset = Packets::CreateObjectAnimationChangedSC(builder, id, animation);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();
