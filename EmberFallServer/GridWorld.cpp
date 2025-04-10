@@ -31,7 +31,7 @@ void GridWorld::Update(const std::shared_ptr<class IServerGameScene>& gameScene)
     {
         decltype(auto) objects = gameScene->GetObjects();
         for (auto& object : objects) {
-            if (not object->IsActive() or not object->IsCollidingObject()) {
+            if (not object->mSpec.active or not object->IsCollidingObject()) {
                 continue;
             }
 
@@ -55,7 +55,7 @@ void GridWorld::Update(const std::shared_ptr<class IServerGameScene>& gameScene)
     {
         decltype(auto) players = gameScene->GetPlayers();
         for (auto& player : players) {
-            if (not player->IsActive() or not player->IsCollidingObject()) {
+            if (not player->mSpec.active or not player->IsCollidingObject()) {
                 continue;
             }
 
@@ -87,7 +87,7 @@ void GridWorld::Update(const std::vector<std::shared_ptr<class GameObject>>& obj
     }
 
     for (auto& player : objects) {
-        if (not player->IsActive() or not player->IsCollidingObject()) {
+        if (not player->mSpec.active or not player->IsCollidingObject()) {
             continue;
         }
 

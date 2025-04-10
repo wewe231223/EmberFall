@@ -36,7 +36,7 @@ void EventTrigger::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opp
 }
 
 void EventTrigger::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    if (not GetOwner()->IsActive() or ObjectTag::TRIGGER == opponent->GetTag()) {
+    if (not GetOwner()->mSpec.hp or ObjectTag::TRIGGER == opponent->GetTag()) {
         return;
     }
 

@@ -156,6 +156,7 @@
     <ClCompile Include="BT_MonsterAttacked.cpp" />
     <ClCompile Include="BT_MonsterChase.cpp" />
     <ClCompile Include="BT_MonsterRandomMove.cpp" />
+    <ClCompile Include="BuffScript.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="EventTrigger.cpp" />
     <ClCompile Include="FbsPacketProcessFn.cpp" />
@@ -211,6 +212,7 @@
     <ClInclude Include="BT_MonsterAttacked.h" />
     <ClInclude Include="BT_MonsterChase.h" />
     <ClInclude Include="BT_MonsterRandomMove.h" />
+    <ClInclude Include="BuffScript.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="EventTrigger.h" />
     <ClInclude Include="FbsPacketProcessFn.h" />

@@ -22,7 +22,7 @@ void Item::UseItem(ItemTag tag, const std::shared_ptr<class GameObject>& obj) {
 }
 
 void Potion::UseItem(const std::shared_ptr<class GameObject>& obj) {
-    obj->RestoreHealth(10.0f);
+    obj->mSpec.hp += 10.0f;
 }
 
 void HolyWater::UseItem(const std::shared_ptr<class GameObject>& obj) {

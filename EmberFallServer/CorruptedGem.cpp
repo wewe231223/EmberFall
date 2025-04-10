@@ -7,8 +7,8 @@
 CorruptedGemScript::CorruptedGemScript(std::shared_ptr<GameObject> owner) 
     : Script{ owner, ObjectTag::CORRUPTED_GEM } { 
     owner->GetPhysics()->mFactor.mass = 10000.0f;
-    owner->SetEntityType(Packets::EntityType_CORRUPTED_GEM);
-    owner->SetInteractable(true);
+    owner->mSpec.entity = Packets::EntityType_CORRUPTED_GEM;
+    owner->mSpec.active = true;
 }
 
 CorruptedGemScript::~CorruptedGemScript() { }
@@ -46,6 +46,6 @@ void CorruptedGemScript::OnDestroy(GemDestroyStart* event) {
             event->sender
         );
 
-        owner->SetActive(false);
+        owner->mSpec.active = false;
     }
 }

@@ -13,20 +13,8 @@ GameObject::GameObject(std::shared_ptr<IServerGameScene> gameScene)
 
 GameObject::~GameObject() { }
 
-bool GameObject::IsActive() const {
-    return true == mActive;
-}
-
-bool GameObject::IsInteractable() const {
-    return mInteractable;
-}
-
 NetworkObjectIdType GameObject::GetId() const {
     return mId;
-}
-
-float GameObject::HP() const {
-    return mHP;
 }
 
 SimpleMath::Matrix GameObject::GetWorld() const {
@@ -77,10 +65,6 @@ ObjectTag GameObject::GetTag() const {
     return mTag;
 }
 
-Packets::EntityType GameObject::GetEntityType() const {
-    return mEntityType;
-}
-
 bool GameObject::IsCollidingObject() const {
     return nullptr != mCollider;
 }
@@ -90,20 +74,8 @@ void GameObject::InitId(NetworkObjectIdType id) {
     mWeaponSystem.SetOwnerId(mId);
 }
 
-void GameObject::SetActive(bool active) {
-    mActive = active;
-}
-
-void GameObject::SetInteractable(bool interactable) {
-    mInteractable = interactable;
-}
-
 void GameObject::SetTag(ObjectTag tag) {
     mTag = tag;
-}
-
-void GameObject::SetEntityType(Packets::EntityType type) {
-    mEntityType = type;
 }
 
 void GameObject::SetCollider(std::shared_ptr<Collider> collider) {
@@ -119,22 +91,19 @@ void GameObject::DisablePhysics() {
 }
 
 void GameObject::Reset() {
+    // clear Components and Tag
     ClearComponents();
     SetTag(ObjectTag::NONE);
-    SetEntityType(Packets::EntityType_ENV);
-    mInteractable = false;
-    mHP = 0.0f;
+
+    // Reset Base Component
     mCollider.reset();
     mTransform->Reset();
     mPhysics->Reset();
-}
 
-void GameObject::ReduceHealth(float hp) {
-    mHP -= hp;
-}
-
-void GameObject::RestoreHealth(float hp) {
-    mHP += hp;
+    // Reset My Spec
+    mSpec.entity = Packets::EntityType_ENV;
+    mSpec.interactable = false;
+    mSpec.hp = 0.0f;
 }
 
 void GameObject::Init() {
@@ -145,7 +114,7 @@ void GameObject::Init() {
 }
 
 void GameObject::Update(const float deltaTime) {
-    if (not IsActive()) {
+    if (not mSpec.active) {
         return;
     }
 
@@ -164,7 +133,7 @@ void GameObject::Update(const float deltaTime) {
 }
 
 void GameObject::LateUpdate(const float deltaTime) {
-    if (not IsActive()) {
+    if (not mSpec.active) {
         return;
     }
 
@@ -225,6 +194,11 @@ void GameObject::Attack() {
         auto extentsZ = SimpleMath::Vector3::Forward * mCollider->GetForwardExtents();
         mWeaponSystem.Attack(mTransform->GetPosition() + extentsZ, mTransform->Forward());
     }
+}
+
+void GameObject::Attack(const SimpleMath::Vector3& dir) {
+    mTransform->SetLook(dir);
+    Attack();
 }
 
 void GameObject::OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 

@@ -3,7 +3,7 @@
 
 ItemScript::ItemScript(std::shared_ptr<GameObject> owner, ItemTag item) 
     : Script{ owner, ObjectTag::ITEM }, mItemTag{ item } { 
-    owner->SetInteractable(true);
+    owner->mSpec.interactable = true;
 }
 
 ItemScript::~ItemScript() { }
