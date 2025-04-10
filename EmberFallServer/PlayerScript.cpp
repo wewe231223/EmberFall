@@ -22,6 +22,10 @@ void PlayerScript::ResetGameScene(std::shared_ptr<IServerGameScene> gameScene) {
     mViewList.mCurrentScene = gameScene;
 }
 
+std::shared_ptr<Input> PlayerScript::GetInput() const {
+    return mInput;
+}
+
 std::shared_ptr<IServerGameScene> PlayerScript::GetCurrentScene() const {
     return mGameScene;
 }

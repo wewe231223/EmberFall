@@ -2,11 +2,13 @@
 #include "FbsPacketProcessFn.h"
 #include "ServerGameScene.h"
 #include "PlayerScript.h"
+#include "Input.h"
+#include "ServerFrame.h"
 
-void ProcessPackets(std::shared_ptr<IServerGameScene>& gameScene, const uint8_t* buffer, size_t bufSize) {
+void ProcessPackets(std::shared_ptr<IServerGameScene>& gameScene, const uint8_t* const buffer, size_t bufSize) {
     const uint8_t* iter = buffer;
     while (iter < buffer + bufSize) {
-        iter = ProcessPacket(gameScene, buffer);
+        iter = ProcessPacket(gameScene, iter);
     }
 }
 
@@ -15,6 +17,13 @@ const uint8_t* ProcessPacket(std::shared_ptr<IServerGameScene>& gameScene, const
     decltype(auto) sender = gameScene->GetObjectFromId(header->senderId);
 
     switch (header->type) {
+    case Packets::PacketTypes_PT_PLAYER_INPUT_CS:
+    {
+        decltype(auto) packetInput = FbsPacketFactory::GetDataPtrCS<Packets::PlayerInputCS>(buffer);
+        ProcessPlayerInputCS(packetInput, sender);
+        break;
+    }
+
     case Packets::PacketTypes::PacketTypes_PT_PLAYER_LOOK_CS:
     {
         decltype(auto) packetLook = FbsPacketFactory::GetDataPtrCS<Packets::PlayerLookCS>(buffer);
@@ -80,6 +89,12 @@ const uint8_t* ProcessPacket(std::shared_ptr<IServerGameScene>& gameScene, const
     }
 
     return buffer + header->size;
+}
+
+void ProcessPlayerInputCS(const Packets::PlayerInputCS* const input, std::shared_ptr<class GameObject>& player) {
+    auto id = player->GetId();
+    auto inputObj = gServerFrame->GetInputManager()->GetInput(id);
+    inputObj->UpdateInput(input->key(), input->down());
 }
 
 void ProcessPlayerLookCS(const Packets::PlayerLookCS* const look, std::shared_ptr<GameObject>& player) {

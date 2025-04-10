@@ -64,6 +64,7 @@ void ServerFrame::OnPlayerConnect(SessionIdType id) {
     //object->CreateCollider<OrientedBoxCollider>(BoundingBoxImporter::GetBoundingBox(EntryKeys::PLAYER_BOUNDING_BOX));
     object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.4f, 1.5f, 0.4f });
     object->CreateComponent<PlayerScript>(object, mInputManager->GetInput(id));
+    object->mSpec.active = true;
 
     Lock::SRWLockGuard playersGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mPlayersLock };
     mPlayers[id] = object;

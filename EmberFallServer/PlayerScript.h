@@ -29,6 +29,7 @@ public:
 
 public:
     void ResetGameScene(std::shared_ptr<IServerGameScene> gameScene);
+    std::shared_ptr<Input> GetInput() const;
     std::shared_ptr<IServerGameScene> GetCurrentScene() const;
 
     virtual void Init() override;
