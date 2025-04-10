@@ -15,6 +15,9 @@ void ProcessPackets(std::shared_ptr<IServerGameScene>& gameScene, const uint8_t*
 const uint8_t* ProcessPacket(std::shared_ptr<IServerGameScene>& gameScene, const uint8_t* buffer) {
     decltype(auto) header = FbsPacketFactory::GetHeaderPtrCS(buffer);
     decltype(auto) sender = gameScene->GetObjectFromId(header->senderId);
+    if (nullptr == sender) {
+        return buffer + header->size;
+    }
 
     switch (header->type) {
     case Packets::PacketTypes_PT_PLAYER_INPUT_CS:
@@ -24,34 +27,34 @@ const uint8_t* ProcessPacket(std::shared_ptr<IServerGameScene>& gameScene, const
         break;
     }
 
-    case Packets::PacketTypes::PacketTypes_PT_PLAYER_LOOK_CS:
+    case Packets::PacketTypes_PT_PLAYER_LOOK_CS:
     {
         decltype(auto) packetLook = FbsPacketFactory::GetDataPtrCS<Packets::PlayerLookCS>(buffer);
         ProcessPlayerLookCS(packetLook, sender);
         break;
     }
 
-    case Packets::PacketTypes::PacketTypes_PT_PLAYER_EXIT_CS:
+    case Packets::PacketTypes_PT_PLAYER_EXIT_CS:
     {
         gameScene->ExitPlayer(header->senderId);
         break;
     }
 
-    case Packets::PacketTypes::PacketTypes_PT_PLAYER_SELECT_WEAPON_CS:
+    case Packets::PacketTypes_PT_PLAYER_SELECT_WEAPON_CS:
     {
         decltype(auto) packetWeapon = FbsPacketFactory::GetDataPtrCS<Packets::PlayerSelectWeaponCS>(buffer);
         ProcessPlayerSelectWeaponCS(packetWeapon, sender);
         break;
     }
 
-    case Packets::PacketTypes::PacketTypes_PT_PLAYER_SELECT_ROLE_CS:
+    case Packets::PacketTypes_PT_PLAYER_SELECT_ROLE_CS:
     {
         decltype(auto) packetRoll = FbsPacketFactory::GetDataPtrCS<Packets::PlayerSelectRoleCS>(buffer);
         ProcessPlayerSelectRoleCS(packetRoll, sender);
         break;
     }
 
-    case Packets::PacketTypes::PacketTypes_PT_LATENCY_CS:
+    case Packets::PacketTypes_PT_LATENCY_CS:
     {
         decltype(auto) packetLatency = FbsPacketFactory::GetDataPtrCS<Packets::PacketLatencyCS>(buffer);
         ProcessLatencyCS(packetLatency);
@@ -59,21 +62,21 @@ const uint8_t* ProcessPacket(std::shared_ptr<IServerGameScene>& gameScene, const
     }
 
 
-    case Packets::PacketTypes::PacketTypes_PT_REQUEST_ATTACK_CS:
+    case Packets::PacketTypes_PT_REQUEST_ATTACK_CS:
     {
         decltype(auto) packetAttack = FbsPacketFactory::GetDataPtrCS<Packets::RequestAttackCS>(buffer);
         ProcessRequestAttackCS(packetAttack, sender);
         break;
     }
 
-    case Packets::PacketTypes::PacketTypes_PT_REQUEST_FIRE_CS:
+    case Packets::PacketTypes_PT_REQUEST_FIRE_CS:
     {
         decltype(auto) packetRequestFire = FbsPacketFactory::GetDataPtrCS<Packets::RequestFireCS>(buffer);
         ProcessRequestFireProjectileCS(packetRequestFire, sender);
         break;
     }
 
-    case Packets::PacketTypes::PacketTypes_PT_REQUEST_USE_ITEM_CS:
+    case Packets::PacketTypes_PT_REQUEST_USE_ITEM_CS:
     {
         decltype(auto) packetUseItem = FbsPacketFactory::GetDataPtrCS<Packets::RequestUseItemCS>(buffer);
         ProcessRequestUseItemCS(packetUseItem, sender);
