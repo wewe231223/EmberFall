@@ -26,7 +26,7 @@ void ViewList::Update() {
     for (const auto& player : playerList) {
         auto playerPos = player->GetPosition();
 
-        if (MathUtil::IsInRange(mPosition, mViewRange, playerPos) and player->IsActive()) {
+        if (MathUtil::IsInRange(mPosition, mViewRange, playerPos) and player->mSpec.active) {
             AddInRange(player);
         }
         else {
@@ -43,7 +43,7 @@ void ViewList::Update() {
 
         auto objectPos = object->GetPosition();
 
-        if (MathUtil::IsInRange(mPosition, mViewRange, objectPos) and object->IsActive()) {
+        if (MathUtil::IsInRange(mPosition, mViewRange, objectPos) and object->mSpec.active) {
             AddInRange(object);
         }
         else {
@@ -80,10 +80,10 @@ void ViewList::AddInRange(std::shared_ptr<GameObject> obj) {
 
     decltype(auto) packet = FbsPacketFactory::ObjectAppearedSC(
         obj->GetId(),
-        obj->GetEntityType(),
+        obj->mSpec.entity,
         obj->GetEulerRotation().y,
         obj->mAnimationStateMachine.GetCurrState(),
-        obj->HP(),
+        obj->mSpec.hp,
         obj->GetPosition()
     );
     gServerCore->Send(mOwnerId, packet);

@@ -256,6 +256,9 @@
     <ClCompile Include="FbsPacketProcessFn.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="BuffScript.cpp">
+      <Filter>Script\Item&amp;Skill</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -407,6 +410,9 @@
     </ClInclude>
     <ClInclude Include="FbsPacketProcessFn.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="BuffScript.h">
+      <Filter>Script\Item&amp;Skill</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

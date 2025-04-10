@@ -11,7 +11,7 @@
 
 PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input)
     : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ static_cast<SessionIdType>(owner->GetId()) } {
-    owner->SetEntityType(Packets::EntityType_HUMAN);
+    owner->mSpec.entity = Packets::EntityType_HUMAN;
     owner->ChangeWeapon(Packets::Weapon_SWORD);
 }
 
@@ -108,7 +108,7 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
     case GameEventType::ATTACK_EVENT:
         if (event->sender != event->receiver) {
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
-            GetOwner()->ReduceHealth(attackEvent->damage);
+            GetOwner()->mSpec.hp -= attackEvent->damage;
             GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED, true);
             GetOwner()->GetPhysics()->AddForce(attackEvent->knockBackForce);
 
@@ -141,7 +141,7 @@ std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
     auto ownerId = owner->GetId();
     decltype(auto) filterObjects = std::views::filter(objects, [this](NetworkObjectIdType id) {
         decltype(auto) obj = mGameScene->GetObjectFromId(id);
-        if (false == obj->IsInteractable() or false == obj->IsActive()) {
+        if (false == obj->mSpec.interactable or false == obj->mSpec.active) {
             return false;
         }
 
@@ -233,13 +233,13 @@ void PlayerScript::CheckAndJump(const float deltaTime) {
 }
 
 void PlayerScript::DoInteraction(const float deltaTime, const std::shared_ptr<GameObject>& target) {
-    if (nullptr == target or not target->IsActive()) {
+    if (nullptr == target or not target->mSpec.active) {
         mInteractionObj = INVALID_OBJ_ID;
         return;
     }
 
     mInteraction = true;
-    if (target->GetId() != mInteractionObj and Packets::EntityType_CORRUPTED_GEM == target->GetEntityType()) {
+    if (target->GetId() != mInteractionObj and Packets::EntityType_CORRUPTED_GEM == target->mSpec.entity) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Start");
         auto ownerId = static_cast<SessionIdType>(GetOwner()->GetId());
         decltype(auto) packetInteraction = FbsPacketFactory::GemInteractSC(mInteractionObj, ownerId);

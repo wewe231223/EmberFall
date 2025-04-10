@@ -5,7 +5,7 @@
 
 BossPlayerScript::BossPlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input)
     : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ static_cast<SessionIdType>(owner->GetId()) } {  
-    GetOwner()->SetEntityType(Packets::EntityType_BOSS);
+    GetOwner()->mSpec.entity = Packets::EntityType_BOSS;
 }
 
 BossPlayerScript::~BossPlayerScript() { }
@@ -62,7 +62,7 @@ void BossPlayerScript::DispatchGameEvent(GameEvent* event) {
     case GameEventType::ATTACK_EVENT:
         if (event->sender != event->receiver) {
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
-            GetOwner()->ReduceHealth(attackEvent->damage);
+            GetOwner()->mSpec.hp -= attackEvent->damage;
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!", GetOwner()->GetId());
         }
         break;

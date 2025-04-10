@@ -32,20 +32,29 @@ enum class ObjectTag : uint8_t {
     NONE,
 };
 
+struct ObjectSpec {
+    bool active;                    // 활성화 여부
+    bool interactable;              // 상호작용 가능 여부
+    bool attackable;                // 공격 가능 여부
+    Packets::EntityType entity;     // 외형 정보
+
+    float defence;                  // 방어력
+    float damage;                   // 공격력
+
+    float hp;                       // 체력
+};
+
 class GameObject : public std::enable_shared_from_this<GameObject> {
 public:
     GameObject(std::shared_ptr<IServerGameScene> gameScene);
     ~GameObject();
 
 public:
-    bool IsActive() const;
-    bool IsInteractable() const;
+    // Getter
     bool IsCollidingObject() const;
 
-    float HP() const;
     ObjectTag GetTag() const;
     NetworkObjectIdType GetId() const;
-    Packets::EntityType GetEntityType() const;
 
     std::shared_ptr<Transform> GetTransform() const;
     std::shared_ptr<Physics> GetPhysics() const;
@@ -62,23 +71,21 @@ public:
 
     std::shared_ptr<IServerGameScene> GetOwnGameScene() const;
 
-    void Init();
-    void InitId(NetworkObjectIdType id);
-
-    void SetActive(bool active);
-    void SetInteractable(bool interactable);
+    // Setter
     void SetTag(ObjectTag tag);
-    void SetEntityType(Packets::EntityType type);
 
     void SetCollider(std::shared_ptr<Collider> collider);
     void DisablePhysics();
-
-    void Reset();
-
     void ChangeWeapon(Packets::Weapon weapon);
-    void ReduceHealth(float hp);
-    void RestoreHealth(float hp);
 
+    void ClearComponents();
+    void Reset();
+    
+    // Initialize Function
+    void Init();
+    void InitId(NetworkObjectIdType id);
+
+    // Update & Process Event Functions
     void Update(const float deltaTime);
     void LateUpdate(const float deltaTime);
 
@@ -87,37 +94,20 @@ public:
 
     void DispatchGameEvent(GameEvent* event);
 
-    void ClearComponents();
     void Attack();
+    void Attack(const SimpleMath::Vector3& dir);
 
+    // Declaration of template Functions
     template <typename ColliderType, typename... Args>
         requires std::derived_from<ColliderType, Collider> and std::is_constructible_v<ColliderType, Args...>
-    void CreateCollider(Args&&... args) {
-        if (nullptr != mCollider) {
-            mCollider.reset();
-        }
-
-        mCollider = std::make_shared<ColliderType>(args...);
-        mCollider->SetTransform(mTransform);
-    }
+    void CreateCollider(Args&&... args);
 
     template <typename ComponentType, typename... Args>
         requires std::derived_from<ComponentType, GameObjectComponent>
-    void CreateComponent(Args&&... args) {
-        mComponents.emplace_back(std::make_shared<ComponentType>(args...));
-    }
+    void CreateComponent(Args&&... args);
 
     template <typename ComponentType> requires std::derived_from<ComponentType, GameObjectComponent>
-    std::shared_ptr<ComponentType> GetComponent() {
-        for (auto& componenet : mComponents) {
-            auto ptr = std::dynamic_pointer_cast<ComponentType>(componenet);
-            if (nullptr != ptr) {
-                return ptr;
-            }
-        }
-
-        return nullptr;
-    }
+    std::shared_ptr<ComponentType> GetComponent();
 
 private:
     void OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
@@ -126,15 +116,10 @@ private:
 
 public:
     AnimationStateMachine mAnimationStateMachine{ };
+    ObjectSpec mSpec{ };
 
 private:
-    bool mActive{ true };
-    bool mInteractable{ false };
-    Packets::EntityType mEntityType{ Packets::EntityType_ENV };
     ObjectTag mTag{ ObjectTag::NONE };
-
-    float mHP{ };
-
     NetworkObjectIdType mId{ INVALID_OBJ_ID };                      // network id
 
     std::shared_ptr<Transform> mTransform{ };                           // Transform
@@ -146,3 +131,34 @@ private:
 
     std::shared_ptr<IServerGameScene> mGameScene{ };
 };
+
+// Definition of template functions
+template<typename ColliderType, typename ...Args>
+    requires std::derived_from<ColliderType, Collider> and std::is_constructible_v<ColliderType, Args...>
+inline void GameObject::CreateCollider(Args && ...args) {
+    if (nullptr != mCollider) {
+        mCollider.reset();
+    }
+
+    mCollider = std::make_shared<ColliderType>(args...);
+    mCollider->SetTransform(mTransform);
+}
+
+template<typename ComponentType, typename ...Args>
+    requires std::derived_from<ComponentType, GameObjectComponent>
+inline void GameObject::CreateComponent(Args && ...args) {
+    mComponents.emplace_back(std::make_shared<ComponentType>(args...));
+}
+
+template<typename ComponentType>
+    requires std::derived_from<ComponentType, GameObjectComponent>
+inline std::shared_ptr<ComponentType> GameObject::GetComponent() {
+    for (auto& componenet : mComponents) {
+        auto ptr = std::dynamic_pointer_cast<ComponentType>(componenet);
+        if (nullptr != ptr) {
+            return ptr;
+        }
+    }
+
+    return nullptr;
+}

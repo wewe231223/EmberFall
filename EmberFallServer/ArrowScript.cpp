@@ -5,7 +5,7 @@
 ArrowScript::ArrowScript(std::shared_ptr<GameObject> owner, const SimpleMath::Vector3& pos,
     const SimpleMath::Vector3& dir, GameUnits::GameUnit<GameUnits::StandardSpeed> speed) 
     : Script{ owner, ObjectTag::ARROW } {
-    owner->SetEntityType(Packets::EntityType_PROJECTILE);
+    owner->mSpec.entity = Packets::EntityType_PROJECTILE;
     owner->GetTransform()->Translate(pos);
     owner->GetPhysics()->AddVelocity(dir);
     owner->GetPhysics()->ResizeVelocity(speed.Count());
@@ -26,7 +26,7 @@ void ArrowScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& oppo
         GameProtocol::Logic::DEFAULT_DAMAGE
     );
 
-    GetOwner()->SetActive(false);
+    GetOwner()->mSpec.active = false;
 }
 
 void ArrowScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }

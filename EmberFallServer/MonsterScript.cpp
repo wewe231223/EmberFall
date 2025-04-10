@@ -9,8 +9,8 @@
 
 MonsterScript::MonsterScript(std::shared_ptr<class GameObject> owner)
     : Script{ owner, ObjectTag::MONSTER } {
-    owner->SetEntityType(Packets::EntityType_MONSTER);
-    owner->RestoreHealth(100.0f);
+    owner->mSpec.entity = Packets::EntityType_MONSTER;
+    owner->mSpec.hp = 100.0f;
     owner->GetPhysics()->mFactor.maxMoveSpeed = 1.3mps;
 }
 
@@ -29,7 +29,7 @@ void MonsterScript::Update(const float deltaTime) {
 }
 
 void MonsterScript::LateUpdate(const float deltaTime) { 
-    if (GetOwner()->HP() > MathUtil::EPSILON) {
+    if (GetOwner()->mSpec.hp > MathUtil::EPSILON) {
         return;
     }
 
@@ -38,7 +38,7 @@ void MonsterScript::LateUpdate(const float deltaTime) {
         decltype(auto) packet = FbsPacketFactory::ObjectRemoveSC(GetOwner()->GetId());
         gServerCore->SendAll(packet);
 
-        GetOwner()->SetActive(false);
+        GetOwner()->mSpec.active = false;
         return;
     }
 
@@ -89,12 +89,12 @@ void MonsterScript::DispatchGameEvent(GameEvent* event) {
             }
 
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
-            GetOwner()->ReduceHealth(attackEvent->damage);
+            GetOwner()->mSpec.hp -= attackEvent->damage;
             
             GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED);
 
             mMonsterBT.Interrupt();
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster [{}] Attacked!!, HP: {}", GetOwner()->GetId(), GetOwner()->HP());
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster [{}] Attacked!!, HP: {}", GetOwner()->GetId(), GetOwner()->mSpec.hp);
         }
         break;
 

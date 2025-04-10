@@ -80,7 +80,7 @@ std::shared_ptr<GameObject> PlayScene::GetObjectFromId(NetworkObjectIdType id) {
 
 std::shared_ptr<GameObject>& PlayScene::GetInvalidObject() {
     return *std::find_if(mObjects.begin(), mObjects.end(),
-        [](const std::shared_ptr<GameObject>& obj) { return not obj->IsActive(); });
+        [](const std::shared_ptr<GameObject>& obj) { return not obj->mSpec.active; });
 }
 
 TerrainCollider& PlayScene::GetTerrainCollider() {
@@ -97,7 +97,7 @@ void PlayScene::Init() {
         object->InitId(OBJECT_ID_START + id);
         ++id;
 
-        object->SetActive(false);
+        object->mSpec.active = false;
 
         auto& factors = object->GetPhysics()->mFactor;
         factors.mass = 10.0f;
@@ -134,7 +134,7 @@ void PlayScene::Update(const float deltaTime) {
 }
 
 void PlayScene::LateUpdate(const float deltaTime) { 
-    std::erase_if(mPlayerList, [=](const std::shared_ptr<GameObject>& obj) { return not obj->IsActive(); });
+    std::erase_if(mPlayerList, [=](const std::shared_ptr<GameObject>& obj) { return not obj->mSpec.active; });
 
     for (auto& [id, obj] : mPlayers) {
         obj->LateUpdate(deltaTime);
@@ -166,7 +166,7 @@ void PlayScene::ExitPlayer(SessionIdType id) {
         return;
     }
     
-    it->second->SetActive(false);
+    it->second->mSpec.active = false;
 
     mTerrainCollider.RemoveObjectFromTerrainGroup(it->second);
     mPlayers.erase(it);

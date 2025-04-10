@@ -19,7 +19,14 @@ void Trigger::Init() {
         return;
     }
 
-    StaticTimer::PushTimerEvent([=]() { GetOwner()->SetActive(false); gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Trigger Die"); }, mLifeTime, 1);
+    StaticTimer::PushTimerEvent(
+        [=]() { 
+            GetOwner()->mSpec.active = false; 
+            gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Trigger Die"); 
+        },
+        mLifeTime, 
+        1
+    );
 }
 
 void Trigger::Update(const float deltaTime) { }

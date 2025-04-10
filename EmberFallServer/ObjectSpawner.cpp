@@ -16,7 +16,7 @@ std::shared_ptr<GameObject>& ObjectSpawner::SpawnObject(ObjectTag objectType, bo
     decltype(auto) object = mCurrentScene->GetInvalidObject();
     ObjectBuilder::BuildObjectComponent(object, objectType);
     
-    object->SetActive(true);
+    object->mSpec.active = true;
 
     if (true == terrainCollision) {
         mCurrentScene->GetTerrainCollider().AddObjectInTerrainGroup(object);
@@ -29,7 +29,7 @@ std::shared_ptr<GameObject>& ObjectSpawner::SpawnObject(ObjectTag objectType, st
     decltype(auto) object = mCurrentScene->GetInvalidObject();
     ObjectBuilder::BuildObjectComponent(object, objectType, collider);
 
-    object->SetActive(true);
+    object->mSpec.active = true;
 
     if (true == terrainCollision) {
         mCurrentScene->GetTerrainCollider().AddObjectInTerrainGroup(object);
@@ -42,7 +42,7 @@ std::shared_ptr<GameObject>& ObjectSpawner::SpawnTrigger(float lifeTime, const S
     decltype(auto) object = mCurrentScene->GetInvalidObject();
     ObjectBuilder::BuildTrigger(object, lifeTime, pos, extents);
 
-    object->SetActive(true);
+    object->mSpec.active = true;
     return object;
 }
 
@@ -50,7 +50,7 @@ std::shared_ptr<GameObject>& ObjectSpawner::SpawnTrigger(float lifeTime, const S
     decltype(auto) object = mCurrentScene->GetInvalidObject();
     ObjectBuilder::BuildTrigger(object, lifeTime, pos, collider);
 
-    object->SetActive(true);
+    object->mSpec.active = true;
     return object;
 }
 
@@ -60,7 +60,7 @@ std::shared_ptr<GameObject>& ObjectSpawner::SpawnEventTrigger(std::shared_ptr<Ga
     decltype(auto) object = mCurrentScene->GetInvalidObject();
     ObjectBuilder::BuildEventTrigger(object, event, lifeTime, eventDelay, eventCount, pos, size, dir);
 
-    object->SetActive(true);
+    object->mSpec.active = true;
     return object;
 }
 
@@ -69,7 +69,7 @@ std::shared_ptr<GameObject>& ObjectSpawner::SpawnEventTrigger(std::shared_ptr<Ga
     decltype(auto) object = mCurrentScene->GetInvalidObject();
     ObjectBuilder::BuildEventTrigger(object, event, lifeTime, eventDelay, eventCount, pos, dir, collider);
 
-    object->SetActive(true);
+    object->mSpec.active = true;
     return object;
 }
 
@@ -82,6 +82,6 @@ std::shared_ptr<GameObject>& ObjectSpawner::SpawnProjectile(ObjectTag objectType
         mCurrentScene->GetTerrainCollider().AddObjectInTerrainGroup(object);
     }
 
-    object->SetActive(true);
+    object->mSpec.active = true;
     return object;
 }
