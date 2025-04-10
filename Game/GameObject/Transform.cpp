@@ -74,6 +74,14 @@ void Transform::SetPosition(const SimpleMath::Vector3& pos) {
 	mPosition = pos;
 }
 
+void Transform::SetVelocity(float velocity) {
+	mVelocity = velocity; 
+}
+
+void Transform::SetDirection(const SimpleMath::Vector3& dir) {
+	mDirection = dir;
+}
+
 void Transform::Scaling(const SimpleMath::Vector3& scale) {
 	mScale *= scale;
 }
@@ -117,6 +125,10 @@ Transform Transform::CreateChild(const SimpleMath::Vector3& localPosition, const
 
 void Transform::SetLocalTransform(const SimpleMath::Matrix& localMatrix) {
 	mLocalMatrix = localMatrix;
+}
+
+void Transform::Update(float deltaTime) {
+
 }
 
 void Transform::UpdateWorldMatrix() {

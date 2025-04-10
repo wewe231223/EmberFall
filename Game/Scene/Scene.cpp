@@ -284,7 +284,10 @@ void Scene::ProcessNotifyId(const uint8_t* buffer) {
 
 void Scene::ProcessPlayerExit(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::PlayerExitSC>(buffer);
-
+	
+	if (mPlayerIndexmap.contains(data->playerId())) {
+		mPlayerIndexmap[data->playerId()]->SetActiveState(false);
+	}
 
 }
 
@@ -296,23 +299,199 @@ void Scene::ProcessLatency(const uint8_t* buffer) {
 void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAppearedSC>(buffer);
 
+	auto FindNextPlayerLoc = [this]() {
+		for (auto iter = mPlayers.begin(); iter != mPlayers.end(); ++iter) {
+			if (not iter->GetActiveState()) {
+				return iter;
+			}
+		}
+		return mPlayers.end();
+		};
+		
+	auto FindNextObjectLoc = [this]() {
+		for (auto iter = mGameObjects.begin(); iter != mGameObjects.end(); ++iter) {
+			if (not *iter) {
+				return iter;
+			}
+		}
+		return mGameObjects.end();
+		};
+		
+		
+	// 플레이어 등장 
+	if (data->objectId() < OBJECT_ID_START) {
+		// 내 플레이어 등장 
+		if (data->objectId() == gClientCore->GetSessionId()) {
+			// 플레이어 인스턴스가 없다면 
+			if (not mPlayerIndexmap.contains(data->objectId())) {
+		
+				auto nextLoc = FindNextPlayerLoc();
+		
+				if (nextLoc == mPlayers.end()) {
+					Crash("There is no more space for My Player!!");
+				}
+		
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
+				mMyPlayer = &(*nextLoc);
+		
+				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
+				mMyPlayer->SetMyPlayer();
+
+				mMyPlayer->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
+
+					
+				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
+				mCameraMode->Enter();
+		
+				//Scene::SetInputBaseAnimMode();
+		
+		
+			}
+			else {
+				if (mPlayerIndexmap[data->objectId()] != nullptr) {
+					mPlayerIndexmap[data->objectId()]->SetActiveState(true);
+				}
+			}
+		}
+		// 다른 플레이어 등장 
+		else {
+			// 그 플레이어 인스턴스가 없다면  
+			if (not mPlayerIndexmap.contains(data->objectId())) {
+				auto nextLoc = FindNextPlayerLoc();
+				if (nextLoc == mPlayers.end()) { 
+					Crash("There is no more space for Other Player!!"); 
+				}
+		
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
+				mPlayerIndexmap[data->objectId()]->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
+			}
+			else {
+				if (mPlayerIndexmap[data->objectId()] != nullptr) {
+					mPlayerIndexmap[data->objectId()]->SetActiveState(true);
+				}
+			}
+		}
+	}
+	// 이외 오브젝트 등장 
+	else {
+		if (not mGameObjectMap.contains(data->objectId())) {
+			auto nextLoc = FindNextObjectLoc();
+			if (nextLoc == mGameObjects.end()) {
+				Crash("There is no more space for Other Object!!");
+			}
+			switch (data->entity()) {
+				case Packets::EntityType_MONSTER:
+				{
+					*nextLoc = GameObject{};
+					mGameObjectMap[data->objectId()] = &(*nextLoc);
+		
+					nextLoc->mShader = mShaderMap["SkinnedShader"].get();
+					nextLoc->mMesh = mMeshMap["MonsterType1"].get();
+					nextLoc->mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
+					nextLoc->mGraphController = mMonsterType1AnimationController;
+					nextLoc->mAnimated = true;
+					nextLoc->SetActiveState(true);
+		
+					nextLoc->GetTransform().Scaling(0.3f, 0.3f, 0.3f);
+					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
+					nextLoc->mGraphController.Transition(static_cast<size_t>(data->animation()));
+				}
+					break;
+				case Packets::EntityType_CORRUPTED_GEM:
+				{
+					*nextLoc = GameObject{};
+					mGameObjectMap[data->objectId()] = &(*nextLoc);
+					nextLoc->mShader = mShaderMap["StandardShader"].get();
+					nextLoc->mMesh = mMeshMap["CorruptedGem"].get();
+					nextLoc->mMaterial = mMaterialManager->GetMaterial("CorruptedGemMaterial");
+					nextLoc->SetActiveState(true);
+		
+					nextLoc->GetTransform().Scaling(0.3f, 0.3f, 0.3f);
+					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
+				}
+					break;
+				default:
+				{
+					*nextLoc = GameObject{};
+					mGameObjectMap[data->objectId()] = &(*nextLoc);
+					nextLoc->mShader = mShaderMap["StandardShader"].get();
+					nextLoc->mMesh = mMeshMap["Cube"].get();
+					nextLoc->mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+					nextLoc->SetActiveState(true);
+
+					nextLoc->GetTransform().Scaling(0.3f, 0.3f, 0.3f);
+					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
+				}
+					break;
+			}
+		}
+		
+	}
 }
 
 void Scene::ProcessObjectDisappeared(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectDisappearedSC>(buffer);
 
-
+	if (data->objectId() < OBJECT_ID_START) {
+		if (mPlayerIndexmap.contains(data->objectId())) {
+			mPlayerIndexmap[data->objectId()]->SetActiveState(false);
+		}
+	}
+	else {
+		if (mGameObjectMap.contains(data->objectId())) {
+			mGameObjectMap[data->objectId()]->SetActiveState(false);
+		}
+	}
 }
 
 void Scene::ProcessObjectRemoved(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectRemovedSC>(buffer);
 
-
+	if (data->objectId() < OBJECT_ID_START) {
+		if (mPlayerIndexmap.contains(data->objectId())) {
+			mPlayerIndexmap[data->objectId()]->SetActiveState(false);
+		}
+	}
+	else {
+		if (mGameObjectMap.contains(data->objectId())) {
+			mGameObjectMap[data->objectId()]->SetActiveState(false);
+		}
+	}
 }
 
 void Scene::ProcessObjectMove(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectMoveSC>(buffer);
 
+	if (data->objectId() < OBJECT_ID_START) {
+		if (mPlayerIndexmap.contains(data->objectId())) {
+			mPlayerIndexmap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
+
+
+			mPlayerIndexmap[data->objectId()]->GetTransform().SetDirection(FbsPacketFactory::GetVector3(data->dir()));
+			mPlayerIndexmap[data->objectId()]->GetTransform().SetVelocity(data->speed());
+
+			if (data->objectId() == gClientCore->GetSessionId()) {
+				return;
+			}
+
+			auto euler = mPlayerIndexmap[data->objectId()]->GetTransform().GetRotation().ToEuler();
+			euler.y = data->yaw();
+			mPlayerIndexmap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
+		}
+	}
+	else {
+		if (mGameObjectMap.contains(data->objectId())) {
+			mGameObjectMap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
+			mGameObjectMap[data->objectId()]->GetTransform().SetDirection(FbsPacketFactory::GetVector3(data->dir()));
+			mGameObjectMap[data->objectId()]->GetTransform().SetVelocity(data->speed());
+			auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
+			euler.y = data->yaw();
+			mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
+		}
+	}
 }
 
 void Scene::ProcessObjectAttacked(const uint8_t* buffer) {
@@ -323,12 +502,21 @@ void Scene::ProcessObjectAttacked(const uint8_t* buffer) {
 void Scene::ProcessPacketAnimation(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAnimationChangedSC>(buffer);
 
+	if (data->objectId() < OBJECT_ID_START) {
+		if (mPlayerIndexmap.contains(data->objectId())) {
+			mPlayerIndexmap[data->objectId()]->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
+		}
+	}
+	else {
+		if (mGameObjectMap.contains(data->objectId())) {
+			mGameObjectMap[data->objectId()]->GetAnimationController().Transition(static_cast<size_t>(data->animation()));
+		}
+	}
+
 }
 
 void Scene::ProcessGemInteraction(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GemInteractSC>(buffer);
-
-
 }
 
 void Scene::ProcessGemCancelInteraction(const uint8_t* buffer) {
@@ -646,7 +834,7 @@ void Scene::ProcessNetwork() {
 	auto packetHandler = gClientCore->GetPacketHandler(); 
 	decltype(auto) buffer = packetHandler->GetBuffer(); 
 
-
+	Scene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
 	
 }
 
@@ -1175,8 +1363,6 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 	leaves.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
 	// leaves.mCollider = mColliderMap["Pine3_Stem"];
 
-
-
 	GameObject pinetree{};
 	pinetree.mShader = mShaderMap["TreeShader"].get();
 	pinetree.mMesh = mMeshMap["Pine2"].get();
@@ -1289,10 +1475,6 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 	baseWindMillBlade.mMaterial = mMaterialManager->GetMaterial("WindMillBladeMaterial");
 	//baseWindMillBlade.mCollider = mColliderMap["WindMill"];
 
-	GameObject baseWater;
-	baseWater.mShader = mShaderMap["StandardShader"].get();
-	baseWater.mMesh = mMeshMap["Plane"].get();
-	baseWater.mMaterial = mMaterialManager->GetMaterial("WaterMaterial");
 
 	GameObject baseWell = baseTimberHouse.Clone();
 	baseWell.mMesh = mMeshMap["Well"].get();
@@ -1311,7 +1493,10 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 	std::vector<EnvData> envPoses(envCount);
 	ifs.read(reinterpret_cast<char*>(envPoses.data()), sizeof(EnvData) * envCount);
 
+	
 
+
+	// 
 	// 이후 나무 객체를 생성하는 부분 (stem, leaves 복제)
 	std::vector<GameObject> envObjects{};
 	for (auto& envData : envPoses) {
@@ -1412,7 +1597,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 		case GameProtocol::EnvironmentType::TimberHouse:
 		{
 			auto& object = envObjects.emplace_back();
-			object = baseMountain2.Clone();
+			object = baseTimberHouse.Clone();
 			object.GetTransform().SetPosition(envData.position);
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}

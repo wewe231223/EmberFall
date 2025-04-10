@@ -27,6 +27,7 @@ void GameObject::ToggleActiveState() {
 }
 
 void GameObject::UpdateShaderVariables() {
+	mTransform.Update(Time.GetDeltaTime<float>()); 
 	mTransform.UpdateWorldMatrix();
 
 	if (mCollider.GetActiveState()) {
@@ -37,6 +38,7 @@ void GameObject::UpdateShaderVariables() {
 }
 
 void GameObject::UpdateShaderVariables(SimpleMath::Matrix& parent) {
+	mTransform.Update(Time.GetDeltaTime<float>());
 	mTransform.UpdateWorldMatrix(parent);
 
 	if (mCollider.GetActiveState()) {
@@ -47,6 +49,7 @@ void GameObject::UpdateShaderVariables(SimpleMath::Matrix& parent) {
 }
 
 void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer) {
+	mTransform.Update(Time.GetDeltaTime<float>());
 	mTransform.UpdateWorldMatrix();
 
 	if (mCollider.GetActiveState()) {

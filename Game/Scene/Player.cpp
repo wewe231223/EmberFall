@@ -73,6 +73,7 @@ void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 
 	mBoneMaskController.Update(Time.GetDeltaTime(), boneTransformBuffer);
 
+	mTransform.Update(Time.GetDeltaTime<float>());
 	mTransform.UpdateWorldMatrix();
 	mModelContext.world = mTransform.GetWorldMatrix();
 
