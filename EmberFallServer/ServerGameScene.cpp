@@ -25,6 +25,7 @@ void IServerGameScene::DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerE
 
         switch (event.eventType) {
         case PlayerEvent::EventType::CONNECT:
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "AddPlayer");
             AddPlayer(event.id, event.player);
             break;
 
@@ -41,11 +42,15 @@ void IServerGameScene::DispatchPlayerEvent(Concurrency::concurrent_queue<PlayerE
 }
 
 void IServerGameScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
-    mPlayers[id] = playerObject;
-    mPlayerList.push_back(playerObject);
+    auto player = playerObject; // std::shared_ptr 복사
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "player use count: {}", player.use_count());
+    mPlayers.try_emplace(id, player);
+    mPlayerList.push_back(player);
 }
 
 void IServerGameScene::ExitPlayer(SessionIdType id) {
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Fuck");
+
     auto it = mPlayers.find(id);
     if (it == mPlayers.end()) {
         return;
@@ -71,9 +76,9 @@ ObjectList& PlayScene::GetObjects() {
 
 std::shared_ptr<GameObject> PlayScene::GetObjectFromId(NetworkObjectIdType id) {
     if (id >= OBJECT_ID_START) {
-        return mObjects[id - OBJECT_ID_START];
+        return mObjects.at(id - OBJECT_ID_START);
     }
-    else {
+    else if (mPlayers.contains(id)) {
         return mPlayers[static_cast<SessionIdType>(id)];
     }
 }
@@ -146,30 +151,40 @@ void PlayScene::LateUpdate(const float deltaTime) {
 }
 
 void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerObject) {
-    mPlayers[id] = playerObject;
-    mPlayerList.emplace_back(playerObject);
+    auto player = playerObject; // std::shared_ptr 복사
 
-    playerObject->GetComponent<PlayerScript>()->ResetGameScene(shared_from_this());
+    mPlayers.try_emplace(id, player);
+    mPlayerList.push_back(player);
+
+    player->GetComponent<PlayerScript>()->ResetGameScene(shared_from_this());
     auto randPos = Random::GetRandomVec3(-50.0f, 50.0f);
     randPos.y = 0.0f;
 
-    playerObject->GetTransform()->Translate(randPos);
+    player->GetTransform()->Translate(randPos);
 
-    mTerrainCollider.AddObjectInTerrainGroup(playerObject);
+    mTerrainCollider.AddObjectInTerrainGroup(player);
 
-    playerObject->Init();
+    player->Init();
 }
 
 void PlayScene::ExitPlayer(SessionIdType id) {
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Exit Player: {}", id);
+
     auto it = mPlayers.find(id);
     if (it == mPlayers.end()) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Exit Player Find Fail: {}", id);
         return;
     }
-    
+
     it->second->mSpec.active = false;
 
+    auto objSearch = std::find(mPlayerList.begin(), mPlayerList.end(), it->second);
+    std::swap(*objSearch, mPlayerList.back());
+    mPlayerList.pop_back();
+
     mTerrainCollider.RemoveObjectFromTerrainGroup(it->second);
-    mPlayers.erase(it);
+    mPlayers.erase(id);
+
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Call Player Exit");
 
     decltype(auto) packetExit = FbsPacketFactory::PlayerExitSC(id);

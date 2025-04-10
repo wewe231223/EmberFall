@@ -81,9 +81,9 @@ void ServerFrame::OnPlayerDisconnect(SessionIdType id) {
         return;
     }
 
-    PlayerEvent event{ PlayerEvent::EventType::DISCONNECT, id, it->second };
-    mPlayerEventQueue.push(event);
-
     mPlayers.erase(it);
     mInputManager->DeleteInput(id);
+
+    PlayerEvent event{ PlayerEvent::EventType::DISCONNECT, id };
+    mPlayerEventQueue.push(event);
 }
