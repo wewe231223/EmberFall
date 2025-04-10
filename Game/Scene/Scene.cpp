@@ -791,14 +791,10 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	MeshLoader Loader{};
 	MeshData data{}; 
 
-
 	mMeshMap["Cube"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Cube, 1);
 
 	data = Loader.Load("Resources/Assets/Knight/BaseAnim/BaseAnim.gltf");
 	mMeshMap["HumanBaseAnim"] = std::make_unique<Mesh>(device, commandList, data);
-
-	data = Loader.Load("Resources/Assets/Knight/archer.gltf");
-	mMeshMap["T_Pose"] = std::make_unique<Mesh>(device, commandList, data);
 
 	data = Loader.Load("Resources/Assets/Knight/LongSword/LongSword.gltf");
 	mMeshMap["SwordMan"] = std::make_unique<Mesh>(device, commandList, data);
@@ -811,10 +807,6 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mMeshMap["Mountain1"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Mountain1"] = Collider{ data.position };
 
-	data = Loader.Load("Resources/Assets/Mountain/Mountain3.glb");
-	mMeshMap["Mountain3"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Mountain3"] = Collider{ data.position };
-
 	data = Loader.Load("Resources/Assets/Monster/MonsterType1.gltf");
 	mMeshMap["MonsterType1"] = std::make_unique<Mesh>(device, commandList, data);
 	
@@ -826,15 +818,6 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mMeshMap["CorruptedGem"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["CorruptedGem"] = Collider{ data.position };
 
-	data = Loader.Load("Resources/Assets/Demon/Demon.glb");
-	mMeshMap["Demon"] = std::make_unique<Mesh>(device, commandList, data);
-
-	data = Loader.Load("Resources/Assets/Tree/PineTree/PineTree.glb", 0);
-	mMeshMap["PineTree_Stem"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["PineTree_Stem"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Tree/PineTree/PineTree.glb", 1);
-	mMeshMap["PineTree_Leaves"] = std::make_unique<Mesh>(device, commandList, data);
 
 	data = Loader.Load("Resources/Assets/Env/Fern.glb");
 	mMeshMap["Fern"] = std::make_unique<Mesh>(device, commandList, data);
@@ -946,17 +929,8 @@ void Scene::BuildMaterial() {
 	mat.mDiffuseTexture[5] = mTextureManager->GetTexture("SkyBox_Right_0");
 	mMaterialManager->CreateMaterial("SkyBoxMaterial", mat);
 
-	mat.mDiffuseColor = { 0.5f, 0.5f, 0.5f, 1.f };
-	mMaterialManager->CreateMaterial("SkyFogMaterial", mat);
-
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Paladin_diffuse");
 	mMaterialManager->CreateMaterial("CubeMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("blue");
-	mMaterialManager->CreateMaterial("AreaMat", mat);
-
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Big_02___Default_color");
-	mMaterialManager->CreateMaterial("StoneMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Default_OBJ_baseColor");
 	mMaterialManager->CreateMaterial("MountainMaterial", mat);
@@ -976,12 +950,6 @@ void Scene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("T_BigDemonWarrior_Body_Albedo_Skin_3");
 	mMaterialManager->CreateMaterial("DemonMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Tree_0Mat_baseColor");
-	mMaterialManager->CreateMaterial("PineTreeStemMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Tree_1Mat_baseColor");
-	mMaterialManager->CreateMaterial("PineTreeLeavesMaterial", mat);
-
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("ferns");
 	mMaterialManager->CreateMaterial("FernMaterial", mat);
 
@@ -993,9 +961,6 @@ void Scene::BuildMaterial() {
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("pinebranch");
 	mMaterialManager->CreateMaterial("Pine3LeavesMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("sea-water");
-	mMaterialManager->CreateMaterial("WaterMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Small Rock 1 RFS_DefaultMaterial_AlbedoTransparency");
 	mMaterialManager->CreateMaterial("Rock_1_Material", mat);
@@ -1032,8 +997,6 @@ void Scene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("well_albedo");
 	mMaterialManager->CreateMaterial("WellMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Mountain3_Diffuse");
-	mMaterialManager->CreateMaterial("Mountain3Material", mat);
 } 
 
 void Scene::BuildShader(ComPtr<ID3D12Device> device) {

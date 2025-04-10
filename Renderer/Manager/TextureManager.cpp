@@ -34,10 +34,11 @@ TextureManager::TextureManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graphic
 		auto& path = entry.path();
 		auto name = path.stem().string();
 
-		if (mTextures.find(name) != mTextures.end()) {
+		if (mTextures.find(name) != mTextures.end() or not std::filesystem::is_regular_file(path)) {
 			continue;
 		}
 
+		
 
 		pair = std::make_pair(++count, Texture(device, commandList, path));
 
