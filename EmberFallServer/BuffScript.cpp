@@ -2,7 +2,7 @@
 #include "BuffScript.h"
 
 BuffScript::BuffScript(std::shared_ptr<GameObject> owner) 
-    : Script{ owner, ObjectTag::NONE } { }
+    : Script{ owner, ObjectTag::NONE, ScriptType::SKILL } { }
 
 BuffScript::~BuffScript() { }
 

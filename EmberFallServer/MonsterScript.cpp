@@ -8,7 +8,7 @@
 #include "ServerGameScene.h"
 
 MonsterScript::MonsterScript(std::shared_ptr<class GameObject> owner)
-    : Script{ owner, ObjectTag::MONSTER } {
+    : Script{ owner, ObjectTag::MONSTER, ScriptType::MONSTER } {
     owner->mSpec.entity = Packets::EntityType_MONSTER;
     owner->mSpec.hp = 100.0f;
     owner->GetPhysics()->mFactor.maxMoveSpeed = 1.3mps;

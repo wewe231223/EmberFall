@@ -2,6 +2,7 @@
 #include "BT_MonsterAttack.h"
 #include "MonsterScript.h"
 #include "GameTimer.h"
+#include "GameObject.h"
 
 float BT::BT_MonsterAttack::CalculateDecideValue(const std::shared_ptr<Script>& ownerScript) const {
     auto owner = std::static_pointer_cast<MonsterScript>(ownerScript);

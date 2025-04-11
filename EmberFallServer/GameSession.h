@@ -9,9 +9,11 @@ public:
     ~GameSession();
 
 public:
+    std::shared_ptr<GameObject> GetUserObject() const;
+
+    virtual void OnConnect() override;
     virtual void ProcessRecv(INT32 numOfBytes) override;
 
-    std::shared_ptr<GameObject> GetUserObject() const;
 
 private:
     std::shared_ptr<GameObject> mUserObject{ nullptr };

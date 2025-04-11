@@ -99,6 +99,8 @@ void Listener::ProcessAccept() {
 
         decltype(auto) packetProtocolVersion = FbsPacketFactory::ProtocolVersionSC();
         sessionManager->Send(session->GetId(), packetProtocolVersion);
+
+        session->OnConnect();
         
         gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Client [IP: {}, PORT: {}] Connected", ip, port);
     }

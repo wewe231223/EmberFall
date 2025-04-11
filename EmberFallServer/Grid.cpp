@@ -39,6 +39,6 @@ void Grid::Clear() {
     mObjects.clear();
 }
 
-void Grid::AddObject(const std::shared_ptr<class GameObject>& object) {
+void Grid::TryInsert(const std::shared_ptr<class GameObject>& object) {
     mObjects.push_back(object);
 }

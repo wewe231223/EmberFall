@@ -10,16 +10,19 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <set>
-
 class ViewList {
 public:
     ViewList();
     ~ViewList();
 
-public:
-    void Update();
+    ViewList(const ViewList& other);
+    ViewList(ViewList&& other) noexcept;
+    ViewList& operator=(const ViewList& other);
+    ViewList& operator=(ViewList&& other) noexcept;
 
+public:
+    bool IsInList(NetworkObjectIdType id) const;
+    bool TryInsert(NetworkObjectIdType id);
     std::unordered_set<NetworkObjectIdType> GetCurrViewList() const;
 
 public:

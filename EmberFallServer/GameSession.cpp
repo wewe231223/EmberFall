@@ -2,17 +2,27 @@
 #include "GameSession.h"
 #include "FbsPacketProcessFn.h"
 #include "PlayerScript.h"
+#include "ObjectManager.h"
 
 GameSession::GameSession(std::shared_ptr<INetworkCore> core) 
     : Session{ core } { 
-    
 }
 
 GameSession::~GameSession() { 
     Session::Close();
 }
 
-void GameSession::ProcessRecv(INT32 numOfBytes) { 
+void GameSession::OnConnect() {
+    mUserObject = gObjectManager->GetObjectFromId(GetId());
+    mUserObject->mSpec.active = true;
+    auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
+    auto player = mUserObject->GetScript<PlayerScript>();
+    if (nullptr == player) {}
+
+    player->SetOwnerSession(sharedFromThis);
+}
+
+void GameSession::ProcessRecv(INT32 numOfBytes) {
     mOverlappedRecv.owner.reset();
     if (0 >= numOfBytes) {
         Disconnect();

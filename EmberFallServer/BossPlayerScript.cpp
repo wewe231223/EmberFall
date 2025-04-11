@@ -2,9 +2,10 @@
 #include "BossPlayerScript.h"
 #include "Input.h"
 #include "ObjectSpawner.h"
+#include "GameObject.h"
 
 BossPlayerScript::BossPlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input)
-    : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ } {  
+    : Script{ owner, ObjectTag::PLAYER, ScriptType::BOSSPLAYER }, mInput{ input }, mViewList{ } {  
     GetOwner()->mSpec.entity = Packets::EntityType_BOSS;
 }
 

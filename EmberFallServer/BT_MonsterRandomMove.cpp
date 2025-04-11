@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "BT_MonsterRandomMove.h"
+#include "GameObject.h"
 #include "MonsterScript.h"
 
 float BT::BT_MonsterRandomMove::CalculateDecideValue(const std::shared_ptr<Script>& ownerScript) const {

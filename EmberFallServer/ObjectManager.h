@@ -17,9 +17,14 @@ public:
     static constexpr size_t VALID_ID_MAX = ENV_ID_START + MAX_ENV;
 
 public:
-    void Init();
+    ObjectManager();
+    ~ObjectManager();
+
+public:
     void LoadEnvFromFile();
     std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) const;
+
+    bool InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2, const float range);
 
 private:
     std::array<std::shared_ptr<GameObject>, MAX_USER> mPlayers{ };

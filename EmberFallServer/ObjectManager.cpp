@@ -6,7 +6,8 @@
 
 #include "Input.h"
 
-void ObjectManager::Init() {
+
+ObjectManager::ObjectManager() {
     for (NetworkObjectIdType id = 0; id < MAX_USER + MAX_MONSTER + MAX_ENV; ++id) {
         mFreeIndices.push(id);
     }
@@ -16,7 +17,7 @@ void ObjectManager::Init() {
         user->Reset();
         user->mSpec.active = false;
         user->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.3f, 1.5f, 0.3f });
-        user->CreateComponent<PlayerScript>(user, std::make_shared<Input>());
+        user->CreateScript<PlayerScript>(user, std::make_shared<Input>());
     }
 
     for (auto& monster : mMonsters) {
@@ -24,15 +25,17 @@ void ObjectManager::Init() {
         monster->Reset();
         monster->mSpec.active = false;
         //monster->CreateCollider<OrientedBoxCollider>();
-        monster->CreateComponent<MonsterScript>(monster);
+        monster->CreateScript<MonsterScript>(monster);
     }
 
-    for (auto& env : mMonsters) { 
+    for (auto& env : mMonsters) {
         env = std::make_shared<GameObject>();
         env->Reset();
         env->mSpec.active = false;
     }
 }
+
+ObjectManager::~ObjectManager() { }
 
 void ObjectManager::LoadEnvFromFile() { }
 
@@ -42,12 +45,23 @@ std::shared_ptr<GameObject> ObjectManager::GetObjectFromId(NetworkObjectIdType i
         return nullptr;
     }
 
-    if (id < MONSTER_ID_START) {
+    if (id < MONSTER_ID_START - 1) {
         return mPlayers[id];
     }
-    else if (id < ENV_ID_START) {
+    else if (id < ENV_ID_START - 1) {
         return mMonsters[id];
     }
 
     return mEnvironments[id];
+}
+
+bool ObjectManager::InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2, const float range) {
+    const auto obj1 = GetObjectFromId(id1);
+    const auto obj2 = GetObjectFromId(id2);
+
+    const auto pos1 = obj1->GetPosition();
+    const auto pos2 = obj2->GetPosition();
+
+    auto dist = SimpleMath::Vector3::DistanceSquared(pos1, pos2);
+    return dist < (range * range);
 }

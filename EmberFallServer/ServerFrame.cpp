@@ -28,7 +28,9 @@ void ServerFrame::Run() {
     mInputManager = std::make_shared<InputManager>();
 
     auto sessionManager = gServerCore->GetSessionManager();
-    auto fn = []() -> std::shared_ptr<Session> { return std::make_shared<GameSession>(gServerCore); };
+    auto fn = []() -> std::shared_ptr<Session> { 
+        return std::make_shared<GameSession>(gServerCore);
+        };
     sessionManager->RegisterCreateSessionFn(fn);
 
     gServerCore->Start("", SERVER_PORT);

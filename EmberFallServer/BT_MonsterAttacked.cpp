@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "BT_MonsterAttacked.h"
+#include "GameObject.h"
 
 float BT::BT_MonsterAttacked::CalculateDecideValue(const std::shared_ptr<Script>& ownerScript) const {
     auto state = ownerScript->GetOwner()->mAnimationStateMachine.GetCurrState();

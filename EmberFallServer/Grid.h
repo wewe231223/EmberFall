@@ -20,7 +20,7 @@ public:
 
 public:
     void Clear();
-    void AddObject(const std::shared_ptr<class GameObject>& object);
+    void TryInsert(const std::shared_ptr<class GameObject>& object);
 
 private:
     SimpleMath::Vector2 mCellPosition{ };

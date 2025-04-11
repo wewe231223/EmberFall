@@ -9,14 +9,24 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "GameObject.h"
 #include "GameObjectComponent.h"
 
 class GameObject;
 
+enum class ScriptType : uint8_t {
+    PLAYER,
+    BOSSPLAYER,
+    MONSTER,
+    CORRUPTED_GEM,
+    TRIGGER,
+    EVENT_TRIGGER,
+    SKILL,
+    ITEM
+};
+
 class Script abstract : public GameObjectComponent {
 public:
-    Script(std::shared_ptr<GameObject> owner, ObjectTag tag);
+    Script(std::shared_ptr<GameObject> owner, ObjectTag tag, ScriptType type);
     virtual ~Script();
 
 public:
@@ -36,5 +46,6 @@ public:
     virtual void DispatchGameEvent(struct GameEvent* event) abstract;
     
 private:
+    ScriptType mType{ };
     std::weak_ptr<GameObject> mOwner;
 };

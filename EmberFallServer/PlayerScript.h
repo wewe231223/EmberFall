@@ -29,6 +29,12 @@ public:
 
 public:
     std::shared_ptr<Input> GetInput() const;
+    ViewList& GetViewList();
+
+    void SetOwnerSession(std::shared_ptr<class GameSession> session);
+
+    void UpdateViewListNPC(std::vector<NetworkObjectIdType>&& inViewRangeObjects);
+    void UpdateViewListPlayer(std::vector<NetworkObjectIdType>&& inViewRangeObjects);
 
     virtual void Init() override;
 
@@ -61,8 +67,11 @@ private:
     ViewList mViewList;
     Inventory mInventory{ };
 
+    std::mutex mViewListLock{ };
+
     NetworkObjectIdType mInteractionObj{ };
 
+    std::weak_ptr<GameSession> mSession{ };
     std::shared_ptr<Input> mInput{ };
     std::shared_ptr<GameObject> mInteractionTrigger{ };
 };

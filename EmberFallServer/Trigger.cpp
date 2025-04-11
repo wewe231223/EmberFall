@@ -4,9 +4,10 @@
 #include "GameEventManager.h"
 #include "GameTimer.h"
 #include "GameEventFactory.h"
+#include "GameObject.h"
 
 Trigger::Trigger(std::shared_ptr<GameObject> owner, float lifeTime)
-    : Script{ owner, ObjectTag::TRIGGER }, mLifeTime{ lifeTime } {  }
+    : Script{ owner, ObjectTag::TRIGGER, ScriptType::TRIGGER }, mLifeTime{ lifeTime } {  }
 
 Trigger::~Trigger() { }
 

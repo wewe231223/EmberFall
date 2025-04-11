@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "EventTrigger.h"
+#include "GameObject.h"
 #include "GameTimer.h"
 
 #include "GameEventManager.h"

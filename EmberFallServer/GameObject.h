@@ -15,22 +15,11 @@
 
 #include "Collider.h"
 #include "GameObjectComponent.h"
+#include "Script.h"
 #include "WeaponSystem.h"
 #include "AnimationStateMachine.h"
 
 class IServerGameScene;
-
-enum class ObjectTag : uint8_t {
-    ENV,
-    BOSSPLAYER,
-    PLAYER, 
-    MONSTER,
-    CORRUPTED_GEM,
-    ITEM,
-    TRIGGER,
-    ARROW,
-    NONE,
-};
 
 struct ObjectSpec {
     bool active;                    // 활성화 여부
@@ -104,8 +93,15 @@ public:
         requires std::derived_from<ComponentType, GameObjectComponent>
     void CreateComponent(Args&&... args);
 
+    template <typename ScriptType, typename... Args>
+        requires std::derived_from<ScriptType, Script>
+    void CreateScript(Args&&... args);
+
     template <typename ComponentType> requires std::derived_from<ComponentType, GameObjectComponent>
     std::shared_ptr<ComponentType> GetComponent();
+
+    template <typename ScriptType> requires std::derived_from<ScriptType, Script>
+    std::shared_ptr<ScriptType> GetScript();
 
 private:
     void OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
@@ -123,6 +119,7 @@ private:
     std::shared_ptr<Transform> mTransform{ };                           // Transform
     std::shared_ptr<class Physics> mPhysics{ };                         // Physics
     std::shared_ptr<Collider> mCollider{ nullptr };                     // 
+    std::shared_ptr<Script> mScript{ };                           // script
     std::vector<std::shared_ptr<GameObjectComponent>> mComponents{ };   // Components
 
     WeaponSystem mWeaponSystem{ INVALID_OBJ_ID };
@@ -146,6 +143,12 @@ inline void GameObject::CreateComponent(Args && ...args) {
     mComponents.emplace_back(std::make_shared<ComponentType>(args...));
 }
 
+template<typename ScriptType, typename ...Args>
+    requires std::derived_from<ScriptType, Script>
+void GameObject::CreateScript(Args&&... args) {
+    mScript = std::make_shared<ScriptType>(args...);
+}
+
 template<typename ComponentType>
     requires std::derived_from<ComponentType, GameObjectComponent>
 inline std::shared_ptr<ComponentType> GameObject::GetComponent() {
@@ -157,4 +160,9 @@ inline std::shared_ptr<ComponentType> GameObject::GetComponent() {
     }
 
     return nullptr;
+}
+
+template<typename ScriptType> requires std::derived_from<ScriptType, Script>
+inline std::shared_ptr<ScriptType> GameObject::GetScript() {
+    return std::dynamic_pointer_cast<ScriptType>(mScript);
 }

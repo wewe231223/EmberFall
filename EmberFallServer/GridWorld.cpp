@@ -44,7 +44,7 @@ void GridWorld::Update(const std::vector<std::shared_ptr<class GameObject>>& obj
 
         for (INT32 z = minZ; z <= maxZ; ++z) {
             for (INT32 x = minX; x <= maxX; ++x) {
-                mGrid[z * mHeight + x].AddObject(player);
+                mGrid[z * mHeight + x].TryInsert(player);
             }
         }
     }

@@ -1,8 +1,9 @@
 #include "pch.h"
 #include "ItemScript.h"
+#include "GameObject.h"
 
 ItemScript::ItemScript(std::shared_ptr<GameObject> owner, ItemTag item) 
-    : Script{ owner, ObjectTag::ITEM }, mItemTag{ item } { 
+    : Script{ owner, ObjectTag::ITEM, ScriptType::ITEM }, mItemTag{ item } { 
     owner->mSpec.interactable = true;
 }
 

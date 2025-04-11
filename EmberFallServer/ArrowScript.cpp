@@ -1,10 +1,11 @@
 #include "pch.h"
 #include "ArrowScript.h"
+#include "GameObject.h"
 #include "GameEventManager.h"
 
 ArrowScript::ArrowScript(std::shared_ptr<GameObject> owner, const SimpleMath::Vector3& pos,
     const SimpleMath::Vector3& dir, GameUnits::GameUnit<GameUnits::StandardSpeed> speed) 
-    : Script{ owner, ObjectTag::ARROW } {
+    : Script{ owner, ObjectTag::ARROW, ScriptType::TRIGGER } {
     owner->mSpec.entity = Packets::EntityType_PROJECTILE;
     owner->GetTransform()->Translate(pos);
     owner->GetPhysics()->AddVelocity(dir);

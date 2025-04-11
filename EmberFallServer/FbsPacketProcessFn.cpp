@@ -6,6 +6,7 @@
 #include "ServerFrame.h"
 #include "GameSession.h"
 #include "ObjectManager.h"
+#include "Sector.h"
 
 // MultiThread Test
 void ProcessPackets(std::shared_ptr<GameSession>& session, const uint8_t* const buffer, size_t bufSize) {
@@ -104,17 +105,11 @@ void ProcessPlayerInputCS(std::shared_ptr<GameSession>& session, const Packets::
 void ProcessPlayerLookCS(std::shared_ptr<GameSession>& session, const Packets::PlayerLookCS* const look) {
     static bool once{ false };
     if (not once) {
-        auto packet = FbsPacketFactory::ObjectAppearedSC(
-            session->GetId(),
-            Packets::EntityType_HUMAN,
-            0.0f,
-            Packets::AnimationState_IDLE,
-            0.0f,
-            SimpleMath::Vector3::Zero
-        );
-        session->RegisterSend(packet);
-
-        gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Send Appeared Packet!!!");
+        gSectorSystem->AddInSector(session->GetId(), session->GetUserObject()->GetPosition());
+        const auto player = session->GetUserObject();
+        const auto pos = player->GetPosition();
+        const auto range = player->GetScript<PlayerScript>()->GetViewList().mViewRange.Count();
+        gSectorSystem->UpdatePlayerViewList(player, pos, range);
     }
     once = true;
 

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "BT_MonsterChase.h"
 #include "MonsterScript.h"
+#include "GameObject.h"
 #include "GameTimer.h"
 
 float BT::BT_MonsterChase::CalculateDecideValue(const std::shared_ptr<Script>& ownerScript) const {

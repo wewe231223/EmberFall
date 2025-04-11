@@ -32,4 +32,5 @@ extern std::unique_ptr<class ServerFrame> gServerFrame;
 extern std::shared_ptr<class GameEventManager> gEventManager;
 extern std::unique_ptr<class ObjectSpawner> gObjectSpawner;
 extern std::shared_ptr<class ServerCore> gServerCore;
-extern std::unique_ptr<class ObjectManager> mObjectManager;
+extern std::unique_ptr<class ObjectManager> gObjectManager;
+extern std::unique_ptr<class SectorSystem> gSectorSystem;
