@@ -4,6 +4,8 @@ cbuffer Camera : register(b0)
     matrix projection;
     matrix viewProjection;
     float3 cameraPosition;
+
+
 }
 
 struct ModelContext
@@ -81,7 +83,11 @@ SkyBox_VOUT SkyBox_VS(SkyBox_VIN input)
 
 Deffered_POUT SkyBox_PS(SkyBox_VOUT input)
 {
+    
     Deffered_POUT output = (Deffered_POUT)0;
+    
+    
+    
     output.diffuse = textures[input.imageID].Sample(pointWrapSampler, input.texcoord);
     return output;
 }

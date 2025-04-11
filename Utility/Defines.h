@@ -20,6 +20,7 @@ struct CameraConstants {
     SimpleMath::Matrix proj;
     SimpleMath::Matrix viewProj;
     SimpleMath::Vector3 cameraPosition;
+	int isShadow{ 0 };
 };
 
 using MaterialIndex = UINT;

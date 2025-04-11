@@ -5,10 +5,13 @@
 #include "../Utility/DirectXInclude.h"
 
 class ShadowRenderer {
-	static constexpr SimpleMath::Vector3 LIGHTDIRECTION{ 1.f, -1.f, -1.f };
+	static constexpr SimpleMath::Vector3 LIGHTDIRECTION{ 1.f, -3.f, -1.f };
 
 	template<typename T>
 	static constexpr T SHADOWMAPSIZE = static_cast<T>(2000);
+
+	//그림자 맵에 담을 프러스텀의 원평면 까지의 거리
+	static constexpr float FRUSTUMLENGTH = 10.0f;
 public:
 	ShadowRenderer() = default;
 	ShadowRenderer(ComPtr<ID3D12Device> device);
@@ -25,7 +28,6 @@ public:
 	// 그림자 맵 만들기 
 	void SetShadowDSV(ComPtr<ID3D12GraphicsCommandList> commandList);
 	void Update(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator worldCameraBuffer); 
-	void TransitionShadowMap(ComPtr<ID3D12GraphicsCommandList> commandList);
 
 	DefaultBufferGPUIterator GetShadowCameraBuffer(); 
 
@@ -38,6 +40,7 @@ private:
 	void StablizeShadowMatrix(SimpleMath::Matrix& shadowCameraVP);
 
 private:
+	ComPtr<ID3D12DescriptorHeap> mShadowRTVHeap{};
 	ComPtr<ID3D12DescriptorHeap> mShadowDSVHeap{};
 
 	DefaultBuffer mShadowCameraBuffer{};
@@ -45,4 +48,7 @@ private:
 	CameraConstants mShadowCamera{};
 
 	Texture mShadowMap{}; 
+	Texture mDepthStencilMap{};
+
+
 };

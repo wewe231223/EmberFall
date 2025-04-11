@@ -94,12 +94,13 @@ void Renderer::Render() {
 
 	mMainCameraBuffer.Upload(mCommandList);
 	mMeshRenderManager->PrepareRender(mCommandList);
+	mTextureManager->Bind(mCommandList);
 
-
+	mShadowRenderer.GetShadowMap().Transition(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	mShadowRenderer.SetShadowDSV(mCommandList);
 	mShadowRenderer.Update(mCommandList, mMainCameraBuffer.CPUBegin());
 
-	mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer.GetShadowCameraBuffer());
+	mMeshRenderManager->RenderShadowPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer.GetShadowCameraBuffer());
 	// mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
 
 	viewport.TopLeftX = 0;
@@ -137,7 +138,7 @@ void Renderer::Render() {
 
 	auto& currentBackBuffer = mRenderTargets[mRTIndex];
 
-	mTextureManager->Bind(mCommandList);
+	//mTextureManager->Bind(mCommandList);
 	mMeshRenderManager->RenderGPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin() );
 	mMeshRenderManager->Reset();
 
@@ -145,7 +146,7 @@ void Renderer::Render() {
 	//mParticleManager->RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress());
 
 	// Deffered Rendering Pass 
-	mShadowRenderer.TransitionShadowMap(mCommandList);
+	mShadowRenderer.GetShadowMap().Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 

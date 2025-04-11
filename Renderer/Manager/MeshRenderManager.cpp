@@ -73,8 +73,8 @@ void MeshRenderManager::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandL
 	mAnimationBuffer.Upload(commandList, mAnimationBuffer.CPUBegin(), it);
 }
 
-void MeshRenderManager::RenderShadowPass(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
-	MeshRenderManager::RenderShadowPassPlainMesh(commandList, mat, camera);
+void MeshRenderManager::RenderShadowPass(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex,D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
+	MeshRenderManager::RenderShadowPassPlainMesh(commandList, tex, mat, camera);
 	MeshRenderManager::RenderShadowPassBonedMesh(commandList, mat, camera);
 }
 
@@ -93,13 +93,14 @@ void MeshRenderManager::Reset(){
 	mPlainMeshContexts.clear(); 
 }
 
-void MeshRenderManager::RenderShadowPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
+void MeshRenderManager::RenderShadowPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
 	auto gpuIt = mPlainMeshBuffer.GPUBegin() + static_cast<std::ptrdiff_t>(MeshRenderManager::RESERVED_CONTEXT_SLOT);
 
 	for (auto& [shader, meshContexts] : mPlainMeshContexts) {
 		shader->SetShadowPassShader(commandList);
 		commandList->SetGraphicsRootConstantBufferView(0, camera);
 		commandList->SetGraphicsRootShaderResourceView(2, mat);
+		commandList->SetGraphicsRootDescriptorTable(3, tex);
 
 		for (auto& [mesh, worlds] : meshContexts) {
 

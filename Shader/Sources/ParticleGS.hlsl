@@ -8,6 +8,8 @@ cbuffer CameraCB : register(b0)
     matrix projectionMatrix;
     matrix viewProjectionMatrix;
     float3 cameraPosition;
+ 
+
 };
 
 cbuffer GlobalCB : register(b1)
