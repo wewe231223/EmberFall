@@ -70,8 +70,8 @@ void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, Defau
 
 	SimpleMath::Vector3 directionNormalized = LIGHTDIRECTION;
 	directionNormalized.Normalize();
-	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (350.0f));
-	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (FRUSTUMLENGTH - cameraParam.nearZ));
+	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (300.0f));
+	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (FRUSTUMLENGTH - cameraParam.nearZ) );
 
 	SimpleMath::Matrix view = SimpleMath::Matrix::CreateLookAt(cameraPos, centerFrustum, DirectX::SimpleMath::Vector3::Up);
 
@@ -103,10 +103,12 @@ void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, Defau
 
 
 	float projectionSize = std::max(maxPoint.x - minPoint.x, maxPoint.y - minPoint.y);
-	float padding = 10.0f;  // 조명 투영행렬의 근,원평면에 약간의 여유 공간을 추가할때 사용.
-	float nearPlane = minPoint.z - padding;
-	float farPlane = maxPoint.z + padding;
-	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize * 2.0f, projectionSize * 2.0f, nearPlane, farPlane);
+	float nearPadding =40.0f;  // 조명 투영행렬의 근,원평면에 약간의 여유 공간을 추가할때 사용.
+	float farPadding = 40.0f;
+	float nearPlane = minPoint.z - nearPadding;
+	float farPlane = maxPoint.z + farPadding;
+	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize, projectionSize, nearPlane, farPlane);
+	//SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize, projectionSize, 1.0f, 700.0f);
 
 
 

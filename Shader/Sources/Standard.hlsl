@@ -100,11 +100,11 @@ Deffered_POUT Standard_PS(Standard_VOUT input) {
     
     clip(color.a - 0.2f);
 
-    if (isShadow == 1)
+    [unroll]
+    for (int i = 0; i < isShadow; ++i)
     {
         float depth = input.position.z / input.position.w;
         output.diffuse = float4(depth, depth, depth, 1.0f);
-
         return output;
     }
 
