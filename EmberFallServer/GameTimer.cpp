@@ -8,16 +8,16 @@ TimerEvent::~TimerEvent() { }
 
 TimerEvent::TimerEvent(TimerEvent&& other) noexcept { 
     mFunction = std::move(other.mFunction);
-    mTimeRegistered = GameTimer::Clock::now();
-    mDelay = other.mDelay - std::chrono::duration_cast<Duration>(GameTimer::Clock::now() - other.mTimeRegistered);
+    mTimeRegistered = Clock::now();
+    mDelay = other.mDelay - std::chrono::duration_cast<Duration>(Clock::now() - other.mTimeRegistered);
     mDelayOrigin = other.mDelayOrigin;
     mLoopCount = other.mLoopCount;
 }
 
 TimerEvent& TimerEvent::operator=(TimerEvent&& other) noexcept {
     mFunction = std::move(other.mFunction);
-    mTimeRegistered = GameTimer::Clock::now();
-    mDelay = other.mDelay - std::chrono::duration_cast<Duration>(GameTimer::Clock::now() - other.mTimeRegistered);
+    mTimeRegistered = Clock::now();
+    mDelay = other.mDelay - std::chrono::duration_cast<Duration>(Clock::now() - other.mTimeRegistered);
     mDelayOrigin = other.mDelayOrigin;
     mLoopCount = other.mLoopCount;
     return *this;
@@ -29,11 +29,11 @@ bool TimerEvent::operator<(const TimerEvent& right) const {
     return  leftExcutionTime > rightExcutionTime;
 }
 
-GameTimer::EventCallBack GameTimer::TimerEvent::GetFunction() const {
+EventCallBack GameTimer::TimerEvent::GetFunction() const {
     return mFunction;
 }
 
-GameTimer::Duration GameTimer::TimerEvent::GetDuration() const {
+Duration GameTimer::TimerEvent::GetDuration() const {
     return mDelayOrigin;
 }
 
@@ -136,11 +136,24 @@ void StaticTimer::Update() {
     mTimer.Update();
 }
 
-void StaticTimer::PushTimerEvent(GameTimer::EventCallBack&& callback, GameTimer::Duration time, int32_t loopCount) {
+void StaticTimer::PushTimerEvent(EventCallBack&& callback, Duration time, int32_t loopCount) {
     mTimer.PushTimerEvent(std::move(callback), time, loopCount);
 }
 
-void StaticTimer::PushTimerEvent(GameTimer::EventCallBack&& callback, float time, int32_t loopCount) {
-    auto duration = std::chrono::duration_cast<GameTimer::Duration>(std::chrono::duration<float>(time));
+void StaticTimer::PushTimerEvent(EventCallBack&& callback, float time, int32_t loopCount) {
+    auto duration = std::chrono::duration_cast<Duration>(std::chrono::duration<float>(time));
     mTimer.PushTimerEvent(std::move(callback), duration, loopCount);
+}
+
+void SimpleTimer::UpdatePoint() {
+    mPrevPoint = mCurrPoint;
+    mCurrPoint = Clock::now();
+}
+
+float SimpleTimer::GetDeltaTime() const {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(mCurrPoint - mPrevPoint).count();
+}
+
+Clock::time_point SimpleTimer::GetPointNow() {
+    return Clock::now();
 }

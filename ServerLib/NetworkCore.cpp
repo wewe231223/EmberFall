@@ -44,15 +44,20 @@ std::shared_ptr<SessionManager> ServerCore::GetSessionManager() const {
     return mSessionManager;
 }
 
+void ServerCore::Init() {
+    auto sharedPtrThis = std::static_pointer_cast<ServerCore>(shared_from_this());
+    mSessionManager = std::make_shared<SessionManager>(sharedPtrThis);
+}
+
 bool ServerCore::Start(const std::string& ip, const UINT16 port) {
     WSADATA data{ };
     if (0 != ::WSAStartup(MAKEWORD(2, 2), &data)) {
         return false;
     }
 
+    INetworkCore::Init();
     GetIOCPCore()->Init(mWorkerThreadNum);
     auto sharedPtrThis = std::static_pointer_cast<ServerCore>(shared_from_this());
-    mSessionManager = std::make_shared<SessionManager>(sharedPtrThis);
     mListener = std::make_unique<Listener>(port, sharedPtrThis);
 
     GetIOCPCore()->RegisterSocket(mListener);

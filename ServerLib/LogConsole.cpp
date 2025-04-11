@@ -1,16 +1,18 @@
 #include "pch.h"
 #include "LogConsole.h"
 
-LogConsole::LogConsole() {
-    mConsoleHandle = ::GetStdHandle(STD_OUTPUT_HANDLE);
-    mPrintThread = std::thread{ [=]() { Worker(); } };
-}
+LogConsole::LogConsole() { }
 
 LogConsole::~LogConsole() {
     mPrintLoop = false;
     if (mPrintThread.joinable()) {
         mPrintThread.join();
     }
+}
+
+void LogConsole::Start() {
+    mConsoleHandle = ::GetStdHandle(STD_OUTPUT_HANDLE);
+    mPrintThread = std::thread{ [=]() { Worker(); } };
 }
 
 void LogConsole::SetConsoleColor(ConsoleColor text, ConsoleColor background) {

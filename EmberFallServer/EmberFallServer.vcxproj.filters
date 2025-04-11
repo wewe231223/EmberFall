@@ -259,6 +259,15 @@
     <ClCompile Include="BuffScript.cpp">
       <Filter>Script\Item&amp;Skill</Filter>
     </ClCompile>
+    <ClCompile Include="InteractionSystem.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectManager.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSession.cpp">
+      <Filter>Object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -413,6 +422,15 @@
     </ClInclude>
     <ClInclude Include="BuffScript.h">
       <Filter>Script\Item&amp;Skill</Filter>
+    </ClInclude>
+    <ClInclude Include="InteractionSystem.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectManager.h">
+      <Filter>Object</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSession.h">
+      <Filter>Object</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

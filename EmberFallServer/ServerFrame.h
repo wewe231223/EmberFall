@@ -21,15 +21,12 @@ public:
 public:
     std::shared_ptr<class InputManager> GetInputManager() const;
 
+    void Run();
+
     void InitGameScenes();
-    void GameLoop();
 
 private:
-    void OnPlayerConnect(SessionIdType id);
-    void OnPlayerDisconnect(SessionIdType id);
-
-private:
-    bool mDone{ };
+    volatile bool mDone{ false };
     
     std::vector<std::shared_ptr<class IServerGameScene>> mGameScenes{ };
     std::shared_ptr<class IServerGameScene> mCurrentScene{ };

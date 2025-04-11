@@ -6,14 +6,13 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class GameTimer {
-public:
-    using Clock = std::chrono::high_resolution_clock;
-    using TimePeriod = std::milli;
-    using Duration = std::chrono::duration<float, TimePeriod>;
-    using TimePoint = Clock::time_point;
-    using EventCallBack = std::function<void()>;
+using Clock = std::chrono::high_resolution_clock;
+using TimePeriod = std::milli;
+using Duration = std::chrono::duration<float, TimePeriod>;
+using TimePoint = Clock::time_point;
+using EventCallBack = std::function<void()>;
 
+class GameTimer {
 public:
     class TimerEvent {
     public:
@@ -80,6 +79,22 @@ private:
 
 using TimerEvent = GameTimer::TimerEvent;
 
+class SimpleTimer {
+public:
+    SimpleTimer() = default;
+    ~SimpleTimer() = default;
+
+public:
+    void UpdatePoint();
+    float GetDeltaTime() const;
+
+    Clock::time_point GetPointNow();
+
+private:
+    Clock::time_point mPrevPoint{ };
+    Clock::time_point mCurrPoint{ };
+};
+
 class StaticTimer {
 public:
     static void Sync(int32_t syncFrame = 0);
@@ -89,8 +104,8 @@ public:
 
     static void Update();
 
-    static void PushTimerEvent(GameTimer::EventCallBack&& callback, GameTimer::Duration time, int32_t loopCount);
-    static void PushTimerEvent(GameTimer::EventCallBack&& callback, float time, int32_t loopCount);
+    static void PushTimerEvent(EventCallBack&& callback, Duration time, int32_t loopCount);
+    static void PushTimerEvent(EventCallBack&& callback, float time, int32_t loopCount);
 
 private:
     inline static GameTimer mTimer{ };

@@ -54,6 +54,7 @@ public:
     bool IsListenerClosed() const;
     std::shared_ptr<SessionManager> GetSessionManager() const;
 
+    virtual void Init() override;
     virtual bool Start(const std::string& ip, const UINT16 port) override;
     virtual void End() override;
 

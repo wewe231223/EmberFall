@@ -14,8 +14,12 @@ SessionManager::~SessionManager() {
     mSessions.clear();
 }
 
+void SessionManager::RegisterCreateSessionFn(std::function<std::shared_ptr<Session>()>&& fn) {
+    mCreateSessionFn = fn;
+}
+
 std::shared_ptr<Session> SessionManager::CreateSessionObject() {
-    return std::make_shared<Session>(mCoreService);
+    return mCreateSessionFn();
 }
 
 bool SessionManager::AddSession(std::shared_ptr<Session> session) {
@@ -33,8 +37,6 @@ bool SessionManager::AddSession(std::shared_ptr<Session> session) {
 
     mCoreService->GetIOCPCore()->RegisterSocket(session);
 
-    mOnSessionConnFn(id);
-
     return true;
 }
 
@@ -46,17 +48,7 @@ void SessionManager::CloseSession(SessionIdType id) {
         mSessions.unsafe_erase(it);
         mSessionCount.fetch_sub(1);
         gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Session[{}]: erased from session map", id);
-
-        mOnSessionDisconnFn(id);
     }
-}
-
-void SessionManager::RegisterOnSessionConnect(std::function<void(SessionIdType)>&& fn) {
-    mOnSessionConnFn = fn;
-}
-
-void SessionManager::RegisterOnSessionDisconnect(std::function<void(SessionIdType)>&& fn) {
-    mOnSessionDisconnFn = fn;
 }
 
 std::shared_ptr<Session> SessionManager::GetSession(SessionIdType id) {

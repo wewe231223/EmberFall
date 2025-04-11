@@ -9,19 +9,9 @@
 #include "Input.h"
 
 #include "PlayerScript.h"
+#include "GameSession.h"
 
-ServerFrame::ServerFrame() {
-    gServerCore->Init();
-
-    mInputManager = std::make_shared<InputManager>();
-
-    //mTimer = std::make_shared<GameTimer>();
-
-    gServerCore->Start("", SERVER_PORT);
-    auto sessionManager = gServerCore->GetSessionManager();
-    sessionManager->RegisterOnSessionConnect(std::bind_front(&ServerFrame::OnPlayerConnect, this));
-    sessionManager->RegisterOnSessionDisconnect(std::bind_front(&ServerFrame::OnPlayerDisconnect, this));
-}
+ServerFrame::ServerFrame() {}
 
 ServerFrame::~ServerFrame() { 
     mGameScenes.clear();
@@ -32,58 +22,20 @@ std::shared_ptr<class InputManager> ServerFrame::GetInputManager() const {
     return mInputManager;
 }
 
+void ServerFrame::Run() {
+    gServerCore->Init();
+
+    mInputManager = std::make_shared<InputManager>();
+
+    auto sessionManager = gServerCore->GetSessionManager();
+    auto fn = []() -> std::shared_ptr<Session> { return std::make_shared<GameSession>(gServerCore); };
+    sessionManager->RegisterCreateSessionFn(fn);
+
+    gServerCore->Start("", SERVER_PORT);
+
+    while (not mDone) { };
+}
+
 void ServerFrame::InitGameScenes() {
     BoundingBoxImporter::LoadFromFile();
-
-    mGameScenes.emplace_back(std::make_shared<PlayScene>());
-
-    mCurrentScene = mGameScenes.front();
-    gObjectSpawner->SetCurrentScene(mCurrentScene);
-    gEventManager->SetCurrentGameScene(mCurrentScene);
-
-    mCurrentScene->Init();
-
-    StaticTimer::Sync(15);
-}
-
-void ServerFrame::GameLoop() {
-    while (true) {
-        StaticTimer::Update();
-        const float deltaTime = StaticTimer::GetDeltaTime();
-
-        mCurrentScene->DispatchPlayerEvent(mPlayerEventQueue);
-        mCurrentScene->Update(deltaTime);
-        mCurrentScene->LateUpdate(deltaTime);
-    }
-}
-
-void ServerFrame::OnPlayerConnect(SessionIdType id) {
-    auto object = std::make_shared<GameObject>(mCurrentScene);
-    
-    object->InitId(id);
-    //object->CreateCollider<OrientedBoxCollider>(BoundingBoxImporter::GetBoundingBox(EntryKeys::PLAYER_BOUNDING_BOX));
-    object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.4f, 1.5f, 0.4f });
-    object->CreateComponent<PlayerScript>(object, mInputManager->GetInput(id));
-    object->mSpec.active = true;
-
-    Lock::SRWLockGuard playersGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mPlayersLock };
-    mPlayers[id] = object;
-
-    PlayerEvent event{ PlayerEvent::EventType::CONNECT, id, object };
-    mPlayerEventQueue.push(event);
-}
-
-void ServerFrame::OnPlayerDisconnect(SessionIdType id) {
-    Lock::SRWLockGuard playersGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mPlayersLock };
-
-    auto it = mPlayers.find(id);
-    if (it == mPlayers.end()) {
-        return;
-    }
-
-    mPlayers.erase(it);
-    mInputManager->DeleteInput(id);
-
-    PlayerEvent event{ PlayerEvent::EventType::DISCONNECT, id };
-    mPlayerEventQueue.push(event);
 }
