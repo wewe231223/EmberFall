@@ -1,9 +1,12 @@
 #include "pch.h"
 #include "GameSession.h"
 #include "FbsPacketProcessFn.h"
+#include "PlayerScript.h"
 
 GameSession::GameSession(std::shared_ptr<INetworkCore> core) 
-    : Session{ core } { }
+    : Session{ core } { 
+    
+}
 
 GameSession::~GameSession() { 
     Session::Close();
@@ -39,7 +42,6 @@ void GameSession::ProcessRecv(INT32 numOfBytes) {
     RegisterRecv();
 }
 
-std::shared_ptr<GameObject> GameSession::GetUserObject() const
-{
-    return std::shared_ptr<GameObject>();
+std::shared_ptr<GameObject> GameSession::GetUserObject() const {
+    return mUserObject;
 }

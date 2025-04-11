@@ -46,7 +46,7 @@ struct ObjectSpec {
 
 class GameObject : public std::enable_shared_from_this<GameObject> {
 public:
-    GameObject(std::shared_ptr<IServerGameScene> gameScene);
+    GameObject();
     ~GameObject();
 
 public:
@@ -68,8 +68,6 @@ public:
 
     float GetSpeed() const;
     SimpleMath::Vector3 GetMoveDir() const;
-
-    std::shared_ptr<IServerGameScene> GetOwnGameScene() const;
 
     // Setter
     void SetTag(ObjectTag tag);
@@ -128,8 +126,6 @@ private:
     std::vector<std::shared_ptr<GameObjectComponent>> mComponents{ };   // Components
 
     WeaponSystem mWeaponSystem{ INVALID_OBJ_ID };
-
-    std::shared_ptr<IServerGameScene> mGameScene{ };
 };
 
 // Definition of template functions

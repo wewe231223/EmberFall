@@ -84,9 +84,9 @@ void MonsterScript::DispatchGameEvent(GameEvent* event) {
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
         if (event->sender != event->receiver) {
-            if (GetOwner()->GetOwnGameScene()->GetObjectFromId(event->sender)->GetTag() == ObjectTag::MONSTER) {
-                return;
-            }
+            //if (GetOwner()->GetOwnGameScene()->GetObjectFromId(event->sender)->GetTag() == ObjectTag::MONSTER) {
+            //    return;
+            //}
 
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
             GetOwner()->mSpec.hp -= attackEvent->damage;
@@ -143,19 +143,19 @@ BT::NodeStatus MonsterScript::MoveTo(const float deltaTime) {
 BT::NodeStatus MonsterScript::DetectPlayerInRange(const float deltaTime) {
     auto owner = GetOwner();
 
-    auto gameWorld = owner->GetOwnGameScene();
-    if (nullptr == gameWorld) {
-        return BT::NodeStatus::FAIL;
-    }
+    //auto gameWorld = owner->GetOwnGameScene();
+    //if (nullptr == gameWorld) {
+    //    return BT::NodeStatus::FAIL;
+    //}
 
-    decltype(auto) playerList = gameWorld->GetPlayers();
-    for (const auto& player : playerList) {
-        auto distance = SimpleMath::Vector3::Distance(player->GetPosition(), owner->GetPosition());
-        if (distance < mPlayerDetectRange.Count()) {
-            mChaseTarget = player;
-            return BT::NodeStatus::SUCCESS;
-        }
-    }
+    //decltype(auto) playerList = gameWorld->GetPlayers();
+    //for (const auto& player : playerList) {
+    //    auto distance = SimpleMath::Vector3::Distance(player->GetPosition(), owner->GetPosition());
+    //    if (distance < mPlayerDetectRange.Count()) {
+    //        mChaseTarget = player;
+    //        return BT::NodeStatus::SUCCESS;
+    //    }
+    //}
 
     mChaseTarget = nullptr;
     return BT::NodeStatus::FAIL;

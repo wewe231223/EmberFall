@@ -13,9 +13,6 @@ public:
     virtual ~BossPlayerScript();
 
 public:
-    void ResetGameScene(std::shared_ptr<IServerGameScene> gameScene);
-    std::shared_ptr<IServerGameScene> GetCurrentScene() const;
-
     virtual void Init() override;
 
     virtual void Update(const float deltaTime) override;

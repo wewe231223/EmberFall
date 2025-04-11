@@ -10,24 +10,15 @@
 #include "Trigger.h"
 
 PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input)
-    : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ static_cast<SessionIdType>(owner->GetId()) } {
+    : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ } {
     owner->mSpec.entity = Packets::EntityType_HUMAN;
     owner->ChangeWeapon(Packets::Weapon_SWORD);
 }
 
 PlayerScript::~PlayerScript() { }
 
-void PlayerScript::ResetGameScene(std::shared_ptr<IServerGameScene> gameScene) {
-    mGameScene = gameScene;
-    mViewList.mCurrentScene = gameScene;
-}
-
 std::shared_ptr<Input> PlayerScript::GetInput() const {
     return mInput;
-}
-
-std::shared_ptr<IServerGameScene> PlayerScript::GetCurrentScene() const {
-    return mGameScene;
 }
 
 void PlayerScript::Init() { 
@@ -38,9 +29,6 @@ void PlayerScript::Update(const float deltaTime) {
     decltype(auto) owner = GetOwner();
 
     mInteractionTrigger->GetTransform()->SetPosition(owner->GetPosition());
-    mViewList.mPosition = owner->GetPosition();
-    mViewList.Update();
-    mViewList.Send();
 
     // Interact
     if (mInput->IsActiveKey('F')) {
@@ -135,46 +123,46 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
 }
 
 std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
-    decltype(auto) objects = mInteractionTrigger->GetComponent<Trigger>()->GetObjects();
-    if (objects.empty()) {
-        return nullptr;
-    }
+    //decltype(auto) objects = mInteractionTrigger->GetComponent<Trigger>()->GetObjects();
+    //if (objects.empty()) {
+    //    return nullptr;
+    //}
 
-    auto owner = GetOwner();
-    auto ownerPos = owner->GetPosition();
-    auto ownerId = owner->GetId();
-    decltype(auto) filterObjects = std::views::filter(objects, [this](NetworkObjectIdType id) {
-        decltype(auto) obj = mGameScene->GetObjectFromId(id);
-        if (false == obj->mSpec.interactable or false == obj->mSpec.active) {
-            return false;
-        }
+    //auto owner = GetOwner();
+    //auto ownerPos = owner->GetPosition();
+    //auto ownerId = owner->GetId();
+    //decltype(auto) filterObjects = std::views::filter(objects, [this](NetworkObjectIdType id) {
+    //    decltype(auto) obj = mGameScene->GetObjectFromId(id);
+    //    if (false == obj->mSpec.interactable or false == obj->mSpec.active) {
+    //        return false;
+    //    }
 
-        return true;
-        }
-    );
+    //    return true;
+    //    }
+    //);
 
-    if (std::ranges::empty(filterObjects)) {
-        return nullptr;
-    }
+    //if (std::ranges::empty(filterObjects)) {
+    //    return nullptr;
+    //}
 
-    if (std::ranges::distance(filterObjects) == 1) {
-        return mGameScene->GetObjectFromId(*filterObjects.begin());
-    }
+    //if (std::ranges::distance(filterObjects) == 1) {
+    //    return mGameScene->GetObjectFromId(*filterObjects.begin());
+    //}
 
-    auto result = *std::ranges::min_element(filterObjects, [&owner, ownerId, ownerPos, this](NetworkObjectIdType id1, NetworkObjectIdType id2) {
-        if (ownerId == id1 or ownerId == id2) {
-            return false;
-        }
+    //auto result = *std::ranges::min_element(filterObjects, [&owner, ownerId, ownerPos, this](NetworkObjectIdType id1, NetworkObjectIdType id2) {
+    //    if (ownerId == id1 or ownerId == id2) {
+    //        return false;
+    //    }
 
-        decltype(auto) obj1 = mGameScene->GetObjectFromId(id1);
-        decltype(auto) obj2 = mGameScene->GetObjectFromId(id2);
+    //    decltype(auto) obj1 = mGameScene->GetObjectFromId(id1);
+    //    decltype(auto) obj2 = mGameScene->GetObjectFromId(id2);
 
-        return SimpleMath::Vector3::DistanceSquared(ownerPos, obj1->GetPosition()) < SimpleMath::Vector3::DistanceSquared(ownerPos, obj2->GetPosition());
-        }
-    );
+    //    return SimpleMath::Vector3::DistanceSquared(ownerPos, obj1->GetPosition()) < SimpleMath::Vector3::DistanceSquared(ownerPos, obj2->GetPosition());
+    //    }
+    //);
 
-    decltype(auto) resultObject = mGameScene->GetObjectFromId(result);
-    return resultObject;
+    //decltype(auto) resultObject = mGameScene->GetObjectFromId(result);
+    return nullptr;
 }
 
 void PlayerScript::CheckAndMove(const float deltaTime) {

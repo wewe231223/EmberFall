@@ -173,6 +173,7 @@
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="ObjectSpawner.cpp" />
     <ClCompile Include="PathFinder.cpp" />
+    <ClCompile Include="Sector.cpp" />
     <ClCompile Include="TerrainCollider.cpp" />
     <ClCompile Include="CorruptedGem.cpp" />
     <ClCompile Include="EmberFallServer.cpp" />
@@ -194,7 +195,6 @@
     <ClCompile Include="GameRandom.cpp" />
     <ClCompile Include="Script.cpp" />
     <ClCompile Include="ServerFrame.cpp" />
-    <ClCompile Include="ServerGameScene.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Trigger.cpp" />
@@ -233,6 +233,7 @@
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="ObjectSpawner.h" />
     <ClInclude Include="PathFinder.h" />
+    <ClInclude Include="Sector.h" />
     <ClInclude Include="TerrainCollider.h" />
     <ClInclude Include="CorruptedGem.h" />
     <ClInclude Include="Events.h" />
@@ -250,7 +251,6 @@
     <ClInclude Include="GameRandom.h" />
     <ClInclude Include="Script.h" />
     <ClInclude Include="ServerFrame.h" />
-    <ClInclude Include="ServerGameScene.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Trigger.h" />

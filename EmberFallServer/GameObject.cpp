@@ -5,8 +5,8 @@
 
 #include "ServerGameScene.h"
 
-GameObject::GameObject(std::shared_ptr<IServerGameScene> gameScene)
-    : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mGameScene{ gameScene } {
+GameObject::GameObject()
+    : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() } {
     mWeaponSystem.SetWeapon(Packets::Weapon_SWORD);
     mPhysics->SetTransform(mTransform);
 }
@@ -39,10 +39,6 @@ std::shared_ptr<Physics> GameObject::GetPhysics() const {
 
 std::shared_ptr<Collider> GameObject::GetCollider() const {
     return mCollider;
-}
-
-std::shared_ptr<IServerGameScene> GameObject::GetOwnGameScene() const {
-    return mGameScene;
 }
 
 SimpleMath::Vector3 GameObject::GetPosition() const {

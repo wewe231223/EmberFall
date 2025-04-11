@@ -14,29 +14,17 @@
 
 class ViewList {
 public:
-    ViewList(SessionIdType ownerId);
+    ViewList();
     ~ViewList();
-
-    ViewList& operator=(const ViewList& other);
-    ViewList& operator=(ViewList&& other) noexcept;
 
 public:
     void Update();
-    void Send();
 
-    void AddInRange(std::shared_ptr<class GameObject> obj);
-    bool EraseFromRange(std::shared_ptr<class GameObject> obj);
-
-    std::set<std::shared_ptr<class GameObject>>& GetInRangeObjects();
+    std::unordered_set<NetworkObjectIdType> GetCurrViewList() const;
 
 public:
     GameUnits::GameUnit<GameUnits::Meter> mViewRange{ 100.0m };
-    SimpleMath::Vector3 mPosition{ };
-    std::shared_ptr<class IServerGameScene> mCurrentScene{ };
 
 private:
-    SessionIdType mOwnerId{ };
-    float mSendTimeCounter{ };
-    float mSendTimeInterval{ 1.0f };
-    std::set<std::shared_ptr<class GameObject>> mObjectInRange{ };
+    std::unordered_set<NetworkObjectIdType> mViewList{ };
 };

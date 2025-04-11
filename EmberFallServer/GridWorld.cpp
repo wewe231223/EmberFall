@@ -23,64 +23,6 @@ GridWorld::GridWorld(float cellWidth, float cellHeight, float mapWidth, float ma
 
 GridWorld::~GridWorld() { }
 
-void GridWorld::Update(const std::shared_ptr<class IServerGameScene>& gameScene) {
-    for (auto& grid : mGrid) {
-        grid.Clear();
-    }
-
-    {
-        decltype(auto) objects = gameScene->GetObjects();
-        for (auto& object : objects) {
-            if (not object->mSpec.active or not object->IsCollidingObject()) {
-                continue;
-            }
-
-            decltype(auto) obb = std::static_pointer_cast<OrientedBoxCollider>(object->GetCollider())->GetBoundingBox();
-            auto aabbMin = obb.Center - (SimpleMath::Vector3{ obb.Extents } * 1.415f); // root 2 (OBB를 감싸는 최소한의 AABB 2D 기준)
-            auto aabbMax = obb.Center + (SimpleMath::Vector3{ obb.Extents } * 1.415f);
-
-            INT32 minX = std::max(static_cast<INT32>(aabbMin.x / mGridWidth), 0);
-            INT32 maxX = std::min(static_cast<INT32>(aabbMax.x / mGridWidth), mWidth);
-            INT32 minZ = std::max(static_cast<INT32>(aabbMin.z / mGridHeight), 0);
-            INT32 maxZ = std::min(static_cast<INT32>(aabbMax.z / mGridHeight), mHeight);
-
-            for (INT32 z = minZ; z <= maxZ; ++z) {
-                for (INT32 x = minX; x <= maxX; ++x) {
-                    mGrid[z * mHeight + x].AddObject(object);
-                }
-            }
-        }
-    }
-
-    {
-        decltype(auto) players = gameScene->GetPlayers();
-        for (auto& player : players) {
-            if (not player->mSpec.active or not player->IsCollidingObject()) {
-                continue;
-            }
-
-            decltype(auto) obb = std::static_pointer_cast<OrientedBoxCollider>(player->GetCollider())->GetBoundingBox();
-            auto aabbMin = obb.Center - (SimpleMath::Vector3{ obb.Extents } *1.415f); // root 2 (OBB를 감싸는 최소한의 AABB)
-            auto aabbMax = obb.Center + (SimpleMath::Vector3{ obb.Extents } *1.415f);
-
-            INT32 minX = std::max(static_cast<INT32>(aabbMin.x / mGridWidth), 0);
-            INT32 maxX = std::min(static_cast<INT32>(aabbMax.x / mGridWidth), mWidth);
-            INT32 minZ = std::max(static_cast<INT32>(aabbMin.z / mGridHeight), 0);
-            INT32 maxZ = std::min(static_cast<INT32>(aabbMax.z / mGridHeight), mHeight);
-
-            for (INT32 z = minZ; z <= maxZ; ++z) {
-                for (INT32 x = minX; x <= maxX; ++x) {
-                    mGrid[z * mHeight + x].AddObject(player);
-                }
-            }
-        }
-    }
-
-    for (auto& grid : mGrid) {
-        grid.HandleCollision();
-    }
-}
-
 void GridWorld::Update(const std::vector<std::shared_ptr<class GameObject>>& objects) {
     for (auto& grid : mGrid) {
         grid.Clear();

@@ -13,9 +13,6 @@
     <Filter Include="Utils">
       <UniqueIdentifier>{8389f802-350b-4427-bf5b-bc265ed71c1b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scene">
-      <UniqueIdentifier>{5367a523-1d53-4f63-b084-8ade79c3e76a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Frame">
       <UniqueIdentifier>{1b56ccde-0c63-4997-a348-2d312d8cdd67}</UniqueIdentifier>
     </Filter>
@@ -101,19 +98,25 @@
     <Filter Include="BehaviorTree\BT_Monster">
       <UniqueIdentifier>{1b526a72-8971-4d1e-8236-7986ba6ffdd1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MultiThreadLoopTest">
+      <UniqueIdentifier>{5ee0cb47-082d-4f61-8430-e161455121a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MultiThreadLoopTest\Session">
+      <UniqueIdentifier>{67286a51-a9c7-40b3-afff-f414dc1e3cc5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MultiThreadLoopTest\Sector&amp;View">
+      <UniqueIdentifier>{8428fb5f-066c-4ba2-8bc1-fdf8bf349617}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MultiThreadLoopTest\Frame">
+      <UniqueIdentifier>{94f6fbff-f3b2-4b14-b8f5-e4d2eaae2a1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MultiThreadLoopTest\ObjectManager">
+      <UniqueIdentifier>{0522bd71-083f-44e2-9a1b-e5bf4fcdf7c2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
       <Filter>pch</Filter>
-    </ClCompile>
-    <ClCompile Include="ServerFrame.cpp">
-      <Filter>Frame</Filter>
-    </ClCompile>
-    <ClCompile Include="EmberFallServer.cpp">
-      <Filter>Frame</Filter>
-    </ClCompile>
-    <ClCompile Include="GameTimer.cpp">
-      <Filter>Frame</Filter>
     </ClCompile>
     <ClCompile Include="GameObject.cpp">
       <Filter>Object</Filter>
@@ -138,9 +141,6 @@
     </ClCompile>
     <ClCompile Include="Input.cpp">
       <Filter>Frame</Filter>
-    </ClCompile>
-    <ClCompile Include="ServerGameScene.cpp">
-      <Filter>Scene</Filter>
     </ClCompile>
     <ClCompile Include="Grid.cpp">
       <Filter>Collision\CollisionCheck</Filter>
@@ -262,19 +262,28 @@
     <ClCompile Include="InteractionSystem.cpp">
       <Filter>Object</Filter>
     </ClCompile>
-    <ClCompile Include="ObjectManager.cpp">
-      <Filter>Object</Filter>
+    <ClCompile Include="Sector.cpp">
+      <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
     </ClCompile>
     <ClCompile Include="GameSession.cpp">
-      <Filter>Object</Filter>
+      <Filter>MultiThreadLoopTest\Session</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerFrame.cpp">
+      <Filter>MultiThreadLoopTest\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="GameTimer.cpp">
+      <Filter>MultiThreadLoopTest\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="EmberFallServer.cpp">
+      <Filter>MultiThreadLoopTest\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectManager.cpp">
+      <Filter>MultiThreadLoopTest\ObjectManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>pch</Filter>
-    </ClInclude>
-    <ClInclude Include="GameTimer.h">
-      <Filter>Frame</Filter>
     </ClInclude>
     <ClInclude Include="GameObject.h">
       <Filter>Object</Filter>
@@ -297,9 +306,6 @@
     <ClInclude Include="Input.h">
       <Filter>Frame</Filter>
     </ClInclude>
-    <ClInclude Include="ServerGameScene.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
     <ClInclude Include="Grid.h">
       <Filter>Collision\CollisionCheck</Filter>
     </ClInclude>
@@ -311,9 +317,6 @@
     </ClInclude>
     <ClInclude Include="BehaviorTreeBase.h">
       <Filter>BehaviorTree</Filter>
-    </ClInclude>
-    <ClInclude Include="ServerFrame.h">
-      <Filter>Frame</Filter>
     </ClInclude>
     <ClInclude Include="TerrainCollider.h">
       <Filter>Collision\Collider</Filter>
@@ -426,11 +429,20 @@
     <ClInclude Include="InteractionSystem.h">
       <Filter>Object</Filter>
     </ClInclude>
-    <ClInclude Include="ObjectManager.h">
-      <Filter>Object</Filter>
+    <ClInclude Include="Sector.h">
+      <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
     </ClInclude>
     <ClInclude Include="GameSession.h">
-      <Filter>Object</Filter>
+      <Filter>MultiThreadLoopTest\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerFrame.h">
+      <Filter>MultiThreadLoopTest\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="GameTimer.h">
+      <Filter>MultiThreadLoopTest\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectManager.h">
+      <Filter>MultiThreadLoopTest\ObjectManager</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -4,20 +4,11 @@
 #include "ObjectSpawner.h"
 
 BossPlayerScript::BossPlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input)
-    : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ static_cast<SessionIdType>(owner->GetId()) } {  
+    : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ } {  
     GetOwner()->mSpec.entity = Packets::EntityType_BOSS;
 }
 
 BossPlayerScript::~BossPlayerScript() { }
-
-void BossPlayerScript::ResetGameScene(std::shared_ptr<IServerGameScene> gameScene) {
-    mGameScene = gameScene;
-    mViewList.mCurrentScene = gameScene;
-}
-
-std::shared_ptr<IServerGameScene> BossPlayerScript::GetCurrentScene() const {
-    return mGameScene;
-}
 
 void BossPlayerScript::Init() {
     mInteractionTrigger = gObjectSpawner->SpawnTrigger(std::numeric_limits<float>::max(), GetOwner()->GetPosition(), SimpleMath::Vector3{ 15.0f });
@@ -25,11 +16,6 @@ void BossPlayerScript::Init() {
 
 void BossPlayerScript::Update(const float deltaTime) {
     decltype(auto) owner = GetOwner();
-
-    //mInteractionTrigger->GetTransform()->SetPosition(owner->GetPosition());
-    mViewList.mPosition = owner->GetPosition();
-    mViewList.Update();
-    mViewList.Send();
 
     CheckAndJump(deltaTime);
     CheckAndMove(deltaTime);
