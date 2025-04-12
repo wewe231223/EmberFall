@@ -8,6 +8,10 @@
 #include "ServerFrame.h"
 #include "ObjectSpawner.h"
 
+#include <profileapi.h>
+
+#include "GameTimer.h"
+
 IServerGameScene::IServerGameScene() { }
 
 IServerGameScene::~IServerGameScene() { }
@@ -123,6 +127,16 @@ void PlayScene::Update(const float deltaTime) {
     decltype(auto) sharedThis = shared_from_this();
     decltype(auto) dataPtr = reinterpret_cast<const uint8_t*>(buffer.Data());
     ProcessPackets(sharedThis, dataPtr, buffer.Size());
+
+    StaticTimer::PushTimerEvent(
+        []()  {
+            unsigned long long time;
+            ::QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&time));
+            gServerCore->SendAll(FbsPacketFactory::PacketLatencySC(time));
+        }, 
+        0.0f, 
+        std::numeric_limits<int32_t>::max()
+    );
 
     for (auto& [id, obj] : mPlayers) {
         obj->Update(deltaTime);
