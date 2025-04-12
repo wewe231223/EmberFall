@@ -128,16 +128,6 @@ void PlayScene::Update(const float deltaTime) {
     decltype(auto) dataPtr = reinterpret_cast<const uint8_t*>(buffer.Data());
     ProcessPackets(sharedThis, dataPtr, buffer.Size());
 
-    StaticTimer::PushTimerEvent(
-        []()  {
-            unsigned long long time;
-            ::QueryPerformanceCounter(reinterpret_cast<LARGE_INTEGER*>(&time));
-            gServerCore->SendAll(FbsPacketFactory::PacketLatencySC(time));
-        }, 
-        0.0f, 
-        std::numeric_limits<int32_t>::max()
-    );
-
     for (auto& [id, obj] : mPlayers) {
         obj->Update(deltaTime);
     }
