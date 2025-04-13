@@ -104,7 +104,7 @@ Deffered_POUT StandardAnimation_PS(StandardAnimation_PIN input) {
     [unroll]
     for (int i = 0; i < isShadow; ++i)
     {
-        float depth = input.position.z / input.position.w;
+        float depth = input.position.z;
         output.diffuse = float4(depth, depth, depth, 1.0f);
         return output;
     }

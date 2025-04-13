@@ -77,7 +77,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     Input.Initialize(hWnd);
 
     std::unique_ptr<Scene> scene{}; 
-    scene = std::make_unique<Scene>(renderer.GetDevice(), renderer.GetCommandList(), renderer.GetManagers(), renderer.GetMainCameraBuffer()); 
+    scene = std::make_unique<Scene>(renderer.GetDevice(), renderer.GetCommandList(), renderer.GetManagers(), renderer.GetMainCameraBuffer(), renderer.GetShadowRenderer()); 
 
     renderer.UploadResource();
 
@@ -124,7 +124,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             Input.Update();
 
             scene->ProcessNetwork();
-            scene->Update();
+            scene->Update(renderer.GetMainCameraBuffer());
             scene->SendNetwork();
 
             renderer.Render();

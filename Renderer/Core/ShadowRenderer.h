@@ -3,6 +3,8 @@
 #include "../Renderer/Resource/DefaultBuffer.h"
 #include "../Utility/Defines.h"
 #include "../Utility/DirectXInclude.h"
+#include "../Game/GameObject/Collider.h"
+
 
 class ShadowRenderer {
 	static constexpr SimpleMath::Vector3 LIGHTDIRECTION{ 1.f, -3.f, -1.f };
@@ -26,8 +28,10 @@ public:
 
 public:
 	// 그림자 맵 만들기 
-	void SetShadowDSV(ComPtr<ID3D12GraphicsCommandList> commandList);
-	void Update(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator worldCameraBuffer); 
+	void SetShadowDSVRTV(ComPtr<ID3D12GraphicsCommandList> commandList);
+	void Update(DefaultBufferCPUIterator worldCameraBuffer); 
+	void Upload(ComPtr<ID3D12GraphicsCommandList> commandList);
+	bool ShadowMapCulling(Collider& other);
 
 	DefaultBufferGPUIterator GetShadowCameraBuffer(); 
 
@@ -37,6 +41,7 @@ public:
 	static constexpr T GetShadowMapSize() { return SHADOWMAPSIZE<T>; }
 private:
 	std::array<SimpleMath::Vector3, 8> ComputeFrustumCorners(SimpleMath::Matrix worldCameraVPInv);
+	void ComputeOrientedBoundingBox(SimpleMath::Matrix cameraProjInv);
 	void StablizeShadowMatrix(SimpleMath::Matrix& shadowCameraVP);
 
 private:
@@ -46,6 +51,9 @@ private:
 	DefaultBuffer mShadowCameraBuffer{};
 
 	CameraConstants mShadowCamera{};
+
+	DirectX::BoundingOrientedBox mWorldBox{};
+	
 
 	Texture mShadowMap{}; 
 	Texture mDepthStencilMap{};

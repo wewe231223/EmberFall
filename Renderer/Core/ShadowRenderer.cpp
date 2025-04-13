@@ -41,7 +41,7 @@ ShadowRenderer::ShadowRenderer(ComPtr<ID3D12Device> device) {
 	mShadowCameraBuffer = DefaultBuffer(device, sizeof(CameraConstants), 1, true);
 }
 
-void ShadowRenderer::SetShadowDSV(ComPtr<ID3D12GraphicsCommandList> commandList) {
+void ShadowRenderer::SetShadowDSVRTV(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	auto rtv = mShadowRTVHeap->GetCPUDescriptorHandleForHeapStart();
 	auto dsv = mShadowDSVHeap->GetCPUDescriptorHandleForHeapStart();
 
@@ -51,7 +51,7 @@ void ShadowRenderer::SetShadowDSV(ComPtr<ID3D12GraphicsCommandList> commandList)
 
 }
 
-void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator worldCameraBuffer) {
+void ShadowRenderer::Update(DefaultBufferCPUIterator worldCameraBuffer) {
 	// transposed 
 	CameraConstants worldCamera{};
 	std::memcpy(&worldCamera, *worldCameraBuffer, sizeof(CameraConstants));
@@ -70,8 +70,8 @@ void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, Defau
 
 	SimpleMath::Vector3 directionNormalized = LIGHTDIRECTION;
 	directionNormalized.Normalize();
-	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (300.0f));
-	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (FRUSTUMLENGTH - cameraParam.nearZ) );
+	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (250.0f));
+	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (FRUSTUMLENGTH - cameraParam.nearZ) );
 
 	SimpleMath::Matrix view = SimpleMath::Matrix::CreateLookAt(cameraPos, centerFrustum, DirectX::SimpleMath::Vector3::Up);
 
@@ -103,13 +103,18 @@ void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, Defau
 
 
 	float projectionSize = std::max(maxPoint.x - minPoint.x, maxPoint.y - minPoint.y);
-	float nearPadding =40.0f;  // 조명 투영행렬의 근,원평면에 약간의 여유 공간을 추가할때 사용.
-	float farPadding = 40.0f;
+	float nearPadding =10.0f;  // 조명 투영행렬의 근,원평면에 약간의 여유 공간을 추가할때 사용.
+	float farPadding = 10.0f;
 	float nearPlane = minPoint.z - nearPadding;
 	float farPlane = maxPoint.z + farPadding;
 	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize, projectionSize, nearPlane, farPlane);
 	//SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize, projectionSize, 1.0f, 700.0f);
 
+	
+
+	
+	SimpleMath::Matrix shadowInverse = proj.Invert() * view.Invert();
+	ComputeOrientedBoundingBox(shadowInverse);
 
 
 	mShadowCamera.view = view.Transpose();
@@ -119,7 +124,18 @@ void ShadowRenderer::Update(ComPtr<ID3D12GraphicsCommandList> commandList, Defau
 	mShadowCamera.isShadow = 1;
 
 	std::memcpy(*mShadowCameraBuffer.CPUBegin(), &mShadowCamera, sizeof(CameraConstants));
+
+}
+
+void ShadowRenderer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	mShadowCameraBuffer.Upload(commandList);
+
+}
+
+bool ShadowRenderer::ShadowMapCulling(Collider& other) {
+	auto& box = other.GetWorldBox();
+
+	return mWorldBox.Intersects(box);
 }
 
 
@@ -150,6 +166,25 @@ std::array<SimpleMath::Vector3, 8> ShadowRenderer::ComputeFrustumCorners(SimpleM
 	}
 
 	return frustumCorners;
+}
+
+void ShadowRenderer::ComputeOrientedBoundingBox(SimpleMath::Matrix cameraProjInv) {
+	
+	std::array<SimpleMath::Vector3, 8> ndcCorners = {
+	SimpleMath::Vector3(-1,  1, 0), // Near Plane
+	SimpleMath::Vector3(1,  1, 0),
+	SimpleMath::Vector3(1, -1, 0),
+	SimpleMath::Vector3(-1, -1, 0),
+	SimpleMath::Vector3(-1,  1, 1), // Far Plane
+	SimpleMath::Vector3(1,  1, 1),
+	SimpleMath::Vector3(1, -1, 1),
+	SimpleMath::Vector3(-1, -1, 1)
+	};
+
+	DirectX::BoundingOrientedBox::CreateFromPoints(mWorldBox, 8, ndcCorners.data(), sizeof(SimpleMath::Vector3));
+
+	mWorldBox.Transform(mWorldBox, cameraProjInv);
+
 }
 
 void ShadowRenderer::StablizeShadowMatrix(SimpleMath::Matrix& shadowCameraVP) {

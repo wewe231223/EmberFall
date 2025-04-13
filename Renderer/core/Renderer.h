@@ -38,6 +38,7 @@ public:
 
 	ComPtr<ID3D12Device> GetDevice();
 	ComPtr<ID3D12GraphicsCommandList> GetCommandList();
+	std::shared_ptr<ShadowRenderer> GetShadowRenderer();
 
 	void UploadResource();
 
@@ -99,7 +100,7 @@ private:
 	UINT mRTIndex{ 0 };
 
 	StringRenderer mStringRenderer{}; 
-	ShadowRenderer mShadowRenderer{};
+	std::shared_ptr<ShadowRenderer> mShadowRenderer{};
 	/*
 	1. diffuse 
 	2. normal

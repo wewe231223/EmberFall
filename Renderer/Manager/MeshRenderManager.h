@@ -37,6 +37,9 @@ public:
 	void AppendPlaneMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, UINT reservedSlot = std::numeric_limits<UINT>::max() );
 	void AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms );
 
+	void AppendShadowPlaneMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, UINT reservedSlot = std::numeric_limits<UINT>::max());
+
+
 	void PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList);
 	
 	void RenderShadowPass(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex,D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
@@ -54,6 +57,9 @@ private:
 	DefaultBuffer mBonedMeshBuffer{}; 
 	DefaultBuffer mAnimationBuffer{};
 
+	DefaultBuffer mShadowPlainMeshBuffer{};
+
+
 	UINT mBoneCounter{ 0 };
 	UINT mReservedSlotCounter{ 0 };
 
@@ -62,6 +68,8 @@ private:
 	
 	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<ModelContext>>> mPlainMeshReserved{};
 	std::unordered_map<GraphicsShaderBase* ,std::unordered_map<Mesh*, std::vector<ModelContext>>> mPlainMeshContexts{};
+
+	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<ModelContext>>> mShadowPlainMeshContexts{};
 
 	std::unique_ptr<GraphicsShaderBase> mSkeletonBoundingboxRenderShader{};
 	std::unique_ptr<GraphicsShaderBase> mStandardBoundingBoxRenderShader{}; 

@@ -53,6 +53,11 @@ ComPtr<ID3D12GraphicsCommandList> Renderer::GetCommandList() {
 	return mCommandList;
 }
 
+std::shared_ptr<ShadowRenderer> Renderer::GetShadowRenderer() {
+	return mShadowRenderer;
+
+}
+
 void Renderer::UploadResource(){
 	mMaterialManager->UploadMaterial(mDevice, mCommandList);
 
@@ -93,14 +98,14 @@ void Renderer::Render() {
 	mCommandList->RSSetScissorRects(1, &scissorRect);
 
 	mMainCameraBuffer.Upload(mCommandList);
+	mShadowRenderer->Upload(mCommandList);
 	mMeshRenderManager->PrepareRender(mCommandList);
 	mTextureManager->Bind(mCommandList);
 
-	mShadowRenderer.GetShadowMap().Transition(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	mShadowRenderer.SetShadowDSV(mCommandList);
-	mShadowRenderer.Update(mCommandList, mMainCameraBuffer.CPUBegin());
+	mShadowRenderer->GetShadowMap().Transition(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	mShadowRenderer->SetShadowDSVRTV(mCommandList);
 
-	mMeshRenderManager->RenderShadowPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer.GetShadowCameraBuffer());
+	mMeshRenderManager->RenderShadowPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer());
 	// mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
 
 	viewport.TopLeftX = 0;
@@ -146,7 +151,7 @@ void Renderer::Render() {
 	//mParticleManager->RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress());
 
 	// Deffered Rendering Pass 
-	mShadowRenderer.GetShadowMap().Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+	mShadowRenderer->GetShadowMap().Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
@@ -154,7 +159,7 @@ void Renderer::Render() {
 	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
-	mDefferedRenderer.Render(mCommandList, mShadowRenderer.GetShadowCameraBuffer());
+	mDefferedRenderer.Render(mCommandList, mShadowRenderer->GetShadowCameraBuffer());
 }
 
 void Renderer::ExecuteRender() {
@@ -419,7 +424,7 @@ void Renderer::InitFonts() {
 }
 
 void Renderer::InitShadowRenderer() {
-	mShadowRenderer = ShadowRenderer(mDevice);
+	mShadowRenderer = std::make_shared<ShadowRenderer>(mDevice);
 }
 
 void Renderer::InitParticleManager() {
@@ -439,7 +444,7 @@ void Renderer::InitDefferedRenderer() {
 	mDefferedRenderer = DefferedRenderer(mDevice, mCommandList);
 
 	mDefferedRenderer.RegisterGBufferTexture(mDevice, mGBuffers);
-	mDefferedRenderer.RegisterShadowMap(mDevice, mShadowRenderer.GetShadowMap());
+	mDefferedRenderer.RegisterShadowMap(mDevice, mShadowRenderer->GetShadowMap());
 
 }
 

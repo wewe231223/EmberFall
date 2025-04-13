@@ -297,7 +297,7 @@ void Scene::ProcessProjectileMove(const uint8_t* buffer) {
 #pragma endregion 
 
 
-Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
+Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation, std::shared_ptr<ShadowRenderer> shadow) {
 	
 	mInputSign = NonReplacementSampler::GetInstance().Sample(); 
 	mNetworkSign = NonReplacementSampler::GetInstance().Sample();
@@ -309,11 +309,11 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		Crash(false);
 	}
 
-
 	mMeshRenderManager = std::get<0>(managers);
 	mTextureManager = std::get<1>(managers);
 	mMaterialManager = std::get<2>(managers);
 	mParticleManager = std::get<3>(managers);
+	mShadowRenderer = shadow;
 
 	Scene::BuildShader(device); 
 	Scene::BuildMesh(device, commandList);
@@ -690,7 +690,7 @@ const uint8_t* Scene::ProcessPacket(const uint8_t* buffer) {
 
 
 
-void Scene::Update() {
+void Scene::Update(DefaultBufferCPUIterator mainCameraBufferLocation) {
 	if (mMyPlayer != nullptr) {
 		auto& pos = mMyPlayer->GetTransform().GetPosition();
 		pos.y = tCollider.GetHeight(pos.x, pos.z);
@@ -714,6 +714,7 @@ void Scene::Update() {
 		mCameraMode->Update();
 	}
 	mCamera.UpdateBuffer(); 
+	mShadowRenderer->Update(mainCameraBufferLocation);
 
 	static BoneTransformBuffer boneTransformBuffer{};
 
@@ -730,6 +731,8 @@ void Scene::Update() {
 				gameObject.UpdateShaderVariables();
 				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext);
+
 			}
 		}
 	}
@@ -738,13 +741,26 @@ void Scene::Update() {
 	for (auto& object : mEnvironmentObjects) {
 		
 		if (object.mCollider.GetActiveState()) {
-			if (!mCamera.FrustumCulling(object.mCollider)) {
-				continue;
+			if (mShadowRenderer->ShadowMapCulling(object.mCollider)) {
+				auto [mesh, shader, modelContext] = object.GetRenderData();
+				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext);
+			}
+			if (mCamera.FrustumCulling(object.mCollider)) {
+				auto [mesh, shader, modelContext] = object.GetRenderData();
+
+				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+
+
 			}
 		}
+		else {
+			auto [mesh, shader, modelContext] = object.GetRenderData();
+			mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+			mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext);
+
+		}
 		
-		auto [mesh, shader, modelContext] = object.GetRenderData();
-		mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+
 	}
 
 
@@ -836,7 +852,7 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	data = Loader.Load("Resources/Assets/Tree/pine2/pine3.glb", 0);
 	mMeshMap["Pine3_Stem"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Pine3_Stem"] = Collider{ data.position };
-
+	
 
 	// 파일에 기록할 크기 
 	mColliderMap["Pine3_Stem"].SetExtents(0.3f, 7.51479626f, 0.3f);

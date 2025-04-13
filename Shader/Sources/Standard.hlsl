@@ -103,7 +103,7 @@ Deffered_POUT Standard_PS(Standard_VOUT input) {
     [unroll]
     for (int i = 0; i < isShadow; ++i)
     {
-        float depth = input.position.z / input.position.w;
+        float depth = input.position.z;
         output.diffuse = float4(depth, depth, depth, 1.0f);
         return output;
     }
