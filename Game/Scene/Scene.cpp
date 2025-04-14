@@ -77,9 +77,9 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 					Crash("There is no more space for My Player!!");
 				}
 		
-				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mMageAnimationController);
-				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mShieldManController);
+				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mShieldManController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
 
 
@@ -87,7 +87,7 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
 		
-				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
+				mMyPlayer->AddEquipment(mEquipments["GreatSword"].Clone());
 				mMyPlayer->SetMyPlayer();
 
 				mMyPlayer->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
@@ -541,8 +541,19 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		mEquipments["Sword"].mCollider = mColliderMap["Sword"];
 		mEquipments["Sword"].mEquipJointIndex = 36;
 		mEquipments["Sword"].SetActiveState(true);
-
 	}
+
+
+	{
+		mEquipments["GreatSword"] = EquipmentObject{};
+		mEquipments["GreatSword"].mMesh = mMeshMap["GreatSword"].get();
+		mEquipments["GreatSword"].mShader = mShaderMap["StandardShader"].get();
+		mEquipments["GreatSword"].mMaterial = mMaterialManager->GetMaterial("GreatSwordMaterial");
+		mEquipments["GreatSword"].mCollider = mColliderMap["GreatSword"];
+		mEquipments["GreatSword"].mEquipJointIndex = 36;
+		mEquipments["GreatSword"].SetActiveState(true);
+	}
+
 
 	for (auto& environment : mEnvironmentObjects) {
 		environment.UpdateShaderVariables(); 
@@ -817,6 +828,11 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mMeshMap["Sword"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Sword"] = Collider{ data.position };
 
+	data = Loader.Load("Resources/Assets/Weapon/great_sword/Sword.glb");
+	mMeshMap["GreatSword"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["GreatSword"] = Collider{ data.position };
+
+
 	data = Loader.Load("Resources/Assets/CorruptedGem/CorruptedGem.glb");
 	mMeshMap["CorruptedGem"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["CorruptedGem"] = Collider{ data.position };
@@ -943,6 +959,9 @@ void Scene::BuildMaterial() {
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("SwordA_v004_Default_AlbedoTransparency");
 	mMaterialManager->CreateMaterial("SwordMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("sword_base");
+	mMaterialManager->CreateMaterial("GreatSwordMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("T_Demon_Imp_Monster_Bloody_Albedo_Skin_4");
 	mMaterialManager->CreateMaterial("MonsterType1Material", mat);
