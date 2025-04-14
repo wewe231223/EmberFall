@@ -35,7 +35,7 @@ private:
 	void BuildArcherAnimationController();
 	void BuildSwordManAnimationController();
 	void BuildMageAnimationController();
-	void BuildAxeAnimationController(); 
+	void BuildShieldManController();
 
 	void BuildMonsterType1AnimationController();
 	void BuildDemonAnimationController(); 
@@ -99,7 +99,7 @@ private:
 	AnimatorGraph::BoneMaskAnimationGraphController mArcherAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mSwordManAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mMageAnimationController{};
-	AnimatorGraph::BoneMaskAnimationGraphController mAxeAnimationController{};
+	AnimatorGraph::BoneMaskAnimationGraphController mShieldManController{};
 
 	AnimatorGraph::AnimationGraphController mMonsterType1AnimationController{}; 
 	AnimatorGraph::AnimationGraphController mDemonAnimationController{};

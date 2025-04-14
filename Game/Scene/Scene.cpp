@@ -79,7 +79,7 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 		
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mMageAnimationController);
-				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mAxeAnimationController);
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mShieldManController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
 
 
@@ -1035,7 +1035,7 @@ void Scene::BuildAniamtionController() {
 	Scene::BuildSwordManAnimationController(); 
 	Scene::BuildArcherAnimationController();
 	Scene::BuildMageAnimationController(); 
-	Scene::BuildAxeAnimationController(); 
+	Scene::BuildShieldManController(); 
 
 	Scene::BuildMonsterType1AnimationController();
 	Scene::BuildDemonAnimationController(); 
@@ -1661,9 +1661,9 @@ void Scene::BuildMageAnimationController() {
 	}
 }
 
-void Scene::BuildAxeAnimationController() {
-	mAnimationMap["Axe"].Load("Resources/Assets/Knight/Axe/Axe.glb");
-	auto& loader = mAnimationMap["Axe"];
+void Scene::BuildShieldManController() {
+	mAnimationMap["ShieldMan"].Load("Resources/Assets/Knight/ShieldMan/ShieldMan.glb");
+	auto& loader = mAnimationMap["ShieldMan"];
 
 	std::vector<const AnimationClip*> clips{
 		loader.GetClip(0), // Idle
@@ -1738,7 +1738,7 @@ void Scene::BuildAxeAnimationController() {
 	deathState.loop = false;
 
 	std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState };
-	mAxeAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
+	mShieldManController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
 }
 
 void Scene::BuildMonsterType1AnimationController() {
