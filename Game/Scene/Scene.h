@@ -35,6 +35,7 @@ private:
 	void BuildArcherAnimationController();
 	void BuildSwordManAnimationController();
 	void BuildMageAnimationController();
+	void BuildAxeAnimationController(); 
 
 	void BuildMonsterType1AnimationController();
 	void BuildDemonAnimationController(); 
@@ -90,7 +91,7 @@ private:
 	
 	Player* mMyPlayer{ nullptr };
 
-
+	
 	
 	std::unordered_map<std::string, EquipmentObject> mEquipments{}; 
 
@@ -98,8 +99,10 @@ private:
 	AnimatorGraph::BoneMaskAnimationGraphController mArcherAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mSwordManAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mMageAnimationController{};
+	AnimatorGraph::BoneMaskAnimationGraphController mAxeAnimationController{};
 
 	AnimatorGraph::AnimationGraphController mMonsterType1AnimationController{}; 
+	AnimatorGraph::AnimationGraphController mDemonAnimationController{};
 
 	GameObject mSkyBox{};
 	GameObject mSkyFog{};

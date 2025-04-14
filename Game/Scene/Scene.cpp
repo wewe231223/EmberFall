@@ -77,7 +77,7 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 					Crash("There is no more space for My Player!!");
 				}
 		
-				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
 		
@@ -246,6 +246,7 @@ void Scene::ProcessPacketAnimation(const uint8_t* buffer) {
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
+
 			mPlayerIndexmap[data->objectId()]->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
 		}
 	}
@@ -512,6 +513,18 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
 	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
 	//}
+
+
+	{
+		auto& boss = mGameObjects.emplace_back();
+		boss.mShader = mShaderMap["SkinnedShader"].get();
+		boss.mMesh = mMeshMap["Demon"].get();
+		boss.mMaterial = mMaterialManager->GetMaterial("DemonMaterial");
+		boss.mGraphController = mDemonAnimationController;
+		boss.mAnimated = true; 
+		boss.SetActiveState(true);
+		boss.GetTransform().GetPosition() = { 3.f, tCollider.GetHeight(3.f, 36.f), 36.f};
+	}
 
 
 	{
@@ -799,6 +812,9 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	data = Loader.Load("Resources/Assets/Knight/LongSword/SwordMan.glb");
 	mMeshMap["SwordMan"] = std::make_unique<Mesh>(device, commandList, data);
 
+	data = Loader.Load("Resources/Assets/Demon/Demon.glb");
+	mMeshMap["Demon"] = std::make_unique<Mesh>(device, commandList, data);
+
 	data = Loader.Load("Resources/Assets/Mountain/Mountain.gltf");
 	mMeshMap["Mountain"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Mountain"] = Collider{ data.position };
@@ -1032,8 +1048,10 @@ void Scene::BuildAniamtionController() {
 	Scene::BuildSwordManAnimationController(); 
 	Scene::BuildArcherAnimationController();
 	Scene::BuildMageAnimationController(); 
+	Scene::BuildAxeAnimationController(); 
 
-	Scene::BuildMonsterType1AnimationController(); 
+	Scene::BuildMonsterType1AnimationController();
+	Scene::BuildDemonAnimationController(); 
 
 
 
@@ -1412,80 +1430,85 @@ void Scene::BuildBaseAnimationController() {
 }
 
 void Scene::BuildArcherAnimationController() {
-	// Archer 
 	{
-		mAnimationMap["Archer"].Load("Resources/Assets/Knight/archer.gltf");
+		mAnimationMap["Archer"].Load("Resources/Assets/Knight/Archer/Archer.glb");
+		auto& loader = mAnimationMap["Archer"];
 
-		std::vector<const AnimationClip*> clips{ mAnimationMap["Archer"].GetClip(0), mAnimationMap["Archer"].GetClip(1), mAnimationMap["Archer"].GetClip(16), mAnimationMap["Archer"].GetClip(3) };
+		std::vector<const AnimationClip*> clips{
+			loader.GetClip(0), // Idle
+			loader.GetClip(1), // Forward Run
+			loader.GetClip(2), // Backward Run
+			loader.GetClip(3), // Right Run
+			loader.GetClip(4), // Left Run
+			loader.GetClip(5), // Jump 
+			loader.GetClip(6), // Attacked
+			loader.GetClip(7), // Attack Ready 
+			loader.GetClip(8), // Attack Shoot	
+			loader.GetClip(9), // Interaction 
+			loader.GetClip(10), // Death 
+		};
 
-		std::vector<UINT> boneMask(69);
-		std::iota(boneMask.begin(), boneMask.begin() + 59, 0);
+		std::vector<UINT> boneMask(67);
+		std::iota(boneMask.begin(), boneMask.begin() + 57, 0);
+
 		AnimatorGraph::BoneMaskAnimationState idleState{};
 		idleState.maskedClipIndex = 0;
 		idleState.nonMaskedClipIndex = 0;
 		idleState.name = "Idle";
 
-		{
-			AnimatorGraph::AnimationTransition idleToRun{};
-			idleToRun.targetStateIndex = 1;
-			idleToRun.blendDuration = 0.09;
-			idleToRun.parameterName = "Move";
-			idleToRun.expectedValue = true;
-			idleToRun.triggerOnEnd = false;
-			idleState.transitions.emplace_back(idleToRun);
-		}
+		AnimatorGraph::BoneMaskAnimationState forwardState{};
+		forwardState.maskedClipIndex = 1;
+		forwardState.nonMaskedClipIndex = 1;
+		forwardState.name = "Forward";
+		forwardState.speed = 1.2;
 
-		AnimatorGraph::BoneMaskAnimationState runState{};
-		runState.maskedClipIndex = 3;
-		runState.nonMaskedClipIndex = 3;
-		runState.name = "Move";
+		AnimatorGraph::BoneMaskAnimationState backwardState{};
+		backwardState.maskedClipIndex = 2;
+		backwardState.nonMaskedClipIndex = 2;
+		backwardState.name = "BackWard";
 
-		{
-			AnimatorGraph::AnimationTransition runToIdle{};
-			runToIdle.targetStateIndex = 0;
-			runToIdle.blendDuration = 0.09;
-			runToIdle.parameterName = "Move";
-			runToIdle.expectedValue = false;
-			runToIdle.triggerOnEnd = false;
-			runState.transitions.emplace_back(runToIdle);
+		AnimatorGraph::BoneMaskAnimationState leftState{};
+		leftState.maskedClipIndex = 3;
+		leftState.nonMaskedClipIndex = 3;
+		leftState.name = "Left";
 
-			AnimatorGraph::AnimationTransition runToAttack{};
-			runToAttack.targetStateIndex = 2;
-			runToAttack.blendDuration = 0.09;
-			runToAttack.parameterName = "Attack";
-			runToAttack.expectedValue = true;
-			runToAttack.triggerOnEnd = false;
-			runState.transitions.emplace_back(runToAttack);
-		}
+		AnimatorGraph::BoneMaskAnimationState rightState{};
+		rightState.maskedClipIndex = 4;
+		rightState.nonMaskedClipIndex = 4;
+		rightState.name = "Right";
 
-		AnimatorGraph::BoneMaskAnimationState runAttack{};
-		runAttack.maskedClipIndex = 2;
-		runAttack.nonMaskedClipIndex = 1;
-		runAttack.name = "Attack";
+		AnimatorGraph::BoneMaskAnimationState jumpState{};
+		jumpState.maskedClipIndex = 5;
+		jumpState.nonMaskedClipIndex = 5;
+		jumpState.name = "Jump";
+		jumpState.loop = false;
 
-		{
-			AnimatorGraph::AnimationTransition attackToRun{};
-			attackToRun.targetStateIndex = 1;
-			attackToRun.blendDuration = 0.3;
-			attackToRun.parameterName = "Move";
-			attackToRun.expectedValue = true;
-			attackToRun.triggerOnEnd = true;
-			runAttack.transitions.emplace_back(attackToRun);
+		AnimatorGraph::BoneMaskAnimationState attackedState{};
+		attackedState.maskedClipIndex = 6;
+		attackedState.nonMaskedClipIndex = 6;
+		attackedState.name = "Attacked";
+		attackedState.loop = false;
 
-			AnimatorGraph::AnimationTransition attackToIdle{};
-			attackToIdle.targetStateIndex = 0;
-			attackToIdle.blendDuration = 0.2;
-			attackToIdle.parameterName = "Move";
-			attackToIdle.expectedValue = false;
-			attackToIdle.triggerOnEnd = false;
-			runAttack.transitions.emplace_back(attackToIdle);
-		}
+		AnimatorGraph::BoneMaskAnimationState attackState{};
+		attackedState.maskedClipIndex = 8;
+		attackedState.nonMaskedClipIndex = 8;
+		attackedState.name = "Attack";
+		attackedState.loop = true;
 
-		std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, runState,  runAttack };
+		AnimatorGraph::BoneMaskAnimationState interactionState{};
+		interactionState.maskedClipIndex = 9;
+		interactionState.nonMaskedClipIndex = 9;
+		interactionState.name = "Interaction";
+		interactionState.loop = true;
 
+		AnimatorGraph::BoneMaskAnimationState deathState{};
+		deathState.maskedClipIndex = 10;
+		deathState.nonMaskedClipIndex = 10;
+		deathState.name = "Death";
+		deathState.loop = false;
+
+		std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState };
 		mArcherAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
-		mArcherAnimationController.AddParameter("Move", AnimatorGraph::ParameterType::Bool);
-		mArcherAnimationController.AddParameter("Attack", AnimatorGraph::ParameterType::Trigger);
 	}
 }
 
@@ -1499,8 +1522,8 @@ void Scene::BuildSwordManAnimationController() {
 			loader.GetClip(0), // Idle
 			loader.GetClip(1), // Forward Run
 			loader.GetClip(2), // Backward Run
-			loader.GetClip(4), // Left Run
 			loader.GetClip(3), // Right Run
+			loader.GetClip(4), // Left Run
 			loader.GetClip(5), // Jump 
 			loader.GetClip(6), // Attacked
 			loader.GetClip(7), // Attack 
@@ -1508,11 +1531,11 @@ void Scene::BuildSwordManAnimationController() {
 			loader.GetClip(9), // Death 
 		};
 
-		std::vector<UINT> boneMask(69);
+		std::vector<UINT> boneMask(67);
 		std::iota(boneMask.begin(), boneMask.begin() + 57, 0);
 
 		AnimatorGraph::BoneMaskAnimationState idleState{};
-		idleState.maskedClipIndex = 7;
+		idleState.maskedClipIndex = 0;
 		idleState.nonMaskedClipIndex = 0;
 		idleState.name = "Idle";
 
@@ -1553,7 +1576,7 @@ void Scene::BuildSwordManAnimationController() {
 		attackedState.maskedClipIndex = 7;
 		attackedState.nonMaskedClipIndex = 7;
 		attackedState.name = "Attack";
-		attackedState.loop = false;
+		attackedState.loop = true;
 
 		AnimatorGraph::BoneMaskAnimationState interactionState{};
 		interactionState.maskedClipIndex = 8;
@@ -1573,7 +1596,165 @@ void Scene::BuildSwordManAnimationController() {
 }
 
 void Scene::BuildMageAnimationController() {
+	{
+		mAnimationMap["Magician"].Load("Resources/Assets/Knight/Mage/Magician.glb");
+		auto& loader = mAnimationMap["Magician"];
 
+		std::vector<const AnimationClip*> clips{
+			loader.GetClip(0), // Idle
+			loader.GetClip(1), // Forward Run
+			loader.GetClip(2), // Backward Run
+			loader.GetClip(3), // Right Run
+			loader.GetClip(4), // Left Run
+			loader.GetClip(5), // Jump 
+			loader.GetClip(6), // Attacked
+			loader.GetClip(7), // Attack 
+			loader.GetClip(8), // Interaction 
+			loader.GetClip(9), // Death 
+		};
+
+		std::vector<UINT> boneMask(67);
+		std::iota(boneMask.begin(), boneMask.begin() + 57, 0);
+
+		AnimatorGraph::BoneMaskAnimationState idleState{};
+		idleState.maskedClipIndex = 0;
+		idleState.nonMaskedClipIndex = 0;
+		idleState.name = "Idle";
+
+		AnimatorGraph::BoneMaskAnimationState forwardState{};
+		forwardState.maskedClipIndex = 1;
+		forwardState.nonMaskedClipIndex = 1;
+		forwardState.name = "Forward";
+		forwardState.speed = 1.2;
+
+		AnimatorGraph::BoneMaskAnimationState backwardState{};
+		backwardState.maskedClipIndex = 2;
+		backwardState.nonMaskedClipIndex = 2;
+		backwardState.name = "BackWard";
+
+		AnimatorGraph::BoneMaskAnimationState leftState{};
+		leftState.maskedClipIndex = 3;
+		leftState.nonMaskedClipIndex = 3;
+		leftState.name = "Left";
+
+		AnimatorGraph::BoneMaskAnimationState rightState{};
+		rightState.maskedClipIndex = 4;
+		rightState.nonMaskedClipIndex = 4;
+		rightState.name = "Right";
+
+		AnimatorGraph::BoneMaskAnimationState jumpState{};
+		jumpState.maskedClipIndex = 5;
+		jumpState.nonMaskedClipIndex = 5;
+		jumpState.name = "Jump";
+		jumpState.loop = false;
+
+		AnimatorGraph::BoneMaskAnimationState attackedState{};
+		attackedState.maskedClipIndex = 6;
+		attackedState.nonMaskedClipIndex = 6;
+		attackedState.name = "Attacked";
+		attackedState.loop = false;
+
+		AnimatorGraph::BoneMaskAnimationState attackState{};
+		attackedState.maskedClipIndex = 7;
+		attackedState.nonMaskedClipIndex = 7;
+		attackedState.name = "Attack";
+		attackedState.loop = true;
+
+		AnimatorGraph::BoneMaskAnimationState interactionState{};
+		interactionState.maskedClipIndex = 8;
+		interactionState.nonMaskedClipIndex = 8;
+		interactionState.name = "Interaction";
+		interactionState.loop = true;
+
+		AnimatorGraph::BoneMaskAnimationState deathState{};
+		deathState.maskedClipIndex = 9;
+		deathState.nonMaskedClipIndex = 9;
+		deathState.name = "Death";
+		deathState.loop = false;
+
+		std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState };
+		mMageAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
+	}
+}
+
+void Scene::BuildAxeAnimationController() {
+	mAnimationMap["Axe"].Load("Resources/Assets/Knight/Axe/Axe.glb");
+	auto& loader = mAnimationMap["Axe"];
+
+	std::vector<const AnimationClip*> clips{
+		loader.GetClip(0), // Idle
+		loader.GetClip(1), // Forward Run
+		loader.GetClip(2), // Backward Run
+		loader.GetClip(3), // Right Run
+		loader.GetClip(4), // Left Run
+		loader.GetClip(5), // Jump 
+		loader.GetClip(6), // Attacked
+		loader.GetClip(7), // Attack 
+		loader.GetClip(8), // Interaction 
+		loader.GetClip(9), // Death 
+	};
+
+	std::vector<UINT> boneMask(67);
+	std::iota(boneMask.begin(), boneMask.begin() + 57, 0);
+
+	AnimatorGraph::BoneMaskAnimationState idleState{};
+	idleState.maskedClipIndex = 0;
+	idleState.nonMaskedClipIndex = 0;
+	idleState.name = "Idle";
+
+	AnimatorGraph::BoneMaskAnimationState forwardState{};
+	forwardState.maskedClipIndex = 1;
+	forwardState.nonMaskedClipIndex = 1;
+	forwardState.name = "Forward";
+	forwardState.speed = 1.2;
+
+	AnimatorGraph::BoneMaskAnimationState backwardState{};
+	backwardState.maskedClipIndex = 2;
+	backwardState.nonMaskedClipIndex = 2;
+	backwardState.name = "BackWard";
+
+	AnimatorGraph::BoneMaskAnimationState leftState{};
+	leftState.maskedClipIndex = 3;
+	leftState.nonMaskedClipIndex = 3;
+	leftState.name = "Left";
+
+	AnimatorGraph::BoneMaskAnimationState rightState{};
+	rightState.maskedClipIndex = 4;
+	rightState.nonMaskedClipIndex = 4;
+	rightState.name = "Right";
+
+	AnimatorGraph::BoneMaskAnimationState jumpState{};
+	jumpState.maskedClipIndex = 5;
+	jumpState.nonMaskedClipIndex = 5;
+	jumpState.name = "Jump";
+	jumpState.loop = false;
+
+	AnimatorGraph::BoneMaskAnimationState attackedState{};
+	attackedState.maskedClipIndex = 6;
+	attackedState.nonMaskedClipIndex = 6;
+	attackedState.name = "Attacked";
+	attackedState.loop = false;
+
+	AnimatorGraph::BoneMaskAnimationState attackState{};
+	attackedState.maskedClipIndex = 7;
+	attackedState.nonMaskedClipIndex = 7;
+	attackedState.name = "Attack";
+	attackedState.loop = true;
+
+	AnimatorGraph::BoneMaskAnimationState interactionState{};
+	interactionState.maskedClipIndex = 8;
+	interactionState.nonMaskedClipIndex = 8;
+	interactionState.name = "Interaction";
+	interactionState.loop = true;
+
+	AnimatorGraph::BoneMaskAnimationState deathState{};
+	deathState.maskedClipIndex = 9;
+	deathState.nonMaskedClipIndex = 9;
+	deathState.name = "Death";
+	deathState.loop = false;
+
+	std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState };
+	mAxeAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
 }
 
 void Scene::BuildMonsterType1AnimationController() {
@@ -1636,19 +1817,57 @@ void Scene::BuildMonsterType1AnimationController() {
 
 void Scene::BuildDemonAnimationController() {
 	mAnimationMap["Demon"].Load("Resources/Assets/Demon/Demon.glb");
-	auto& loader = mAnimationMap["MonsterType1"];
+	auto& loader = mAnimationMap["Demon"];
 
-	std::vector<AnimationClip*> clips = {
-		loader.GetClip(0), // Bite 
-		loader.GetClip(1), // Crouch 
-		loader.GetClip(2), // Death
-		loader.GetClip(3), // Eat
-		loader.GetClip(4), // Idle1
-		loader.GetClip(5), // Idle2 
-		loader.GetClip(6), // Punch 
-		loader.GetClip(7), // Roar 
-		loader.GetClip(8), // Sniff 
-		loader.GetClip(9), // Walk1 
-		loader.GetClip(10) // Walk2 
-	};
+	AnimatorGraph::AnimationState idleState{};
+	idleState.clip = loader.GetClip(0);
+	idleState.name = "Idle";
+	idleState.loop = true;
+
+	AnimatorGraph::AnimationState forwardState{};
+	forwardState.clip = loader.GetClip(1);
+	forwardState.name = "Forward";
+	forwardState.loop = true;
+
+	AnimatorGraph::AnimationState backwardState{};
+	backwardState.clip = loader.GetClip(2);
+	backwardState.name = "BackWard";
+	backwardState.loop = true;
+
+	AnimatorGraph::AnimationState leftState{};
+	leftState.clip = loader.GetClip(3);
+	leftState.name = "Left";
+	leftState.loop = true;
+
+	AnimatorGraph::AnimationState rightState{};
+	rightState.clip = loader.GetClip(4);
+	rightState.name = "Right";
+	rightState.loop = true;
+
+	AnimatorGraph::AnimationState jumpState{};
+	jumpState.clip = loader.GetClip(5);
+	jumpState.name = "Jump";
+	jumpState.loop = false;
+
+	AnimatorGraph::AnimationState attackedState{};
+	attackedState.clip = loader.GetClip(6);
+	attackedState.name = "Attacked";
+	attackedState.loop = false;
+
+	AnimatorGraph::AnimationState attackState{};
+	attackState.clip = loader.GetClip(7);
+	attackState.name = "Attack";
+	attackState.loop = false;
+
+	AnimatorGraph::AnimationState interactionState{};
+	interactionState.clip = loader.GetClip(0);
+	interactionState.name = "Interaction";
+	interactionState.loop = true;
+
+	AnimatorGraph::AnimationState deathState{};
+	deathState.clip = loader.GetClip(8);
+	deathState.name = "Death";
+	deathState.loop = false;
+
+	mDemonAnimationController = AnimatorGraph::AnimationGraphController({ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState });
 }

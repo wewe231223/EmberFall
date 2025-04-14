@@ -131,3 +131,47 @@ inline void AnimationDeserializer::ReadVector(std::vector<T>& value) {
 	value.resize(size);
 	mFile.read(reinterpret_cast<char*>(value.data()), size * sizeof(T));
 }
+
+
+//template <typename T>
+//void OffsetKeyTimes(std::vector<std::pair<double, T>>& keys, double offset) {
+//	for (auto& key : keys) {
+//		key.first += offset;
+//	}
+//}
+//
+//// 두 AnimationClip을 이어붙이는 함수 (A 뒤에 B를 붙임)
+//AnimationClip AppendAnimationClips(const AnimationClip& clipA, const AnimationClip& clipB) {
+//	AnimationClip merged;
+//
+//	merged.duration = clipA.duration + clipB.duration;
+//	merged.ticksPerSecond = clipA.ticksPerSecond;
+//	merged.globalInverseTransform = clipA.globalInverseTransform;
+//	merged.boneOffsetMatrices = clipA.boneOffsetMatrices;
+//	merged.root = clipA.root;
+//	merged.boneAnimations = clipA.boneAnimations;
+//
+//	for (const auto& pair : clipB.boneAnimations) {
+//		unsigned int boneIndex = pair.first;
+//		BoneAnimation animB = pair.second;  
+//
+//		OffsetKeyTimes(animB.positionKey, clipA.duration);
+//		OffsetKeyTimes(animB.rotationKey, clipA.duration);
+//		OffsetKeyTimes(animB.scalingKey, clipA.duration);
+//
+//		auto it = merged.boneAnimations.find(boneIndex);
+//		if (it != merged.boneAnimations.end()) {
+//			it->second.positionKey.insert(it->second.positionKey.end(),
+//				animB.positionKey.begin(), animB.positionKey.end());
+//			it->second.rotationKey.insert(it->second.rotationKey.end(),
+//				animB.rotationKey.begin(), animB.rotationKey.end());
+//			it->second.scalingKey.insert(it->second.scalingKey.end(),
+//				animB.scalingKey.begin(), animB.scalingKey.end());
+//		}
+//		else {
+//			merged.boneAnimations[boneIndex] = animB;
+//		}
+//	}
+//
+//	return merged;
+//}
