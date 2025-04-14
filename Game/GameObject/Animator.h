@@ -302,7 +302,9 @@ namespace AnimatorGraph {
         
 
         void ResetTrigger(const std::string& name);
+
         const AnimationParameter* GetParameter(const std::string& name) const;
+		size_t GetCurrentStateIndex() const;
 
         void Transition(size_t targretIndex, double transitionDuration = 0.09);
     private:

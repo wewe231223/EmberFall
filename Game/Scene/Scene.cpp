@@ -77,7 +77,13 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 					Crash("There is no more space for My Player!!");
 				}
 		
-				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
+				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mMageAnimationController);
+				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mAxeAnimationController);
+				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
+
+
+
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
 		
@@ -209,7 +215,7 @@ void Scene::ProcessObjectMove(const uint8_t* buffer) {
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
-			mPlayerIndexmap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
+			//mPlayerIndexmap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
 
 
 			mPlayerIndexmap[data->objectId()]->GetTransform().SetDirection(FbsPacketFactory::GetVector3(data->dir()));
@@ -226,7 +232,7 @@ void Scene::ProcessObjectMove(const uint8_t* buffer) {
 	}
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
-			mGameObjectMap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
+			//mGameObjectMap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
 			mGameObjectMap[data->objectId()]->GetTransform().SetDirection(FbsPacketFactory::GetVector3(data->dir()));
 			mGameObjectMap[data->objectId()]->GetTransform().SetSpeed(data->speed());
 			auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
@@ -704,9 +710,16 @@ const uint8_t* Scene::ProcessPacket(const uint8_t* buffer) {
 
 
 void Scene::Update() {
+
+	
+
+
 	if (mMyPlayer != nullptr) {
 		auto& pos = mMyPlayer->GetTransform().GetPosition();
 		pos.y = tCollider.GetHeight(pos.x, pos.z);
+		
+
+	
 	}
 
 	if (mMyPlayer != nullptr) {
@@ -1490,10 +1503,10 @@ void Scene::BuildArcherAnimationController() {
 		attackedState.loop = false;
 
 		AnimatorGraph::BoneMaskAnimationState attackState{};
-		attackedState.maskedClipIndex = 8;
-		attackedState.nonMaskedClipIndex = 8;
-		attackedState.name = "Attack";
-		attackedState.loop = true;
+		attackState.maskedClipIndex = 8;
+		attackState.nonMaskedClipIndex = 8;
+		attackState.name = "Attack";
+		attackState.loop = true;
 
 		AnimatorGraph::BoneMaskAnimationState interactionState{};
 		interactionState.maskedClipIndex = 9;
@@ -1573,10 +1586,10 @@ void Scene::BuildSwordManAnimationController() {
 		attackedState.loop = false;
 		
 		AnimatorGraph::BoneMaskAnimationState attackState{};
-		attackedState.maskedClipIndex = 7;
-		attackedState.nonMaskedClipIndex = 7;
-		attackedState.name = "Attack";
-		attackedState.loop = true;
+		attackState.maskedClipIndex = 7;
+		attackState.nonMaskedClipIndex = 7;
+		attackState.name = "Attack";
+		attackState.loop = true;
 
 		AnimatorGraph::BoneMaskAnimationState interactionState{};
 		interactionState.maskedClipIndex = 8;
@@ -1655,10 +1668,10 @@ void Scene::BuildMageAnimationController() {
 		attackedState.loop = false;
 
 		AnimatorGraph::BoneMaskAnimationState attackState{};
-		attackedState.maskedClipIndex = 7;
-		attackedState.nonMaskedClipIndex = 7;
-		attackedState.name = "Attack";
-		attackedState.loop = true;
+		attackState.maskedClipIndex = 7;
+		attackState.nonMaskedClipIndex = 7;
+		attackState.name = "Attack";
+		attackState.loop = true;
 
 		AnimatorGraph::BoneMaskAnimationState interactionState{};
 		interactionState.maskedClipIndex = 8;
@@ -1736,10 +1749,10 @@ void Scene::BuildAxeAnimationController() {
 	attackedState.loop = false;
 
 	AnimatorGraph::BoneMaskAnimationState attackState{};
-	attackedState.maskedClipIndex = 7;
-	attackedState.nonMaskedClipIndex = 7;
-	attackedState.name = "Attack";
-	attackedState.loop = true;
+	attackState.maskedClipIndex = 7;
+	attackState.nonMaskedClipIndex = 7;
+	attackState.name = "Attack";
+	attackState.loop = true;
 
 	AnimatorGraph::BoneMaskAnimationState interactionState{};
 	interactionState.maskedClipIndex = 8;
