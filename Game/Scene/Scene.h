@@ -3,6 +3,7 @@
 #include "../Renderer/Manager/TextureManager.h"
 #include "../Renderer/Manager/MeshRenderManager.h"
 #include "../Renderer/Manager/ParticleManager.h"
+#include "../Renderer/Manager/LightingManager.h"
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Renderer/core/ShadowRenderer.h"
 #include "../Game/System/Input.h"
@@ -17,7 +18,7 @@
 
 class Scene {
 public:
-	Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList ,std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation, std::shared_ptr<ShadowRenderer> shadow); 
+	Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList ,std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<LightingManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation, std::shared_ptr<ShadowRenderer> shadow);
 	~Scene();
 public:
 	void ProcessNetwork(); 
@@ -67,6 +68,7 @@ private:
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{ nullptr };
 	std::shared_ptr<MaterialManager> mMaterialManager{ nullptr };
 	std::shared_ptr<ParticleManager> mParticleManager{ nullptr };
+	std::shared_ptr<LightingManager> mLightingManager{ nullptr };
 	std::shared_ptr<ShadowRenderer> mShadowRenderer{ nullptr };
 
 	std::unordered_map<std::string, Collider> mColliderMap{};

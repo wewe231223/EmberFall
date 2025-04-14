@@ -61,6 +61,7 @@ void DefferedRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList, Def
 	commandList->SetGraphicsRootConstantBufferView(0, *shadowCameraBuffer);
 	commandList->SetGraphicsRootDescriptorTable(1, mGBufferSRVHeap->GetGPUDescriptorHandleForHeapStart());
 
+
 	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }
 

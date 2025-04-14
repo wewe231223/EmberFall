@@ -111,7 +111,7 @@ Deffered_POUT StandardAnimation_PS(StandardAnimation_PIN input) {
     
     output.diffuse = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord);
     // color += materialConstants[input.material].diffuse;
-    
+    output.normal = float4(input.normal, 1.0f);
     //output.position = float4(input.wPosition, 1.0f);
     return output;
 }

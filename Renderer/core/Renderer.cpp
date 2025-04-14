@@ -37,8 +37,8 @@ Renderer::~Renderer() {
 }
 
 
-std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> Renderer::GetManagers() {
-	return std::make_tuple(mMeshRenderManager, mTextureManager, mMaterialManager, mParticleManager);
+std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<LightingManager>> Renderer::GetManagers() {
+	return std::make_tuple(mMeshRenderManager, mTextureManager, mMaterialManager, mParticleManager, mLightingManager);
 }
 
 DefaultBufferCPUIterator Renderer::GetMainCameraBuffer() {
@@ -435,7 +435,7 @@ void Renderer::InitCoreResources() {
 	mMeshRenderManager = std::make_shared<MeshRenderManager>(mDevice);
 	mTextureManager = std::make_shared<TextureManager>(mDevice, mCommandList);
 	mMaterialManager = std::make_shared<MaterialManager>();
-
+	mLightingManager = std::make_shared<LightingManager>(mDevice, mCommandList, 1);
 	mMainCameraBuffer = DefaultBuffer(mDevice, sizeof(CameraConstants), 1, true);
 
 }

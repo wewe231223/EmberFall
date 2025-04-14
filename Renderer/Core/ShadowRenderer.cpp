@@ -70,8 +70,8 @@ void ShadowRenderer::Update(DefaultBufferCPUIterator worldCameraBuffer) {
 
 	SimpleMath::Vector3 directionNormalized = LIGHTDIRECTION;
 	directionNormalized.Normalize();
-	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (250.0f));
-	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (FRUSTUMLENGTH - cameraParam.nearZ) );
+	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (150.0f));
+	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (FRUSTUMLENGTH - cameraParam.nearZ) );
 
 	SimpleMath::Matrix view = SimpleMath::Matrix::CreateLookAt(cameraPos, centerFrustum, DirectX::SimpleMath::Vector3::Up);
 
@@ -103,7 +103,7 @@ void ShadowRenderer::Update(DefaultBufferCPUIterator worldCameraBuffer) {
 
 
 	float projectionSize = std::max(maxPoint.x - minPoint.x, maxPoint.y - minPoint.y);
-	float nearPadding =10.0f;  // 조명 투영행렬의 근,원평면에 약간의 여유 공간을 추가할때 사용.
+	float nearPadding =20.0f;  // 조명 투영행렬의 근,원평면에 약간의 여유 공간을 추가할때 사용.
 	float farPadding = 10.0f;
 	float nearPlane = minPoint.z - nearPadding;
 	float farPlane = maxPoint.z + farPadding;

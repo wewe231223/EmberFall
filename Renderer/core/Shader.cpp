@@ -395,9 +395,11 @@ void GraphicsShaderBase::CreateShader(ComPtr<ID3D12Device> device) {
 
 	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPipelineState)));
 
-	psoDesc.NumRenderTargets = 1;
+	psoDesc.NumRenderTargets = 3;
 	std::memset(psoDesc.RTVFormats, DXGI_FORMAT_UNKNOWN, sizeof(DXGI_FORMAT) * 8);
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	psoDesc.RTVFormats[1] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	psoDesc.RTVFormats[2] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mShadowPipelineState)));
@@ -839,6 +841,8 @@ GraphicsShaderBase::RootParameters DefferedShader::CreateRootParameters() {
 	params.Parameters[1].DescriptorTable.NumDescriptorRanges = 1;
 	params.Parameters[1].DescriptorTable.pDescriptorRanges = params.Ranges.data();
 	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	
 
 	params.ParameterCount = 2;
 

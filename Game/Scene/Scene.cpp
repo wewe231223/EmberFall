@@ -297,7 +297,7 @@ void Scene::ProcessProjectileMove(const uint8_t* buffer) {
 #pragma endregion 
 
 
-Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation, std::shared_ptr<ShadowRenderer> shadow) {
+Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<LightingManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation, std::shared_ptr<ShadowRenderer> shadow) {
 	
 	mInputSign = NonReplacementSampler::GetInstance().Sample(); 
 	mNetworkSign = NonReplacementSampler::GetInstance().Sample();
@@ -313,6 +313,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mTextureManager = std::get<1>(managers);
 	mMaterialManager = std::get<2>(managers);
 	mParticleManager = std::get<3>(managers);
+	mLightingManager = std::get<4>(managers);
 	mShadowRenderer = shadow;
 
 	Scene::BuildShader(device); 
@@ -754,6 +755,7 @@ void Scene::Update(DefaultBufferCPUIterator mainCameraBufferLocation) {
 			}
 		}
 		else {
+
 			auto [mesh, shader, modelContext] = object.GetRenderData();
 			mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
 			mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext);
@@ -845,8 +847,8 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 
 	//// 파일에 기록할 크기 
-	mColliderMap["Pine2"].SetExtents(0.33f, 10.797011f, 0.33f);
-	mColliderMap["Pine2"].SetCenter(0.f, 10.7970114f, 0.f);
+	/*mColliderMap["Pine2"].SetExtents(0.33f, 10.797011f, 0.33f);
+	mColliderMap["Pine2"].SetCenter(0.f, 10.7970114f, 0.f);*/
 
 
 	data = Loader.Load("Resources/Assets/Tree/pine2/pine3.glb", 0);
@@ -855,7 +857,7 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	
 
 	// 파일에 기록할 크기 
-	mColliderMap["Pine3_Stem"].SetExtents(0.3f, 7.51479626f, 0.3f);
+	//mColliderMap["Pine3_Stem"].SetExtents(0.3f, 7.51479626f, 0.3f);
 
 
 	data = Loader.Load("Resources/Assets/Tree/pine2/pine3.glb", 1);
@@ -867,8 +869,8 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 
 	// 파일에 기록할 크기 
-	mColliderMap["Pine4"].SetCenter(0.f, 10.7723713f, 0.f);
-	mColliderMap["Pine4"].SetExtents(0.35f, 10.7723713f, 0.35f);
+	/*mColliderMap["Pine4"].SetCenter(0.f, 10.7723713f, 0.f);
+	mColliderMap["Pine4"].SetExtents(0.35f, 10.7723713f, 0.35f);*/
 
 
 	data = Loader.Load("Resources/Assets/Env/Rocks.glb", 0);

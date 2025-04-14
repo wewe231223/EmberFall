@@ -72,6 +72,9 @@
     <ClCompile Include="Resource\Particle.cpp">
       <Filter>Resource</Filter>
     </ClCompile>
+    <ClCompile Include="Manager\LightingManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -118,6 +121,9 @@
     </ClInclude>
     <ClInclude Include="Resource\Particle.h">
       <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="Manager\LightingManager.h">
+      <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

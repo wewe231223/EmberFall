@@ -21,6 +21,7 @@
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Renderer/Core/ShadowRenderer.h"
 #include "../Renderer/Manager/ParticleManager.h"
+#include "../Renderer/Manager/LightingManager.h"
 
 class Renderer {
 public:
@@ -33,7 +34,7 @@ public:
 	Renderer(Renderer&& other) = delete;
 	Renderer& operator=(Renderer&& other) = delete;
 public:
-	std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> GetManagers();
+	std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<LightingManager>> GetManagers();
 	DefaultBufferCPUIterator GetMainCameraBuffer();
 
 	ComPtr<ID3D12Device> GetDevice();
@@ -118,6 +119,7 @@ private:
 	std::shared_ptr<MaterialManager> mMaterialManager{};
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{};
 	std::shared_ptr<ParticleManager> mParticleManager{};
+	std::shared_ptr<LightingManager> mLightingManager{};
 
 	DefaultBuffer mMainCameraBuffer{};
 };
