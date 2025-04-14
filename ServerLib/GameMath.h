@@ -132,15 +132,17 @@ namespace MathUtil {
         return VectorLengthSq(center, point) < (radius * radius);
     }
 
-    inline bool IsInRange(const SimpleMath::Vector3& center, GameUnits::GameUnit<GameUnits::Meter> radius, const SimpleMath::Vector3& point)
+    // Convert Vector3 to Vector2 , Ignore Y
+    inline SimpleMath::Vector3 ConvertXZVector(const SimpleMath::Vector3& v)
     {
-        return VectorLengthSq(center, point) < (radius * radius).Count();
+        return SimpleMath::Vector3{ v.x, 0.0f,  v.z };
     }
 
-    // Convert Vector3 to Vector2 , Ignore Y
-    inline SimpleMath::Vector2 ConvertXZVector(const SimpleMath::Vector3& v)
+    inline bool IsInRange(const SimpleMath::Vector3& center, GameUnits::GameUnit<GameUnits::Meter> radius, const SimpleMath::Vector3& point)
     {
-        return SimpleMath::Vector2{ v.x, v.z };
+        auto centerXZ = MathUtil::ConvertXZVector(center);
+        auto pointXZ = MathUtil::ConvertXZVector(point);
+        return SimpleMath::Vector3::DistanceSquared(centerXZ, pointXZ) < (radius * radius).Count();
     }
 
     inline SimpleMath::Vector3 Normalize(const SimpleMath::Vector3& v)

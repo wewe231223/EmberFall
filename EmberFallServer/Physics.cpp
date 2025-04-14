@@ -76,8 +76,7 @@ void Physics::CheckAndJump(const float deltaTime) {
     // v = F / mess * time (m/s)
     auto accel = mFactor.jumpForce / mFactor.mass;
     mVelocity.y = (accel * GameUnits::ToUnit<GameUnits::StandardTime>(deltaTime)).Count(); 
-    
-    mTransform.lock()->Translate(SimpleMath::Vector3{ 0.0f, 1.0f, 0.0f });
+    mTransform.lock()->Translate(SimpleMath::Vector3{ 0.0f, 0.005f, 0.0f });
 }
 
 void Physics::ResizeVelocity(float speed) {

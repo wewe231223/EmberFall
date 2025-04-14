@@ -78,8 +78,8 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 				}
 		
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mMageAnimationController);
-				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mAxeAnimationController);
+				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mMageAnimationController);
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mAxeAnimationController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
 
 
@@ -215,7 +215,7 @@ void Scene::ProcessObjectMove(const uint8_t* buffer) {
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
-			//mPlayerIndexmap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
+			mPlayerIndexmap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
 
 
 			mPlayerIndexmap[data->objectId()]->GetTransform().SetDirection(FbsPacketFactory::GetVector3(data->dir()));
@@ -232,7 +232,7 @@ void Scene::ProcessObjectMove(const uint8_t* buffer) {
 	}
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
-			//mGameObjectMap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
+			mGameObjectMap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
 			mGameObjectMap[data->objectId()]->GetTransform().SetDirection(FbsPacketFactory::GetVector3(data->dir()));
 			mGameObjectMap[data->objectId()]->GetTransform().SetSpeed(data->speed());
 			auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
@@ -544,15 +544,11 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	}
 
-
-
 	for (auto& environment : mEnvironmentObjects) {
 		environment.UpdateShaderVariables(); 
 	}
 
 	mGameObjects.resize(MeshRenderManager::MAX_INSTANCE_COUNT<size_t>, GameObject{});
-
-
 
 	mCamera = Camera(mainCameraBufferLocation);
 	
@@ -707,21 +703,7 @@ const uint8_t* Scene::ProcessPacket(const uint8_t* buffer) {
 	return buffer + header->size; 
 }
 
-
-
 void Scene::Update() {
-
-	
-
-
-	if (mMyPlayer != nullptr) {
-		auto& pos = mMyPlayer->GetTransform().GetPosition();
-		pos.y = tCollider.GetHeight(pos.x, pos.z);
-		
-
-	
-	}
-
 	if (mMyPlayer != nullptr) {
 		mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mCamera.GetTransform().GetPosition().x, mCamera.GetTransform().GetPosition().y, mCamera.GetTransform().GetPosition().z);
 
@@ -733,8 +715,6 @@ void Scene::Update() {
 
 
 	}
-
-
  
 	if (mCameraMode) {
 		mCameraMode->Update();
@@ -744,8 +724,6 @@ void Scene::Update() {
 	static BoneTransformBuffer boneTransformBuffer{};
 
 	for (auto& gameObject : mGameObjects) {
-
-
 		if (gameObject) {
 			if (gameObject.mAnimated) {
 				gameObject.UpdateShaderVariables(boneTransformBuffer); 
@@ -779,10 +757,6 @@ void Scene::Update() {
 			player.Update(mMeshRenderManager);
 		}
 	}
-
-
-
-
 
 	mSkyBox.GetTransform().GetPosition() = mCamera.GetTransform().GetPosition();
 	mSkyBox.UpdateShaderVariables();
@@ -1065,9 +1039,6 @@ void Scene::BuildAniamtionController() {
 
 	Scene::BuildMonsterType1AnimationController();
 	Scene::BuildDemonAnimationController(); 
-
-
-
 }
 
 void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
