@@ -27,6 +27,9 @@ public:
 
 	const DirectX::BoundingOrientedBox& GetWorldBox() const;
 	DirectX::BoundingOrientedBox& GetWorldBox();
+
+	const DirectX::BoundingOrientedBox& GetOriginBox() const;
+	DirectX::BoundingOrientedBox& GetOriginBox();
 private:
 	DirectX::BoundingOrientedBox mOrigin{};
 	DirectX::BoundingOrientedBox mWorld{};

@@ -13,6 +13,7 @@
 #include "../MeshLoader/Loader/TerrainLoader.h"
 #include "../Game/Scene/Player.h"
 #include "../ServerLib/PacketHandler.h"
+#include "../Utility/IntervalTimer.h"
 
 class Scene {
 public:
@@ -101,7 +102,7 @@ private:
 	AnimatorGraph::BoneMaskAnimationGraphController mMageAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mShieldManController{};
 
-	AnimatorGraph::AnimationGraphController mMonsterType1AnimationController{}; 
+	AnimatorGraph::AnimationGraphController mMonsterAnimationController{}; 
 	AnimatorGraph::AnimationGraphController mDemonAnimationController{};
 
 	GameObject mSkyBox{};
@@ -115,4 +116,8 @@ private:
 	Particle test2{}; 
 
 	TextBlock* mNetworkInfoText{ TextBlockManager::GetInstance().CreateTextBlock(L"",D2D1_RECT_F{100.f,0.f,800.f,100.f},StringColor::Black, "NotoSansKR") };
+	
+	IntervalTimer mIntervalTimer{};
+
+	std::unordered_map<std::string, std::vector<double>> mAnimationTimeMap{};
 };

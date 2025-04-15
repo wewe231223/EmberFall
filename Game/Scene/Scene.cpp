@@ -87,6 +87,8 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
 		
+				//mMyPlayer->AddEquipment(mEquipments["GreatSword"].Clone());
+
 				//mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
 				//mMyPlayer->AddEquipment(mEquipments["Shield"].Clone());
 
@@ -147,7 +149,8 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextLoc->mShader = mShaderMap["SkinnedShader"].get();
 					nextLoc->mMesh = mMeshMap["MonsterType1"].get();
 					nextLoc->mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
-					nextLoc->mGraphController = mMonsterType1AnimationController;
+					nextLoc->mGraphController = mMonsterAnimationController;
+					nextLoc->mCollider = mColliderMap["MonsterType1"];
 					nextLoc->mAnimated = true;
 					nextLoc->SetActiveState(true);
 		
@@ -266,6 +269,18 @@ void Scene::ProcessPacketAnimation(const uint8_t* buffer) {
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
 
+
+			//if (data->animation() == Packets::AnimationState_ATTACK) {
+			//	mIntervalTimer.Start(); 
+			//}
+			//
+			//if (mMyPlayer->GetBoneMaskController().GetCurrentStateIndex() == 7 and data->animation() == Packets::AnimationState_IDLE) {
+			//	mIntervalTimer.End(); 
+			//	auto time = mIntervalTimer.Elapsed<std::chrono::milliseconds>();
+			//	DebugBreak();
+			//}
+
+
 			mPlayerIndexmap[data->objectId()]->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
 		}
 	}
@@ -354,7 +369,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	mSkyFog.mMaterial = mMaterialManager->GetMaterial("SkyFogMaterial");
 
 
-	 //Scene::BakeEnvironment ("Resources/Binarys/Terrain/Environment.bin");
 	 Scene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
 
 
@@ -372,166 +386,155 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.GetTransform().Scaling(1.f, 1.f, 1.f);
 	}
 
-	//std::ofstream file{ "Resources/Binarys/Terrain/env_bb.bin", std::ios::binary };
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Tree1);
-	//	auto& bb = mColliderMap["Pine3_Stem"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
 
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
+	/*std::ofstream file{ "env_bb.bin", std::ios::binary };
+	UINT c = 16; 
+	file.write(reinterpret_cast<const char*>(&c), sizeof(UINT));
 
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Tree2);
-	//	auto& bb = mColliderMap["Pine2"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Tree1);
+		auto& bb = mColliderMap["Pine3_Stem"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}
 
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Tree2);
+		auto& bb = mColliderMap["Pine2"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}
 
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Tree3);
-	//	auto& bb = mColliderMap["Pine4"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Tree3);
+		auto& bb = mColliderMap["Pine4"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}
 
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Rock1);
+		auto& bb = mColliderMap["Rock_1"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}
 
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Rock1);
-	//	auto& bb = mColliderMap["Rock_1"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Rock2);
+		auto& bb = mColliderMap["Rock_2"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}
 
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Rock3);
+		auto& bb = mColliderMap["Rock_3"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}
 
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Rock2);
-	//	auto& bb = mColliderMap["Rock_2"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Rock4);
+		auto& bb = mColliderMap["Rock_4"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}
 
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::LargeRock1);
+		auto& bb = mColliderMap["LargeRock1"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}
 
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Rock3);
-	//	auto& bb = mColliderMap["Rock_3"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::LargeRock2);
+		auto& bb = mColliderMap["LargeRock2"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}
 
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Mountain1);
+		auto& bb = mColliderMap["Mountain"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}
 
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Rock4);
-	//	auto& bb = mColliderMap["Rock_4"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Mountain2);
+		auto& bb = mColliderMap["Mountain1"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}
 
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::TimberHouse);
+		auto& bb = mColliderMap["TimberHouse"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}
 
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::LargeRock1);
-	//	auto& bb = mColliderMap["LargeRock1"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::StoneHouse);
+		auto& bb = mColliderMap["StoneHouse"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}
 
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::LogHouse);
+		auto& bb = mColliderMap["LogHouse"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}
 
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::LargeRock2);
-	//	auto& bb = mColliderMap["LargeRock2"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::WindMill);
+		auto& bb = mColliderMap["WindMill"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}
 
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
+	{
+		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Well);
+		auto& bb = mColliderMap["Well"].GetOriginBox();
+		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
+		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
+		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
+		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
+	}*/
 
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Mountain1);
-	//	auto& bb = mColliderMap["Mountain"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Mountain2);
-	//	auto& bb = mColliderMap["Mountain1"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-	//
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::TimberHouse);
-	//	auto& bb = mColliderMap["TimberHouse"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::StoneHouse);
-	//	auto& bb = mColliderMap["StoneHouse"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::LogHouse);
-	//	auto& bb = mColliderMap["LogHouse"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::WindMill);
-	//	auto& bb = mColliderMap["WindMill"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Well);
-	//	auto& bb = mColliderMap["Well"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
 
 
 	{
@@ -541,10 +544,22 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		boss.mMaterial = mMaterialManager->GetMaterial("DemonMaterial");
 		boss.mGraphController = mDemonAnimationController;
 		boss.mAnimated = true; 
+		boss.mCollider = mColliderMap["Demon"];
 		boss.SetActiveState(true);
 		boss.GetTransform().GetPosition() = { 3.f, tCollider.GetHeight(3.f, 36.f), 36.f};
 	}
 
+	{
+		auto& imp = mGameObjects.emplace_back();
+		imp.mShader = mShaderMap["SkinnedShader"].get();
+		imp.mMesh = mMeshMap["MonsterType1"].get();
+		imp.mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
+		imp.mGraphController = mMonsterAnimationController;
+		imp.mAnimated = true;
+		imp.mCollider = mColliderMap["MonsterType1"];
+		imp.SetActiveState(true);
+		imp.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 36.f), 36.f };
+	}
 
 	{
 		mEquipments["Sword"] = EquipmentObject{}; 
@@ -627,6 +642,23 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	v.position = DirectX::XMFLOAT3(10.f, 30.f, 10.f);
 	test2 = mParticleManager->CreateEmitParticle(commandList, v);
+
+
+	std::ofstream file1{ "AnimationInfo.bin", std::ios::binary };
+
+	UINT cnt = static_cast<UINT>(mAnimationMap.size());
+	file1.write(reinterpret_cast<const char*>(&cnt), sizeof(UINT));
+
+	for (auto& [key, values] : mAnimationTimeMap) {
+		UINT length = static_cast<UINT>(key.size());
+		file1.write(reinterpret_cast<const char*>(&length), sizeof(UINT));
+		file1.write(key.data(), length);
+
+		length = static_cast<UINT>(values.size());
+		file1.write(reinterpret_cast<const char*>(&length), sizeof(UINT));
+		file1.write(reinterpret_cast<const char*>(values.data()), length * sizeof(double));
+	}
+
 }
 
 Scene::~Scene() {
@@ -844,6 +876,19 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 	data = Loader.Load("Resources/Assets/Demon/Demon.glb");
 	mMeshMap["Demon"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Demon"] = Collider{ data.position };
+
+	// 파일에 기록할 크기
+	mColliderMap["Demon"].SetExtents(0.9f, 1.8f, 0.9f);
+	mColliderMap["Demon"].SetCenter(-0.4f, 1.8f, 0.f);
+
+	data = Loader.Load("Resources/Assets/imp/imp.glb");
+	mMeshMap["MonsterType1"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["MonsterType1"] = Collider{ data.position };
+
+	mColliderMap["MonsterType1"].SetCenter(0.f, 0.65f, 0.f);
+	mColliderMap["MonsterType1"].SetExtents(0.3f, 0.65f, 0.3f);
+
 
 	data = Loader.Load("Resources/Assets/Mountain/Mountain.gltf");
 	mMeshMap["Mountain"] = std::make_unique<Mesh>(device, commandList, data);
@@ -853,8 +898,6 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mMeshMap["Mountain1"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Mountain1"] = Collider{ data.position };
 
-	data = Loader.Load("Resources/Assets/imp/imp.glb");
-	mMeshMap["MonsterType1"] = std::make_unique<Mesh>(device, commandList, data);
 	
 	data = Loader.Load("Resources/Assets/Weapon/sword/LongSword.glb");
 	mMeshMap["Sword"] = std::make_unique<Mesh>(device, commandList, data);
@@ -867,6 +910,10 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	data = Loader.Load("Resources/Assets/Weapon/Bow/Bow.glb");
 	mMeshMap["Bow"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Bow"] = Collider{ data.position };
+
+	data = Loader.Load("Resources/Assets/Weapon/Bow/Arrow.glb");
+	mMeshMap["Arrow"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Arrow"] = Collider{ data.position };
 
 	data = Loader.Load("Resources/Assets/Weapon/Shield/Shield.glb");
 	mMeshMap["Shield"] = std::make_unique<Mesh>(device, commandList, data);
@@ -1542,7 +1589,7 @@ void Scene::BuildArcherAnimationController() {
 		attackState.maskedClipIndex = 7;
 		attackState.nonMaskedClipIndex = 7;
 		attackState.name = "Attack";
-		attackState.loop = true;
+		attackState.loop = false;
 
 		AnimatorGraph::BoneMaskAnimationState interactionState{};
 		interactionState.maskedClipIndex = 8;
@@ -1558,6 +1605,20 @@ void Scene::BuildArcherAnimationController() {
 
 		std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState };
 		mArcherAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
+
+
+		mAnimationTimeMap["Archer"] = std::vector<double>{
+		loader.GetClip(0)->duration / loader.GetClip(0)->ticksPerSecond,
+		loader.GetClip(1)->duration / loader.GetClip(1)->ticksPerSecond,
+		loader.GetClip(2)->duration / loader.GetClip(2)->ticksPerSecond,
+		loader.GetClip(3)->duration / loader.GetClip(3)->ticksPerSecond,
+		loader.GetClip(4)->duration / loader.GetClip(4)->ticksPerSecond,
+		loader.GetClip(5)->duration / loader.GetClip(5)->ticksPerSecond,
+		loader.GetClip(6)->duration / loader.GetClip(6)->ticksPerSecond,
+		loader.GetClip(11)->duration / loader.GetClip(11)->ticksPerSecond,
+		loader.GetClip(9)->duration / loader.GetClip(9)->ticksPerSecond,
+		loader.GetClip(10)->duration / loader.GetClip(10)->ticksPerSecond,
+		};
 	}
 }
 
@@ -1641,6 +1702,19 @@ void Scene::BuildSwordManAnimationController() {
 
 		std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState };
 		mSwordManAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
+
+		mAnimationTimeMap["LongSword"] = std::vector<double>{
+		loader.GetClip(0)->duration / loader.GetClip(0)->ticksPerSecond,
+		loader.GetClip(1)->duration / loader.GetClip(1)->ticksPerSecond,
+		loader.GetClip(2)->duration / loader.GetClip(2)->ticksPerSecond,
+		loader.GetClip(3)->duration / loader.GetClip(3)->ticksPerSecond,
+		loader.GetClip(4)->duration / loader.GetClip(4)->ticksPerSecond,
+		loader.GetClip(5)->duration / loader.GetClip(5)->ticksPerSecond,
+		loader.GetClip(6)->duration / loader.GetClip(6)->ticksPerSecond,
+		loader.GetClip(7)->duration / loader.GetClip(7)->ticksPerSecond,
+		loader.GetClip(8)->duration / loader.GetClip(8)->ticksPerSecond,
+		loader.GetClip(9)->duration / loader.GetClip(9)->ticksPerSecond,
+		};
 	}
 }
 
@@ -1723,6 +1797,19 @@ void Scene::BuildMageAnimationController() {
 
 		std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState };
 		mMageAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
+
+		mAnimationTimeMap["Magician"] = std::vector<double>{
+			loader.GetClip(0)->duration / loader.GetClip(0)->ticksPerSecond,
+			loader.GetClip(1)->duration / loader.GetClip(1)->ticksPerSecond,
+			loader.GetClip(2)->duration / loader.GetClip(2)->ticksPerSecond,
+			loader.GetClip(3)->duration / loader.GetClip(3)->ticksPerSecond,
+			loader.GetClip(4)->duration / loader.GetClip(4)->ticksPerSecond,
+			loader.GetClip(5)->duration / loader.GetClip(5)->ticksPerSecond,
+			loader.GetClip(6)->duration / loader.GetClip(6)->ticksPerSecond,
+			loader.GetClip(7)->duration / loader.GetClip(7)->ticksPerSecond,
+			loader.GetClip(8)->duration / loader.GetClip(8)->ticksPerSecond,
+			loader.GetClip(9)->duration / loader.GetClip(9)->ticksPerSecond,
+		};
 	}
 }
 
@@ -1804,6 +1891,19 @@ void Scene::BuildShieldManController() {
 
 	std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState };
 	mShieldManController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
+
+	mAnimationTimeMap["ShieldMan"] = std::vector<double>{
+		loader.GetClip(0)->duration / loader.GetClip(0)->ticksPerSecond,
+		loader.GetClip(1)->duration / loader.GetClip(1)->ticksPerSecond,
+		loader.GetClip(2)->duration / loader.GetClip(2)->ticksPerSecond,
+		loader.GetClip(3)->duration / loader.GetClip(3)->ticksPerSecond,
+		loader.GetClip(4)->duration / loader.GetClip(4)->ticksPerSecond,
+		loader.GetClip(5)->duration / loader.GetClip(5)->ticksPerSecond,
+		loader.GetClip(6)->duration / loader.GetClip(6)->ticksPerSecond,
+		loader.GetClip(7)->duration / loader.GetClip(7)->ticksPerSecond,
+		loader.GetClip(8)->duration / loader.GetClip(8)->ticksPerSecond,
+		loader.GetClip(9)->duration / loader.GetClip(9)->ticksPerSecond,
+	};
 }
 
 void Scene::BuildMonsterType1AnimationController() {
@@ -1860,8 +1960,20 @@ void Scene::BuildMonsterType1AnimationController() {
 	deathState.name = "Death";
 	deathState.loop = false;
 
-	mMonsterType1AnimationController = AnimatorGraph::AnimationGraphController({ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState });
+	mMonsterAnimationController = AnimatorGraph::AnimationGraphController({ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState });
 
+	mAnimationTimeMap["Monster"] = std::vector<double>{
+		loader.GetClip(0)->duration / loader.GetClip(0)->ticksPerSecond,
+		loader.GetClip(1)->duration / loader.GetClip(1)->ticksPerSecond,
+		loader.GetClip(2)->duration / loader.GetClip(2)->ticksPerSecond,
+		loader.GetClip(3)->duration / loader.GetClip(3)->ticksPerSecond,
+		loader.GetClip(4)->duration / loader.GetClip(4)->ticksPerSecond,
+		loader.GetClip(5)->duration / loader.GetClip(5)->ticksPerSecond,
+		loader.GetClip(6)->duration / loader.GetClip(6)->ticksPerSecond,
+		loader.GetClip(7)->duration / loader.GetClip(7)->ticksPerSecond,
+		0.0, 
+		loader.GetClip(8)->duration / loader.GetClip(8)->ticksPerSecond,
+	};
 }
 
 void Scene::BuildDemonAnimationController() {
@@ -1919,4 +2031,17 @@ void Scene::BuildDemonAnimationController() {
 	deathState.loop = false;
 
 	mDemonAnimationController = AnimatorGraph::AnimationGraphController({ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState });
+
+	mAnimationTimeMap["Demon"] = std::vector<double>{
+		loader.GetClip(0)->duration / loader.GetClip(0)->ticksPerSecond,
+		loader.GetClip(1)->duration / loader.GetClip(1)->ticksPerSecond,
+		loader.GetClip(2)->duration / loader.GetClip(2)->ticksPerSecond,
+		loader.GetClip(3)->duration / loader.GetClip(3)->ticksPerSecond,
+		loader.GetClip(4)->duration / loader.GetClip(4)->ticksPerSecond,
+		loader.GetClip(5)->duration / loader.GetClip(5)->ticksPerSecond,
+		loader.GetClip(6)->duration / loader.GetClip(6)->ticksPerSecond,
+		loader.GetClip(7)->duration / loader.GetClip(7)->ticksPerSecond,
+		0.0,
+		loader.GetClip(8)->duration / loader.GetClip(8)->ticksPerSecond,
+	};
 }
