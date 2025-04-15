@@ -77,9 +77,9 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 					Crash("There is no more space for My Player!!");
 				}
 		
-				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mMageAnimationController);
-				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mShieldManController);
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mShieldManController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
 
 
@@ -87,14 +87,15 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
 		
-				mMyPlayer->AddEquipment(mEquipments["GreatSword"].Clone());
+				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
+				mMyPlayer->AddEquipment(mEquipments["Shield"].Clone());
 				mMyPlayer->SetMyPlayer();
 
 				mMyPlayer->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
 
 					
 				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
-				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
+				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, -3.f });
 				mCameraMode->Enter();
 			}
 			else {
@@ -554,6 +555,25 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		mEquipments["GreatSword"].SetActiveState(true);
 	}
 
+	{
+		mEquipments["Bow"] = EquipmentObject{};
+		mEquipments["Bow"].mMesh = mMeshMap["Bow"].get();
+		mEquipments["Bow"].mShader = mShaderMap["StandardShader"].get();
+		mEquipments["Bow"].mMaterial = mMaterialManager->GetMaterial("BowMaterial");
+		mEquipments["Bow"].mCollider = mColliderMap["Bow"];
+		mEquipments["Bow"].mEquipJointIndex = 12;
+		mEquipments["Bow"].SetActiveState(true);
+	}
+
+	{
+		mEquipments["Shield"] = EquipmentObject{};
+		mEquipments["Shield"].mMesh = mMeshMap["Shield"].get();
+		mEquipments["Shield"].mShader = mShaderMap["StandardShader"].get();
+		mEquipments["Shield"].mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+		mEquipments["Shield"].mCollider = mColliderMap["Shield"];
+		mEquipments["Shield"].mEquipJointIndex = 11;
+		mEquipments["Shield"].SetActiveState(true);
+	}
 
 	for (auto& environment : mEnvironmentObjects) {
 		environment.UpdateShaderVariables(); 
@@ -832,6 +852,14 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mMeshMap["GreatSword"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["GreatSword"] = Collider{ data.position };
 
+	data = Loader.Load("Resources/Assets/Weapon/Bow/Bow.glb");
+	mMeshMap["Bow"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Bow"] = Collider{ data.position };
+
+	data = Loader.Load("Resources/Assets/Weapon/Shield/Shield.glb");
+	mMeshMap["Shield"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Shield"] = Collider{ data.position };
+
 
 	data = Loader.Load("Resources/Assets/CorruptedGem/CorruptedGem.glb");
 	mMeshMap["CorruptedGem"] = std::make_unique<Mesh>(device, commandList, data);
@@ -963,6 +991,10 @@ void Scene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("sword_base");
 	mMaterialManager->CreateMaterial("GreatSwordMaterial", mat);
 
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Bow_DIFF");
+	mMaterialManager->CreateMaterial("BowMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("bow_base");
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("T_Demon_Imp_Monster_Bloody_Albedo_Skin_4");
 	mMaterialManager->CreateMaterial("MonsterType1Material", mat);
 
