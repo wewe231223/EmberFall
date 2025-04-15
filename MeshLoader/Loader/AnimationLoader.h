@@ -38,11 +38,14 @@ public:
 	void Load(const std::filesystem::path& path);
 	
 	AnimationClip* GetClip(UINT index);
+	void AddClip(const AnimationClip& clip);
+	
 	UINT GetBoneIndex(const std::string& name);
 private:
 	bool CheckBinary(const std::filesystem::path& path);
 
 	AnimationClip LoadClip(UINT animIndex = 0);
+
 	std::shared_ptr<BoneNode> BuildNode(const aiNode* node, const std::unordered_map<std::string, UINT>& boneMap);
 private:
 	std::vector<AnimationClip> mClips{};
@@ -141,24 +144,24 @@ inline void OffsetKeyTimes(std::vector<std::pair<double, T>>& keys, double offse
 	}
 }
 
-inline AnimationClip AppendAnimationClips(const AnimationClip& clipA, const AnimationClip& clipB) 
+inline AnimationClip AppendAnimationClips(const AnimationClip* clipA, const AnimationClip* clipB) 
 {
 	AnimationClip merged;
 
-	merged.duration = clipA.duration + clipB.duration;
-	merged.ticksPerSecond = clipA.ticksPerSecond;
-	merged.globalInverseTransform = clipA.globalInverseTransform;
-	merged.boneOffsetMatrices = clipA.boneOffsetMatrices;
-	merged.root = clipA.root;
-	merged.boneAnimations = clipA.boneAnimations;
+	merged.duration = clipA->duration + clipB->duration;
+	merged.ticksPerSecond = clipA->ticksPerSecond;
+	merged.globalInverseTransform = clipA->globalInverseTransform;
+	merged.boneOffsetMatrices = clipA->boneOffsetMatrices;
+	merged.root = clipA->root;
+	merged.boneAnimations = clipA->boneAnimations;
 
-	for (const auto& pair : clipB.boneAnimations) {
+	for (const auto& pair : clipB->boneAnimations) {
 		unsigned int boneIndex = pair.first;
 		BoneAnimation animB = pair.second;  
 
-		OffsetKeyTimes(animB.positionKey, clipA.duration);
-		OffsetKeyTimes(animB.rotationKey, clipA.duration);
-		OffsetKeyTimes(animB.scalingKey, clipA.duration);
+		OffsetKeyTimes(animB.positionKey, clipA->duration);
+		OffsetKeyTimes(animB.rotationKey, clipA->duration);
+		OffsetKeyTimes(animB.scalingKey, clipA->duration);
 
 		auto it = merged.boneAnimations.find(boneIndex);
 		if (it != merged.boneAnimations.end()) {

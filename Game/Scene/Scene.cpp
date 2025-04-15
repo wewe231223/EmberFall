@@ -79,16 +79,20 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 		
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mMageAnimationController);
-				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mShieldManController);
-				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
+				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mShieldManController);
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
 
 
 
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
 		
-				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
-				mMyPlayer->AddEquipment(mEquipments["Shield"].Clone());
+				//mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
+				//mMyPlayer->AddEquipment(mEquipments["Shield"].Clone());
+
+				mMyPlayer->AddEquipment(mEquipments["Bow"].Clone());
+
+
 				mMyPlayer->SetMyPlayer();
 
 				mMyPlayer->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
@@ -1477,6 +1481,9 @@ void Scene::BuildArcherAnimationController() {
 		mAnimationMap["Archer"].Load("Resources/Assets/Knight/Archer/Archer.glb");
 		auto& loader = mAnimationMap["Archer"];
 
+		loader.AddClip(AppendAnimationClips(loader.GetClip(7), loader.GetClip(8)));
+
+
 		std::vector<const AnimationClip*> clips{
 			loader.GetClip(0), // Idle
 			loader.GetClip(1), // Forward Run
@@ -1485,8 +1492,7 @@ void Scene::BuildArcherAnimationController() {
 			loader.GetClip(4), // Left Run
 			loader.GetClip(5), // Jump 
 			loader.GetClip(6), // Attacked
-			loader.GetClip(7), // Attack Ready 
-			loader.GetClip(8), // Attack Shoot	
+			loader.GetClip(11), // Attack
 			loader.GetClip(9), // Interaction 
 			loader.GetClip(10), // Death 
 		};
@@ -1533,20 +1539,20 @@ void Scene::BuildArcherAnimationController() {
 		attackedState.loop = false;
 
 		AnimatorGraph::BoneMaskAnimationState attackState{};
-		attackState.maskedClipIndex = 8;
-		attackState.nonMaskedClipIndex = 8;
+		attackState.maskedClipIndex = 7;
+		attackState.nonMaskedClipIndex = 7;
 		attackState.name = "Attack";
 		attackState.loop = true;
 
 		AnimatorGraph::BoneMaskAnimationState interactionState{};
-		interactionState.maskedClipIndex = 9;
-		interactionState.nonMaskedClipIndex = 9;
+		interactionState.maskedClipIndex = 8;
+		interactionState.nonMaskedClipIndex = 8;
 		interactionState.name = "Interaction";
 		interactionState.loop = true;
 
 		AnimatorGraph::BoneMaskAnimationState deathState{};
-		deathState.maskedClipIndex = 10;
-		deathState.nonMaskedClipIndex = 10;
+		deathState.maskedClipIndex = 9;
+		deathState.nonMaskedClipIndex = 9;
 		deathState.name = "Death";
 		deathState.loop = false;
 
