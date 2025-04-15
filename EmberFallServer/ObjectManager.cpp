@@ -12,26 +12,35 @@ ObjectManager::ObjectManager() {
         mFreeIndices.push(id);
     }
 
-    for (auto& user : mPlayers) {
+    for (NetworkObjectIdType id{ USER_ID_START }; auto & user : mPlayers) {
         user = std::make_shared<GameObject>();
+        user->InitId(id);
         user->Reset();
         user->mSpec.active = false;
         user->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.3f, 1.5f, 0.3f });
         user->CreateScript<PlayerScript>(user, std::make_shared<Input>());
+
+        ++id;
     }
 
-    for (auto& monster : mMonsters) {
+    for (NetworkObjectIdType id{ MONSTER_ID_START }; auto& monster : mMonsters) {
         monster = std::make_shared<GameObject>();
+        monster->InitId(id);
         monster->Reset();
         monster->mSpec.active = false;
         //monster->CreateCollider<OrientedBoxCollider>();
         monster->CreateScript<MonsterScript>(monster);
+
+        ++id;
     }
 
-    for (auto& env : mMonsters) {
+    for (NetworkObjectIdType id{ ENV_ID_START }; auto& env : mEnvironments) {
         env = std::make_shared<GameObject>();
+        env->InitId(id);
         env->Reset();
         env->mSpec.active = false;
+
+        ++id;
     }
 }
 

@@ -93,15 +93,9 @@ void Listener::ProcessAccept() {
     if (true == sessionManager->AddSession(session)) {
         session->InitSessionNetAddress(mOverlappedAccept.buffer.data());
         auto [ip, port] = session->GetAddress();
-        
-        decltype(auto) packetId = FbsPacketFactory::NotifyIdSC(session->GetId());
-        sessionManager->Send(session->GetId(), packetId);
-
-        decltype(auto) packetProtocolVersion = FbsPacketFactory::ProtocolVersionSC();
-        sessionManager->Send(session->GetId(), packetProtocolVersion);
 
         session->OnConnect();
-        
+
         gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Client [IP: {}, PORT: {}] Connected", ip, port);
     }
     else {

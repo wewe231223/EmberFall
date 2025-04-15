@@ -4,6 +4,8 @@
 #include "PlayerScript.h"
 #include "ObjectManager.h"
 
+#include "Sector.h"
+
 GameSession::GameSession(std::shared_ptr<INetworkCore> core) 
     : Session{ core } { 
 }
@@ -13,13 +15,37 @@ GameSession::~GameSession() {
 }
 
 void GameSession::OnConnect() {
+    static auto TestPos = SimpleMath::Vector3::Zero;
+    const static auto PosInc = SimpleMath::Vector3::Left;
+
+    Session::OnConnect();
+
     mUserObject = gObjectManager->GetObjectFromId(GetId());
     mUserObject->mSpec.active = true;
+    mUserObject->mSpec.attackable = true;
+    mUserObject->mSpec.hp = 100.0f;
+    mUserObject->mSpec.damage = 10.0f;
+
     auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
     auto player = mUserObject->GetScript<PlayerScript>();
-    if (nullptr == player) {}
-
     player->SetOwnerSession(sharedFromThis);
+
+    player->GetTransform()->Translate(TestPos);
+    TestPos += PosInc;
+
+    const ObjectSpec spec = mUserObject->mSpec;
+    const auto yaw = mUserObject->GetEulerRotation().y;
+    const auto pos = mUserObject->GetPosition();
+    const auto anim = mUserObject->mAnimationStateMachine.GetCurrState();
+    decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(GetId(), spec.entity, yaw, anim, spec.hp, pos);
+
+    RegisterSend(packetAppeared);
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Send Appeared My Player: {}", GetId());
+
+    const auto range = mUserObject->GetScript<PlayerScript>()->GetViewList().mViewRange.Count();
+
+    gSectorSystem->AddInSector(GetId(), pos);
+    gSectorSystem->UpdatePlayerViewList(mUserObject, pos, range);
 }
 
 void GameSession::ProcessRecv(INT32 numOfBytes) {

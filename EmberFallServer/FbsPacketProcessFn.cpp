@@ -23,6 +23,7 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
     }
 
     Packets::PacketTypes enumType = static_cast<Packets::PacketTypes>(header->type);
+    //gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Process: {}", Packets::EnumNamePacketTypes(enumType));
     switch (header->type) {
     case Packets::PacketTypes_PT_PLAYER_INPUT_CS:
     {
@@ -40,7 +41,6 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
 
     case Packets::PacketTypes_PT_PLAYER_EXIT_CS:
     {
-        gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Process: {}", Packets::EnumNamePacketTypes(enumType));
         break;
     }
 
@@ -99,43 +99,42 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
 }
 
 void ProcessPlayerInputCS(std::shared_ptr<GameSession>& session, const Packets::PlayerInputCS* const input) {
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Process: Player");
 }
 
 void ProcessPlayerLookCS(std::shared_ptr<GameSession>& session, const Packets::PlayerLookCS* const look) {
-    static bool once{ false };
-    if (not once) {
-        gSectorSystem->AddInSector(session->GetId(), session->GetUserObject()->GetPosition());
-        const auto player = session->GetUserObject();
-        const auto pos = player->GetPosition();
-        const auto range = player->GetScript<PlayerScript>()->GetViewList().mViewRange.Count();
-        gSectorSystem->UpdatePlayerViewList(player, pos, range);
-    }
-    once = true;
+    const auto userObject = session->GetUserObject();
+    auto player = userObject->GetScript<PlayerScript>();
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Process: PlayerLook");
+    const auto playerPos = userObject->GetPosition();
+    const auto viewRange = player->GetViewList().mViewRange.Count();
+
+    //userObject->GetTransform()->Translate(SimpleMath::Vector3::Backward * 0.1f);
+    //const auto userId = userObject->GetId();
+    //const auto userPos = userObject->GetPosition();
+    //const auto userYaw = userObject->GetEulerRotation().y;
+    //const auto userDir = userObject->GetMoveDir();
+    //const auto userSpeed = userObject->GetSpeed();
+
+    //auto packetMove = FbsPacketFactory::ObjectMoveSC(userId, userYaw, userPos, userDir, userSpeed);
+    //session->RegisterSend(packetMove);
+
+    gSectorSystem->UpdatePlayerViewList(userObject, playerPos, viewRange);
 }
 
 void ProcessPlayerSelectWeaponCS(std::shared_ptr<GameSession>& session, const Packets::PlayerSelectWeaponCS* const weapon) {
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Process: PlayerSelectWeapon");
 }
 
 void ProcessPlayerSelectRoleCS(std::shared_ptr<GameSession>& session, const Packets::PlayerSelectRoleCS* const roll) {
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Process: PlayerSelectRoll");
 }
 
 void ProcessLatencyCS(std::shared_ptr<GameSession>& session, const Packets::PacketLatencyCS* const latency) {
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Process: PlayerLatency");
 }
 
 void ProcessRequestAttackCS(std::shared_ptr<GameSession>& session, const Packets::RequestAttackCS* const attack) {
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Process: PlayerAttack");
 }
 
 void ProcessRequestUseItemCS(std::shared_ptr<GameSession>& session, const Packets::RequestUseItemCS* const useItem) {
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Process: PlayerItem");
 }
 
 void ProcessRequestFireProjectileCS(std::shared_ptr<GameSession>& session, const Packets::RequestFireCS* const fire) {
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Process: PlayerFire");
 }

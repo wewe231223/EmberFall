@@ -14,7 +14,6 @@
 ServerFrame::ServerFrame() {}
 
 ServerFrame::~ServerFrame() { 
-    mGameScenes.clear();
     gServerCore->End();
 }
 
@@ -23,21 +22,20 @@ std::shared_ptr<class InputManager> ServerFrame::GetInputManager() const {
 }
 
 void ServerFrame::Run() {
+    BoundingBoxImporter::LoadFromFile();
+
     gServerCore->Init();
 
     mInputManager = std::make_shared<InputManager>();
 
     auto sessionManager = gServerCore->GetSessionManager();
-    auto fn = []() -> std::shared_ptr<Session> { 
+    static auto createSessionFn = []() -> std::shared_ptr<Session> { 
         return std::make_shared<GameSession>(gServerCore);
-        };
-    sessionManager->RegisterCreateSessionFn(fn);
+    };
+
+    sessionManager->RegisterCreateSessionFn(createSessionFn);
 
     gServerCore->Start("", SERVER_PORT);
 
     while (not mDone) { };
-}
-
-void ServerFrame::InitGameScenes() {
-    BoundingBoxImporter::LoadFromFile();
 }

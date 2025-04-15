@@ -28,13 +28,14 @@ public:
     virtual ~PlayerScript();
 
 public:
+    //Short2 GetCurrSector() const;
     std::shared_ptr<Input> GetInput() const;
     ViewList& GetViewList();
 
     void SetOwnerSession(std::shared_ptr<class GameSession> session);
 
-    void UpdateViewListNPC(std::vector<NetworkObjectIdType>&& inViewRangeObjects);
-    void UpdateViewListPlayer(std::vector<NetworkObjectIdType>&& inViewRangeObjects);
+    void UpdateViewListNPC(const std::vector<NetworkObjectIdType>& inViewRangeObjects);
+    void UpdateViewListPlayer(const std::vector<NetworkObjectIdType>& inViewRangeObjects);
 
     virtual void Init() override;
 
@@ -64,6 +65,9 @@ private:
 
 private:
     bool mInteraction{ false };
+
+    //Short2 mCurrSectorIdx{ };
+
     ViewList mViewList;
     Inventory mInventory{ };
 

@@ -54,8 +54,6 @@ public:
 
 private:
     std::function<std::shared_ptr<Session>()> mCreateSessionFn{ };
-    std::function<void(SessionIdType)> mOnSessionConnFn{ [](SessionIdType){ } };
-    std::function<void(SessionIdType)> mOnSessionDisconnFn{ [](SessionIdType){ } };
 
     std::shared_ptr<class ServerCore> mCoreService{ nullptr };
     Lock::SRWLock mSessionsLock{ }; // 01-14 std::mutex -> SRWLock으로 변경

@@ -187,10 +187,10 @@ void SectorSystem::UpdatePlayerViewList(const std::shared_ptr<GameObject>& playe
 
     std::vector<Short2> checkSectors = std::move(GetMustCheckSectors(pos, range));
     for (const auto idx : checkSectors) {
-        std::vector<NetworkObjectIdType> monsters = GetSector(idx).GetMonstersInRange(pos, range);
-        std::vector<NetworkObjectIdType> players = GetSector(idx).GetPlayersInRange(pos, range);
+        const std::vector<NetworkObjectIdType> monsters = std::move(GetSector(idx).GetMonstersInRange(pos, range));
+        const std::vector<NetworkObjectIdType> players = std::move(GetSector(idx).GetPlayersInRange(pos, range));
 
-        playerScript->UpdateViewListNPC(std::move(monsters));
-        playerScript->UpdateViewListPlayer(std::move(players));
+        playerScript->UpdateViewListNPC(monsters);
+        playerScript->UpdateViewListPlayer(players);
     }
 }

@@ -23,17 +23,12 @@ public:
 
     void Run();
 
-    void InitGameScenes();
-
 private:
     volatile bool mDone{ false };
     
-    std::vector<std::shared_ptr<class IServerGameScene>> mGameScenes{ };
-    std::shared_ptr<class IServerGameScene> mCurrentScene{ };
-
     Lock::SRWLock mPlayersLock{ };
-    std::shared_ptr<class InputManager> mInputManager{ };
     std::unordered_map<SessionIdType, std::shared_ptr<class GameObject>> mPlayers{ };
 
-    Concurrency::concurrent_queue<PlayerEvent> mPlayerEventQueue{ };
+    std::shared_ptr<class InputManager> mInputManager{ };
+    std::shared_ptr<class IServerGameScene> mCurrentScene{ };
 };

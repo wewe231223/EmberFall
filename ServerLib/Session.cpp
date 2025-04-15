@@ -247,7 +247,13 @@ RecvBuf::iterator Session::ValidatePackets(RecvBuf::iterator iter, RecvBuf::iter
     return it;
 }
 
-void Session::OnConnect() { }
+void Session::OnConnect() { 
+    decltype(auto) packetId = FbsPacketFactory::NotifyIdSC(GetId());
+    RegisterSend(packetId);
+
+    decltype(auto) packetProtocolVersion = FbsPacketFactory::ProtocolVersionSC();
+    RegisterSend(packetProtocolVersion);
+}
 
 void Session::Disconnect() {
     auto coreService = GetCore();

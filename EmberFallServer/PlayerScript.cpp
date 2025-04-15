@@ -20,6 +20,10 @@ PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<In
 
 PlayerScript::~PlayerScript() { }
 
+//Short2 PlayerScript::GetCurrSector() const {
+//    return mCurrSectorIdx;
+//}
+
 std::shared_ptr<Input> PlayerScript::GetInput() const {
     return mInput;
 }
@@ -32,7 +36,7 @@ void PlayerScript::SetOwnerSession(std::shared_ptr<class GameSession> session) {
     mSession = session;
 }
 
-void PlayerScript::UpdateViewListNPC(std::vector<NetworkObjectIdType>&& inViewRangeObjects) {
+void PlayerScript::UpdateViewListNPC(const std::vector<NetworkObjectIdType>& inViewRangeObjects) {
     auto oldViewList = mViewList;
 
     auto session = mSession.lock();
@@ -70,12 +74,12 @@ void PlayerScript::UpdateViewListNPC(std::vector<NetworkObjectIdType>&& inViewRa
     }
 }
 
-void PlayerScript::UpdateViewListPlayer(std::vector<NetworkObjectIdType>&& inViewRangeObjects) {
+void PlayerScript::UpdateViewListPlayer(const std::vector<NetworkObjectIdType>& inViewRangeObjects) {
     auto oldViewList = mViewList;
 
     auto session = mSession.lock();
     if (nullptr == session) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "In UpdateViewListNPC: std::weak_ptr<GameSession> is null");
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "In UpdateViewListPlayer: std::weak_ptr<GameSession> is null");
         return;
     }
 
@@ -87,18 +91,19 @@ void PlayerScript::UpdateViewListPlayer(std::vector<NetworkObjectIdType>&& inVie
 
         decltype(auto) newObj = gObjectManager->GetObjectFromId(id);
         if (nullptr == newObj or false == newObj->mSpec.active) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "In UpdateViewListPlayer NPC: INVALID Object");
             continue;
         }
 
         const ObjectSpec spec = gObjectManager->GetObjectFromId(id)->mSpec;
-        auto yaw = newObj->GetEulerRotation().y;
-        auto pos = newObj->GetPosition();
-        auto anim = newObj->mAnimationStateMachine.GetCurrState();
+        const auto yaw = newObj->GetEulerRotation().y;
+        const auto pos = newObj->GetPosition();
+        const auto anim = newObj->mAnimationStateMachine.GetCurrState();
         decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(id, spec.entity, yaw, anim, spec.hp, pos);
 
         session->RegisterSend(packetAppeared);
 
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Send Appeared!!!");
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "UpdateVewList: Send Appeared!!!\n F: {}, T: {}, pos: {}, {}, {}", session->GetId(), id, pos.x, pos.y, pos.z);
     }
 
     for (const auto id : oldViewList.GetCurrViewList()) {
@@ -106,6 +111,8 @@ void PlayerScript::UpdateViewListPlayer(std::vector<NetworkObjectIdType>&& inVie
             decltype(auto) packetDisappeared = FbsPacketFactory::ObjectDisappearedSC(id);
 
             session->RegisterSend(packetDisappeared);
+
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Send Disappeared!!!");
         }
     }
 }
