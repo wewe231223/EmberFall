@@ -95,7 +95,7 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 					
 				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
-				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, -3.f });
+				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
 				mCameraMode->Enter();
 			}
 			else {
@@ -116,6 +116,9 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mPlayerIndexmap[data->objectId()]->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
+
+				mPlayerIndexmap[data->objectId()]->AddEquipment(mEquipments["Sword"].Clone());
+
 			}
 			else {
 				if (mPlayerIndexmap[data->objectId()] != nullptr) {
@@ -175,6 +178,11 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
 				}
 					break;
+			}
+		}
+		else {
+			if (mGameObjectMap[data->objectId()] != nullptr) {
+				mGameObjectMap[data->objectId()]->SetActiveState(true);
 			}
 		}
 		

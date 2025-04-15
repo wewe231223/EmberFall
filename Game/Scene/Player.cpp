@@ -22,7 +22,7 @@ bool Player::GetActiveState() const {
 }
 
 void Player::SetActiveState(bool state) {
-	mActiveState = false; 
+	mActiveState = state; 
 }
 
 void Player::AddEquipment(EquipmentObject equipment) {
