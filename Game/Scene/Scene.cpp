@@ -691,13 +691,22 @@ const uint8_t* Scene::ProcessPacket(const uint8_t* buffer) {
 
 
 void Scene::Update() {
-	if (mMyPlayer != nullptr) {
-		auto& pos = mMyPlayer->GetTransform().GetPosition();
-		pos.y = tCollider.GetHeight(pos.x, pos.z);
+	for (auto& player : mPlayers) {
+		if (false == player.GetActiveState()) {
+			continue; 
+		}
+
+		player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
 	}
 
 	if (mMyPlayer != nullptr) {
-		mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mCamera.GetTransform().GetPosition().x, mCamera.GetTransform().GetPosition().y, mCamera.GetTransform().GetPosition().z);
+		// mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mCamera.GetTransform().GetPosition().x, mCamera.GetTransform().GetPosition().y, mCamera.GetTransform().GetPosition().z);
+
+		auto c = std::count_if(mPlayerIndexmap.begin(), mPlayerIndexmap.end(), [](const std::pair<NetworkObjectIdType, Player*>& pair) {
+			return pair.second->GetActiveState(); 
+			});
+
+		mNetworkInfoText->GetText() = std::format(L"Num of Player : {}", c);
 
 
 		// test.Get()->position = mMyPlayer->GetTransform().GetPosition(); 

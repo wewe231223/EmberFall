@@ -43,8 +43,6 @@ private:
 	Mesh* mMesh{};
 	GraphicsShaderBase* mShader{};
 	MaterialIndex mMaterial{ 0 };
-
-	GameObject mWeapon{}; 
 	std::vector<EquipmentObject> mEquipments{}; 
 
 	AnimatorGraph::BoneMaskAnimationGraphController mBoneMaskController{};

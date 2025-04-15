@@ -14,7 +14,6 @@ Player::Player(Mesh* mesh, GraphicsShaderBase* shader, MaterialIndex material, A
 	DirectX::BoundingBox box{ {0.f,0.8f,0.f}, {0.25f, 0.8f, 0.25f} };
 	mCollider = Collider{ box };
 
-	mWeapon.SetActiveState(false);
 }
 
 bool Player::GetActiveState() const {
