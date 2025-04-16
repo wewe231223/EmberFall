@@ -157,10 +157,7 @@ void Renderer::Render() {
 
 	mDefferedRenderer.Render(mCommandList, mShadowRenderer.GetShadowCameraBuffer());
 
-
-
-
-
+	mCanvas->Render(mCommandList, mTextureManager->GetTextureHeapAddress());
 }
 
 void Renderer::ExecuteRender() {
