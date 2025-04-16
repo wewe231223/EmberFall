@@ -114,7 +114,7 @@ BT::NodeStatus MonsterScript::MoveTo(const float deltaTime) {
     }
 
     owner->GetTransform()->SetLook(moveDir);
-    owner->GetPhysics()->Accelerate(moveDir);
+    owner->GetPhysics()->Accelerate(moveDir, GetOwner()->GetDeltaTime());
     return BT::NodeStatus::RUNNING;
 }
 
@@ -160,7 +160,7 @@ BT::NodeStatus MonsterScript::ChaseDetectedPlayer(const float deltaTime) {
     }
 
     owner->GetTransform()->SetLook(moveDir);
-    owner->GetPhysics()->Accelerate(moveDir);
+    owner->GetPhysics()->Accelerate(moveDir, GetOwner()->GetDeltaTime());
     return BT::NodeStatus::RUNNING;
 }
 

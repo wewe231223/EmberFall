@@ -11,6 +11,9 @@ GameSession::GameSession()
     : Session{ NetworkType::SERVER } { }
 
 GameSession::~GameSession() { 
+    gSectorSystem->RemoveInSector(GetId(), mUserObject->GetPosition());
+    mUserObject->Reset();
+
     Session::Close();
 }
 
@@ -33,7 +36,7 @@ void GameSession::OnConnect() {
     auto player = mUserObject->GetScript<PlayerScript>();
     player->SetOwnerSession(sharedFromThis);
 
-    player->GetTransform()->Translate(TestPos + SimpleMath::Vector3::Forward * 10.0f);
+    player->GetTransform()->Translate(TestPos);
     TestPos += PosInc;
 
     const ObjectSpec spec = mUserObject->mSpec;

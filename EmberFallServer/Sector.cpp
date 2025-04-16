@@ -138,12 +138,18 @@ Sector& SectorSystem::GetSector(Short2 idx) {
 }
 
 Sector& SectorSystem::GetSectorFromPos(const SimpleMath::Vector3& pos) {
-    const Short2 idx = { static_cast<int16_t>(pos.x / Sector::DEFAULT_SECTOR_WIDTH), static_cast<int16_t>(pos.z / Sector::DEFAULT_SECTOR_HEIGHT) };
+    const Short2 idx = { 
+        static_cast<int16_t>((pos.x + 500.0f) / Sector::DEFAULT_SECTOR_WIDTH),
+        static_cast<int16_t>((pos.z + 500.0f) / Sector::DEFAULT_SECTOR_HEIGHT)
+    };
     return GetSector(idx);
 }
 
 Short2 SectorSystem::GetSectorIdxFromPos(const SimpleMath::Vector3& pos) const {
-    const Short2 idx = { static_cast<int16_t>(pos.x / Sector::DEFAULT_SECTOR_WIDTH), static_cast<int16_t>(pos.z / Sector::DEFAULT_SECTOR_HEIGHT) };
+    const Short2 idx = { 
+        static_cast<int16_t>((pos.x + 500.0f) / Sector::DEFAULT_SECTOR_WIDTH),
+        static_cast<int16_t>((pos.z + 500.0f) / Sector::DEFAULT_SECTOR_HEIGHT)
+    };
     if (idx.x < 0 or idx.y < 0 or
         idx.x >= mSectorWidth or idx.y >= mSectorHeight) {
         return Short2{ -1, -1 };
@@ -292,7 +298,6 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
     const auto prevPos = object->GetPrevPosition();
     UpdateSectorPos(id, prevPos, currPos);
     auto currSector = GetSectorIdxFromPos(currPos);
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Curr Monster Sector: {}, {}", currSector.x, currSector.y);
 
     const auto yaw = object->GetEulerRotation().y;
     const auto dir = object->GetMoveDir();

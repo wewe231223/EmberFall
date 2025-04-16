@@ -285,7 +285,7 @@ void PlayerScript::CheckAndMove(const float deltaTime) {
 
     moveDir.Normalize();
     moveDir = SimpleMath::Vector3::Transform(moveDir, GetOwner()->GetTransform()->GetRotation());
-    physics->Accelerate(moveDir);
+    physics->Accelerate(moveDir, GetOwner()->GetDeltaTime());
 }
 
 void PlayerScript::CheckAndJump(const float deltaTime) {

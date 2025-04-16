@@ -19,6 +19,10 @@ SimpleMath::Matrix GameObject::GetWorld() const {
     return mTransform->GetWorld();
 }
 
+float GameObject::GetDeltaTime() const {
+    return mDeltaTime;
+}
+
 float GameObject::GetSpeed() const {
     return mPhysics->GetSpeed();
 }
@@ -76,9 +80,6 @@ void GameObject::DisablePhysics() {
 }
 
 void GameObject::Reset() {
-    // clear Components
-    ClearComponents();
-
     // Reset Base Component
     mTransform->Reset();
     mPhysics->Reset();
@@ -116,8 +117,7 @@ void GameObject::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
     Update();
     LateUpdate();
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameObject Update");
-    gServerFrame->AddTimerEvent(GetId(), SysClock::now() + 1s);
+    gServerFrame->AddTimerEvent(GetId(), SysClock::now() + 500ms);
 }
 
 void GameObject::Update() {

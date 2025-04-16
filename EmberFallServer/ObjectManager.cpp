@@ -5,6 +5,7 @@
 #include "MonsterScript.h"
 
 #include "Input.h"
+#include "Sector.h"
 
 
 ObjectManager::ObjectManager() { }
@@ -129,7 +130,10 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->CreateScript<MonsterScript>(obj);
         obj->CreateBoundingObject<OBBCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f, 0.8f, 0.5f });
         obj->Init();
+        
+        gSectorSystem->AddInSector(validId, obj->GetPosition());
         obj->RegisterUpdate();
+
         return obj;
     }
 

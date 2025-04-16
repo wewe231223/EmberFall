@@ -243,6 +243,12 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
     output.diffuse = Color;
     output.position = float4(input.wPosition, 1.f);
     
+    if (distance(input.wPosition.xz, cameraPosition.xz) < 100.0f)
+    {
+        output.diffuse = float4(1.f, 0.f, 0.f, 1.f);
+    }
+    
+    
     return output;
     
     // return float4(1.f, 1.f, 1.f, 1.f);

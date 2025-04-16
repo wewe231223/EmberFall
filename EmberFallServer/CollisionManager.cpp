@@ -40,42 +40,67 @@ void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj) {
     const auto pos = obj->GetPosition();
 
     decltype(auto) sectors = gSectorSystem->GetMustCheckSectors(pos, 10.0f);
+    const auto myId = obj->GetId();
     for (const auto sector : sectors) {
         decltype(auto) collisionCheckPlayers = std::move(gSectorSystem->GetSector(sector).GetPlayersInRange(pos, 10.0f));
         decltype(auto) collisionCheckMonsters = gSectorSystem->GetSector(sector).GetMonstersInRange(pos, 10.0f);
 
         for (const auto playerId : collisionCheckPlayers) {
-            auto result = PushCollisionPair(playerId, obj->GetId());
+            if (myId == playerId) {
+                continue;
+            }
+
+            auto result = PushCollisionPair(playerId, myId);
             if (false == result) {
                 continue;
             }
 
             // Todo Collision Check And Resolve
             auto player = gObjectManager->GetPlayer(playerId);
+            if (nullptr == player) {
+                PopCollisionPair(playerId, myId);
+                continue;
+            }
+
             const auto boundingObj1 = player->GetBoundingObject();
             const auto boundingObj2 = obj->GetBoundingObject();
 
             auto [intersects, penetration] = boundingObj2->IsColliding(boundingObj1);
-            obj->OnCollision(player, penetration);
+            if (intersects) {
+                gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Collision With Player");
+                obj->OnCollision(player, penetration);
+            }
 
-            PopCollisionPair(playerId, obj->GetId());
+            PopCollisionPair(playerId, myId);
         }
 
         for (const auto monsterId : collisionCheckMonsters) {
-            auto result = PushCollisionPair(monsterId, obj->GetId());
+            if (myId == monsterId) {
+                continue;
+            }
+
+            auto result = PushCollisionPair(monsterId, myId);
             if (false == result) {
                 continue;
             }
 
             // Todo Collision Check And Resolve
-            auto monster = gObjectManager->GetPlayer(monsterId);
+            auto monster = gObjectManager->GetMonster(monsterId);
+            if (nullptr == monster) {
+                PopCollisionPair(monsterId, myId);
+                continue;
+            }
+
             const auto boundingObj1 = monster->GetBoundingObject();
             const auto boundingObj2 = obj->GetBoundingObject();
 
             auto [intersects, penetration] = boundingObj2->IsColliding(boundingObj1);
-            obj->OnCollision(monster, penetration);
+            if (intersects) {
+                gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Collision With Monster");
+                obj->OnCollision(monster, penetration);
+            }
 
-            PopCollisionPair(monsterId, obj->GetId());
+            PopCollisionPair(monsterId, myId);
         }
     }
 }

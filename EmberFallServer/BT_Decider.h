@@ -63,11 +63,8 @@ namespace BT {
                 return;
             }
 
-            mDecideTimeCounter += deltaTime;
-            if (mDecideTimeCounter > mDecideTimeInterval) {
-                Decide();
-                mDecideTimeCounter = 0.0f;
-            }
+            Decide();
+
             (*mCurrNode)->Update(deltaTime);
         }
 
@@ -108,8 +105,6 @@ namespace BT {
     private:
         TreeList mRoots{ };
         TreeListIter mCurrNode{ };
-        float mDecideTimeCounter{ 0.0f };
-        float mDecideTimeInterval{ 2.0f };
         std::shared_ptr<Script> mOwner{ nullptr };
     };
 }

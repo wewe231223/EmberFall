@@ -53,8 +53,7 @@ public:
 
     void ResizeVelocity(float speed);
 
-    void Accelerate(const SimpleMath::Vector3& dir);
-    void Accelerate(const SimpleMath::Vector3& dir, const float acceleration);
+    void Accelerate(const SimpleMath::Vector3& dir, const float deltaTime);
 
     void AddVelocity(const SimpleMath::Vector3& velocity);
     void AddForce(const SimpleMath::Vector3& force);

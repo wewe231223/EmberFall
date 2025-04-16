@@ -53,6 +53,7 @@ public:
     SimpleMath::Vector3 GetScale() const;
     SimpleMath::Matrix GetWorld() const;
 
+    float GetDeltaTime() const;
     float GetSpeed() const;
     SimpleMath::Vector3 GetMoveDir() const;
 

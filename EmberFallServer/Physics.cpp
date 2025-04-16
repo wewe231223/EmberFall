@@ -90,13 +90,11 @@ void Physics::ResizeVelocity(float speed) {
     mVelocity.z = velocityXZ.z;
 }
 
-void Physics::Accelerate(const SimpleMath::Vector3& dir, const float acceleration) {
-    mVelocity += dir * acceleration;
+void Physics::Accelerate(const SimpleMath::Vector3& dir, const float deltaTime) {
+    auto speed = mFactor.acceleration.Count() * deltaTime;
+    mVelocity += dir * speed;
 
     ClampVelocity();
-}
-
-void Physics::Accelerate(const SimpleMath::Vector3& dir) {
 }
 
 void Physics::AddVelocity(const SimpleMath::Vector3& speed) {
@@ -156,16 +154,16 @@ void Physics::UpdateFriction(const float deltaTime, const SimpleMath::Vector3& m
         return;
     }
 
-    auto inverseDir = -moveDir;
-    auto normalForce = mFactor.mass * GRAVITY_ACCELERATION;
-    SimpleMath::Vector3 frictionForce = inverseDir * normalForce.Count() * mFactor.friction;
+    //auto inverseDir = -moveDir;
+    //auto normalForce = mFactor.mass * GRAVITY_ACCELERATION;
+    //SimpleMath::Vector3 frictionForce = inverseDir * normalForce.Count() * mFactor.friction;
 
-    frictionForce.y = 0.0f; // Y축 계산 X
-    SimpleMath::Vector3 frictionAcc = frictionForce / mFactor.mass.Count();
-    SimpleMath::Vector3 resultVelocity = mVelocity + frictionAcc * deltaTime;
+    //frictionForce.y = 0.0f; // Y축 계산 X
+    //SimpleMath::Vector3 frictionAcc = frictionForce / mFactor.mass.Count();
+    //SimpleMath::Vector3 resultVelocity = mVelocity + frictionAcc * deltaTime;
 
-    mVelocity.x = (mVelocity.x * resultVelocity.x < 0.0f) ? 0.0f : resultVelocity.x;
-    mVelocity.z = (mVelocity.z * resultVelocity.z < 0.0f) ? 0.0f : resultVelocity.z;
+    //mVelocity.x = (mVelocity.x * resultVelocity.x < 0.0f) ? 0.0f : resultVelocity.x;
+    //mVelocity.z = (mVelocity.z * resultVelocity.z < 0.0f) ? 0.0f : resultVelocity.z;
 }
 
 void Physics::UpdateGravity(const float deltaTime, const SimpleMath::Vector3& moveDir, const float speed) {

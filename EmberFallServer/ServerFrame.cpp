@@ -38,8 +38,11 @@ void ServerFrame::Run() {
     gServerCore->Start("", SERVER_PORT);
 
     mTimerThread = std::thread{ [this]() { TimerThread(); } };
-
-    gObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+    
+    for (int32_t test = 0; test < 500; ++test) {
+        decltype(auto) monster = gObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+        monster->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -100.0f, 0.0f, -100.0f }, SimpleMath::Vector3{ 100.0f, 0.0f, 100.0f }));
+    }
 
     while (not mDone);
 }
