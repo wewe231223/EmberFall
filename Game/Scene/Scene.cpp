@@ -660,11 +660,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		file1.write(reinterpret_cast<const char*>(values.data()), length * sizeof(double));
 	}*/
 
-	mCanvasObject = mCanvas->CreateCanvasObject(); 
-
-	mCanvasObject.ChangeImage(mTextureManager->GetTexture("mid_frame"));
-	mCanvasObject.GetRect() = { 100.f,100.f,100.f,100.f }; 
-
+	mInventoryUI.Init(mCanvas, mTextureManager->GetTexture("middle_frame_bg"), mTextureManager->GetTexture("mid_frame"), 0, 0, 0);
 
 
 }
@@ -799,7 +795,7 @@ void Scene::Update() {
 
 	}
  
-	mCanvasObject.Update();
+	mInventoryUI.Update();
 
 	if (mCameraMode) {
 		mCameraMode->Update();

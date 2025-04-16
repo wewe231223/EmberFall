@@ -15,6 +15,7 @@
 #include "../Game/Scene/Player.h"
 #include "../ServerLib/PacketHandler.h"
 #include "../Utility/IntervalTimer.h"
+#include "../UI/Inventory.h"
 
 class Scene {
 public:
@@ -123,5 +124,5 @@ private:
 
 	std::unordered_map<std::string, std::vector<double>> mAnimationTimeMap{};
 
-	CanvasObject mCanvasObject{ nullptr };
+	Inventory mInventoryUI{};
 };

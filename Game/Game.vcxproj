@@ -159,6 +159,7 @@
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="System\Input.cpp" />
     <ClCompile Include="System\Timer.cpp" />
+    <ClCompile Include="UI\Inventory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameObject\Animator.h" />
@@ -172,6 +173,7 @@
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="System\Input.h" />
     <ClInclude Include="System\Timer.h" />
+    <ClInclude Include="UI\Inventory.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
