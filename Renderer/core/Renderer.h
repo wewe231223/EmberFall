@@ -21,6 +21,7 @@
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Renderer/Core/ShadowRenderer.h"
 #include "../Renderer/Manager/ParticleManager.h"
+#include "../Renderer/Render/Canvas.h"
 
 class Renderer {
 public:
@@ -63,7 +64,8 @@ private:
 	void InitFonts(); 
 
 	void InitShadowRenderer();
-	void InitParticleManager(); 
+	void InitParticleManager();
+	void InitCanvas();
 
 	void InitCoreResources(); 
 	void InitDefferedRenderer();
@@ -117,6 +119,7 @@ private:
 	std::shared_ptr<MaterialManager> mMaterialManager{};
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{};
 	std::shared_ptr<ParticleManager> mParticleManager{};
+	std::shared_ptr<Canvas> mCanvas{};
 
 	DefaultBuffer mMainCameraBuffer{};
 };

@@ -1494,3 +1494,89 @@ D3D12_SHADER_BYTECODE SkyFogShader::CreatePixelShader() {
 	auto& blob = gShaderManager.GetShaderBlob("SkyFog", ShaderType::PixelShader);
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }
+
+UIShader::UIShader() {
+
+}
+
+void UIShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+}
+
+GraphicsShaderBase::InputLayout UIShader::CreateInputLayout() {
+	InputLayout result{};
+
+	result.ElementCount = 1;
+	result.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	return result;
+}
+
+GraphicsShaderBase::RootParameters UIShader::CreateRootParameters() {
+	GraphicsShaderBase::RootParameters params{};
+
+	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[0].Descriptor.ShaderRegister = 0;
+	params.Parameters[0].Descriptor.RegisterSpace = 0;
+	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+
+	params.Ranges[0].BaseShaderRegister = 1;
+	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	params.Ranges[0].NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
+	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	params.Ranges[0].RegisterSpace = 0;
+
+	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[1].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[1].DescriptorTable.pDescriptorRanges = params.Ranges.data();
+	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.ParameterCount = 2;
+	return params;
+}
+
+D3D12_BLEND_DESC UIShader::CreateBlendState() {
+	D3D12_BLEND_DESC blendDesc{};
+
+	blendDesc.AlphaToCoverageEnable = false;
+	blendDesc.IndependentBlendEnable = false;
+	blendDesc.RenderTarget[0].BlendEnable = true;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	return blendDesc;
+}
+
+D3D12_DEPTH_STENCIL_DESC UIShader::CreateDepthStencilState() {
+
+	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{ CD3DX12_DEPTH_STENCIL_DESC{ D3D12_DEFAULT } };
+
+	depthStencilDesc.DepthEnable = false;
+	depthStencilDesc.StencilEnable = false;
+
+	return depthStencilDesc;
+}
+
+UINT UIShader::CreateNumOfRenderTarget() {
+	return 1;
+}
+
+void UIShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
+	formats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+}
+
+D3D12_SHADER_BYTECODE UIShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("UI", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE UIShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("UI", ShaderType::PixelShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };;
+}

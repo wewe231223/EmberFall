@@ -644,7 +644,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	test2 = mParticleManager->CreateEmitParticle(commandList, v);
 
 
-	std::ofstream file1{ "AnimationInfo.bin", std::ios::binary };
+	/*std::ofstream file1{ "AnimationInfo.bin", std::ios::binary };
 
 	UINT cnt = static_cast<UINT>(mAnimationMap.size());
 	file1.write(reinterpret_cast<const char*>(&cnt), sizeof(UINT));
@@ -657,7 +657,7 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		length = static_cast<UINT>(values.size());
 		file1.write(reinterpret_cast<const char*>(&length), sizeof(UINT));
 		file1.write(reinterpret_cast<const char*>(values.data()), length * sizeof(double));
-	}
+	}*/
 
 }
 

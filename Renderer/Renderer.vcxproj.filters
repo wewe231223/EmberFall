@@ -25,6 +25,9 @@
     <Filter Include="Manager">
       <UniqueIdentifier>{0ade9b90-ab5d-41b0-a160-6b396c42007e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Render">
+      <UniqueIdentifier>{e479c5d9-3ea9-4109-a4c5-b3de715893d6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -71,6 +74,9 @@
     </ClCompile>
     <ClCompile Include="Resource\Particle.cpp">
       <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="Render\Canvas.cpp">
+      <Filter>Render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -119,6 +125,9 @@
     <ClInclude Include="Resource\Particle.h">
       <Filter>Resource</Filter>
     </ClInclude>
+    <ClInclude Include="Render\Canvas.h">
+      <Filter>Render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shader\Sources\Standard.hlsl">
@@ -149,6 +158,9 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="..\Shader\Sources\SkyFog.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\UI.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>

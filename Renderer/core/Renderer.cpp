@@ -29,6 +29,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitCoreResources(); 
 	Renderer::InitDefferedRenderer();
 	Renderer::InitParticleManager();
+	Renderer::InitCanvas(); 
 
 }
 
@@ -155,6 +156,11 @@ void Renderer::Render() {
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
 	mDefferedRenderer.Render(mCommandList, mShadowRenderer.GetShadowCameraBuffer());
+
+
+
+
+
 }
 
 void Renderer::ExecuteRender() {
@@ -424,6 +430,10 @@ void Renderer::InitShadowRenderer() {
 
 void Renderer::InitParticleManager() {
 	mParticleManager = std::make_shared<ParticleManager>(mDevice, mCommandList);
+}
+
+void Renderer::InitCanvas() {
+	mCanvas = std::make_unique<Canvas>(mDevice, mCommandList);
 }
 
 void Renderer::InitCoreResources() {
