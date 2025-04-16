@@ -238,6 +238,19 @@ void SectorSystem::RemoveInSector(NetworkObjectIdType id, const SimpleMath::Vect
     sector.RemoveObject(id);
 }
 
+std::vector<NetworkObjectIdType> SectorSystem::GetNearbyPlayers(const SimpleMath::Vector3& currPos, const float range) {
+    std::vector<Short2> checkSectors = std::move(GetMustCheckSectors(currPos, range));
+    std::vector<NetworkObjectIdType> nearbyPlayers;
+    for (const auto idx : checkSectors) {
+        decltype(auto) sector = GetSector(idx);
+
+        const std::vector<NetworkObjectIdType> players = std::move(sector.GetPlayersInRange(currPos, range));
+        nearbyPlayers.insert(nearbyPlayers.end(), players.begin(), players.end());
+    }
+
+    return nearbyPlayers;
+}
+
 void SectorSystem::UpdateSectorPos(NetworkObjectIdType id, const SimpleMath::Vector3& prevPos, const SimpleMath::Vector3& currPos) {
     if (MathUtil::IsEqualVector(currPos, prevPos)) {
         return;
@@ -268,5 +281,31 @@ void SectorSystem::UpdatePlayerViewList(const std::shared_ptr<GameObject>& playe
 
         playerScript->UpdateViewListNPC(monsters);
         playerScript->UpdateViewListPlayer(players);
+    }
+}
+
+void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
+    const auto id = object->GetId();
+    const auto currPos = object->GetPosition();
+    const auto prevPos = object->GetPrevPosition();
+    UpdateSectorPos(id, prevPos, currPos);
+    auto currSector = GetSectorIdxFromPos(currPos);
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Curr Monster Sector: {}, {}", currSector.x, currSector.y);
+
+    const auto yaw = object->GetEulerRotation().y;
+    const auto dir = object->GetMoveDir();
+    const auto speed = object->GetSpeed();
+
+    const float range = 100.0f;
+    const std::vector<NetworkObjectIdType> nearbyPlayers = std::move(GetNearbyPlayers(currPos, range));
+    for (const auto playerId : nearbyPlayers) {
+        auto playerObj = gObjectManager->GetObjectFromId(playerId);
+        auto viewRange = playerObj->GetScript<PlayerScript>()->GetViewList().mViewRange.Count();
+        if (false == gObjectManager->InViewRange(playerId, id, viewRange)) {
+            continue;
+        }
+
+        auto packetMove = FbsPacketFactory::ObjectMoveSC(id, yaw, currPos, dir, speed);
+        gServerCore->Send(static_cast<SessionIdType>(playerId), packetMove);
     }
 }

@@ -45,6 +45,7 @@
 #include <concurrent_unordered_map.h>
 #include <concurrent_unordered_set.h>
 #include <concurrent_queue.h>
+#include <concurrent_priority_queue.h>
 
 #include "../Utility/Crash.h"
 #include "../External/Include/DirectXTK12/SimpleMath.h"

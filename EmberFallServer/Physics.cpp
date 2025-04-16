@@ -91,16 +91,12 @@ void Physics::ResizeVelocity(float speed) {
 }
 
 void Physics::Accelerate(const SimpleMath::Vector3& dir, const float acceleration) {
-    mVelocity += dir * acceleration * StaticTimer::GetDeltaTime();
+    mVelocity += dir * acceleration;
 
     ClampVelocity();
 }
 
 void Physics::Accelerate(const SimpleMath::Vector3& dir) {
-    auto speed = mFactor.acceleration * GameUnits::ToUnit<GameUnits::StandardTime>(StaticTimer::GetDeltaTime());
-    mVelocity += GameUnits::ToVelocity(dir, speed);
-
-    ClampVelocity();
 }
 
 void Physics::AddVelocity(const SimpleMath::Vector3& speed) {
@@ -110,13 +106,13 @@ void Physics::AddVelocity(const SimpleMath::Vector3& speed) {
 }
 
 void Physics::AddForce(const SimpleMath::Vector3& force) {
-    mVelocity += (force / mFactor.mass.Count()) * StaticTimer::GetDeltaTime();
+    mVelocity += (force / mFactor.mass.Count());
     
     ClampVelocity();
 }
 
 void Physics::AddForce(const SimpleMath::Vector3& dir, const float force) {
-    mVelocity += ((dir * force) / mFactor.mass.Count()) * StaticTimer::GetDeltaTime();
+    mVelocity += ((dir * force) / mFactor.mass.Count());
 
     ClampVelocity();
 }

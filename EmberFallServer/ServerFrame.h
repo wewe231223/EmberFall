@@ -25,6 +25,7 @@ public:
     void Done();
 
     void PQCS(int32_t transfferedBytes, ULONG_PTR completionKey, OverlappedEx* overlapped);
+    void AddTimerEvent(NetworkObjectIdType id, SysClock::time_point executeTime);
 
 private:
     void TimerThread();
@@ -38,4 +39,5 @@ private:
     std::shared_ptr<class InputManager> mInputManager{ };
 
     std::thread mTimerThread{ };
+    Concurrency::concurrent_priority_queue<TimerEvent> mTimerEvents{ };
 };

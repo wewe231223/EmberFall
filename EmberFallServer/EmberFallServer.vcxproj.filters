@@ -156,9 +156,6 @@
     <ClCompile Include="InteractionSystem.cpp">
       <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerScript.cpp">
-      <Filter>MultiThreadLoopTest\Session</Filter>
-    </ClCompile>
     <ClCompile Include="ViewList.cpp">
       <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
     </ClCompile>
@@ -243,6 +240,9 @@
     <ClCompile Include="MonsterScript.cpp">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClCompile>
+    <ClCompile Include="PlayerScript.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BehaviorTreeBase.h">
@@ -320,9 +320,6 @@
     <ClInclude Include="InteractionSystem.h">
       <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerScript.h">
-      <Filter>MultiThreadLoopTest\Session</Filter>
-    </ClInclude>
     <ClInclude Include="ViewList.h">
       <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
     </ClInclude>
@@ -396,6 +393,9 @@
       <Filter>MultiThreadLoopTest\Resource</Filter>
     </ClInclude>
     <ClInclude Include="MonsterScript.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerScript.h">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClInclude>
   </ItemGroup>

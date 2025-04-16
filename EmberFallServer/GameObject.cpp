@@ -4,9 +4,11 @@
 #include "Input.h"
 
 #include "CollisionManager.h"
+#include "ObjectManager.h"
+#include "ServerFrame.h"
 
 GameObject::GameObject()
-    : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() } {
+    : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mTimer{ std::make_unique<SimpleTimer>() } {
     mWeaponSystem.SetWeapon(Packets::Weapon_SWORD);
     mPhysics->SetTransform(mTransform);
 }
@@ -74,9 +76,8 @@ void GameObject::DisablePhysics() {
 }
 
 void GameObject::Reset() {
-    // clear Components and Tag
+    // clear Components
     ClearComponents();
-    SetTag(ObjectTag::NONE);
 
     // Reset Base Component
     mTransform->Reset();
@@ -86,17 +87,23 @@ void GameObject::Reset() {
     mSpec.entity = Packets::EntityType_ENV;
     mSpec.interactable = false;
     mSpec.hp = 0.0f;
+
+    gObjectManager->ReleaseObject(GetId());
 }
 
 void GameObject::Init() {
     decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
     mAnimationStateMachine.SetOwner(sharedThis);
+
     for (auto& component : mComponents) {
         component->Init();
     }
+
+    mScript->Init();
 }
 
 void GameObject::RegisterUpdate() {
+    mOverlapped.owner = shared_from_this();
     gServerCore->PQCS(0, GetId(), &mOverlapped);
 }
 
@@ -108,6 +115,9 @@ void GameObject::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
 
     Update();
     LateUpdate();
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameObject Update");
+    gServerFrame->AddTimerEvent(GetId(), SysClock::now() + 1s);
 }
 
 void GameObject::Update() {
@@ -123,6 +133,8 @@ void GameObject::Update() {
     for (auto& component : mComponents) {
         component->Update(mDeltaTime);
     } 
+
+    mScript->Update(mDeltaTime);
 
     mPhysics->Update(mDeltaTime);
     mTransform->Update();

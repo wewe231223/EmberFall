@@ -4,6 +4,7 @@
 #include "GameRandom.h"
 #include "Physics.h"
 #include "BehaviorTreeBase.h"
+#include "Sector.h"
 
 MonsterScript::MonsterScript(std::shared_ptr<class GameObject> owner)
     : Script{ owner, ObjectTag::MONSTER, ScriptType::MONSTER } {
@@ -19,11 +20,17 @@ bool MonsterScript::IsDead() const {
 }
 
 void MonsterScript::Init() {
+    auto& spec = GetOwner()->mSpec;
+    spec.active = true;
+    spec.attackable = true;
+    spec.hp = 100.0f;
     mMonsterBT.Build(std::static_pointer_cast<MonsterScript>(shared_from_this()));
 }
 
 void MonsterScript::Update(const float deltaTime) {
     mMonsterBT.Update(deltaTime);
+
+    gSectorSystem->UpdateEntityMove(GetOwner());
 }
 
 void MonsterScript::LateUpdate(const float deltaTime) { 

@@ -89,13 +89,13 @@ void PlayerScript::UpdateViewListPlayer(const std::vector<NetworkObjectIdType>& 
     ViewList newViewList{ };
     for (const auto id : inViewRangeObjects) {
         auto success = newViewList.TryInsert(id);
-        if (not success) {
+        if (not success or id == GetOwner()->GetId()) {
             continue;
         }
 
         decltype(auto) newObj = gObjectManager->GetObjectFromId(id);
         if (nullptr == newObj or false == newObj->mSpec.active) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "In UpdateViewListPlayer NPC: INVALID Object");
+            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "In UpdateViewListPlayer: INVALID Object");
             continue;
         }
 
@@ -115,8 +115,6 @@ void PlayerScript::UpdateViewListPlayer(const std::vector<NetworkObjectIdType>& 
             decltype(auto) packetDisappeared = FbsPacketFactory::ObjectDisappearedSC(id);
 
             session->RegisterSend(packetDisappeared);
-
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Send Disappeared!!!");
         }
     }
 

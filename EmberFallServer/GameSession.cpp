@@ -3,6 +3,7 @@
 #include "FbsPacketProcessFn.h"
 #include "PlayerScript.h"
 #include "ObjectManager.h"
+#include "Input.h"
 
 #include "Sector.h"
 
@@ -15,13 +16,16 @@ GameSession::~GameSession() {
 
 void GameSession::OnConnect() {
     static auto TestPos = SimpleMath::Vector3::Zero;
-    const static auto PosInc = SimpleMath::Vector3::Left;
+    const static auto PosInc = SimpleMath::Vector3::Left * 2.0f;
 
     Session::OnConnect();
 
     mUserObject = gObjectManager->GetObjectFromId(GetId());
     mUserObject->mSpec.active = true;
     mUserObject->mSpec.attackable = true;
+    mUserObject->CreateScript<PlayerScript>(mUserObject, std::make_shared<Input>());
+    mUserObject->CreateBoundingObject<OBBCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f, 0.8f, 0.5f });
+
     mUserObject->mSpec.hp = 100.0f;
     mUserObject->mSpec.damage = 10.0f;
 
@@ -29,7 +33,7 @@ void GameSession::OnConnect() {
     auto player = mUserObject->GetScript<PlayerScript>();
     player->SetOwnerSession(sharedFromThis);
 
-    player->GetTransform()->Translate(TestPos);
+    player->GetTransform()->Translate(TestPos + SimpleMath::Vector3::Forward * 10.0f);
     TestPos += PosInc;
 
     const ObjectSpec spec = mUserObject->mSpec;

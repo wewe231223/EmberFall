@@ -43,7 +43,7 @@ private:
 
 class OBBCollider : public BoundingObject {
 public:
-    OBBCollider(SimpleMath::Vector3& center, const SimpleMath::Vector3& ext);
+    OBBCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& ext);
     OBBCollider(const OBBCollider& orientedBox);
     virtual ~OBBCollider();
 

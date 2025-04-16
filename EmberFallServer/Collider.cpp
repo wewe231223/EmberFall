@@ -11,7 +11,7 @@ ColliderType BoundingObject::GetType() const {
     return mType;
 }
 
-OBBCollider::OBBCollider(SimpleMath::Vector3& center, const SimpleMath::Vector3& ext)
+OBBCollider::OBBCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& ext)
     : BoundingObject{ ColliderType::ORIENTED_BOX }, mLocalBox{ center, ext, SimpleMath::Quaternion::Identity } { }
 
 OBBCollider::OBBCollider(const OBBCollider& orientedBox) 

@@ -21,6 +21,8 @@ public:
     ~ObjectManager();
 
 public:
+    void Init();
+
     void LoadEnvFromFile();
     std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) const;
     std::shared_ptr<GameObject> GetPlayer(NetworkObjectIdType id) const;
@@ -30,11 +32,20 @@ public:
 
     bool InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2, const float range);
 
+    std::shared_ptr<GameObject> SpawnObject(Packets::EntityType entity);
+    void ReleaseObject(NetworkObjectIdType id);
+
+public:
+
 private:
     std::array<std::shared_ptr<GameObject>, MAX_USER> mPlayers{ };
-    std::array<std::shared_ptr<GameObject>, MAX_MONSTER> mMonsters{ };
-    std::array<std::shared_ptr<GameObject>, MAX_ENV> mEnvironments{ };
-    std::array<std::shared_ptr<GameObject>, MAX_ENV> mProjectiles{ };
 
-    Concurrency::concurrent_queue<NetworkObjectIdType> mFreeIndices{ };
+    std::array<std::shared_ptr<GameObject>, MAX_MONSTER> mMonsters{ };
+    Concurrency::concurrent_queue<NetworkObjectIdType> mMonsterIndices{ };
+    
+    std::array<std::shared_ptr<GameObject>, MAX_PROJECTILE> mProjectiles{ };
+    Concurrency::concurrent_queue<NetworkObjectIdType> mProjectileIndices{ };
+  
+    std::array<std::shared_ptr<GameObject>, MAX_ENV> mEnvironments{ };
+    Concurrency::concurrent_queue<NetworkObjectIdType> mEnvironmentsIndices{ };
 };

@@ -6,7 +6,7 @@
 
 float BT::BT_MonsterAttack::CalculateDecideValue(const std::shared_ptr<Script>& ownerScript) const {
     auto owner = std::static_pointer_cast<MonsterScript>(ownerScript);
-    if (BT::NodeStatus::SUCCESS == owner->CheckPlayerInAttackRange(StaticTimer::GetDeltaTime())) {
+    if (BT::NodeStatus::SUCCESS == owner->CheckPlayerInAttackRange(1.0f)) {
         return 1.0f;
     }
 
