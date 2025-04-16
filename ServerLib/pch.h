@@ -43,6 +43,7 @@
 
 // concurrency container
 #include <concurrent_unordered_map.h>
+#include <concurrent_unordered_set.h>
 #include <concurrent_queue.h>
 
 #include "../Utility/Crash.h"
@@ -62,6 +63,10 @@ namespace SimpleMath = DirectX::SimpleMath;
 #include "GameUnits.h"
 #include "GameMath.h"
 #include "FbsPacketFactory.h"
+#include "NetworkCore.h"
 
 using namespace GameUnitLiterals;
 using namespace std::literals;
+
+extern std::shared_ptr<class ClientCore> gClientCore;
+extern std::shared_ptr<class ServerCore> gServerCore;

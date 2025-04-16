@@ -42,10 +42,6 @@ public:
     virtual void Update(const float deltaTime) override;
     virtual void LateUpdate(const float deltaTime) override;
 
-    virtual void OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
-    virtual void OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
-    virtual void OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
-
     virtual void OnCollisionTerrain(const float height) override;
 
     virtual void DispatchGameEvent(struct GameEvent* event) override;
@@ -68,10 +64,9 @@ private:
 
     //Short2 mCurrSectorIdx{ };
 
+    Lock::SRWLock mViewListLock{ };
     ViewList mViewList;
     Inventory mInventory{ };
-
-    std::mutex mViewListLock{ };
 
     NetworkObjectIdType mInteractionObj{ };
 

@@ -13,13 +13,14 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "../ServerLib/INetworkObject.h"
+
 #include "Collider.h"
 #include "GameObjectComponent.h"
 #include "Script.h"
 #include "WeaponSystem.h"
 #include "AnimationStateMachine.h"
-
-class IServerGameScene;
+#include "GameTimer.h"
 
 struct ObjectSpec {
     bool active;                    // 활성화 여부
@@ -33,22 +34,19 @@ struct ObjectSpec {
     float hp;                       // 체력
 };
 
-class GameObject : public std::enable_shared_from_this<GameObject> {
+class GameObject : public INetworkObject {
 public:
     GameObject();
     ~GameObject();
 
 public:
-    // Getter
-    bool IsCollidingObject() const;
-
     ObjectTag GetTag() const;
-    NetworkObjectIdType GetId() const;
 
     std::shared_ptr<Transform> GetTransform() const;
     std::shared_ptr<Physics> GetPhysics() const;
-    std::shared_ptr<Collider> GetCollider() const;
+    std::shared_ptr<BoundingObject> GetBoundingObject() const;
 
+    SimpleMath::Vector3 GetPrevPosition() const;
     SimpleMath::Vector3 GetPosition() const;
     SimpleMath::Quaternion GetRotation() const;
     SimpleMath::Vector3 GetEulerRotation() const;
@@ -61,7 +59,6 @@ public:
     // Setter
     void SetTag(ObjectTag tag);
 
-    void SetCollider(std::shared_ptr<Collider> collider);
     void DisablePhysics();
     void ChangeWeapon(Packets::Weapon weapon);
 
@@ -70,13 +67,15 @@ public:
     
     // Initialize Function
     void Init();
-    void InitId(NetworkObjectIdType id);
 
     // Update & Process Event Functions
-    void Update(const float deltaTime);
-    void LateUpdate(const float deltaTime);
+    void RegisterUpdate();
+    virtual void ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) override;
 
-    void OnCollision(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
+    void Update();
+    void LateUpdate();
+
+    void OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
     void OnCollisionTerrain(const float height);
 
     void DispatchGameEvent(GameEvent* event);
@@ -84,10 +83,9 @@ public:
     void Attack();
     void Attack(const SimpleMath::Vector3& dir);
 
-    // Declaration of template Functions
-    template <typename ColliderType, typename... Args>
-        requires std::derived_from<ColliderType, Collider> and std::is_constructible_v<ColliderType, Args...>
-    void CreateCollider(Args&&... args);
+    template <typename BoundingObjType, typename... Args>
+        requires std::derived_from<BoundingObjType, BoundingObject>
+    void CreateBoundingObject(Args&&... args);
 
     template <typename ComponentType, typename... Args>
         requires std::derived_from<ComponentType, GameObjectComponent>
@@ -103,38 +101,30 @@ public:
     template <typename ScriptType> requires std::derived_from<ScriptType, Script>
     std::shared_ptr<ScriptType> GetScript();
 
-private:
-    void OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
-    void OnCollisionStay(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
-    void OnCollisionExit(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
-
 public:
-    AnimationStateMachine mAnimationStateMachine{ };
     ObjectSpec mSpec{ };
+    AnimationStateMachine mAnimationStateMachine{ };
 
 private:
     ObjectTag mTag{ ObjectTag::NONE };
-    NetworkObjectIdType mId{ INVALID_OBJ_ID };                      // network id
+    float mDeltaTime{ };
 
+    OverlappedUpdate mOverlapped{ };                                    // for update
+    std::unique_ptr<SimpleTimer> mTimer{ };
     std::shared_ptr<Transform> mTransform{ };                           // Transform
     std::shared_ptr<class Physics> mPhysics{ };                         // Physics
-    std::shared_ptr<Collider> mCollider{ nullptr };                     // 
-    std::shared_ptr<Script> mScript{ };                           // script
+    std::shared_ptr<Script> mScript{ };                                 // script
+    std::shared_ptr<BoundingObject> mBoundingObject{ };                 // boundingObject
     std::vector<std::shared_ptr<GameObjectComponent>> mComponents{ };   // Components
 
     WeaponSystem mWeaponSystem{ INVALID_OBJ_ID };
 };
 
 // Definition of template functions
-template<typename ColliderType, typename ...Args>
-    requires std::derived_from<ColliderType, Collider> and std::is_constructible_v<ColliderType, Args...>
-inline void GameObject::CreateCollider(Args && ...args) {
-    if (nullptr != mCollider) {
-        mCollider.reset();
-    }
-
-    mCollider = std::make_shared<ColliderType>(args...);
-    mCollider->SetTransform(mTransform);
+template <typename BoundingObjType, typename... Args>
+    requires std::derived_from<BoundingObjType, BoundingObject>
+void GameObject::CreateBoundingObject(Args&&... args) {
+    mBoundingObject = std::make_shared<BoundingObjType>(args...);
 }
 
 template<typename ComponentType, typename ...Args>

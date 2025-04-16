@@ -12,20 +12,18 @@
 
 class INetworkObject abstract : public std::enable_shared_from_this<INetworkObject> {
 public:
-    INetworkObject(std::shared_ptr<class INetworkCore> coreService);
+    INetworkObject();
     virtual ~INetworkObject();
 
 public:
-    void InitId(SessionIdType id);
-    SessionIdType GetId() const;
-    std::shared_ptr<class INetworkCore> GetCore() const;
-    virtual bool IsClosed() const abstract;
+    void InitId(NetworkObjectIdType id);
+    NetworkObjectIdType GetId() const;
+    virtual bool IsClosed() const { return false;  }
 
-    virtual void Close() abstract;
-    virtual HANDLE GetHandle() const abstract;
-    virtual void ProcessOverlapped(class OverlappedEx* overlapped, INT32 numOfBytes) abstract;
+    virtual void Close() { }
+    virtual HANDLE GetHandle() const { return INVALID_HANDLE_VALUE; }
+    virtual void ProcessOverlapped(struct OverlappedEx* overlapped, int32_t numOfBytes) abstract;
 
 private:
-    SessionIdType mId{ INVALID_SESSION_ID };
-    std::shared_ptr<class INetworkCore> mCoreService{ nullptr };
+    NetworkObjectIdType mId{ INVALID_SESSION_ID };
 };

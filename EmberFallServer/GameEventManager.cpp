@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "GameEventManager.h"
 #include "GameObject.h"
-#include "ServerGameScene.h"
 
 GameEventManager::GameEventManager() { }
 
@@ -17,10 +16,10 @@ void GameEventManager::PushEvent(std::shared_ptr<GameEvent> event) {
 
 void GameEventManager::Update() {
     while (not mEvents.empty()) {        
-        decltype(auto) event = mEvents.front();
+        //decltype(auto) event = mEvents.front();
 
-        auto receiverObject = mCurrentScene->GetObjectFromId(event->receiver);
-        receiverObject->DispatchGameEvent(event.get());
+        //auto receiverObject = mCurrentScene->GetObjectFromId(event->receiver);
+        //receiverObject->DispatchGameEvent(event.get());
 
         mEvents.pop();
     }

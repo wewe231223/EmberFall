@@ -33,7 +33,6 @@ void Physics::Reset() {
     mOnGround = false;
     mOnOtherObject = false;
 
-    mPrevImpulse = SimpleMath::Vector3::Zero;
     mVelocity = SimpleMath::Vector3::Zero;
 }
 
@@ -130,7 +129,7 @@ void Physics::Update(const float deltaTime) {
     float speed = mVelocity.Length();
     SimpleMath::Vector3 moveDir = mVelocity;
     moveDir.Normalize();
-    UpdateGravity(deltaTime, moveDir, speed);   // 중력 적용
+    //UpdateGravity(deltaTime, moveDir, speed);   // 중력 적용
     UpdateFriction(deltaTime, moveDir, speed);
 
     auto transform = mTransform.lock();
@@ -139,26 +138,9 @@ void Physics::Update(const float deltaTime) {
 
 void Physics::LateUpdate(const float deltaTime) { }
 
-void Physics::SolvePenetration(const SimpleMath::Vector3& penetrationVec, const std::shared_ptr<GameObject>& opponent) {
+void Physics::SolvePenetration(const SimpleMath::Vector3& penetrationVec) {
     auto transform = mTransform.lock();
-
-    float myMass = mFactor.mass.Count();
-    float opponentMass = opponent->GetPhysics()->mFactor.mass.Count();
-    // 내가 무거울 수록 덜 밀려나는 구조.
-    float coefficient = opponentMass / (myMass + opponentMass); // 0.0f ~ 1.0f 사이 값.
-    auto repulsiveVec = coefficient * penetrationVec;
-    transform->Translate(repulsiveVec);
-
-    bool onOtherObject{ false };
-    bool amIOnGround = IsOnGround() or IsOnOtherObject();
-    bool isOpponentOnGround = opponent->GetPhysics()->IsOnGround() or opponent->GetPhysics()->IsOnOtherObject();
-
-    //if (not amIOnGround and (transform->GetPrevPosition().y > (obb2.Center.y + obb2.Extents.y))) {
-    //    onOtherObject = true;
-    //    transform->SetY(obb1.Extents.y + obb2.Center.y + obb2.Extents.y);
-    //}
-
-    SetOnOtherObject(onOtherObject);
+    transform->Translate(penetrationVec);
 }
 
 void Physics::ClampVelocity() {

@@ -12,15 +12,7 @@ void BuffScript::Update(const float deltaTime) { }
 
 void BuffScript::LateUpdate(const float deltaTime) { }
 
-void BuffScript::OnAttacked(const float damage, const SimpleMath::Vector3& knockbackForce)
-{
-}
-
-void BuffScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
-
-void BuffScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
-
-void BuffScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
+void BuffScript::OnAttacked(const float damage, const SimpleMath::Vector3& knockbackForce){}
 
 void BuffScript::OnCollisionTerrain(const float height) { }
 

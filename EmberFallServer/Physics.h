@@ -62,7 +62,7 @@ public:
     void Update(const float deltaTime);
     void LateUpdate(const float deltaTime);
 
-    void SolvePenetration(const SimpleMath::Vector3& penetrationVec, const std::shared_ptr<class GameObject>& opponent);
+    void SolvePenetration(const SimpleMath::Vector3& penetrationVec);
 
 private:
     void ClampVelocity();
@@ -77,7 +77,6 @@ private:
     bool mOnGround{ true };
     bool mOnOtherObject{ true };
 
-    SimpleMath::Vector3 mPrevImpulse{ };
     SimpleMath::Vector3 mVelocity{ SimpleMath::Vector3::Zero };
     std::weak_ptr<Transform> mTransform{ };
 };

@@ -22,6 +22,12 @@ public:
     std::shared_ptr<class InputManager> GetInputManager() const;
 
     void Run();
+    void Done();
+
+    void PQCS(int32_t transfferedBytes, ULONG_PTR completionKey, OverlappedEx* overlapped);
+
+private:
+    void TimerThread();
 
 private:
     volatile bool mDone{ false };
@@ -30,5 +36,6 @@ private:
     std::unordered_map<SessionIdType, std::shared_ptr<class GameObject>> mPlayers{ };
 
     std::shared_ptr<class InputManager> mInputManager{ };
-    std::shared_ptr<class IServerGameScene> mCurrentScene{ };
+
+    std::thread mTimerThread{ };
 };

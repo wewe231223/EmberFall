@@ -6,9 +6,8 @@
 
 #include "Sector.h"
 
-GameSession::GameSession(std::shared_ptr<INetworkCore> core) 
-    : Session{ core } { 
-}
+GameSession::GameSession() 
+    : Session{ NetworkType::SERVER } { }
 
 GameSession::~GameSession() { 
     Session::Close();

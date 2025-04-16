@@ -23,6 +23,10 @@ public:
 public:
     void LoadEnvFromFile();
     std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) const;
+    std::shared_ptr<GameObject> GetPlayer(NetworkObjectIdType id) const;
+    std::shared_ptr<GameObject> GetMonster(NetworkObjectIdType id) const;
+    std::shared_ptr<GameObject> GetEnv(NetworkObjectIdType id) const;
+    //std::shared_ptr<GameObject> GetOther(NetworkObjectIdType id) const;
 
     bool InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2, const float range);
 
@@ -30,6 +34,7 @@ private:
     std::array<std::shared_ptr<GameObject>, MAX_USER> mPlayers{ };
     std::array<std::shared_ptr<GameObject>, MAX_MONSTER> mMonsters{ };
     std::array<std::shared_ptr<GameObject>, MAX_ENV> mEnvironments{ };
+    std::array<std::shared_ptr<GameObject>, MAX_ENV> mProjectiles{ };
 
     Concurrency::concurrent_queue<NetworkObjectIdType> mFreeIndices{ };
 };

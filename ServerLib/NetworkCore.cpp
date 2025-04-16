@@ -107,7 +107,7 @@ bool ClientCore::Start(const std::string& ip, const UINT16 port) {
     }
 
     GetIOCPCore()->Init(1);
-    mSession = std::make_shared<Session>(shared_from_this());
+    mSession = std::make_shared<Session>();
     GetIOCPCore()->RegisterSocket(mSession);
     if (not mSession->Connect(ip, port)) {
         return false;
@@ -134,7 +134,7 @@ void ClientCore::InitSessionId(SessionIdType id) {
 }
 
 SessionIdType ClientCore::GetSessionId() const {
-    return mSession->GetId();
+    return static_cast<SessionIdType>(mSession->GetId());
 }
 
 bool ClientCore::IsClosedSession() const {

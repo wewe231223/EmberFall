@@ -23,7 +23,7 @@ void Lock::SRWLock::ReadUnlock() {
     ::ReleaseSRWLockShared(&mLock);
 }
 
-bool Lock::SRWLock::TryWrietLock() {
+bool Lock::SRWLock::TryWriteLock() {
     return ::TryAcquireSRWLockExclusive(&mLock);
 }
 
@@ -31,25 +31,47 @@ bool Lock::SRWLock::TryReadLock() {
     return ::TryAcquireSRWLockShared(&mLock);
 }
 
-Lock::SRWLockGuard::SRWLockGuard(SRWLockMode mode, SRWLock& lock)
-    : mLock{ lock }, mMode{ mode }, mLocked { false } {
-    if (SRWLockMode::SRW_SHARED == mode) {
-        mLock.ReadLock();
-        mLocked.exchange(true);
+Lock::SRWLockGuard::SRWLockGuard(SRWLockMode mode, SRWLock& lock, SRWLockTry tryMode)
+    : mLock{ lock }, mMode{ mode }, mLocked{ false } {
+    if (SRWLockTry::SRW_FORCE == tryMode) {
+        if (SRWLockMode::SRW_SHARED == mode) {
+            mLock.ReadLock();
+        }
+        else {
+            mLock.WriteLock();
+        }
+
+        mLocked = true;
     }
     else {
-        mLock.WriteLock();
-        mLocked.exchange(true);
+        if (SRWLockMode::SRW_SHARED == mode) {
+            mLocked = mLock.TryReadLock();
+        }
+        else {
+            mLocked = mLock.TryWriteLock();
+        }
     }
+
+#ifdef _DEBUG || DEBUG
+    if (false == mLocked) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "SRWLock -> Locking Failure");
+    }
+#endif
+}
+
+bool Lock::SRWLockGuard::IsLocking() const {
+    return mLocked;
 }
 
 Lock::SRWLockGuard::~SRWLockGuard() {
+    if (false == mLocked) {
+        return;
+    }
+
     if (SRWLockMode::SRW_SHARED == mMode) {
         mLock.ReadUnlock();
-        mLocked.exchange(false);
     }
     else {
         mLock.WriteUnlock();
-        mLocked.exchange(false);
     }
 }

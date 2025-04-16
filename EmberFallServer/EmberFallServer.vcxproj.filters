@@ -52,12 +52,6 @@
     <Filter Include="MultiThreadLoopTest\BaseComponent">
       <UniqueIdentifier>{1d191cc2-623c-426c-b9f5-9be760463827}</UniqueIdentifier>
     </Filter>
-    <Filter Include="MaybeReuse\BehaviorTree">
-      <UniqueIdentifier>{95ed22be-e650-4d9c-81d8-f9f77195b696}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="MaybeReuse\BehaviorTree\BT_Monster">
-      <UniqueIdentifier>{1b526a72-8971-4d1e-8236-7986ba6ffdd1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="MaybeReuse\Utils">
       <UniqueIdentifier>{8389f802-350b-4427-bf5b-bc265ed71c1b}</UniqueIdentifier>
     </Filter>
@@ -82,22 +76,22 @@
     <Filter Include="Regacy\Attack\AttackSystem">
       <UniqueIdentifier>{95a3be85-1cf0-41f1-82ae-8c70dfcccaed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MultiThreadLoopTest\BehaviorTree">
+      <UniqueIdentifier>{95ed22be-e650-4d9c-81d8-f9f77195b696}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MultiThreadLoopTest\BehaviorTree\BT_Monster">
+      <UniqueIdentifier>{1b526a72-8971-4d1e-8236-7986ba6ffdd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MultiThreadLoopTest\Script">
+      <UniqueIdentifier>{66233865-9e14-4265-9d98-2f2094efb7a9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Grid.cpp">
-      <Filter>Regacy\Collision\CollisionCheck</Filter>
-    </ClCompile>
-    <ClCompile Include="GridWorld.cpp">
-      <Filter>Regacy\Collision\CollisionCheck</Filter>
-    </ClCompile>
-    <ClCompile Include="Collider.cpp">
-      <Filter>Regacy\Collision\Collider</Filter>
-    </ClCompile>
     <ClCompile Include="TerrainCollider.cpp">
       <Filter>Regacy\Collision\Collider</Filter>
     </ClCompile>
     <ClCompile Include="BT_MonsterChase.cpp">
-      <Filter>MaybeReuse\BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClCompile>
     <ClCompile Include="GraphSearch.cpp">
       <Filter>MaybeReuse\Graph\GraphSearch</Filter>
@@ -111,9 +105,6 @@
     <ClCompile Include="WeaponSystem.cpp">
       <Filter>Regacy\Attack\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="BoundingBoxImporter.cpp">
-      <Filter>Regacy\Collision\Collider</Filter>
-    </ClCompile>
     <ClCompile Include="AttackSystem.cpp">
       <Filter>Regacy\Attack\AttackSystem</Filter>
     </ClCompile>
@@ -121,22 +112,22 @@
       <Filter>Regacy\Animation</Filter>
     </ClCompile>
     <ClCompile Include="BT_MonsterAttack.cpp">
-      <Filter>MaybeReuse\BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClCompile>
     <ClCompile Include="BT_MonsterRandomMove.cpp">
-      <Filter>MaybeReuse\BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClCompile>
     <ClCompile Include="BehaviorTreeBase.cpp">
-      <Filter>MaybeReuse\BehaviorTree</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree</Filter>
     </ClCompile>
     <ClCompile Include="BT_Monster.cpp">
-      <Filter>MaybeReuse\BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClCompile>
     <ClCompile Include="BT_Decider.cpp">
-      <Filter>MaybeReuse\BehaviorTree</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree</Filter>
     </ClCompile>
     <ClCompile Include="BT_MonsterAttacked.cpp">
-      <Filter>MaybeReuse\BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClCompile>
     <ClCompile Include="Sector.cpp">
       <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
@@ -158,12 +149,6 @@
     </ClCompile>
     <ClCompile Include="GameObject.cpp">
       <Filter>MultiThreadLoopTest\ObjectManager</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectBuilder.cpp">
-      <Filter>Regacy</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectSpawner.cpp">
-      <Filter>Regacy</Filter>
     </ClCompile>
     <ClCompile Include="Terrain.cpp">
       <Filter>MultiThreadLoopTest\Resource</Filter>
@@ -222,9 +207,6 @@
     <ClCompile Include="ItemScript.cpp">
       <Filter>MaybeReuse\Script</Filter>
     </ClCompile>
-    <ClCompile Include="MonsterScript.cpp">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClCompile>
     <ClCompile Include="Script.cpp">
       <Filter>MaybeReuse\Script</Filter>
     </ClCompile>
@@ -249,25 +231,28 @@
     <ClCompile Include="Input.cpp">
       <Filter>MultiThreadLoopTest\Session</Filter>
     </ClCompile>
+    <ClCompile Include="CollisionManager.cpp">
+      <Filter>MultiThreadLoopTest\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>MultiThreadLoopTest\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="BoundingBoxImporter.cpp">
+      <Filter>MultiThreadLoopTest\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterScript.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Grid.h">
-      <Filter>Regacy\Collision\CollisionCheck</Filter>
-    </ClInclude>
-    <ClInclude Include="GridWorld.h">
-      <Filter>Regacy\Collision\CollisionCheck</Filter>
-    </ClInclude>
-    <ClInclude Include="Collider.h">
-      <Filter>Regacy\Collision\Collider</Filter>
-    </ClInclude>
     <ClInclude Include="BehaviorTreeBase.h">
-      <Filter>MaybeReuse\BehaviorTree</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree</Filter>
     </ClInclude>
     <ClInclude Include="TerrainCollider.h">
       <Filter>Regacy\Collision\Collider</Filter>
     </ClInclude>
     <ClInclude Include="BT_MonsterChase.h">
-      <Filter>MaybeReuse\BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClInclude>
     <ClInclude Include="GraphBase.h">
       <Filter>MaybeReuse\Graph\GraphBase</Filter>
@@ -287,9 +272,6 @@
     <ClInclude Include="WeaponSystem.h">
       <Filter>Regacy\Attack\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="BoundingBoxImporter.h">
-      <Filter>Regacy\Collision\Collider</Filter>
-    </ClInclude>
     <ClInclude Include="AttackSystem.h">
       <Filter>Regacy\Attack\AttackSystem</Filter>
     </ClInclude>
@@ -300,19 +282,19 @@
       <Filter>Regacy\Animation</Filter>
     </ClInclude>
     <ClInclude Include="BT_MonsterAttack.h">
-      <Filter>MaybeReuse\BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClInclude>
     <ClInclude Include="BT_MonsterRandomMove.h">
-      <Filter>MaybeReuse\BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClInclude>
     <ClInclude Include="BT_Monster.h">
-      <Filter>MaybeReuse\BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClInclude>
     <ClInclude Include="BT_Decider.h">
-      <Filter>MaybeReuse\BehaviorTree</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree</Filter>
     </ClInclude>
     <ClInclude Include="BT_MonsterAttacked.h">
-      <Filter>MaybeReuse\BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClInclude>
     <ClInclude Include="Sector.h">
       <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
@@ -331,12 +313,6 @@
     </ClInclude>
     <ClInclude Include="GameObject.h">
       <Filter>MultiThreadLoopTest\ObjectManager</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectBuilder.h">
-      <Filter>Regacy</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectSpawner.h">
-      <Filter>Regacy</Filter>
     </ClInclude>
     <ClInclude Include="Terrain.h">
       <Filter>MultiThreadLoopTest\Resource</Filter>
@@ -386,9 +362,6 @@
     <ClInclude Include="ItemScript.h">
       <Filter>MaybeReuse\Script</Filter>
     </ClInclude>
-    <ClInclude Include="MonsterScript.h">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClInclude>
     <ClInclude Include="Script.h">
       <Filter>MaybeReuse\Script</Filter>
     </ClInclude>
@@ -412,6 +385,18 @@
     </ClInclude>
     <ClInclude Include="Input.h">
       <Filter>MultiThreadLoopTest\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionManager.h">
+      <Filter>MultiThreadLoopTest\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider.h">
+      <Filter>MultiThreadLoopTest\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundingBoxImporter.h">
+      <Filter>MultiThreadLoopTest\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterScript.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

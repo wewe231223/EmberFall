@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "FbsPacketProcessFn.h"
-#include "ServerGameScene.h"
 #include "PlayerScript.h"
 #include "Input.h"
 #include "ServerFrame.h"
@@ -128,9 +127,12 @@ void ProcessPlayerSelectRoleCS(std::shared_ptr<GameSession>& session, const Pack
 }
 
 void ProcessLatencyCS(std::shared_ptr<GameSession>& session, const Packets::PacketLatencyCS* const latency) {
+    auto packetLatency = FbsPacketFactory::PacketLatencySC(latency->latency());
+    session->RegisterSend(packetLatency);
 }
 
 void ProcessRequestAttackCS(std::shared_ptr<GameSession>& session, const Packets::RequestAttackCS* const attack) {
+
 }
 
 void ProcessRequestUseItemCS(std::shared_ptr<GameSession>& session, const Packets::RequestUseItemCS* const useItem) {

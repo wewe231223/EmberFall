@@ -11,17 +11,25 @@ public:
     Sector(uint8_t row, uint8_t col);
     ~Sector();
 
+    Sector(const Sector& other) = delete;
+    Sector& operator=(const Sector&) = delete;
+    Sector(Sector&& other) noexcept;
+    Sector& operator=(Sector&& other) noexcept;
+
 public:
     Short2 GetIndex() const;
+    Lock::SRWLock& GetLock();
 
     void TryInsert(NetworkObjectIdType id);
+    void RemoveObject(NetworkObjectIdType id);
     std::vector<NetworkObjectIdType> GetMonstersInRange(SimpleMath::Vector3 pos, const float range) const;
     std::vector<NetworkObjectIdType> GetPlayersInRange(SimpleMath::Vector3 pos, const float range) const;
 
 private:
     Short2 mIndex{ };
-    std::vector<NetworkObjectIdType> mPlayers{ };
-    std::vector<NetworkObjectIdType> mMonsters{ };
+    Lock::SRWLock mSectorLock;
+    std::unordered_set<NetworkObjectIdType> mPlayers{ };
+    std::unordered_set<NetworkObjectIdType> mMonsters{ };
 };
 
 class SectorSystem {
@@ -38,12 +46,14 @@ public:
     std::vector<Short2> GetMustCheckSectors(const SimpleMath::Vector3& pos, const float range) const;
 
     void AddInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos);
-    void RemoveInSector(NetworkObjectIdType id);
+    void RemoveInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos);
+
+    void UpdateSectorPos(NetworkObjectIdType id, const SimpleMath::Vector3& prevPos, const SimpleMath::Vector3& currPos);
     
     void UpdatePlayerViewList(const std::shared_ptr<GameObject>& player, const SimpleMath::Vector3 pos, const float range);
 
 private:
     uint8_t mSectorWidth{ };
     uint8_t mSectorHeight{ };
-    std::vector<Sector> mSectors{ };
+    std::vector<Sector> mSectors;
 };

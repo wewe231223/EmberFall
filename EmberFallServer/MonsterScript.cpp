@@ -5,8 +5,6 @@
 #include "Physics.h"
 #include "BehaviorTreeBase.h"
 
-#include "ServerGameScene.h"
-
 MonsterScript::MonsterScript(std::shared_ptr<class GameObject> owner)
     : Script{ owner, ObjectTag::MONSTER, ScriptType::MONSTER } {
     owner->mSpec.entity = Packets::EntityType_MONSTER;
@@ -46,33 +44,6 @@ void MonsterScript::LateUpdate(const float deltaTime) {
         GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_DEAD);
     }
 }
-
-void MonsterScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
-
-void MonsterScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    if (Packets::AnimationState_DEAD == opponent->mAnimationStateMachine.GetCurrState() or IsDead()) {
-        return;
-    }
-
-    switch (opponent->GetTag()) {
-    case ObjectTag::MONSTER:
-        GetOwner()->GetPhysics()->SolvePenetration(impulse, opponent);
-        break;
-
-    case ObjectTag::CORRUPTED_GEM:
-        GetOwner()->GetPhysics()->SolvePenetration(impulse, opponent);
-        break;
-
-    case ObjectTag::PLAYER:
-        GetOwner()->GetPhysics()->SolvePenetration(impulse, opponent);
-        break;
-
-    default:
-        break;
-    }
-}
-
-void MonsterScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
 void MonsterScript::OnCollisionTerrain(const float height) { }
 

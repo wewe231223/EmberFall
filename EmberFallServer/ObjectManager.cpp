@@ -17,7 +17,6 @@ ObjectManager::ObjectManager() {
         user->InitId(id);
         user->Reset();
         user->mSpec.active = false;
-        user->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.3f, 1.5f, 0.3f });
         user->CreateScript<PlayerScript>(user, std::make_shared<Input>());
 
         ++id;
@@ -28,8 +27,15 @@ ObjectManager::ObjectManager() {
         monster->InitId(id);
         monster->Reset();
         monster->mSpec.active = false;
-        //monster->CreateCollider<OrientedBoxCollider>();
-        monster->CreateScript<MonsterScript>(monster);
+
+        ++id;
+    }
+
+    for (NetworkObjectIdType id{ PROJECTILE_ID_START }; auto& projectile : mProjectiles) {
+        projectile = std::make_shared<GameObject>();
+        projectile->InitId(id);
+        projectile->Reset();
+        projectile->mSpec.active = false;
 
         ++id;
     }
@@ -50,18 +56,48 @@ void ObjectManager::LoadEnvFromFile() { }
 
 std::shared_ptr<GameObject> ObjectManager::GetObjectFromId(NetworkObjectIdType id) const {
     if (id > VALID_ID_MAX) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Warning! : Bad Object Array Access - Access Id: [{}]", id);
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Bad Object Array Access - Access Id: [{}]", id);
         return nullptr;
     }
 
     if (id < MONSTER_ID_START - 1) {
         return mPlayers[id];
     }
-    else if (id < ENV_ID_START - 1) {
+    else if (id < PROJECTILE_ID_START - 1) {
         return mMonsters[id];
+    }
+    else if (id < ENV_ID_START - 1) {
+        return mProjectiles[id];
     }
 
     return mEnvironments[id];
+}
+
+std::shared_ptr<GameObject> ObjectManager::GetPlayer(NetworkObjectIdType id) const {
+    if (id >= MONSTER_ID_START or id < USER_ID_START) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Bad Player Object Array Access - Access Id: [{}]", id);
+        return nullptr;
+    }
+
+    return mPlayers[id];
+}
+
+std::shared_ptr<GameObject> ObjectManager::GetMonster(NetworkObjectIdType id) const {
+    if (id >= ENV_ID_START or id < MONSTER_ID_START) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Bad Monster Object Array Access - Access Id: [{}]", id);
+        return nullptr;
+    }
+
+    return mMonsters[id];
+}
+
+std::shared_ptr<GameObject> ObjectManager::GetEnv(NetworkObjectIdType id) const {
+    if (id >= INVALID_OBJ_ID or id < ENV_ID_START) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Bad ENV Object Array Access - Access Id: [{}]", id);
+        return nullptr;
+    }
+
+    return mPlayers[id];
 }
 
 bool ObjectManager::InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2, const float range) {

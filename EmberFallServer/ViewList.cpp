@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "ViewList.h"
-#include "ServerGameScene.h"
 #include "GameObject.h"
-#include "GameTimer.h"
 
 ViewList::ViewList() { }
 

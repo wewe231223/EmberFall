@@ -12,8 +12,22 @@ Sector::~Sector() {
     mPlayers.clear();
 }
 
+Sector::Sector(Sector&& other) noexcept 
+    : mPlayers{ std::move(other.mPlayers) }, mMonsters{ std::move(other.mMonsters) } {
+}
+
+Sector& Sector::operator=(Sector&& other) noexcept {
+    mPlayers = std::move(other.mPlayers); 
+    mMonsters = std::move(other.mMonsters);
+    return *this;
+}
+
 Short2 Sector::GetIndex() const {
     return mIndex;
+}
+
+Lock::SRWLock& Sector::GetLock() {
+    return mSectorLock;
 }
 
 void Sector::TryInsert(NetworkObjectIdType id) {
@@ -23,13 +37,43 @@ void Sector::TryInsert(NetworkObjectIdType id) {
     case ObjectTag::PLAYER:
     case ObjectTag::BOSSPLAYER:
     {
-        mPlayers.emplace_back(id);
+        mPlayers.insert(id);
         break;
     }
 
     case ObjectTag::MONSTER:
     {
-        mMonsters.emplace_back(id);
+        mMonsters.insert(id);
+        break;
+    }
+
+    default:
+        break;
+    }
+}
+
+void Sector::RemoveObject(NetworkObjectIdType id) {
+    auto tag = gObjectManager->GetObjectFromId(id)->GetTag();
+
+    switch (tag) {
+    case ObjectTag::PLAYER:
+    case ObjectTag::BOSSPLAYER:
+    {
+        if (false == mPlayers.contains(id)) {
+            return;
+        }
+
+        mPlayers.erase(id);
+        break;
+    }
+
+    case ObjectTag::MONSTER:
+    {
+        if (false == mMonsters.contains(id)) {
+            return;
+        }
+
+        mMonsters.erase(id);
         break;
     }
 
@@ -88,7 +132,7 @@ Sector& SectorSystem::GetSector(Short2 idx) {
         Crash("Bad Memory Access");
     }
 
-    return mSectors[idx.y * mSectorWidth + idx.x];
+    return std::ref(mSectors[idx.y * mSectorWidth + idx.x]);
 }
 
 Sector& SectorSystem::GetSectorFromPos(const SimpleMath::Vector3& pos) {
@@ -123,7 +167,7 @@ std::vector<Short2> SectorSystem::GetMustCheckSectors(const SimpleMath::Vector3&
     checkSector.emplace_back(checkIdx);
 
     const auto checkForward = GetSectorIdxFromPos(pos - (SimpleMath::Vector3::Forward * range));
-    const auto checkBackward= GetSectorIdxFromPos(pos - (SimpleMath::Vector3::Backward * range));
+    const auto checkBackward = GetSectorIdxFromPos(pos - (SimpleMath::Vector3::Backward * range));
     const auto checkLeft = GetSectorIdxFromPos(pos - (SimpleMath::Vector3::Left * range));
     const auto checkRight = GetSectorIdxFromPos(pos - (SimpleMath::Vector3::Right * range));
 
@@ -173,10 +217,35 @@ std::vector<Short2> SectorSystem::GetMustCheckSectors(const SimpleMath::Vector3&
 }
 
 void SectorSystem::AddInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos) { 
-    GetSectorFromPos(pos).TryInsert(id);
+    const auto idx = GetSectorIdxFromPos(pos);
+    if (Short2{ -1, -1 } == idx) {
+        return;
+    }
+
+    decltype(auto) sector = GetSector(idx);
+    Lock::SRWLockGuard sectorGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, sector.GetLock() };
+    sector.TryInsert(id);
 }
 
-void SectorSystem::RemoveInSector(NetworkObjectIdType id) { }
+void SectorSystem::RemoveInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos) { 
+    const auto idx = GetSectorIdxFromPos(pos);
+    if (Short2{ -1, -1 } == idx) {
+        return;
+    }
+
+    decltype(auto) sector = GetSector(idx);
+    Lock::SRWLockGuard sectorGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, sector.GetLock() };
+    sector.RemoveObject(id);
+}
+
+void SectorSystem::UpdateSectorPos(NetworkObjectIdType id, const SimpleMath::Vector3& prevPos, const SimpleMath::Vector3& currPos) {
+    if (MathUtil::IsEqualVector(currPos, prevPos)) {
+        return;
+    }
+
+    RemoveInSector(id, prevPos);
+    AddInSector(id, currPos);
+}
 
 void SectorSystem::UpdatePlayerViewList(const std::shared_ptr<GameObject>& player, const SimpleMath::Vector3 pos, const float range) {
     const auto playerScript = player->GetScript<PlayerScript>();
@@ -185,10 +254,17 @@ void SectorSystem::UpdatePlayerViewList(const std::shared_ptr<GameObject>& playe
         return;
     }
 
+    const auto id = player->GetId();
+    const auto currPos = player->GetPosition();
+    const auto prevPos = player->GetPrevPosition();
+    UpdateSectorPos(id, prevPos, currPos);
+
     std::vector<Short2> checkSectors = std::move(GetMustCheckSectors(pos, range));
     for (const auto idx : checkSectors) {
-        const std::vector<NetworkObjectIdType> monsters = std::move(GetSector(idx).GetMonstersInRange(pos, range));
-        const std::vector<NetworkObjectIdType> players = std::move(GetSector(idx).GetPlayersInRange(pos, range));
+        decltype(auto) sector = GetSector(idx);
+
+        const std::vector<NetworkObjectIdType> monsters = std::move(sector.GetMonstersInRange(pos, range));
+        const std::vector<NetworkObjectIdType> players = std::move(sector.GetPlayersInRange(pos, range));
 
         playerScript->UpdateViewListNPC(monsters);
         playerScript->UpdateViewListPlayer(players);

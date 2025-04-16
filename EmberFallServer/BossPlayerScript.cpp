@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "BossPlayerScript.h"
 #include "Input.h"
-#include "ObjectSpawner.h"
 #include "GameObject.h"
 
 BossPlayerScript::BossPlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input)
@@ -12,7 +11,7 @@ BossPlayerScript::BossPlayerScript(std::shared_ptr<GameObject> owner, std::share
 BossPlayerScript::~BossPlayerScript() { }
 
 void BossPlayerScript::Init() {
-    mInteractionTrigger = gObjectSpawner->SpawnTrigger(std::numeric_limits<float>::max(), GetOwner()->GetPosition(), SimpleMath::Vector3{ 15.0f });
+    //mInteractionTrigger = gObjectSpawner->SpawnTrigger(std::numeric_limits<float>::max(), GetOwner()->GetPosition(), SimpleMath::Vector3{ 15.0f });
 }
 
 void BossPlayerScript::Update(const float deltaTime) {
@@ -31,12 +30,6 @@ void BossPlayerScript::Update(const float deltaTime) {
 void BossPlayerScript::LateUpdate(const float deltaTime) {
     mInput->Update();
 }
-
-void BossPlayerScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {}
-
-void BossPlayerScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {}
-
-void BossPlayerScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {}
 
 void BossPlayerScript::OnCollisionTerrain(const float height) {
     if (Packets::AnimationState_JUMP == GetOwner()->mAnimationStateMachine.GetCurrState()) {

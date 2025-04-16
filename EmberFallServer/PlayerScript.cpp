@@ -3,9 +3,7 @@
 #include "Input.h"
 
 #include "GameObject.h"
-#include "ServerGameScene.h"
 #include "GameEventManager.h"
-#include "ObjectSpawner.h"
 #include "ObjectManager.h"
 
 #include "GameSession.h"
@@ -20,10 +18,6 @@ PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<In
 
 PlayerScript::~PlayerScript() { }
 
-//Short2 PlayerScript::GetCurrSector() const {
-//    return mCurrSectorIdx;
-//}
-
 std::shared_ptr<Input> PlayerScript::GetInput() const {
     return mInput;
 }
@@ -37,7 +31,9 @@ void PlayerScript::SetOwnerSession(std::shared_ptr<class GameSession> session) {
 }
 
 void PlayerScript::UpdateViewListNPC(const std::vector<NetworkObjectIdType>& inViewRangeObjects) {
+    mViewListLock.ReadLock();
     auto oldViewList = mViewList;
+    mViewListLock.ReadUnlock();
 
     auto session = mSession.lock();
     if (nullptr == session) {
@@ -45,8 +41,9 @@ void PlayerScript::UpdateViewListNPC(const std::vector<NetworkObjectIdType>& inV
         return;
     }
 
+    ViewList newViewList{ };
     for (const auto id : inViewRangeObjects) {
-        auto success = mViewList.TryInsert(id);
+        auto success = newViewList.TryInsert(id);
         if (not success) {
             continue;
         }
@@ -66,16 +63,22 @@ void PlayerScript::UpdateViewListNPC(const std::vector<NetworkObjectIdType>& inV
     }
 
     for (const auto id : oldViewList.GetCurrViewList()) {
-        if (not mViewList.IsInList(id)) {
+        if (not newViewList.IsInList(id)) {
             decltype(auto) packetDisappeared = FbsPacketFactory::ObjectDisappearedSC(id);
 
             session->RegisterSend(packetDisappeared);
         }
     }
+
+    mViewListLock.WriteLock();
+    mViewList = newViewList;
+    mViewListLock.WriteUnlock();
 }
 
 void PlayerScript::UpdateViewListPlayer(const std::vector<NetworkObjectIdType>& inViewRangeObjects) {
+    mViewListLock.ReadLock();
     auto oldViewList = mViewList;
+    mViewListLock.ReadUnlock();
 
     auto session = mSession.lock();
     if (nullptr == session) {
@@ -83,8 +86,9 @@ void PlayerScript::UpdateViewListPlayer(const std::vector<NetworkObjectIdType>& 
         return;
     }
 
+    ViewList newViewList{ };
     for (const auto id : inViewRangeObjects) {
-        auto success = mViewList.TryInsert(id);
+        auto success = newViewList.TryInsert(id);
         if (not success) {
             continue;
         }
@@ -107,7 +111,7 @@ void PlayerScript::UpdateViewListPlayer(const std::vector<NetworkObjectIdType>& 
     }
 
     for (const auto id : oldViewList.GetCurrViewList()) {
-        if (not mViewList.IsInList(id)) {
+        if (not newViewList.IsInList(id)) {
             decltype(auto) packetDisappeared = FbsPacketFactory::ObjectDisappearedSC(id);
 
             session->RegisterSend(packetDisappeared);
@@ -115,10 +119,14 @@ void PlayerScript::UpdateViewListPlayer(const std::vector<NetworkObjectIdType>& 
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Send Disappeared!!!");
         }
     }
+
+    mViewListLock.WriteLock();
+    mViewList = newViewList;
+    mViewListLock.WriteUnlock();
 }
 
 void PlayerScript::Init() { 
-    mInteractionTrigger = gObjectSpawner->SpawnTrigger(std::numeric_limits<float>::max(), GetOwner()->GetPosition(), SimpleMath::Vector3{15.0f});
+    //mInteractionTrigger = gObjectSpawner->SpawnTrigger(std::numeric_limits<float>::max(), GetOwner()->GetPosition(), SimpleMath::Vector3{15.0f});
 }
 
 void PlayerScript::Update(const float deltaTime) {
@@ -156,34 +164,6 @@ void PlayerScript::Update(const float deltaTime) {
 void PlayerScript::LateUpdate(const float deltaTime) {
     mInput->Update();
 }
-
-void PlayerScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
-
-void PlayerScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    if (Packets::AnimationState_DEAD == opponent->mAnimationStateMachine.GetCurrState() or
-        Packets::AnimationState_DEAD == GetOwner()->mAnimationStateMachine.GetCurrState()) {
-        return;
-    }
-
-    switch (opponent->GetTag()) {
-    case ObjectTag::MONSTER:
-        GetOwner()->GetPhysics()->SolvePenetration(impulse, opponent);
-        break;
-
-    case ObjectTag::PLAYER:
-        GetOwner()->GetPhysics()->SolvePenetration(impulse, opponent);
-        break;
-
-    case ObjectTag::CORRUPTED_GEM:
-        GetOwner()->GetPhysics()->SolvePenetration(impulse, opponent);
-        break;
-
-    default:
-        break;
-    }
-}
-
-void PlayerScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
 void PlayerScript::OnCollisionTerrain(const float height) {
     if (Packets::AnimationState_JUMP == GetOwner()->mAnimationStateMachine.GetCurrState()) {

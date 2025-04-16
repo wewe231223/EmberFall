@@ -96,8 +96,13 @@ struct Short2 {
     int16_t x;
     int16_t y;
 
-    Short2();
+    Short2() : x{ }, y{ } { }
     Short2(int16_t x, int16_t y) : x{ x }, y{ y } {}
+
+    Short2(const Short2& other) = default;
+    Short2(Short2&& other) noexcept = default;
+    Short2& operator=(const Short2& other) = default;
+    Short2& operator=(Short2&& other) noexcept = default;
 
     bool operator==(Short2 rhs) const {
         return x == rhs.x and y == rhs.y;

@@ -5,7 +5,7 @@
 
 class GameSession : public Session {
 public:
-    GameSession(std::shared_ptr<INetworkCore> core);
+    GameSession();
     ~GameSession();
 
 public:
