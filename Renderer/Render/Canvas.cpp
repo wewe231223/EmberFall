@@ -93,6 +93,7 @@ void CanvasObject::Update() {
 
 void CanvasObject::ChangeImage(UINT imageIndex) {
 	mImageIndex = imageIndex;
+	mContext.ImageIndex = imageIndex;
 }
 
 void CanvasObject::ChangeImage(UINT imageIndex, const std::pair<UINT, UINT>& imageWidthHeight, const std::pair<UINT, UINT>& imageUnit) {

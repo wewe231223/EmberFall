@@ -662,7 +662,11 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	mCanvasObject = mCanvas->CreateCanvasObject(); 
 
+	mCanvasObject.ChangeImage(mTextureManager->GetTexture("mid_frame"));
 	mCanvasObject.GetRect() = { 100.f,100.f,100.f,100.f }; 
+
+
+
 }
 
 Scene::~Scene() {
