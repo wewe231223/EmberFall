@@ -76,18 +76,21 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 				if (nextLoc == mPlayers.end()) {
 					Crash("There is no more space for My Player!!");
 				}
-		
+				
 				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
-		
+	
 				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
 				mMyPlayer->SetMyPlayer();
+				
+				mMyPlayer->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
 
 				mMyPlayer->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
 
 					
 				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+
 				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
 				mCameraMode->Enter();
 			}
@@ -108,6 +111,7 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 		
 				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
+				mPlayerIndexmap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
 				mPlayerIndexmap[data->objectId()]->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
 			}
 			else {
@@ -179,12 +183,12 @@ void Scene::ProcessObjectDisappeared(const uint8_t* buffer) {
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
-			mPlayerIndexmap[data->objectId()]->SetActiveState(false);
+			//mPlayerIndexmap[data->objectId()]->SetActiveState(false);
 		}
 	}
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
-			mGameObjectMap[data->objectId()]->SetActiveState(false);
+			//mGameObjectMap[data->objectId()]->SetActiveState(false);
 		}
 	}
 }
@@ -695,8 +699,13 @@ void Scene::Update() {
 		if (false == player.GetActiveState()) {
 			continue; 
 		}
-
 		player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
+	}
+
+	for (auto& [key, object] : mGameObjectMap) {
+		if (object) {
+			object->GetTransform().GetPosition().y = tCollider.GetHeight(object->GetTransform().GetPosition().x, object->GetTransform().GetPosition().z);
+		}
 	}
 
 	if (mMyPlayer != nullptr) {
