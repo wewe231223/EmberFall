@@ -82,9 +82,10 @@ void Sector::RemoveObject(NetworkObjectIdType id) {
     }
 }
 
-std::vector<NetworkObjectIdType> Sector::GetMonstersInRange(SimpleMath::Vector3 pos, const float range) const {
+std::vector<NetworkObjectIdType> Sector::GetMonstersInRange(SimpleMath::Vector3 pos, const float range) {
+    Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
     std::vector<NetworkObjectIdType> inRangeMonsters{ };
-    for (const auto& monsterId : mMonsters) {
+    for (const auto monsterId : mMonsters) {
         decltype(auto) monsterPos = gObjectManager->GetObjectFromId(monsterId)->GetPosition();
 
         auto dist = SimpleMath::Vector3::DistanceSquared(pos, monsterPos);
@@ -94,9 +95,10 @@ std::vector<NetworkObjectIdType> Sector::GetMonstersInRange(SimpleMath::Vector3 
     return inRangeMonsters;
 }
 
-std::vector<NetworkObjectIdType> Sector::GetPlayersInRange(SimpleMath::Vector3 pos, const float range) const {
+std::vector<NetworkObjectIdType> Sector::GetPlayersInRange(SimpleMath::Vector3 pos, const float range) {
+    Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
     std::vector<NetworkObjectIdType> inRangePlayer{ };
-    for (const auto& playerId : mPlayers) {
+    for (const auto playerId : mPlayers) {
         decltype(auto) playerPos = gObjectManager->GetObjectFromId(playerId)->GetPosition();
 
         auto dist = SimpleMath::Vector3::DistanceSquared(pos, playerPos);

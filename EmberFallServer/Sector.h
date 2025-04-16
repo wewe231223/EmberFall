@@ -22,8 +22,8 @@ public:
 
     void TryInsert(NetworkObjectIdType id);
     void RemoveObject(NetworkObjectIdType id);
-    std::vector<NetworkObjectIdType> GetMonstersInRange(SimpleMath::Vector3 pos, const float range) const;
-    std::vector<NetworkObjectIdType> GetPlayersInRange(SimpleMath::Vector3 pos, const float range) const;
+    std::vector<NetworkObjectIdType> GetMonstersInRange(SimpleMath::Vector3 pos, const float range);
+    std::vector<NetworkObjectIdType> GetPlayersInRange(SimpleMath::Vector3 pos, const float range);
 
 private:
     Short2 mIndex{ };
