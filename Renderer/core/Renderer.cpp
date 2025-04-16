@@ -159,7 +159,7 @@ void Renderer::Render() {
 	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
-	mDefferedRenderer.Render(mCommandList, mShadowRenderer->GetShadowCameraBuffer());
+	mDefferedRenderer.Render(mCommandList, mShadowRenderer->GetShadowCameraBuffer(), mLightingManager->GetLightingBuffer());
 }
 
 void Renderer::ExecuteRender() {
@@ -435,7 +435,7 @@ void Renderer::InitCoreResources() {
 	mMeshRenderManager = std::make_shared<MeshRenderManager>(mDevice);
 	mTextureManager = std::make_shared<TextureManager>(mDevice, mCommandList);
 	mMaterialManager = std::make_shared<MaterialManager>();
-	mLightingManager = std::make_shared<LightingManager>(mDevice, mCommandList, 1);
+	mLightingManager = std::make_shared<LightingManager>(mDevice, mCommandList);
 	mMainCameraBuffer = DefaultBuffer(mDevice, sizeof(CameraConstants), 1, true);
 
 }

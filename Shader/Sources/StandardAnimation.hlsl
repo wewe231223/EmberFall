@@ -90,7 +90,9 @@ StandardAnimation_PIN StandardAnimation_VS(StandardAnimation_VIN input) {
     output.wPosition = output.position.xyz;
     output.position = mul(output.position, viewProjection);
     
-    output.normal = normalize(mul(input.normal, (float3x3)boneTransform));
+    float3x3 boneWorldTransform = mul((float3x3) boneTransform, (float3x3) modelContext.world);
+    
+    output.normal = normalize(mul(input.normal, boneWorldTransform));
     output.texcoord = input.texcoord;
     output.material = modelContext.material;
     
@@ -112,6 +114,6 @@ Deffered_POUT StandardAnimation_PS(StandardAnimation_PIN input) {
     output.diffuse = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord);
     // color += materialConstants[input.material].diffuse;
     output.normal = float4(input.normal, 1.0f);
-    //output.position = float4(input.wPosition, 1.0f);
+    output.position = float4(input.wPosition, 1.0f);
     return output;
 }

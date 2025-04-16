@@ -19,8 +19,11 @@ ShadowRenderer::ShadowRenderer(ComPtr<ID3D12Device> device) {
 	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	CheckHR(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&mShadowRTVHeap)));
 
+	D3D12_CPU_DESCRIPTOR_HANDLE shadowMapHandle{ mShadowRTVHeap->GetCPUDescriptorHandleForHeapStart() };
+
 	mShadowMap = Texture(device, DXGI_FORMAT_R8G8B8A8_UNORM, SHADOWMAPSIZE<UINT64>, SHADOWMAPSIZE<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-	device->CreateRenderTargetView(mShadowMap.GetResource().Get(), nullptr, mShadowRTVHeap->GetCPUDescriptorHandleForHeapStart());
+	
+	device->CreateRenderTargetView(mShadowMap.GetResource().Get(), nullptr, shadowMapHandle);
 
 
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
@@ -57,7 +60,6 @@ void ShadowRenderer::Update(DefaultBufferCPUIterator worldCameraBuffer) {
 	std::memcpy(&worldCamera, *worldCameraBuffer, sizeof(CameraConstants));
 
 	CameraParameter cameraParam{};
-	
 	
 	
 	SimpleMath::Matrix invView = worldCamera.view.Transpose().Invert();

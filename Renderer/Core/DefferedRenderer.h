@@ -19,7 +19,7 @@ public:
 public:
 	void RegisterGBufferTexture(ComPtr<ID3D12Device> device, const std::span<Texture>& textures);
 	void RegisterShadowMap(ComPtr<ID3D12Device> device, Texture& shadowMap);
-	void Render(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator shadowCameraBuffer);
+	void Render(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator shadowCameraBuffer, DefaultBufferGPUIterator lightingBuffer);
 private:
 	void BuildShader(ComPtr<ID3D12Device> device);
 	void BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);

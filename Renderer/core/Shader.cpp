@@ -344,6 +344,9 @@ void GraphicsShaderBase::CreateShader(ComPtr<ID3D12Device> device) {
 	staticSamplers[5] = { 5, D3D12_FILTER_ANISOTROPIC, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, 0.0f, 16 };
 	staticSamplers[6] = { 6, D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0.0f, 16 };
 	
+	
+	
+
 	D3D12_ROOT_SIGNATURE_DESC rootsignatureDesc{};
 	auto rootParameters = CreateRootParameters();
 
@@ -401,6 +404,10 @@ void GraphicsShaderBase::CreateShader(ComPtr<ID3D12Device> device) {
 	psoDesc.RTVFormats[1] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	psoDesc.RTVFormats[2] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	psoDesc.RasterizerState.DepthBias = 10000;
+	psoDesc.RasterizerState.DepthBiasClamp = 0.0f;
+	psoDesc.RasterizerState.SlopeScaledDepthBias = 5.0f;
 
 	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mShadowPipelineState)));
 }
@@ -842,9 +849,17 @@ GraphicsShaderBase::RootParameters DefferedShader::CreateRootParameters() {
 	params.Parameters[1].DescriptorTable.pDescriptorRanges = params.Ranges.data();
 	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	
+	params.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[2].Descriptor.ShaderRegister = 1;
+	params.Parameters[2].Descriptor.RegisterSpace = 1;
+	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.ParameterCount = 2;
+	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	params.Parameters[3].Descriptor.ShaderRegister = 1;
+	params.Parameters[3].Descriptor.RegisterSpace = 0;
+	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.ParameterCount = 4;
 
 	return params;
 }

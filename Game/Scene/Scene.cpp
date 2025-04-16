@@ -727,6 +727,11 @@ void Scene::Update(DefaultBufferCPUIterator mainCameraBufferLocation) {
 				gameObject.UpdateShaderVariables(boneTransformBuffer); 
 				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 				mMeshRenderManager->AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
+
+				/*if (mShadowRenderer->ShadowMapCulling(gameObject.mCollider)) {
+					auto [mesh, shader, modelContext] = gameObject.GetRenderData();
+					mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext);
+				}*/
 			}
 			else {
 				gameObject.UpdateShaderVariables();

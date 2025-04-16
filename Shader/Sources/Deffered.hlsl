@@ -20,7 +20,7 @@ struct Light
 };
 
 Texture2D GBuffers[4] : register(t0, space0);
-
+StructuredBuffer<Light> gLight : register(t1, space1);
 
 cbuffer Camera : register(b0)
 {
@@ -51,29 +51,70 @@ Deffered_VOUT Deffered_VS(Deffered_VIN input)
     return output;
 }
 
-float4 DirectionalLight(float3 vNormal, float3 toCamera, float2 texcoord)
+
+float4 DirectionalLight(float3 normal, float3 toCamera, float2 texcoord)
 {
     float3 direct = normalize(float3(-1.0f,3.0f,1.0f));
-    float dotNormalLight = dot(direct, vNormal);
+    float dotNormalLight = dot(direct, normal);
 
     float4 diffuse = float4(1.0f,1.0f,1.0f,1.0f);
-    
+    float4 ambient = float4(0.0f, 0.0f, 0.0f, 1.0f);
     
     diffuse.xyz = diffuse.xyz * max(dotNormalLight, 0.0f);
 
-    float3 vReflect = reflect(-direct, vNormal);
+    float3 vReflect = reflect(-direct, normal);
     float specularFactor = pow(max(dot(toCamera, vReflect), 0.0f), 32.0f);
 
-    float4 specular = float4(0.8f, 0.8f, 0.8f, 1.0f);
+    float4 specular = float4(0.4f, 0.4f, 0.4f, 1.0f);
     specular.xyz = specular.xyz * specularFactor;
     
-    float4 color = diffuse + specular;
-  
+    float4 color = diffuse + specular + ambient;
     return color;
 
 }
 
+float4 PointLight(int index, float3 position, float3 normal, float3 toCamera, float2 texcoord)
+{
+    float3 toLight = gLight[index].Position - position;
+    float distance = length(toLight);
+    
+    float4 ambient = gLight[index].Ambient;
+    
+    if (distance > gLight[index].Range)
+    {
+        float4 color = float4(0.0f, 0.0f, 0.0f, 1.0f);
+        return color;
+    }
+    toLight = normalize(toLight);
+    normal = normalize(normal);
+    float dotNormalLight = dot(toLight, normal);
+    
+    float4 diffuse = float4(gLight[index].Diffuse.xyz * max(dotNormalLight, 0.0f), 1.0f);
+    
+        
+    float3 vReflect = reflect(-toLight, normal);
+    float specularSpot = pow(max(dot(toCamera, vReflect), 0.0f), 32.0f);
+    float4 specular = float4(gLight[index].Specular.xyz * specularSpot, 1.0f);
+    
+    float attenFactor = 1.0f / dot(gLight[index].Attenuation, float3(1.0f, distance, distance * distance));
+    
+    float4 color = (diffuse + specular) * attenFactor + ambient;
+    return color;
 
+}
+
+float4 Lighting(float3 normal, float3 toCamera, float3 worldPos, float2 texcoord)
+{
+    float4 Color = DirectionalLight(normal, toCamera, texcoord);
+    
+    [unroll]
+    for (int i = 0; i < 8; ++i)
+    {
+        Color += PointLight(i, worldPos.xyz, normal, toCamera, texcoord);
+
+    }
+    return Color;
+}
 
 float ComputeShadowFactor(float4 shadowPosH, float bias)
 {
@@ -97,20 +138,21 @@ float ComputeShadowFactor(float4 shadowPosH, float bias)
     }
     
     
-    return lerp(0.1f, 1.0f, percentLit / 9.0f);
+    return percentLit / 9.0f;
     
    
 }
 
 float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 {
-    //return float4(GBuffers[1].Sample(linearWrapSampler, input.texcoord).xyz, 1.0f);
+    //return float4(GBuffers[3].Sample(linearWrapSampler, input.texcoord).xxx, 1.0f);
     float4 diffuse = GBuffers[0].Sample(linearWrapSampler, input.texcoord);
     float3 normal = normalize(GBuffers[1].Sample(linearWrapSampler, input.texcoord).xyz);
     float4 worldPos = GBuffers[2].Sample(linearWrapSampler, input.texcoord);
     float3 toCamera = normalize(cameraPosition - worldPos.xyz);
-    
-    float4 LightingColor = DirectionalLight(normal, toCamera, input.texcoord);
+  
+    float4 LightingColor = Lighting(normal, toCamera, worldPos.xyz, input.texcoord);
+        
     for (int i = 0; i < step(4.0f, GBuffers[1].Sample(linearWrapSampler, input.texcoord).w); ++i)
     {
         LightingColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -131,12 +173,20 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     
     float bias = 0.003f;
 
-    float shadowFactor = ComputeShadowFactor(texPos, bias);
+    //float shadowFactor = ComputeShadowFactor(texPos, bias);
+    //float shadowFactor = GBuffers[3].SampleCmpLevelZero(PCFSampler, texPos.xy, texPos.z);
+    float shadowFactor = 1.0f;
     float depth = GBuffers[3].Sample(linearWrapSampler, texPos.xy).r;
+
+
+    if (texPos.z >= (depth + bias))
+    {
+        shadowFactor = 0.3f;
+    }
 
     float shadowApply = step(depth + bias, texPos.z) * valid;
 
     float finalFactor = lerp(1.0f, shadowFactor, shadowApply);
 
-    return diffuse * finalFactor * LightingColor;
+    return diffuse * LightingColor * finalFactor;
 }

@@ -65,6 +65,7 @@ private:
 
 	std::vector<SimpleMath::Matrix> mBoneTransforms{};
 	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<AnimationModelContext>>> mBonedMeshContexts{};
+	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<AnimationModelContext>>> mShadowBonedMeshContexts{};
 	
 	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<ModelContext>>> mPlainMeshReserved{};
 	std::unordered_map<GraphicsShaderBase* ,std::unordered_map<Mesh*, std::vector<ModelContext>>> mPlainMeshContexts{};
