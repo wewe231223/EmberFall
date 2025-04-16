@@ -3,6 +3,7 @@
 #include "../Renderer/Manager/TextureManager.h"
 #include "../Renderer/Manager/MeshRenderManager.h"
 #include "../Renderer/Manager/ParticleManager.h"
+#include "../Renderer/Render/Canvas.h"
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Game/System/Input.h"
 #include "../Game/System/Timer.h"
@@ -17,7 +18,7 @@
 
 class Scene {
 public:
-	Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList ,std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation); 
+	Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList ,std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation); 
 	~Scene();
 public:
 	void ProcessNetwork(); 
@@ -68,6 +69,7 @@ private:
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{ nullptr };
 	std::shared_ptr<MaterialManager> mMaterialManager{ nullptr };
 	std::shared_ptr<ParticleManager> mParticleManager{ nullptr };
+	std::shared_ptr<Canvas> mCanvas{ nullptr };
 
 	std::unordered_map<std::string, Collider> mColliderMap{};
 	std::unordered_map<std::string, std::unique_ptr<Mesh>> mMeshMap{};
@@ -120,4 +122,6 @@ private:
 	IntervalTimer mIntervalTimer{};
 
 	std::unordered_map<std::string, std::vector<double>> mAnimationTimeMap{};
+
+	CanvasObject mCanvasObject{ nullptr };
 };

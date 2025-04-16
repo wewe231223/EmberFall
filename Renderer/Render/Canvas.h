@@ -5,24 +5,63 @@
 
 class Canvas;
 
+struct CanvasRect {
+	float LTx{ 0.f };
+	float LTy{ 0.f };
+	float width{ 0.f };
+	float height{ 0.f };
+};
+
 class CanvasObject {
 public:
 	CanvasObject() = default;
-	CanvasObject(Canvas* canvas) : mCanvas(canvas) {}
+	CanvasObject(Canvas* canvas);
 
-	CanvasObject(const CanvasObject&) = delete;
-	CanvasObject& operator=(const CanvasObject&) = delete;
+	CanvasObject(const CanvasObject&) = default;
+	CanvasObject& operator=(const CanvasObject&) = default;
 
 	CanvasObject(CanvasObject&&) = default;
 	CanvasObject& operator=(CanvasObject&&) = default;
 
 	virtual ~CanvasObject() = default;
 public:
-	virtual void Update() = 0;
-	virtual void Render() = 0;
+	void Update();
+
+	void ChangeImage(UINT imageIndex);
+	void ChangeImage(UINT imageIndex, const std::pair<UINT, UINT>& imageWidthHeight, const std::pair<UINT, UINT>& imageUnit);
+
+	void SetActive(bool active);
+	bool GetActive() const;
+
+	CanvasRect& GetRect();
+
+	void AdvanceSpriteFrame();
+private:
+	DirectX::XMFLOAT3X3 Multifly(const DirectX::XMFLOAT3X3& lhs, const DirectX::XMFLOAT3X3& rhs) const;
+	DirectX::XMFLOAT3X3 Transpose(const DirectX::XMFLOAT3X3& mat) const;
 private:
 	Canvas* mCanvas{ nullptr };
-	ModelContext2D mModelContext{};
+	
+	bool mActive{ true };
+
+	ModelContext2D mContext{};
+	UINT mImageIndex{ 0 };
+
+	CanvasRect mRect{};
+	DirectX::XMFLOAT3X3 mTransform{ 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f };
+	DirectX::XMFLOAT3X3 mScreenTransform{ 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f };
+
+#pragma region UISpritable
+	bool mSpritable{ false };
+
+	std::pair<UINT, UINT> mImageWidthHeight{};
+	std::pair<UINT, UINT> mImageUnit{};
+
+	UINT mSpriteFrameInRow{ 0 };
+	UINT mSpriteFrameInCol{ 0 };
+
+	std::pair<UINT, UINT> mSpriteCoord{ 0,0 };
+#pragma endregion 
 };
 
 class Canvas {
@@ -39,8 +78,7 @@ public:
 	Canvas& operator=(Canvas&&) = default;
 
 public:
-	template<typename T> requires std::is_base_of_v<CanvasObject, T>
-	std::shared_ptr<CanvasObject> CreateCanvasObject();
+	CanvasObject CreateCanvasObject();
 
 	void AppendContext(const ModelContext2D& context);
 	void Render(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex); 
@@ -57,8 +95,3 @@ private:
 
 	std::unique_ptr<GraphicsShaderBase> mShader{ nullptr };
 };
-
-template<typename T> requires std::is_base_of_v<CanvasObject, T>
-inline std::shared_ptr<CanvasObject> Canvas::CreateCanvasObject() {
-	return std::shared_ptr<T>(this);
-}

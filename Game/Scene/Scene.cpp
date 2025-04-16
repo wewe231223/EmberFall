@@ -332,7 +332,7 @@ void Scene::ProcessProjectileMove(const uint8_t* buffer) {
 #pragma endregion 
 
 
-Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
+Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
 	
 	mInputSign = NonReplacementSampler::GetInstance().Sample(); 
 	mNetworkSign = NonReplacementSampler::GetInstance().Sample();
@@ -345,10 +345,11 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	}
 
 
-	mMeshRenderManager = std::get<0>(managers);
-	mTextureManager = std::get<1>(managers);
-	mMaterialManager = std::get<2>(managers);
-	mParticleManager = std::get<3>(managers);
+	mMeshRenderManager	= std::get<0>(managers);
+	mTextureManager		= std::get<1>(managers);
+	mMaterialManager	= std::get<2>(managers);
+	mParticleManager	= std::get<3>(managers);
+	mCanvas				= std::get<4>(managers);
 
 	Scene::BuildShader(device); 
 	Scene::BuildMesh(device, commandList);
@@ -659,6 +660,9 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		file1.write(reinterpret_cast<const char*>(values.data()), length * sizeof(double));
 	}*/
 
+	mCanvasObject = mCanvas->CreateCanvasObject(); 
+
+	mCanvasObject.GetRect() = { 100.f,100.f,100.f,100.f }; 
 }
 
 Scene::~Scene() {
@@ -791,6 +795,8 @@ void Scene::Update() {
 
 	}
  
+	mCanvasObject.Update();
+
 	if (mCameraMode) {
 		mCameraMode->Update();
 	}
