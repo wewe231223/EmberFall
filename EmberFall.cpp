@@ -100,10 +100,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
 
-    TextBlock* CPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 0.f, 0.f, 200.f, 100.f }, StringColor::Black, "NotoSansKR");
+    TextBlock* CPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1000.f, 0.f, 1400.f, 100.f }, StringColor::Black, "NotoSansKR");
     IntervalTimer CPUTimer{};
 
-    TextBlock* GPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 0.f, 30.f, 200.f, 200.f }, StringColor::Black, "NotoSansKR");
+    TextBlock* GPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1000.f, 30.f, 1400.f, 200.f }, StringColor::Black, "NotoSansKR");
     IntervalTimer GPUTimer{};
 
 

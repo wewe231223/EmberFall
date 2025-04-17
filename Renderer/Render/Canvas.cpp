@@ -72,8 +72,11 @@ CanvasObject::CanvasObject(Canvas* canvas) {
 
 void CanvasObject::Update() {
 	if (mActive) {
-		mTransform._11 = mRect.width;
-		mTransform._22 = mRect.height;
+		mTransform._11 = mRect.width * cosf(mtheta);
+		mTransform._12 = mRect.height * -sinf(mtheta);
+
+		mTransform._21 = mRect.width * sinf(mtheta);
+		mTransform._22 = mRect.height * cosf(mtheta);
 
 		mTransform._31 = mRect.LTx;
 		mTransform._32 = mRect.LTy;

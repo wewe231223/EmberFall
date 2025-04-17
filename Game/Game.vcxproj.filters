@@ -66,6 +66,12 @@
     <ClCompile Include="UI\Inventory.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="UI\HealthBar.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\Profile.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -102,6 +108,12 @@
       <Filter>GameObject</Filter>
     </ClInclude>
     <ClInclude Include="UI\Inventory.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\HealthBar.h">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Profile.h">
       <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>

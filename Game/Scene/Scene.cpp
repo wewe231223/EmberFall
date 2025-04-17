@@ -93,6 +93,7 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 				//mMyPlayer->AddEquipment(mEquipments["Shield"].Clone());
 
 				mMyPlayer->AddEquipment(mEquipments["Bow"].Clone());
+				mMyPlayer->AddEquipment(mEquipments["Quiver"].Clone());
 
 
 				mMyPlayer->SetMyPlayer();
@@ -594,6 +595,16 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	}
 
 	{
+		mEquipments["Quiver"] = EquipmentObject{};
+		mEquipments["Quiver"].mMesh = mMeshMap["Quiver"].get();
+		mEquipments["Quiver"].mShader = mShaderMap["StandardShader"].get();
+		mEquipments["Quiver"].mMaterial = mMaterialManager->GetMaterial("QuiverMaterial");
+		mEquipments["Quiver"].mCollider = mColliderMap["Quiver"];
+		mEquipments["Quiver"].mEquipJointIndex = 3;
+		mEquipments["Quiver"].SetActiveState(true);
+	}
+
+	{
 		mEquipments["Shield"] = EquipmentObject{};
 		mEquipments["Shield"].mMesh = mMeshMap["Shield"].get();
 		mEquipments["Shield"].mShader = mShaderMap["StandardShader"].get();
@@ -644,24 +655,23 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	v.position = DirectX::XMFLOAT3(10.f, 30.f, 10.f);
 	test2 = mParticleManager->CreateEmitParticle(commandList, v);
 
+	mInventoryUI.Init(mCanvas, 
+		mTextureManager->GetTexture("mid_dark_bar"), 
+		mTextureManager->GetTexture("mid_frame"), 
+		mTextureManager->GetTexture("Health"), 
+		mTextureManager->GetTexture("HolyWater"),
+		mTextureManager->GetTexture("Cross")
+	);
 
-	/*std::ofstream file1{ "AnimationInfo.bin", std::ios::binary };
+	mInventoryUI.SetItem(ItemType::Health, 0, true);
+	mInventoryUI.SetItem(ItemType::HolyWater, 1, true);
+	mInventoryUI.SetItem(ItemType::Cross, 2, true);
 
-	UINT cnt = static_cast<UINT>(mAnimationMap.size());
-	file1.write(reinterpret_cast<const char*>(&cnt), sizeof(UINT));
+	mHealthBarUI.Init(mCanvas, mTextureManager->GetTexture("health_frame"), mTextureManager->GetTexture("health_bar"));
+	mHealthBarUI.SetHealth(50.f);
 
-	for (auto& [key, values] : mAnimationTimeMap) {
-		UINT length = static_cast<UINT>(key.size());
-		file1.write(reinterpret_cast<const char*>(&length), sizeof(UINT));
-		file1.write(key.data(), length);
 
-		length = static_cast<UINT>(values.size());
-		file1.write(reinterpret_cast<const char*>(&length), sizeof(UINT));
-		file1.write(reinterpret_cast<const char*>(values.data()), length * sizeof(double));
-	}*/
-
-	mInventoryUI.Init(mCanvas, mTextureManager->GetTexture("middle_frame_bg"), mTextureManager->GetTexture("mid_frame"), 0, 0, 0);
-
+	mProfileUI.Init(mCanvas, mTextureManager->GetTexture("big_circle_frame"), mTextureManager->GetTexture("Archer"));
 
 }
 
@@ -784,7 +794,7 @@ const uint8_t* Scene::ProcessPacket(const uint8_t* buffer) {
 
 void Scene::Update() {
 	if (mMyPlayer != nullptr) {
-		mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mCamera.GetTransform().GetPosition().x, mCamera.GetTransform().GetPosition().y, mCamera.GetTransform().GetPosition().z);
+		//mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mCamera.GetTransform().GetPosition().x, mCamera.GetTransform().GetPosition().y, mCamera.GetTransform().GetPosition().z);
 
 
 		// test.Get()->position = mMyPlayer->GetTransform().GetPosition(); 
@@ -796,6 +806,8 @@ void Scene::Update() {
 	}
  
 	mInventoryUI.Update();
+	mHealthBarUI.Update();
+	mProfileUI.Update();
 
 	if (mCameraMode) {
 		mCameraMode->Update();
@@ -885,8 +897,8 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mColliderMap["Demon"] = Collider{ data.position };
 
 	// 파일에 기록할 크기
-	mColliderMap["Demon"].SetExtents(0.9f, 1.8f, 0.9f);
-	mColliderMap["Demon"].SetCenter(-0.4f, 1.8f, 0.f);
+	//mColliderMap["Demon"].SetExtents(0.9f, 1.8f, 0.9f);
+	//mColliderMap["Demon"].SetCenter(-0.4f, 1.8f, 0.f);
 
 	data = Loader.Load("Resources/Assets/imp/imp.glb");
 	mMeshMap["MonsterType1"] = std::make_unique<Mesh>(device, commandList, data);
@@ -921,6 +933,10 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mMeshMap["Arrow"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Arrow"] = Collider{ data.position };
 
+	data = Loader.Load("Resources/Assets/Weapon/Bow/quiver.glb");
+	mMeshMap["Quiver"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Quiver"] = Collider{ data.position };
+
 	data = Loader.Load("Resources/Assets/Weapon/Shield/Shield.glb");
 	mMeshMap["Shield"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Shield"] = Collider{ data.position };
@@ -941,8 +957,8 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 
 	//// 파일에 기록할 크기 
-	mColliderMap["Pine2"].SetExtents(0.33f, 10.797011f, 0.33f);
-	mColliderMap["Pine2"].SetCenter(0.f, 10.7970114f, 0.f);
+	//mColliderMap["Pine2"].SetExtents(0.33f, 10.797011f, 0.33f);
+	//mColliderMap["Pine2"].SetCenter(0.f, 10.7970114f, 0.f);
 
 
 	data = Loader.Load("Resources/Assets/Tree/pine2/pine3.glb", 0);
@@ -951,7 +967,7 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 
 	// 파일에 기록할 크기 
-	mColliderMap["Pine3_Stem"].SetExtents(0.3f, 7.51479626f, 0.3f);
+	//mColliderMap["Pine3_Stem"].SetExtents(0.3f, 7.51479626f, 0.3f);
 
 
 	data = Loader.Load("Resources/Assets/Tree/pine2/pine3.glb", 1);
@@ -963,8 +979,8 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 
 	// 파일에 기록할 크기 
-	mColliderMap["Pine4"].SetCenter(0.f, 10.7723713f, 0.f);
-	mColliderMap["Pine4"].SetExtents(0.35f, 10.7723713f, 0.35f);
+	//mColliderMap["Pine4"].SetCenter(0.f, 10.7723713f, 0.f);
+	//mColliderMap["Pine4"].SetExtents(0.35f, 10.7723713f, 0.35f);
 
 
 	data = Loader.Load("Resources/Assets/Env/Rocks.glb", 0);
@@ -1058,6 +1074,9 @@ void Scene::BuildMaterial() {
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Bow_DIFF");
 	mMaterialManager->CreateMaterial("BowMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Quiver_baseColor");
+	mMaterialManager->CreateMaterial("QuiverMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("bow_base");
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("T_Demon_Imp_Monster_Bloody_Albedo_Skin_4");

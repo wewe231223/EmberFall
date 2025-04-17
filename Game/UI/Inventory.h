@@ -9,13 +9,20 @@ enum class ItemType : BYTE {
 };
 
 class Inventory {
+	static constexpr int ITEM_COUNT = 10; 
 public:
 	Inventory() = default; 
 	~Inventory() = default;
 public:
 	void Init(std::shared_ptr<Canvas> canvas, UINT base, UINT frame, UINT health, UINT cross, UINT holyWater);
+
+	void SetItem(ItemType type, UINT slot, bool active); 
+
 	void Update(); 
 private:
-	std::array<std::pair<CanvasObject, CanvasObject>, 3> mItem{};
+	std::vector<std::pair<CanvasObject, CanvasObject>> mItem{};
+
+	CanvasObject mBaseFrame{}; 
+
 	std::array<UINT, 3> mItemImage{}; 
 };

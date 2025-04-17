@@ -16,6 +16,8 @@
 #include "../ServerLib/PacketHandler.h"
 #include "../Utility/IntervalTimer.h"
 #include "../UI/Inventory.h"
+#include "../UI/HealthBar.h"
+#include "../UI/Profile.h"
 
 class Scene {
 public:
@@ -118,11 +120,13 @@ private:
 	Particle test1{};
 	Particle test2{}; 
 
-	TextBlock* mNetworkInfoText{ TextBlockManager::GetInstance().CreateTextBlock(L"",D2D1_RECT_F{100.f,0.f,800.f,100.f},StringColor::Black, "NotoSansKR") };
+	//TextBlock* mNetworkInfoText{ TextBlockManager::GetInstance().CreateTextBlock(L"",D2D1_RECT_F{100.f,0.f,800.f,100.f},StringColor::Black, "NotoSansKR") };
 	
 	IntervalTimer mIntervalTimer{};
 
 	std::unordered_map<std::string, std::vector<double>> mAnimationTimeMap{};
 
 	Inventory mInventoryUI{};
+	HealthBar mHealthBarUI{};
+	Profile mProfileUI{};
 };

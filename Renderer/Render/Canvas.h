@@ -48,6 +48,8 @@ private:
 	UINT mImageIndex{ 0 };
 
 	CanvasRect mRect{};
+	float mtheta{ 0.f };
+
 	DirectX::XMFLOAT3X3 mTransform{ 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f };
 	DirectX::XMFLOAT3X3 mScreenTransform{ 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f };
 
