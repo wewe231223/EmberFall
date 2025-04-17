@@ -98,26 +98,17 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
 }
 
 void ProcessPlayerInputCS(std::shared_ptr<GameSession>& session, const Packets::PlayerInputCS* const input) {
+    const auto userObject = session->GetUserObject();
+    auto player = userObject->GetScript<PlayerScript>();
+
+    player->GetInput()->UpdateInput(input->key(), input->down());
 }
 
 void ProcessPlayerLookCS(std::shared_ptr<GameSession>& session, const Packets::PlayerLookCS* const look) {
     const auto userObject = session->GetUserObject();
-    auto player = userObject->GetScript<PlayerScript>();
 
-    const auto playerPos = userObject->GetPosition();
-    const auto viewRange = player->GetViewList().mViewRange.Count();
-
-    //userObject->GetTransform()->Translate(SimpleMath::Vector3::Backward * 0.1f);
-    //const auto userId = userObject->GetId();
-    //const auto userPos = userObject->GetPosition();
-    //const auto userYaw = userObject->GetEulerRotation().y;
-    //const auto userDir = userObject->GetMoveDir();
-    //const auto userSpeed = userObject->GetSpeed();
-
-    //auto packetMove = FbsPacketFactory::ObjectMoveSC(userId, userYaw, userPos, userDir, userSpeed);
-    //session->RegisterSend(packetMove);
-
-    gSectorSystem->UpdatePlayerViewList(userObject, playerPos, viewRange);
+    userObject->GetTransform()->SetLook(FbsPacketFactory::GetVector3(look->look()));
+    userObject->Update();
 }
 
 void ProcessPlayerSelectWeaponCS(std::shared_ptr<GameSession>& session, const Packets::PlayerSelectWeaponCS* const weapon) {

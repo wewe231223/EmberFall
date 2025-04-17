@@ -150,9 +150,9 @@ void Physics::ClampVelocity() {
 }
 
 void Physics::UpdateFriction(const float deltaTime, const SimpleMath::Vector3& moveDir, const float speed) {
-    if (MathUtil::IsEqualVector(MathUtil::AbsVector(moveDir), SimpleMath::Vector3::Up)) {
-        return;
-    }
+    //if (MathUtil::IsEqualVector(MathUtil::AbsVector(moveDir), SimpleMath::Vector3::Up)) {
+    //    return;
+    //}
 
     //auto inverseDir = -moveDir;
     //auto normalForce = mFactor.mass * GRAVITY_ACCELERATION;

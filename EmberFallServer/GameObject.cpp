@@ -5,6 +5,7 @@
 
 #include "CollisionManager.h"
 #include "ObjectManager.h"
+#include "Sector.h"
 #include "ServerFrame.h"
 
 GameObject::GameObject()
@@ -142,6 +143,7 @@ void GameObject::Update() {
 
     decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
     gCollisionManager->UpdateCollision(sharedThis);
+    gSectorSystem->UpdateEntityMove(sharedThis);
 }
 
 void GameObject::LateUpdate() {

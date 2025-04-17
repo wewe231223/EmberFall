@@ -125,7 +125,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         }
 
         auto obj = GetObjectFromId(validId);
-        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "validId is: {}, obj Id is: {}", validId, obj->GetId());
         obj->mSpec.active = true;
         obj->CreateScript<MonsterScript>(obj);
         obj->CreateBoundingObject<OBBCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 1.0f, 1.0f, 1.0f });

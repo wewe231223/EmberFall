@@ -7,6 +7,7 @@
 #include "ObjectManager.h"
 
 #include "GameSession.h"
+#include "Sector.h"
 
 #include "Trigger.h"
 
@@ -180,9 +181,11 @@ void PlayerScript::Init() {
 }
 
 void PlayerScript::Update(const float deltaTime) {
+    mInput->Update();
+
     decltype(auto) owner = GetOwner();
 
-    mInteractionTrigger->GetTransform()->SetPosition(owner->GetPosition());
+    //mInteractionTrigger->GetTransform()->SetPosition(owner->GetPosition());
 
     // Interact
     if (mInput->IsActiveKey('F')) {
@@ -209,10 +212,11 @@ void PlayerScript::Update(const float deltaTime) {
     if (mInput->IsUp('P')) {
         owner->Attack();
     }
+
+    gSectorSystem->UpdatePlayerViewList(owner, owner->GetPosition(), mViewList.mViewRange.Count());
 }
 
 void PlayerScript::LateUpdate(const float deltaTime) {
-    mInput->Update();
 }
 
 void PlayerScript::OnCollisionTerrain(const float height) {

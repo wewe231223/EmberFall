@@ -38,6 +38,7 @@ void GameSession::OnConnect() {
 
     player->GetTransform()->Translate(TestPos);
     TestPos += PosInc;
+    mUserObject->Init();
 
     const ObjectSpec spec = mUserObject->mSpec;
     const auto yaw = mUserObject->GetEulerRotation().y;

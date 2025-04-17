@@ -338,4 +338,5 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
         auto packetMove = FbsPacketFactory::ObjectMoveSC(id, yaw, currPos, dir, speed);
         gServerCore->Send(static_cast<SessionIdType>(playerId), packetMove);
     }
+    object->mAnimationStateMachine.mAnimationChanged = false;
 }

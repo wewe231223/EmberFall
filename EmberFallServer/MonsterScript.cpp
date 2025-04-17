@@ -30,7 +30,7 @@ void MonsterScript::Init() {
 void MonsterScript::Update(const float deltaTime) {
     mMonsterBT.Update(deltaTime);
 
-    gSectorSystem->UpdateEntityMove(GetOwner());
+    //gSectorSystem->UpdateEntityMove(GetOwner());
 }
 
 void MonsterScript::LateUpdate(const float deltaTime) { 
@@ -111,7 +111,11 @@ BT::NodeStatus MonsterScript::MoveTo(const float deltaTime) {
     }
 
     owner->GetTransform()->SetLook(moveDir);
-    owner->GetPhysics()->Accelerate(moveDir, GetOwner()->GetDeltaTime());
+    owner->GetPhysics()->AddVelocity(moveDir * 100.0f);
+    if (owner->GetId() == 256) {
+        auto pos = owner->GetPosition();
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster Move: {}, {}", pos.x, pos.z);
+    }
     return BT::NodeStatus::RUNNING;
 }
 
