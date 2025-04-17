@@ -357,10 +357,13 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	Scene::BuildMaterial();
 	Scene::BuildAniamtionController();
 
+
 	// SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", "Resources/Binarys/Terrain/TerrainBaked.bin");
 	tCollider.LoadFromFile("Resources/Binarys/Terrain/TerrainBaked.bin");
+	Scene::BuildTerrainBuffer(device, commandList); 
 
-	mParticleManager->SetTerrain(device, commandList, tCollider.GetHeader(), tCollider.GetData());
+
+	mParticleManager->SetTerrain(mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
 
 	mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
@@ -1174,6 +1177,16 @@ void Scene::BuildAniamtionController() {
 
 	Scene::BuildMonsterType1AnimationController();
 	Scene::BuildDemonAnimationController(); 
+}
+
+void Scene::BuildTerrainBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+
+	auto& header = tCollider.GetHeader();
+	auto& data = tCollider.GetData();
+
+	mTerrainHeaderBuffer = DefaultBuffer(device, commandList, sizeof(TerrainHeader), 1, &header, true);
+	mTerrainDataBuffer = DefaultBuffer(device, commandList, sizeof(SimpleMath::Vector3), data.size(), data.data());
+
 }
 
 void Scene::BuildEnvironment(const std::filesystem::path& envFile) {

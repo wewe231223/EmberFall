@@ -33,6 +33,7 @@ private:
 	void BuildMaterial();
 	void BuildShader(ComPtr<ID3D12Device> device);
 	void BuildAniamtionController(); 
+	void BuildTerrainBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
 
 	void BuildEnvironment(const std::filesystem::path& envFile);
 
@@ -115,6 +116,9 @@ private:
 
 	TerrainLoader tLoader{}; 
 	TerrainCollider tCollider{};
+
+	DefaultBuffer mTerrainHeaderBuffer{};
+	DefaultBuffer mTerrainDataBuffer{};
 
 	Particle test{};
 	Particle test1{};

@@ -78,6 +78,9 @@
     <ClCompile Include="Render\Canvas.cpp">
       <Filter>Render</Filter>
     </ClCompile>
+    <ClCompile Include="Render\GrassRenderer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -126,6 +129,9 @@
       <Filter>Resource</Filter>
     </ClInclude>
     <ClInclude Include="Render\Canvas.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\GrassRenderer.h">
       <Filter>Render</Filter>
     </ClInclude>
   </ItemGroup>
