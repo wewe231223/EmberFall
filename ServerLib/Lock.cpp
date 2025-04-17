@@ -52,11 +52,11 @@ Lock::SRWLockGuard::SRWLockGuard(SRWLockMode mode, SRWLock& lock, SRWLockTry try
         }
     }
 
-#ifdef _DEBUG || DEBUG
-    if (false == mLocked) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "SRWLock -> Locking Failure");
-    }
-#endif
+//#ifdef _DEBUG || DEBUG
+//    if (false == mLocked) {
+//        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "SRWLock -> Locking Failure");
+//    }
+//#endif
 }
 
 bool Lock::SRWLockGuard::IsLocking() const {

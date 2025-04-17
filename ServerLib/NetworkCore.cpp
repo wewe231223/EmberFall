@@ -90,10 +90,6 @@ void ServerCore::Send(SessionIdType to, OverlappedSend* overlappedSend) {
     mSessionManager->Send(to, overlappedSend);
 }
 
-void ServerCore::SendAll(OverlappedSend* const overlappedSend) {
-    mSessionManager->SendAll(overlappedSend);
-}
-
 ClientCore::ClientCore() 
     : INetworkCore{ NetworkType::CLIENT } {
 }

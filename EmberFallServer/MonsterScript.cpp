@@ -40,9 +40,6 @@ void MonsterScript::LateUpdate(const float deltaTime) {
 
     auto currState = GetOwner()->mAnimationStateMachine.GetCurrState();
     if (Packets::AnimationState_DEAD == currState and GetOwner()->mAnimationStateMachine.IsChangable()) {
-        decltype(auto) packet = FbsPacketFactory::ObjectRemoveSC(GetOwner()->GetId());
-        gServerCore->SendAll(packet);
-
         GetOwner()->mSpec.active = false;
         return;
     }

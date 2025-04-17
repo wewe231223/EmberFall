@@ -57,7 +57,7 @@ void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj) {
 
             // Todo Collision Check And Resolve
             auto player = gObjectManager->GetPlayer(playerId);
-            if (nullptr == player) {
+            if (nullptr == player or false == player->mSpec.active) {
                 PopCollisionPair(playerId, myId);
                 continue;
             }
@@ -67,7 +67,6 @@ void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj) {
 
             auto [intersects, penetration] = boundingObj2->IsColliding(boundingObj1);
             if (intersects) {
-                gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Collision With Player");
                 obj->OnCollision(player, penetration);
             }
 
@@ -86,7 +85,7 @@ void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj) {
 
             // Todo Collision Check And Resolve
             auto monster = gObjectManager->GetMonster(monsterId);
-            if (nullptr == monster) {
+            if (nullptr == monster or false == monster->mSpec.active) {
                 PopCollisionPair(monsterId, myId);
                 continue;
             }
@@ -96,7 +95,6 @@ void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj) {
 
             auto [intersects, penetration] = boundingObj2->IsColliding(boundingObj1);
             if (intersects) {
-                gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Collision With Monster");
                 obj->OnCollision(monster, penetration);
             }
 

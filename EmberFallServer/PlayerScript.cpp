@@ -28,54 +28,103 @@ ViewList& PlayerScript::GetViewList() {
 
 void PlayerScript::SetOwnerSession(std::shared_ptr<class GameSession> session) {
     mSession = session;
+    mViewList.TryInsert(session->GetId());
 }
+//
+//void PlayerScript::UpdateViewListNPC(const std::vector<NetworkObjectIdType>& inViewRangeObjects) {
+//    mViewListLock.ReadLock();
+//    auto oldViewList = mViewList;
+//    mViewListLock.ReadUnlock();
+//
+//    auto session = mSession.lock();
+//    if (nullptr == session) {
+//        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "In UpdateViewListNPC: std::weak_ptr<GameSession> is null");
+//        return;
+//    }
+//
+//    ViewList newViewList{ };
+//    for (const auto id : inViewRangeObjects) {
+//        auto success = newViewList.TryInsert(id);
+//        if (not success) {
+//            continue;
+//        }
+//
+//        decltype(auto) newObj = gObjectManager->GetObjectFromId(id);
+//        if (nullptr == newObj or false == newObj->mSpec.active) {
+//            continue;
+//        }
+//
+//        const ObjectSpec spec = gObjectManager->GetObjectFromId(id)->mSpec;
+//        auto yaw = newObj->GetEulerRotation().y;
+//        auto pos = newObj->GetPosition();
+//        auto anim = newObj->mAnimationStateMachine.GetCurrState();
+//        decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(id, spec.entity, yaw, anim, spec.hp, pos);
+//
+//        session->RegisterSend(packetAppeared);
+//    }
+//
+//    for (const auto id : oldViewList.GetCurrViewList()) {
+//        if (not newViewList.IsInList(id)) {
+//            decltype(auto) packetDisappeared = FbsPacketFactory::ObjectDisappearedSC(id);
+//
+//            session->RegisterSend(packetDisappeared);
+//        }
+//    }
+//
+//    mViewListLock.WriteLock();
+//    mViewList = newViewList;
+//    mViewListLock.WriteUnlock();
+//}
+//
+//void PlayerScript::UpdateViewListPlayer(const std::vector<NetworkObjectIdType>& inViewRangeObjects) {
+//    mViewListLock.ReadLock();
+//    auto oldViewList = mViewList;
+//    mViewListLock.ReadUnlock();
+//
+//    auto session = mSession.lock();
+//    if (nullptr == session) {
+//        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "In UpdateViewListPlayer: std::weak_ptr<GameSession> is null");
+//        return;
+//    }
+//
+//    ViewList newViewList{ };
+//    for (const auto id : inViewRangeObjects) {
+//        auto success = newViewList.TryInsert(id);
+//        if (not success or id == GetOwner()->GetId()) {
+//            continue;
+//        }
+//
+//        decltype(auto) newObj = gObjectManager->GetObjectFromId(id);
+//        if (nullptr == newObj or false == newObj->mSpec.active) {
+//            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "In UpdateViewListPlayer: INVALID Object");
+//            continue;
+//        }
+//
+//        const ObjectSpec spec = gObjectManager->GetObjectFromId(id)->mSpec;
+//        const auto yaw = newObj->GetEulerRotation().y;
+//        const auto pos = newObj->GetPosition();
+//        const auto anim = newObj->mAnimationStateMachine.GetCurrState();
+//        decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(id, spec.entity, yaw, anim, spec.hp, pos);
+//
+//        session->RegisterSend(packetAppeared);
+//    }
+//
+//    for (const auto id : oldViewList.GetCurrViewList()) {
+//        if (not newViewList.IsInList(id)) {
+//            decltype(auto) packetDisappeared = FbsPacketFactory::ObjectDisappearedSC(id);
+//
+//            session->RegisterSend(packetDisappeared);
+//
+//            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Send Disappeared Player");
+//        }
+//    }
+//
+//    mViewListLock.WriteLock();
+//    mViewList = newViewList;
+//    mViewListLock.WriteUnlock();
+//}
 
-void PlayerScript::UpdateViewListNPC(const std::vector<NetworkObjectIdType>& inViewRangeObjects) {
-    mViewListLock.ReadLock();
-    auto oldViewList = mViewList;
-    mViewListLock.ReadUnlock();
-
-    auto session = mSession.lock();
-    if (nullptr == session) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "In UpdateViewListNPC: std::weak_ptr<GameSession> is null");
-        return;
-    }
-
-    ViewList newViewList{ };
-    for (const auto id : inViewRangeObjects) {
-        auto success = newViewList.TryInsert(id);
-        if (not success) {
-            continue;
-        }
-
-        decltype(auto) newObj = gObjectManager->GetObjectFromId(id);
-        if (nullptr == newObj or false == newObj->mSpec.active) {
-            continue;
-        }
-
-        const ObjectSpec spec = gObjectManager->GetObjectFromId(id)->mSpec;
-        auto yaw = newObj->GetEulerRotation().y;
-        auto pos = newObj->GetPosition();
-        auto anim = newObj->mAnimationStateMachine.GetCurrState();
-        decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(id, spec.entity, yaw, anim, spec.hp, pos);
-
-        session->RegisterSend(packetAppeared);
-    }
-
-    for (const auto id : oldViewList.GetCurrViewList()) {
-        if (not newViewList.IsInList(id)) {
-            decltype(auto) packetDisappeared = FbsPacketFactory::ObjectDisappearedSC(id);
-
-            session->RegisterSend(packetDisappeared);
-        }
-    }
-
-    mViewListLock.WriteLock();
-    mViewList = newViewList;
-    mViewListLock.WriteUnlock();
-}
-
-void PlayerScript::UpdateViewListPlayer(const std::vector<NetworkObjectIdType>& inViewRangeObjects) {
+void PlayerScript::UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeNPC, const std::vector<NetworkObjectIdType>& inViewRangePlayer) {
     mViewListLock.ReadLock();
     auto oldViewList = mViewList;
     mViewListLock.ReadUnlock();
@@ -87,27 +136,30 @@ void PlayerScript::UpdateViewListPlayer(const std::vector<NetworkObjectIdType>& 
     }
 
     ViewList newViewList{ };
-    for (const auto id : inViewRangeObjects) {
+    for (const auto id : inViewRangePlayer) {
         auto success = newViewList.TryInsert(id);
-        if (not success or id == GetOwner()->GetId()) {
-            continue;
+    }
+
+    for (const auto id : inViewRangeNPC) {
+        auto success = newViewList.TryInsert(id);
+    }
+
+    for (const auto id : newViewList.GetCurrViewList()) {
+        if (not oldViewList.IsInList(id)) {
+            decltype(auto) newObj = gObjectManager->GetObjectFromId(id);
+            if (nullptr == newObj or false == newObj->mSpec.active) {
+                gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "In UpdateViewListPlayer: INVALID Object");
+                continue;
+            }
+
+            const ObjectSpec spec = newObj->mSpec;
+            const auto yaw = newObj->GetEulerRotation().y;
+            const auto pos = newObj->GetPosition();
+            const auto anim = newObj->mAnimationStateMachine.GetCurrState();
+            decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(id, spec.entity, yaw, anim, spec.hp, pos);
+
+            session->RegisterSend(packetAppeared);
         }
-
-        decltype(auto) newObj = gObjectManager->GetObjectFromId(id);
-        if (nullptr == newObj or false == newObj->mSpec.active) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "In UpdateViewListPlayer: INVALID Object");
-            continue;
-        }
-
-        const ObjectSpec spec = gObjectManager->GetObjectFromId(id)->mSpec;
-        const auto yaw = newObj->GetEulerRotation().y;
-        const auto pos = newObj->GetPosition();
-        const auto anim = newObj->mAnimationStateMachine.GetCurrState();
-        decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(id, spec.entity, yaw, anim, spec.hp, pos);
-
-        session->RegisterSend(packetAppeared);
-
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "UpdateVewList: Send Appeared!!!\n F: {}, T: {}, pos: {}, {}, {}", session->GetId(), id, pos.x, pos.y, pos.z);
     }
 
     for (const auto id : oldViewList.GetCurrViewList()) {
@@ -186,8 +238,8 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
         {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Finish");
             auto ownerId = static_cast<SessionIdType>(GetOwner()->GetId());
-            decltype(auto) destroyPacket = FbsPacketFactory::GemDestroyedSC(ownerId, GetOwner()->GetPosition());
-            gServerCore->SendAll(destroyPacket);
+            //decltype(auto) destroyPacket = FbsPacketFactory::GemDestroyedSC(ownerId, GetOwner()->GetPosition());
+            //gServerCore->SendAll(destroyPacket);
 
             mInteraction = false;
             mInteractionObj = INVALID_OBJ_ID;
@@ -308,9 +360,9 @@ void PlayerScript::DoInteraction(const float deltaTime, const std::shared_ptr<Ga
     if (target->GetId() != mInteractionObj and Packets::EntityType_CORRUPTED_GEM == target->mSpec.entity) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Start");
         auto ownerId = static_cast<SessionIdType>(GetOwner()->GetId());
-        decltype(auto) packetInteraction = FbsPacketFactory::GemInteractSC(mInteractionObj, ownerId);
+        //decltype(auto) packetInteraction = FbsPacketFactory::GemInteractSC(mInteractionObj, ownerId);
 
-        gServerCore->SendAll(packetInteraction);
+        //gServerCore->SendAll(packetInteraction);
     }
 
     mInteractionObj = target->GetId();
@@ -337,9 +389,7 @@ void PlayerScript::CancelInteraction(const float deltaTime) {
 
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Cancel");
     auto ownerId{ static_cast<SessionIdType>(GetOwner()->GetId()) };
-    decltype(auto) packetCancelInteraction = FbsPacketFactory::GemInteractionCancelSC(mInteractionObj, ownerId);
-
-    gServerCore->SendAll(packetCancelInteraction);
+    //decltype(auto) packetCancelInteraction = FbsPacketFactory::GemInteractionCancelSC(mInteractionObj, ownerId);
     mInteractionObj = INVALID_OBJ_ID;
 }
 

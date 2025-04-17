@@ -37,18 +37,11 @@ void AnimationStateMachine::ChangeState(Packets::AnimationState nextState, bool 
 
     auto ownerId = mOwner->GetId();
 
-    if (force) {
-        decltype(auto) packetAnim = FbsPacketFactory::ObjectAnimationChangedSC(ownerId, Packets::AnimationState_IDLE);
-        gServerCore->SendAll(packetAnim);
-    }
-
     mCurrState = mAnimationInfo[static_cast<size_t>(nextState)];
 
     mAnimationChangable = mCurrState.loop;
     mAnimationCounter = 0.0f;
-
-    decltype(auto) packetAnim = FbsPacketFactory::ObjectAnimationChangedSC(ownerId, mCurrState.state);
-    gServerCore->SendAll(packetAnim);
+    mAnimationChanged = true;
 }
 
 void AnimationStateMachine::Update(const float deltaTime) {

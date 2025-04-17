@@ -128,7 +128,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "validId is: {}, obj Id is: {}", validId, obj->GetId());
         obj->mSpec.active = true;
         obj->CreateScript<MonsterScript>(obj);
-        obj->CreateBoundingObject<OBBCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f, 0.8f, 0.5f });
+        obj->CreateBoundingObject<OBBCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 1.0f, 1.0f, 1.0f });
         obj->Init();
         
         gSectorSystem->AddInSector(validId, obj->GetPosition());

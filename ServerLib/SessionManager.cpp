@@ -69,15 +69,3 @@ void SessionManager::Send(SessionIdType to, OverlappedSend* const overlappedSend
 
     session->RegisterSend(overlappedSend);
 }
-
-void SessionManager::SendAll(OverlappedSend* const overlappedSend) {
-    Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
-    for (auto& [id, session] : mSessions) {
-        if (false == session->IsConnected()) {
-            continue;
-        }
-
-        session->RegisterSend(overlappedSend);
-    }
-}
-

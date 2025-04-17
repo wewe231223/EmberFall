@@ -47,10 +47,12 @@ public:
 
     void AddInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos);
     void RemoveInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos);
+    void AddInSector(NetworkObjectIdType id, Short2 sectorIdx);
+    void RemoveInSector(NetworkObjectIdType id, Short2 sectorIdx);
 
     std::vector<NetworkObjectIdType> GetNearbyPlayers(const SimpleMath::Vector3& currPos, const float range);
 
-    void UpdateSectorPos(NetworkObjectIdType id, const SimpleMath::Vector3& prevPos, const SimpleMath::Vector3& currPos);
+    Short2 UpdateSectorPos(NetworkObjectIdType id, const SimpleMath::Vector3& prevPos, const SimpleMath::Vector3& currPos);
     
     void UpdatePlayerViewList(const std::shared_ptr<GameObject>& player, const SimpleMath::Vector3 pos, const float range);
 

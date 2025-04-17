@@ -29,7 +29,7 @@ void ServerFrame::Run() {
     mInputManager = std::make_shared<InputManager>();
 
     auto sessionManager = gServerCore->GetSessionManager();
-    static auto createSessionFn = []() -> std::shared_ptr<Session> { 
+    static auto createSessionFn = []() { 
         return std::make_shared<GameSession>();
     };
 
@@ -39,8 +39,9 @@ void ServerFrame::Run() {
 
     mTimerThread = std::thread{ [this]() { TimerThread(); } };
     
-    for (int32_t test = 0; test < 500; ++test) {
+    for (int32_t test = 0; test < 100; ++test) {
         decltype(auto) monster = gObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+        std::this_thread::sleep_for(100ms);
         monster->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -100.0f, 0.0f, -100.0f }, SimpleMath::Vector3{ 100.0f, 0.0f, 100.0f }));
     }
 
@@ -65,6 +66,7 @@ void ServerFrame::AddTimerEvent(NetworkObjectIdType id, SysClock::time_point exe
 void ServerFrame::TimerThread() {
     while (not mDone) {
         auto currentTime = SysClock::now();
+
         TimerEvent event;
         if (false == mTimerEvents.try_pop(event)) {
             std::this_thread::sleep_for(1ms);
@@ -85,7 +87,5 @@ void ServerFrame::TimerThread() {
         }
 
         obj->RegisterUpdate();
-
-        std::this_thread::sleep_for(1ms);
     }
 }

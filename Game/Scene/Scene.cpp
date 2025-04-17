@@ -183,12 +183,12 @@ void Scene::ProcessObjectDisappeared(const uint8_t* buffer) {
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
-			//mPlayerIndexmap[data->objectId()]->SetActiveState(false);
+			mPlayerIndexmap[data->objectId()]->SetActiveState(false);
 		}
 	}
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
-			//mGameObjectMap[data->objectId()]->SetActiveState(false);
+			mGameObjectMap[data->objectId()]->SetActiveState(false);
 		}
 	}
 }

@@ -90,6 +90,11 @@ void Session::RegisterSend(OverlappedSend* const overlappedSend) {
     }
 
     overlappedSend->owner = shared_from_this();
+    if (nullptr == overlappedSend->owner) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Overlapped Send's owner is Null");
+        Crash("Overlapped Send's owner is Null");
+    }
+
     auto result = ::WSASend(
         mSocket,
         &overlappedSend->wsaBuf,
@@ -256,13 +261,6 @@ void Session::OnConnect() {
 }
 
 void Session::Disconnect() {
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Session [{}] Disconnected", GetId());
-    if (NetworkType::SERVER == mNetworkType) {
-        gServerCore->GetSessionManager()->CloseSession(static_cast<SessionIdType>(GetId()));
-    }
-    else {
-        gClientCore->CloseSession();
-    }
 }
 
 void Session::HandleSocketError(INT32 errorCore) {

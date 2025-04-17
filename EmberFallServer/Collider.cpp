@@ -36,7 +36,7 @@ CollisionResult OBBCollider::IsColliding(const std::shared_ptr<BoundingObject>& 
             return CollisionResult{ false, SimpleMath::Vector3::Zero };
         }
 
-        result.penetration = Collision::GetMinTransVec(box, myBox);
+        result.penetration = Collision::GetMinTransVec(myBox, box);
         return result;
     }
 

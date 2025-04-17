@@ -36,6 +36,9 @@ public:
 
     void Update(const float deltaTime);
 
+public:
+    bool mAnimationChanged{ false };
+
 private:
     bool mAnimationChangable{ true };
     float mAnimationCounter{ };

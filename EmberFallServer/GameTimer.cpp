@@ -7,7 +7,7 @@ void SimpleTimer::UpdatePoint() {
 }
 
 float SimpleTimer::GetDeltaTime() const {
-    return std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(mCurrPoint - mPrevPoint).count() / 1000.0f;
+    return std::chrono::duration_cast<std::chrono::microseconds>(mCurrPoint - mPrevPoint).count() / 1000'000.0f;
 }
 
 Clock::time_point SimpleTimer::GetPointNow() {

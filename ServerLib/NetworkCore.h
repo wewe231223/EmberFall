@@ -59,7 +59,6 @@ public:
     virtual void End() override;
 
     void Send(SessionIdType to, OverlappedSend* overlappedSend);
-    void SendAll(OverlappedSend* const overlappedSend);
 
 private:
     std::shared_ptr<class Listener> mListener{ nullptr };
