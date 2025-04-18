@@ -169,6 +169,9 @@
     <FxCompile Include="..\Shader\Sources\UI.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="..\Shader\Sources\GrassShader.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\Shader\ShaderMetadata.txt">

@@ -638,7 +638,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 
 	v.spritable = false;
 
-
 	v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
 	v.velocity = 0.f;
 	v.totalLifeTime = 0.1f;

@@ -24,7 +24,7 @@ public:
 
 
 public:
-
+	void SetMaterial(UINT materialIndex); 
 private:
 	DefaultBufferGPUIterator mTerrainHeader{};
 	DefaultBufferGPUIterator mTerrainData{};
@@ -34,4 +34,9 @@ private:
 	D3D12_SHADER_BYTECODE mMeshShader{};
 	D3D12_SHADER_BYTECODE mAmplificationShader{};
 	D3D12_SHADER_BYTECODE mPixelShader{};
+
+	UINT mMaterialIndex{ 0 };
+
+	ComPtr<ID3D12RootSignature> mRootSignature{};
+	ComPtr<ID3D12PipelineState> mPipelineState{};
 };
