@@ -125,7 +125,8 @@
     <PostBuildEvent>
       <Command>xcopy /Y "%USERPROFILE%\.nuget\packages\microsoft.direct3d.d3d12\1.615.1\build\native\bin\x64\d3d12core.dll" "$(TargetDir)"
 xcopy "$(SolutionDir)Resources" "$(TargetDir)Resources" /E /I /Y /Q
-xcopy "$(SolutionDir)Shader" "$(TargetDir)Shader" /E /I /Y /Q</Command>
+xcopy "$(SolutionDir)Shader" "$(TargetDir)Shader" /E /I /Y /Q
+xcopy /Y "$(SolutionDir)dxcompiler.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -149,7 +150,8 @@ xcopy "$(SolutionDir)Shader" "$(TargetDir)Shader" /E /I /Y /Q</Command>
     <PostBuildEvent>
       <Command>xcopy /Y "%USERPROFILE%\.nuget\packages\microsoft.direct3d.d3d12\1.615.1\build\native\bin\x64\d3d12core.dll" "$(TargetDir)"
 xcopy "$(SolutionDir)Resources" "$(TargetDir)Resources" /E /I /Y /Q
-xcopy "$(SolutionDir)Shader" "$(TargetDir)Shader" /E /I /Y /Q</Command>
+xcopy "$(SolutionDir)Shader" "$(TargetDir)Shader" /E /I /Y /Q
+xcopy /Y "$(SolutionDir)dxcompiler.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

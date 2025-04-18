@@ -21,7 +21,9 @@
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Renderer/Core/ShadowRenderer.h"
 #include "../Renderer/Manager/ParticleManager.h"
+#include "../Renderer/Render/GrassRenderer.h"
 #include "../Renderer/Render/Canvas.h"
+
 
 class Renderer {
 public:
@@ -37,7 +39,7 @@ public:
 	std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> GetManagers();
 	DefaultBufferCPUIterator GetMainCameraBuffer();
 
-	ComPtr<ID3D12Device> GetDevice();
+	ComPtr<ID3D12Device10> GetDevice();
 	ComPtr<ID3D12GraphicsCommandList> GetCommandList();
 
 	void UploadResource();
@@ -64,8 +66,10 @@ private:
 	void InitFonts(); 
 
 	void InitShadowRenderer();
-	void InitParticleManager();
 	void InitCanvas();
+	void InitTerrainBuffer();
+	void InitParticleManager();
+	void InitGrassRender(); 
 
 	void InitCoreResources(); 
 	void InitDefferedRenderer();
@@ -84,7 +88,7 @@ private:
 	ComPtr<ID3D12Debug6> mDebugController{ nullptr };
 	ComPtr<IDXGIDebug1> mDXGIDebug{ nullptr };
 #endif 
-	ComPtr<ID3D12Device> mDevice{ nullptr };
+	ComPtr<ID3D12Device10> mDevice{ nullptr };
 
 	ComPtr<ID3D12CommandQueue> mCommandQueue{ nullptr };
 
@@ -120,6 +124,11 @@ private:
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{};
 	std::shared_ptr<ParticleManager> mParticleManager{};
 	std::shared_ptr<Canvas> mCanvas{};
+
+	GrassRenderer mGrassRenderer{};
+
+	DefaultBuffer mTerrainHeaderBuffer{}; 
+	DefaultBuffer mTerrainDataBuffer{}; 
 
 	DefaultBuffer mMainCameraBuffer{};
 };

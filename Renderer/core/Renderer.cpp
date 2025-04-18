@@ -28,7 +28,9 @@ Renderer::Renderer(HWND rendererWindowHandle)
 
 	Renderer::InitCoreResources(); 
 	Renderer::InitDefferedRenderer();
+	Renderer::InitTerrainBuffer();
 	Renderer::InitParticleManager();
+	Renderer::InitGrassRender();
 	Renderer::InitCanvas(); 
 
 }
@@ -46,7 +48,7 @@ DefaultBufferCPUIterator Renderer::GetMainCameraBuffer() {
 	return mMainCameraBuffer.CPUBegin();
 }
 
-ComPtr<ID3D12Device> Renderer::GetDevice() {
+ComPtr<ID3D12Device10> Renderer::GetDevice() {
 	return mDevice;
 }
 
@@ -274,13 +276,20 @@ void Renderer::InitDevice() {
 
 	CrashExp(adapter != nullptr, "No suitable GPU found.");
 
-	auto hr = ::D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice));
+
+	ComPtr<ID3D12Device> base{};
+	auto hr = ::D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&base));
+
+
 
 	if (FAILED(hr)) {
 		ComPtr<IDXGIAdapter> warpAdapter{ nullptr };
 		CheckHR(mFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
-		CheckHR(::D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice)));
+		CheckHR(::D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&base)));
 	}
+
+
+	CheckHR(base.As(&mDevice));
 
 	// 메시 셰이더 지원됨 
 	// Renderer::CheckMeshShaderSupport(); 
@@ -429,10 +438,32 @@ void Renderer::InitShadowRenderer() {
 
 void Renderer::InitParticleManager() {
 	mParticleManager = std::make_shared<ParticleManager>(mDevice, mCommandList);
+	mParticleManager->SetTerrain(mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
+}
+
+void Renderer::InitGrassRender() {
+	mGrassRenderer = GrassRenderer(mDevice, mCommandList, mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
 }
 
 void Renderer::InitCanvas() {
 	mCanvas = std::make_unique<Canvas>(mDevice, mCommandList);
+}
+
+void Renderer::InitTerrainBuffer() {
+	TerrainHeader header{};
+	std::vector<SimpleMath::Vector3> vertices{};
+
+	std::ifstream file("Resources/Binarys/Terrain/TerrainBaked.bin", std::ios::binary);
+
+	file.read(reinterpret_cast<char*>(&header), sizeof(TerrainHeader));
+
+
+	vertices.resize(header.globalWidth * header.globalHeight);
+	file.read(reinterpret_cast<char*>(vertices.data()), vertices.size() * sizeof(SimpleMath::Vector3));
+
+
+	mTerrainHeaderBuffer = DefaultBuffer(mDevice, sizeof(TerrainHeader), 1, true);
+	mTerrainDataBuffer = DefaultBuffer(mDevice, sizeof(SimpleMath::Vector3), header.globalWidth * header.globalHeight);
 }
 
 void Renderer::InitCoreResources() {

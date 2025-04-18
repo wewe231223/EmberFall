@@ -4,6 +4,7 @@
 #include "../Renderer/Manager/MeshRenderManager.h"
 #include "../Renderer/Manager/ParticleManager.h"
 #include "../Renderer/Render/Canvas.h"
+#include "../Renderer/Render/GrassRenderer.h"
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Game/System/Input.h"
 #include "../Game/System/Timer.h"
@@ -21,7 +22,7 @@
 
 class Scene {
 public:
-	Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList ,std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation); 
+	Scene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList ,std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation); 
 	~Scene();
 public:
 	void ProcessNetwork(); 
@@ -33,7 +34,6 @@ private:
 	void BuildMaterial();
 	void BuildShader(ComPtr<ID3D12Device> device);
 	void BuildAniamtionController(); 
-	void BuildTerrainBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
 
 	void BuildEnvironment(const std::filesystem::path& envFile);
 
