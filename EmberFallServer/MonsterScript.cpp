@@ -10,17 +10,27 @@ MonsterScript::MonsterScript(std::shared_ptr<class GameObject> owner)
     : Script{ owner, ObjectTag::MONSTER, ScriptType::MONSTER } {
     owner->mSpec.entity = Packets::EntityType_MONSTER;
     owner->mSpec.hp = 100.0f;
-    owner->GetPhysics()->mFactor.maxMoveSpeed = 1.3mps;
+    owner->GetPhysics()->mFactor.maxMoveSpeed = 3.3mps;
 }
 
 MonsterScript::~MonsterScript() { }
 
 bool MonsterScript::IsDead() const {
-    return Packets::AnimationState_DEAD == GetOwner()->mAnimationStateMachine.GetCurrState();
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return true;
+    }
+
+    return Packets::AnimationState_DEAD == owner->mAnimationStateMachine.GetCurrState();
 }
 
 void MonsterScript::Init() {
-    auto& spec = GetOwner()->mSpec;
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    auto& spec = owner->mSpec;
     spec.active = true;
     spec.attackable = true;
     spec.hp = 100.0f;
@@ -34,18 +44,23 @@ void MonsterScript::Update(const float deltaTime) {
 }
 
 void MonsterScript::LateUpdate(const float deltaTime) { 
-    if (GetOwner()->mSpec.hp > MathUtil::EPSILON) {
+    auto owner = GetOwner();
+    if (nullptr == owner) {
         return;
     }
 
-    auto currState = GetOwner()->mAnimationStateMachine.GetCurrState();
-    if (Packets::AnimationState_DEAD == currState and GetOwner()->mAnimationStateMachine.IsChangable()) {
-        GetOwner()->mSpec.active = false;
+    if (owner->mSpec.hp > MathUtil::EPSILON) {
+        return;
+    }
+
+    auto currState = owner->mAnimationStateMachine.GetCurrState();
+    if (Packets::AnimationState_DEAD == currState and owner->mAnimationStateMachine.IsChangable()) {
+        owner->mSpec.active = false;
         return;
     }
 
     if (Packets::AnimationState_DEAD != currState) {
-        GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_DEAD);
+        owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_DEAD);
     }
 }
 
@@ -53,6 +68,11 @@ void MonsterScript::OnCollisionTerrain(const float height) { }
 
 void MonsterScript::DispatchGameEvent(GameEvent* event) { 
     if (IsDead()) {
+        return;
+    }
+
+    auto owner = GetOwner();
+    if (nullptr == owner) {
         return;
     }
 
@@ -64,12 +84,12 @@ void MonsterScript::DispatchGameEvent(GameEvent* event) {
             //}
 
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
-            GetOwner()->mSpec.hp -= attackEvent->damage;
+            owner->mSpec.hp -= attackEvent->damage;
             
-            GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED);
+            owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED);
 
             mMonsterBT.Interrupt();
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster [{}] Attacked!!, HP: {}", GetOwner()->GetId(), GetOwner()->mSpec.hp);
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster [{}] Attacked!!, HP: {}", owner->GetId(), owner->mSpec.hp);
         }
         break;
 
@@ -89,13 +109,22 @@ std::shared_ptr<GameObject>& MonsterScript::GetChaseTarget() {
 }
 
 BT::NodeStatus MonsterScript::SetRandomTargetLocation(const float deltaTime) {
-    GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE);
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return BT::NodeStatus::FAIL;
+    }
+
+    owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE);
     mTargetPos = Random::GetRandomVec3(SimpleMath::Vector3{ -100.0f, 0.0f, -100.0f }, SimpleMath::Vector3{ 100.0f, 0.0f, 100.0f });
     return BT::NodeStatus::SUCCESS;
 }
 
 BT::NodeStatus MonsterScript::MoveTo(const float deltaTime) {
     auto owner = GetOwner();
+    if (nullptr == owner) {
+        return BT::NodeStatus::FAIL;
+    }
+
     owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_MOVE_FORWARD);
 
     auto transform = owner->GetTransform();
@@ -111,16 +140,15 @@ BT::NodeStatus MonsterScript::MoveTo(const float deltaTime) {
     }
 
     owner->GetTransform()->SetLook(moveDir);
-    owner->GetPhysics()->AddVelocity(moveDir * 100.0f);
-    if (owner->GetId() == 256) {
-        auto pos = owner->GetPosition();
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster Move: {}, {}", pos.x, pos.z);
-    }
+    owner->GetPhysics()->Accelerate(moveDir, owner->GetDeltaTime());
     return BT::NodeStatus::RUNNING;
 }
 
 BT::NodeStatus MonsterScript::DetectPlayerInRange(const float deltaTime) {
     auto owner = GetOwner();
+    if (nullptr == owner) {
+        return BT::NodeStatus::FAIL;
+    }
 
     //auto gameWorld = owner->GetOwnGameScene();
     //if (nullptr == gameWorld) {
@@ -142,6 +170,9 @@ BT::NodeStatus MonsterScript::DetectPlayerInRange(const float deltaTime) {
 
 BT::NodeStatus MonsterScript::ChaseDetectedPlayer(const float deltaTime) {
     auto owner = GetOwner();
+    if (nullptr == owner) {
+        return BT::NodeStatus::FAIL;
+    }
     owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_MOVE_FORWARD);
 
     auto targetPos = mChaseTarget->GetPosition();

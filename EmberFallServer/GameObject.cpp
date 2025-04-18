@@ -101,7 +101,9 @@ void GameObject::Init() {
         component->Init();
     }
 
-    mScript->Init();
+    if (nullptr != mScript) {
+        mScript->Init();
+    }
 }
 
 void GameObject::RegisterUpdate() {
@@ -135,10 +137,16 @@ void GameObject::Update() {
         component->Update(mDeltaTime);
     } 
 
-    mScript->Update(mDeltaTime);
+    if (nullptr != mScript) {
+        mScript->Update(mDeltaTime);
+    }
 
     mPhysics->Update(mDeltaTime);
     mTransform->Update();
+    mTransform->SetY(0.0f); // test
+    if (nullptr == mBoundingObject) {
+        return;
+    }
     mBoundingObject->Update(mTransform->GetWorld());
 
     decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());

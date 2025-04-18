@@ -44,6 +44,7 @@ private:
 class OBBCollider : public BoundingObject {
 public:
     OBBCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& ext);
+    OBBCollider(const DirectX::BoundingOrientedBox& box);
     OBBCollider(const OBBCollider& orientedBox);
     virtual ~OBBCollider();
 

@@ -7,6 +7,7 @@
 #include "Input.h"
 #include "Sector.h"
 
+#include "Resources.h"
 
 ObjectManager::ObjectManager() { }
 
@@ -50,7 +51,48 @@ void ObjectManager::Init() {
     }
 }
 
-void ObjectManager::LoadEnvFromFile() { }
+void ObjectManager::LoadEnvFromFile(const std::filesystem::path& path) {
+    std::ifstream envs{ path, std::ios::binary };
+    if (not envs.is_open()) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Load Environments Failure - File does not exists");
+        return;
+    }
+
+    uint32_t numOfEnvs{ };
+    envs.read(reinterpret_cast<char*>(&numOfEnvs), sizeof(numOfEnvs));
+    struct FileFormat {
+        GameProtocol::EnvironmentType type;
+        SimpleMath::Vector3 pos;
+        float yaw;
+    };
+
+    std::vector<FileFormat> envInfos(numOfEnvs);
+    envs.read(reinterpret_cast<char*>(envInfos.data()), sizeof(FileFormat) * envInfos.size());
+    for (auto& info : envInfos) {
+        if (GameProtocol::EnvironmentType::Fern == info.type or GameProtocol::EnvironmentType::LogHouseDoor == info.type or GameProtocol::EnvironmentType::WindMillBlade == info.type) {
+            continue;
+        }
+
+        auto obj = SpawnObject(Packets::EntityType_ENV);
+        obj->SetTag(ObjectTag::ENV);
+        obj->mSpec.entity = Packets::EntityType_ENV;
+        obj->mSpec.active = true;
+        obj->Init();
+
+        obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEnvInfo(info.type).bb);
+
+        auto objTransform = obj->GetTransform();
+        objTransform->Translate(info.pos);
+        objTransform->SetY(0.0f);
+        objTransform->Rotation(SimpleMath::Quaternion::CreateFromYawPitchRoll(SimpleMath::Vector3{ 0.0f, info.yaw, 0.0f }));
+        objTransform->Update();
+        obj->GetBoundingObject()->Update(objTransform->GetWorld());
+
+        gSectorSystem->AddInSector(obj->GetId(), obj->GetPosition());
+    }
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Load Environments Success");
+}
 
 std::shared_ptr<GameObject> ObjectManager::GetObjectFromId(NetworkObjectIdType id) const {
     if (id > VALID_ID_MAX) {
@@ -58,13 +100,13 @@ std::shared_ptr<GameObject> ObjectManager::GetObjectFromId(NetworkObjectIdType i
         return nullptr;
     }
 
-    if (id < MONSTER_ID_START - 1) {
+    if (id < MONSTER_ID_START) {
         return mPlayers[id];
     }
-    else if (id < PROJECTILE_ID_START - 1) {
+    else if (id < PROJECTILE_ID_START) {
         return mMonsters[id - MONSTER_ID_START];
     }
-    else if (id < ENV_ID_START - 1) {
+    else if (id < ENV_ID_START) {
         return mProjectiles[id - PROJECTILE_ID_START];
     }
 
@@ -151,6 +193,17 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         break;
     }
 
+    case Packets::EntityType_ENV:
+    {
+        if (false == mEnvironmentsIndices.try_pop(validId)) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max User");
+            break;
+        }
+
+        auto obj = GetEnv(validId);
+        return obj;
+    }
+
     default:
         break;
     }
@@ -164,14 +217,16 @@ void ObjectManager::ReleaseObject(NetworkObjectIdType id) {
         return;
     }
 
-    if (id < MONSTER_ID_START - 1) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Release Player Object");
+    if (id < MONSTER_ID_START) {
+#if defined(DEBUG) || defined(_DEBUG)
+        //gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Release Player Object");
+#endif
         return;
     }
-    else if (id < PROJECTILE_ID_START - 1) {
+    else if (id < PROJECTILE_ID_START) {
         return mMonsterIndices.push(id);
     }
-    else if (id < ENV_ID_START - 1) {
+    else if (id < ENV_ID_START) {
         return mProjectileIndices.push(id);
     }
 

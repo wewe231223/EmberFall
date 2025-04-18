@@ -99,13 +99,19 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
 
 void ProcessPlayerInputCS(std::shared_ptr<GameSession>& session, const Packets::PlayerInputCS* const input) {
     const auto userObject = session->GetUserObject();
-    auto player = userObject->GetScript<PlayerScript>();
+    if (nullptr == userObject) {
+        return;
+    }
 
+    auto player = userObject->GetScript<PlayerScript>();
     player->GetInput()->UpdateInput(input->key(), input->down());
 }
 
 void ProcessPlayerLookCS(std::shared_ptr<GameSession>& session, const Packets::PlayerLookCS* const look) {
     const auto userObject = session->GetUserObject();
+    if (nullptr == userObject) {
+        return;
+    }
 
     userObject->GetTransform()->SetLook(FbsPacketFactory::GetVector3(look->look()));
     userObject->Update();

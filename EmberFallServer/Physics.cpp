@@ -124,7 +124,7 @@ void Physics::Update(const float deltaTime) {
     SimpleMath::Vector3 moveDir = mVelocity;
     moveDir.Normalize();
     //UpdateGravity(deltaTime, moveDir, speed);   // 중력 적용
-    UpdateFriction(deltaTime, moveDir, speed);
+    //UpdateFriction(deltaTime, moveDir, speed);
 
     auto transform = mTransform.lock();
     transform->Translate(mVelocity * deltaTime);
@@ -146,24 +146,25 @@ void Physics::ClampVelocity() {
         velocityXZ = velocityXZ * mFactor.maxMoveSpeed.Count();
         mVelocity.x = velocityXZ.x;
         mVelocity.z = velocityXZ.z;
+        mVelocity.y = 0.0f;
     }
 }
 
 void Physics::UpdateFriction(const float deltaTime, const SimpleMath::Vector3& moveDir, const float speed) {
-    //if (MathUtil::IsEqualVector(MathUtil::AbsVector(moveDir), SimpleMath::Vector3::Up)) {
-    //    return;
-    //}
+    if (MathUtil::IsEqualVector(MathUtil::AbsVector(moveDir), SimpleMath::Vector3::Up)) {
+        return;
+    }
 
-    //auto inverseDir = -moveDir;
-    //auto normalForce = mFactor.mass * GRAVITY_ACCELERATION;
-    //SimpleMath::Vector3 frictionForce = inverseDir * normalForce.Count() * mFactor.friction;
+    auto inverseDir = -moveDir;
+    auto normalForce = mFactor.mass * GRAVITY_ACCELERATION;
+    SimpleMath::Vector3 frictionForce = inverseDir * normalForce.Count() * mFactor.friction;
 
-    //frictionForce.y = 0.0f; // Y축 계산 X
-    //SimpleMath::Vector3 frictionAcc = frictionForce / mFactor.mass.Count();
-    //SimpleMath::Vector3 resultVelocity = mVelocity + frictionAcc * deltaTime;
+    frictionForce.y = 0.0f; // Y축 계산 X
+    SimpleMath::Vector3 frictionAcc = frictionForce / mFactor.mass.Count();
+    SimpleMath::Vector3 resultVelocity = mVelocity + frictionAcc * deltaTime;
 
-    //mVelocity.x = (mVelocity.x * resultVelocity.x < 0.0f) ? 0.0f : resultVelocity.x;
-    //mVelocity.z = (mVelocity.z * resultVelocity.z < 0.0f) ? 0.0f : resultVelocity.z;
+    mVelocity.x = (mVelocity.x * resultVelocity.x < 0.0f) ? 0.0f : resultVelocity.x;
+    mVelocity.z = (mVelocity.z * resultVelocity.z < 0.0f) ? 0.0f : resultVelocity.z;
 }
 
 void Physics::UpdateGravity(const float deltaTime, const SimpleMath::Vector3& moveDir, const float speed) {

@@ -243,6 +243,9 @@
     <ClCompile Include="PlayerScript.cpp">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClCompile>
+    <ClCompile Include="Resources.cpp">
+      <Filter>MultiThreadLoopTest\Resource</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BehaviorTreeBase.h">
@@ -397,6 +400,9 @@
     </ClInclude>
     <ClInclude Include="PlayerScript.h">
       <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources.h">
+      <Filter>MultiThreadLoopTest\Resource</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

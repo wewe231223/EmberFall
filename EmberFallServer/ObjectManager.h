@@ -12,7 +12,7 @@ public:
     static constexpr size_t USER_ID_START = 0;                                      // 0 ~ 255
     static constexpr size_t MONSTER_ID_START = MAX_USER + 1;                        // 256 ~ 1255
     static constexpr size_t PROJECTILE_ID_START = MONSTER_ID_START + MAX_MONSTER;   // 1256 ~ 2255
-    static constexpr size_t ENV_ID_START = PROJECTILE_ID_START + MAX_PROJECTILE;    // 2255 ~ 7255
+    static constexpr size_t ENV_ID_START = PROJECTILE_ID_START + MAX_PROJECTILE;    // 2256 ~ 7255
 
     static constexpr size_t VALID_ID_MAX = ENV_ID_START + MAX_ENV;
 
@@ -23,7 +23,7 @@ public:
 public:
     void Init();
 
-    void LoadEnvFromFile();
+    void LoadEnvFromFile(const std::filesystem::path& path);
     std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) const;
     std::shared_ptr<GameObject> GetPlayer(NetworkObjectIdType id) const;
     std::shared_ptr<GameObject> GetMonster(NetworkObjectIdType id) const;

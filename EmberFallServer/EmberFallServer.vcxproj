@@ -172,6 +172,7 @@
     <ClCompile Include="ItemScript.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="PathFinder.cpp" />
+    <ClCompile Include="Resources.cpp" />
     <ClCompile Include="Sector.cpp" />
     <ClCompile Include="TerrainCollider.cpp" />
     <ClCompile Include="CorruptedGem.cpp" />
@@ -229,6 +230,7 @@
     <ClInclude Include="ItemScript.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="PathFinder.h" />
+    <ClInclude Include="Resources.h" />
     <ClInclude Include="Sector.h" />
     <ClInclude Include="TerrainCollider.h" />
     <ClInclude Include="CorruptedGem.h" />

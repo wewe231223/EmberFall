@@ -10,9 +10,5 @@ Script::Script(std::shared_ptr<GameObject> owner, ObjectTag tag, ScriptType type
 Script::~Script() { }
 
 std::shared_ptr<GameObject> Script::GetOwner() const {
-    if (mOwner.expired()) {
-        return nullptr;
-    }
-
     return mOwner.lock();
 }

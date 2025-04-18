@@ -44,61 +44,100 @@ void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj) {
     for (const auto sector : sectors) {
         decltype(auto) collisionCheckPlayers = std::move(gSectorSystem->GetSector(sector).GetPlayersInRange(pos, 10.0f));
         decltype(auto) collisionCheckMonsters = gSectorSystem->GetSector(sector).GetMonstersInRange(pos, 10.0f);
+        decltype(auto) collisionCheckEnvs = gSectorSystem->GetSector(sector).GetEnvInRange(pos, 10.0f);
 
-        for (const auto playerId : collisionCheckPlayers) {
-            if (myId == playerId) {
-                continue;
-            }
+        UpdateCollisionMonster(obj, myId, collisionCheckMonsters);
+        UpdateCollisionPlayer(obj, myId, collisionCheckPlayers);
+        UpdateCollisionEnv(obj, myId, collisionCheckEnvs);
+    }
+}
 
-            auto result = PushCollisionPair(playerId, myId);
-            if (false == result) {
-                continue;
-            }
-
-            // Todo Collision Check And Resolve
-            auto player = gObjectManager->GetPlayer(playerId);
-            if (nullptr == player or false == player->mSpec.active) {
-                PopCollisionPair(playerId, myId);
-                continue;
-            }
-
-            const auto boundingObj1 = player->GetBoundingObject();
-            const auto boundingObj2 = obj->GetBoundingObject();
-
-            auto [intersects, penetration] = boundingObj2->IsColliding(boundingObj1);
-            if (intersects) {
-                obj->OnCollision(player, penetration);
-            }
-
-            PopCollisionPair(playerId, myId);
+void CollisionManager::UpdateCollisionMonster(const std::shared_ptr<GameObject>& obj, NetworkObjectIdType objId, const std::vector<NetworkObjectIdType>& collisionCheckMonsters) {
+    for (const auto monsterId : collisionCheckMonsters) {
+        if (objId == monsterId) {
+            continue;
         }
 
-        for (const auto monsterId : collisionCheckMonsters) {
-            if (myId == monsterId) {
-                continue;
-            }
-
-            auto result = PushCollisionPair(monsterId, myId);
-            if (false == result) {
-                continue;
-            }
-
-            // Todo Collision Check And Resolve
-            auto monster = gObjectManager->GetMonster(monsterId);
-            if (nullptr == monster or false == monster->mSpec.active) {
-                PopCollisionPair(monsterId, myId);
-                continue;
-            }
-
-            const auto boundingObj1 = monster->GetBoundingObject();
-            const auto boundingObj2 = obj->GetBoundingObject();
-
-            auto [intersects, penetration] = boundingObj2->IsColliding(boundingObj1);
-            if (intersects) {
-                obj->OnCollision(monster, penetration);
-            }
-
-            PopCollisionPair(monsterId, myId);
+        auto result = PushCollisionPair(monsterId, objId);
+        if (false == result) {
+            continue;
         }
+
+        // Todo Collision Check And Resolve
+        auto monster = gObjectManager->GetMonster(monsterId);
+        if (nullptr == monster or false == monster->mSpec.active) {
+            PopCollisionPair(monsterId, objId);
+            continue;
+        }
+
+        const auto boundingObj1 = monster->GetBoundingObject();
+        const auto boundingObj2 = obj->GetBoundingObject();
+
+        auto [intersects, penetration] = boundingObj2->IsColliding(boundingObj1);
+        if (intersects) {
+            obj->OnCollision(monster, penetration);
+        }
+
+        PopCollisionPair(monsterId, objId);
+    }
+}
+
+void CollisionManager::UpdateCollisionPlayer(const std::shared_ptr<GameObject>& obj, NetworkObjectIdType objId, const std::vector<NetworkObjectIdType>& collisionCheckPlayers) {
+    for (const auto playerId : collisionCheckPlayers) {
+        if (objId == playerId) {
+            continue;
+        }
+
+        auto result = PushCollisionPair(playerId, objId);
+        if (false == result) {
+            continue;
+        }
+
+        // Todo Collision Check And Resolve
+        auto player = gObjectManager->GetPlayer(playerId);
+        if (nullptr == player or false == player->mSpec.active) {
+            PopCollisionPair(playerId, objId);
+            continue;
+        }
+
+        const auto boundingObj1 = player->GetBoundingObject();
+        const auto boundingObj2 = obj->GetBoundingObject();
+
+        auto [intersects, penetration] = boundingObj2->IsColliding(boundingObj1);
+        if (intersects) {
+            obj->OnCollision(player, penetration);
+        }
+
+        PopCollisionPair(playerId, objId);
+    }
+}
+
+void CollisionManager::UpdateCollisionEnv(const std::shared_ptr<GameObject>& obj, NetworkObjectIdType objId, const std::vector<NetworkObjectIdType>& collisionCheckEnvs) {
+    for (const auto envId : collisionCheckEnvs) {
+        if (objId == envId) {
+            continue;
+        }
+
+        auto result = PushCollisionPair(envId, objId);
+        if (false == result) {
+            continue;
+        }
+
+        // Todo Collision Check And Resolve
+        auto env = gObjectManager->GetEnv(envId);
+        if (nullptr == env or false == env->mSpec.active) {
+            PopCollisionPair(envId, objId);
+            continue;
+        }
+
+        const auto boundingObj1 = env->GetBoundingObject();
+        const auto boundingObj2 = obj->GetBoundingObject();
+
+        auto [intersects, penetration] = boundingObj2->IsColliding(boundingObj1);
+        if (intersects) {
+            obj->OnCollision(env, penetration);
+        }
+
+        PopCollisionPair(envId, objId);
     }
 }

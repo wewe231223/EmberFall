@@ -9,6 +9,7 @@
 #include "PlayerScript.h"
 #include "GameSession.h"
 #include "ObjectManager.h"
+#include "Resources.h"
 
 ServerFrame::ServerFrame() {}
 
@@ -21,6 +22,9 @@ std::shared_ptr<class InputManager> ServerFrame::GetInputManager() const {
 }
 
 void ServerFrame::Run() {
+    ResourceManager::LoadEnvFromFile("../Resources/Binarys/Collider/EnvBB.bin");
+    ResourceManager::LoadEntityFromFile("../Resources/Binarys/Collider/Entitybb.bin");
+    ResourceManager::LoadEnvFromFile("../Resources/Binarys/Collider/AnimationInfo.bin");
     BoundingBoxImporter::LoadFromFile();
     gObjectManager->Init();
 
@@ -39,9 +43,12 @@ void ServerFrame::Run() {
 
     mTimerThread = std::thread{ [this]() { TimerThread(); } };
     
+    gObjectManager->LoadEnvFromFile("../Resources/Binarys/Collider/env1.bin");
+
     for (int32_t test = 0; test < 100; ++test) {
         decltype(auto) monster = gObjectManager->SpawnObject(Packets::EntityType_MONSTER);
         std::this_thread::sleep_for(100ms);
+        monster->GetTransform()->SetY(0.0f);
         monster->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -100.0f, 0.0f, -100.0f }, SimpleMath::Vector3{ 100.0f, 0.0f, 100.0f }));
     }
 

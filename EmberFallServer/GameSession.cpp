@@ -28,6 +28,7 @@ void GameSession::OnConnect() {
     mUserObject->mSpec.attackable = true;
     mUserObject->CreateScript<PlayerScript>(mUserObject, std::make_shared<Input>());
     mUserObject->CreateBoundingObject<OBBCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.5f, 0.8f, 0.5f });
+    mUserObject->GetTransform()->SetY(0.0f);
 
     mUserObject->mSpec.hp = 100.0f;
     mUserObject->mSpec.damage = 10.0f;

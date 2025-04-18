@@ -47,6 +47,12 @@ void Sector::TryInsert(NetworkObjectIdType id) {
         break;
     }
 
+    case ObjectTag::ENV:
+    {
+        mEnvs.insert(id);
+        break;
+    }
+
     default:
         break;
     }
@@ -106,6 +112,19 @@ std::vector<NetworkObjectIdType> Sector::GetPlayersInRange(SimpleMath::Vector3 p
     }
 
     return inRangePlayer;
+}
+
+std::vector<NetworkObjectIdType> Sector::GetEnvInRange(SimpleMath::Vector3 pos, const float range) {
+    Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
+    std::vector<NetworkObjectIdType> inRangeEnv{ };
+    for (const auto envId : mEnvs) {
+        decltype(auto) envPos = gObjectManager->GetObjectFromId(envId)->GetPosition();
+
+        auto dist = SimpleMath::Vector3::DistanceSquared(pos, envPos);
+        inRangeEnv.emplace_back(envId);
+    }
+
+    return inRangeEnv;
 }
 
 SectorSystem::SectorSystem() { 
@@ -314,12 +333,15 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
     const auto id = object->GetId();
     const auto currPos = object->GetPosition();
     const auto prevPos = object->GetPrevPosition();
+    const auto speed = object->GetSpeed();
+    if (MathUtil::IsEqualVectorXZ(currPos, prevPos)) {
+        return;
+    }
 
     auto currSector = UpdateSectorPos(id, prevPos, currPos);
 
     const auto yaw = object->GetEulerRotation().y;
     const auto dir = object->GetMoveDir();
-    const auto speed = object->GetSpeed();
 
     const float range = 100.0f;
     const std::vector<NetworkObjectIdType> nearbyPlayers = std::move(GetNearbyPlayers(currPos, range));

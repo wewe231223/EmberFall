@@ -34,6 +34,10 @@ void CorruptedGemScript::DispatchGameEvent(GameEvent* event) {
 
 void CorruptedGemScript::OnDestroy(GemDestroyStart* event) {
     auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
     if (event->holdTime > mDesytoyingTime) {
         gEventManager->PushEvent<GemDestroyed>(
             event->receiver,
