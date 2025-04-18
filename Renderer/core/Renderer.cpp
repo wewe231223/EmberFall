@@ -157,6 +157,8 @@ void Renderer::Render() {
 
 	mDefferedRenderer.Render(mCommandList, mShadowRenderer.GetShadowCameraBuffer());
 
+	mTextureManager->Bind(mCommandList);
+
 	mCanvas->Render(mCommandList, mTextureManager->GetTextureHeapAddress());
 }
 
