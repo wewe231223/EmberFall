@@ -729,17 +729,19 @@ void Scene::Update(DefaultBufferCPUIterator mainCameraBufferLocation) {
 				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 				mMeshRenderManager->AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
 
-				if (mShadowRenderer->ShadowMapCulling(0, gameObject.mCollider)) {
+				/*if (mShadowRenderer->ShadowMapCulling(0, gameObject.mCollider)) {
 					gameObject.UpdateShaderVariables(shadowBoneTransformBuffer);
 					auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 					mMeshRenderManager->AppendShadowBonedMeshContext(shader, mesh, modelContext, shadowBoneTransformBuffer);
-				}
+				}*/
 			}
 			else {
 				gameObject.UpdateShaderVariables();
 				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
-				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext);
+				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
+				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
+				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 2);
 
 			}
 		}
@@ -751,8 +753,17 @@ void Scene::Update(DefaultBufferCPUIterator mainCameraBufferLocation) {
 		if (object.mCollider.GetActiveState()) {
 			if (mShadowRenderer->ShadowMapCulling(0, object.mCollider)) {
 				auto [mesh, shader, modelContext] = object.GetRenderData();
-				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext);
+				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
 			}
+			if (mShadowRenderer->ShadowMapCulling(1, object.mCollider)) {
+				auto [mesh, shader, modelContext] = object.GetRenderData();
+				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
+			}
+			if (mShadowRenderer->ShadowMapCulling(2, object.mCollider)) {
+				auto [mesh, shader, modelContext] = object.GetRenderData();
+				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 2);
+			}
+
 			if (mCamera.FrustumCulling(object.mCollider)) {
 				auto [mesh, shader, modelContext] = object.GetRenderData();
 
@@ -765,7 +776,9 @@ void Scene::Update(DefaultBufferCPUIterator mainCameraBufferLocation) {
 
 			auto [mesh, shader, modelContext] = object.GetRenderData();
 			mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
-			mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext);
+			mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
+			mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
+			mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 2);
 
 		}
 		

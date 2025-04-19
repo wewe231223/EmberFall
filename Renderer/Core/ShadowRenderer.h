@@ -11,7 +11,7 @@ class ShadowRenderer {
 	static constexpr SimpleMath::Vector3 LIGHTDIRECTION{ 1.f, -3.f, -1.f };
 
 	template<typename T>
-	static constexpr T SHADOWMAPSIZE = static_cast<T>(1000);
+	static constexpr T SHADOWMAPSIZE = static_cast<T>(1500);
 
 	//그림자 맵에 담을 프러스텀의 원평면 까지의 거리
 	static constexpr float FRUSTUMLENGTH = 10.0f;

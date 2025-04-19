@@ -104,15 +104,15 @@ void Renderer::Render() {
 
 	mShadowRenderer->TransitionShadowMap(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 0);
-	mMeshRenderManager->RenderShadowPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(0));
+	mMeshRenderManager->RenderShadowPass(0, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(0));
 
 	// mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
 
 	mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 1);
-	mMeshRenderManager->RenderShadowPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(1));
+	mMeshRenderManager->RenderShadowPass(1, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(1));
 
 	mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 2);
-	mMeshRenderManager->RenderShadowPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(2));
+	mMeshRenderManager->RenderShadowPass(2, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(2));
 
 
 	viewport.TopLeftX = 0;

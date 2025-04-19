@@ -43,11 +43,11 @@ public:
 
 	void PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList);
 	
-	void RenderShadowPass(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex,D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
+	void RenderShadowPass(UINT index, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex,D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 	void RenderGPass(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 	void Reset(); 
 private:
-	void RenderShadowPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
+	void RenderShadowPassPlainMesh(UINT index, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 	void RenderShadowPassBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 
 	void RenderGPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
@@ -67,6 +67,8 @@ private:
 	UINT mShadowBoneCounter{ 0 };
 	UINT mReservedSlotCounter{ 0 };
 
+	std::array<UINT, 3> mShadowMeshCounter{ 0, 0, 0 };
+
 	std::vector<SimpleMath::Matrix> mBoneTransforms{};
 	std::vector<SimpleMath::Matrix> mShadowBoneTransforms{};
 	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<AnimationModelContext>>> mBonedMeshContexts{};
@@ -75,7 +77,7 @@ private:
 	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<ModelContext>>> mPlainMeshReserved{};
 	std::unordered_map<GraphicsShaderBase* ,std::unordered_map<Mesh*, std::vector<ModelContext>>> mPlainMeshContexts{};
 
-	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<ModelContext>>> mShadowPlainMeshContexts{};
+	std::array<std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<ModelContext>>>, 3> mShadowPlainMeshContexts{};
 
 	std::unique_ptr<GraphicsShaderBase> mSkeletonBoundingboxRenderShader{};
 	std::unique_ptr<GraphicsShaderBase> mStandardBoundingBoxRenderShader{}; 
