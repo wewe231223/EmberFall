@@ -31,14 +31,16 @@ public:
 
 public:
 	// 그림자 맵 만들기 
-	void SetShadowDSVRTV(ComPtr<ID3D12GraphicsCommandList> commandList);
+	void SetShadowDSVRTV(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList,int index);
 	void Update(DefaultBufferCPUIterator worldCameraBuffer); 
 	void Upload(ComPtr<ID3D12GraphicsCommandList> commandList);
 	bool ShadowMapCulling(int index, Collider& other);
+	void TransitionShadowMap(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
 
-	DefaultBufferGPUIterator GetShadowCameraBuffer(); 
+	DefaultBufferGPUIterator GetShadowCameraBuffer(int index);
 
-	Texture& GetShadowMap();
+	Texture& GetShadowMap(int index);
+	std::array<Texture, 3>& GetShadowMapArray();
 
 	template<typename T>
 	static constexpr T GetShadowMapSize() { return SHADOWMAPSIZE<T>; }
@@ -52,14 +54,14 @@ private:
 	ComPtr<ID3D12DescriptorHeap> mShadowRTVHeap{};
 	ComPtr<ID3D12DescriptorHeap> mShadowDSVHeap{};
 
-	DefaultBuffer mShadowCameraBuffer{};
+	std::array<DefaultBuffer, 3> mShadowCameraBuffer{};
 
 	CameraConstants mShadowCamera{};
 
 	std::vector<DirectX::BoundingOrientedBox> mWorldBox{};
-	
+	std::array<SimpleMath::Matrix, 3> mLightMatrix{};
 
-	Texture mShadowMap{}; 
+	std::array<Texture,3> mShadowMap{};
 	Texture mDepthStencilMap{};
 
 

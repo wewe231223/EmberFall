@@ -19,7 +19,7 @@ struct Light
     
 };
 
-Texture2D GBuffers[4] : register(t0, space0);
+Texture2D GBuffers[6] : register(t0, space0);
 StructuredBuffer<Light> gLight : register(t1, space1);
 
 cbuffer Camera : register(b0)
@@ -149,7 +149,7 @@ float ComputeShadowFactor(float4 shadowPosH, float bias)
 
 float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 {
-    return float4(GBuffers[3].Sample(linearWrapSampler, input.texcoord).xxx, 1.0f);
+    return float4(GBuffers[5].Sample(linearWrapSampler, input.texcoord).xxx, 1.0f);
     float4 diffuse = GBuffers[0].Sample(linearWrapSampler, input.texcoord);
     float3 normal = normalize(GBuffers[1].Sample(linearWrapSampler, input.texcoord).xyz);
     float4 worldPos = GBuffers[2].Sample(linearWrapSampler, input.texcoord);

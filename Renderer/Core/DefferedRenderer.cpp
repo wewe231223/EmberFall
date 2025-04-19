@@ -5,7 +5,7 @@
 
 DefferedRenderer::DefferedRenderer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	D3D12_DESCRIPTOR_HEAP_DESC desc{};
-	desc.NumDescriptors = Config::GBUFFER_COUNT<UINT> + 1;
+	desc.NumDescriptors = Config::GBUFFER_COUNT<UINT> + 3;
 	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
@@ -33,7 +33,7 @@ void DefferedRenderer::RegisterGBufferTexture(ComPtr<ID3D12Device> device, const
 
 }
 
-void DefferedRenderer::RegisterShadowMap(ComPtr<ID3D12Device> device, Texture& shadowMap) {
+void DefferedRenderer::RegisterShadowMap(ComPtr<ID3D12Device> device, std::array<Texture,3>& shadowMap) {
 	D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
 	desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
@@ -45,7 +45,10 @@ void DefferedRenderer::RegisterShadowMap(ComPtr<ID3D12Device> device, Texture& s
 	auto descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	handle.Offset(Config::GBUFFER_COUNT<>, descriptorSize);
-	device->CreateShaderResourceView(shadowMap.GetResource().Get(), &desc, handle);
+	for (auto& texture : shadowMap) {
+	device->CreateShaderResourceView(texture.GetResource().Get(), &desc, handle);
+	handle.Offset(1, descriptorSize);
+	}
 }
 
 void DefferedRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator shadowCameraBuffer, DefaultBufferGPUIterator lightingBuffer) {
