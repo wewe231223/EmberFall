@@ -38,6 +38,7 @@ public:
 	void AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms );
 
 	void AppendShadowPlaneMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, UINT reservedSlot = std::numeric_limits<UINT>::max());
+	void AppendShadowBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms);
 
 
 	void PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList);
@@ -59,11 +60,15 @@ private:
 
 	DefaultBuffer mShadowPlainMeshBuffer{};
 
+	DefaultBuffer mShadowBonedMeshBuffer{};
+	DefaultBuffer mShadowAnimationBuffer{};
 
 	UINT mBoneCounter{ 0 };
+	UINT mShadowBoneCounter{ 0 };
 	UINT mReservedSlotCounter{ 0 };
 
 	std::vector<SimpleMath::Matrix> mBoneTransforms{};
+	std::vector<SimpleMath::Matrix> mShadowBoneTransforms{};
 	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<AnimationModelContext>>> mBonedMeshContexts{};
 	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<AnimationModelContext>>> mShadowBonedMeshContexts{};
 	

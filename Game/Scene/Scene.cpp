@@ -718,6 +718,7 @@ void Scene::Update(DefaultBufferCPUIterator mainCameraBufferLocation) {
 	mShadowRenderer->Update(mainCameraBufferLocation);
 
 	static BoneTransformBuffer boneTransformBuffer{};
+	static BoneTransformBuffer shadowBoneTransformBuffer{};
 
 	for (auto& gameObject : mGameObjects) {
 
@@ -728,10 +729,11 @@ void Scene::Update(DefaultBufferCPUIterator mainCameraBufferLocation) {
 				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 				mMeshRenderManager->AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
 
-				/*if (mShadowRenderer->ShadowMapCulling(gameObject.mCollider)) {
+				if (mShadowRenderer->ShadowMapCulling(0, gameObject.mCollider)) {
+					gameObject.UpdateShaderVariables(shadowBoneTransformBuffer);
 					auto [mesh, shader, modelContext] = gameObject.GetRenderData();
-					mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext);
-				}*/
+					mMeshRenderManager->AppendShadowBonedMeshContext(shader, mesh, modelContext, shadowBoneTransformBuffer);
+				}
 			}
 			else {
 				gameObject.UpdateShaderVariables();
@@ -747,7 +749,7 @@ void Scene::Update(DefaultBufferCPUIterator mainCameraBufferLocation) {
 	for (auto& object : mEnvironmentObjects) {
 		
 		if (object.mCollider.GetActiveState()) {
-			if (mShadowRenderer->ShadowMapCulling(object.mCollider)) {
+			if (mShadowRenderer->ShadowMapCulling(0, object.mCollider)) {
 				auto [mesh, shader, modelContext] = object.GetRenderData();
 				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext);
 			}

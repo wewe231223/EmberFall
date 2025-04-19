@@ -407,7 +407,7 @@ void GraphicsShaderBase::CreateShader(ComPtr<ID3D12Device> device) {
 
 	psoDesc.RasterizerState.DepthBias = 10000;
 	psoDesc.RasterizerState.DepthBiasClamp = 0.0f;
-	psoDesc.RasterizerState.SlopeScaledDepthBias = 5.0f;
+	psoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;
 
 	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mShadowPipelineState)));
 }

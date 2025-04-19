@@ -4,16 +4,19 @@
 #include "../Utility/Defines.h"
 #include "../Utility/DirectXInclude.h"
 #include "../Game/GameObject/Collider.h"
+#include "../Game/Scene/Camera.h"
 
 
 class ShadowRenderer {
 	static constexpr SimpleMath::Vector3 LIGHTDIRECTION{ 1.f, -3.f, -1.f };
 
 	template<typename T>
-	static constexpr T SHADOWMAPSIZE = static_cast<T>(1500);
+	static constexpr T SHADOWMAPSIZE = static_cast<T>(1000);
 
 	//그림자 맵에 담을 프러스텀의 원평면 까지의 거리
-	static constexpr float FRUSTUMLENGTH = 70.0f;
+	static constexpr float FRUSTUMLENGTH = 10.0f;
+
+	static constexpr std::array<float, 3> SHADOWMAPOFFSET = { 10.0f, 30.0f, 100.0f };
 public:
 	ShadowRenderer() = default;
 	ShadowRenderer(ComPtr<ID3D12Device> device);
@@ -31,7 +34,7 @@ public:
 	void SetShadowDSVRTV(ComPtr<ID3D12GraphicsCommandList> commandList);
 	void Update(DefaultBufferCPUIterator worldCameraBuffer); 
 	void Upload(ComPtr<ID3D12GraphicsCommandList> commandList);
-	bool ShadowMapCulling(Collider& other);
+	bool ShadowMapCulling(int index, Collider& other);
 
 	DefaultBufferGPUIterator GetShadowCameraBuffer(); 
 
@@ -41,6 +44,7 @@ public:
 	static constexpr T GetShadowMapSize() { return SHADOWMAPSIZE<T>; }
 private:
 	std::array<SimpleMath::Vector3, 8> ComputeFrustumCorners(SimpleMath::Matrix worldCameraVPInv);
+	SimpleMath::Matrix ComputeLightViewMatrix(CameraParameter cameraParam, SimpleMath::Matrix invView, float nearZ, float farZ);
 	void ComputeOrientedBoundingBox(SimpleMath::Matrix cameraProjInv);
 	void StablizeShadowMatrix(SimpleMath::Matrix& shadowCameraVP);
 
@@ -52,7 +56,7 @@ private:
 
 	CameraConstants mShadowCamera{};
 
-	DirectX::BoundingOrientedBox mWorldBox{};
+	std::vector<DirectX::BoundingOrientedBox> mWorldBox{};
 	
 
 	Texture mShadowMap{}; 

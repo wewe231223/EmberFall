@@ -27,7 +27,11 @@ cbuffer Camera : register(b0)
     matrix view;
     matrix projection;
     matrix viewProjection;
+    Matrix middleViewProjection;
+    Matrix farViewProjection;
+
     float3 cameraPosition;
+    int isShadow;
 }
 
 struct Deffered_VIN
@@ -138,14 +142,14 @@ float ComputeShadowFactor(float4 shadowPosH, float bias)
     }
     
     
-    return percentLit / 9.0f;
+    return lerp(0.2f, 1.0f, percentLit / 9.0f);
     
    
 }
 
 float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 {
-    //return float4(GBuffers[3].Sample(linearWrapSampler, input.texcoord).xxx, 1.0f);
+    return float4(GBuffers[3].Sample(linearWrapSampler, input.texcoord).xxx, 1.0f);
     float4 diffuse = GBuffers[0].Sample(linearWrapSampler, input.texcoord);
     float3 normal = normalize(GBuffers[1].Sample(linearWrapSampler, input.texcoord).xyz);
     float4 worldPos = GBuffers[2].Sample(linearWrapSampler, input.texcoord);
@@ -164,24 +168,21 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 
     texPos.x = texPos.x * 0.5f + 0.5f;
     texPos.y = -texPos.y * 0.5f + 0.5f;
-
     float insideX = step(0.0f, texPos.x) * step(texPos.x, 1.0f);
     float insideY = step(0.0f, texPos.y) * step(texPos.y, 1.0f);
     float validTex = insideX * insideY;
     float valid = validWorld * validTex;
     
     
-    float bias = 0.003f;
+    float bias = 0.0035f;
 
-    //float shadowFactor = ComputeShadowFactor(texPos, bias);
-    //float shadowFactor = GBuffers[3].SampleCmpLevelZero(PCFSampler, texPos.xy, texPos.z);
-    float shadowFactor = 1.0f;
+    float shadowFactor = ComputeShadowFactor(texPos, bias);
     float depth = GBuffers[3].Sample(linearWrapSampler, texPos.xy).r;
 
-
-    if (texPos.z >= (depth + bias))
+    
+    if (dot((cameraPosition - worldPos.xyz), normal) >= 0)
     {
-        shadowFactor = 0.3f;
+        shadowFactor = 1.0f;
     }
 
     float shadowApply = step(depth + bias, texPos.z) * valid;

@@ -9,7 +9,8 @@ MeshRenderManager::MeshRenderManager(ComPtr<ID3D12Device> device) {
 	mAnimationBuffer = DefaultBuffer(device, sizeof(SimpleMath::Matrix), MeshRenderManager::MAX_BONE_COUNT<size_t>);
 
 	mShadowPlainMeshBuffer = DefaultBuffer(device, sizeof(ModelContext), MeshRenderManager::MAX_INSTANCE_COUNT<size_t>);
-
+	mShadowBonedMeshBuffer = DefaultBuffer(device, sizeof(AnimationModelContext), MeshRenderManager::MAX_INSTANCE_COUNT<size_t>);
+	mShadowAnimationBuffer = DefaultBuffer(device, sizeof(SimpleMath::Matrix), MeshRenderManager::MAX_BONE_COUNT<size_t>);
 
 	mSkeletonBoundingboxRenderShader = std::make_unique<SkeletonBBShader>();
 	mSkeletonBoundingboxRenderShader->CreateShader(device);
@@ -42,6 +43,15 @@ void MeshRenderManager::AppendShadowPlaneMeshContext(GraphicsShaderBase* shader,
 	
 	mShadowPlainMeshContexts[shader][mesh].emplace_back(world);
 	
+}
+
+void MeshRenderManager::AppendShadowBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms) {
+	AnimationModelContext context{ world.world, world.BBCenter, world.BBextents, world.material, mShadowBoneCounter };
+	mShadowBonedMeshContexts[shader][mesh].emplace_back(context);
+	mShadowBoneCounter += boneTransforms.boneCount;
+
+	mShadowBoneTransforms.insert(mShadowBoneTransforms.end(), std::make_move_iterator(boneTransforms.boneTransforms.begin()), std::make_move_iterator(boneTransforms.boneTransforms.begin() + boneTransforms.boneCount));
+
 }
 
 void MeshRenderManager::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList) {
@@ -88,12 +98,26 @@ void MeshRenderManager::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandL
 	mShadowPlainMeshBuffer.Upload(commandList, mShadowPlainMeshBuffer.CPUBegin(), it);
 
 
+	it = mShadowBonedMeshBuffer.CPUBegin();
+
+	for (auto& [shader, meshContexts] : mShadowBonedMeshContexts) {
+		for (auto& [mesh, worlds] : meshContexts) {
+			std::memcpy(*it, worlds.data(), worlds.size() * sizeof(AnimationModelContext));
+			it += worlds.size();
+		}
+	}
+
+	mShadowBonedMeshBuffer.Upload(commandList, mShadowBonedMeshBuffer.CPUBegin(), it);
+
 	it = mAnimationBuffer.CPUBegin();
 	std::memcpy(*it, mBoneTransforms.data(), mBoneTransforms.size() * sizeof(SimpleMath::Matrix));
 	it += mBoneTransforms.size();
 	mAnimationBuffer.Upload(commandList, mAnimationBuffer.CPUBegin(), it);
 
-	
+	it = mShadowAnimationBuffer.CPUBegin();
+	std::memcpy(*it, mShadowBoneTransforms.data(), mShadowBoneTransforms.size() * sizeof(SimpleMath::Matrix));
+	it += mShadowBoneTransforms.size();
+	mShadowAnimationBuffer.Upload(commandList, mShadowAnimationBuffer.CPUBegin(), it);
 }
 
 void MeshRenderManager::RenderShadowPass(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex,D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
@@ -109,12 +133,15 @@ void MeshRenderManager::RenderGPass(ComPtr<ID3D12GraphicsCommandList> commandLis
 
 void MeshRenderManager::Reset(){
 	mBoneCounter = 0;
+	mShadowBoneCounter = 0;
 	mReservedSlotCounter = 0;
 	mBoneTransforms.clear();
+	mShadowBoneTransforms.clear();
 	mBonedMeshContexts.clear();
 	mPlainMeshReserved.clear();
 	mPlainMeshContexts.clear(); 
 
+	mShadowBonedMeshContexts.clear();
 	mShadowPlainMeshContexts.clear();
 }
 
@@ -146,10 +173,10 @@ void MeshRenderManager::RenderShadowPassPlainMesh(ComPtr<ID3D12GraphicsCommandLi
 }
 
 void MeshRenderManager::RenderShadowPassBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
-	DefaultBufferGPUIterator boneIt{ mAnimationBuffer.GPUBegin() };
-	DefaultBufferGPUIterator gpuIt{ mBonedMeshBuffer.GPUBegin() };
+	DefaultBufferGPUIterator boneIt{ mShadowAnimationBuffer.GPUBegin() };
+	DefaultBufferGPUIterator gpuIt{ mShadowBonedMeshBuffer.GPUBegin() };
 
-	for (auto& [shader, meshContexts] : mBonedMeshContexts) {
+	for (auto& [shader, meshContexts] : mShadowBonedMeshContexts) {
 
 		shader->SetShadowPassShader(commandList);
 
