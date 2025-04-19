@@ -94,34 +94,53 @@ float GetHeight(float x, float z)
 
 struct Payload
 {
-    uint grassIndex;
+    uint baseIndex;
+    bool culled; 
 };
 
-#define GRASS_COUNT 1000000
+#define GRASS_GRID_COUNT 2500
+#define GRASS_PER_GRID 2048
+#define GRASS_PER_DISPATCH 64
 #define GRASS_CULL_DISTANCE 100.0f
+#define GRASS_COUNT GRASS_PER_GRID * GRASS_GRID_COUNT
+#define MAX_VERTEX_COUNT (GRASS_PER_DISPATCH * 4)
+#define MAX_INDEX_COUNT (GRASS_PER_DISPATCH * 2)
 
 
-// Amplification Shader
 [numthreads(1, 1, 1)]
-void mainAS(uint3 id : SV_DispatchThreadID)
+void mainAS(uint3 groupId : SV_GroupID)
 {
-    Payload sPayload; 
-    sPayload.grassIndex = 0xFFFFFFFF;
-    
-    float2 pos = grassVertices[id.x].position;
-    float2 deltaXZ = pos - cameraPosition.xz;
-    float distSq = dot(deltaXZ, deltaXZ);
+    uint gridIndex = groupId.x;
 
+    float2 gridMin = float2(-250.0f, -250.0f);
+    float gridSize = 10.0f;
+
+    uint gridX = gridIndex % 50;
+    uint gridZ = gridIndex / 50;
+
+    float2 centerXZ = gridMin + float2((gridX + 0.5f) * gridSize, (gridZ + 0.5f) * gridSize);
+
+
+    float2 toCamera = centerXZ - cameraPosition.xz;
+    float distSq = dot(toCamera, toCamera);
+
+    Payload pl;
     if (distSq < GRASS_CULL_DISTANCE * GRASS_CULL_DISTANCE)
     {
-        sPayload.grassIndex = id.x;
+        pl.baseIndex = gridIndex * GRASS_PER_GRID;
+        pl.culled = false; 
     }
-    
-    DispatchMesh(1, 1, 1, sPayload);
+    else
+    {
+        pl.baseIndex = 0;
+        pl.culled = true; 
+    }
+
+    DispatchMesh(GRASS_PER_GRID / GRASS_PER_DISPATCH, 1, 1, pl); 
 }
 
 
-// Mesh Shader
+
 struct VSOutput
 {
     float4 position : SV_Position;
@@ -129,25 +148,33 @@ struct VSOutput
     uint texIndex : TEXID;
 };
 
-
 [outputtopology("triangle")]
-[numthreads(1, 1, 1)]
+[numthreads(GRASS_PER_DISPATCH, 1, 1)]
 void mainMS(
-            uint3 id : SV_DispatchThreadID, 
-            in payload Payload pl,
-            out indices uint3 outIndices[2],
-            out vertices VSOutput outVerts[4])
+    uint3 threadId : SV_DispatchThreadID,
+    uint3 groupThreadId : SV_GroupThreadID,
+    in payload Payload pl,
+    out indices uint3 outIndices[MAX_INDEX_COUNT],
+    out vertices VSOutput outVerts[MAX_VERTEX_COUNT])
 {
-    if(pl.grassIndex == 0xFFFFFFFF)
+    const uint localId = groupThreadId.x;
+    const uint grassIndex = pl.baseIndex + localId;
+
+    if (grassIndex >= GRASS_COUNT)
         return;
+
+    SetMeshOutputCounts(pl.culled ? 0 : MAX_VERTEX_COUNT, pl.culled ? 0 : MAX_INDEX_COUNT);
+
+    if (pl.culled) 
+        return; 
     
-    GrassPosition grass = grassVertices[pl.grassIndex];
+    GrassPosition grass = grassVertices[grassIndex];
     float3 basePos = float3(grass.position.x, GetHeight(grass.position.x, grass.position.y), grass.position.y);
 
-    float halfSize = grass.scale * 0.5f;
+    float halfSize = grass.scale * 2.f * 0.5f;
+    
+    basePos += halfSize; 
     float3 up = float3(0, 1, 0);
-
-    // 카메라 방향 기반 billboard right 벡터 계산
     float3 toCamera = normalize(cameraPosition - basePos);
     float3 right = normalize(cross(up, toCamera));
 
@@ -155,32 +182,32 @@ void mainMS(
     float3 v1 = basePos + (right + up) * halfSize;
     float3 v2 = basePos + (right - up) * halfSize;
     float3 v3 = basePos + (-right - up) * halfSize;
-    
-    SetMeshOutputCounts(4, 2);
 
-    outVerts[0].position = float4(v0, 1.0);
-    outVerts[1].position = float4(v1, 1.0);
-    outVerts[2].position = float4(v2, 1.0);
-    outVerts[3].position = float4(v3, 1.0);
+    uint vtxBase = localId * 4;
+    uint idxBase = localId * 2;
 
-    outVerts[0].uv = float2(0, 0);
-    outVerts[1].uv = float2(1, 0);
-    outVerts[2].uv = float2(1, 1);
-    outVerts[3].uv = float2(0, 1);
 
-    outVerts[0].texIndex = grass.tex;
-    outVerts[1].texIndex = grass.tex;
-    outVerts[2].texIndex = grass.tex;
-    outVerts[3].texIndex = grass.tex;
+    outVerts[vtxBase + 0].position = mul(float4(v0, 1.0), viewProjection);
+    outVerts[vtxBase + 1].position = mul(float4(v1, 1.0), viewProjection);
+    outVerts[vtxBase + 2].position = mul(float4(v2, 1.0), viewProjection);
+    outVerts[vtxBase + 3].position = mul(float4(v3, 1.0), viewProjection);
 
-    outIndices[0] = uint3(0, 1, 2);
-    outIndices[1] = uint3(2, 3, 0);
+    outVerts[vtxBase + 0].uv = float2(0, 0);
+    outVerts[vtxBase + 1].uv = float2(1, 0);
+    outVerts[vtxBase + 2].uv = float2(1, 1);
+    outVerts[vtxBase + 3].uv = float2(0, 1);
+
+    for (int i = 0; i < 4; ++i)
+        outVerts[vtxBase + i].texIndex = grass.tex;
+
+    outIndices[idxBase + 0] = uint3(vtxBase + 2, vtxBase + 1, vtxBase + 0);
+    outIndices[idxBase + 1] = uint3(vtxBase + 0, vtxBase + 3, vtxBase + 2);
 }
 
 // Pixel Shader
 float4 mainPS(VSOutput input) : SV_Target
 {
-    Texture2D tex = textures[input.texIndex];
+    Texture2D tex = textures[materialConstants[materialIndex].diffuseTexture[input.texIndex]];
     float4 color = tex.Sample(anisotropicWrapSampler, input.uv);
     clip(color.a - 0.2f);
     return color;

@@ -67,21 +67,21 @@ GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12Graphic
 	LPCWSTR meshShaderArgs[] = {
 		shaderPath.c_str(),         // 소스 파일 경로 
 		L"-T", L"ms_6_5",			// Target: Mesh Shader 6.5
-		L"-E", L"main",
+		L"-E", L"mainMS",
 		L"-O3",						// <- 최적화 최대화
 	};
 
 	LPCWSTR amplificationShaderArgs[] = {
 		shaderPath.c_str(),         // 소스 파일 경로
 		L"-T", L"as_6_5",           // Target: Amplification Shader 6.5
-		L"-E", L"main",             // Entry point
+		L"-E", L"mainAS",             // Entry point
 		L"-O3",						// <- 최적화 최대화
 	};
 
 	LPCWSTR pixelShaderArgs[] = {
 		shaderPath.c_str(),         // 소스 파일 경로
 		L"-T", L"ps_6_0",           // Target: Pixel Shader 6.5
-		L"-E", L"main",             // Entry point
+		L"-E", L"mainPS",             // Entry point
 		L"-O3",						// <- 최적화 최대화
 	};
 #endif 
@@ -144,6 +144,41 @@ GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12Graphic
 void GrassRenderer::SetMaterial(UINT materialIndex) {
 	mMaterialIndex = materialIndex;
 }
+
+// 1. Camera 
+// 2. terrain header
+// 3. terrain data
+// 4. grass position
+// 5. material Index 
+// 6. material 
+// 7. textures 
+void GrassRenderer::Render(ComPtr<ID3D12GraphicsCommandList6> commandList, DefaultBufferGPUIterator cameraBuffer, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS material) {
+	commandList->SetGraphicsRootSignature(mRootSignature.Get());
+	commandList->SetPipelineState(mPipelineState.Get());
+
+
+	// 1. Camera 
+	// 2. terrain header
+	// 3. terrain data
+	// 4. grass position
+	// 5. material Index 
+	// 6. material 
+	// 7. textures 
+	commandList->SetGraphicsRootConstantBufferView(0, *cameraBuffer);
+	commandList->SetGraphicsRootConstantBufferView(1, *mTerrainHeader);
+	commandList->SetGraphicsRootShaderResourceView(2, *mTerrainData);
+	commandList->SetGraphicsRootShaderResourceView(3, *mGrassPosition.GPUBegin());
+	commandList->SetGraphicsRoot32BitConstants(4, 1, &mMaterialIndex, 0);
+	commandList->SetGraphicsRootShaderResourceView(5, material);
+	commandList->SetGraphicsRootDescriptorTable(6, tex);
+
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
+
+	// Dispatch mesh 
+	commandList->DispatchMesh(2500, 1, 1);
+}
+
+
 
 void GrassRenderer::CreatePipelineState(ComPtr<ID3D12Device10> device) {
 	struct alignas(8) Subobject_RootSignature {
@@ -220,6 +255,7 @@ void GrassRenderer::CreatePipelineState(ComPtr<ID3D12Device10> device) {
 
 	stream.Rasterizer.Type = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER;
 	stream.Rasterizer.Desc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
+//	stream.Rasterizer.Desc.CullMode = D3D12_CULL_MODE_NONE;
 
 	stream.DepthStencil.Type = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL;
 	stream.DepthStencil.Desc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);

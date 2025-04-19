@@ -7,7 +7,7 @@
 
 class GrassRenderer {
 	template<typename T>
-	constexpr static T GRASS_INSTANCE_COUNT = static_cast<T>(100'0000);
+	constexpr static T GRASS_INSTANCE_COUNT = static_cast<T>(2048 * 2500);
 
 	struct GrassPoint {
 		SimpleMath::Vector2 position{};
@@ -28,6 +28,7 @@ public:
 	GrassRenderer& operator=(GrassRenderer&& other) = default;
 public:
 	void SetMaterial(UINT materialIndex);
+	void Render(ComPtr<ID3D12GraphicsCommandList6> commandList, DefaultBufferGPUIterator cameraBuffer, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS material);
 private:
 	void CreatePipelineState(ComPtr<ID3D12Device10> device);
 	void CreateRootSignature(ComPtr<ID3D12Device10> device);

@@ -145,6 +145,9 @@ void Renderer::Render() {
 	mMeshRenderManager->RenderGPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin() );
 	mMeshRenderManager->Reset();
 
+	mGrassRenderer.SetMaterial(0);
+	mGrassRenderer.Render(mCommandList, mMainCameraBuffer.GPUBegin(), mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress());
+
 	//mParticleManager->RenderSO(mCommandList);
 	//mParticleManager->RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress());
 
@@ -443,6 +446,17 @@ void Renderer::InitParticleManager() {
 
 void Renderer::InitGrassRender() {
 	mGrassRenderer = GrassRenderer(mDevice, mCommandList, mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
+
+	MaterialConstants material{};
+
+	material.mDiffuseTexture[0] = mTextureManager->GetTexture("Grass0");
+	material.mDiffuseTexture[1] = mTextureManager->GetTexture("Grass1");
+	material.mDiffuseTexture[2] = mTextureManager->GetTexture("Grass2");
+	material.mDiffuseTexture[3] = mTextureManager->GetTexture("Grass3");
+
+	mMaterialManager->CreateMaterial("GrassMaterial", material);
+
+	mGrassRenderer.SetMaterial(mMaterialManager->GetMaterial("GrassMaterial"));
 }
 
 void Renderer::InitCanvas() {
@@ -462,8 +476,8 @@ void Renderer::InitTerrainBuffer() {
 	file.read(reinterpret_cast<char*>(vertices.data()), vertices.size() * sizeof(SimpleMath::Vector3));
 
 
-	mTerrainHeaderBuffer = DefaultBuffer(mDevice, sizeof(TerrainHeader), 1, true);
-	mTerrainDataBuffer = DefaultBuffer(mDevice, sizeof(SimpleMath::Vector3), header.globalWidth * header.globalHeight);
+	mTerrainHeaderBuffer = DefaultBuffer(mDevice, mCommandList, sizeof(TerrainHeader), 1, &header, true);
+	mTerrainDataBuffer = DefaultBuffer(mDevice, mCommandList, sizeof(SimpleMath::Vector3), header.globalWidth * header.globalHeight,  vertices.data() );
 }
 
 void Renderer::InitCoreResources() {
