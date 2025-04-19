@@ -171,7 +171,7 @@ void mainMS(
     GrassPosition grass = grassVertices[grassIndex];
     float3 basePos = float3(grass.position.x, GetHeight(grass.position.x, grass.position.y), grass.position.y);
 
-    float halfSize = grass.scale * 2.f * 0.5f;
+    float halfSize = grass.scale;
     
     basePos += halfSize; 
     float3 up = float3(0, 1, 0);
