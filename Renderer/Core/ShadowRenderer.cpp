@@ -78,6 +78,9 @@ void ShadowRenderer::Update(DefaultBufferCPUIterator worldCameraBuffer) {
 	mLightMatrix[1] = ComputeLightViewMatrix(cameraParam, invView, SHADOWMAPOFFSET[0], SHADOWMAPOFFSET[1]);
 	mLightMatrix[2] = ComputeLightViewMatrix(cameraParam, invView, SHADOWMAPOFFSET[1], SHADOWMAPOFFSET[2]);
 
+	StablizeShadowMatrix(mLightMatrix[0]);
+	StablizeShadowMatrix(mLightMatrix[1]);
+	StablizeShadowMatrix(mLightMatrix[2]);
 
 	mShadowCamera.view = worldCamera.view;
 	mShadowCamera.viewProj = mLightMatrix[0];
@@ -168,7 +171,7 @@ SimpleMath::Matrix ShadowRenderer::ComputeLightViewMatrix(CameraParameter camera
 
 	SimpleMath::Vector3 directionNormalized = LIGHTDIRECTION;
 	directionNormalized.Normalize();
-	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (250.0f));
+	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (150.0f));
 	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (FRUSTUMLENGTH - cameraParam.nearZ) );
 
 	SimpleMath::Matrix view = SimpleMath::Matrix::CreateLookAt(cameraPos, centerFrustum, DirectX::SimpleMath::Vector3::Up);
@@ -201,11 +204,10 @@ SimpleMath::Matrix ShadowRenderer::ComputeLightViewMatrix(CameraParameter camera
 
 
 	float projectionSize = std::max(maxPoint.x - minPoint.x, maxPoint.y - minPoint.y);
-	float nearPadding = 40.0f;  // 조명 투영행렬의 근,원평면에 약간의 여유 공간을 추가할때 사용.
-	float farPadding = 20.0f;
-	float nearPlane = minPoint.z - nearPadding;
-	float farPlane = maxPoint.z + farPadding;
-	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize + 2.0f, projectionSize + 2.0f, nearPlane, farPlane);
+	
+	float nearPlane = minPoint.z - NEAROFFSET;
+	float farPlane = maxPoint.z + FAROFFSET;
+	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize + PROJECTIONOFFSET, projectionSize + PROJECTIONOFFSET, nearPlane, farPlane);
 
 
 

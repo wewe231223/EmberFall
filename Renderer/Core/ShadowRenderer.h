@@ -11,12 +11,14 @@ class ShadowRenderer {
 	static constexpr SimpleMath::Vector3 LIGHTDIRECTION{ 1.f, -3.f, -1.f };
 
 	template<typename T>
-	static constexpr T SHADOWMAPSIZE = static_cast<T>(1500);
+	static constexpr T SHADOWMAPSIZE = static_cast<T>(2000);
 
-	//그림자 맵에 담을 프러스텀의 원평면 까지의 거리
-	static constexpr float FRUSTUMLENGTH = 10.0f;
+	static constexpr float NEAROFFSET = 20.0f;  // 조명 투영행렬의 근,원평면에 약간의 여유 공간을 추가할때 사용.
+	static constexpr float FAROFFSET = 10.0f;
 
-	static constexpr std::array<float, 3> SHADOWMAPOFFSET = { 10.0f, 30.0f, 100.0f };
+	static constexpr float PROJECTIONOFFSET = 2.0f; // 조명 투영공간의 크기를 조정하기 위한 오프셋값.
+
+	static constexpr std::array<float, 3> SHADOWMAPOFFSET = { 10.0f, 25.0f, 100.0f };
 public:
 	ShadowRenderer() = default;
 	ShadowRenderer(ComPtr<ID3D12Device> device);

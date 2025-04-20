@@ -777,8 +777,8 @@ void Scene::Update(DefaultBufferCPUIterator mainCameraBufferLocation) {
 			auto [mesh, shader, modelContext] = object.GetRenderData();
 			mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
 			mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
-			mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
-			mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 2);
+			//mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
+			//mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 2);
 
 		}
 		

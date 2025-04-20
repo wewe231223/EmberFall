@@ -155,7 +155,7 @@ float ComputeShadowFactor(float4 shadowPosH, float bias, float depth)
     }
     
     
-    return lerp(0.2f, 1.0f, percentLit / 9.0f);
+    return lerp(0.0f, 1.0f, percentLit / 9.0f);
     
    
 }
@@ -192,7 +192,7 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     {
         texPos = mul(worldPos, farViewProjection);
     }
-    texPos.xyz /= texPos.w;
+ 
     texPos.x = texPos.x * 0.5f + 0.5f;
     texPos.y = -texPos.y * 0.5f + 0.5f;
     float insideX = step(0.0f, texPos.x) * step(texPos.x, 1.0f);
@@ -201,7 +201,7 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     float valid = validWorld * validTex;
     
     
-    float bias = 0.0035f;
+    float bias = 0.003f;
 
     
     float depth;
@@ -219,8 +219,8 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
         depth = GBuffers[5].Sample(linearWrapSampler, texPos.xy).r;
     }
     
-    float shadowFactor = ComputeShadowFactor(texPos, bias, viewPos.z);
-    //float shadowFactor = 0.5f;
+    //float shadowFactor = ComputeShadowFactor(texPos, bias, viewPos.z);
+    float shadowFactor = 0.5f;
    
     
     if (dot((cameraPosition - worldPos.xyz), normal) >= 0)
