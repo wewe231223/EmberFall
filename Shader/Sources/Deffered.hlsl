@@ -139,7 +139,7 @@ float ComputeShadowFactor(float4 shadowPosH, float bias, float depth)
     [unroll]
     for (int i = 0; i < 9; ++i)
     {
-        if (depth <= shadowOffset.x && depth >= 0.1f)
+        if (depth >= 0.1f && depth <= shadowOffset.x )
         {
             percentLit += GBuffers[3].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
 
@@ -178,8 +178,9 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     float validWorld = step(0.000001, abs(worldPos.x));
 
     float4 viewPos = mul(worldPos, view);
+    
     float4 texPos;
-    if (viewPos.z <= shadowOffset.x && viewPos.z >= 0.1f)
+    if ( viewPos.z >= 0.1f && viewPos.z <= shadowOffset.x)
     {
         texPos = mul(worldPos, viewProjection);
 
@@ -206,7 +207,7 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     
     float depth;
     
-    if (viewPos.z <= shadowOffset.x && viewPos.z >= 0.1f)
+    if (viewPos.z >= 0.1f && viewPos.z <= shadowOffset.x )
     {
         depth = GBuffers[3].Sample(linearWrapSampler, texPos.xy).r;
     }
