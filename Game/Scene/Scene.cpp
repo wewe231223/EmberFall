@@ -737,7 +737,7 @@ void Scene::Update(DefaultBufferCPUIterator mainCameraBufferLocation) {
 				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
 				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
 				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
-				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 2);
+				//mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 2);
 
 			}
 		}
@@ -747,31 +747,24 @@ void Scene::Update(DefaultBufferCPUIterator mainCameraBufferLocation) {
 	for (auto& object : mEnvironmentObjects) {
 		
 		if (object.mCollider.GetActiveState()) {
-			if (mShadowRenderer->ShadowMapCulling(0, object.mCollider)) {
+			for(int i = 0 ; i< Config::SHADOWMAP_COUNT<int> ; ++i)
+			if (mShadowRenderer->ShadowMapCulling(i, object.mCollider)) {
 				auto [mesh, shader, modelContext] = object.GetRenderData();
-				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
+				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, i);
 			}
-			if (mShadowRenderer->ShadowMapCulling(1, object.mCollider)) {
-				auto [mesh, shader, modelContext] = object.GetRenderData();
-				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
-			}
-			if (mShadowRenderer->ShadowMapCulling(2, object.mCollider)) {
-				auto [mesh, shader, modelContext] = object.GetRenderData();
-				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 2);
-			}
+
 
 			if (mCamera.FrustumCulling(object.mCollider)) {
 				auto [mesh, shader, modelContext] = object.GetRenderData();
 
 				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
-
-
 			}
 		}
 		else {
 
 			auto [mesh, shader, modelContext] = object.GetRenderData();
 			mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+
 			mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
 			//mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
 			//mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 2);

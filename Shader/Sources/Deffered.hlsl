@@ -19,7 +19,7 @@ struct Light
     
 };
 
-Texture2D GBuffers[6] : register(t0, space0);
+Texture2D GBuffers[5] : register(t0, space0);
 StructuredBuffer<Light> gLight : register(t1, space1);
 
 cbuffer Camera : register(b0)
@@ -28,7 +28,7 @@ cbuffer Camera : register(b0)
     matrix projection;
     matrix viewProjection;
     Matrix middleViewProjection;
-    Matrix farViewProjection;
+    //Matrix farViewProjection;
 
     float3 cameraPosition;
     int isShadow;
@@ -125,7 +125,21 @@ float ComputeShadowFactor(float4 shadowPosH, float bias, float depth)
 {
     depth = depth - bias;
     uint width, height, numMips;
-    GBuffers[3].GetDimensions(0, width, height, numMips);
+    //GBuffers[3].GetDimensions(0, width, height, numMips);
+    
+    if (depth >= 0.1f && depth <= shadowOffset.x)
+    {
+        GBuffers[3].GetDimensions(0, width, height, numMips);
+
+    }
+    else if (depth <= shadowOffset.y)
+    {
+        GBuffers[4].GetDimensions(0, width, height, numMips);
+    }
+   //else
+    //{
+        //GBuffers[5].GetDimensions(0, width, height, numMips);
+    //}
     float dx = 1.0f / (float) width;
     float dy = 1.0f / (float) height;
 
@@ -148,10 +162,10 @@ float ComputeShadowFactor(float4 shadowPosH, float bias, float depth)
         {
             percentLit += GBuffers[4].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
         }
-        else if (depth <= shadowOffset.z)
-        {
-            percentLit += GBuffers[5].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
-        }
+       // else
+        //{
+        //    percentLit += GBuffers[5].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
+       //}
     }
     
     
@@ -189,10 +203,10 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     {
         texPos = mul(worldPos, middleViewProjection);
     }
-    else if (viewPos.z <= shadowOffset.z)
-    {
-        texPos = mul(worldPos, farViewProjection);
-    }
+    //else
+    //{
+        //texPos = mul(worldPos, farViewProjection);
+    //}
  
     texPos.x = texPos.x * 0.5f + 0.5f;
     texPos.y = -texPos.y * 0.5f + 0.5f;
@@ -215,13 +229,13 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     {
         depth = GBuffers[4].Sample(linearWrapSampler, texPos.xy).r;
     }
-    else if (viewPos.z <= shadowOffset.z)
-    {
-        depth = GBuffers[5].Sample(linearWrapSampler, texPos.xy).r;
-    }
+    //else
+    //{
+        //depth = GBuffers[5].Sample(linearWrapSampler, texPos.xy).r;
+    //}
     
-    //float shadowFactor = ComputeShadowFactor(texPos, bias, viewPos.z);
-    float shadowFactor = 0.5f;
+    float shadowFactor = ComputeShadowFactor(texPos, bias, viewPos.z);
+    //float shadowFactor = 0.5f;
    
     
     if (dot((cameraPosition - worldPos.xyz), normal) >= 0)

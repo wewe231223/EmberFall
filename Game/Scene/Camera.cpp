@@ -7,6 +7,8 @@
 
 Camera::Camera(DefaultBufferCPUIterator bufferLocation) : mCameraBufferCPU(bufferLocation) {
 	mCameraConstant.proj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(CameraParam.fov, CameraParam.aspect, CameraParam.nearZ, CameraParam.farZ).Transpose();
+	
+	
 	DirectX::BoundingFrustum::CreateFromMatrix(mViewFrustum, mCameraConstant.proj.Transpose());
 	
 }

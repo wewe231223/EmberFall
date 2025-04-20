@@ -4,7 +4,7 @@ cbuffer Camera : register(b0)
     matrix projection;
     matrix viewProjection;
     Matrix middleViewProjection;
-    Matrix farViewProjection;
+    //Matrix farViewProjection;
 
     float3 cameraPosition;
     int isShadow;

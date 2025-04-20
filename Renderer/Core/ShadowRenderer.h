@@ -11,14 +11,14 @@ class ShadowRenderer {
 	static constexpr SimpleMath::Vector3 LIGHTDIRECTION{ 1.f, -3.f, -1.f };
 
 	template<typename T>
-	static constexpr T SHADOWMAPSIZE = static_cast<T>(1500);
+	static constexpr T SHADOWMAPSIZE = static_cast<T>(2000);
 
-	static constexpr float NEAROFFSET = 20.0f;  // 조명 투영행렬의 근,원평면에 약간의 여유 공간을 추가할때 사용.
-	static constexpr float FAROFFSET = 10.0f;
+	static constexpr float NEAROFFSET = 70.0f;  // 조명 투영행렬의 근,원평면에 약간의 여유 공간을 추가할때 사용.
+	static constexpr float FAROFFSET = 70.0f;
 
-	static constexpr float PROJECTIONOFFSET = 4.0f; // 조명 투영공간의 크기를 조정하기 위한 오프셋값.
+	static constexpr float PROJECTIONOFFSET = 2.0f; // 조명 투영공간의 크기를 조정하기 위한 오프셋값.
 
-	static constexpr std::array<float, 3> SHADOWMAPOFFSET = { 7.0f, 20.0f, 100.0f };
+	static constexpr std::array<float, Config::SHADOWMAP_COUNT<int>> SHADOWMAPOFFSET = { 10.0f, 60.0f };
 public:
 	ShadowRenderer() = default;
 	ShadowRenderer(ComPtr<ID3D12Device> device);
@@ -42,7 +42,7 @@ public:
 	DefaultBufferGPUIterator GetShadowCameraBuffer(int index);
 
 	Texture& GetShadowMap(int index);
-	std::array<Texture, 3>& GetShadowMapArray();
+	std::array<Texture, Config::SHADOWMAP_COUNT<int>>& GetShadowMapArray();
 
 	template<typename T>
 	static constexpr T GetShadowMapSize() { return SHADOWMAPSIZE<T>; }
@@ -56,14 +56,14 @@ private:
 	ComPtr<ID3D12DescriptorHeap> mShadowRTVHeap{};
 	ComPtr<ID3D12DescriptorHeap> mShadowDSVHeap{};
 
-	std::array<DefaultBuffer, 3> mShadowCameraBuffer{};
+	std::array<DefaultBuffer, Config::SHADOWMAP_COUNT<int>> mShadowCameraBuffer{};
 
 	CameraConstants mShadowCamera{};
 
 	std::vector<DirectX::BoundingOrientedBox> mWorldBox{};
-	std::array<SimpleMath::Matrix, 3> mLightMatrix{};
+	std::array<SimpleMath::Matrix, Config::SHADOWMAP_COUNT<int>> mLightMatrix{};
 
-	std::array<Texture,3> mShadowMap{};
+	std::array<Texture, Config::SHADOWMAP_COUNT<int>> mShadowMap{};
 	Texture mDepthStencilMap{};
 
 

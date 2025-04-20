@@ -111,8 +111,8 @@ void Renderer::Render() {
 	mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 1);
 	mMeshRenderManager->RenderShadowPass(1, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(1));
 
-	mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 2);
-	mMeshRenderManager->RenderShadowPass(2, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(2));
+	//mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 2);
+	//mMeshRenderManager->RenderShadowPass(2, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(2));
 
 
 	viewport.TopLeftX = 0;

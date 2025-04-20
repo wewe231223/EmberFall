@@ -14,16 +14,17 @@
 
 ShadowRenderer::ShadowRenderer(ComPtr<ID3D12Device> device) {
 	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
-	rtvHeapDesc.NumDescriptors = 3;
+	rtvHeapDesc.NumDescriptors = Config::SHADOWMAP_COUNT<int>;
 	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 	rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	CheckHR(device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&mShadowRTVHeap)));
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE shadowMapHandle{ mShadowRTVHeap->GetCPUDescriptorHandleForHeapStart() };
 
-	mShadowMap[0] = Texture(device, DXGI_FORMAT_R8G8B8A8_UNORM, SHADOWMAPSIZE<UINT64>, SHADOWMAPSIZE<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-	mShadowMap[1] = Texture(device, DXGI_FORMAT_R8G8B8A8_UNORM, SHADOWMAPSIZE<UINT64>, SHADOWMAPSIZE<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
-	mShadowMap[2] = Texture(device, DXGI_FORMAT_R8G8B8A8_UNORM, SHADOWMAPSIZE<UINT64>, SHADOWMAPSIZE<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+	for (Texture& shadowMap : mShadowMap) {
+		shadowMap = Texture(device, DXGI_FORMAT_R8G8B8A8_UNORM, SHADOWMAPSIZE<UINT64>, SHADOWMAPSIZE<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+
+	}
 	
 	for (Texture& shadowMap : mShadowMap) {
 		device->CreateRenderTargetView(shadowMap.GetResource().Get(), nullptr, shadowMapHandle);
@@ -45,10 +46,10 @@ ShadowRenderer::ShadowRenderer(ComPtr<ID3D12Device> device) {
 
 
 
-
-	mShadowCameraBuffer[0] = DefaultBuffer(device, sizeof(CameraConstants), 1, true);
-	mShadowCameraBuffer[1] = DefaultBuffer(device, sizeof(CameraConstants), 1, true);
-	mShadowCameraBuffer[2] = DefaultBuffer(device, sizeof(CameraConstants), 1, true);
+	for (DefaultBuffer& shadowCameraBuffer : mShadowCameraBuffer) {
+		shadowCameraBuffer = DefaultBuffer(device, sizeof(CameraConstants), 1, true);
+	}
+	
 }
 
 void ShadowRenderer::SetShadowDSVRTV(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, int index) {
@@ -76,20 +77,22 @@ void ShadowRenderer::Update(DefaultBufferCPUIterator worldCameraBuffer) {
 
 	mLightMatrix[0] = ComputeLightViewMatrix(cameraParam, invView, cameraParam.nearZ, SHADOWMAPOFFSET[0]);
 	mLightMatrix[1] = ComputeLightViewMatrix(cameraParam, invView, SHADOWMAPOFFSET[0], SHADOWMAPOFFSET[1]);
-	mLightMatrix[2] = ComputeLightViewMatrix(cameraParam, invView, SHADOWMAPOFFSET[1], SHADOWMAPOFFSET[2]);
+	//mLightMatrix[2] = ComputeLightViewMatrix(cameraParam, invView, SHADOWMAPOFFSET[1], SHADOWMAPOFFSET[2]);
 
-	StablizeShadowMatrix(mLightMatrix[0]);
-	StablizeShadowMatrix(mLightMatrix[1]);
-	StablizeShadowMatrix(mLightMatrix[2]);
+	for (SimpleMath::Matrix& lightMatrix : mLightMatrix) {
+		StablizeShadowMatrix(lightMatrix);
+	}
+
 
 	mShadowCamera.view = worldCamera.view;
 	mShadowCamera.viewProj = mLightMatrix[0];
 	mShadowCamera.middleViewProj = mLightMatrix[1];
-	mShadowCamera.farViewProj = mLightMatrix[2];
+	//mShadowCamera.farViewProj = mLightMatrix[2];
+
 	mShadowCamera.cameraPosition = worldCamera.cameraPosition;
 	mShadowCamera.lengthOffset.x = SHADOWMAPOFFSET[0];
 	mShadowCamera.lengthOffset.y = SHADOWMAPOFFSET[1];
-	mShadowCamera.lengthOffset.z = SHADOWMAPOFFSET[2];
+	//mShadowCamera.lengthOffset.z = SHADOWMAPOFFSET[2];
 
 	mShadowCamera.isShadow = 1;
 
@@ -98,8 +101,8 @@ void ShadowRenderer::Update(DefaultBufferCPUIterator worldCameraBuffer) {
 	mShadowCamera.viewProj = mLightMatrix[1];
 	std::memcpy(*mShadowCameraBuffer[1].CPUBegin(), &mShadowCamera, sizeof(CameraConstants));
 	
-	mShadowCamera.viewProj = mLightMatrix[2];
-	std::memcpy(*mShadowCameraBuffer[2].CPUBegin(), &mShadowCamera, sizeof(CameraConstants));
+	//mShadowCamera.viewProj = mLightMatrix[2];
+	//std::memcpy(*mShadowCameraBuffer[2].CPUBegin(), &mShadowCamera, sizeof(CameraConstants));
 
 
 }
@@ -136,7 +139,7 @@ Texture& ShadowRenderer::GetShadowMap(int index) {
 	return mShadowMap[index];
 }
 
-std::array<Texture, 3>& ShadowRenderer::GetShadowMapArray() {
+std::array<Texture, Config::SHADOWMAP_COUNT<int>>& ShadowRenderer::GetShadowMapArray() {
 	return mShadowMap;
 }
 
@@ -171,8 +174,8 @@ SimpleMath::Matrix ShadowRenderer::ComputeLightViewMatrix(CameraParameter camera
 
 	SimpleMath::Vector3 directionNormalized = LIGHTDIRECTION;
 	directionNormalized.Normalize();
-	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (150.0f));
-	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (FRUSTUMLENGTH - cameraParam.nearZ) );
+	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (150.0f));
+	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (farZ - nearZ) );
 
 	SimpleMath::Matrix view = SimpleMath::Matrix::CreateLookAt(cameraPos, centerFrustum, DirectX::SimpleMath::Vector3::Up);
 
@@ -207,6 +210,9 @@ SimpleMath::Matrix ShadowRenderer::ComputeLightViewMatrix(CameraParameter camera
 	
 	float nearPlane = minPoint.z - NEAROFFSET;
 	float farPlane = maxPoint.z + FAROFFSET;
+
+	
+
 	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize + PROJECTIONOFFSET, projectionSize + PROJECTIONOFFSET, nearPlane, farPlane);
 
 
