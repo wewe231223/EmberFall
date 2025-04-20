@@ -37,7 +37,7 @@ struct MaterialConstants
 
 struct GrassPosition
 {
-    float2 position; // x z 좌표 
+    float3 position;
     float scale; 
     uint tex; 
 };
@@ -56,42 +56,6 @@ SamplerState anisotropicWrapSampler : register(s4);
 SamplerState anisotropicClampSampler : register(s5);
 
 
-float GetHeight(float x, float z)
-{
-    // 로컬 좌표 계산
-    float localX = x - minX;
-    float localZ = z - minZ;
-
-    // 그리드상의 부동소수점 좌표
-    float fcol = localX / gridSpacing;
-    float frow = localZ / gridSpacing;
-
-    // 정수 인덱스는 소수점 부분을 버림(floor) 처리
-    int col = (int) fcol;
-    int row = (int) frow;
-
-    // 인덱스를 범위 내로 제한 (분기 없는 clamp 함수 사용)
-    col = clamp(col, 0, globalWidth - 2);
-    row = clamp(row, 0, globalHeight - 2);
-
-    // 보간 계수 계산
-    float t = fcol - col;
-    float u = frow - row;
-
-    // 인덱스 계산
-    int index00 = row * globalWidth + col;
-    int index10 = index00 + 1;
-    int index01 = index00 + globalWidth;
-    int index11 = index01 + 1;
-
-    // x 방향 선형 보간
-    float y0 = lerp(TerrainVertices[index00].y, TerrainVertices[index10].y, t);
-    float y1 = lerp(TerrainVertices[index01].y, TerrainVertices[index11].y, t);
-
-    // z 방향 보간하여 최종 높이 산출
-    return lerp(y0, y1, u);
-}
-
 struct Payload
 {
     uint baseIndex;
@@ -99,9 +63,9 @@ struct Payload
 };
 
 #define GRASS_GRID_COUNT 2500
-#define GRASS_PER_GRID 2048
+#define GRASS_PER_GRID 512
 #define GRASS_PER_DISPATCH 64
-#define GRASS_CULL_DISTANCE 100.0f
+#define GRASS_CULL_DISTANCE 200.0f
 #define GRASS_COUNT GRASS_PER_GRID * GRASS_GRID_COUNT
 #define MAX_VERTEX_COUNT (GRASS_PER_DISPATCH * 4)
 #define MAX_INDEX_COUNT (GRASS_PER_DISPATCH * 2)
@@ -160,23 +124,20 @@ void mainMS(
     const uint localId = groupThreadId.x;
     const uint grassIndex = pl.baseIndex + localId;
 
-    if (grassIndex >= GRASS_COUNT)
-        return;
-
     SetMeshOutputCounts(pl.culled ? 0 : MAX_VERTEX_COUNT, pl.culled ? 0 : MAX_INDEX_COUNT);
 
     if (pl.culled) 
         return; 
     
     GrassPosition grass = grassVertices[grassIndex];
-    float3 basePos = float3(grass.position.x, GetHeight(grass.position.x, grass.position.y), grass.position.y);
+    float3 basePos = grass.position;
 
-    float halfSize = grass.scale;
+    float halfSize = grass.scale * 0.5f;
     
-    basePos += halfSize; 
-    float3 up = float3(0, 1, 0);
-    float3 toCamera = normalize(cameraPosition - basePos);
-    float3 right = normalize(cross(up, toCamera));
+    basePos.y += halfSize; 
+    float3 toCameraXZ = normalize(float3(cameraPosition.x - basePos.x, 0.0f, cameraPosition.z - basePos.z));
+    float3 right = float3(toCameraXZ.z, 0.0f, -toCameraXZ.x);
+    const float3 up = float3(0.0f, 1.0f, 0.0f);
 
     float3 v0 = basePos + (-right + up) * halfSize;
     float3 v1 = basePos + (right + up) * halfSize;
@@ -197,6 +158,7 @@ void mainMS(
     outVerts[vtxBase + 2].uv = float2(1, 1);
     outVerts[vtxBase + 3].uv = float2(0, 1);
 
+    [unroll]
     for (int i = 0; i < 4; ++i)
         outVerts[vtxBase + i].texIndex = grass.tex;
 

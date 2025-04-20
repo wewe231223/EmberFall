@@ -7,10 +7,10 @@
 
 class GrassRenderer {
 	template<typename T>
-	constexpr static T GRASS_INSTANCE_COUNT = static_cast<T>(2048 * 2500);
+	constexpr static T GRASS_INSTANCE_COUNT = static_cast<T>(512 * 2500);
 
 	struct GrassPoint {
-		SimpleMath::Vector2 position{};
+		SimpleMath::Vector3 position{};
 		float scale{};
 		UINT tex{ 0 }; // 하나의 material 안에서의 diffuse 텍스쳐 인덱스
 	};

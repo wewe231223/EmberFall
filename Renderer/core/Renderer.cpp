@@ -145,11 +145,10 @@ void Renderer::Render() {
 	mMeshRenderManager->RenderGPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin() );
 	mMeshRenderManager->Reset();
 
-	mGrassRenderer.SetMaterial(0);
 	mGrassRenderer.Render(mCommandList, mMainCameraBuffer.GPUBegin(), mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress());
 
-	//mParticleManager->RenderSO(mCommandList);
-	//mParticleManager->RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress());
+	mParticleManager->RenderSO(mCommandList);
+	mParticleManager->RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress());
 
 	// Deffered Rendering Pass 
 	mShadowRenderer.GetShadowMap().Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
@@ -185,8 +184,8 @@ void Renderer::ExecuteRender() {
 	Renderer::FlushCommandQueue();
 
 	mStringRenderer.Render();
-	//mParticleManager->PostRender();
-	//mParticleManager->ValidateParticle();
+	mParticleManager->PostRender();
+	mParticleManager->ValidateParticle();
 
 	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
 	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
