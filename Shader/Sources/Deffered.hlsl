@@ -32,6 +32,7 @@ cbuffer Camera : register(b0)
 
     float3 cameraPosition;
     int isShadow;
+    float3 shadowOffset;
 }
 
 struct Deffered_VIN
@@ -138,16 +139,16 @@ float ComputeShadowFactor(float4 shadowPosH, float bias, float depth)
     [unroll]
     for (int i = 0; i < 9; ++i)
     {
-        if (depth <= 10.0f && depth >=0.1f)
+        if (depth <= shadowOffset.x && depth >= 0.1f)
         {
             percentLit += GBuffers[3].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
 
         }
-        else if (depth <= 30.0f)
+        else if (depth <= shadowOffset.y)
         {
             percentLit += GBuffers[4].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
         }
-        else if(depth <= 100.0f)
+        else if (depth <= shadowOffset.z)
         {
             percentLit += GBuffers[5].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
         }
@@ -176,18 +177,18 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 
     float validWorld = step(0.000001, abs(worldPos.x));
 
-    float3 viewPos = mul(worldPos, view);
+    float4 viewPos = mul(worldPos, view);
     float4 texPos;
-    if (viewPos.z <= 10.0f && viewPos.z >= 0.1f)
+    if (viewPos.z <= shadowOffset.x && viewPos.z >= 0.1f)
     {
         texPos = mul(worldPos, viewProjection);
 
     }
-    else if (viewPos.z <= 30.0f)
+    else if (viewPos.z <= shadowOffset.y)
     {
         texPos = mul(worldPos, middleViewProjection);
     }
-    else if (viewPos.z <= 100.0f)
+    else if (viewPos.z <= shadowOffset.z)
     {
         texPos = mul(worldPos, farViewProjection);
     }
@@ -205,22 +206,23 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     
     float depth;
     
-    if (viewPos.z <= 10.0f && viewPos.z>=0.1f)
+    if (viewPos.z <= shadowOffset.x && viewPos.z >= 0.1f)
     {
         depth = GBuffers[3].Sample(linearWrapSampler, texPos.xy).r;
     }
-    else if (viewPos.z <= 30.0f)
+    else if (viewPos.z <= shadowOffset.y)
     {
         depth = GBuffers[4].Sample(linearWrapSampler, texPos.xy).r;
     }
-    else
+    else if (viewPos.z <= shadowOffset.z)
     {
         depth = GBuffers[5].Sample(linearWrapSampler, texPos.xy).r;
     }
     
-    float shadowFactor = ComputeShadowFactor(texPos, bias, depth);
+    float shadowFactor = ComputeShadowFactor(texPos, bias, viewPos.z);
     //float shadowFactor = 0.5f;
-
+   
+    
     if (dot((cameraPosition - worldPos.xyz), normal) >= 0)
     {
         shadowFactor = 1.0f;

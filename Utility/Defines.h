@@ -24,6 +24,7 @@ struct CameraConstants {
 
     SimpleMath::Vector3 cameraPosition;
     int isShadow{ 0 };
+    SimpleMath::Vector3 lengthOffset;
 
 };
 
