@@ -115,6 +115,7 @@ void ProcessPlayerLookCS(std::shared_ptr<GameSession>& session, const Packets::P
 
     userObject->GetTransform()->SetLook(FbsPacketFactory::GetVector3(look->look()));
     userObject->Update();
+    userObject->LateUpdate();
 }
 
 void ProcessPlayerSelectWeaponCS(std::shared_ptr<GameSession>& session, const Packets::PlayerSelectWeaponCS* const weapon) {

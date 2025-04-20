@@ -4,6 +4,7 @@
 #include "GameTimer.h"
 
 #include "GameEventManager.h"
+#include "ObjectManager.h"
 
 EventTrigger::EventTrigger(std::shared_ptr<GameObject> owner, std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount)
     : Trigger{ owner, lifeTime }, mEvent{ event }, mProduceEventDelay{ eventDelay }, mProduceEventCount{ eventCount } {
@@ -28,6 +29,11 @@ void EventTrigger::OnCollision(const std::shared_ptr<GameObject>& opponent, cons
     }
 
     auto opponentId = opponent->GetId();
+    auto opponentTag = gObjectManager->GetObjectFromId(opponentId)->GetTag();
+    if (ObjectTag::TRIGGER == opponentTag or ObjectTag::ENV == opponentTag or ObjectTag::NONE == opponentTag) {
+        return;
+    }
+
     if (not mProducedEventCounter.contains(opponentId) and opponentId != mEvent->sender) {
         mProducedEventCounter.try_emplace(opponentId, 0.0f, 1);
         mEvent->receiver = opponentId;

@@ -245,10 +245,10 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
         return;
     }
 
+    auto senderTag = gObjectManager->GetObjectFromId(event->sender)->GetTag();
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
     {
-        auto senderTag = gObjectManager->GetObjectFromId(event->sender)->GetTag();
         if (event->sender != event->receiver and ObjectTag::PLAYER != senderTag) {
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
             owner->mSpec.hp -= attackEvent->damage;
