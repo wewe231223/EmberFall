@@ -96,6 +96,7 @@ void GameObject::Reset() {
 
 void GameObject::Init() {
     decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
+    mWeaponSystem.SetOwnerId(GetId());
     mAnimationStateMachine.SetOwner(sharedThis);
 
     for (auto& component : mComponents) {

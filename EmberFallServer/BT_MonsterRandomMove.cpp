@@ -4,7 +4,7 @@
 #include "MonsterScript.h"
 
 float BT::BT_MonsterRandomMove::CalculateDecideValue(const std::shared_ptr<Script>& ownerScript) const {
-    return 0.3f;
+    return 0.1f;
 }
 
 void BT::BT_MonsterRandomMove::Build(const std::shared_ptr<Script>& ownerScript) {

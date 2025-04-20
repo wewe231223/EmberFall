@@ -23,7 +23,7 @@ void BT::BT_MonsterAttacked::Build(const std::shared_ptr<Script>& ownerScript) {
             return NodeStatus::FAIL;
         }
 
-        if (owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
+        if (owner->mAnimationStateMachine.IsChangable() and Packets::AnimationState_ATTACKED == owner->mAnimationStateMachine.GetCurrState()) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Waiting Attacked Animation End");
             return NodeStatus::SUCCESS;
         }

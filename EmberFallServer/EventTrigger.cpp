@@ -23,11 +23,24 @@ void EventTrigger::Update(const float deltaTime) { }
 void EventTrigger::LateUpdate(const float deltaTime) { }
 
 void EventTrigger::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    if (nullptr == opponent) {
+    if (nullptr == opponent and false == GetOwner()->mSpec.active) {
         return;
     }
 
-    opponent->DispatchGameEvent(GameEventFactory::CloneEvent(mEvent));
+    auto opponentId = opponent->GetId();
+    if (not mProducedEventCounter.contains(opponentId) and opponentId != mEvent->sender) {
+        mProducedEventCounter.try_emplace(opponentId, 0.0f, 1);
+        mEvent->receiver = opponentId;
+        opponent->DispatchGameEvent(GameEventFactory::CloneEvent(mEvent));
+        return;
+    }
+
+    auto& [count, delay] = mProducedEventCounter[opponentId];
+    delay += GetOwner()->GetDeltaTime();
+    if (delay >= mProduceEventDelay and count < mProduceEventCount) {
+        count += 1;
+        opponent->DispatchGameEvent(GameEventFactory::CloneEvent(mEvent));
+    }
 }
 
 void EventTrigger::OnCollisionTerrain(const float height) { }

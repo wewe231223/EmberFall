@@ -36,8 +36,7 @@ public:
     virtual void DispatchGameEvent(struct GameEvent* event) override;
 
 public:
-    std::shared_ptr<GameObject> GetChaseTarget() const;
-    std::shared_ptr<GameObject>& GetChaseTarget();
+    NetworkObjectIdType GetChaseTarget() const;
 
     // 행동트리 관련 함수들 return NodeStatus
     BT::NodeStatus SetRandomTargetLocation(const float deltaTime);
@@ -54,7 +53,7 @@ private:
     SimpleMath::Vector3 mTargetPos{ SimpleMath::Vector3::Zero }; // TestTargetPos....
 
     // range to detecting player 
-    std::shared_ptr<class GameObject> mChaseTarget{ nullptr };
+    NetworkObjectIdType mChaseTarget{ INVALID_OBJ_ID };
     GameUnits::GameUnit<GameUnits::Meter> mAttackRange{ 3.0m };
     GameUnits::GameUnit<GameUnits::Meter> mPlayerDetectRange{ 10.0m };
 
