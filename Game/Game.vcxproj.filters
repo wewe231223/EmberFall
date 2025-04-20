@@ -78,6 +78,9 @@
     <ClCompile Include="Scene\LoadingScene.cpp">
       <Filter>LoadingScene</Filter>
     </ClCompile>
+    <ClCompile Include="UI\Loading.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -124,6 +127,9 @@
     </ClInclude>
     <ClInclude Include="Scene\LoadingScene.h">
       <Filter>LoadingScene</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Loading.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

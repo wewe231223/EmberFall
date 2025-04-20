@@ -164,6 +164,7 @@
     <ClCompile Include="System\Timer.cpp" />
     <ClCompile Include="UI\HealthBar.cpp" />
     <ClCompile Include="UI\Inventory.cpp" />
+    <ClCompile Include="UI\Loading.cpp" />
     <ClCompile Include="UI\Profile.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -181,6 +182,7 @@
     <ClInclude Include="System\Timer.h" />
     <ClInclude Include="UI\HealthBar.h" />
     <ClInclude Include="UI\Inventory.h" />
+    <ClInclude Include="UI\Loading.h" />
     <ClInclude Include="UI\Profile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
