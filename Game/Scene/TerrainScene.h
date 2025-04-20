@@ -20,10 +20,10 @@
 #include "../UI/HealthBar.h"
 #include "../UI/Profile.h"
 
-class Scene {
+class TerrainScene {
 public:
-	Scene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList ,std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation); 
-	~Scene();
+	TerrainScene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList ,std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation); 
+	~TerrainScene();
 public:
 	void ProcessNetwork(); 
 	void Update();

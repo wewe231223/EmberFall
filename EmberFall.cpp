@@ -15,7 +15,7 @@
 #include "Renderer/core/Renderer.h"
 #include "Game/System/Timer.h"
 #include "Game/System/Input.h"
-#include "Game/Scene/Scene.h"
+#include "Game/Scene/TerrainScene.h"
 #include "Utility/NonReplacementSampler.h"
 #include "MeshLoader/Loader/MeshLoader.h"
 #include "Utility/IntervalTimer.h"
@@ -76,8 +76,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     Renderer renderer{ hWnd };
     Input.Initialize(hWnd);
 
-    std::unique_ptr<Scene> scene{}; 
-    scene = std::make_unique<Scene>(renderer.GetDevice(), renderer.GetCommandList(), renderer.GetManagers(), renderer.GetMainCameraBuffer()); 
+    std::unique_ptr<TerrainScene> scene{}; 
+    scene = std::make_unique<TerrainScene>(renderer.GetDevice(), renderer.GetCommandList(), renderer.GetManagers(), renderer.GetMainCameraBuffer()); 
 
     renderer.UploadResource();
 

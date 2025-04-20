@@ -1,7 +1,7 @@
 #include <ranges>
 #include <random>
 #include "pch.h"
-#include "Scene.h"
+#include "TerrainScene.h"
 #include "../Renderer/Core/Renderer.h"
 #include "../MeshLoader/Loader/MeshLoader.h"
 #include "../MeshLoader/Loader/AnimationLoader.h"
@@ -15,7 +15,7 @@
 #include "../ServerLib/GameProtocol.h"
 
 #pragma region PacketProcessFn 
-void Scene::ProcessPacketProtocolVersion(const uint8_t* buffer) {
+void TerrainScene::ProcessPacketProtocolVersion(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ProtocolVersionSC>(buffer);
 	if (PROTOCOL_VERSION_MAJOR != data->major() or
 		PROTOCOL_VERSION_MINOR != data->minor()) {
@@ -25,24 +25,24 @@ void Scene::ProcessPacketProtocolVersion(const uint8_t* buffer) {
 	}
 }
 
-void Scene::ProcessNotifyId(const uint8_t* buffer) {
+void TerrainScene::ProcessNotifyId(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::NotifyIdSC>(buffer);
 	gClientCore->InitSessionId(data->playerId());
 }
 
-void Scene::ProcessPlayerExit(const uint8_t* buffer) {
+void TerrainScene::ProcessPlayerExit(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::PlayerExitSC>(buffer);
 	if (mPlayerIndexmap.contains(data->playerId())) {
 		mPlayerIndexmap[data->playerId()]->SetActiveState(false);
 	}
 }
 
-void Scene::ProcessLatency(const uint8_t* buffer) {
+void TerrainScene::ProcessLatency(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::PacketLatencySC>(buffer);
 
 }
 
-void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
+void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAppearedSC>(buffer);
 
 	auto FindNextPlayerLoc = [this]() {
@@ -197,7 +197,7 @@ void Scene::ProcessObjectAppeared(const uint8_t* buffer) {
 	}
 }
 
-void Scene::ProcessObjectDisappeared(const uint8_t* buffer) {
+void TerrainScene::ProcessObjectDisappeared(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectDisappearedSC>(buffer);
 
 	if (data->objectId() < OBJECT_ID_START) {
@@ -212,7 +212,7 @@ void Scene::ProcessObjectDisappeared(const uint8_t* buffer) {
 	}
 }
 
-void Scene::ProcessObjectRemoved(const uint8_t* buffer) {
+void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectRemovedSC>(buffer);
 
 	if (data->objectId() < OBJECT_ID_START) {
@@ -227,7 +227,7 @@ void Scene::ProcessObjectRemoved(const uint8_t* buffer) {
 	}
 }
 
-void Scene::ProcessObjectMove(const uint8_t* buffer) {
+void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectMoveSC>(buffer);
 
 	if (data->objectId() < OBJECT_ID_START) {
@@ -259,12 +259,12 @@ void Scene::ProcessObjectMove(const uint8_t* buffer) {
 	}
 }
 
-void Scene::ProcessObjectAttacked(const uint8_t* buffer) {
+void TerrainScene::ProcessObjectAttacked(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAttackedSC>(buffer);
 	// HP 깍기 
 }
 
-void Scene::ProcessPacketAnimation(const uint8_t* buffer) {
+void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAnimationChangedSC>(buffer);
 
 	if (data->objectId() < OBJECT_ID_START) {
@@ -294,38 +294,38 @@ void Scene::ProcessPacketAnimation(const uint8_t* buffer) {
 }
 
 // 보석 상호작용 전용 패킷 처리 
-void Scene::ProcessGemInteraction(const uint8_t* buffer) {
+void TerrainScene::ProcessGemInteraction(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GemInteractSC>(buffer);
 }
 
-void Scene::ProcessGemCancelInteraction(const uint8_t* buffer) {
+void TerrainScene::ProcessGemCancelInteraction(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GemInteractionCancelSC>(buffer);
 }
 
-void Scene::ProcessGemDestroyed(const uint8_t* buffer) {
+void TerrainScene::ProcessGemDestroyed(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GemDestroyedSC>(buffer);
 
 }
 
 // 아이템 
-void Scene::ProcessUseItem(const uint8_t* buffer) {
+void TerrainScene::ProcessUseItem(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::UseItemSC>(buffer);
 
 }
 
-void Scene::ProcessAcquiredItem(const uint8_t* buffer) {
+void TerrainScene::ProcessAcquiredItem(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::AcquiredItemSC>(buffer);
 
 
 }
 
 // 원거리
-void Scene::ProcessFireProjectile(const uint8_t* buffer) {
+void TerrainScene::ProcessFireProjectile(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::FireProjectileSC>(buffer);
 
 }
 
-void Scene::ProcessProjectileMove(const uint8_t* buffer) {
+void TerrainScene::ProcessProjectileMove(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ProjectileMoveSC>(buffer);
 }
 
@@ -333,7 +333,7 @@ void Scene::ProcessProjectileMove(const uint8_t* buffer) {
 #pragma endregion 
 
 
-Scene::Scene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
+TerrainScene::TerrainScene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
 	
 	mInputSign = NonReplacementSampler::GetInstance().Sample(); 
 	mNetworkSign = NonReplacementSampler::GetInstance().Sample();
@@ -353,10 +353,10 @@ Scene::Scene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> co
 	mParticleManager	= std::get<3>(managers);
 	mCanvas				= std::get<4>(managers);
 
-	Scene::BuildShader(device); 
-	Scene::BuildMesh(device, commandList);
-	Scene::BuildMaterial();
-	Scene::BuildAniamtionController();
+	TerrainScene::BuildShader(device); 
+	TerrainScene::BuildMesh(device, commandList);
+	TerrainScene::BuildMaterial();
+	TerrainScene::BuildAniamtionController();
 
 	// SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", "Resources/Binarys/Terrain/TerrainBaked.bin");
 	tCollider.LoadFromFile("Resources/Binarys/Terrain/TerrainBaked.bin");
@@ -370,7 +370,7 @@ Scene::Scene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> co
 	mSkyFog.mMaterial = mMaterialManager->GetMaterial("SkyFogMaterial");
 
 
-	 Scene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
+	 TerrainScene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
 
 
 
@@ -673,19 +673,19 @@ Scene::Scene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> co
 
 }
 
-Scene::~Scene() {
+TerrainScene::~TerrainScene() {
 	gClientCore->End(); 
 }
 
-void Scene::ProcessNetwork() {
+void TerrainScene::ProcessNetwork() {
 	auto packetHandler = gClientCore->GetPacketHandler(); 
 	decltype(auto) buffer = packetHandler->GetBuffer(); 
 
-	Scene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
+	TerrainScene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
 	
 }
 
-void Scene::ProcessPackets(const uint8_t* buffer, size_t size) { 
+void TerrainScene::ProcessPackets(const uint8_t* buffer, size_t size) { 
 	const uint8_t* iter = buffer; 
 	
 	while (iter < buffer + size) {
@@ -694,93 +694,93 @@ void Scene::ProcessPackets(const uint8_t* buffer, size_t size) {
 
 }
 
-const uint8_t* Scene::ProcessPacket(const uint8_t* buffer) {
+const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 	decltype(auto) header = FbsPacketFactory::GetHeaderPtrSC(buffer); 
 	
 	switch (header->type) {
 	case Packets::PacketTypes_PT_PROTOCOL_VERSION_SC:
 	{
-		Scene::ProcessPacketProtocolVersion(buffer);
+		TerrainScene::ProcessPacketProtocolVersion(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_NOTIFY_ID_SC:
 	{
-		Scene::ProcessNotifyId(buffer);
+		TerrainScene::ProcessNotifyId(buffer);
 	}
 	break; 
 	case Packets::PacketTypes_PT_OBJECT_REMOVED_SC:
 	{
-		Scene::ProcessObjectRemoved(buffer);
+		TerrainScene::ProcessObjectRemoved(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_PLAYER_EXIT_SC:
 	{
-		Scene::ProcessPlayerExit(buffer);
+		TerrainScene::ProcessPlayerExit(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_LATENCT_SC:
 	{
-		Scene::ProcessLatency(buffer);
+		TerrainScene::ProcessLatency(buffer);
 	}
 	break; 
 	case Packets::PacketTypes_PT_OBJECT_APPEARED_SC:
 	{
-		Scene::ProcessObjectAppeared(buffer);
+		TerrainScene::ProcessObjectAppeared(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_OBJECT_DISAPPEARED_SC:
 	{
-		Scene::ProcessObjectDisappeared(buffer);
+		TerrainScene::ProcessObjectDisappeared(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_OBJECT_MOVE_SC:
 	{
-		Scene::ProcessObjectMove(buffer);
+		TerrainScene::ProcessObjectMove(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_OBJECT_ATTACKED_SC:
 	{
-		Scene::ProcessObjectAttacked(buffer);
+		TerrainScene::ProcessObjectAttacked(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_OBJECT_ANIMATION_CHANGED_SC:
 	{
-		Scene::ProcessPacketAnimation(buffer);
+		TerrainScene::ProcessPacketAnimation(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_GEM_INTERACT_SC:
 	{
-		Scene::ProcessGemInteraction(buffer);
+		TerrainScene::ProcessGemInteraction(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_GEM_CANCEL_INTERACTOIN_SC:
 	{
-		Scene::ProcessGemCancelInteraction(buffer);
+		TerrainScene::ProcessGemCancelInteraction(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_GEM_DESTROYED_SC:
 	{
-		Scene::ProcessGemDestroyed(buffer);
+		TerrainScene::ProcessGemDestroyed(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_USE_ITEM_SC:
 	{
-		Scene::ProcessUseItem(buffer);
+		TerrainScene::ProcessUseItem(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_ACQUIRED_ITEM_SC:
 	{
-		Scene::ProcessAcquiredItem(buffer);
+		TerrainScene::ProcessAcquiredItem(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_FIRE_PROJECTILE_SC:
 	{
-		Scene::ProcessFireProjectile(buffer);
+		TerrainScene::ProcessFireProjectile(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_PROJECTILE_MOVE_SC:
 	{
-		Scene::ProcessProjectileMove(buffer);
+		TerrainScene::ProcessProjectileMove(buffer);
 	}
 	break;
 	default:
@@ -790,7 +790,7 @@ const uint8_t* Scene::ProcessPacket(const uint8_t* buffer) {
 	return buffer + header->size; 
 }
 
-void Scene::Update() {
+void TerrainScene::Update() {
 	if (mMyPlayer != nullptr) {
 		//mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mCamera.GetTransform().GetPosition().x, mCamera.GetTransform().GetPosition().y, mCamera.GetTransform().GetPosition().z);
 
@@ -855,7 +855,7 @@ void Scene::Update() {
 	mMeshRenderManager->AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);
 }
 
-void Scene::SendNetwork() {
+void TerrainScene::SendNetwork() {
 	auto id = gClientCore->GetSessionId();
 	auto& keyTracker = Input.GetKeyboardTracker();
 
@@ -878,7 +878,7 @@ void Scene::SendNetwork() {
 	gClientCore->Send(packetCamera);
 }
 
-void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	MeshLoader Loader{};
 	MeshData data{}; 
 
@@ -1039,7 +1039,7 @@ void Scene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mMeshMap["Plane"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Plane, 10);
 }
 
-void Scene::BuildMaterial() {
+void TerrainScene::BuildMaterial() {
 	MaterialConstants mat{};
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Rolling Hills");
@@ -1135,7 +1135,7 @@ void Scene::BuildMaterial() {
 
 } 
 
-void Scene::BuildShader(ComPtr<ID3D12Device> device) {
+void TerrainScene::BuildShader(ComPtr<ID3D12Device> device) {
 	std::unique_ptr<GraphicsShaderBase> shader = std::make_unique<StandardShader>();
 	shader->CreateShader(device);
 	mShaderMap["StandardShader"] = std::move(shader);
@@ -1162,19 +1162,19 @@ void Scene::BuildShader(ComPtr<ID3D12Device> device) {
 }
 
 
-void Scene::BuildAniamtionController() {
-	Scene::BuildBaseAnimationController();
+void TerrainScene::BuildAniamtionController() {
+	TerrainScene::BuildBaseAnimationController();
 
-	Scene::BuildSwordManAnimationController(); 
-	Scene::BuildArcherAnimationController();
-	Scene::BuildMageAnimationController(); 
-	Scene::BuildShieldManController(); 
+	TerrainScene::BuildSwordManAnimationController(); 
+	TerrainScene::BuildArcherAnimationController();
+	TerrainScene::BuildMageAnimationController(); 
+	TerrainScene::BuildShieldManController(); 
 
-	Scene::BuildMonsterType1AnimationController();
-	Scene::BuildDemonAnimationController(); 
+	TerrainScene::BuildMonsterType1AnimationController();
+	TerrainScene::BuildDemonAnimationController(); 
 }
 
-void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
+void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 
 	struct EnvData {
 		GameProtocol::EnvironmentType envType;
@@ -1496,7 +1496,7 @@ void Scene::BuildEnvironment(const std::filesystem::path& envFile) {
 	std::move(envObjects.begin(), envObjects.end(), std::back_inserter(mEnvironmentObjects));
 }
 
-void Scene::BuildBaseAnimationController() {
+void TerrainScene::BuildBaseAnimationController() {
 	// Base Anim 
 	{
 		mAnimationMap["HumanBase"].Load("Resources/Assets/Knight/BaseAnim/BaseAnim.gltf");
@@ -1546,7 +1546,7 @@ void Scene::BuildBaseAnimationController() {
 	}
 }
 
-void Scene::BuildArcherAnimationController() {
+void TerrainScene::BuildArcherAnimationController() {
 	{
 		mAnimationMap["Archer"].Load("Resources/Assets/Knight/Archer/Archer.glb");
 		auto& loader = mAnimationMap["Archer"];
@@ -1645,7 +1645,7 @@ void Scene::BuildArcherAnimationController() {
 	}
 }
 
-void Scene::BuildSwordManAnimationController() {
+void TerrainScene::BuildSwordManAnimationController() {
 	// LongSword
 	{
 		mAnimationMap["LongSword"].Load("Resources/Assets/Knight/LongSword/SwordMan.glb");
@@ -1741,7 +1741,7 @@ void Scene::BuildSwordManAnimationController() {
 	}
 }
 
-void Scene::BuildMageAnimationController() {
+void TerrainScene::BuildMageAnimationController() {
 	{
 		mAnimationMap["Magician"].Load("Resources/Assets/Knight/Mage/Magician.glb");
 		auto& loader = mAnimationMap["Magician"];
@@ -1836,7 +1836,7 @@ void Scene::BuildMageAnimationController() {
 	}
 }
 
-void Scene::BuildShieldManController() {
+void TerrainScene::BuildShieldManController() {
 	mAnimationMap["ShieldMan"].Load("Resources/Assets/Knight/ShieldMan/ShieldMan.glb");
 	auto& loader = mAnimationMap["ShieldMan"];
 
@@ -1929,7 +1929,7 @@ void Scene::BuildShieldManController() {
 	};
 }
 
-void Scene::BuildMonsterType1AnimationController() {
+void TerrainScene::BuildMonsterType1AnimationController() {
 	mAnimationMap["MonsterType1"].Load("Resources/Assets/imp/imp.glb");
 	auto& loader = mAnimationMap["MonsterType1"];
 
@@ -1999,7 +1999,7 @@ void Scene::BuildMonsterType1AnimationController() {
 	};
 }
 
-void Scene::BuildDemonAnimationController() {
+void TerrainScene::BuildDemonAnimationController() {
 	mAnimationMap["Demon"].Load("Resources/Assets/Demon/Demon.glb");
 	auto& loader = mAnimationMap["Demon"];
 

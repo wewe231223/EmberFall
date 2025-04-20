@@ -28,6 +28,9 @@
     <Filter Include="UI">
       <UniqueIdentifier>{2a919e25-34db-47c3-8f87-a3b30b1b9e92}</UniqueIdentifier>
     </Filter>
+    <Filter Include="LoadingScene">
+      <UniqueIdentifier>{0d708428-ebef-4ede-b95d-e260bdfa5966}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -43,9 +46,6 @@
       <Filter>GameObject</Filter>
     </ClCompile>
     <ClCompile Include="Scene\Camera.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Scene\Scene.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
     <ClCompile Include="System\Timer.cpp">
@@ -72,6 +72,12 @@
     <ClCompile Include="UI\Profile.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\TerrainScene.cpp">
+      <Filter>TerrainScene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\LoadingScene.cpp">
+      <Filter>LoadingScene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -87,9 +93,6 @@
       <Filter>GameObject</Filter>
     </ClInclude>
     <ClInclude Include="Scene\Camera.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Scene.h">
       <Filter>Scene</Filter>
     </ClInclude>
     <ClInclude Include="System\Timer.h">
@@ -115,6 +118,12 @@
     </ClInclude>
     <ClInclude Include="UI\Profile.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\TerrainScene.h">
+      <Filter>TerrainScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\LoadingScene.h">
+      <Filter>LoadingScene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
