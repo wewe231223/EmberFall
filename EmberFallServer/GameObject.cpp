@@ -12,6 +12,7 @@ GameObject::GameObject()
     : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mTimer{ std::make_unique<SimpleTimer>() } {
     mWeaponSystem.SetWeapon(Packets::Weapon_SWORD);
     mPhysics->SetTransform(mTransform);
+    mOverlapped = std::make_unique<OverlappedUpdate>();
 }
 
 GameObject::~GameObject() { }
@@ -107,8 +108,8 @@ void GameObject::Init() {
 }
 
 void GameObject::RegisterUpdate() {
-    mOverlapped.owner = shared_from_this();
-    gServerCore->PQCS(0, GetId(), &mOverlapped);
+    mOverlapped->owner = shared_from_this();
+    gServerCore->PQCS(0, GetId(), mOverlapped.get());
 }
 
 void GameObject::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
@@ -120,7 +121,7 @@ void GameObject::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
     Update();
     LateUpdate();
 
-    gServerFrame->AddTimerEvent(GetId(), SysClock::now() + 500ms);
+    gServerFrame->AddTimerEvent(GetId(), SysClock::now() + 500ms, TimerEventType::NPC_UPDATE);
 }
 
 void GameObject::Update() {
@@ -147,6 +148,7 @@ void GameObject::Update() {
     if (nullptr == mBoundingObject) {
         return;
     }
+
     mBoundingObject->Update(mTransform->GetWorld());
 
     decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
@@ -159,30 +161,51 @@ void GameObject::LateUpdate() {
         return;
     }
 
+    // Game Event 처리
+    if (nullptr == mScript) {
+        return;
+    }
+
+    std::shared_ptr<GameEvent> event;
+    while (true) {
+        if (false == mGameEvents.try_pop(event)) {
+            break;
+        }
+
+        mScript->DispatchGameEvent(event.get());
+    }
+
     for (auto& component : mComponents) {
         component->LateUpdate(mDeltaTime);
     }
 
     mPhysics->LateUpdate(mDeltaTime);
     mTransform->LateUpdate(mDeltaTime);
+    mScript->LateUpdate(mDeltaTime);
 }
 
 void GameObject::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    mPhysics->SolvePenetration(impulse);
+    if (nullptr == mScript) {
+        return;
+    }
+
+    mScript->OnCollision(opponent, impulse);
+    if (ObjectTag::TRIGGER == opponent->GetTag()) {
+        opponent->OnCollision(std::static_pointer_cast<GameObject>(shared_from_this()), impulse);
+    }
 }
 
 void GameObject::OnCollisionTerrain(const float height) {
     mTransform->SetY(height);
-
     for (auto& component : mComponents) {
         component->OnCollisionTerrain(height);
     }
+
+    mScript->OnCollisionTerrain(height);
 }
 
-void GameObject::DispatchGameEvent(GameEvent* event) {
-    for (auto& component : mComponents) {
-        component->DispatchGameEvent(event);
-    }
+void GameObject::DispatchGameEvent(std::shared_ptr<GameEvent> event) {
+    mGameEvents.push(event);
 }
 
 void GameObject::ClearComponents() {
@@ -190,12 +213,14 @@ void GameObject::ClearComponents() {
 }
 
 void GameObject::Attack() {
-    //auto changable = mAnimationStateMachine.IsChangable();
-    //if (changable) {
-    //    mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACK);
-    //    auto extentsZ = SimpleMath::Vector3::Forward * mCollider->GetForwardExtents();
-    //    mWeaponSystem.Attack(mTransform->GetPosition() + extentsZ, mTransform->Forward());
-    //}
+    auto changable = mAnimationStateMachine.IsChangable();
+    if (not changable or nullptr == mBoundingObject) {
+        return;
+    }
+
+    mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACK);
+    auto extentsZ = SimpleMath::Vector3::Forward * mBoundingObject->GetForwardExtents();
+    mWeaponSystem.Attack(mTransform->GetPosition() + extentsZ, mTransform->Forward());
 }
 
 void GameObject::Attack(const SimpleMath::Vector3& dir) {

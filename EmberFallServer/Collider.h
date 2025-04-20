@@ -32,6 +32,9 @@ public:
 
 public:
     ColliderType GetType() const;
+    virtual float GetForwardExtents() const abstract; // extents-z
+    virtual float GetRadiusCircumplex() const abstract;
+    virtual float GetRadiusCircumplexSq() const abstract;
 
     virtual CollisionResult IsColliding(const std::shared_ptr<BoundingObject>& other) const abstract;
     virtual std::shared_ptr<BoundingObject> Clone() const abstract;
@@ -51,6 +54,10 @@ public:
 public:
     DirectX::BoundingOrientedBox GetBoundingBox() const;
 
+    virtual float GetForwardExtents() const override; // extents-z
+    virtual float GetRadiusCircumplex() const override;
+    virtual float GetRadiusCircumplexSq() const override;
+
     virtual CollisionResult IsColliding(const std::shared_ptr<BoundingObject>& other) const override;
     virtual std::shared_ptr<BoundingObject> Clone() const override;
     virtual void Update(const SimpleMath::Matrix& mat) override;
@@ -68,6 +75,10 @@ public:
     virtual ~SphereCollider();
 
 public:
+    virtual float GetForwardExtents() const override; // extents-z
+    virtual float GetRadiusCircumplex() const override;
+    virtual float GetRadiusCircumplexSq() const override;
+
     virtual CollisionResult IsColliding(const std::shared_ptr<BoundingObject>& other) const override;
     virtual std::shared_ptr<BoundingObject> Clone() const override;
     virtual void Update(const SimpleMath::Matrix& mat) override;

@@ -37,6 +37,7 @@ public:
     virtual void Update(const float deltaTime) abstract;
     virtual void LateUpdate(const float deltaTime) abstract;
 
+    virtual void OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) abstract;
     virtual void OnCollisionTerrain(const float height) abstract;
 
     virtual void DispatchGameEvent(struct GameEvent* event) abstract;

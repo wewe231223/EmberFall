@@ -64,6 +64,15 @@ void MonsterScript::LateUpdate(const float deltaTime) {
     }
 }
 
+void MonsterScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    owner->GetPhysics()->SolvePenetration(impulse);
+}
+
 void MonsterScript::OnCollisionTerrain(const float height) { }
 
 void MonsterScript::DispatchGameEvent(GameEvent* event) { 
@@ -79,10 +88,6 @@ void MonsterScript::DispatchGameEvent(GameEvent* event) {
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
         if (event->sender != event->receiver) {
-            //if (GetOwner()->GetOwnGameScene()->GetObjectFromId(event->sender)->GetTag() == ObjectTag::MONSTER) {
-            //    return;
-            //}
-
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
             owner->mSpec.hp -= attackEvent->damage;
             

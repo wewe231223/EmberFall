@@ -146,7 +146,6 @@
     <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp" />
     <ClCompile Include="AnimationStateMachine.cpp" />
     <ClCompile Include="ArrowScript.cpp" />
-    <ClCompile Include="AttackSystem.cpp" />
     <ClCompile Include="BehaviorTreeBase.cpp" />
     <ClCompile Include="BossPlayerScript.cpp" />
     <ClCompile Include="BoundingBoxImporter.cpp" />
@@ -203,7 +202,6 @@
   <ItemGroup>
     <ClInclude Include="AnimationStateMachine.h" />
     <ClInclude Include="ArrowScript.h" />
-    <ClInclude Include="AttackSystem.h" />
     <ClInclude Include="BehaviorTreeBase.h" />
     <ClInclude Include="BossPlayerScript.h" />
     <ClInclude Include="BoundingBoxImporter.h" />

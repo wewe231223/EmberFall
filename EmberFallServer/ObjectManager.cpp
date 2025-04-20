@@ -3,6 +3,8 @@
 
 #include "PlayerScript.h"
 #include "MonsterScript.h"
+#include "Trigger.h"
+#include "EventTrigger.h"
 
 #include "Input.h"
 #include "Sector.h"
@@ -37,6 +39,15 @@ void ObjectManager::Init() {
         projectile->InitId(id);
         projectile->Reset();
         projectile->mSpec.active = false;
+
+        ++id;
+    }
+
+    for (NetworkObjectIdType id{ TRIGGER_ID_START }; auto & trigger : mTriggers) {
+        trigger = std::make_shared<GameObject>();
+        trigger->InitId(id);
+        trigger->Reset();
+        trigger->mSpec.active = false;
 
         ++id;
     }
@@ -106,8 +117,11 @@ std::shared_ptr<GameObject> ObjectManager::GetObjectFromId(NetworkObjectIdType i
     else if (id < PROJECTILE_ID_START) {
         return mMonsters[id - MONSTER_ID_START];
     }
-    else if (id < ENV_ID_START) {
+    else if (id < TRIGGER_ID_START) {
         return mProjectiles[id - PROJECTILE_ID_START];
+    }
+    else if (id < ENV_ID_START) {
+        return mTriggers[id - TRIGGER_ID_START];
     }
 
     return mEnvironments[id - ENV_ID_START];
@@ -123,12 +137,21 @@ std::shared_ptr<GameObject> ObjectManager::GetPlayer(NetworkObjectIdType id) con
 }
 
 std::shared_ptr<GameObject> ObjectManager::GetMonster(NetworkObjectIdType id) const {
-    if (id >= ENV_ID_START or id < MONSTER_ID_START) {
+    if (id >= PROJECTILE_ID_START or id < MONSTER_ID_START) {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Bad Monster Object Array Access - Access Id: [{}]", id);
         return nullptr;
     }
 
     return mMonsters[id - MONSTER_ID_START];
+}
+
+std::shared_ptr<GameObject> ObjectManager::GetTrigger(NetworkObjectIdType id) const {
+    if (id >= ENV_ID_START or id < TRIGGER_ID_START) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Bad Trigger Object Array Access - Access Id: [{}]", id);
+        return nullptr;
+    }
+
+    return mTriggers[id - TRIGGER_ID_START];
 }
 
 std::shared_ptr<GameObject> ObjectManager::GetEnv(NetworkObjectIdType id) const {
@@ -211,6 +234,55 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
     return nullptr;
 }
 
+std::shared_ptr<GameObject> ObjectManager::SpawnTrigger(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& ext, const SimpleMath::Vector3& dir, float lifeTime) {
+    NetworkObjectIdType validId{ };
+    if (false == mTriggerIndices.try_pop(validId)) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max Trigger");
+        return nullptr;
+    }
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Spawn Trigger: {}", validId);
+    auto obj = GetTrigger(validId);
+    obj->mSpec.active = true;
+    obj->CreateScript<Trigger>(obj, lifeTime);
+    obj->GetTransform()->SetPosition(pos);
+    obj->GetTransform()->SetLook(dir);
+    obj->CreateBoundingObject<OBBCollider>(SimpleMath::Vector3::Zero, ext);
+    obj->Init();
+
+    gSectorSystem->AddInSector(validId, obj->GetPosition());
+    obj->RegisterUpdate();
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Spawn Common Trigger in : {}, {}, {}", pos.x, pos.y, pos.z);
+
+    return obj;
+}
+
+std::shared_ptr<GameObject> ObjectManager::SpawnEventTrigger(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& ext, const SimpleMath::Vector3& dir, 
+    float lifeTime, std::shared_ptr<GameEvent> event, float delay, int32_t count) {
+    NetworkObjectIdType validId{ };
+    if (false == mTriggerIndices.try_pop(validId)) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max Trigger");
+        return nullptr;
+    }
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Spawn Trigger: {}", validId);
+    auto obj = GetTrigger(validId);
+    obj->mSpec.active = true;
+    obj->CreateScript<EventTrigger>(obj, event, lifeTime, delay, count);
+    obj->GetTransform()->SetPosition(pos);
+    obj->GetTransform()->SetLook(dir);
+    obj->CreateBoundingObject<OBBCollider>(SimpleMath::Vector3::Zero, ext);
+    obj->Init();
+
+    gSectorSystem->AddInSector(validId, obj->GetPosition());
+    obj->RegisterUpdate();
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Spawn Event Trigger in : {}, {}, {}", pos.x, pos.y, pos.z);
+
+    return obj;
+}
+
 void ObjectManager::ReleaseObject(NetworkObjectIdType id) {
     if (id > VALID_ID_MAX) {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Bad Object Array Access - Access Id: [{}]", id);
@@ -224,11 +296,18 @@ void ObjectManager::ReleaseObject(NetworkObjectIdType id) {
         return;
     }
     else if (id < PROJECTILE_ID_START) {
-        return mMonsterIndices.push(id);
+        mMonsterIndices.push(id);
+        return;
+    }
+    else if (id < TRIGGER_ID_START) {
+        mProjectileIndices.push(id);
+        return;
     }
     else if (id < ENV_ID_START) {
-        return mProjectileIndices.push(id);
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Release Trigger : {}", id);
+        mTriggerIndices.push(id);
+        return;
     }
 
-    return mEnvironmentsIndices.push(id);
+    mEnvironmentsIndices.push(id);
 }

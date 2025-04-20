@@ -209,7 +209,7 @@ void PlayerScript::Update(const float deltaTime) {
     CheckAndMove(deltaTime);
 
     // Attack
-    if (mInput->IsUp('P')) {
+    if (mInput->IsActiveKey('P')) {
         owner->Attack();
     }
 
@@ -219,35 +219,48 @@ void PlayerScript::Update(const float deltaTime) {
 void PlayerScript::LateUpdate(const float deltaTime) {
 }
 
+void PlayerScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    owner->GetPhysics()->SolvePenetration(impulse);
+}
+
 void PlayerScript::OnCollisionTerrain(const float height) {
-    if (Packets::AnimationState_JUMP == GetOwner()->mAnimationStateMachine.GetCurrState()) {
-        GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE);
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    if (Packets::AnimationState_JUMP == owner->mAnimationStateMachine.GetCurrState()) {
+        owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE);
     }
 }
 
 void PlayerScript::DispatchGameEvent(GameEvent* event) { 
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
-        if (event->sender != event->receiver) {
+    {
+        auto senderTag = gObjectManager->GetObjectFromId(event->sender)->GetTag();
+        if (event->sender != event->receiver and ObjectTag::PLAYER != senderTag) {
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
-            GetOwner()->mSpec.hp -= attackEvent->damage;
-            GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED, true);
-            GetOwner()->GetPhysics()->AddForce(attackEvent->knockBackForce);
+            owner->mSpec.hp -= attackEvent->damage;
+            owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED, true);
+            owner->GetPhysics()->AddForce(attackEvent->knockBackForce);
 
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!", GetOwner()->GetId());
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!", owner->GetId());
         }
         break;
+    }
 
-    case GameEventType::DESTROY_GEM_COMPLETE:
-        {
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Finish");
-            auto ownerId = static_cast<SessionIdType>(GetOwner()->GetId());
-            //decltype(auto) destroyPacket = FbsPacketFactory::GemDestroyedSC(ownerId, GetOwner()->GetPosition());
-            //gServerCore->SendAll(destroyPacket);
-
-            mInteraction = false;
-            mInteractionObj = INVALID_OBJ_ID;
-        }
+    default:
         break;
     }
 }
@@ -358,7 +371,7 @@ void PlayerScript::CheckAndJump(const float deltaTime) {
     auto physics{ GetPhysics() };
 
     // Jump
-    if (mInput->IsDown(VK_SPACE) and physics->IsOnGround()) {
+    if (mInput->IsActiveKey(VK_SPACE) and physics->IsOnGround()) {
         owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_JUMP);
         physics->CheckAndJump(deltaTime);
     }

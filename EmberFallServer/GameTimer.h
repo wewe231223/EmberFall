@@ -13,9 +13,15 @@ using Duration = std::chrono::duration<float, TimePeriod>;
 using TimePoint = Clock::time_point;
 using EventCallBack = std::function<void()>;
 
+enum class TimerEventType : uint8_t {
+    NPC_UPDATE,
+    TRIGGER_DEAD
+};
+
 struct TimerEvent {
     NetworkObjectIdType id;
     SysClock::time_point executeTime;
+    TimerEventType eventType;
 
     constexpr bool operator<(const TimerEvent& other) const {
         return executeTime > other.executeTime;

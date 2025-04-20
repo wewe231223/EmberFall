@@ -42,7 +42,7 @@ struct GameEvent {
     GameEventType type;
     NetworkObjectIdType sender;
     NetworkObjectIdType receiver;
-
+    
     GameEvent() = default;
     GameEvent(GameEventType type, NetworkObjectIdType sender, NetworkObjectIdType receiver)
         : type(type), sender(sender), receiver(receiver) { }

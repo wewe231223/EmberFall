@@ -23,8 +23,8 @@ std::shared_ptr<class InputManager> ServerFrame::GetInputManager() const {
 
 void ServerFrame::Run() {
     ResourceManager::LoadEnvFromFile("../Resources/Binarys/Collider/EnvBB.bin");
-    ResourceManager::LoadEntityFromFile("../Resources/Binarys/Collider/Entitybb.bin");
-    ResourceManager::LoadEnvFromFile("../Resources/Binarys/Collider/AnimationInfo.bin");
+    //ResourceManager::LoadEntityFromFile("../Resources/Binarys/Collider/Entitybb.bin");
+    //ResourceManager::LoadEnvFromFile("../Resources/Binarys/Collider/AnimationInfo.bin");
     BoundingBoxImporter::LoadFromFile();
     gObjectManager->Init();
 
@@ -66,8 +66,8 @@ void ServerFrame::PQCS(int32_t transfferedBytes, ULONG_PTR completionKey, Overla
     gServerCore->PQCS(transfferedBytes, completionKey, overlapped);
 }
 
-void ServerFrame::AddTimerEvent(NetworkObjectIdType id, SysClock::time_point executeTime) {
-    mTimerEvents.push(TimerEvent{ id, executeTime });
+void ServerFrame::AddTimerEvent(NetworkObjectIdType id, SysClock::time_point executeTime, TimerEventType eventType) {
+    mTimerEvents.push(TimerEvent{ id, executeTime, eventType });
 }
 
 void ServerFrame::TimerThread() {
@@ -93,6 +93,21 @@ void ServerFrame::TimerThread() {
             continue;
         }
 
-        obj->RegisterUpdate();
+        switch (event.eventType) {
+        case TimerEventType::NPC_UPDATE:
+        {
+            obj->RegisterUpdate();
+            break;
+        }
+
+        case TimerEventType::TRIGGER_DEAD:
+        {
+            obj->Reset();
+            break;
+        }
+
+        default:
+            break;
+        }
     }
 }

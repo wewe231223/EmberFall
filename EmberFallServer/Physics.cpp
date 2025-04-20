@@ -120,11 +120,12 @@ void Physics::Update(const float deltaTime) {
         return;
     }
 
+    mVelocity.y = 0.0f;
     float speed = mVelocity.Length();
     SimpleMath::Vector3 moveDir = mVelocity;
     moveDir.Normalize();
     //UpdateGravity(deltaTime, moveDir, speed);   // 중력 적용
-    //UpdateFriction(deltaTime, moveDir, speed);
+    UpdateFriction(deltaTime, moveDir, speed);
 
     auto transform = mTransform.lock();
     transform->Translate(mVelocity * deltaTime);

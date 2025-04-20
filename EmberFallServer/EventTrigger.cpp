@@ -10,7 +10,6 @@ EventTrigger::EventTrigger(std::shared_ptr<GameObject> owner, std::shared_ptr<Ga
     if (0 == mProduceEventCount) {
         mProduceEventCount = static_cast<int32_t>(mLifeTime / mProduceEventDelay);
     }
-    auto pos = GetOwner()->GetPosition();
 }
 
 EventTrigger::~EventTrigger() { }
@@ -19,13 +18,17 @@ void EventTrigger::Init() {
     Trigger::Init();
 }
 
-void EventTrigger::Update(const float deltaTime) { 
-    auto col = std::static_pointer_cast<OBBCollider>(GetOwner()->GetBoundingObject());
-    auto colpos = col->GetBoundingBox().Center;
-    auto colex = col->GetBoundingBox().Extents;
-}
+void EventTrigger::Update(const float deltaTime) { }
 
 void EventTrigger::LateUpdate(const float deltaTime) { }
+
+void EventTrigger::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+    if (nullptr == opponent) {
+        return;
+    }
+
+    opponent->DispatchGameEvent(GameEventFactory::CloneEvent(mEvent));
+}
 
 void EventTrigger::OnCollisionTerrain(const float height) { }
 

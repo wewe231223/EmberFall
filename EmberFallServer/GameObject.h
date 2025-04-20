@@ -15,12 +15,11 @@
 
 #include "../ServerLib/INetworkObject.h"
 
+#include "GameTimer.h"
 #include "Collider.h"
-#include "GameObjectComponent.h"
 #include "Script.h"
 #include "WeaponSystem.h"
 #include "AnimationStateMachine.h"
-#include "GameTimer.h"
 
 struct ObjectSpec {
     bool active;                    // 활성화 여부
@@ -79,7 +78,7 @@ public:
     void OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
     void OnCollisionTerrain(const float height);
 
-    void DispatchGameEvent(GameEvent* event);
+    void DispatchGameEvent(std::shared_ptr<GameEvent> event);
 
     void Attack();
     void Attack(const SimpleMath::Vector3& dir);
@@ -105,12 +104,13 @@ public:
 public:
     ObjectSpec mSpec{ };
     AnimationStateMachine mAnimationStateMachine{ };
+    WeaponSystem mWeaponSystem{ INVALID_OBJ_ID };
 
 private:
     ObjectTag mTag{ ObjectTag::NONE };
     float mDeltaTime{ };
 
-    OverlappedUpdate mOverlapped{ };                                    // for update
+    std::unique_ptr<OverlappedUpdate> mOverlapped{ };                                    // for update
     std::unique_ptr<SimpleTimer> mTimer{ };
     std::shared_ptr<Transform> mTransform{ };                           // Transform
     std::shared_ptr<class Physics> mPhysics{ };                         // Physics
@@ -118,7 +118,7 @@ private:
     std::shared_ptr<BoundingObject> mBoundingObject{ };                 // boundingObject
     std::vector<std::shared_ptr<GameObjectComponent>> mComponents{ };   // Components
 
-    WeaponSystem mWeaponSystem{ INVALID_OBJ_ID };
+    Concurrency::concurrent_queue<std::shared_ptr<GameEvent>> mGameEvents{ };
 };
 
 // Definition of template functions

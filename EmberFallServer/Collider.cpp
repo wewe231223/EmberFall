@@ -26,6 +26,18 @@ DirectX::BoundingOrientedBox OBBCollider::GetBoundingBox() const {
     return mBoundingBox;
 }
 
+float OBBCollider::GetForwardExtents() const {
+    return mLocalBox.Extents.z;
+}
+
+float OBBCollider::GetRadiusCircumplex() const {
+    return SimpleMath::Vector3{ mLocalBox.Extents }.Length();
+}
+
+float OBBCollider::GetRadiusCircumplexSq() const {
+    return SimpleMath::Vector3{ mLocalBox.Extents }.LengthSquared();
+}
+
 CollisionResult OBBCollider::IsColliding(const std::shared_ptr<BoundingObject>& other) const {
     CollisionResult result{ };
 
@@ -74,6 +86,18 @@ SphereCollider::SphereCollider(const SphereCollider& sphere)
     : BoundingObject{ ColliderType::SPHERE }, mLocalSphere{ sphere.mLocalSphere } { }
 
 SphereCollider::~SphereCollider() { }
+
+float SphereCollider::GetForwardExtents() const {
+    return mLocalSphere.Radius;
+}
+
+float SphereCollider::GetRadiusCircumplex() const {
+    return mLocalSphere.Radius;
+}
+
+float SphereCollider::GetRadiusCircumplexSq() const {
+    return MathUtil::Square(mLocalSphere.Radius);
+}
 
 CollisionResult SphereCollider::IsColliding(const std::shared_ptr<BoundingObject>& other) const {
     return {};

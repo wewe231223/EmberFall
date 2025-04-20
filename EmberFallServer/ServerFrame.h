@@ -25,7 +25,7 @@ public:
     void Done();
 
     void PQCS(int32_t transfferedBytes, ULONG_PTR completionKey, OverlappedEx* overlapped);
-    void AddTimerEvent(NetworkObjectIdType id, SysClock::time_point executeTime);
+    void AddTimerEvent(NetworkObjectIdType id, SysClock::time_point executeTime, TimerEventType eventType);
 
 private:
     void TimerThread();

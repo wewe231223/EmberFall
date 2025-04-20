@@ -98,6 +98,12 @@ namespace MathUtil {
         }
     }
 
+    template <typename T> requires std::is_arithmetic_v<T>
+    inline T Square(T val)
+    {
+        return val * val;
+    }
+
     // Projection Vector to Axis
     inline float Projection(const SimpleMath::Vector3& vector, SimpleMath::Vector3 axis)
     {
@@ -320,6 +326,7 @@ namespace Collision {
             shortestAxis = -shortestAxis;
         }
 
+        shortestAxis.y = 0.0f; // y성분 삭제
         return shortestAxis * minRange;
     }
 

@@ -27,6 +27,7 @@ namespace Weapons {
     protected:
         bool mAttackable{ true };
         float mDamage{ };
+        SimpleMath::Vector3 mHitBox;
 
     private:
         Packets::Weapon mWeaponType;
