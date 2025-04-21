@@ -40,7 +40,7 @@ public:
     bool mAnimationChanged{ false };
 
 private:
-    bool mAnimationChangable{ true };
+    bool mIsLoopAnimation{ true };
     float mAnimationCounter{ };
     AnimationInfo mDefaultState{ Packets::AnimationState_IDLE };
     AnimationInfo mCurrState{ Packets::AnimationState_IDLE };

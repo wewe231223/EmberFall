@@ -7,7 +7,7 @@ AnimationStateMachine::AnimationStateMachine() { }
 AnimationStateMachine::~AnimationStateMachine() { }
 
 bool AnimationStateMachine::IsChangable() const {
-    return mAnimationChangable;
+    return mIsLoopAnimation;
 }
 
 Packets::AnimationState AnimationStateMachine::GetCurrState() const {
@@ -39,7 +39,7 @@ void AnimationStateMachine::ChangeState(Packets::AnimationState nextState, bool 
 
     mCurrState = mAnimationInfo[static_cast<size_t>(nextState)];
 
-    mAnimationChangable = mCurrState.loop;
+    mIsLoopAnimation = mCurrState.loop;
     mAnimationCounter = 0.0f;
     mAnimationChanged = true;
 }
@@ -50,10 +50,11 @@ void AnimationStateMachine::Update(const float deltaTime) {
     }
 
     mAnimationCounter += deltaTime;
-    if (mAnimationCounter > mCurrState.duration) {
-        if (mAnimationChangable) {
-            ChangeState(mDefaultState.state);
-        }
-        mAnimationChangable = true;
+    if (mAnimationCounter < mCurrState.duration) {
+        return;
+    }
+
+    if (not mIsLoopAnimation) {
+        ChangeState(mDefaultState.state);
     }
 }

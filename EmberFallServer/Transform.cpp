@@ -81,6 +81,7 @@ void Transform::SetY(const float y) {
 }
 
 void Transform::Translate(const SimpleMath::Vector3& v) {
+    mPrevPosition = mPosition;
     mPosition += v;
 }
 
@@ -94,10 +95,9 @@ void Transform::CheckAndMove(const SimpleMath::Vector3& moveVec) {
 }
 
 void Transform::SetLook(const SimpleMath::Vector3& lookVec) {
-    //mRotation = MathUtil::GetQuatFromLook(lookVec);
     auto look = MathUtil::Normalize(lookVec);
-    
-    mRotation = SimpleMath::Quaternion::Concatenate(SimpleMath::Quaternion::FromToRotation(Forward(), lookVec), mRotation);
+
+    mRotation = SimpleMath::Quaternion::FromToRotation(SimpleMath::Vector3::Forward, look);
     mRotation.Normalize();
 }
 

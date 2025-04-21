@@ -219,6 +219,7 @@ void GameObject::Attack() {
         return;
     }
 
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Object {} has changed state to attack", GetId());
     mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACK);
     auto extentsZ = SimpleMath::Vector3::Forward * mBoundingObject->GetForwardExtents();
     mWeaponSystem.Attack(mTransform->GetPosition() + extentsZ, mTransform->Forward());

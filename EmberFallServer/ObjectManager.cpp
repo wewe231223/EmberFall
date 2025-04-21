@@ -192,7 +192,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         auto obj = GetObjectFromId(validId);
         obj->mSpec.active = true;
         obj->CreateScript<MonsterScript>(obj);
-        obj->CreateBoundingObject<OBBCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 1.0f, 1.0f, 1.0f });
+        obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_IMP).bb);
         obj->Init();
         
         gSectorSystem->AddInSector(validId, obj->GetPosition());
@@ -241,7 +241,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnTrigger(const SimpleMath::Vector
         return nullptr;
     }
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Spawn Trigger: {}", validId);
     auto obj = GetTrigger(validId);
     obj->mSpec.active = true;
     obj->CreateScript<Trigger>(obj, lifeTime);
@@ -253,8 +252,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnTrigger(const SimpleMath::Vector
     gSectorSystem->AddInSector(validId, obj->GetPosition());
     obj->RegisterUpdate();
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Spawn Common Trigger in : {}, {}, {}", pos.x, pos.y, pos.z);
-
     return obj;
 }
 
@@ -262,11 +259,10 @@ std::shared_ptr<GameObject> ObjectManager::SpawnEventTrigger(const SimpleMath::V
     float lifeTime, std::shared_ptr<GameEvent> event, float delay, int32_t count) {
     NetworkObjectIdType validId{ };
     if (false == mTriggerIndices.try_pop(validId)) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max Trigger");
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max Event Trigger");
         return nullptr;
     }
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Spawn Trigger: {}", validId);
     auto obj = GetTrigger(validId);
     obj->mSpec.active = true;
     obj->CreateScript<EventTrigger>(obj, event, lifeTime, delay, count);
@@ -277,8 +273,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnEventTrigger(const SimpleMath::V
 
     gSectorSystem->AddInSector(validId, obj->GetPosition());
     obj->RegisterUpdate();
-
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Spawn Event Trigger in : {}, {}, {}", pos.x, pos.y, pos.z);
 
     return obj;
 }
@@ -304,7 +298,6 @@ void ObjectManager::ReleaseObject(NetworkObjectIdType id) {
         return;
     }
     else if (id < ENV_ID_START) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Release Trigger : {}", id);
         mTriggerIndices.push(id);
         return;
     }

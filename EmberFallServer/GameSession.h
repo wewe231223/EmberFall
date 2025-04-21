@@ -14,6 +14,8 @@ public:
     virtual void OnConnect() override;
     virtual void ProcessRecv(INT32 numOfBytes) override;
 
+private:
+    void InitUserObject();
 
 private:
     std::shared_ptr<GameObject> mUserObject{ nullptr };

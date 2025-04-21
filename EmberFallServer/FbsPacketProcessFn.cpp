@@ -105,6 +105,8 @@ void ProcessPlayerInputCS(std::shared_ptr<GameSession>& session, const Packets::
 
     auto player = userObject->GetScript<PlayerScript>();
     player->GetInput()->UpdateInput(input->key(), input->down());
+    userObject->Update();
+    userObject->LateUpdate();
 }
 
 void ProcessPlayerLookCS(std::shared_ptr<GameSession>& session, const Packets::PlayerLookCS* const look) {
@@ -113,7 +115,8 @@ void ProcessPlayerLookCS(std::shared_ptr<GameSession>& session, const Packets::P
         return;
     }
 
-    userObject->GetTransform()->SetLook(FbsPacketFactory::GetVector3(look->look()));
+    auto lookVec = FbsPacketFactory::GetVector3(look->look());
+    userObject->GetTransform()->SetLook(lookVec);
     userObject->Update();
     userObject->LateUpdate();
 }

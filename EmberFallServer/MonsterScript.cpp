@@ -11,7 +11,7 @@ MonsterScript::MonsterScript(std::shared_ptr<class GameObject> owner)
     : Script{ owner, ObjectTag::MONSTER, ScriptType::MONSTER } {
     owner->mSpec.entity = Packets::EntityType_MONSTER;
     owner->mSpec.hp = 100.0f;
-    owner->GetPhysics()->mFactor.maxMoveSpeed = 3.3mps;
+    owner->GetPhysics()->mFactor.maxMoveSpeed = 1.5mps;
 }
 
 MonsterScript::~MonsterScript() { }
@@ -113,6 +113,34 @@ NetworkObjectIdType MonsterScript::GetChaseTarget() const {
     return mChaseTarget;
 }
 
+bool MonsterScript::IsPlayerInAttackRange() const {
+    if (INVALID_OBJ_ID == mChaseTarget) {
+        return false;
+    }
+
+    auto owner = GetOwner();
+    auto chaseTarget = gObjectManager->GetPlayer(mChaseTarget);
+    if (nullptr == chaseTarget or false == chaseTarget->mSpec.active) {
+        return false;
+    }
+
+    auto targetPos = chaseTarget->GetPosition();
+    auto moveDir = targetPos - owner->GetPosition();
+    moveDir.y = 0.0f;
+    moveDir.Normalize();
+
+    targetPos.y = 0.0f;
+    auto compareXZ = owner->GetPosition();
+    compareXZ.y = 0.0f;
+
+    float attackRange = mAttackRange.Count();
+    if (SimpleMath::Vector3::DistanceSquared(targetPos, compareXZ) > MathUtil::Square(attackRange)) {
+        return false;
+    }
+
+    return true;
+}
+
 BT::NodeStatus MonsterScript::SetRandomTargetLocation(const float deltaTime) {
     auto owner = GetOwner();
     if (nullptr == owner) {
@@ -211,22 +239,7 @@ BT::NodeStatus MonsterScript::CheckPlayerInAttackRange(const float deltaTime) {
     }
 
     auto owner = GetOwner();
-    auto chaseTarget = gObjectManager->GetPlayer(mChaseTarget);
-    if (nullptr == chaseTarget or false == chaseTarget->mSpec.active) {
-        return BT::NodeStatus::FAIL;
-    }
-
-    auto targetPos = chaseTarget->GetPosition();
-    auto moveDir = targetPos - owner->GetPosition();
-    moveDir.y = 0.0f;
-    moveDir.Normalize();
-
-    targetPos.y = 0.0f;
-    auto compareXZ = owner->GetPosition();
-    compareXZ.y = 0.0f;
-
-    float attackRange = mAttackRange.Count();
-    if (SimpleMath::Vector3::DistanceSquared(targetPos, compareXZ) > MathUtil::Square(attackRange)) {
+    if (nullptr == owner or not IsPlayerInAttackRange()) {
         return BT::NodeStatus::FAIL;
     }
 
@@ -236,21 +249,18 @@ BT::NodeStatus MonsterScript::CheckPlayerInAttackRange(const float deltaTime) {
 
 BT::NodeStatus MonsterScript::Attack(const float deltaTime) {
     if (INVALID_OBJ_ID == mChaseTarget) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster Attack fail - chaseTarget is null");
         return BT::NodeStatus::FAIL;
     }
 
     auto owner = GetOwner();
     auto chaseTarget = gObjectManager->GetPlayer(mChaseTarget);
     if (nullptr == chaseTarget or false == chaseTarget->mSpec.active) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster Attack fail - chaseTarget is null or inactive");
         return BT::NodeStatus::FAIL;
     }
 
     auto currState = owner->mAnimationStateMachine.GetCurrState();
     if ((Packets::AnimationState_IDLE != currState and Packets::AnimationState_ATTACK != currState)
         and not owner->mAnimationStateMachine.IsChangable()) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster Attack failure - currState is not changable");
         return BT::NodeStatus::FAIL;
     }
 

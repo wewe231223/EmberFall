@@ -38,6 +38,8 @@ public:
 public:
     NetworkObjectIdType GetChaseTarget() const;
 
+    bool IsPlayerInAttackRange() const;
+
     // 행동트리 관련 함수들 return NodeStatus
     BT::NodeStatus SetRandomTargetLocation(const float deltaTime);
     BT::NodeStatus MoveTo(const float deltaTime);

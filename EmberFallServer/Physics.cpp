@@ -152,6 +152,7 @@ void Physics::ClampVelocity() {
 }
 
 void Physics::UpdateFriction(const float deltaTime, const SimpleMath::Vector3& moveDir, const float speed) {
+    static float maxFrictionTime = 0.1f;
     if (MathUtil::IsEqualVector(MathUtil::AbsVector(moveDir), SimpleMath::Vector3::Up)) {
         return;
     }
@@ -161,8 +162,9 @@ void Physics::UpdateFriction(const float deltaTime, const SimpleMath::Vector3& m
     SimpleMath::Vector3 frictionForce = inverseDir * normalForce.Count() * mFactor.friction;
 
     frictionForce.y = 0.0f; // Y축 계산 X
+    float frictionTime = std::clamp(deltaTime, 0.0f, maxFrictionTime);
     SimpleMath::Vector3 frictionAcc = frictionForce / mFactor.mass.Count();
-    SimpleMath::Vector3 resultVelocity = mVelocity + frictionAcc * deltaTime;
+    SimpleMath::Vector3 resultVelocity = mVelocity + frictionAcc * frictionTime;
 
     mVelocity.x = (mVelocity.x * resultVelocity.x < 0.0f) ? 0.0f : resultVelocity.x;
     mVelocity.z = (mVelocity.z * resultVelocity.z < 0.0f) ? 0.0f : resultVelocity.z;

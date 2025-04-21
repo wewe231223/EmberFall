@@ -79,7 +79,7 @@ void ResourceManager::LoadEntityFromFile(const std::filesystem::path& path) {
         mEntityInfos.try_emplace(name, EntityInfo{ });
 
         decltype(auto) info = mEntityInfos[name];
-        envs.read(reinterpret_cast<char*>(&info), sizeof(DirectX::BoundingBox) + sizeof(SimpleMath::Vector3));
+        envs.read(reinterpret_cast<char*>(&info), sizeof(DirectX::BoundingOrientedBox) + sizeof(SimpleMath::Vector3));
     }
 
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Anim File Load Sucess");
