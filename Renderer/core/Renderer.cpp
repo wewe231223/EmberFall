@@ -133,7 +133,7 @@ void Renderer::Render() {
 	// G-Buffer Pass 
 	auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	auto dsvHandle = mDSHeap->GetCPUDescriptorHandleForHeapStart();
-	mCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	mCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 0.0f, 0, 0, nullptr);
 
 	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	CD3DX12_CPU_DESCRIPTOR_HANDLE gBufferHandle{ mGBufferHeap->GetCPUDescriptorHandleForHeapStart() };
@@ -397,7 +397,7 @@ void Renderer::InitDepthStencilBuffer() {
 
 	CheckHR(mDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(mDSHeap.GetAddressOf())));
 
-	CD3DX12_CLEAR_VALUE clearValue{ DXGI_FORMAT_D24_UNORM_S8_UINT, 1.0f, 0 };
+	CD3DX12_CLEAR_VALUE clearValue{ DXGI_FORMAT_D24_UNORM_S8_UINT, 0.0f, 0 };
 	auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 
 	auto resourceDesc = CD3DX12_RESOURCE_DESC::Tex2D(

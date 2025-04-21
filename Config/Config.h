@@ -71,7 +71,7 @@ struct Config {
 
 	constexpr static const char* IMGUI_KOREAN_FONT_PATH{ "Resources/Font/NotoSansKR-Regular-Hestia.otf" };
 
-	constexpr static bool DEFAULT_REVERSE_Z{ false };
+	constexpr static bool DEFAULT_REVERSE_Z{ true };
 };
 
 

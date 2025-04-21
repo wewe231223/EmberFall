@@ -22,7 +22,7 @@ ShadowRenderer::ShadowRenderer(ComPtr<ID3D12Device> device) {
 	CD3DX12_CPU_DESCRIPTOR_HANDLE shadowMapHandle{ mShadowRTVHeap->GetCPUDescriptorHandleForHeapStart() };
 
 	for (Texture& shadowMap : mShadowMap) {
-		shadowMap = Texture(device, DXGI_FORMAT_R8G8B8A8_UNORM, SHADOWMAPSIZE<UINT64>, SHADOWMAPSIZE<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		shadowMap = Texture(device, DXGI_FORMAT_R32_FLOAT, SHADOWMAPSIZE<UINT64>, SHADOWMAPSIZE<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
 	}
 	
@@ -57,7 +57,7 @@ void ShadowRenderer::SetShadowDSVRTV(ComPtr<ID3D12Device> device, ComPtr<ID3D12G
 	auto dsv = mShadowDSVHeap->GetCPUDescriptorHandleForHeapStart();
 	rtv.Offset(index, device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
 
-	commandList->ClearDepthStencilView(mShadowDSVHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	commandList->ClearDepthStencilView(mShadowDSVHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 0.0f, 0, 0, nullptr);
 	commandList->ClearRenderTargetView(rtv, DirectX::Colors::Black, 0, nullptr);
 	commandList->OMSetRenderTargets(1, &rtv, FALSE, &dsv);
 
@@ -77,7 +77,6 @@ void ShadowRenderer::Update(DefaultBufferCPUIterator worldCameraBuffer) {
 
 	mLightMatrix[0] = ComputeLightViewMatrix(cameraParam, invView, cameraParam.nearZ, SHADOWMAPOFFSET[0]);
 	mLightMatrix[1] = ComputeLightViewMatrix(cameraParam, invView, SHADOWMAPOFFSET[0], SHADOWMAPOFFSET[1]);
-	//mLightMatrix[2] = ComputeLightViewMatrix(cameraParam, invView, SHADOWMAPOFFSET[1], SHADOWMAPOFFSET[2]);
 
 	for (SimpleMath::Matrix& lightMatrix : mLightMatrix) {
 		StablizeShadowMatrix(lightMatrix);
@@ -87,12 +86,10 @@ void ShadowRenderer::Update(DefaultBufferCPUIterator worldCameraBuffer) {
 	mShadowCamera.view = worldCamera.view;
 	mShadowCamera.viewProj = mLightMatrix[0];
 	mShadowCamera.middleViewProj = mLightMatrix[1];
-	//mShadowCamera.farViewProj = mLightMatrix[2];
 
 	mShadowCamera.cameraPosition = worldCamera.cameraPosition;
 	mShadowCamera.lengthOffset.x = SHADOWMAPOFFSET[0];
 	mShadowCamera.lengthOffset.y = SHADOWMAPOFFSET[1];
-	//mShadowCamera.lengthOffset.z = SHADOWMAPOFFSET[2];
 
 	mShadowCamera.isShadow = 1;
 
@@ -101,9 +98,7 @@ void ShadowRenderer::Update(DefaultBufferCPUIterator worldCameraBuffer) {
 	mShadowCamera.viewProj = mLightMatrix[1];
 	std::memcpy(*mShadowCameraBuffer[1].CPUBegin(), &mShadowCamera, sizeof(CameraConstants));
 	
-	//mShadowCamera.viewProj = mLightMatrix[2];
-	//std::memcpy(*mShadowCameraBuffer[2].CPUBegin(), &mShadowCamera, sizeof(CameraConstants));
-
+	
 
 }
 
@@ -174,8 +169,8 @@ SimpleMath::Matrix ShadowRenderer::ComputeLightViewMatrix(CameraParameter camera
 
 	SimpleMath::Vector3 directionNormalized = LIGHTDIRECTION;
 	directionNormalized.Normalize();
-	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (250.0f));
-	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (farZ - nearZ) );
+	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (250.0f));
+	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (farZ - nearZ) );
 
 	
 
@@ -217,7 +212,7 @@ SimpleMath::Matrix ShadowRenderer::ComputeLightViewMatrix(CameraParameter camera
 
 	
 
-	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize + PROJECTIONOFFSET, projectionSize + PROJECTIONOFFSET, nearPlane, farPlane);
+	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize + PROJECTIONOFFSET, projectionSize + PROJECTIONOFFSET, farPlane, nearPlane);
 
 
 

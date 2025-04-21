@@ -123,7 +123,7 @@ float4 Lighting(float3 normal, float3 toCamera, float3 worldPos, float2 texcoord
 
 float ComputeShadowFactor(float4 shadowPosH, float bias, float depth)
 {
-    depth = depth - bias;
+    depth = depth + bias;
     uint width, height, numMips;
     //GBuffers[3].GetDimensions(0, width, height, numMips);
     
@@ -163,7 +163,7 @@ float ComputeShadowFactor(float4 shadowPosH, float bias, float depth)
     }
     
     
-    return lerp(0.0f, 1.0f, percentLit / 9.0f);
+    return percentLit / 9.0f;
     
    
 }
@@ -187,16 +187,13 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 
     float4 viewPos = mul(worldPos, view);
     
-    float4 texPos;
-    if ( viewPos.z >= 0.1f && viewPos.z <= shadowOffset.x)
-    {
-        texPos = mul(worldPos, viewProjection);
+    float shadowIndex = step(shadowOffset.x, viewPos.z);
 
-    }
-    else
-    {
-        texPos = mul(worldPos, middleViewProjection);
-    }
+    float4 posNear = mul(worldPos, viewProjection);
+    float4 posFar = mul(worldPos, middleViewProjection);
+
+
+    float4 texPos = lerp(posNear, posFar, shadowIndex);
     
  
     texPos.x = texPos.x * 0.5f + 0.5f;
@@ -212,28 +209,24 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     float blendOffset = 2.0f;
     float depth;
     
-    if (viewPos.z >= 0.1f && viewPos.z <= shadowOffset.x )
-    {
-        depth = GBuffers[3].Sample(linearWrapSampler, texPos.xy).r;
-    }
     
-    else
-    {
-        depth = GBuffers[4].Sample(linearWrapSampler, texPos.xy).r;
-    }
+  
+    depth = GBuffers[3 + shadowIndex].Sample(linearWrapSampler, texPos.xy).r;
     
+    
+
     
     //float shadowFactor = ComputeShadowFactor(texPos, bias, viewPos.z);
+   
     float shadowFactor = 0.5f;
    
+    float isBackFace = step(0, dot((cameraPosition - worldPos.xyz), normal));
+    shadowFactor = 0.5f + 0.5f * isBackFace;
    
     
-    if (dot((cameraPosition - worldPos.xyz), normal) >= 0)
-    {
-        shadowFactor = 1.0f;
-    }
+  
 
-    float shadowApply = step(depth + bias, texPos.z) * valid;
+    float shadowApply = step(texPos.z + bias, depth) * valid;
 
     float finalFactor = lerp(1.0f, shadowFactor, shadowApply);
 
