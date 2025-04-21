@@ -341,10 +341,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 	 //Scene::BakeEnvironment ("Resources/Binarys/Terrain/Environment.bin");
 	 Scene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
 
-
-
-
-
 	{
 		auto& object = mGameObjects.emplace_back(); 
 		object.mShader = mShaderMap["TerrainShader"].get();
@@ -356,168 +352,6 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		object.GetTransform().Scaling(1.f, 1.f, 1.f);
 	}
 
-	//std::ofstream file{ "Resources/Binarys/Terrain/env_bb.bin", std::ios::binary };
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Tree1);
-	//	auto& bb = mColliderMap["Pine3_Stem"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Tree2);
-	//	auto& bb = mColliderMap["Pine2"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Tree3);
-	//	auto& bb = mColliderMap["Pine4"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Rock1);
-	//	auto& bb = mColliderMap["Rock_1"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Rock2);
-	//	auto& bb = mColliderMap["Rock_2"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Rock3);
-	//	auto& bb = mColliderMap["Rock_3"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Rock4);
-	//	auto& bb = mColliderMap["Rock_4"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::LargeRock1);
-	//	auto& bb = mColliderMap["LargeRock1"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::LargeRock2);
-	//	auto& bb = mColliderMap["LargeRock2"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Mountain1);
-	//	auto& bb = mColliderMap["Mountain"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Mountain2);
-	//	auto& bb = mColliderMap["Mountain1"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-	//
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::TimberHouse);
-	//	auto& bb = mColliderMap["TimberHouse"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::StoneHouse);
-	//	auto& bb = mColliderMap["StoneHouse"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::LogHouse);
-	//	auto& bb = mColliderMap["LogHouse"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::WindMill);
-	//	auto& bb = mColliderMap["WindMill"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-	//{
-	//	auto type = static_cast<UINT>(EnvironmentType::Well);
-	//	auto& bb = mColliderMap["Well"];
-	//	auto offset = SimpleMath::Vector3{ 0.f, bb.GetOriginCenter().y, 0.f };
-
-	//	file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//	file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	//}
-
-
 	{
 		mEquipments["Sword"] = EquipmentObject{}; 
 		mEquipments["Sword"].mMesh = mMeshMap["Sword"].get();
@@ -526,19 +360,13 @@ Scene::Scene(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comm
 		mEquipments["Sword"].mCollider = mColliderMap["Sword"];
 		mEquipments["Sword"].mEquipJointIndex = 58;
 		mEquipments["Sword"].SetActiveState(true);
-
 	}
-
-
 
 	for (auto& environment : mEnvironmentObjects) {
 		environment.UpdateShaderVariables(); 
 	}
 
 	mGameObjects.resize(MeshRenderManager::MAX_INSTANCE_COUNT<size_t>, GameObject{});
-
-
-
 	mCamera = Camera(mainCameraBufferLocation);
 	
 	auto& cameraTransform = mCamera.GetTransform();
@@ -801,7 +629,10 @@ void Scene::SendNetwork() {
 		}
 	}
 
-	decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(id, mCamera.GetTransform().GetForward());
+	auto look = mCamera.GetTransform().GetForward();
+	look.y = 0.f; 
+
+	decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(id, look);
 	gClientCore->Send(packetCamera);
 }
 
