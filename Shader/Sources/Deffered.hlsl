@@ -132,14 +132,11 @@ float ComputeShadowFactor(float4 shadowPosH, float bias, float depth)
         GBuffers[3].GetDimensions(0, width, height, numMips);
 
     }
-    else if (depth <= shadowOffset.y)
+    else
     {
         GBuffers[4].GetDimensions(0, width, height, numMips);
     }
-   //else
-    //{
-        //GBuffers[5].GetDimensions(0, width, height, numMips);
-    //}
+  
     float dx = 1.0f / (float) width;
     float dy = 1.0f / (float) height;
 
@@ -158,14 +155,11 @@ float ComputeShadowFactor(float4 shadowPosH, float bias, float depth)
             percentLit += GBuffers[3].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
 
         }
-        else if (depth <= shadowOffset.y)
+        else
         {
             percentLit += GBuffers[4].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
         }
-       // else
-        //{
-        //    percentLit += GBuffers[5].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
-       //}
+      
     }
     
     
@@ -176,7 +170,7 @@ float ComputeShadowFactor(float4 shadowPosH, float bias, float depth)
 
 float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 {
-    //return float4(GBuffers[5].Sample(linearWrapSampler, input.texcoord).xxx, 1.0f);
+    //return float4(GBuffers[3].Sample(linearWrapSampler, input.texcoord).xxx, 1.0f);
     float4 diffuse = GBuffers[0].Sample(linearWrapSampler, input.texcoord);
     float3 normal = normalize(GBuffers[1].Sample(linearWrapSampler, input.texcoord).xyz);
     float4 worldPos = GBuffers[2].Sample(linearWrapSampler, input.texcoord);
@@ -199,14 +193,11 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
         texPos = mul(worldPos, viewProjection);
 
     }
-    else if (viewPos.z <= shadowOffset.y)
+    else
     {
         texPos = mul(worldPos, middleViewProjection);
     }
-    //else
-    //{
-        //texPos = mul(worldPos, farViewProjection);
-    //}
+    
  
     texPos.x = texPos.x * 0.5f + 0.5f;
     texPos.y = -texPos.y * 0.5f + 0.5f;
@@ -218,24 +209,23 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     
     float bias = 0.003f;
 
-    
+    float blendOffset = 2.0f;
     float depth;
     
     if (viewPos.z >= 0.1f && viewPos.z <= shadowOffset.x )
     {
         depth = GBuffers[3].Sample(linearWrapSampler, texPos.xy).r;
     }
-    else if (viewPos.z <= shadowOffset.y)
+    
+    else
     {
         depth = GBuffers[4].Sample(linearWrapSampler, texPos.xy).r;
     }
-    //else
-    //{
-        //depth = GBuffers[5].Sample(linearWrapSampler, texPos.xy).r;
-    //}
     
-    float shadowFactor = ComputeShadowFactor(texPos, bias, viewPos.z);
-    //float shadowFactor = 0.5f;
+    
+    //float shadowFactor = ComputeShadowFactor(texPos, bias, viewPos.z);
+    float shadowFactor = 0.5f;
+   
    
     
     if (dot((cameraPosition - worldPos.xyz), normal) >= 0)

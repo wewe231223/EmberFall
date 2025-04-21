@@ -174,8 +174,10 @@ SimpleMath::Matrix ShadowRenderer::ComputeLightViewMatrix(CameraParameter camera
 
 	SimpleMath::Vector3 directionNormalized = LIGHTDIRECTION;
 	directionNormalized.Normalize();
-	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (150.0f));
-	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (farZ - nearZ) );
+	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (250.0f));
+	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (farZ - nearZ) );
+
+	
 
 	SimpleMath::Matrix view = SimpleMath::Matrix::CreateLookAt(cameraPos, centerFrustum, DirectX::SimpleMath::Vector3::Up);
 
@@ -210,6 +212,8 @@ SimpleMath::Matrix ShadowRenderer::ComputeLightViewMatrix(CameraParameter camera
 	
 	float nearPlane = minPoint.z - NEAROFFSET;
 	float farPlane = maxPoint.z + FAROFFSET;
+
+
 
 	
 
