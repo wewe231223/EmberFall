@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Canvas.h"
+#include "../Game/System/Timer.h"
 
 Canvas::Canvas(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	std::vector<DirectX::XMFLOAT2> vertices{
@@ -82,11 +83,17 @@ void CanvasObject::Update() {
 		mTransform._32 = mRect.LTy;
 
 		if (mSpritable) {
-			mContext.UVTransform._11 = 1.f / static_cast<float>(mSpriteFrameInRow);
-			mContext.UVTransform._22 = 1.f / static_cast<float>(mSpriteFrameInCol);
+			UINT spriteIndex = GetSpriteIndex();
 
-			mContext.UVTransform._13 = static_cast<float>(mSpriteCoord.first) * mContext.UVTransform._11;
-			mContext.UVTransform._23 = static_cast<float>(mSpriteCoord.second) * mContext.UVTransform._22;
+			float spriteWidth = 1.f / static_cast<float>(mSpriteFrameInRow);
+			float spriteHeight = 1.f / static_cast<float>(mSpriteFrameInCol);
+
+			mContext.UVTransform = DirectX::XMFLOAT3X3{
+				spriteWidth,	0.f,				(spriteIndex % mSpriteFrameInRow) * spriteWidth,
+				0.f,			spriteHeight,		(spriteIndex / mSpriteFrameInCol) * spriteHeight,
+				0.f,			0.f,				1.f
+			};
+
 		}
 
 		mContext.Transform = Transpose(Multifly(mTransform, mScreenTransform));
@@ -97,17 +104,17 @@ void CanvasObject::Update() {
 void CanvasObject::ChangeImage(UINT imageIndex) {
 	mImageIndex = imageIndex;
 	mContext.ImageIndex = imageIndex;
+	mSpritable = false;
 }
 
-void CanvasObject::ChangeImage(UINT imageIndex, const std::pair<UINT, UINT>& imageWidthHeight, const std::pair<UINT, UINT>& imageUnit) {
+void CanvasObject::ChangeImage(UINT imageIndex, UINT spriteframeRow, UINT spriteframeCol, float spriteDuration) {
 	mImageIndex = imageIndex;
 	mContext.ImageIndex = imageIndex;
 
-	mImageWidthHeight = imageWidthHeight;
-	mImageUnit = imageUnit;
-	
-	mSpritable = false;
-
+	mSpritable = true;
+	mSpriteFrameInRow = spriteframeRow;
+	mSpriteFrameInCol = spriteframeCol;
+	mSpriteDuration = spriteDuration;
 }
 
 void CanvasObject::SetActive(bool active) {
@@ -120,19 +127,6 @@ bool CanvasObject::GetActive() const {
 
 CanvasRect& CanvasObject::GetRect() {
 	return mRect;
-}
-
-void CanvasObject::AdvanceSpriteFrame() {
-	if (mSpritable) {
-		mSpriteCoord.first++;
-		if (mSpriteCoord.first >= mSpriteFrameInRow) {
-			mSpriteCoord.first -= mSpriteFrameInRow;
-			mSpriteCoord.second += 1;
-			if (mSpriteCoord.second >= mSpriteFrameInCol) {
-				mSpriteCoord.second = 0;
-			}
-		}
-	}
 }
 
 DirectX::XMFLOAT3X3 CanvasObject::Multifly(const DirectX::XMFLOAT3X3& lhs, const DirectX::XMFLOAT3X3& rhs) const {
@@ -158,4 +152,12 @@ DirectX::XMFLOAT3X3 CanvasObject::Transpose(const DirectX::XMFLOAT3X3& mat) cons
 	DirectX::XMStoreFloat3x3(&result, matrix1);
 
 	return result;
+}
+
+UINT CanvasObject::GetSpriteIndex() {
+
+	UINT ms = Time.GetTimeSinceStarted<UINT ,std::chrono::milliseconds>();
+
+	float framedurationMS = (1000.f * mSpriteDuration) / (mSpriteFrameInRow * mSpriteFrameInCol);
+	return static_cast<UINT>(Time.GetTimeSinceStarted<UINT, std::chrono::milliseconds>() / framedurationMS) % (mSpriteFrameInCol * mSpriteFrameInRow); 
 }

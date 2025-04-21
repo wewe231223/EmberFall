@@ -3,11 +3,11 @@
 
 class Loading {
 public:
-	Loading();
-	~Loading();
+	Loading() = default;
+	~Loading() = default;
 
 public:
-	void Init(std::shared_ptr<Canvas> canvas, UINT img);
+	void Init(std::shared_ptr<Canvas> canvas, UINT img, UINT frameinRow, UINT frameinCol, float duration);
 
 	void Update(); 
 private:

@@ -28,17 +28,17 @@ public:
 	void Update();
 
 	void ChangeImage(UINT imageIndex);
-	void ChangeImage(UINT imageIndex, const std::pair<UINT, UINT>& imageWidthHeight, const std::pair<UINT, UINT>& imageUnit);
+	void ChangeImage(UINT imageIndex, UINT spriteframeRow, UINT spriteframeCol, float spriteDuration);
 
 	void SetActive(bool active);
 	bool GetActive() const;
 
 	CanvasRect& GetRect();
-
-	void AdvanceSpriteFrame();
 private:
 	DirectX::XMFLOAT3X3 Multifly(const DirectX::XMFLOAT3X3& lhs, const DirectX::XMFLOAT3X3& rhs) const;
 	DirectX::XMFLOAT3X3 Transpose(const DirectX::XMFLOAT3X3& mat) const;
+
+	UINT GetSpriteIndex(); 
 private:
 	Canvas* mCanvas{ nullptr };
 	
@@ -56,13 +56,10 @@ private:
 #pragma region UISpritable
 	bool mSpritable{ false };
 
-	std::pair<UINT, UINT> mImageWidthHeight{};
-	std::pair<UINT, UINT> mImageUnit{};
-
 	UINT mSpriteFrameInRow{ 0 };
 	UINT mSpriteFrameInCol{ 0 };
 
-	std::pair<UINT, UINT> mSpriteCoord{ 0,0 };
+	float mSpriteDuration{ 0.f };
 #pragma endregion 
 };
 

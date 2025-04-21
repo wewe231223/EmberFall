@@ -1,5 +1,3 @@
-#include <ranges>
-#include <random>
 #include "pch.h"
 #include "TerrainScene.h"
 #include "../Renderer/Core/Renderer.h"
@@ -333,27 +331,36 @@ void TerrainScene::ProcessProjectileMove(const uint8_t* buffer) {
 #pragma endregion 
 
 
-TerrainScene::TerrainScene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList, std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
-	
-	mInputSign = NonReplacementSampler::GetInstance().Sample(); 
+TerrainScene::TerrainScene(std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
+
+	mInputSign = NonReplacementSampler::GetInstance().Sample();
 	mNetworkSign = NonReplacementSampler::GetInstance().Sample();
-	
+
 	gClientCore->Init();
 	auto res = gClientCore->Start("127.0.0.1", 7777);
 	if (false == res) {
-		DebugBreak(); 
+		DebugBreak();
 		Crash(false);
 	}
 
+	mMeshRenderManager = std::get<0>(managers);
+	mTextureManager = std::get<1>(managers);
+	mMaterialManager = std::get<2>(managers);
+	mParticleManager = std::get<3>(managers);
+	mCanvas = std::get<4>(managers);
 
+	mCamera = Camera(mainCameraBufferLocation);
+	auto& cameraTransform = mCamera.GetTransform();
+	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
+	cameraTransform.Look({ 0.f,85.f,0.f });
+}
 
-	mMeshRenderManager	= std::get<0>(managers);
-	mTextureManager		= std::get<1>(managers);
-	mMaterialManager	= std::get<2>(managers);
-	mParticleManager	= std::get<3>(managers);
-	mCanvas				= std::get<4>(managers);
+TerrainScene::~TerrainScene() {
+	gClientCore->End(); 
+}
 
-	TerrainScene::BuildShader(device); 
+void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+	TerrainScene::BuildShader(device);
 	TerrainScene::BuildMesh(device, commandList);
 	TerrainScene::BuildMaterial();
 	TerrainScene::BuildAniamtionController();
@@ -370,14 +377,14 @@ TerrainScene::TerrainScene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsC
 	mSkyFog.mMaterial = mMaterialManager->GetMaterial("SkyFogMaterial");
 
 
-	 TerrainScene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
+	TerrainScene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
 
 
 
 
 
 	{
-		auto& object = mGameObjects.emplace_back(); 
+		auto& object = mGameObjects.emplace_back();
 		object.mShader = mShaderMap["TerrainShader"].get();
 		object.mMesh = mMeshMap["Terrain"].get();
 		object.mMaterial = mMaterialManager->GetMaterial("TerrainMaterial");
@@ -388,155 +395,6 @@ TerrainScene::TerrainScene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsC
 	}
 
 
-	/*std::ofstream file{ "env_bb.bin", std::ios::binary };
-	UINT c = 16; 
-	file.write(reinterpret_cast<const char*>(&c), sizeof(UINT));
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Tree1);
-		auto& bb = mColliderMap["Pine3_Stem"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Tree2);
-		auto& bb = mColliderMap["Pine2"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Tree3);
-		auto& bb = mColliderMap["Pine4"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Rock1);
-		auto& bb = mColliderMap["Rock_1"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Rock2);
-		auto& bb = mColliderMap["Rock_2"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Rock3);
-		auto& bb = mColliderMap["Rock_3"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Rock4);
-		auto& bb = mColliderMap["Rock_4"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::LargeRock1);
-		auto& bb = mColliderMap["LargeRock1"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::LargeRock2);
-		auto& bb = mColliderMap["LargeRock2"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Mountain1);
-		auto& bb = mColliderMap["Mountain"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Mountain2);
-		auto& bb = mColliderMap["Mountain1"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::TimberHouse);
-		auto& bb = mColliderMap["TimberHouse"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::StoneHouse);
-		auto& bb = mColliderMap["StoneHouse"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::LogHouse);
-		auto& bb = mColliderMap["LogHouse"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::WindMill);
-		auto& bb = mColliderMap["WindMill"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}
-
-	{
-		auto type = static_cast<UINT>(GameProtocol::EnvironmentType::Well);
-		auto& bb = mColliderMap["Well"].GetOriginBox();
-		auto offset = SimpleMath::Vector3{ 0.f, bb.Center.y, 0.f };
-		file.write(reinterpret_cast<const char*>(&type), sizeof(UINT));
-		file.write(reinterpret_cast<const char*>(&bb), sizeof(DirectX::BoundingOrientedBox));
-		file.write(reinterpret_cast<const char*>(&offset), sizeof(SimpleMath::Vector3));
-	}*/
-
-
 
 	{
 		auto& boss = mGameObjects.emplace_back();
@@ -544,10 +402,10 @@ TerrainScene::TerrainScene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsC
 		boss.mMesh = mMeshMap["Demon"].get();
 		boss.mMaterial = mMaterialManager->GetMaterial("DemonMaterial");
 		boss.mGraphController = mDemonAnimationController;
-		boss.mAnimated = true; 
+		boss.mAnimated = true;
 		boss.mCollider = mColliderMap["Demon"];
 		boss.SetActiveState(true);
-		boss.GetTransform().GetPosition() = { 3.f, tCollider.GetHeight(3.f, 36.f), 36.f};
+		boss.GetTransform().GetPosition() = { 3.f, tCollider.GetHeight(3.f, 36.f), 36.f };
 	}
 
 	{
@@ -563,9 +421,9 @@ TerrainScene::TerrainScene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsC
 	}
 
 	{
-		mEquipments["Sword"] = EquipmentObject{}; 
+		mEquipments["Sword"] = EquipmentObject{};
 		mEquipments["Sword"].mMesh = mMeshMap["Sword"].get();
-		mEquipments["Sword"].mShader = mShaderMap["StandardShader"].get(); 
+		mEquipments["Sword"].mShader = mShaderMap["StandardShader"].get();
 		mEquipments["Sword"].mMaterial = mMaterialManager->GetMaterial("SwordMaterial");
 		mEquipments["Sword"].mCollider = mColliderMap["Sword"];
 		mEquipments["Sword"].mEquipJointIndex = 36;
@@ -614,16 +472,11 @@ TerrainScene::TerrainScene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsC
 	}
 
 	for (auto& environment : mEnvironmentObjects) {
-		environment.UpdateShaderVariables(); 
+		environment.UpdateShaderVariables();
 	}
 
 	mGameObjects.resize(MeshRenderManager::MAX_INSTANCE_COUNT<size_t>, GameObject{});
 
-	mCamera = Camera(mainCameraBufferLocation);
-	
-	auto& cameraTransform = mCamera.GetTransform();
-	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
-	cameraTransform.Look({ 0.f,85.f,0.f });
 
 	ParticleVertex v{};
 
@@ -653,10 +506,10 @@ TerrainScene::TerrainScene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsC
 	v.position = DirectX::XMFLOAT3(10.f, 30.f, 10.f);
 	test2 = mParticleManager->CreateEmitParticle(commandList, v);
 
-	mInventoryUI.Init(mCanvas, 
-		mTextureManager->GetTexture("mid_dark_bar"), 
-		mTextureManager->GetTexture("mid_frame"), 
-		mTextureManager->GetTexture("Health"), 
+	mInventoryUI.Init(mCanvas,
+		mTextureManager->GetTexture("mid_dark_bar"),
+		mTextureManager->GetTexture("mid_frame"),
+		mTextureManager->GetTexture("Health"),
 		mTextureManager->GetTexture("HolyWater"),
 		mTextureManager->GetTexture("Cross")
 	);
@@ -670,11 +523,6 @@ TerrainScene::TerrainScene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsC
 
 
 	mProfileUI.Init(mCanvas, mTextureManager->GetTexture("big_circle_frame"), mTextureManager->GetTexture("Archer"));
-
-}
-
-TerrainScene::~TerrainScene() {
-	gClientCore->End(); 
 }
 
 void TerrainScene::ProcessNetwork() {

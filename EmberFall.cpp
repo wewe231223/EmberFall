@@ -15,7 +15,7 @@
 #include "Renderer/core/Renderer.h"
 #include "Game/System/Timer.h"
 #include "Game/System/Input.h"
-#include "Game/Scene/TerrainScene.h"
+#include "Game/Scene/SceneManager.h"
 #include "Utility/NonReplacementSampler.h"
 #include "MeshLoader/Loader/MeshLoader.h"
 #include "Utility/IntervalTimer.h"
@@ -74,23 +74,26 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	Console.Log("Application Start!",LogType::Info);
 
     Renderer renderer{ hWnd };
+    renderer.UploadResource();
+	renderer.ResetLoadCommandList();
+
     Input.Initialize(hWnd);
 
-    std::unique_ptr<TerrainScene> scene{}; 
-    scene = std::make_unique<TerrainScene>(renderer.GetDevice(), renderer.GetCommandList(), renderer.GetManagers(), renderer.GetMainCameraBuffer()); 
-
-    renderer.UploadResource();
+    SceneManager sceneManager{
+        renderer.GetManagers(),
+        renderer.GetMainCameraBuffer(),
+        renderer.GetDevice(),
+        renderer.GetLoadCommandList(),
+        [&renderer]() { renderer.LoadTextures();  }
+    };
 
     int n = NonReplacementSampler::GetInstance().Sample();
-
     Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::Escape, n, []() {
         PostQuitMessage(0);
         });
-
     Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F2, n, []() {Input.ToggleVirtualMouse(); });
 
     size_t frameCount = 0;
-
     Time.AddEvent(1s, [&frameCount]() {
         std::string title = "FPS : " + std::to_string(frameCount);
         SetWindowTextA(hWnd, title.c_str());
@@ -99,13 +102,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         });
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
-
     TextBlock* CPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1000.f, 0.f, 1400.f, 100.f }, StringColor::Black, "NotoSansKR");
     IntervalTimer CPUTimer{};
-
     TextBlock* GPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1000.f, 30.f, 1400.f, 200.f }, StringColor::Black, "NotoSansKR");
     IntervalTimer GPUTimer{};
-
 
     // 기본 메시지 루프입니다:
     while (true) {
@@ -123,9 +123,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             Time.AdvanceTime();
             Input.Update();
 
-            scene->ProcessNetwork();
-            scene->Update();
-            scene->SendNetwork();
+            if (sceneManager.CheckLoaded()) {
+                renderer.ExecuteLoadCommandList();
+				renderer.SetFeatureEnabled(sceneManager.GetCurrentSceneFeatureType());
+            }
+
+            sceneManager.Update();
+
 
             renderer.Render();
             CPUTimer.End();

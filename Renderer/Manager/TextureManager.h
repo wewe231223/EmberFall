@@ -9,8 +9,10 @@
 #ifdef max
 #undef max
 #endif
+
 class TextureManager {
 	static constexpr const char* IMAGE_DIRECTORY = "Resources/Image";
+	static constexpr const char* LOAD_DIRECTORY = "Resources/Image/Load";
 public:
 	TextureManager() = default;
 	TextureManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
@@ -18,19 +20,20 @@ public:
 
 	TextureManager(const TextureManager& other) = delete;
 	TextureManager& operator=(const TextureManager& other) = delete;
-
 	TextureManager(TextureManager&& other) = default;
 	TextureManager& operator=(TextureManager&& other) = default;
-public:
+
 	UINT GetTexture(const std::string& name);
-
-	void Bind(ComPtr<ID3D12GraphicsCommandList> commandList); 
-
+	void Bind(ComPtr<ID3D12GraphicsCommandList> commandList);
 	D3D12_GPU_DESCRIPTOR_HANDLE GetTextureHeapAddress();
+	void LoadAllImages(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
+
 private:
 	ComPtr<ID3D12DescriptorHeap> mTextureHeap{ nullptr };
-	std::unordered_map<std::string, std::pair<UINT,Texture>> mTextures{};
+	std::unordered_map<std::string, std::pair<UINT, Texture>> mTextures{};
+	UINT mCount{ 0 };
 };
+
 
 struct MaterialConstants {
 	SimpleMath::Color mDiffuseColor{};

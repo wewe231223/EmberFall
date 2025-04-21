@@ -145,10 +145,6 @@ void ParticleManager::PostRender() {
 	CheckHR(mParticleCountReadbackBuffer->Map(0, nullptr, reinterpret_cast<void**>(&data)));
 	mParticleCount = static_cast<UINT32>((*data) / sizeof(ParticleVertex));
 	mParticleCountReadbackBuffer->Unmap(0, nullptr);
-
-	if (mParticleCount == 0) {
-		DebugBreak(); 
-	}
 }
 
 void ParticleManager::ValidateParticle() {

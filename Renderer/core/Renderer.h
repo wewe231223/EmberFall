@@ -24,6 +24,11 @@
 #include "../Renderer/Render/GrassRenderer.h"
 #include "../Renderer/Render/Canvas.h"
 
+enum class RenderFeature : BYTE {
+	PARTICLE, 
+	GRASS,
+	END,
+};
 
 class Renderer {
 public:
@@ -41,8 +46,15 @@ public:
 
 	ComPtr<ID3D12Device10> GetDevice();
 	ComPtr<ID3D12GraphicsCommandList> GetCommandList();
+	ComPtr<ID3D12GraphicsCommandList> GetLoadCommandList(); 
+
+	void LoadTextures(); 
 
 	void UploadResource();
+	void ResetLoadCommandList(); 
+	void ExecuteLoadCommandList();
+
+	void SetFeatureEnabled(std::tuple<bool, bool> type);
 
 	void Update();
 
@@ -97,6 +109,10 @@ private:
 
 	ComPtr<IDXGISwapChain1> mSwapChain{ nullptr };
 
+	bool mExecute{ false };
+	ComPtr<ID3D12CommandAllocator> mLoadAllocator{ nullptr };
+	ComPtr<ID3D12GraphicsCommandList> mLoadCommandList{ nullptr };
+
 	ComPtr<ID3D12CommandAllocator> mAllocator{ nullptr };
 	ComPtr<ID3D12GraphicsCommandList6> mCommandList{ nullptr };
 
@@ -125,6 +141,7 @@ private:
 	std::shared_ptr<ParticleManager> mParticleManager{};
 	std::shared_ptr<Canvas> mCanvas{};
 
+	std::tuple<bool, bool> mFeatureEnabled{ false, false };
 	GrassRenderer mGrassRenderer{};
 
 	DefaultBuffer mTerrainHeaderBuffer{}; 

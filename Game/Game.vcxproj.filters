@@ -81,6 +81,9 @@
     <ClCompile Include="UI\Loading.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\SceneManager.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -130,6 +133,12 @@
     </ClInclude>
     <ClInclude Include="UI\Loading.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\SceneManager.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\RENDERER\MANAGER\SCENEMANAGER.H">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -159,6 +159,7 @@
     <ClCompile Include="Scene\Camera.cpp" />
     <ClCompile Include="Scene\LoadingScene.cpp" />
     <ClCompile Include="Scene\Player.cpp" />
+    <ClCompile Include="Scene\SceneManager.cpp" />
     <ClCompile Include="Scene\TerrainScene.cpp" />
     <ClCompile Include="System\Input.cpp" />
     <ClCompile Include="System\Timer.cpp" />
@@ -168,6 +169,7 @@
     <ClCompile Include="UI\Profile.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\RENDERER\MANAGER\SCENEMANAGER.H" />
     <ClInclude Include="GameObject\Animator.h" />
     <ClInclude Include="GameObject\Collider.h" />
     <ClInclude Include="GameObject\EquipmentObject.h" />
@@ -177,6 +179,7 @@
     <ClInclude Include="Scene\Camera.h" />
     <ClInclude Include="Scene\LoadingScene.h" />
     <ClInclude Include="Scene\Player.h" />
+    <ClInclude Include="Scene\SceneManager.h" />
     <ClInclude Include="Scene\TerrainScene.h" />
     <ClInclude Include="System\Input.h" />
     <ClInclude Include="System\Timer.h" />

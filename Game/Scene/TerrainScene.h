@@ -20,14 +20,19 @@
 #include "../UI/HealthBar.h"
 #include "../UI/Profile.h"
 
-class TerrainScene {
+#include "../UI/Loading.h"
+
+class TerrainScene : public IScene {
 public:
-	TerrainScene(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList ,std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation); 
-	~TerrainScene();
+	TerrainScene(std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation); 
+	virtual ~TerrainScene();
+
 public:
-	void ProcessNetwork(); 
-	void Update();
-	void SendNetwork(); 
+	virtual void Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) override; 
+
+	virtual void ProcessNetwork(); 
+	virtual void Update();
+	virtual void SendNetwork(); 
 
 private:
 	void BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList); 
