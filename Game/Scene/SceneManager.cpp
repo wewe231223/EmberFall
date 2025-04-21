@@ -24,7 +24,9 @@ SceneManager::SceneManager(std::tuple<std::shared_ptr<MeshRenderManager>, std::s
 }
 
 SceneManager::~SceneManager() {
-
+	if (mLoadingThread.joinable()) {
+		mLoadingThread.join(); 
+	}
 }
 
 std::tuple<bool, bool> SceneManager::GetCurrentSceneFeatureType() {

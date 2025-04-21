@@ -123,16 +123,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             Time.AdvanceTime();
             Input.Update();
 
-            if (sceneManager.CheckLoaded()) {
-                renderer.ExecuteLoadCommandList();
-				renderer.SetFeatureEnabled(sceneManager.GetCurrentSceneFeatureType());
-            }
-
             sceneManager.Update();
 
 
             renderer.Render();
             CPUTimer.End();
+
+            if (sceneManager.CheckLoaded()) {
+                renderer.ExecuteLoadCommandList();
+				renderer.SetFeatureEnabled(sceneManager.GetCurrentSceneFeatureType());
+            }
 
             GPUTimer.Start();
             renderer.ExecuteRender();

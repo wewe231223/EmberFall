@@ -30,6 +30,7 @@ public:
 
 	bool CheckLoaded(); 
 	void Update();
+ 
 private:
 	std::array<std::unique_ptr<IScene>, static_cast<size_t>(SceneType::END)> mScenes{};
 	std::array<std::tuple<bool, bool>, static_cast<size_t>(SceneType::END)> mSceneFeatureType{};
