@@ -3,7 +3,7 @@
 #include "LoadingScene.h"
 
 LoadingScene::LoadingScene(std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers) {
-	mLoading.Init(std::get<4>(managers), std::get<1>(managers)->GetTexture("circle 2"), 12, 1, 0.5f);
+	mLoading.Init(std::get<4>(managers), std::get<1>(managers)->GetTexture("_Run"), 10, 1, 0.7f);
 
 }
 
