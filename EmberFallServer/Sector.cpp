@@ -43,6 +43,7 @@ void Sector::TryInsert(NetworkObjectIdType id) {
     }
 
     case ObjectTag::MONSTER:
+    case ObjectTag::CORRUPTED_GEM:
     {
         mNPCs.insert(id);
         break;
@@ -89,7 +90,7 @@ void Sector::RemoveObject(NetworkObjectIdType id) {
     }
 }
 
-std::vector<NetworkObjectIdType> Sector::GetMonstersInRange(SimpleMath::Vector3 pos, const float range) {
+std::vector<NetworkObjectIdType> Sector::GetNPCsInRange(SimpleMath::Vector3 pos, const float range) {
     Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
     std::vector<NetworkObjectIdType> inRangeMonsters{ };
     for (const auto monsterId : mNPCs) {
@@ -326,7 +327,7 @@ void SectorSystem::UpdatePlayerViewList(const std::shared_ptr<GameObject>& playe
     for (const auto idx : checkSectors) {
         decltype(auto) sector = GetSector(idx);
 
-        const std::vector<NetworkObjectIdType> monsters = std::move(sector.GetMonstersInRange(pos, range));
+        const std::vector<NetworkObjectIdType> monsters = std::move(sector.GetNPCsInRange(pos, range));
         const std::vector<NetworkObjectIdType> players = std::move(sector.GetPlayersInRange(pos, range));
 
         inViewRangeMonsters.insert(inViewRangeMonsters.end(), monsters.begin(), monsters.end());

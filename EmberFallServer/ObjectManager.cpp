@@ -209,6 +209,11 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
 
     case Packets::EntityType_CORRUPTED_GEM:
     {
+        if (false == mNPCIndices.try_pop(validId)) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max NPC");
+            break;
+        }
+
         auto obj = GetObjectFromId(validId);
         obj->mSpec.active = true;
         obj->CreateScript<CorruptedGemScript>(obj);

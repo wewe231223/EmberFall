@@ -26,6 +26,8 @@ void MonsterScript::Init() {
     spec.active = true;
     spec.attackable = true;
     spec.hp = 10.0f;
+
+    mAttackRange = owner->mWeaponSystem.GetHitBoxSize().Length() + 1.0f;
     mMonsterBT.Build(std::static_pointer_cast<MonsterScript>(shared_from_this()));
     owner->GetPhysics()->mFactor.maxMoveSpeed = 1.5mps;
 }

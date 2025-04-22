@@ -5,11 +5,7 @@
 #include "GameEventManager.h"
 
 CorruptedGemScript::CorruptedGemScript(std::shared_ptr<GameObject> owner) 
-    : Script{ owner, ObjectTag::CORRUPTED_GEM, ScriptType::CORRUPTED_GEM } { 
-    owner->GetPhysics()->mFactor.mass = 10000.0f;
-    owner->mSpec.entity = Packets::EntityType_CORRUPTED_GEM;
-    owner->mSpec.active = true;
-}
+    : Script{ owner, ObjectTag::CORRUPTED_GEM, ScriptType::CORRUPTED_GEM } { }
 
 CorruptedGemScript::~CorruptedGemScript() { }
 
@@ -19,6 +15,10 @@ void CorruptedGemScript::Init() {
         return;
     }
 
+    owner->GetPhysics()->mFactor.mass = 10000.0f;
+
+    owner->mSpec.entity = Packets::EntityType_CORRUPTED_GEM;
+    owner->mSpec.active = true;
     owner->mSpec.hp = 100.0f;
 }
 

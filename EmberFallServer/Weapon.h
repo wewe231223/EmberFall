@@ -18,6 +18,7 @@ namespace Weapons {
 
     public:
         Packets::Weapon GetWeaponType() const;
+        SimpleMath::Vector3 GetHitBoxSize() const;
 
         virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) abstract;
 

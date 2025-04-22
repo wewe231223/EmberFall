@@ -43,7 +43,7 @@ void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj) {
     const auto myId = obj->GetId();
     for (const auto sector : sectors) {
         decltype(auto) collisionCheckPlayers = std::move(gSectorSystem->GetSector(sector).GetPlayersInRange(pos, 10.0f));
-        decltype(auto) collisionCheckMonsters = gSectorSystem->GetSector(sector).GetMonstersInRange(pos, 10.0f);
+        decltype(auto) collisionCheckMonsters = gSectorSystem->GetSector(sector).GetNPCsInRange(pos, 10.0f);
         decltype(auto) collisionCheckEnvs = gSectorSystem->GetSector(sector).GetEnvInRange(pos, 10.0f);
 
         UpdateCollisionMonster(obj, myId, collisionCheckMonsters);

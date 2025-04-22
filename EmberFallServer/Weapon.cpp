@@ -13,6 +13,10 @@ Packets::Weapon IWeapon::GetWeaponType() const {
     return mWeaponType;
 }
 
+SimpleMath::Vector3 Weapons::IWeapon::GetHitBoxSize() const {
+    return mHitBox;
+}
+
 Fist::Fist(const SimpleMath::Vector3& hitBoxSize)
     : IWeapon{ Packets::Weapon_SWORD } {
     mHitBox = hitBoxSize;

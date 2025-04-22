@@ -46,7 +46,7 @@ void ServerFrame::Run() {
 
     for (int32_t test = 0; test < 100; ++test) {
         if (test == 0) {
-            decltype(auto) corruptedGem = gObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+            decltype(auto) corruptedGem = gObjectManager->SpawnObject(Packets::EntityType_CORRUPTED_GEM);
             corruptedGem->GetTransform()->SetPosition(SimpleMath::Vector3::Zero);
         }
 
