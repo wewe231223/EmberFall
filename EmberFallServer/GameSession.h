@@ -21,6 +21,7 @@ public:
     virtual void OnConnect() override;
     virtual void ProcessRecv(INT32 numOfBytes) override;
 
+
 private:
     std::atomic_uint8_t mSessionState{ SESSION_STATE_NONE };
     std::shared_ptr<GameObject> mUserObject{ nullptr };
