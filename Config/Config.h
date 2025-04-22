@@ -56,6 +56,9 @@ struct Config {
 	template<typename T = size_t> 
 	constexpr static T GBUFFER_COUNT{ static_cast<T>(3) };
 
+	template<typename T = size_t>
+	constexpr static T SHADOWMAP_COUNT{ static_cast<T>(2) };
+
 	template<typename T = size_t> 
 	constexpr static T MAX_BONE_COUNT_PER_INSTANCE{ static_cast<T>(100) };
 
@@ -68,7 +71,7 @@ struct Config {
 
 	constexpr static const char* IMGUI_KOREAN_FONT_PATH{ "Resources/Font/NotoSansKR-Regular-Hestia.otf" };
 
-	constexpr static bool DEFAULT_REVERSE_Z{ false };
+	constexpr static bool DEFAULT_REVERSE_Z{ true };
 };
 
 

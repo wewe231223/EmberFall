@@ -659,8 +659,10 @@ void TerrainScene::Update() {
 		mCameraMode->Update();
 	}
 	mCamera.UpdateBuffer(); 
+	mShadowRenderer->Update(mainCameraBufferLocation);
 
 	static BoneTransformBuffer boneTransformBuffer{};
+	static BoneTransformBuffer shadowBoneTransformBuffer{};
 
 	for (auto& gameObject : mGameObjects) {
 		if (gameObject) {
@@ -668,11 +670,16 @@ void TerrainScene::Update() {
 				gameObject.UpdateShaderVariables(boneTransformBuffer); 
 				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 				mMeshRenderManager->AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
+
+				
 			}
 			else {
 				gameObject.UpdateShaderVariables();
 				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
+				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
+
 			}
 		}
 	}
@@ -681,13 +688,30 @@ void TerrainScene::Update() {
 	for (auto& object : mEnvironmentObjects) {
 		
 		if (object.mCollider.GetActiveState()) {
-			if (!mCamera.FrustumCulling(object.mCollider)) {
-				continue;
+			for(int i = 0 ; i< Config::SHADOWMAP_COUNT<int> ; ++i)
+			if (mShadowRenderer->ShadowMapCulling(i, object.mCollider)) {
+				auto [mesh, shader, modelContext] = object.GetRenderData();
+				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, i);
+			}
+
+
+			if (mCamera.FrustumCulling(object.mCollider)) {
+				auto [mesh, shader, modelContext] = object.GetRenderData();
+
+				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
 			}
 		}
+		else {
+
+			auto [mesh, shader, modelContext] = object.GetRenderData();
+			mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+
+			mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
+			mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
+
+		}
 		
-		auto [mesh, shader, modelContext] = object.GetRenderData();
-		mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+
 	}
 
 
@@ -810,7 +834,7 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 	data = Loader.Load("Resources/Assets/Tree/pine2/pine3.glb", 0);
 	mMeshMap["Pine3_Stem"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Pine3_Stem"] = Collider{ data.position };
-
+	
 
 	// 파일에 기록할 크기 
 	//mColliderMap["Pine3_Stem"].SetExtents(0.3f, 7.51479626f, 0.3f);

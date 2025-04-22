@@ -19,8 +19,13 @@ struct CameraConstants {
     SimpleMath::Matrix view;
     SimpleMath::Matrix proj;
     SimpleMath::Matrix viewProj;
+    SimpleMath::Matrix middleViewProj;
+    //SimpleMath::Matrix farViewProj;
+
     SimpleMath::Vector3 cameraPosition;
-	int isShadow{ 0 };
+    int isShadow{ 0 };
+    SimpleMath::Vector3 lengthOffset;
+
 };
 
 using MaterialIndex = UINT;

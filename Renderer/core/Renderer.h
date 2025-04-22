@@ -121,7 +121,7 @@ private:
 	UINT mRTIndex{ 0 };
 
 	StringRenderer mStringRenderer{}; 
-	ShadowRenderer mShadowRenderer{};
+	std::shared_ptr<ShadowRenderer> mShadowRenderer{};
 	/*
 	1. diffuse 
 	2. normal

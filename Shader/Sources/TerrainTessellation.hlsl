@@ -3,6 +3,9 @@ cbuffer Camera : register(b0)
     matrix view;
     matrix projection;
     matrix viewProjection;
+    Matrix middleViewProjection;
+    //Matrix farViewProjection;
+
     float3 cameraPosition;
     int isShadow;
 
@@ -236,7 +239,7 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
     [unroll]
     for (int i = 0; i < isShadow; ++i)
     {
-        float depth = input.position.z / input.position.w;
+        float depth = input.position.z;
         output.diffuse = float4(depth, depth, depth, 1.0f);
         return output;
     }
@@ -251,6 +254,7 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
     Color = saturate(BaseColor * 0.4f + DetailColor * 0.6f);
     
     output.diffuse = Color;
+    output.normal = float4(0.0f,0.0f,0.0f,5.0f);
     output.position = float4(input.wPosition, 1.f);
     
     return output;

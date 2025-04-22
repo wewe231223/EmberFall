@@ -131,15 +131,22 @@ void Renderer::Render() {
 	mCommandList->RSSetScissorRects(1, &scissorRect);
 
 	mMainCameraBuffer.Upload(mCommandList);
+	mShadowRenderer->Upload(mCommandList);
 	mMeshRenderManager->PrepareRender(mCommandList);
 	mTextureManager->Bind(mCommandList);
 
-	mShadowRenderer.GetShadowMap().Transition(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	mShadowRenderer.SetShadowDSV(mCommandList);
-	mShadowRenderer.Update(mCommandList, mMainCameraBuffer.CPUBegin());
+	mShadowRenderer->TransitionShadowMap(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 0);
+	mMeshRenderManager->RenderShadowPass(0, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(0));
 
-	mMeshRenderManager->RenderShadowPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer.GetShadowCameraBuffer());
 	// mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
+
+	mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 1);
+	mMeshRenderManager->RenderShadowPass(1, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(1));
+
+	//mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 2);
+	//mMeshRenderManager->RenderShadowPass(2, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(2));
+
 
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
@@ -159,7 +166,7 @@ void Renderer::Render() {
 	// G-Buffer Pass 
 	auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	auto dsvHandle = mDSHeap->GetCPUDescriptorHandleForHeapStart();
-	mCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	mCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 0.0f, 0, 0, nullptr);
 
 	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	CD3DX12_CPU_DESCRIPTOR_HANDLE gBufferHandle{ mGBufferHeap->GetCPUDescriptorHandleForHeapStart() };
@@ -190,7 +197,7 @@ void Renderer::Render() {
 	}
 
 	// Deffered Rendering Pass 
-	mShadowRenderer.GetShadowMap().Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+	mShadowRenderer->TransitionShadowMap(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
@@ -454,7 +461,7 @@ void Renderer::InitDepthStencilBuffer() {
 
 	CheckHR(mDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(mDSHeap.GetAddressOf())));
 
-	CD3DX12_CLEAR_VALUE clearValue{ DXGI_FORMAT_D24_UNORM_S8_UINT, 1.0f, 0 };
+	CD3DX12_CLEAR_VALUE clearValue{ DXGI_FORMAT_D24_UNORM_S8_UINT, 0.0f, 0 };
 	auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 
 	auto resourceDesc = CD3DX12_RESOURCE_DESC::Tex2D(
@@ -488,7 +495,7 @@ void Renderer::InitFonts() {
 }
 
 void Renderer::InitShadowRenderer() {
-	mShadowRenderer = ShadowRenderer(mDevice);
+	mShadowRenderer = std::make_shared<ShadowRenderer>(mDevice);
 }
 
 void Renderer::InitParticleManager() {
@@ -525,7 +532,7 @@ void Renderer::InitCoreResources() {
 	mMeshRenderManager = std::make_shared<MeshRenderManager>(mDevice);
 	mTextureManager = std::make_shared<TextureManager>(mDevice, mCommandList);
 	mMaterialManager = std::make_shared<MaterialManager>();
-
+	mLightingManager = std::make_shared<LightingManager>(mDevice, mCommandList);
 	mMainCameraBuffer = DefaultBuffer(mDevice, sizeof(CameraConstants), 1, true);
 
 }
@@ -534,7 +541,7 @@ void Renderer::InitDefferedRenderer() {
 	mDefferedRenderer = DefferedRenderer(mDevice, mCommandList);
 
 	mDefferedRenderer.RegisterGBufferTexture(mDevice, mGBuffers);
-	mDefferedRenderer.RegisterShadowMap(mDevice, mShadowRenderer.GetShadowMap());
+	mDefferedRenderer.RegisterShadowMap(mDevice, mShadowRenderer->GetShadowMapArray());
 
 }
 

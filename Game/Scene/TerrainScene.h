@@ -5,7 +5,9 @@
 #include "../Renderer/Manager/ParticleManager.h"
 #include "../Renderer/Render/Canvas.h"
 #include "../Renderer/Render/GrassRenderer.h"
+#include "../Renderer/Manager/LightingManager.h"
 #include "../Renderer/Core/StringRenderer.h"
+#include "../Renderer/core/ShadowRenderer.h"
 #include "../Game/System/Input.h"
 #include "../Game/System/Timer.h"
 #include "../Game/GameObject/GameObject.h"
@@ -77,6 +79,8 @@ private:
 	std::shared_ptr<MaterialManager> mMaterialManager{ nullptr };
 	std::shared_ptr<ParticleManager> mParticleManager{ nullptr };
 	std::shared_ptr<Canvas> mCanvas{ nullptr };
+	std::shared_ptr<LightingManager> mLightingManager{ nullptr };
+	std::shared_ptr<ShadowRenderer> mShadowRenderer{ nullptr };
 
 	std::unordered_map<std::string, Collider> mColliderMap{};
 	std::unordered_map<std::string, std::unique_ptr<Mesh>> mMeshMap{};
