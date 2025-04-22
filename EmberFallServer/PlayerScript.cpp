@@ -5,6 +5,7 @@
 #include "GameObject.h"
 #include "GameEventManager.h"
 #include "ObjectManager.h"
+#include "ServerFrame.h"
 
 #include "GameSession.h"
 #include "Sector.h"
@@ -142,16 +143,21 @@ void PlayerScript::LateUpdate(const float deltaTime) {
         return;
     }
 
-    auto currState = owner->mAnimationStateMachine.GetCurrState();
-    if (owner->mSpec.hp <= MathUtil::EPSILON and Packets::AnimationState_DEAD != currState) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player Dead");
-        owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_DEAD, true);
-        return;
-    }
+    //if (owner->mSpec.hp > MathUtil::EPSILON) {
+    //    return;
+    //}
 
-    if (Packets::AnimationState_DEAD == currState and owner->mAnimationStateMachine.IsChangable()) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player Dead End");
-    }
+    //auto isDead = owner->IsDead();
+    //if (not isDead) {
+    //    owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_DEAD);
+    //}
+
+    //if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
+    //    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster Remove");
+    //    gServerFrame->AddTimerEvent(owner->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
+    //    owner->mSpec.active = false;
+    //    return;
+    //}
 }
 
 void PlayerScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 
