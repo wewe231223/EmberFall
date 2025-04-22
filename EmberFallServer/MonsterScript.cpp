@@ -5,25 +5,15 @@
 #include "Physics.h"
 #include "BehaviorTreeBase.h"
 #include "ObjectManager.h"
+#include "ServerFrame.h"
 #include "Sector.h"
 
 MonsterScript::MonsterScript(std::shared_ptr<class GameObject> owner)
     : Script{ owner, ObjectTag::MONSTER, ScriptType::MONSTER } {
     owner->mSpec.entity = Packets::EntityType_MONSTER;
-    owner->mSpec.hp = 100.0f;
-    owner->GetPhysics()->mFactor.maxMoveSpeed = 1.5mps;
 }
 
 MonsterScript::~MonsterScript() { }
-
-bool MonsterScript::IsDead() const {
-    auto owner = GetOwner();
-    if (nullptr == owner) {
-        return true;
-    }
-
-    return Packets::AnimationState_DEAD == owner->mAnimationStateMachine.GetCurrState();
-}
 
 void MonsterScript::Init() {
     auto owner = GetOwner();
@@ -34,8 +24,9 @@ void MonsterScript::Init() {
     auto& spec = owner->mSpec;
     spec.active = true;
     spec.attackable = true;
-    spec.hp = 100.0f;
+    spec.hp = 10.0f;
     mMonsterBT.Build(std::static_pointer_cast<MonsterScript>(shared_from_this()));
+    owner->GetPhysics()->mFactor.maxMoveSpeed = 1.5mps;
 }
 
 void MonsterScript::Update(const float deltaTime) {
@@ -54,14 +45,16 @@ void MonsterScript::LateUpdate(const float deltaTime) {
         return;
     }
 
-    auto currState = owner->mAnimationStateMachine.GetCurrState();
-    if (Packets::AnimationState_DEAD == currState and owner->mAnimationStateMachine.IsChangable()) {
-        owner->mSpec.active = false;
-        return;
+    auto isDead = owner->IsDead();
+    if (not isDead) {
+        owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_DEAD);
     }
 
-    if (Packets::AnimationState_DEAD != currState) {
-        owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_DEAD);
+    if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster Remove");
+        gServerFrame->AddTimerEvent(owner->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
+        owner->mSpec.active = false;
+        return;
     }
 }
 
@@ -77,12 +70,8 @@ void MonsterScript::OnCollision(const std::shared_ptr<GameObject>& opponent, con
 void MonsterScript::OnCollisionTerrain(const float height) { }
 
 void MonsterScript::DispatchGameEvent(GameEvent* event) { 
-    if (IsDead()) {
-        return;
-    }
-
     auto owner = GetOwner();
-    if (nullptr == owner) {
+    if (nullptr == owner or owner->IsDead()) {
         return;
     }
     

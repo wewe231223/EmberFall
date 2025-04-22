@@ -23,8 +23,6 @@ public:
     virtual ~MonsterScript();
 
 public:
-    bool IsDead() const;
-
     virtual void Init() override;
 
     virtual void Update(const float deltaTime) override;

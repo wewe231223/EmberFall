@@ -54,7 +54,7 @@ void AnimationStateMachine::Update(const float deltaTime) {
         return;
     }
 
-    if (not mIsLoopAnimation) {
+    if (not mIsLoopAnimation and mCurrState.state != Packets::AnimationState_DEAD) {
         ChangeState(mDefaultState.state);
     }
 }

@@ -88,19 +88,29 @@ void ServerFrame::TimerThread() {
 
         auto obj = gObjectManager->GetObjectFromId(event.id);
 
-        if (nullptr == obj or false == obj->mSpec.active) {
+        if (nullptr == obj) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Object Is Dead");
             continue;
         }
 
         switch (event.eventType) {
-        case TimerEventType::NPC_UPDATE:
+        case TimerEventType::UPDATE_NPC:
         {
+            if (false == obj->mSpec.active) {
+                break;
+            }
+
             obj->RegisterUpdate();
             break;
         }
 
-        case TimerEventType::TRIGGER_DEAD:
+        case TimerEventType::REMOVE_NPC:
+        {
+            obj->Reset();
+            break;
+        }
+
+        case TimerEventType::REMOVE_TRIGGER:
         {
             obj->Reset();
             break;

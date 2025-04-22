@@ -33,6 +33,10 @@ SimpleMath::Vector3 GameObject::GetMoveDir() const {
     return mPhysics->GetMoveDir();
 }
 
+bool GameObject::IsDead() const {
+    return Packets::AnimationState_DEAD == mAnimationStateMachine.GetCurrState();
+}
+
 std::shared_ptr<Transform> GameObject::GetTransform() const {
     return mTransform;
 }
@@ -128,7 +132,7 @@ void GameObject::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
     Update();
     LateUpdate();
     
-    gServerFrame->AddTimerEvent(GetId(), SysClock::now() + 150ms, TimerEventType::NPC_UPDATE);
+    gServerFrame->AddTimerEvent(GetId(), SysClock::now() + 150ms, TimerEventType::UPDATE_NPC);
 }
 
 void GameObject::Update() {
@@ -156,7 +160,6 @@ void GameObject::Update() {
 
     decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
     gCollisionManager->UpdateCollision(sharedThis);
-    gSectorSystem->UpdateEntityMove(sharedThis);
 }
 
 void GameObject::LateUpdate() {
@@ -165,20 +168,21 @@ void GameObject::LateUpdate() {
     }
 
     // Game Event 처리
-    if (nullptr == mEntityScript) {
-        return;
-    }
+    if (nullptr != mEntityScript) {
+        std::shared_ptr<GameEvent> event;
+        while (true) {
+            if (false == mGameEvents.try_pop(event)) {
+                break;
+            }
 
-    std::shared_ptr<GameEvent> event;
-    while (true) {
-        if (false == mGameEvents.try_pop(event)) {
-            break;
+            mEntityScript->DispatchGameEvent(event.get());
         }
 
-        mEntityScript->DispatchGameEvent(event.get());
+        mEntityScript->LateUpdate(mDeltaTime);
     }
 
-    mEntityScript->LateUpdate(mDeltaTime);
+    decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
+    gSectorSystem->UpdateEntityMove(sharedThis);
 }
 
 void GameObject::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {

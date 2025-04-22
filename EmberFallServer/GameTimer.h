@@ -14,8 +14,9 @@ using TimePoint = Clock::time_point;
 using EventCallBack = std::function<void()>;
 
 enum class TimerEventType : uint8_t {
-    NPC_UPDATE,
-    TRIGGER_DEAD
+    REMOVE_NPC,
+    UPDATE_NPC,
+    REMOVE_TRIGGER
 };
 
 struct TimerEvent {

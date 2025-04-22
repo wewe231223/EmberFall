@@ -57,6 +57,8 @@ public:
     float GetSpeed() const;
     SimpleMath::Vector3 GetMoveDir() const;
 
+    bool IsDead() const;
+
     // Setter
     void SetTag(ObjectTag tag);
 

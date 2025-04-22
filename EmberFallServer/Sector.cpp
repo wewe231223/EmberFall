@@ -349,6 +349,12 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
             continue;
         }
 
+        if (false == object->mSpec.active) {
+            auto packetRemove = FbsPacketFactory::ObjectRemoveSC(id);
+            gServerCore->Send(static_cast<SessionIdType>(playerId), packetRemove);
+            continue;
+        }
+
         if (object->mAnimationStateMachine.mAnimationChanged) {
             auto packetAnim = FbsPacketFactory::ObjectAnimationChangedSC(id, object->mAnimationStateMachine.GetCurrState());
             gServerCore->Send(static_cast<SessionIdType>(playerId), packetAnim);
