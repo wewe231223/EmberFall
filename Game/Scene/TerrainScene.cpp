@@ -340,13 +340,6 @@ TerrainScene::TerrainScene(std::tuple<std::shared_ptr<MeshRenderManager>, std::s
 	mInputSign = NonReplacementSampler::GetInstance().Sample();
 	mNetworkSign = NonReplacementSampler::GetInstance().Sample();
 
-	gClientCore->Init();
-	auto res = gClientCore->Start("127.0.0.1", 7777);
-	if (false == res) {
-		DebugBreak();
-		Crash(false);
-	}
-
 	mMeshRenderManager = std::get<0>(managers);
 	mTextureManager = std::get<1>(managers);
 	mMaterialManager = std::get<2>(managers);

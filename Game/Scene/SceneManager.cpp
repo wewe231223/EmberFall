@@ -1,4 +1,3 @@
-#include "SceneManager.h"
 #include "pch.h"
 #include "SceneManager.h"
 
@@ -13,6 +12,13 @@ SceneManager::SceneManager(std::tuple<std::shared_ptr<MeshRenderManager>, std::s
 
 	mCurrentScene = mScenes[static_cast<size_t>(SceneType::LOADING)].get();
 
+
+	gClientCore->Init();
+	auto res = gClientCore->Start("127.0.0.1", 7777);
+	if (false == res) {
+		DebugBreak();
+		Crash(false);
+	}
 
 	mLoadingThread = std::thread([this, device, loadCommandList, initLoadFunc]() {
 		initLoadFunc();
@@ -39,6 +45,10 @@ bool SceneManager::CheckLoaded() {
 
 	if (loaded) {
 		mLoadingThread.join();
+		
+		auto packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
+		gClientCore->Send(packet); 
+
 		mCurrentScene = mScenes[static_cast<size_t>(SceneType::TERRAIN)].get();
 		mCurrentSceneType = SceneType::TERRAIN;
 		mLoaded.store(false);
