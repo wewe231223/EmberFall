@@ -24,13 +24,15 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitRenderTargets();
 	Renderer::InitDepthStencilBuffer();
 	Renderer::InitStringRenderer();
-	Renderer::InitShadowRenderer();
+	
 
 	Renderer::ResetCommandList();
-	Renderer::InitDefferedRenderer();
 
 	
 	Renderer::InitCoreResources(); 
+	Renderer::InitCameraBuffer(); 
+	Renderer::InitShadowRenderer();
+	Renderer::InitDefferedRenderer();
 	Renderer::InitTerrainBuffer();
 	Renderer::InitParticleManager();
 	Renderer::InitGrassRender();
@@ -60,6 +62,10 @@ ComPtr<ID3D12GraphicsCommandList> Renderer::GetCommandList() {
 
 ComPtr<ID3D12GraphicsCommandList> Renderer::GetLoadCommandList() {
 	return mLoadCommandList;
+}
+
+std::shared_ptr<ShadowRenderer> Renderer::GetShadowRenderer() {
+	return mShadowRenderer;
 }
 
 void Renderer::LoadTextures() {
@@ -205,7 +211,7 @@ void Renderer::Render() {
 	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
-	mDefferedRenderer.Render(mCommandList, mShadowRenderer.GetShadowCameraBuffer());
+	mDefferedRenderer.Render(mCommandList, mShadowRenderer->GetShadowCameraBuffer(0), mLightingManager->GetLightingBuffer());
 
 	mTextureManager->Bind(mCommandList);
 
@@ -494,8 +500,12 @@ void Renderer::InitFonts() {
 	mStringRenderer.LoadExternalFont("NotoSansKR", "Resources/Font/NotoSansKR-Regular-Hestia.otf", L"Noto Sans KR", L"ko-kr");
 }
 
+void Renderer::InitCameraBuffer() {
+	mMainCameraBuffer = DefaultBuffer(mDevice, sizeof(CameraConstants), 1, true);
+}
+
 void Renderer::InitShadowRenderer() {
-	mShadowRenderer = std::make_shared<ShadowRenderer>(mDevice);
+	mShadowRenderer = std::make_shared<ShadowRenderer>(mDevice, mMainCameraBuffer.CPUBegin());
 }
 
 void Renderer::InitParticleManager() {
@@ -533,7 +543,6 @@ void Renderer::InitCoreResources() {
 	mTextureManager = std::make_shared<TextureManager>(mDevice, mCommandList);
 	mMaterialManager = std::make_shared<MaterialManager>();
 	mLightingManager = std::make_shared<LightingManager>(mDevice, mCommandList);
-	mMainCameraBuffer = DefaultBuffer(mDevice, sizeof(CameraConstants), 1, true);
 
 }
 

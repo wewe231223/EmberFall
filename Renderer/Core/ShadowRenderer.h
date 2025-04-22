@@ -21,7 +21,7 @@ class ShadowRenderer {
 	static constexpr std::array<float, Config::SHADOWMAP_COUNT<int>> SHADOWMAPOFFSET = { 12.0f, 70.0f };
 public:
 	ShadowRenderer() = default;
-	ShadowRenderer(ComPtr<ID3D12Device> device);
+	ShadowRenderer(ComPtr<ID3D12Device> device, DefaultBufferCPUIterator mainCameraBufferLoc);
 	
 	~ShadowRenderer() = default;
 
@@ -34,7 +34,7 @@ public:
 public:
 	// 그림자 맵 만들기 
 	void SetShadowDSVRTV(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList,int index);
-	void Update(DefaultBufferCPUIterator worldCameraBuffer); 
+	void Update(); 
 	void Upload(ComPtr<ID3D12GraphicsCommandList> commandList);
 	bool ShadowMapCulling(int index, Collider& other);
 	void TransitionShadowMap(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
@@ -66,5 +66,5 @@ private:
 	std::array<Texture, Config::SHADOWMAP_COUNT<int>> mShadowMap{};
 	Texture mDepthStencilMap{};
 
-
+	DefaultBufferCPUIterator mMainCamerabuffeerLocation{}; 
 };

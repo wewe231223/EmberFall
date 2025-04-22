@@ -4,8 +4,8 @@
 LightingManager::LightingManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	mLightCount = 8;
 	mLightingBuffer = DefaultBuffer(device, sizeof(Light), mLightCount);
-	CreatePointLighting(commandList, SimpleMath::Vector3(0.0f, 12.0f, 4.0f), SimpleMath::Vector4(1.0f, 0.0f, 1.0f, 1.0f));
-	CreatePointLighting(commandList, SimpleMath::Vector3(0.0f, 12.0f, 24.0f), SimpleMath::Vector4(0.0f, 0.0f, 1.0f, 1.0f));
+	//CreatePointLighting(commandList, SimpleMath::Vector3(0.0f, 12.0f, 4.0f), SimpleMath::Vector4(1.0f, 0.0f, 1.0f, 1.0f));
+	//CreatePointLighting(commandList, SimpleMath::Vector3(0.0f, 12.0f, 24.0f), SimpleMath::Vector4(0.0f, 0.0f, 1.0f, 1.0f));
 
 	
 }

@@ -20,6 +20,7 @@
 #include "../Resource/Mesh.h"
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Renderer/Core/ShadowRenderer.h"
+#include "../Renderer/Manager/LightingManager.h"
 #include "../Renderer/Manager/ParticleManager.h"
 #include "../Renderer/Render/GrassRenderer.h"
 #include "../Renderer/Render/Canvas.h"
@@ -47,6 +48,8 @@ public:
 	ComPtr<ID3D12Device10> GetDevice();
 	ComPtr<ID3D12GraphicsCommandList> GetCommandList();
 	ComPtr<ID3D12GraphicsCommandList> GetLoadCommandList(); 
+
+	std::shared_ptr<ShadowRenderer> GetShadowRenderer(); 
 
 	void LoadTextures(); 
 
@@ -77,6 +80,7 @@ private:
 	void InitStringRenderer(); 
 	void InitFonts(); 
 
+	void InitCameraBuffer(); 
 	void InitShadowRenderer();
 	void InitCanvas();
 	void InitTerrainBuffer();
@@ -139,6 +143,7 @@ private:
 	std::shared_ptr<MaterialManager> mMaterialManager{};
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{};
 	std::shared_ptr<ParticleManager> mParticleManager{};
+	std::shared_ptr<LightingManager> mLightingManager{};
 	std::shared_ptr<Canvas> mCanvas{};
 
 	std::tuple<bool, bool> mFeatureEnabled{ false, false };

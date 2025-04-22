@@ -335,7 +335,7 @@ void TerrainScene::ProcessProjectileMove(const uint8_t* buffer) {
 #pragma endregion 
 
 
-TerrainScene::TerrainScene(std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation) {
+TerrainScene::TerrainScene(std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation, std::shared_ptr<ShadowRenderer> shadowRenderer) {
 
 	mInputSign = NonReplacementSampler::GetInstance().Sample();
 	mNetworkSign = NonReplacementSampler::GetInstance().Sample();
@@ -352,6 +352,7 @@ TerrainScene::TerrainScene(std::tuple<std::shared_ptr<MeshRenderManager>, std::s
 	mMaterialManager = std::get<2>(managers);
 	mParticleManager = std::get<3>(managers);
 	mCanvas = std::get<4>(managers);
+	mShadowRenderer = shadowRenderer;
 
 	mCamera = Camera(mainCameraBufferLocation);
 	auto& cameraTransform = mCamera.GetTransform();
@@ -640,7 +641,7 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 
 
 
-void Scene::Update() {
+void TerrainScene::Update() {
 	for (auto& player : mPlayers) {
 		if (false == player.GetActiveState()) {
 			continue; 
@@ -656,12 +657,12 @@ void Scene::Update() {
 
 
 		// test.Get()->position = mMyPlayer->GetTransform().GetPosition(); 
-		test.Get()->position = mGameObjects[3].GetTransform().GetPosition();
-		test1.Get()->position = mGameObjects[4].GetTransform().GetPosition();
-		test2.Get()->position = mGameObjects[5].GetTransform().GetPosition();
+	test.Get()->position = mGameObjects[3].GetTransform().GetPosition();
+	test1.Get()->position = mGameObjects[4].GetTransform().GetPosition();
+	test2.Get()->position = mGameObjects[5].GetTransform().GetPosition();
 
 
-	}
+	
  
 	mInventoryUI.Update();
 	mHealthBarUI.Update();
@@ -671,7 +672,7 @@ void Scene::Update() {
 		mCameraMode->Update();
 	}
 	mCamera.UpdateBuffer(); 
-	mShadowRenderer->Update(mainCameraBufferLocation);
+	mShadowRenderer->Update();
 
 	static BoneTransformBuffer boneTransformBuffer{};
 	static BoneTransformBuffer shadowBoneTransformBuffer{};
@@ -734,6 +735,7 @@ void Scene::Update() {
 	}
 
 	mSkyBox.GetTransform().GetPosition() = mCamera.GetTransform().GetPosition();
+	
 	mSkyBox.UpdateShaderVariables();
 	auto [skyBoxMesh, skyBoxShader, skyBoxModelContext] = mSkyBox.GetRenderData();
 	mMeshRenderManager->AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);

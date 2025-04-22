@@ -12,7 +12,7 @@
 #undef min
 #endif
 
-ShadowRenderer::ShadowRenderer(ComPtr<ID3D12Device> device) {
+ShadowRenderer::ShadowRenderer(ComPtr<ID3D12Device> device, DefaultBufferCPUIterator mainCameraBufferLoc) {
 	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
 	rtvHeapDesc.NumDescriptors = Config::SHADOWMAP_COUNT<int>;
 	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
@@ -49,7 +49,8 @@ ShadowRenderer::ShadowRenderer(ComPtr<ID3D12Device> device) {
 	for (DefaultBuffer& shadowCameraBuffer : mShadowCameraBuffer) {
 		shadowCameraBuffer = DefaultBuffer(device, sizeof(CameraConstants), 1, true);
 	}
-	
+
+	mMainCamerabuffeerLocation = mainCameraBufferLoc;
 }
 
 void ShadowRenderer::SetShadowDSVRTV(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, int index) {
@@ -65,10 +66,10 @@ void ShadowRenderer::SetShadowDSVRTV(ComPtr<ID3D12Device> device, ComPtr<ID3D12G
 
 }
 
-void ShadowRenderer::Update(DefaultBufferCPUIterator worldCameraBuffer) {
+void ShadowRenderer::Update() {
 	// transposed 
 	CameraConstants worldCamera{};
-	std::memcpy(&worldCamera, *worldCameraBuffer, sizeof(CameraConstants));
+	std::memcpy(&worldCamera, *mMainCamerabuffeerLocation, sizeof(CameraConstants));
 
 	CameraParameter cameraParam{};
 	SimpleMath::Matrix invView = worldCamera.view.Transpose().Invert();
