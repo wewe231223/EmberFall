@@ -350,17 +350,13 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
         }
 
         if (object->mAnimationStateMachine.mAnimationChanged) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Send Animation Packet: Anim: {}", static_cast<int>(object->mAnimationStateMachine.GetCurrState()));
             auto packetAnim = FbsPacketFactory::ObjectAnimationChangedSC(id, object->mAnimationStateMachine.GetCurrState());
             gServerCore->Send(static_cast<SessionIdType>(playerId), packetAnim);
-        }
-
-        if (MathUtil::IsEqualVectorXZ(currPos, prevPos)) {
-            continue;
         }
 
         auto packetMove = FbsPacketFactory::ObjectMoveSC(id, yaw, currPos, dir, speed);
         gServerCore->Send(static_cast<SessionIdType>(playerId), packetMove);
     }
+
     object->mAnimationStateMachine.mAnimationChanged = false;
 }

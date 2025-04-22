@@ -131,8 +131,6 @@ void Physics::Update(const float deltaTime) {
     transform->Translate(mVelocity * deltaTime);
 }
 
-void Physics::LateUpdate(const float deltaTime) { }
-
 void Physics::SolvePenetration(const SimpleMath::Vector3& penetrationVec) {
     auto transform = mTransform.lock();
     transform->Translate(penetrationVec);

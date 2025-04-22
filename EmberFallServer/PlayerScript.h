@@ -46,6 +46,8 @@ public:
     virtual void OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
     virtual void OnCollisionTerrain(const float height) override;
 
+    virtual void DoInteraction(std::shared_ptr<GameObject>& target) override;
+
     virtual void DispatchGameEvent(struct GameEvent* event) override;
 
 private:
@@ -54,9 +56,8 @@ private:
     void CheckAndMove(const float deltaTime);
     void CheckAndJump(const float deltaTime);
 
-    void DoInteraction(const float deltaTime, const std::shared_ptr<GameObject>& target);
 
-    void CancelInteraction(const float deltaTime);
+    void CancelInteraction();
     void DestroyGem(const float deltaTime, const std::shared_ptr<GameObject>& gem);
     void AcquireItem(const float deltaTime, const std::shared_ptr<GameObject>& item);
     void UseItem();

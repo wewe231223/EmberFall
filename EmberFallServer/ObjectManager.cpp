@@ -192,7 +192,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         auto obj = GetObjectFromId(validId);
         obj->mSpec.active = true;
         obj->CreateScript<MonsterScript>(obj);
-        obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_IMP).bb);
+        obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         obj->Init();
         
         gSectorSystem->AddInSector(validId, obj->GetPosition());

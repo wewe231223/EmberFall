@@ -59,7 +59,6 @@ public:
     void AddForce(const SimpleMath::Vector3& force);
     void AddForce(const SimpleMath::Vector3& dir, const float force);
     void Update(const float deltaTime);
-    void LateUpdate(const float deltaTime);
 
     void SolvePenetration(const SimpleMath::Vector3& penetrationVec);
 

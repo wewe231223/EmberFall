@@ -45,6 +45,10 @@ std::shared_ptr<BoundingObject> GameObject::GetBoundingObject() const {
     return mBoundingObject;
 }
 
+std::shared_ptr<Script> GameObject::GetScript() const {
+    return mEntityScript;
+}
+
 SimpleMath::Vector3 GameObject::GetPrevPosition() const {
     return mTransform->GetPrevPosition();
 }
@@ -91,6 +95,8 @@ void GameObject::Reset() {
     mSpec.interactable = false;
     mSpec.hp = 0.0f;
 
+    mEntityScript.reset();
+
     gObjectManager->ReleaseObject(GetId());
 }
 
@@ -99,12 +105,8 @@ void GameObject::Init() {
     mWeaponSystem.SetOwnerId(GetId());
     mAnimationStateMachine.SetOwner(sharedThis);
 
-    for (auto& component : mComponents) {
-        component->Init();
-    }
-
-    if (nullptr != mScript) {
-        mScript->Init();
+    if (nullptr != mEntityScript) {
+        mEntityScript->Init();
     }
 }
 
@@ -115,14 +117,18 @@ void GameObject::RegisterUpdate() {
 
 void GameObject::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
     if (IOType::UPDATE != overlapped->type) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "GameObject gotted Update Overlapped");
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "GameObject ProcessOverlapped - Is not Overlapped Update");
+        return;
+    }
+
+    if (not mSpec.active) {
         return;
     }
 
     Update();
     LateUpdate();
-
-    gServerFrame->AddTimerEvent(GetId(), SysClock::now() + 500ms, TimerEventType::NPC_UPDATE);
+    
+    gServerFrame->AddTimerEvent(GetId(), SysClock::now() + 150ms, TimerEventType::NPC_UPDATE);
 }
 
 void GameObject::Update() {
@@ -135,12 +141,8 @@ void GameObject::Update() {
 
     mAnimationStateMachine.Update(mDeltaTime);
 
-    for (auto& component : mComponents) {
-        component->Update(mDeltaTime);
-    } 
-
-    if (nullptr != mScript) {
-        mScript->Update(mDeltaTime);
+    if (nullptr != mEntityScript) {
+        mEntityScript->Update(mDeltaTime);
     }
 
     mPhysics->Update(mDeltaTime);
@@ -163,7 +165,7 @@ void GameObject::LateUpdate() {
     }
 
     // Game Event 처리
-    if (nullptr == mScript) {
+    if (nullptr == mEntityScript) {
         return;
     }
 
@@ -173,24 +175,18 @@ void GameObject::LateUpdate() {
             break;
         }
 
-        mScript->DispatchGameEvent(event.get());
+        mEntityScript->DispatchGameEvent(event.get());
     }
 
-    for (auto& component : mComponents) {
-        component->LateUpdate(mDeltaTime);
-    }
-
-    mPhysics->LateUpdate(mDeltaTime);
-    mTransform->LateUpdate(mDeltaTime);
-    mScript->LateUpdate(mDeltaTime);
+    mEntityScript->LateUpdate(mDeltaTime);
 }
 
 void GameObject::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    if (nullptr == mScript) {
+    if (nullptr == mEntityScript) {
         return;
     }
 
-    mScript->OnCollision(opponent, impulse);
+    mEntityScript->OnCollision(opponent, impulse);
     if (ObjectTag::TRIGGER == opponent->GetTag()) {
         opponent->OnCollision(std::static_pointer_cast<GameObject>(shared_from_this()), impulse);
     }
@@ -198,19 +194,19 @@ void GameObject::OnCollision(const std::shared_ptr<GameObject>& opponent, const 
 
 void GameObject::OnCollisionTerrain(const float height) {
     mTransform->SetY(height);
-    for (auto& component : mComponents) {
-        component->OnCollisionTerrain(height);
+    if (nullptr != mEntityScript) {
+        mEntityScript->OnCollisionTerrain(height);
     }
+}
 
-    mScript->OnCollisionTerrain(height);
+void GameObject::DoInteraction(std::shared_ptr<GameObject>& obj) {
+    if (nullptr != mEntityScript) {
+        mEntityScript->DoInteraction(obj);
+    }
 }
 
 void GameObject::DispatchGameEvent(std::shared_ptr<GameEvent> event) {
     mGameEvents.push(event);
-}
-
-void GameObject::ClearComponents() {
-    mComponents.clear();
 }
 
 void GameObject::Attack() {
@@ -219,7 +215,6 @@ void GameObject::Attack() {
         return;
     }
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Object {} has changed state to attack", GetId());
     mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACK);
     auto extentsZ = SimpleMath::Vector3::Forward * mBoundingObject->GetForwardExtents();
     mWeaponSystem.Attack(mTransform->GetPosition() + extentsZ, mTransform->Forward());

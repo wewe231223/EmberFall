@@ -44,6 +44,7 @@ public:
     std::shared_ptr<Transform> GetTransform() const;
     std::shared_ptr<Physics> GetPhysics() const;
     std::shared_ptr<BoundingObject> GetBoundingObject() const;
+    std::shared_ptr<Script> GetScript() const;
 
     SimpleMath::Vector3 GetPrevPosition() const;
     SimpleMath::Vector3 GetPosition() const;
@@ -62,7 +63,6 @@ public:
     void DisablePhysics();
     void ChangeWeapon(Packets::Weapon weapon);
 
-    void ClearComponents();
     void Reset();
     
     // Initialize Function
@@ -78,6 +78,8 @@ public:
     void OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
     void OnCollisionTerrain(const float height);
 
+    void DoInteraction(std::shared_ptr<GameObject>& obj);
+
     void DispatchGameEvent(std::shared_ptr<GameEvent> event);
 
     void Attack();
@@ -87,16 +89,9 @@ public:
         requires std::derived_from<BoundingObjType, BoundingObject>
     void CreateBoundingObject(Args&&... args);
 
-    template <typename ComponentType, typename... Args>
-        requires std::derived_from<ComponentType, GameObjectComponent>
-    void CreateComponent(Args&&... args);
-
     template <typename ScriptType, typename... Args>
         requires std::derived_from<ScriptType, Script>
     void CreateScript(Args&&... args);
-
-    template <typename ComponentType> requires std::derived_from<ComponentType, GameObjectComponent>
-    std::shared_ptr<ComponentType> GetComponent();
 
     template <typename ScriptType> requires std::derived_from<ScriptType, Script>
     std::shared_ptr<ScriptType> GetScript();
@@ -110,13 +105,12 @@ private:
     ObjectTag mTag{ ObjectTag::NONE };
     float mDeltaTime{ };
 
-    std::unique_ptr<OverlappedUpdate> mOverlapped{ };                                    // for update
-    std::unique_ptr<SimpleTimer> mTimer{ };
+    std::unique_ptr<SimpleTimer> mTimer{ };                             // own timer
+    std::unique_ptr<OverlappedUpdate> mOverlapped{ };                   // for update
     std::shared_ptr<Transform> mTransform{ };                           // Transform
     std::shared_ptr<class Physics> mPhysics{ };                         // Physics
-    std::shared_ptr<Script> mScript{ };                                 // script
+    std::shared_ptr<Script> mEntityScript{ };                           // script
     std::shared_ptr<BoundingObject> mBoundingObject{ };                 // boundingObject
-    std::vector<std::shared_ptr<GameObjectComponent>> mComponents{ };   // Components
 
     Concurrency::concurrent_queue<std::shared_ptr<GameEvent>> mGameEvents{ };
 };
@@ -128,32 +122,13 @@ void GameObject::CreateBoundingObject(Args&&... args) {
     mBoundingObject = std::make_shared<BoundingObjType>(args...);
 }
 
-template<typename ComponentType, typename ...Args>
-    requires std::derived_from<ComponentType, GameObjectComponent>
-inline void GameObject::CreateComponent(Args && ...args) {
-    mComponents.emplace_back(std::make_shared<ComponentType>(args...));
-}
-
 template<typename ScriptType, typename ...Args>
     requires std::derived_from<ScriptType, Script>
 void GameObject::CreateScript(Args&&... args) {
-    mScript = std::make_shared<ScriptType>(args...);
-}
-
-template<typename ComponentType>
-    requires std::derived_from<ComponentType, GameObjectComponent>
-inline std::shared_ptr<ComponentType> GameObject::GetComponent() {
-    for (auto& componenet : mComponents) {
-        auto ptr = std::dynamic_pointer_cast<ComponentType>(componenet);
-        if (nullptr != ptr) {
-            return ptr;
-        }
-    }
-
-    return nullptr;
+    mEntityScript = std::make_shared<ScriptType>(args...);
 }
 
 template<typename ScriptType> requires std::derived_from<ScriptType, Script>
 inline std::shared_ptr<ScriptType> GameObject::GetScript() {
-    return std::dynamic_pointer_cast<ScriptType>(mScript);
+    return std::dynamic_pointer_cast<ScriptType>(mEntityScript);
 }
