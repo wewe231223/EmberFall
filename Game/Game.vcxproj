@@ -164,12 +164,12 @@
     <ClCompile Include="System\Input.cpp" />
     <ClCompile Include="System\Timer.cpp" />
     <ClCompile Include="UI\HealthBar.cpp" />
+    <ClCompile Include="UI\Image.cpp" />
     <ClCompile Include="UI\Inventory.cpp" />
-    <ClCompile Include="UI\Loading.cpp" />
+    <ClCompile Include="UI\SpriteImage.cpp" />
     <ClCompile Include="UI\Profile.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\RENDERER\MANAGER\SCENEMANAGER.H" />
     <ClInclude Include="GameObject\Animator.h" />
     <ClInclude Include="GameObject\Collider.h" />
     <ClInclude Include="GameObject\EquipmentObject.h" />
@@ -184,8 +184,9 @@
     <ClInclude Include="System\Input.h" />
     <ClInclude Include="System\Timer.h" />
     <ClInclude Include="UI\HealthBar.h" />
+    <ClInclude Include="UI\Image.h" />
     <ClInclude Include="UI\Inventory.h" />
-    <ClInclude Include="UI\Loading.h" />
+    <ClInclude Include="UI\SpriteImage.h" />
     <ClInclude Include="UI\Profile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

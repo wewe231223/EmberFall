@@ -74,7 +74,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				if (nextLoc == mPlayers.end()) {
 					Crash("There is no more space for My Player!!");
 				}
-		
+				
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mMageAnimationController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mShieldManController);
@@ -522,7 +522,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 	mHealthBarUI.SetHealth(50.f);
 
 
-	mProfileUI.Init(mCanvas, mTextureManager->GetTexture("big_circle_frame"), mTextureManager->GetTexture("Archer"));
+	mProfileUI.Init(mCanvas, mTextureManager->GetTexture("big_circle_frame"), mTextureManager->GetTexture("Devil"));
 }
 
 void TerrainScene::ProcessNetwork() {

@@ -17,6 +17,7 @@ SceneManager::SceneManager(std::tuple<std::shared_ptr<MeshRenderManager>, std::s
 	mLoadingThread = std::thread([this, device, loadCommandList, initLoadFunc]() {
 		initLoadFunc();
 		mScenes[static_cast<size_t>(SceneType::TERRAIN)]->Init(device, loadCommandList);
+		//std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 		mLoaded.store(true);
 		});
 

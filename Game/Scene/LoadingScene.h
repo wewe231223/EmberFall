@@ -1,6 +1,7 @@
 #pragma once 
 #include "../Renderer/Render/Canvas.h"
-#include "../Game/UI/Loading.h"
+#include "../Game/UI/SpriteImage.h"
+#include "../Game/UI/Image.h"
 #include "../Renderer/Manager/TextureManager.h"
 #include "../Renderer/Manager/MeshRenderManager.h"
 #include "../Renderer/Manager/ParticleManager.h"
@@ -17,5 +18,7 @@ public:
 	virtual void Update();
 	virtual void SendNetwork();
 private:
-	Loading mLoading{};
+	SpriteImage mLoading{};
+	Image mBackground{};
+	Image mLoadingWord{};
 };

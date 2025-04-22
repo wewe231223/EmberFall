@@ -78,11 +78,14 @@
     <ClCompile Include="Scene\LoadingScene.cpp">
       <Filter>LoadingScene</Filter>
     </ClCompile>
-    <ClCompile Include="UI\Loading.cpp">
+    <ClCompile Include="UI\SpriteImage.cpp">
       <Filter>UI</Filter>
     </ClCompile>
     <ClCompile Include="Scene\SceneManager.cpp">
       <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\Image.cpp">
+      <Filter>UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -131,14 +134,14 @@
     <ClInclude Include="Scene\LoadingScene.h">
       <Filter>LoadingScene</Filter>
     </ClInclude>
-    <ClInclude Include="UI\Loading.h">
+    <ClInclude Include="UI\SpriteImage.h">
       <Filter>UI</Filter>
     </ClInclude>
     <ClInclude Include="Scene\SceneManager.h">
       <Filter>Scene</Filter>
     </ClInclude>
-    <ClInclude Include="..\RENDERER\MANAGER\SCENEMANAGER.H">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="UI\Image.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
