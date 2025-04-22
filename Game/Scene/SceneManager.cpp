@@ -12,7 +12,6 @@ SceneManager::SceneManager(std::tuple<std::shared_ptr<MeshRenderManager>, std::s
 
 	mCurrentScene = mScenes[static_cast<size_t>(SceneType::LOADING)].get();
 
-
 	gClientCore->Init();
 	auto res = gClientCore->Start("127.0.0.1", 7777);
 	if (false == res) {

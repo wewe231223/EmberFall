@@ -75,23 +75,23 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					Crash("There is no more space for My Player!!");
 				}
 				
-				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mMageAnimationController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mShieldManController);
-				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
+				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
 
 
 
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
 		
-				//mMyPlayer->AddEquipment(mEquipments["GreatSword"].Clone());
+				mMyPlayer->AddEquipment(mEquipments["GreatSword"].Clone());
 
 				//mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
 				//mMyPlayer->AddEquipment(mEquipments["Shield"].Clone());
 
-				mMyPlayer->AddEquipment(mEquipments["Bow"].Clone());
-				mMyPlayer->AddEquipment(mEquipments["Quiver"].Clone());
+				//mMyPlayer->AddEquipment(mEquipments["Bow"].Clone());
+				//mMyPlayer->AddEquipment(mEquipments["Quiver"].Clone());
 
 
 				mMyPlayer->SetMyPlayer();
