@@ -254,6 +254,7 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
     Color = saturate(BaseColor * 0.4f + DetailColor * 0.6f);
     
     output.diffuse = Color;
+    output.normal = float4(0.f, 0.f, 0.f, 5.f); 
     output.position = float4(input.wPosition, 1.f);    
     
     return output;

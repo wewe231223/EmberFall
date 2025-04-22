@@ -176,13 +176,16 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     float4 worldPos = GBuffers[2].Sample(linearWrapSampler, input.texcoord);
     float3 toCamera = normalize(cameraPosition - worldPos.xyz);
   
+   
     float4 LightingColor = Lighting(normal, toCamera, worldPos.xyz, input.texcoord);
-        
+    
     for (int i = 0; i < step(4.0f, GBuffers[1].Sample(linearWrapSampler, input.texcoord).w); ++i)
     {
         LightingColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
+    
+    
     float validWorld = step(0.000001, abs(worldPos.x));
 
     float4 viewPos = mul(worldPos, view);
