@@ -14,7 +14,7 @@ inline std::array<AnimationInfo, Packets::AnimationState_MAX + 1> DEFAULT_ANIM_I
     AnimationInfo{ 3.0f, true, Packets::AnimationState_MOVE_RIGHT },
     AnimationInfo{ 3.0f, false, Packets::AnimationState_JUMP },
     AnimationInfo{ 2.3f, false, Packets::AnimationState_ATTACKED },
-    AnimationInfo{ 2.3f, false, Packets::AnimationState_ATTACK },
+    AnimationInfo{ 1.7f, false, Packets::AnimationState_ATTACK },
     AnimationInfo{ 3.0f, true, Packets::AnimationState_INTERACTION },
     AnimationInfo{ 3.0f, false, Packets::AnimationState_DEAD }
 };

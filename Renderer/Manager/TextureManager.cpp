@@ -4,71 +4,97 @@
 #include "../Config/Config.h"
 
 TextureManager::TextureManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
-	D3D12_DESCRIPTOR_HEAP_DESC desc{};
-	desc.NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
-	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	desc.NodeMask = 0;
+    D3D12_DESCRIPTOR_HEAP_DESC desc{};
+    desc.NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
+    desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+    desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+    desc.NodeMask = 0;
+    CheckHR(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&mTextureHeap)));
+    CrashExp(std::filesystem::exists(LOAD_DIRECTORY), "Load directory not found.");
 
-	CheckHR(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&mTextureHeap)));
+    // Initial default texture
+    mCount = 0;
+    {
+        std::filesystem::path defaultPath = std::filesystem::path(IMAGE_DIRECTORY) / "DefaultTexture.png";
+        auto pair = std::make_pair(mCount, Texture(device, commandList, defaultPath));
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.Format = pair.second.GetResource()->GetDesc().Format;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MipLevels = pair.second.GetResource()->GetDesc().MipLevels;
 
-	CrashExp(std::filesystem::exists(TextureManager::IMAGE_DIRECTORY), "Image directory not found.");
+        CD3DX12_CPU_DESCRIPTOR_HANDLE handle(mTextureHeap->GetCPUDescriptorHandleForHeapStart());
+        device->CreateShaderResourceView(pair.second.GetResource().Get(), &srvDesc, handle);
 
+        mTextures["DefaultTexture"] = std::move(pair);
+    }
 
-	UINT count{ 0 };
-	auto pair = std::make_pair(count, Texture(device, commandList, "Resources/Image/DefaultTexture.png"));
+    UINT increment = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    // Load only files in Load directory
+    for (const auto& entry : std::filesystem::directory_iterator(LOAD_DIRECTORY)) {
+        const auto& path = entry.path();
+        const std::string name = path.stem().string();
+        if (mTextures.find(name) != mTextures.end() || !std::filesystem::is_regular_file(path))
+            continue;
 
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.Format = pair.second.GetResource()->GetDesc().Format;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = pair.second.GetResource()->GetDesc().MipLevels;
+        auto pair = std::make_pair(++mCount, Texture(device, commandList, path));
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.Format = pair.second.GetResource()->GetDesc().Format;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MipLevels = pair.second.GetResource()->GetDesc().MipLevels;
+        srvDesc.Texture2D.MostDetailedMip = 0;
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE handle{ mTextureHeap->GetCPUDescriptorHandleForHeapStart() };
-	device->CreateShaderResourceView(pair.second.GetResource().Get(), &srvDesc, handle);
+        CD3DX12_CPU_DESCRIPTOR_HANDLE handle(mTextureHeap->GetCPUDescriptorHandleForHeapStart());
+        handle.Offset(mCount, increment);
+        device->CreateShaderResourceView(pair.second.GetResource().Get(), &srvDesc, handle);
 
-	mTextures["DefaultTexture"] = std::move(pair);
-
-	auto increasement = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	for (const auto& entry : std::filesystem::directory_iterator(TextureManager::IMAGE_DIRECTORY)) {
-		auto& path = entry.path();
-		auto name = path.stem().string();
-
-		if (mTextures.find(name) != mTextures.end() or not std::filesystem::is_regular_file(path)) {
-			continue;
-		}
-
-		
-
-		pair = std::make_pair(++count, Texture(device, commandList, path));
-
-		srvDesc.Format = pair.second.GetResource()->GetDesc().Format;
-		srvDesc.Texture2D.MipLevels = pair.second.GetResource()->GetDesc().MipLevels;
-		srvDesc.Texture2D.MostDetailedMip = 0; 
-		handle = mTextureHeap->GetCPUDescriptorHandleForHeapStart();
-		handle.Offset(count, increasement);
-
-		device->CreateShaderResourceView(pair.second.GetResource().Get(), &srvDesc, handle);
-
-		mTextures[name] = std::move(pair);
-	}
+        mTextures[name] = std::move(pair);
+    }
 }
 
 UINT TextureManager::GetTexture(const std::string& name) {
-	auto result = mTextures.find(name);
-	if (result == mTextures.end()) {
-		return mTextures["Default"].first;
-	}
-	return result->second.first;
+    auto it = mTextures.find(name);
+    if (it == mTextures.end()) {
+        return mTextures["DefaultTexture"].first;
+    }
+    return it->second.first;
 }
 
 void TextureManager::Bind(ComPtr<ID3D12GraphicsCommandList> commandList) {
-	commandList->SetDescriptorHeaps(1, mTextureHeap.GetAddressOf());
+    commandList->SetDescriptorHeaps(1, mTextureHeap.GetAddressOf());
 }
 
 D3D12_GPU_DESCRIPTOR_HANDLE TextureManager::GetTextureHeapAddress() {
-	return mTextureHeap->GetGPUDescriptorHandleForHeapStart();
+    return mTextureHeap->GetGPUDescriptorHandleForHeapStart();
 }
+
+void TextureManager::LoadAllImages(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+    UINT increment = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    for (const auto& entry : std::filesystem::directory_iterator(IMAGE_DIRECTORY)) {
+        const auto& path = entry.path();
+        const std::string name = path.stem().string();
+        if (path == std::filesystem::path(LOAD_DIRECTORY) ||
+            mTextures.find(name) != mTextures.end() ||
+            !std::filesystem::is_regular_file(path))
+            continue;
+
+        auto pair = std::make_pair(++mCount, Texture(device, commandList, path));
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.Format = pair.second.GetResource()->GetDesc().Format;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MipLevels = pair.second.GetResource()->GetDesc().MipLevels;
+        srvDesc.Texture2D.MostDetailedMip = 0;
+
+        CD3DX12_CPU_DESCRIPTOR_HANDLE handle(mTextureHeap->GetCPUDescriptorHandleForHeapStart());
+        handle.Offset(mCount, increment);
+        device->CreateShaderResourceView(pair.second.GetResource().Get(), &srvDesc, handle);
+
+        mTextures[name] = std::move(pair);
+    }
+}
+
 
 void MaterialManager::CreateMaterial(const std::string& name, const MaterialConstants& material) {
 	mMaterialData.emplace_back(material);
@@ -83,6 +109,12 @@ void MaterialManager::CreateMaterial(const std::string& name, UINT diffuseTextur
 
 void MaterialManager::UploadMaterial(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	mMaterialData.shrink_to_fit(); 
+
+	if (mMaterialData.size() == 0) {
+        MaterialConstants dummy{};
+		mMaterialData.emplace_back(dummy);
+	}
+
 	mMaterialBuffer = DefaultBuffer(device, commandList, sizeof(MaterialConstants), mMaterialData.size(), mMaterialData.data());
 
 	::memcpy(mMaterialBuffer.Data(), mMaterialData.data(), mMaterialData.size() * sizeof(MaterialConstants));

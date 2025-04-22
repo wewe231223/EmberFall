@@ -113,7 +113,9 @@ void PlayScene::Init() {
     }
 
     for (int32_t i = 0; i < 10; ++i) {
-        gObjectSpawner->SpawnObject(ObjectTag::MONSTER);
+        auto monster = gObjectSpawner->SpawnObject(ObjectTag::MONSTER);
+        monster->GetTransform()->Reset();
+
         if (0 == i) {
             decltype(auto) obj = gObjectSpawner->SpawnObject(ObjectTag::CORRUPTED_GEM);
         }
@@ -161,10 +163,10 @@ void PlayScene::AddPlayer(SessionIdType id, std::shared_ptr<GameObject> playerOb
     mPlayerList.push_back(player);
 
     player->GetComponent<PlayerScript>()->ResetGameScene(shared_from_this());
-    auto randPos = Random::GetRandomVec3(-50.0f, 50.0f);
-    randPos.y = 0.0f;
+    //auto randPos = Random::GetRandomVec3(-50.0f, 50.0f);
+    //randPos.y = 0.0f;
 
-    player->GetTransform()->Translate(randPos);
+    //player->GetTransform()->Translate(randPos);
 
     mTerrainCollider.AddObjectInTerrainGroup(player);
 

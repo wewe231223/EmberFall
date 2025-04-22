@@ -68,6 +68,7 @@ void FreeCameraMode::Enter() {
 		});
 
 	mCamera->GetTransform().GetRotation() = DirectX::SimpleMath::Quaternion::Identity;
+
 }
 
 void FreeCameraMode::Exit() {

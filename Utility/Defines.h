@@ -40,6 +40,33 @@ struct AnimationModelContext {
 	UINT boneIndexStart{ 0 };
 };
 
+struct ModelContext2D {
+    DirectX::XMFLOAT3X3 Transform{
+        1.f,0.f,0.f,
+        0.f,1.f,0.f,
+        0.f,0.f,1.f
+    };
+
+    DirectX::XMFLOAT3X3 UVTransform{
+        1.f,0.f,0.f,
+        0.f,1.f,0.f,
+        0.f,0.f,1.f
+    };
+
+    UINT ImageIndex{ 0 };
+    UINT GreyScale{ 0 };
+};
+
+
+class IScene abstract {
+public:
+	virtual ~IScene() = default;
+	virtual void Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) PURE;
+	virtual void ProcessNetwork() PURE;
+	virtual void Update() PURE;
+	virtual void SendNetwork() PURE;
+};
+
 struct BoneTransformBuffer {
 	std::array< SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<size_t> >	boneTransforms;
 	UINT boneCount;

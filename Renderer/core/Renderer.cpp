@@ -5,14 +5,16 @@
 #include "../Utility/Serializer.h"
 #include "../Utility/Exceptions.h"
 #include "../Utility/Crash.h"
+#include "../Utility/IntervalTimer.h"
+
 #define DIRECTWRITE
 
 Renderer::Renderer(HWND rendererWindowHandle)
 	: mRendererWindow(rendererWindowHandle) {
 
-	// 셰이더 매니저 테스트용.. 
 	gShaderManager.Test();
 
+	// 기존 렌더러에 있는 초기화 작업은 이미지 로딩 이외에 모두 메인 쓰레드에서 해도 무방함. ( 충분히 빠른 시간 안에 완료됨 ) 
 	Renderer::InitFactory();
 	Renderer::InitDevice();
 	Renderer::InitCommandQueue();
@@ -25,11 +27,14 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitShadowRenderer();
 
 	Renderer::ResetCommandList();
-
-	Renderer::InitCoreResources(); 
 	Renderer::InitDefferedRenderer();
-	Renderer::InitParticleManager();
 
+	
+	Renderer::InitCoreResources(); 
+	Renderer::InitTerrainBuffer();
+	Renderer::InitParticleManager();
+	Renderer::InitGrassRender();
+	Renderer::InitCanvas(); 
 }
 
 Renderer::~Renderer() {
@@ -37,15 +42,15 @@ Renderer::~Renderer() {
 }
 
 
-std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> Renderer::GetManagers() {
-	return std::make_tuple(mMeshRenderManager, mTextureManager, mMaterialManager, mParticleManager);
+std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> Renderer::GetManagers() {
+	return std::make_tuple(mMeshRenderManager, mTextureManager, mMaterialManager, mParticleManager, mCanvas);
 }
 
 DefaultBufferCPUIterator Renderer::GetMainCameraBuffer() {
 	return mMainCameraBuffer.CPUBegin();
 }
 
-ComPtr<ID3D12Device> Renderer::GetDevice() {
+ComPtr<ID3D12Device10> Renderer::GetDevice() {
 	return mDevice;
 }
 
@@ -53,9 +58,28 @@ ComPtr<ID3D12GraphicsCommandList> Renderer::GetCommandList() {
 	return mCommandList;
 }
 
-void Renderer::UploadResource(){
-	mMaterialManager->UploadMaterial(mDevice, mCommandList);
+ComPtr<ID3D12GraphicsCommandList> Renderer::GetLoadCommandList() {
+	return mLoadCommandList;
+}
 
+void Renderer::LoadTextures() {
+	mTextureManager->LoadAllImages(mDevice, mLoadCommandList); 
+
+	MaterialConstants material{};
+
+	material.mDiffuseTexture[0] = mTextureManager->GetTexture("Grass0");
+	material.mDiffuseTexture[1] = mTextureManager->GetTexture("Grass1");
+	material.mDiffuseTexture[2] = mTextureManager->GetTexture("Grass2");
+	material.mDiffuseTexture[3] = mTextureManager->GetTexture("Grass3");
+
+	mMaterialManager->CreateMaterial("GrassMaterial", material);
+
+	mGrassRenderer.SetMaterial(mMaterialManager->GetMaterial("GrassMaterial"));
+
+}
+
+void Renderer::UploadResource(){ 
+	mMaterialManager->UploadMaterial(mDevice, mCommandList);
 	CheckHR(mCommandList->Close());
 
 	ID3D12CommandList* commandLists[] = { mCommandList.Get() };
@@ -63,6 +87,20 @@ void Renderer::UploadResource(){
 	Renderer::FlushCommandQueue();
 
 	Console.Log("Renderer 초기화가 완료되었습니다.", LogType::Info);
+}
+
+void Renderer::ResetLoadCommandList() {
+	CheckHR(mLoadAllocator->Reset());
+	CheckHR(mLoadCommandList->Reset(mLoadAllocator.Get(), nullptr));
+}
+
+void Renderer::ExecuteLoadCommandList() {
+	mMaterialManager->UploadMaterial(mDevice, mLoadCommandList);
+	mExecute = true; 
+}
+
+void Renderer::SetFeatureEnabled(std::tuple<bool, bool> type) {
+	mFeatureEnabled = type;
 }
 
 void Renderer::Update() {
@@ -142,8 +180,14 @@ void Renderer::Render() {
 	mMeshRenderManager->RenderGPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin() );
 	mMeshRenderManager->Reset();
 
-	//mParticleManager->RenderSO(mCommandList);
-	//mParticleManager->RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress());
+	if (std::get<static_cast<size_t>(RenderFeature::GRASS)>(mFeatureEnabled)) {
+		mGrassRenderer.Render(mCommandList, mMainCameraBuffer.GPUBegin(), mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress());
+	}
+
+	if (std::get<static_cast<size_t>(RenderFeature::PARTICLE)>(mFeatureEnabled)) {
+		mParticleManager->RenderSO(mCommandList);
+		mParticleManager->RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress());
+	}
 
 	// Deffered Rendering Pass 
 	mShadowRenderer.GetShadowMap().Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
@@ -155,6 +199,10 @@ void Renderer::Render() {
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
 	mDefferedRenderer.Render(mCommandList, mShadowRenderer.GetShadowCameraBuffer());
+
+	mTextureManager->Bind(mCommandList);
+
+	mCanvas->Render(mCommandList, mTextureManager->GetTextureHeapAddress());
 }
 
 void Renderer::ExecuteRender() {
@@ -170,13 +218,21 @@ void Renderer::ExecuteRender() {
 	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
 #else 
 	CheckHR(mCommandList->Close());
-	ID3D12CommandList* commandLists[] = { mCommandList.Get() };
-	mCommandQueue->ExecuteCommandLists(1, commandLists);
+	ID3D12CommandList* commandLists[2] = { mCommandList.Get(), nullptr };
+	
+	if (mExecute) {
+		CheckHR(mLoadCommandList->Close());
+		commandLists[1] = mLoadCommandList.Get();
+	}
+
+	mCommandQueue->ExecuteCommandLists(mExecute ? 2 : 1, commandLists);
+	mExecute = false;
+
 	Renderer::FlushCommandQueue();
 
 	mStringRenderer.Render();
-	//mParticleManager->PostRender();
-	//mParticleManager->ValidateParticle();
+	mParticleManager->PostRender();
+	mParticleManager->ValidateParticle();
 
 	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
 	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
@@ -269,13 +325,20 @@ void Renderer::InitDevice() {
 
 	CrashExp(adapter != nullptr, "No suitable GPU found.");
 
-	auto hr = ::D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice));
+
+	ComPtr<ID3D12Device> base{};
+	auto hr = ::D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&base));
+
+
 
 	if (FAILED(hr)) {
 		ComPtr<IDXGIAdapter> warpAdapter{ nullptr };
 		CheckHR(mFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
-		CheckHR(::D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice)));
+		CheckHR(::D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&base)));
 	}
+
+
+	CheckHR(base.As(&mDevice));
 
 	// 메시 셰이더 지원됨 
 	// Renderer::CheckMeshShaderSupport(); 
@@ -322,6 +385,12 @@ void Renderer::InitSwapChain() {
 }
 
 void Renderer::InitCommandList() {
+
+	CheckHR(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&mLoadAllocator)));
+	CheckHR(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mLoadAllocator.Get(), nullptr, IID_PPV_ARGS(&mLoadCommandList)));
+
+	CheckHR(mLoadCommandList->Close());
+
 	ComPtr<ID3D12GraphicsCommandList> base{}; 
 
 	CheckHR(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&mAllocator)));
@@ -424,6 +493,32 @@ void Renderer::InitShadowRenderer() {
 
 void Renderer::InitParticleManager() {
 	mParticleManager = std::make_shared<ParticleManager>(mDevice, mCommandList);
+	mParticleManager->SetTerrain(mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
+}
+
+void Renderer::InitGrassRender() {
+	mGrassRenderer = GrassRenderer(mDevice, mCommandList, mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
+}
+
+void Renderer::InitCanvas() {
+	mCanvas = std::make_unique<Canvas>(mDevice, mCommandList);
+}
+
+void Renderer::InitTerrainBuffer() {
+	TerrainHeader header{};
+	std::vector<SimpleMath::Vector3> vertices{};
+
+	std::ifstream file("Resources/Binarys/Terrain/TerrainBaked.bin", std::ios::binary);
+
+	file.read(reinterpret_cast<char*>(&header), sizeof(TerrainHeader));
+
+
+	vertices.resize(header.globalWidth * header.globalHeight);
+	file.read(reinterpret_cast<char*>(vertices.data()), vertices.size() * sizeof(SimpleMath::Vector3));
+
+
+	mTerrainHeaderBuffer = DefaultBuffer(mDevice, mCommandList, sizeof(TerrainHeader), 1, &header, true);
+	mTerrainDataBuffer = DefaultBuffer(mDevice, mCommandList, sizeof(SimpleMath::Vector3), header.globalWidth * header.globalHeight,  vertices.data() );
 }
 
 void Renderer::InitCoreResources() {

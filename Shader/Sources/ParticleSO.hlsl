@@ -201,39 +201,34 @@ void OnTerrain(inout ParticleVertex vertex)
     }
 }
 
-// Ember 파티클 업데이트: 전체 시간이 흐를수록 수평 확산이 점점 커지도록 함
+
 void FoggyEmberParticleUpdate(inout ParticleVertex vertex, inout PointStream<ParticleVertex> stream, uint vertexID)
 {
     if (vertex.lifetime >= 0.f)
     {
         ParticleVertex n = vertex;
-        
-        // 상승 효과는 최소화 (공포게임 안개처럼 거의 수평 확산)
+
         float riseSpeed = 0.05f;
-        
-        // 초기 방향의 수평 성분만 사용하여 이동 계산
+ 
         float3 horizontalDir = normalize(float3(n.direction.x, 0.0f, n.direction.z));
         float3 velocity = horizontalDir * n.velocity;
-        
-        // 파티클의 나이가 들수록 수평 확산이 커지도록 확산 계수 적용 (최대 3배까지)
+
         float ageFactor = (n.totalLifetime - n.lifetime) / n.totalLifetime; // 0~1 범위
         float expansionMultiplier = 1.0f + 2.0f * ageFactor;
         velocity.x *= expansionMultiplier;
         velocity.z *= expansionMultiplier;
-        
-        // 약간의 랜덤 흔들림 추가하여 자연스러운 퍼짐 효과 (-0.1 ~ 0.1)
+
         float randomX = GenerateRandomInRange(-0.1f, 0.1f, vertexID * 13);
         float randomZ = GenerateRandomInRange(-0.1f, 0.1f, vertexID * 17);
         velocity.x += randomX;
         velocity.z += randomZ;
         
-        // 최소한의 상승 효과 적용
+
         velocity.y = riseSpeed;
         
-        // 위치 갱신
+ 
         n.position += velocity * deltaTime;
-        
-        // 자연스러운 감쇠 처리
+ 
         n.velocity *= 0.995f;
         
         OnTerrain(n);

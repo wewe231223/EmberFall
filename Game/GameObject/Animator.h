@@ -151,15 +151,14 @@ namespace AnimatorGraph {
         size_t mCurrentClipIndex{ 0 };
         size_t mTargetClipIndex{ 0 };
 
-        bool mTransitioning{ false };
-
         double mTransitionTime{ 0.0 };
         double mTransitionDuration{ 0.09 };
         double mCurrentTime{ 0.0 };
 
         std::unordered_map<unsigned int, TransformComponents> mStoredTransitionComponents{};
-        bool mHasStoredTransition{ false };
 
+        bool mTransitioning{ false };
+        bool mHasStoredTransition{ false };
 		bool mLoop{ true };
     };
 
@@ -302,7 +301,9 @@ namespace AnimatorGraph {
         
 
         void ResetTrigger(const std::string& name);
+
         const AnimationParameter* GetParameter(const std::string& name) const;
+		size_t GetCurrentStateIndex() const;
 
         void Transition(size_t targretIndex, double transitionDuration = 0.09);
     private:

@@ -109,7 +109,7 @@ namespace BT {
         TreeList mRoots{ };
         TreeListIter mCurrNode{ };
         float mDecideTimeCounter{ 0.0f };
-        float mDecideTimeInterval{ 2.0f };
+        float mDecideTimeInterval{ 100000.0f };
         std::shared_ptr<Script> mOwner{ nullptr };
     };
 }

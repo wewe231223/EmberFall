@@ -128,7 +128,7 @@ void Transform::SetLocalTransform(const SimpleMath::Matrix& localMatrix) {
 }
 
 void Transform::Update(float deltaTime) {
-	mPosition += mDirection * mSpeed * deltaTime;
+	//mPosition += mDirection * mSpeed * deltaTime;
 }
 
 void Transform::UpdateWorldMatrix() {

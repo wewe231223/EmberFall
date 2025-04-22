@@ -49,3 +49,11 @@ const DirectX::BoundingOrientedBox& Collider::GetWorldBox() const {
 DirectX::BoundingOrientedBox& Collider::GetWorldBox() {
 	return mWorld; 
 }
+
+const DirectX::BoundingOrientedBox& Collider::GetOriginBox() const {
+	return mOrigin;
+}
+
+DirectX::BoundingOrientedBox& Collider::GetOriginBox() {
+	return mOrigin; 
+}

@@ -21,6 +21,14 @@
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Renderer/Core/ShadowRenderer.h"
 #include "../Renderer/Manager/ParticleManager.h"
+#include "../Renderer/Render/GrassRenderer.h"
+#include "../Renderer/Render/Canvas.h"
+
+enum class RenderFeature : BYTE {
+	PARTICLE, 
+	GRASS,
+	END,
+};
 
 class Renderer {
 public:
@@ -33,13 +41,20 @@ public:
 	Renderer(Renderer&& other) = delete;
 	Renderer& operator=(Renderer&& other) = delete;
 public:
-	std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>> GetManagers();
+	std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> GetManagers();
 	DefaultBufferCPUIterator GetMainCameraBuffer();
 
-	ComPtr<ID3D12Device> GetDevice();
+	ComPtr<ID3D12Device10> GetDevice();
 	ComPtr<ID3D12GraphicsCommandList> GetCommandList();
+	ComPtr<ID3D12GraphicsCommandList> GetLoadCommandList(); 
+
+	void LoadTextures(); 
 
 	void UploadResource();
+	void ResetLoadCommandList(); 
+	void ExecuteLoadCommandList();
+
+	void SetFeatureEnabled(std::tuple<bool, bool> type);
 
 	void Update();
 
@@ -63,7 +78,10 @@ private:
 	void InitFonts(); 
 
 	void InitShadowRenderer();
-	void InitParticleManager(); 
+	void InitCanvas();
+	void InitTerrainBuffer();
+	void InitParticleManager();
+	void InitGrassRender(); 
 
 	void InitCoreResources(); 
 	void InitDefferedRenderer();
@@ -82,7 +100,7 @@ private:
 	ComPtr<ID3D12Debug6> mDebugController{ nullptr };
 	ComPtr<IDXGIDebug1> mDXGIDebug{ nullptr };
 #endif 
-	ComPtr<ID3D12Device> mDevice{ nullptr };
+	ComPtr<ID3D12Device10> mDevice{ nullptr };
 
 	ComPtr<ID3D12CommandQueue> mCommandQueue{ nullptr };
 
@@ -90,6 +108,10 @@ private:
 	ComPtr<ID3D12Fence> mFence{ nullptr };
 
 	ComPtr<IDXGISwapChain1> mSwapChain{ nullptr };
+
+	bool mExecute{ false };
+	ComPtr<ID3D12CommandAllocator> mLoadAllocator{ nullptr };
+	ComPtr<ID3D12GraphicsCommandList> mLoadCommandList{ nullptr };
 
 	ComPtr<ID3D12CommandAllocator> mAllocator{ nullptr };
 	ComPtr<ID3D12GraphicsCommandList6> mCommandList{ nullptr };
@@ -117,6 +139,13 @@ private:
 	std::shared_ptr<MaterialManager> mMaterialManager{};
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{};
 	std::shared_ptr<ParticleManager> mParticleManager{};
+	std::shared_ptr<Canvas> mCanvas{};
+
+	std::tuple<bool, bool> mFeatureEnabled{ false, false };
+	GrassRenderer mGrassRenderer{};
+
+	DefaultBuffer mTerrainHeaderBuffer{}; 
+	DefaultBuffer mTerrainDataBuffer{}; 
 
 	DefaultBuffer mMainCameraBuffer{};
 };

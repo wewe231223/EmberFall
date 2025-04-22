@@ -61,8 +61,8 @@ void ServerFrame::OnPlayerConnect(SessionIdType id) {
     auto object = std::make_shared<GameObject>(mCurrentScene);
     
     object->InitId(id);
-    //object->CreateCollider<OrientedBoxCollider>(BoundingBoxImporter::GetBoundingBox(EntryKeys::PLAYER_BOUNDING_BOX));
-    object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.4f, 1.5f, 0.4f });
+    object->CreateCollider<OrientedBoxCollider>(BoundingBoxImporter::GetBoundingBox(EntryKeys::PLAYER_BOUNDING_BOX));
+    //object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3{ 0.0f, 0.75f, 0.0f }, SimpleMath::Vector3{ 0.2f, 0.75f, 0.2f });
     object->CreateComponent<PlayerScript>(object, mInputManager->GetInput(id));
     object->mSpec.active = true;
 

@@ -1200,8 +1200,13 @@ namespace AnimatorGraph {
         return nullptr;
     }
 
+    size_t BoneMaskAnimationGraphController::GetCurrentStateIndex() const {
+        return mCurrentStateIndex;
+    }
+
     void BoneMaskAnimationGraphController::Transition(size_t targetIndex, double transitionDuration) {
 		const BoneMaskAnimationState& target = mStates[targetIndex];
+
 		mAnimator.SetTransitionDuration(transitionDuration);
 		mAnimator.SetLoop(target.loop);
 		mAnimator.TransitionMaskedToClip(target.maskedClipIndex);
