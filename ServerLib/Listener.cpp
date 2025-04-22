@@ -5,7 +5,7 @@
 #include "NetworkCore.h"
 
 Listener::Listener(const UINT16 port, std::shared_ptr<INetworkCore> coreService)
-    : INetworkObject{ coreService }, mLocalPort{ port } {
+    : INetworkObject{ }, mLocalPort{ port } {
     mListenSocket = NetworkUtil::CreateSocket();
     if (INVALID_SOCKET == mListenSocket) {
         gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Create Socket Failure: {}", NetworkUtil::WSAErrorMessage());
@@ -56,7 +56,7 @@ void Listener::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
 }
 
 void Listener::RegisterAccept() {
-    auto sessionManager = std::static_pointer_cast<ServerCore>(GetCore())->GetSessionManager();
+    auto sessionManager = gServerCore->GetSessionManager();
     std::shared_ptr<Session> session = sessionManager->CreateSessionObject();
 
     mOverlappedAccept.ResetOverlapped();
@@ -89,17 +89,13 @@ void Listener::RegisterAccept() {
 void Listener::ProcessAccept() {
     auto session = mOverlappedAccept.GetSession();
 
-    auto sessionManager = std::static_pointer_cast<ServerCore>(GetCore())->GetSessionManager();
+    auto sessionManager = gServerCore->GetSessionManager();
     if (true == sessionManager->AddSession(session)) {
         session->InitSessionNetAddress(mOverlappedAccept.buffer.data());
         auto [ip, port] = session->GetAddress();
-        
-        decltype(auto) packetId = FbsPacketFactory::NotifyIdSC(session->GetId());
-        sessionManager->Send(session->GetId(), packetId);
 
-        decltype(auto) packetProtocolVersion = FbsPacketFactory::ProtocolVersionSC();
-        sessionManager->Send(session->GetId(), packetProtocolVersion);
-        
+        session->OnConnect();
+
         gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Client [IP: {}, PORT: {}] Connected", ip, port);
     }
     else {

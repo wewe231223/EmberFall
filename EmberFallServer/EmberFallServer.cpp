@@ -11,8 +11,12 @@
 
 int main()
 {
+    gLogConsole->Start();
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Server Project Start");
 
-    gServerFrame->InitGameScenes();
-    gServerFrame->GameLoop();
+    gServerFrame->Run();
+    //gServerFrame->GameLoop();
+
+    volatile bool loop{ true };
+    while (loop) {};
 }

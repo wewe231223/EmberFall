@@ -28,20 +28,25 @@ public:
     virtual ~PlayerScript();
 
 public:
-    void ResetGameScene(std::shared_ptr<IServerGameScene> gameScene);
+    //Short2 GetCurrSector() const;
     std::shared_ptr<Input> GetInput() const;
-    std::shared_ptr<IServerGameScene> GetCurrentScene() const;
+    ViewList& GetViewList();
+
+    void SetOwnerSession(std::shared_ptr<class GameSession> session);
+
+    //void UpdateViewListNPC(const std::vector<NetworkObjectIdType>& inViewRangeObjects);
+    //void UpdateViewListPlayer(const std::vector<NetworkObjectIdType>& inViewRangeObjects);
+    void UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeNPC, const std::vector<NetworkObjectIdType>& inViewRangePlayer);
 
     virtual void Init() override;
 
     virtual void Update(const float deltaTime) override;
     virtual void LateUpdate(const float deltaTime) override;
 
-    virtual void OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
-    virtual void OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
-    virtual void OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
-
+    virtual void OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
     virtual void OnCollisionTerrain(const float height) override;
+
+    virtual void DoInteraction(const std::shared_ptr<GameObject>& target) override;
 
     virtual void DispatchGameEvent(struct GameEvent* event) override;
 
@@ -51,22 +56,25 @@ private:
     void CheckAndMove(const float deltaTime);
     void CheckAndJump(const float deltaTime);
 
-    void DoInteraction(const float deltaTime, const std::shared_ptr<GameObject>& target);
 
-    void CancelInteraction(const float deltaTime);
+    void CancelInteraction();
     void DestroyGem(const float deltaTime, const std::shared_ptr<GameObject>& gem);
     void AcquireItem(const float deltaTime, const std::shared_ptr<GameObject>& item);
     void UseItem();
 
 private:
     bool mInteraction{ false };
+
+    //Short2 mCurrSectorIdx{ };
+
+    Lock::SRWLock mViewListLock{ };
     ViewList mViewList;
     Inventory mInventory{ };
 
     NetworkObjectIdType mInteractionObj{ };
 
+    std::weak_ptr<GameSession> mSession{ };
     std::shared_ptr<Input> mInput{ };
-    std::shared_ptr<IServerGameScene> mGameScene{ };
     std::shared_ptr<GameObject> mInteractionTrigger{ };
 };
 

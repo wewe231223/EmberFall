@@ -36,3 +36,6 @@ OverlappedSend::OverlappedSend()
 
 OverlappedDisconnect::OverlappedDisconnect()
     : OverlappedEx{ IOType::DISCONNECT } { }
+
+OverlappedUpdate::OverlappedUpdate()
+    : OverlappedEx{ IOType::UPDATE } { }

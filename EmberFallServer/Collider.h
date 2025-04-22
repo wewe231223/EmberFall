@@ -16,110 +16,74 @@
 class Transform;
 
 enum class ColliderType : BYTE {
-    BOX,
     SPHERE,
     ORIENTED_BOX,
-    OTHER
 };
 
-struct ContactImpulse {
-    NetworkObjectIdType opponentId;
-    SimpleMath::Vector3 prevImpulse;
+struct CollisionResult {
+    bool intersects;
+    SimpleMath::Vector3 penetration;
 };
 
-class Collider : public std::enable_shared_from_this<Collider> {
+class BoundingObject : public std::enable_shared_from_this<BoundingObject> {
 public:
-    Collider(ColliderType type);
-    virtual ~Collider();
-
-    Collider(Collider&& other) noexcept;
-    Collider& operator=(Collider&& other) noexcept;
-
-    Collider(const Collider& other) = delete;
-    Collider& operator=(const Collider& other) = delete;
+    BoundingObject(ColliderType type);
+    virtual ~BoundingObject();
 
 public:
-    void Disable();
-    void Enable();
     ColliderType GetType() const;
-    bool IsEnable() const;
-    bool IsColliding() const;
+    virtual float GetForwardExtents() const abstract; // extents-z
+    virtual float GetRadiusCircumplex() const abstract;
+    virtual float GetRadiusCircumplexSq() const abstract;
 
-    void SetTransform(const std::shared_ptr<Transform>& transform);
-    CollisionState GetState(NetworkObjectIdType id) const;
-
-    virtual float GetForwardExtents() abstract;
-    virtual void Update() abstract;
-    virtual void LateUpdate() abstract;
-    virtual bool CheckCollision(const std::shared_ptr<Collider>& other) abstract;
-
-    void UpdateState(bool collisionResult, NetworkObjectIdType objId);
-
-protected:
-    std::string mTag{ };                            // OTHER 타입일 경우 식별할 수 있도록 string으로 구성.
-    std::weak_ptr<Transform> mTransform{ };         // GameObject 에서 가지는 Transform 참조
-
-    ColliderType mType{ ColliderType::OTHER };
-    std::unordered_map<NetworkObjectIdType, CollisionState> mStates{ };   // 이전 충돌 결과를 기억하기 위한 map
-    bool mEnable{ true };
-};
-
-class BoxCollider : public Collider {
-public:
-    BoxCollider();
-    BoxCollider(const DirectX::BoundingBox& box);
-    BoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents);
-    virtual ~BoxCollider();
-
-public:
-    DirectX::BoundingBox& GetBoundingBox();
-    virtual float GetForwardExtents() override;
-
-    virtual void Update() override;
-    virtual void LateUpdate() override;
-    virtual bool CheckCollision(const std::shared_ptr<Collider>& other) override;
+    virtual CollisionResult IsColliding(const std::shared_ptr<BoundingObject>& other) const abstract;
+    virtual std::shared_ptr<BoundingObject> Clone() const abstract;
+    virtual void Update(const SimpleMath::Matrix& mat) abstract;
 
 private:
-    DirectX::BoundingBox mLocalBox{ };
-    DirectX::BoundingBox mBoundingBox{ };
+    ColliderType mType{ };
 };
 
-class SphereCollider : public Collider {
+class OBBCollider : public BoundingObject {
 public:
-    SphereCollider();
-    SphereCollider(const SimpleMath::Vector3& center, const float radius);
-    virtual ~SphereCollider();
-
-public:
-    DirectX::BoundingSphere& GetBoundingSphere();
-    virtual float GetForwardExtents() override;
-
-    virtual void Update() override;
-    virtual void LateUpdate() override;
-    virtual bool CheckCollision(const std::shared_ptr<Collider>& other) override;
-
-private:
-    DirectX::BoundingSphere mLocalSphere{ };
-    DirectX::BoundingSphere mBoundingSphere{ };
-};
-
-class OrientedBoxCollider : public Collider {
-public:
-    OrientedBoxCollider();
-    OrientedBoxCollider(const DirectX::BoundingBox& box);
-    OrientedBoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents,
-        const SimpleMath::Quaternion& quat = SimpleMath::Quaternion::Identity);
-    virtual ~OrientedBoxCollider();
+    OBBCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& ext);
+    OBBCollider(const DirectX::BoundingOrientedBox& box);
+    OBBCollider(const OBBCollider& orientedBox);
+    virtual ~OBBCollider();
 
 public:
-    DirectX::BoundingOrientedBox& GetBoundingBox();
-    virtual float GetForwardExtents() override;
+    DirectX::BoundingOrientedBox GetBoundingBox() const;
 
-    virtual void Update() override;
-    virtual void LateUpdate() override;
-    virtual bool CheckCollision(const std::shared_ptr<Collider>& other) override;
+    virtual float GetForwardExtents() const override; // extents-z
+    virtual float GetRadiusCircumplex() const override;
+    virtual float GetRadiusCircumplexSq() const override;
+
+    virtual CollisionResult IsColliding(const std::shared_ptr<BoundingObject>& other) const override;
+    virtual std::shared_ptr<BoundingObject> Clone() const override;
+    virtual void Update(const SimpleMath::Matrix& mat) override;
 
 private:
     DirectX::BoundingOrientedBox mLocalBox{ };
     DirectX::BoundingOrientedBox mBoundingBox{ };
+};
+
+class SphereCollider : public BoundingObject {
+public:
+    SphereCollider(float radius);
+    SphereCollider(const SimpleMath::Vector3& center, float radius);
+    SphereCollider(const SphereCollider& sphere);
+    virtual ~SphereCollider();
+
+public:
+    virtual float GetForwardExtents() const override; // extents-z
+    virtual float GetRadiusCircumplex() const override;
+    virtual float GetRadiusCircumplexSq() const override;
+
+    virtual CollisionResult IsColliding(const std::shared_ptr<BoundingObject>& other) const override;
+    virtual std::shared_ptr<BoundingObject> Clone() const override;
+    virtual void Update(const SimpleMath::Matrix& mat) override;
+
+private:
+    DirectX::BoundingSphere mLocalSphere{ };
+    DirectX::BoundingSphere mBoundingSphere{ };
 };

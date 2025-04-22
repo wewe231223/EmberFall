@@ -1,35 +1,27 @@
 #include "pch.h"
 #include "BossPlayerScript.h"
 #include "Input.h"
-#include "ObjectSpawner.h"
+#include "GameObject.h"
 
 BossPlayerScript::BossPlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input)
-    : Script{ owner, ObjectTag::PLAYER }, mInput{ input }, mViewList{ static_cast<SessionIdType>(owner->GetId()) } {  
-    GetOwner()->mSpec.entity = Packets::EntityType_BOSS;
+    : Script{ owner, ObjectTag::PLAYER, ScriptType::BOSSPLAYER }, mInput{ input }, mViewList{ } {  
+    auto myOwner = GetOwner();
+    if (nullptr == myOwner) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Script Constructor - Owner is Null");
+        Crash("Nullptr");
+    }
+
+    myOwner->mSpec.entity = Packets::EntityType_BOSS;
 }
 
 BossPlayerScript::~BossPlayerScript() { }
 
-void BossPlayerScript::ResetGameScene(std::shared_ptr<IServerGameScene> gameScene) {
-    mGameScene = gameScene;
-    mViewList.mCurrentScene = gameScene;
-}
-
-std::shared_ptr<IServerGameScene> BossPlayerScript::GetCurrentScene() const {
-    return mGameScene;
-}
-
 void BossPlayerScript::Init() {
-    mInteractionTrigger = gObjectSpawner->SpawnTrigger(std::numeric_limits<float>::max(), GetOwner()->GetPosition(), SimpleMath::Vector3{ 15.0f });
+    //mInteractionTrigger = gObjectSpawner->SpawnTrigger(std::numeric_limits<float>::max(), GetOwner()->GetPosition(), SimpleMath::Vector3{ 15.0f });
 }
 
 void BossPlayerScript::Update(const float deltaTime) {
     decltype(auto) owner = GetOwner();
-
-    //mInteractionTrigger->GetTransform()->SetPosition(owner->GetPosition());
-    mViewList.mPosition = owner->GetPosition();
-    mViewList.Update();
-    mViewList.Send();
 
     CheckAndJump(deltaTime);
     CheckAndMove(deltaTime);
@@ -45,12 +37,6 @@ void BossPlayerScript::LateUpdate(const float deltaTime) {
     mInput->Update();
 }
 
-void BossPlayerScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {}
-
-void BossPlayerScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {}
-
-void BossPlayerScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {}
-
 void BossPlayerScript::OnCollisionTerrain(const float height) {
     if (Packets::AnimationState_JUMP == GetOwner()->mAnimationStateMachine.GetCurrState()) {
         GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE);
@@ -58,12 +44,17 @@ void BossPlayerScript::OnCollisionTerrain(const float height) {
 }
 
 void BossPlayerScript::DispatchGameEvent(GameEvent* event) {
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
         if (event->sender != event->receiver) {
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
-            GetOwner()->mSpec.hp -= attackEvent->damage;
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!", GetOwner()->GetId());
+            owner->mSpec.hp -= attackEvent->damage;
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!", owner->GetId());
         }
         break;
     
@@ -73,7 +64,12 @@ void BossPlayerScript::DispatchGameEvent(GameEvent* event) {
 }
 
 void BossPlayerScript::CheckAndMove(const float deltaTime) {
-    auto currState = GetOwner()->mAnimationStateMachine.GetCurrState();
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    auto currState = owner->mAnimationStateMachine.GetCurrState();
     if (Packets::AnimationState_MOVE_RIGHT < currState) {
         return;
     }
@@ -114,19 +110,24 @@ void BossPlayerScript::CheckAndMove(const float deltaTime) {
         }
     }
 
-    GetOwner()->mAnimationStateMachine.ChangeState(changeState);
+    owner->mAnimationStateMachine.ChangeState(changeState);
 
     moveDir.Normalize();
-    moveDir = SimpleMath::Vector3::Transform(moveDir, GetOwner()->GetTransform()->GetRotation());
-    physics->Accelerate(moveDir);
+    moveDir = SimpleMath::Vector3::Transform(moveDir,owner->GetTransform()->GetRotation());
+    physics->Accelerate(moveDir, owner->GetDeltaTime());
 }
 
 void BossPlayerScript::CheckAndJump(const float deltaTime) {
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
     auto physics{ GetPhysics() };
 
     // Jump
     if (mInput->IsDown(VK_SPACE) and physics->IsOnGround()) {
-        GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_JUMP);
+        owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_JUMP);
         physics->CheckAndJump(deltaTime);
     }
 }

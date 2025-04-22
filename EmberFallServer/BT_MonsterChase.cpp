@@ -1,11 +1,12 @@
 #include "pch.h"
 #include "BT_MonsterChase.h"
 #include "MonsterScript.h"
+#include "GameObject.h"
 #include "GameTimer.h"
 
 float BT::BT_MonsterChase::CalculateDecideValue(const std::shared_ptr<Script>& ownerScript) const {
     auto owner = std::static_pointer_cast<MonsterScript>(ownerScript);
-    if (BT::NodeStatus::SUCCESS == owner->DetectPlayerInRange(StaticTimer::GetDeltaTime())) {
+    if (BT::NodeStatus::SUCCESS == owner->DetectPlayerInRange(1.0f)) {
         return 0.8f;
     }
 

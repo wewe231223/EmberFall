@@ -25,7 +25,7 @@ namespace Lock {
         void ReadLock();
         void ReadUnlock();
 
-        bool TryWrietLock();
+        bool TryWriteLock();
         bool TryReadLock();
 
     private:
@@ -34,21 +34,26 @@ namespace Lock {
 
     enum class SRWLockMode : BYTE {
         SRW_SHARED,
-        SRW_EXCLUSIVE = 0x01,
-        SRW_TRY_READ = 0xF0,
-        SRW_TRY_WRITE = 0xF1,
+        SRW_EXCLUSIVE,
 
-        MODE_TRY = 0xF0,
+    };
+
+    enum class SRWLockTry : BYTE {
+        SRW_FORCE,
+        SRW_TRY
     };
 
     class SRWLockGuard {
     public:
-        explicit SRWLockGuard(SRWLockMode mode, SRWLock& lock);
+        explicit SRWLockGuard(SRWLockMode mode, SRWLock& lock, SRWLockTry tryMode = SRWLockTry::SRW_FORCE);
         ~SRWLockGuard();
+
+    public:
+        bool IsLocking() const;
 
     private:
         SRWLock& mLock;
-        std::atomic_bool mLocked{ false };
+        bool mLocked{ false };
         SRWLockMode mMode{ };
     };
 }

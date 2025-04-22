@@ -94,6 +94,14 @@ void IOCPCore::IOWorker() {
             break;
         }
 
+        if (nullptr == overlappedEx->owner) {
+            auto header = FbsPacketFactory::GetHeaderPtrSC(reinterpret_cast<const uint8_t* const>(overlappedEx->wsaBuf.buf));
+            gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "OverlappedEx's owner is Null");
+            gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Error Overlapped Info: ID: {}", clientId);
+            gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Error PacketType: {}", Packets::EnumNamePacketTypes(static_cast<Packets::PacketTypes>(header->type)));
+            Crash("");
+        }
+
         overlappedEx->owner->ProcessOverlapped(overlappedEx, receivedByte);
     }
 }

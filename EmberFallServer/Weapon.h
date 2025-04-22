@@ -18,7 +18,6 @@ namespace Weapons {
 
     public:
         Packets::Weapon GetWeaponType() const;
-        std::shared_ptr<Collider> GetHitbox() const;
 
         virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) abstract;
 
@@ -28,7 +27,7 @@ namespace Weapons {
     protected:
         bool mAttackable{ true };
         float mDamage{ };
-        std::shared_ptr<Collider> mHitbox{ };
+        SimpleMath::Vector3 mHitBox;
 
     private:
         Packets::Weapon mWeaponType;

@@ -33,7 +33,7 @@ public:
     float GetHeight(const SimpleMath::Vector3& pos, float offset = 0.0f) const;
 
     bool Contains(const SimpleMath::Vector3& position);
-    bool Contains(const std::shared_ptr<class Collider>& collider, float& height);
+    bool Contains(const std::shared_ptr<class BoundingObject>& collider, float& height);
 
 private:
     bool LoadFromFile(const std::filesystem::path& path);

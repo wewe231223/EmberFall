@@ -1,418 +1,405 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Object">
-      <UniqueIdentifier>{6c8effd1-71c6-45ff-9ef0-1dbefb68bd3c}</UniqueIdentifier>
+    <Filter Include="MultiThreadLoopTest">
+      <UniqueIdentifier>{5ee0cb47-082d-4f61-8430-e161455121a0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Collision">
-      <UniqueIdentifier>{8d52854a-4d78-44c9-bd56-5e9f29d605bb}</UniqueIdentifier>
+    <Filter Include="MultiThreadLoopTest\Session">
+      <UniqueIdentifier>{67286a51-a9c7-40b3-afff-f414dc1e3cc5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Component">
-      <UniqueIdentifier>{382a9043-5187-43b0-8898-fc3fb22c595e}</UniqueIdentifier>
+    <Filter Include="MultiThreadLoopTest\Sector&amp;View">
+      <UniqueIdentifier>{8428fb5f-066c-4ba2-8bc1-fdf8bf349617}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Utils">
-      <UniqueIdentifier>{8389f802-350b-4427-bf5b-bc265ed71c1b}</UniqueIdentifier>
+    <Filter Include="MultiThreadLoopTest\Frame">
+      <UniqueIdentifier>{94f6fbff-f3b2-4b14-b8f5-e4d2eaae2a1c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scene">
-      <UniqueIdentifier>{5367a523-1d53-4f63-b084-8ade79c3e76a}</UniqueIdentifier>
+    <Filter Include="MultiThreadLoopTest\ObjectManager">
+      <UniqueIdentifier>{0522bd71-083f-44e2-9a1b-e5bf4fcdf7c2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Frame">
-      <UniqueIdentifier>{1b56ccde-0c63-4997-a348-2d312d8cdd67}</UniqueIdentifier>
+    <Filter Include="MultiThreadLoopTest\Collision">
+      <UniqueIdentifier>{816b1b28-ece8-451f-aa47-278dacc8d10b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Script">
-      <UniqueIdentifier>{8ffa7fd5-09b9-4c09-98bb-37e62f49b8a1}</UniqueIdentifier>
+    <Filter Include="Regacy">
+      <UniqueIdentifier>{6f2fb448-a218-4dae-ac8e-69b57049200a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Collision\CollisionCheck">
-      <UniqueIdentifier>{c4b819e4-01ff-406c-8624-db4874c2c8b7}</UniqueIdentifier>
+    <Filter Include="MultiThreadLoopTest\Resource">
+      <UniqueIdentifier>{f03619d1-2309-4a3d-994e-1786d3c6082c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Collision\Collider">
-      <UniqueIdentifier>{cef0a9ff-4a48-455b-bdae-f0e889a147b7}</UniqueIdentifier>
+    <Filter Include="MultiThreadLoopTest\Pch">
+      <UniqueIdentifier>{c33958bc-2be3-4005-9a28-ab9cd7a44671}</UniqueIdentifier>
     </Filter>
-    <Filter Include="BehaviorTree">
-      <UniqueIdentifier>{95ed22be-e650-4d9c-81d8-f9f77195b696}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="PathFinding">
+    <Filter Include="MaybeReuse">
       <UniqueIdentifier>{d73b7875-f5ee-4c83-bf48-22772279a75c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="PathFinding\Graph">
+    <Filter Include="MaybeReuse\Graph">
       <UniqueIdentifier>{1b284061-0b82-4ed7-a035-c59ee0553925}</UniqueIdentifier>
     </Filter>
-    <Filter Include="PathFinding\Graph\GraphSearch">
+    <Filter Include="MaybeReuse\Graph\GraphSearch">
       <UniqueIdentifier>{ea01f14d-fee2-497c-925e-18449b5c8052}</UniqueIdentifier>
     </Filter>
-    <Filter Include="PathFinding\Graph\GraphBase">
+    <Filter Include="MaybeReuse\Graph\GraphBase">
       <UniqueIdentifier>{46614c48-9d7a-484a-a51f-64d9233bd237}</UniqueIdentifier>
     </Filter>
-    <Filter Include="PathFinding\Graph\PriorityQueue">
+    <Filter Include="MaybeReuse\Graph\PriorityQueue">
       <UniqueIdentifier>{72e3f717-ae76-4796-9986-87783ddff148}</UniqueIdentifier>
     </Filter>
-    <Filter Include="PathFinding\Map">
+    <Filter Include="MaybeReuse\Map">
       <UniqueIdentifier>{1938af07-f06e-4960-a6b9-02d3fe1874e6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Script\Base">
-      <UniqueIdentifier>{24b3899b-1638-42aa-9efe-1a8f343a258f}</UniqueIdentifier>
+    <Filter Include="MaybeReuse\Script">
+      <UniqueIdentifier>{f2c819ec-3d47-4d52-93cd-a3d3bea2e826}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Script\Item&amp;Skill">
-      <UniqueIdentifier>{f8c38d71-0788-4c68-a6b9-25fb1baa32d9}</UniqueIdentifier>
+    <Filter Include="MultiThreadLoopTest\BaseComponent">
+      <UniqueIdentifier>{1d191cc2-623c-426c-b9f5-9be760463827}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameEvent">
-      <UniqueIdentifier>{149a7731-ffbf-4ec3-9a90-4cc613b668e4}</UniqueIdentifier>
+    <Filter Include="Regacy\Collision">
+      <UniqueIdentifier>{8d52854a-4d78-44c9-bd56-5e9f29d605bb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Script\Trigger">
-      <UniqueIdentifier>{563c1ba7-e3f0-4d09-856a-ede8cdde952c}</UniqueIdentifier>
+    <Filter Include="Regacy\Collision\CollisionCheck">
+      <UniqueIdentifier>{c4b819e4-01ff-406c-8624-db4874c2c8b7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="pch">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="Regacy\Collision\Collider">
+      <UniqueIdentifier>{cef0a9ff-4a48-455b-bdae-f0e889a147b7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Script\Monsters">
-      <UniqueIdentifier>{835d1265-ff49-4927-9ed8-5716707b1926}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Script\Projectile">
-      <UniqueIdentifier>{2ba7016a-baca-44c8-bb10-77eb8e90cb88}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Script\Env">
-      <UniqueIdentifier>{b4f2a0a4-c6a6-47cb-b111-e70911a3eab2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Script\User">
-      <UniqueIdentifier>{edce1043-2100-4a5b-98c3-5a3911cb9366}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Script\User\Player">
-      <UniqueIdentifier>{407ecfb9-1bcb-4ab0-a864-b2a6bb98d306}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Script\User\Boss">
-      <UniqueIdentifier>{f36cfa5e-46c4-4c64-9a66-3a335f878b89}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Script\User\Common">
-      <UniqueIdentifier>{e64cda37-1c0a-469a-9c94-e2f10fa65cb5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Attack">
-      <UniqueIdentifier>{0ec17123-8f6e-4463-a8b6-70e1a3f77296}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Attack\Weapon">
-      <UniqueIdentifier>{5bdb23f0-7f45-49b4-bdd9-2dd54094a7ae}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Attack\AttackSystem">
-      <UniqueIdentifier>{95a3be85-1cf0-41f1-82ae-8c70dfcccaed}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Animation">
+    <Filter Include="Regacy\Animation">
       <UniqueIdentifier>{ca2a0725-a3e9-4bce-a7fc-4becb610673a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="BehaviorTree\BT_Monster">
+    <Filter Include="Regacy\Attack">
+      <UniqueIdentifier>{0ec17123-8f6e-4463-a8b6-70e1a3f77296}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Regacy\Attack\Weapon">
+      <UniqueIdentifier>{5bdb23f0-7f45-49b4-bdd9-2dd54094a7ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Regacy\Attack\AttackSystem">
+      <UniqueIdentifier>{95a3be85-1cf0-41f1-82ae-8c70dfcccaed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MultiThreadLoopTest\BehaviorTree">
+      <UniqueIdentifier>{95ed22be-e650-4d9c-81d8-f9f77195b696}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MultiThreadLoopTest\BehaviorTree\BT_Monster">
       <UniqueIdentifier>{1b526a72-8971-4d1e-8236-7986ba6ffdd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MultiThreadLoopTest\Script">
+      <UniqueIdentifier>{66233865-9e14-4265-9d98-2f2094efb7a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MultiThreadLoopTest\Utils">
+      <UniqueIdentifier>{8389f802-350b-4427-bf5b-bc265ed71c1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MultiThreadLoopTest\Events">
+      <UniqueIdentifier>{74abd418-50dc-437c-b5e2-b0062e0901c8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
-      <Filter>pch</Filter>
-    </ClCompile>
-    <ClCompile Include="ServerFrame.cpp">
-      <Filter>Frame</Filter>
-    </ClCompile>
-    <ClCompile Include="EmberFallServer.cpp">
-      <Filter>Frame</Filter>
-    </ClCompile>
-    <ClCompile Include="GameTimer.cpp">
-      <Filter>Frame</Filter>
-    </ClCompile>
-    <ClCompile Include="GameObject.cpp">
-      <Filter>Object</Filter>
-    </ClCompile>
-    <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp">
-      <Filter>pch</Filter>
-    </ClCompile>
-    <ClCompile Include="Terrain.cpp">
-      <Filter>Object</Filter>
-    </ClCompile>
-    <ClCompile Include="Transform.cpp">
-      <Filter>Component</Filter>
-    </ClCompile>
-    <ClCompile Include="Physics.cpp">
-      <Filter>Component</Filter>
-    </ClCompile>
-    <ClCompile Include="GameObjectComponent.cpp">
-      <Filter>Component</Filter>
-    </ClCompile>
-    <ClCompile Include="GameRandom.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Input.cpp">
-      <Filter>Frame</Filter>
-    </ClCompile>
-    <ClCompile Include="ServerGameScene.cpp">
-      <Filter>Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="Grid.cpp">
-      <Filter>Collision\CollisionCheck</Filter>
-    </ClCompile>
-    <ClCompile Include="GridWorld.cpp">
-      <Filter>Collision\CollisionCheck</Filter>
-    </ClCompile>
-    <ClCompile Include="Collider.cpp">
-      <Filter>Collision\Collider</Filter>
-    </ClCompile>
     <ClCompile Include="TerrainCollider.cpp">
-      <Filter>Collision\Collider</Filter>
+      <Filter>Regacy\Collision\Collider</Filter>
     </ClCompile>
     <ClCompile Include="BT_MonsterChase.cpp">
-      <Filter>BehaviorTree\BT_Monster</Filter>
-    </ClCompile>
-    <ClCompile Include="PathFinder.cpp">
-      <Filter>PathFinding</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClCompile>
     <ClCompile Include="GraphSearch.cpp">
-      <Filter>PathFinding\Graph\GraphSearch</Filter>
+      <Filter>MaybeReuse\Graph\GraphSearch</Filter>
     </ClCompile>
     <ClCompile Include="GraphMap.cpp">
-      <Filter>PathFinding\Map</Filter>
-    </ClCompile>
-    <ClCompile Include="CorruptedGem.cpp">
-      <Filter>Script\Env</Filter>
-    </ClCompile>
-    <ClCompile Include="Script.cpp">
-      <Filter>Script\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="Events.cpp">
-      <Filter>GameEvent</Filter>
-    </ClCompile>
-    <ClCompile Include="GameEventManager.cpp">
-      <Filter>GameEvent</Filter>
-    </ClCompile>
-    <ClCompile Include="ItemScript.cpp">
-      <Filter>Script\Item&amp;Skill</Filter>
-    </ClCompile>
-    <ClCompile Include="Item.cpp">
-      <Filter>Script\Item&amp;Skill</Filter>
+      <Filter>MaybeReuse\Map</Filter>
     </ClCompile>
     <ClCompile Include="Weapon.cpp">
-      <Filter>Attack\Weapon</Filter>
-    </ClCompile>
-    <ClCompile Include="Trigger.cpp">
-      <Filter>Script\Trigger</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectBuilder.cpp">
-      <Filter>Object</Filter>
-    </ClCompile>
-    <ClCompile Include="GameEventFactory.cpp">
-      <Filter>GameEvent</Filter>
+      <Filter>Regacy\Attack\Weapon</Filter>
     </ClCompile>
     <ClCompile Include="WeaponSystem.cpp">
-      <Filter>Attack\Weapon</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectSpawner.cpp">
-      <Filter>Object</Filter>
-    </ClCompile>
-    <ClCompile Include="MonsterScript.cpp">
-      <Filter>Script\Monsters</Filter>
-    </ClCompile>
-    <ClCompile Include="ArrowScript.cpp">
-      <Filter>Script\Projectile</Filter>
-    </ClCompile>
-    <ClCompile Include="Inventory.cpp">
-      <Filter>Script\User\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="ViewList.cpp">
-      <Filter>Script\User\Common</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerScript.cpp">
-      <Filter>Script\User\Player</Filter>
-    </ClCompile>
-    <ClCompile Include="BoundingBoxImporter.cpp">
-      <Filter>Collision\Collider</Filter>
-    </ClCompile>
-    <ClCompile Include="AttackSystem.cpp">
-      <Filter>Attack\AttackSystem</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphBase.cpp">
-      <Filter>GameEvent</Filter>
+      <Filter>Regacy\Attack\Weapon</Filter>
     </ClCompile>
     <ClCompile Include="AnimationStateMachine.cpp">
-      <Filter>Animation</Filter>
+      <Filter>Regacy\Animation</Filter>
     </ClCompile>
     <ClCompile Include="BT_MonsterAttack.cpp">
-      <Filter>BehaviorTree\BT_Monster</Filter>
-    </ClCompile>
-    <ClCompile Include="EventTrigger.cpp">
-      <Filter>Script\Trigger</Filter>
-    </ClCompile>
-    <ClCompile Include="BossPlayerScript.cpp">
-      <Filter>Script\User\Boss</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClCompile>
     <ClCompile Include="BT_MonsterRandomMove.cpp">
-      <Filter>BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClCompile>
     <ClCompile Include="BehaviorTreeBase.cpp">
-      <Filter>BehaviorTree</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree</Filter>
     </ClCompile>
     <ClCompile Include="BT_Monster.cpp">
-      <Filter>BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClCompile>
     <ClCompile Include="BT_Decider.cpp">
-      <Filter>BehaviorTree</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree</Filter>
     </ClCompile>
     <ClCompile Include="BT_MonsterAttacked.cpp">
-      <Filter>BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="Sector.cpp">
+      <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSession.cpp">
+      <Filter>MultiThreadLoopTest\Session</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerFrame.cpp">
+      <Filter>MultiThreadLoopTest\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="GameTimer.cpp">
+      <Filter>MultiThreadLoopTest\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="EmberFallServer.cpp">
+      <Filter>MultiThreadLoopTest\Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectManager.cpp">
+      <Filter>MultiThreadLoopTest\ObjectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>MultiThreadLoopTest\ObjectManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
+      <Filter>MultiThreadLoopTest\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="InteractionSystem.cpp">
+      <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
+    </ClCompile>
+    <ClCompile Include="ViewList.cpp">
+      <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEventManager.cpp">
+      <Filter>Regacy</Filter>
+    </ClCompile>
+    <ClCompile Include="GraphBase.cpp">
+      <Filter>Regacy</Filter>
+    </ClCompile>
+    <ClCompile Include="PathFinder.cpp">
+      <Filter>MaybeReuse\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp">
+      <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
     </ClCompile>
     <ClCompile Include="FbsPacketProcessFn.cpp">
-      <Filter>Utils</Filter>
+      <Filter>MultiThreadLoopTest\Session</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObjectComponent.cpp">
+      <Filter>MultiThreadLoopTest\BaseComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics.cpp">
+      <Filter>MultiThreadLoopTest\BaseComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>MultiThreadLoopTest\BaseComponent</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>MultiThreadLoopTest\Session</Filter>
+    </ClCompile>
+    <ClCompile Include="CollisionManager.cpp">
+      <Filter>MultiThreadLoopTest\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Collider.cpp">
+      <Filter>MultiThreadLoopTest\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="BoundingBoxImporter.cpp">
+      <Filter>MultiThreadLoopTest\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterScript.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerScript.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="Resources.cpp">
+      <Filter>MultiThreadLoopTest\Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="GameRandom.cpp">
+      <Filter>MultiThreadLoopTest\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Events.cpp">
+      <Filter>MultiThreadLoopTest\Events</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEventFactory.cpp">
+      <Filter>MultiThreadLoopTest\Events</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>MultiThreadLoopTest\Pch</Filter>
+    </ClCompile>
+    <ClCompile Include="EventTrigger.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="Trigger.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="Script.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="BossPlayerScript.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrowScript.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
     </ClCompile>
     <ClCompile Include="BuffScript.cpp">
-      <Filter>Script\Item&amp;Skill</Filter>
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="CorruptedGem.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="Inventory.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="ItemScript.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="Item.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
-      <Filter>pch</Filter>
-    </ClInclude>
-    <ClInclude Include="GameTimer.h">
-      <Filter>Frame</Filter>
-    </ClInclude>
-    <ClInclude Include="GameObject.h">
-      <Filter>Object</Filter>
-    </ClInclude>
-    <ClInclude Include="Terrain.h">
-      <Filter>Object</Filter>
-    </ClInclude>
-    <ClInclude Include="Transform.h">
-      <Filter>Component</Filter>
-    </ClInclude>
-    <ClInclude Include="Physics.h">
-      <Filter>Component</Filter>
-    </ClInclude>
-    <ClInclude Include="GameObjectComponent.h">
-      <Filter>Component</Filter>
-    </ClInclude>
-    <ClInclude Include="GameRandom.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Input.h">
-      <Filter>Frame</Filter>
-    </ClInclude>
-    <ClInclude Include="ServerGameScene.h">
-      <Filter>Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="Grid.h">
-      <Filter>Collision\CollisionCheck</Filter>
-    </ClInclude>
-    <ClInclude Include="GridWorld.h">
-      <Filter>Collision\CollisionCheck</Filter>
-    </ClInclude>
-    <ClInclude Include="Collider.h">
-      <Filter>Collision\Collider</Filter>
-    </ClInclude>
     <ClInclude Include="BehaviorTreeBase.h">
-      <Filter>BehaviorTree</Filter>
-    </ClInclude>
-    <ClInclude Include="ServerFrame.h">
-      <Filter>Frame</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree</Filter>
     </ClInclude>
     <ClInclude Include="TerrainCollider.h">
-      <Filter>Collision\Collider</Filter>
+      <Filter>Regacy\Collision\Collider</Filter>
     </ClInclude>
     <ClInclude Include="BT_MonsterChase.h">
-      <Filter>BehaviorTree\BT_Monster</Filter>
-    </ClInclude>
-    <ClInclude Include="PathFinder.h">
-      <Filter>PathFinding</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClInclude>
     <ClInclude Include="GraphBase.h">
-      <Filter>PathFinding\Graph\GraphBase</Filter>
+      <Filter>MaybeReuse\Graph\GraphBase</Filter>
     </ClInclude>
     <ClInclude Include="GraphSearch.h">
-      <Filter>PathFinding\Graph\GraphSearch</Filter>
+      <Filter>MaybeReuse\Graph\GraphSearch</Filter>
     </ClInclude>
     <ClInclude Include="IndexedPriorityQueue.h">
-      <Filter>PathFinding\Graph\PriorityQueue</Filter>
+      <Filter>MaybeReuse\Graph\PriorityQueue</Filter>
     </ClInclude>
     <ClInclude Include="GraphMap.h">
-      <Filter>PathFinding\Map</Filter>
-    </ClInclude>
-    <ClInclude Include="CorruptedGem.h">
-      <Filter>Script\Env</Filter>
-    </ClInclude>
-    <ClInclude Include="Script.h">
-      <Filter>Script\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="Events.h">
-      <Filter>GameEvent</Filter>
-    </ClInclude>
-    <ClInclude Include="ItemScript.h">
-      <Filter>Script\Item&amp;Skill</Filter>
-    </ClInclude>
-    <ClInclude Include="Item.h">
-      <Filter>Script\Item&amp;Skill</Filter>
+      <Filter>MaybeReuse\Map</Filter>
     </ClInclude>
     <ClInclude Include="Weapon.h">
-      <Filter>Attack\Weapon</Filter>
-    </ClInclude>
-    <ClInclude Include="Trigger.h">
-      <Filter>Script\Trigger</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectBuilder.h">
-      <Filter>Object</Filter>
-    </ClInclude>
-    <ClInclude Include="GameEventFactory.h">
-      <Filter>GameEvent</Filter>
+      <Filter>Regacy\Attack\Weapon</Filter>
     </ClInclude>
     <ClInclude Include="WeaponSystem.h">
-      <Filter>Attack\Weapon</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectSpawner.h">
-      <Filter>Object</Filter>
-    </ClInclude>
-    <ClInclude Include="MonsterScript.h">
-      <Filter>Script\Monsters</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrowScript.h">
-      <Filter>Script\Projectile</Filter>
-    </ClInclude>
-    <ClInclude Include="Inventory.h">
-      <Filter>Script\User\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="ViewList.h">
-      <Filter>Script\User\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerScript.h">
-      <Filter>Script\User\Player</Filter>
-    </ClInclude>
-    <ClInclude Include="BoundingBoxImporter.h">
-      <Filter>Collision\Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="AttackSystem.h">
-      <Filter>Attack\AttackSystem</Filter>
+      <Filter>Regacy\Attack\Weapon</Filter>
     </ClInclude>
     <ClInclude Include="GameEventManager.h">
-      <Filter>PathFinding\Graph\GraphBase</Filter>
+      <Filter>MaybeReuse\Graph\GraphBase</Filter>
     </ClInclude>
     <ClInclude Include="AnimationStateMachine.h">
-      <Filter>Animation</Filter>
+      <Filter>Regacy\Animation</Filter>
     </ClInclude>
     <ClInclude Include="BT_MonsterAttack.h">
-      <Filter>BehaviorTree\BT_Monster</Filter>
-    </ClInclude>
-    <ClInclude Include="EventTrigger.h">
-      <Filter>Script\Trigger</Filter>
-    </ClInclude>
-    <ClInclude Include="BossPlayerScript.h">
-      <Filter>Script\User\Boss</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClInclude>
     <ClInclude Include="BT_MonsterRandomMove.h">
-      <Filter>BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClInclude>
     <ClInclude Include="BT_Monster.h">
-      <Filter>BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
     </ClInclude>
     <ClInclude Include="BT_Decider.h">
-      <Filter>BehaviorTree</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree</Filter>
     </ClInclude>
     <ClInclude Include="BT_MonsterAttacked.h">
-      <Filter>BehaviorTree\BT_Monster</Filter>
+      <Filter>MultiThreadLoopTest\BehaviorTree\BT_Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="Sector.h">
+      <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSession.h">
+      <Filter>MultiThreadLoopTest\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerFrame.h">
+      <Filter>MultiThreadLoopTest\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="GameTimer.h">
+      <Filter>MultiThreadLoopTest\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectManager.h">
+      <Filter>MultiThreadLoopTest\ObjectManager</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>MultiThreadLoopTest\ObjectManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Terrain.h">
+      <Filter>MultiThreadLoopTest\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="InteractionSystem.h">
+      <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewList.h">
+      <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
+    </ClInclude>
+    <ClInclude Include="PathFinder.h">
+      <Filter>MaybeReuse\Map</Filter>
     </ClInclude>
     <ClInclude Include="FbsPacketProcessFn.h">
-      <Filter>Utils</Filter>
+      <Filter>MultiThreadLoopTest\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObjectComponent.h">
+      <Filter>MultiThreadLoopTest\BaseComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics.h">
+      <Filter>MultiThreadLoopTest\BaseComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>MultiThreadLoopTest\BaseComponent</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>MultiThreadLoopTest\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionManager.h">
+      <Filter>MultiThreadLoopTest\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider.h">
+      <Filter>MultiThreadLoopTest\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundingBoxImporter.h">
+      <Filter>MultiThreadLoopTest\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterScript.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerScript.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources.h">
+      <Filter>MultiThreadLoopTest\Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="GameRandom.h">
+      <Filter>MultiThreadLoopTest\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Events.h">
+      <Filter>MultiThreadLoopTest\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEventFactory.h">
+      <Filter>MultiThreadLoopTest\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>MultiThreadLoopTest\Pch</Filter>
+    </ClInclude>
+    <ClInclude Include="EventTrigger.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="Trigger.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="Script.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="BossPlayerScript.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="CorruptedGem.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrowScript.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
     </ClInclude>
     <ClInclude Include="BuffScript.h">
-      <Filter>Script\Item&amp;Skill</Filter>
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="Inventory.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="Item.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="ItemScript.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -3,22 +3,26 @@
 #include "Physics.h"
 #include "Input.h"
 
-#include "ServerGameScene.h"
+#include "CollisionManager.h"
+#include "ObjectManager.h"
+#include "Sector.h"
+#include "ServerFrame.h"
 
-GameObject::GameObject(std::shared_ptr<IServerGameScene> gameScene)
-    : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mGameScene{ gameScene } {
+GameObject::GameObject()
+    : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mTimer{ std::make_unique<SimpleTimer>() } {
     mWeaponSystem.SetWeapon(Packets::Weapon_SWORD);
     mPhysics->SetTransform(mTransform);
+    mOverlapped = std::make_unique<OverlappedUpdate>();
 }
 
 GameObject::~GameObject() { }
 
-NetworkObjectIdType GameObject::GetId() const {
-    return mId;
-}
-
 SimpleMath::Matrix GameObject::GetWorld() const {
     return mTransform->GetWorld();
+}
+
+float GameObject::GetDeltaTime() const {
+    return mDeltaTime;
 }
 
 float GameObject::GetSpeed() const {
@@ -29,6 +33,10 @@ SimpleMath::Vector3 GameObject::GetMoveDir() const {
     return mPhysics->GetMoveDir();
 }
 
+bool GameObject::IsDead() const {
+    return Packets::AnimationState_DEAD == mAnimationStateMachine.GetCurrState();
+}
+
 std::shared_ptr<Transform> GameObject::GetTransform() const {
     return mTransform;
 }
@@ -37,12 +45,16 @@ std::shared_ptr<Physics> GameObject::GetPhysics() const {
     return mPhysics;
 }
 
-std::shared_ptr<Collider> GameObject::GetCollider() const {
-    return mCollider;
+std::shared_ptr<BoundingObject> GameObject::GetBoundingObject() const {
+    return mBoundingObject;
 }
 
-std::shared_ptr<IServerGameScene> GameObject::GetOwnGameScene() const {
-    return mGameScene;
+std::shared_ptr<Script> GameObject::GetScript() const {
+    return mEntityScript;
+}
+
+SimpleMath::Vector3 GameObject::GetPrevPosition() const {
+    return mTransform->GetPrevPosition();
 }
 
 SimpleMath::Vector3 GameObject::GetPosition() const {
@@ -65,21 +77,8 @@ ObjectTag GameObject::GetTag() const {
     return mTag;
 }
 
-bool GameObject::IsCollidingObject() const {
-    return nullptr != mCollider;
-}
-
-void GameObject::InitId(NetworkObjectIdType id) {
-    mId = id;
-    mWeaponSystem.SetOwnerId(mId);
-}
-
 void GameObject::SetTag(ObjectTag tag) {
     mTag = tag;
-}
-
-void GameObject::SetCollider(std::shared_ptr<Collider> collider) {
-    mCollider = collider;
 }
 
 void GameObject::ChangeWeapon(Packets::Weapon weapon) {
@@ -91,12 +90,7 @@ void GameObject::DisablePhysics() {
 }
 
 void GameObject::Reset() {
-    // clear Components and Tag
-    ClearComponents();
-    SetTag(ObjectTag::NONE);
-
     // Reset Base Component
-    mCollider.reset();
     mTransform->Reset();
     mPhysics->Reset();
 
@@ -104,117 +98,133 @@ void GameObject::Reset() {
     mSpec.entity = Packets::EntityType_ENV;
     mSpec.interactable = false;
     mSpec.hp = 0.0f;
+
+    mEntityScript.reset();
+
+    gObjectManager->ReleaseObject(GetId());
 }
 
 void GameObject::Init() {
-    mAnimationStateMachine.SetOwner(shared_from_this());
-    for (auto& component : mComponents) {
-        component->Init();
+    decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
+    mWeaponSystem.SetOwnerId(GetId());
+    mAnimationStateMachine.SetOwner(sharedThis);
+
+    if (nullptr != mEntityScript) {
+        mEntityScript->Init();
     }
 }
 
-void GameObject::Update(const float deltaTime) {
+void GameObject::RegisterUpdate() {
+    mOverlapped->owner = shared_from_this();
+    gServerCore->PQCS(0, GetId(), mOverlapped.get());
+}
+
+void GameObject::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
+    if (IOType::UPDATE != overlapped->type) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "GameObject ProcessOverlapped - Is not Overlapped Update");
+        return;
+    }
+
     if (not mSpec.active) {
         return;
     }
 
-    mAnimationStateMachine.Update(deltaTime);
+    Update();
+    LateUpdate();
+    
+    gServerFrame->AddTimerEvent(GetId(), SysClock::now() + 150ms, TimerEventType::UPDATE_NPC);
+}
 
-    for (auto& component : mComponents) {
-        component->Update(deltaTime);
-    } 
+void GameObject::Update() {
+    if (not mSpec.active) {
+        return;
+    }
 
-    mPhysics->Update(deltaTime);
+    mTimer->UpdatePoint();
+    mDeltaTime = mTimer->GetDeltaTime();
+
+    mAnimationStateMachine.Update(mDeltaTime);
+
+    if (nullptr != mEntityScript) {
+        mEntityScript->Update(mDeltaTime);
+    }
+
+    mPhysics->Update(mDeltaTime);
     mTransform->Update();
-
-    if (nullptr != mCollider) {
-        mCollider->Update();
+    mTransform->SetY(0.0f); // test
+    if (nullptr == mBoundingObject) {
+        return;
     }
+
+    mBoundingObject->Update(mTransform->GetWorld());
+
+    decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
+    gCollisionManager->UpdateCollision(sharedThis);
 }
 
-void GameObject::LateUpdate(const float deltaTime) {
+void GameObject::LateUpdate() {
     if (not mSpec.active) {
         return;
     }
 
-    for (auto& component : mComponents) {
-        component->LateUpdate(deltaTime);
+    // Game Event 처리
+    if (nullptr != mEntityScript) {
+        std::shared_ptr<GameEvent> event;
+        while (true) {
+            if (false == mGameEvents.try_pop(event)) {
+                break;
+            }
+
+            mEntityScript->DispatchGameEvent(event.get());
+        }
+
+        mEntityScript->LateUpdate(mDeltaTime);
     }
 
-    mPhysics->LateUpdate(deltaTime);
-    mTransform->LateUpdate(deltaTime);
-
-    if (nullptr != mCollider) {
-        mCollider->LateUpdate();
-    }
+    decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
+    gSectorSystem->UpdateEntityMove(sharedThis);
 }
 
-void GameObject::OnCollision(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    auto state = mCollider->GetState(opponent->GetId());
-    switch (state) {
-    case CollisionState::ENTER:
-        OnCollisionEnter(opponent, impulse);
-        break;
+void GameObject::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+    if (nullptr == mEntityScript) {
+        return;
+    }
 
-    case CollisionState::STAY:
-        OnCollisionStay(opponent, impulse);
-        break;
-
-    case CollisionState::EXIT:
-        OnCollisionExit(opponent, impulse);
-        break;
-
-    default:
-        break;
+    mEntityScript->OnCollision(opponent, impulse);
+    if (ObjectTag::TRIGGER == opponent->GetTag()) {
+        opponent->OnCollision(std::static_pointer_cast<GameObject>(shared_from_this()), impulse);
     }
 }
 
 void GameObject::OnCollisionTerrain(const float height) {
     mTransform->SetY(height);
-
-    for (auto& component : mComponents) {
-        component->OnCollisionTerrain(height);
+    if (nullptr != mEntityScript) {
+        mEntityScript->OnCollisionTerrain(height);
     }
 }
 
-void GameObject::DispatchGameEvent(GameEvent* event) {
-    for (auto& component : mComponents) {
-        component->DispatchGameEvent(event);
+void GameObject::DoInteraction(std::shared_ptr<GameObject>& obj) {
+    if (nullptr != mEntityScript) {
+        mEntityScript->DoInteraction(obj);
     }
 }
 
-void GameObject::ClearComponents() {
-    mComponents.clear();
+void GameObject::DispatchGameEvent(std::shared_ptr<GameEvent> event) {
+    mGameEvents.push(event);
 }
 
 void GameObject::Attack() {
     auto changable = mAnimationStateMachine.IsChangable();
-    if (changable) {
-        mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACK);
-        auto extentsZ = SimpleMath::Vector3::Forward * mCollider->GetForwardExtents();
-        mWeaponSystem.Attack(mTransform->GetPosition() + extentsZ, mTransform->Forward());
+    if (not changable or nullptr == mBoundingObject) {
+        return;
     }
+
+    mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACK);
+    auto extentsZ = SimpleMath::Vector3::Forward * mBoundingObject->GetForwardExtents();
+    mWeaponSystem.Attack(mTransform->GetPosition() + extentsZ, mTransform->Forward());
 }
 
 void GameObject::Attack(const SimpleMath::Vector3& dir) {
     mTransform->SetLook(dir);
     Attack();
-}
-
-void GameObject::OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 
-    for (auto& component : mComponents) {
-        component->OnHandleCollisionEnter(opponent, impulse);
-    }
-}
-
-void GameObject::OnCollisionStay(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 
-    for (auto& component : mComponents) {
-        component->OnHandleCollisionStay(opponent, impulse);
-    }
-}
-
-void GameObject::OnCollisionExit(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    for (auto& component : mComponents) {
-        component->OnHandleCollisionExit(opponent, impulse);
-    }
 }

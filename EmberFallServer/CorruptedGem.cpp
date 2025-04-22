@@ -5,7 +5,7 @@
 #include "GameEventManager.h"
 
 CorruptedGemScript::CorruptedGemScript(std::shared_ptr<GameObject> owner) 
-    : Script{ owner, ObjectTag::CORRUPTED_GEM } { 
+    : Script{ owner, ObjectTag::CORRUPTED_GEM, ScriptType::CORRUPTED_GEM } { 
     owner->GetPhysics()->mFactor.mass = 10000.0f;
     owner->mSpec.entity = Packets::EntityType_CORRUPTED_GEM;
     owner->mSpec.active = true;
@@ -19,11 +19,7 @@ void CorruptedGemScript::Update(const float deltaTime) { }
 
 void CorruptedGemScript::LateUpdate(const float deltaTime) { }
 
-void CorruptedGemScript::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
-
-void CorruptedGemScript::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
-
-void CorruptedGemScript::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
+void CorruptedGemScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
 void CorruptedGemScript::OnCollisionTerrain(const float height) { }
 
@@ -40,6 +36,10 @@ void CorruptedGemScript::DispatchGameEvent(GameEvent* event) {
 
 void CorruptedGemScript::OnDestroy(GemDestroyStart* event) {
     auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
     if (event->holdTime > mDesytoyingTime) {
         gEventManager->PushEvent<GemDestroyed>(
             event->receiver,

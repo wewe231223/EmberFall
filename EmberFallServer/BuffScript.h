@@ -25,10 +25,6 @@ public:
 
     virtual void OnAttacked(const float damage, const SimpleMath::Vector3& knockbackForce);
 
-    virtual void OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) abstract;
-    virtual void OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) abstract;
-    virtual void OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) abstract;
-
     virtual void OnCollisionTerrain(const float height) abstract;
 
     virtual void DispatchGameEvent(struct GameEvent* event) abstract;

@@ -21,22 +21,23 @@ public:
 public:
     std::shared_ptr<class InputManager> GetInputManager() const;
 
-    void InitGameScenes();
-    void GameLoop();
+    void Run();
+    void Done();
+
+    void PQCS(int32_t transfferedBytes, ULONG_PTR completionKey, OverlappedEx* overlapped);
+    void AddTimerEvent(NetworkObjectIdType id, SysClock::time_point executeTime, TimerEventType eventType);
 
 private:
-    void OnPlayerConnect(SessionIdType id);
-    void OnPlayerDisconnect(SessionIdType id);
+    void TimerThread();
 
 private:
-    bool mDone{ };
+    volatile bool mDone{ false };
     
-    std::vector<std::shared_ptr<class IServerGameScene>> mGameScenes{ };
-    std::shared_ptr<class IServerGameScene> mCurrentScene{ };
-
     Lock::SRWLock mPlayersLock{ };
-    std::shared_ptr<class InputManager> mInputManager{ };
     std::unordered_map<SessionIdType, std::shared_ptr<class GameObject>> mPlayers{ };
 
-    Concurrency::concurrent_queue<PlayerEvent> mPlayerEventQueue{ };
+    std::shared_ptr<class InputManager> mInputManager{ };
+
+    std::thread mTimerThread{ };
+    Concurrency::concurrent_priority_queue<TimerEvent> mTimerEvents{ };
 };

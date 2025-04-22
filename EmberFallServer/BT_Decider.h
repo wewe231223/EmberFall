@@ -59,15 +59,12 @@ namespace BT {
         }
 
         void Update(const float deltaTime) {
-            if (Packets::AnimationState_DEAD == mOwner->GetOwner()->mAnimationStateMachine.GetCurrState()) {
+            if (mOwner->GetOwner()->IsDead()) {
                 return;
             }
 
-            mDecideTimeCounter += deltaTime;
-            if (mDecideTimeCounter > mDecideTimeInterval) {
-                Decide();
-                mDecideTimeCounter = 0.0f;
-            }
+            Decide();
+
             (*mCurrNode)->Update(deltaTime);
         }
 
@@ -108,8 +105,6 @@ namespace BT {
     private:
         TreeList mRoots{ };
         TreeListIter mCurrNode{ };
-        float mDecideTimeCounter{ 0.0f };
-        float mDecideTimeInterval{ 100000.0f };
         std::shared_ptr<Script> mOwner{ nullptr };
     };
 }

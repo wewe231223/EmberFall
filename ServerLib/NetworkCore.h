@@ -54,11 +54,11 @@ public:
     bool IsListenerClosed() const;
     std::shared_ptr<SessionManager> GetSessionManager() const;
 
+    virtual void Init() override;
     virtual bool Start(const std::string& ip, const UINT16 port) override;
     virtual void End() override;
 
     void Send(SessionIdType to, OverlappedSend* overlappedSend);
-    void SendAll(OverlappedSend* const overlappedSend);
 
 private:
     std::shared_ptr<class Listener> mListener{ nullptr };

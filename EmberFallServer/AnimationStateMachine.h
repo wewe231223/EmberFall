@@ -1,23 +1,6 @@
 #pragma once
 
-struct AnimationInfo {
-    float duration;
-    bool loop;
-    Packets::AnimationState state;
-};
-
-inline std::array<AnimationInfo, Packets::AnimationState_MAX + 1> DEFAULT_ANIM_INFO{
-    AnimationInfo{ 3.0f, true, Packets::AnimationState_IDLE },
-    AnimationInfo{ 3.0f, true, Packets::AnimationState_MOVE_FORWARD },
-    AnimationInfo{ 3.0f, true, Packets::AnimationState_MOVE_BACKWARD },
-    AnimationInfo{ 3.0f, true, Packets::AnimationState_MOVE_LEFT },
-    AnimationInfo{ 3.0f, true, Packets::AnimationState_MOVE_RIGHT },
-    AnimationInfo{ 3.0f, false, Packets::AnimationState_JUMP },
-    AnimationInfo{ 2.3f, false, Packets::AnimationState_ATTACKED },
-    AnimationInfo{ 1.7f, false, Packets::AnimationState_ATTACK },
-    AnimationInfo{ 3.0f, true, Packets::AnimationState_INTERACTION },
-    AnimationInfo{ 3.0f, false, Packets::AnimationState_DEAD }
-};
+#include "Resources.h"
 
 class AnimationStateMachine {
 public:
@@ -25,6 +8,8 @@ public:
     ~AnimationStateMachine();
 
 public:
+    void Init(const std::string& entityKey);
+
     bool IsChangable() const;
     Packets::AnimationState GetCurrState() const;
     float GetDuration(Packets::AnimationState state) const;
@@ -36,12 +21,19 @@ public:
 
     void Update(const float deltaTime);
 
+public:
+    bool mAnimationChanged{ false };
+
 private:
-    bool mAnimationChangable{ true };
+    bool mIsLoopAnimation{ true };
     float mAnimationCounter{ };
-    AnimationInfo mDefaultState{ Packets::AnimationState_IDLE };
-    AnimationInfo mCurrState{ Packets::AnimationState_IDLE };
+
+    Packets::AnimationState mDefaultState{ };
+    AnimationState mDefaultAnimInfo{ };
+
+    Packets::AnimationState mCurrState{ };
+    AnimationState mCurrAnimInfo{ };
 
     std::shared_ptr<class GameObject> mOwner{ nullptr };
-    std::array<AnimationInfo, Packets::AnimationState_MAX + 1> mAnimationInfo{ DEFAULT_ANIM_INFO };
+    std::shared_ptr<AnimationInfo> mAnimInfo{ };
 };

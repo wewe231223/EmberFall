@@ -95,11 +95,14 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 
 				mMyPlayer->SetMyPlayer();
+				
+				mMyPlayer->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
 
 				mMyPlayer->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
 
 					
 				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+
 				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
 				mCameraMode->Enter();
 			}
@@ -120,6 +123,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		
 				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
+				mPlayerIndexmap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
 				mPlayerIndexmap[data->objectId()]->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
 
 				mPlayerIndexmap[data->objectId()]->AddEquipment(mEquipments["Sword"].Clone());
@@ -379,10 +383,6 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 
 	TerrainScene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
 
-
-
-
-
 	{
 		auto& object = mGameObjects.emplace_back();
 		object.mShader = mShaderMap["TerrainShader"].get();
@@ -638,9 +638,21 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 	return buffer + header->size; 
 }
 
-void TerrainScene::Update() {
-	if (mMyPlayer != nullptr) {
-		//mNetworkInfoText->GetText() = std::format(L"Position : {} {} {}", mCamera.GetTransform().GetPosition().x, mCamera.GetTransform().GetPosition().y, mCamera.GetTransform().GetPosition().z);
+
+
+void Scene::Update() {
+	for (auto& player : mPlayers) {
+		if (false == player.GetActiveState()) {
+			continue; 
+		}
+		player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
+	}
+
+	for (auto& [key, object] : mGameObjectMap) {
+		if (object) {
+			object->GetTransform().GetPosition().y = tCollider.GetHeight(object->GetTransform().GetPosition().x, object->GetTransform().GetPosition().z);
+		}
+	}
 
 
 		// test.Get()->position = mMyPlayer->GetTransform().GetPosition(); 
@@ -746,7 +758,10 @@ void TerrainScene::SendNetwork() {
 		}
 	}
 
-	decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(id, mCamera.GetTransform().GetForward());
+	auto look = mCamera.GetTransform().GetForward();
+	look.y = 0.f; 
+
+	decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(id, look);
 	gClientCore->Send(packetCamera);
 }
 

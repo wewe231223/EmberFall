@@ -25,12 +25,7 @@ void WeaponSystem::SetWeapon(Packets::Weapon weapon) {
     mWeapon.reset();
 
     switch (weapon) {
-    //case Packets::Weapon_SWORD:
-    //    mWeapon = std::make_shared<Weapons::Fist>(SimpleMath::Vector3{ 1.0f, 1.0f, 1.0f });
-    //    break;
-
     case Packets::Weapon_SWORD:
-        //mWeapon = std::make_shared<Weapons::Sword>(BoundingBoxImporter::GetBoundingBox(EntryKeys::SWORD_BOUNDING_BOX).Extents);
         mWeapon = std::make_shared<Weapons::Sword>(SimpleMath::Vector3{ 1.0f, 1.0f, 5.0f });
         break;
 

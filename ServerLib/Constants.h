@@ -23,7 +23,8 @@ enum class IOType : uint32_t {
     RECV,
     CONNECT,
     DISCONNECT,
-    ACCEPT
+    ACCEPT,
+    UPDATE // NPC, ENEMIES AI, PHYSICS ...
 };
 
 enum class CollisionState : BYTE {

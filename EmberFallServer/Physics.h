@@ -53,16 +53,14 @@ public:
 
     void ResizeVelocity(float speed);
 
-    void Accelerate(const SimpleMath::Vector3& dir);
-    void Accelerate(const SimpleMath::Vector3& dir, const float acceleration);
+    void Accelerate(const SimpleMath::Vector3& dir, const float deltaTime);
 
     void AddVelocity(const SimpleMath::Vector3& velocity);
     void AddForce(const SimpleMath::Vector3& force);
     void AddForce(const SimpleMath::Vector3& dir, const float force);
     void Update(const float deltaTime);
-    void LateUpdate(const float deltaTime);
 
-    void SolvePenetration(const SimpleMath::Vector3& penetrationVec, const std::shared_ptr<class GameObject>& opponent);
+    void SolvePenetration(const SimpleMath::Vector3& penetrationVec);
 
 private:
     void ClampVelocity();
@@ -77,7 +75,6 @@ private:
     bool mOnGround{ true };
     bool mOnOtherObject{ true };
 
-    SimpleMath::Vector3 mPrevImpulse{ };
     SimpleMath::Vector3 mVelocity{ SimpleMath::Vector3::Zero };
     std::weak_ptr<Transform> mTransform{ };
 };
