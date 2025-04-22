@@ -255,10 +255,11 @@ void GrassRenderer::CreatePipelineState(ComPtr<ID3D12Device10> device) {
 
 	stream.Rasterizer.Type = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER;
 	stream.Rasterizer.Desc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
-//	stream.Rasterizer.Desc.CullMode = D3D12_CULL_MODE_NONE;
+	stream.Rasterizer.Desc.CullMode = D3D12_CULL_MODE_NONE;
 
 	stream.DepthStencil.Type = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_DEPTH_STENCIL;
 	stream.DepthStencil.Desc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	stream.DepthStencil.Desc.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL; 
 
 	stream.Topology.Type = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_PRIMITIVE_TOPOLOGY;
 	stream.Topology.Topology = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;

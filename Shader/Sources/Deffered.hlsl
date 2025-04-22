@@ -233,5 +233,5 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 
     float finalFactor = lerp(1.0f, shadowFactor, shadowApply);
 
-    return diffuse * LightingColor * finalFactor;
+    return diffuse ;
 }

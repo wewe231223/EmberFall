@@ -44,7 +44,7 @@ void ServerFrame::Run() {
     
     gObjectManager->LoadEnvFromFile("../Resources/Binarys/Collider/env1.bin");
 
-    for (int32_t test = 0; test < 100; ++test) {
+    for (int32_t test = 0; test < 10; ++test) {
         decltype(auto) monster = gObjectManager->SpawnObject(Packets::EntityType_MONSTER);
         std::this_thread::sleep_for(1ms);
         monster->GetTransform()->SetY(0.0f);

@@ -1,11 +1,13 @@
-cbuffer Camera : register(b0)
+cbuffer CameraCB : register(b0)
 {
     matrix view;
-    matrix projection;
-    matrix viewProjection;
+    matrix proj;
+    matrix viewProj;
+    matrix middleViewProjection;
     float3 cameraPosition;
     int isShadow;
-}
+};
+
 
 cbuffer TerrainGlobal : register(b1)
 {
@@ -148,10 +150,10 @@ void mainMS(
     uint idxBase = localId * 2;
 
 
-    outVerts[vtxBase + 0].position = mul(float4(v0, 1.0), viewProjection);
-    outVerts[vtxBase + 1].position = mul(float4(v1, 1.0), viewProjection);
-    outVerts[vtxBase + 2].position = mul(float4(v2, 1.0), viewProjection);
-    outVerts[vtxBase + 3].position = mul(float4(v3, 1.0), viewProjection);
+    outVerts[vtxBase + 0].position = mul(float4(v0, 1.0), viewProj);
+    outVerts[vtxBase + 1].position = mul(float4(v1, 1.0), viewProj);
+    outVerts[vtxBase + 2].position = mul(float4(v2, 1.0), viewProj);
+    outVerts[vtxBase + 3].position = mul(float4(v3, 1.0), viewProj);
 
     outVerts[vtxBase + 0].uv = float2(0, 0);
     outVerts[vtxBase + 1].uv = float2(1, 0);

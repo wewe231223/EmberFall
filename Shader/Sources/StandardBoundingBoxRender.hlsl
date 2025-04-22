@@ -1,11 +1,11 @@
 cbuffer Camera : register(b0)
 {
     matrix view;
-    matrix projection;
-    matrix viewProjection;
+    matrix proj;
+    matrix viewProj;
+    Matrix middleViewProjection;
     float3 cameraPosition;
- 
-
+    int isShadow;
 }
 
 struct ModelContext
@@ -97,47 +97,47 @@ void BB_GS(point BB_GIN input[1], inout LineStream<BB_PIN> output)
     [unroll(4)] 
     for (int i = 0; i < 4; ++i)
     {
-        outpoint.position = mul(float4(TopPoints[i], 1.f), viewProjection);
+        outpoint.position = mul(float4(TopPoints[i], 1.f), viewProj);
         output.Append(outpoint);
     }
     //// 위 앞 왼쪽 - 아래 앞 왼쪽 엣지 ( 점 2개 )   
-    outpoint.position = mul(float4(TopPoints[0], 1.f), viewProjection);
+    outpoint.position = mul(float4(TopPoints[0], 1.f), viewProj);
     output.Append(outpoint);
-    outpoint.position = mul(float4(BottomPoints[0], 1.f), viewProjection);
+    outpoint.position = mul(float4(BottomPoints[0], 1.f), viewProj);
     output.Append(outpoint);
     
     // 아랫면 엣지들 ( 점 4개 ) 
     [unroll(4)]
     for (int k = 1; k < 4; ++k)
     {
-        outpoint.position = mul(float4(BottomPoints[k], 1.f), viewProjection);
+        outpoint.position = mul(float4(BottomPoints[k], 1.f), viewProj);
         output.Append(outpoint);
     }
     // 아랫면 닫기 ( 점 1개 ) 
-    outpoint.position = mul(float4(BottomPoints[0], 1.f), viewProjection);
+    outpoint.position = mul(float4(BottomPoints[0], 1.f), viewProj);
     output.Append(outpoint);
     
     //// 별도 엣지들 ( 점 6개 ) 
     
     //// 앞 오른쪽 엣지 
     output.RestartStrip();
-    outpoint.position = mul(float4(TopPoints[1], 1.f), viewProjection);
+    outpoint.position = mul(float4(TopPoints[1], 1.f), viewProj);
     output.Append(outpoint);
-    outpoint.position = mul(float4(BottomPoints[1], 1.f), viewProjection);
+    outpoint.position = mul(float4(BottomPoints[1], 1.f), viewProj);
     output.Append(outpoint);
     
     //// 뒤 왼쪽 엣지
     output.RestartStrip();
-    outpoint.position = mul(float4(TopPoints[3], 1.f), viewProjection);
+    outpoint.position = mul(float4(TopPoints[3], 1.f), viewProj);
     output.Append(outpoint);
-    outpoint.position = mul(float4(BottomPoints[3], 1.f), viewProjection);
+    outpoint.position = mul(float4(BottomPoints[3], 1.f), viewProj);
     output.Append(outpoint);
     
     //// 뒤 오른쪽 엣지 
     output.RestartStrip();
-    outpoint.position = mul(float4(TopPoints[2], 1.f), viewProjection);
+    outpoint.position = mul(float4(TopPoints[2], 1.f), viewProj);
     output.Append(outpoint);
-    outpoint.position = mul(float4(BottomPoints[2], 1.f), viewProjection);
+    outpoint.position = mul(float4(BottomPoints[2], 1.f), viewProj);
     output.Append(outpoint);
 }
 

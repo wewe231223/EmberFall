@@ -189,7 +189,7 @@ void Renderer::Render() {
 
 	auto& currentBackBuffer = mRenderTargets[mRTIndex];
 
-	//mTextureManager->Bind(mCommandList);
+	mTextureManager->Bind(mCommandList);
 	mMeshRenderManager->RenderGPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin() );
 	mMeshRenderManager->Reset();
 

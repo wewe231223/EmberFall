@@ -9,7 +9,7 @@ SceneManager::SceneManager(std::tuple<std::shared_ptr<MeshRenderManager>, std::s
 
 
 	mSceneFeatureType[static_cast<size_t>(SceneType::LOADING)] = std::make_tuple(false, false);
-	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)] = std::make_tuple(false, false);
+	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)] = std::make_tuple(true, true);
 
 	mCurrentScene = mScenes[static_cast<size_t>(SceneType::LOADING)].get();
 
