@@ -47,6 +47,8 @@ public:
     bool AddSession(std::shared_ptr<Session> session);
     void CloseSession(SessionIdType id);
 
+    void ReleaseSessionId(SessionIdType id);
+
     std::shared_ptr<Session> GetSession(SessionIdType id);
 
     void Send(SessionIdType to, OverlappedSend* const overlappedSend);

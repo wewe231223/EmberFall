@@ -46,7 +46,7 @@ public:
     virtual void OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
     virtual void OnCollisionTerrain(const float height) override;
 
-    virtual void DoInteraction(std::shared_ptr<GameObject>& target) override;
+    virtual void DoInteraction(const std::shared_ptr<GameObject>& target) override;
 
     virtual void DispatchGameEvent(struct GameEvent* event) override;
 

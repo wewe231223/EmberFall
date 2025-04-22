@@ -44,11 +44,15 @@ void SessionManager::CloseSession(SessionIdType id) {
     Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mSessionsLock };
     auto it = mSessions.find(id);
     if (it != mSessions.end()) {
-        mSessionIdMap.push(id);
         mSessions.unsafe_erase(it);
         mSessionCount.fetch_sub(1);
         gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Session[{}]: erased from session map", id);
     }
+}
+
+void SessionManager::ReleaseSessionId(SessionIdType id) {
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Release Session Id: {}", id);
+    mSessionIdMap.push(id);
 }
 
 std::shared_ptr<Session> SessionManager::GetSession(SessionIdType id) {

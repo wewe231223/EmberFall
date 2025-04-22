@@ -5,14 +5,14 @@
 class ObjectManager {
 public:
     static constexpr size_t MAX_USER = INVALID_SESSION_ID;
-    static constexpr size_t MAX_MONSTER = 1000;
+    static constexpr size_t MAX_NPC = 1000;
     static constexpr size_t MAX_PROJECTILE = 1000;
     static constexpr size_t MAX_TRIGGER_OBJ = 100;
     static constexpr size_t MAX_ENV = 5000;
 
     static constexpr size_t USER_ID_START = 0;                                          // 0 ~ 255
     static constexpr size_t MONSTER_ID_START = MAX_USER + 1;                            // 256 ~ 1255
-    static constexpr size_t PROJECTILE_ID_START = MONSTER_ID_START + MAX_MONSTER;       // 1256 ~ 2255
+    static constexpr size_t PROJECTILE_ID_START = MONSTER_ID_START + MAX_NPC;           // 1256 ~ 2255
     static constexpr size_t TRIGGER_ID_START = PROJECTILE_ID_START + MAX_PROJECTILE;    // 2256 ~ 2355
     static constexpr size_t ENV_ID_START = TRIGGER_ID_START + MAX_TRIGGER_OBJ;          // 2356 ~ 7255
 
@@ -28,7 +28,7 @@ public:
     void LoadEnvFromFile(const std::filesystem::path& path);
     std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) const;
     std::shared_ptr<GameObject> GetPlayer(NetworkObjectIdType id) const;
-    std::shared_ptr<GameObject> GetMonster(NetworkObjectIdType id) const;
+    std::shared_ptr<GameObject> GetNPC(NetworkObjectIdType id) const;
     std::shared_ptr<GameObject> GetTrigger(NetworkObjectIdType id) const;
     std::shared_ptr<GameObject> GetEnv(NetworkObjectIdType id) const;
     //std::shared_ptr<GameObject> GetOther(NetworkObjectIdType id) const;
@@ -47,8 +47,8 @@ public:
 private:
     std::array<std::shared_ptr<GameObject>, MAX_USER> mPlayers{ };
 
-    std::array<std::shared_ptr<GameObject>, MAX_MONSTER> mMonsters{ };
-    Concurrency::concurrent_queue<NetworkObjectIdType> mMonsterIndices{ };
+    std::array<std::shared_ptr<GameObject>, MAX_NPC> mNPCs{ };
+    Concurrency::concurrent_queue<NetworkObjectIdType> mNPCIndices{ };
     
     std::array<std::shared_ptr<GameObject>, MAX_PROJECTILE> mProjectiles{ };
     Concurrency::concurrent_queue<NetworkObjectIdType> mProjectileIndices{ };

@@ -171,27 +171,6 @@
     <ClCompile Include="..\External\Include\DirectXTK12\SimpleMath.cpp">
       <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
     </ClCompile>
-    <ClCompile Include="ArrowScript.cpp">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="BossPlayerScript.cpp">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="BuffScript.cpp">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="CorruptedGem.cpp">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="Inventory.cpp">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="Item.cpp">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="ItemScript.cpp">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClCompile>
     <ClCompile Include="FbsPacketProcessFn.cpp">
       <Filter>MultiThreadLoopTest\Session</Filter>
     </ClCompile>
@@ -244,6 +223,27 @@
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClCompile>
     <ClCompile Include="Script.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="BossPlayerScript.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrowScript.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="BuffScript.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="CorruptedGem.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="Inventory.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="ItemScript.cpp">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="Item.cpp">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClCompile>
   </ItemGroup>
@@ -326,27 +326,6 @@
     <ClInclude Include="PathFinder.h">
       <Filter>MaybeReuse\Map</Filter>
     </ClInclude>
-    <ClInclude Include="ArrowScript.h">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="BossPlayerScript.h">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="BuffScript.h">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="CorruptedGem.h">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="Inventory.h">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="Item.h">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="ItemScript.h">
-      <Filter>MaybeReuse\Script</Filter>
-    </ClInclude>
     <ClInclude Include="FbsPacketProcessFn.h">
       <Filter>MultiThreadLoopTest\Session</Filter>
     </ClInclude>
@@ -399,6 +378,27 @@
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClInclude>
     <ClInclude Include="Script.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="BossPlayerScript.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="CorruptedGem.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrowScript.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="BuffScript.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="Inventory.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="Item.h">
+      <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="ItemScript.h">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClInclude>
   </ItemGroup>

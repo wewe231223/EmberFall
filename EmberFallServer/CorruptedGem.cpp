@@ -19,6 +19,8 @@ void CorruptedGemScript::Update(const float deltaTime) { }
 
 void CorruptedGemScript::LateUpdate(const float deltaTime) { }
 
+void CorruptedGemScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
+
 void CorruptedGemScript::OnCollisionTerrain(const float height) { }
 
 void CorruptedGemScript::DispatchGameEvent(GameEvent* event) { 

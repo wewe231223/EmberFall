@@ -3,6 +3,7 @@
 
 #include "PlayerScript.h"
 #include "MonsterScript.h"
+#include "CorruptedGem.h"
 #include "Trigger.h"
 #include "EventTrigger.h"
 
@@ -25,7 +26,7 @@ void ObjectManager::Init() {
         ++id;
     }
 
-    for (NetworkObjectIdType id{ MONSTER_ID_START }; auto& monster : mMonsters) {
+    for (NetworkObjectIdType id{ MONSTER_ID_START }; auto& monster : mNPCs) {
         monster = std::make_shared<GameObject>();
         monster->InitId(id);
         monster->Reset();
@@ -115,7 +116,7 @@ std::shared_ptr<GameObject> ObjectManager::GetObjectFromId(NetworkObjectIdType i
         return mPlayers[id];
     }
     else if (id < PROJECTILE_ID_START) {
-        return mMonsters[id - MONSTER_ID_START];
+        return mNPCs[id - MONSTER_ID_START];
     }
     else if (id < TRIGGER_ID_START) {
         return mProjectiles[id - PROJECTILE_ID_START];
@@ -136,13 +137,13 @@ std::shared_ptr<GameObject> ObjectManager::GetPlayer(NetworkObjectIdType id) con
     return mPlayers[id];
 }
 
-std::shared_ptr<GameObject> ObjectManager::GetMonster(NetworkObjectIdType id) const {
+std::shared_ptr<GameObject> ObjectManager::GetNPC(NetworkObjectIdType id) const {
     if (id >= PROJECTILE_ID_START or id < MONSTER_ID_START) {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Bad Monster Object Array Access - Access Id: [{}]", id);
         return nullptr;
     }
 
-    return mMonsters[id - MONSTER_ID_START];
+    return mNPCs[id - MONSTER_ID_START];
 }
 
 std::shared_ptr<GameObject> ObjectManager::GetTrigger(NetworkObjectIdType id) const {
@@ -184,8 +185,8 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
 
     case Packets::EntityType_MONSTER:
     {
-        if (false == mMonsterIndices.try_pop(validId)) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max User");
+        if (false == mNPCIndices.try_pop(validId)) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max NPC");
             break;
         }
 
@@ -203,6 +204,21 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
 
     case Packets::EntityType_PROJECTILE:
     {
+        if (false == mNPCIndices.try_pop(validId)) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max NPC");
+            break;
+        }
+
+        auto obj = GetObjectFromId(validId);
+        obj->mSpec.active = true;
+        obj->CreateScript<CorruptedGemScript>(obj);
+        obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
+        obj->Init();
+
+        gSectorSystem->AddInSector(validId, obj->GetPosition());
+        obj->RegisterUpdate();
+
+        return obj;
         break;
     }
 
@@ -290,7 +306,7 @@ void ObjectManager::ReleaseObject(NetworkObjectIdType id) {
         return;
     }
     else if (id < PROJECTILE_ID_START) {
-        mMonsterIndices.push(id);
+        mNPCIndices.push(id);
         return;
     }
     else if (id < TRIGGER_ID_START) {

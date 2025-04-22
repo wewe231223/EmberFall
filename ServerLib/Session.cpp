@@ -9,6 +9,8 @@ Session::Session(NetworkType networkType)
 }
 
 Session::~Session() {
+    auto myId = GetId();
+    gServerCore->GetSessionManager()->ReleaseSessionId(myId);
     Close();
 }
 

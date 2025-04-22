@@ -30,7 +30,7 @@ private:
     Short2 mIndex{ };
     Lock::SRWLock mSectorLock;
     std::unordered_set<NetworkObjectIdType> mPlayers{ };
-    std::unordered_set<NetworkObjectIdType> mMonsters{ };
+    std::unordered_set<NetworkObjectIdType> mNPCs{ };
     std::unordered_set<NetworkObjectIdType> mEnvs{ };
 };
 

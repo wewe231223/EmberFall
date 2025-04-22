@@ -8,17 +8,17 @@ Sector::Sector(uint8_t row, uint8_t col)
 }
 
 Sector::~Sector() {
-    mMonsters.clear();
+    mNPCs.clear();
     mPlayers.clear();
 }
 
 Sector::Sector(Sector&& other) noexcept 
-    : mPlayers{ std::move(other.mPlayers) }, mMonsters{ std::move(other.mMonsters) } {
+    : mPlayers{ std::move(other.mPlayers) }, mNPCs{ std::move(other.mNPCs) } {
 }
 
 Sector& Sector::operator=(Sector&& other) noexcept {
     mPlayers = std::move(other.mPlayers); 
-    mMonsters = std::move(other.mMonsters);
+    mNPCs = std::move(other.mNPCs);
     return *this;
 }
 
@@ -43,7 +43,7 @@ void Sector::TryInsert(NetworkObjectIdType id) {
 
     case ObjectTag::MONSTER:
     {
-        mMonsters.insert(id);
+        mNPCs.insert(id);
         break;
     }
 
@@ -75,11 +75,11 @@ void Sector::RemoveObject(NetworkObjectIdType id) {
 
     case ObjectTag::MONSTER:
     {
-        if (false == mMonsters.contains(id)) {
+        if (false == mNPCs.contains(id)) {
             return;
         }
 
-        mMonsters.erase(id);
+        mNPCs.erase(id);
         break;
     }
 
@@ -91,7 +91,7 @@ void Sector::RemoveObject(NetworkObjectIdType id) {
 std::vector<NetworkObjectIdType> Sector::GetMonstersInRange(SimpleMath::Vector3 pos, const float range) {
     Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
     std::vector<NetworkObjectIdType> inRangeMonsters{ };
-    for (const auto monsterId : mMonsters) {
+    for (const auto monsterId : mNPCs) {
         decltype(auto) monsterPos = gObjectManager->GetObjectFromId(monsterId)->GetPosition();
 
         auto dist = SimpleMath::Vector3::DistanceSquared(pos, monsterPos);

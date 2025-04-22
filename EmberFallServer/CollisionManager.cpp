@@ -64,7 +64,7 @@ void CollisionManager::UpdateCollisionMonster(const std::shared_ptr<GameObject>&
         }
 
         // Todo Collision Check And Resolve
-        auto monster = gObjectManager->GetMonster(monsterId);
+        auto monster = gObjectManager->GetNPC(monsterId);
         if (nullptr == monster or false == monster->mSpec.active) {
             PopCollisionPair(monsterId, objId);
             continue;

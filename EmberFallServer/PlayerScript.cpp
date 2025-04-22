@@ -140,10 +140,15 @@ void PlayerScript::LateUpdate(const float deltaTime) {
         return;
     }
 
-    if (owner->mSpec.hp <= MathUtil::EPSILON) {
+    auto currState = owner->mAnimationStateMachine.GetCurrState();
+    if (owner->mSpec.hp <= MathUtil::EPSILON and Packets::AnimationState_DEAD != currState) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player Dead");
         owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_DEAD, true);
         return;
+    }
+
+    if (Packets::AnimationState_DEAD == currState and owner->mAnimationStateMachine.IsChangable()) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player Dead End");
     }
 }
 
@@ -178,7 +183,6 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
     case GameEventType::ATTACK_EVENT:
     {
         if (event->sender != event->receiver and ObjectTag::PLAYER != senderTag) {
-
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
             owner->mSpec.hp -= attackEvent->damage;
             owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED, true);
@@ -309,7 +313,7 @@ void PlayerScript::CheckAndJump(const float deltaTime) {
     }
 }
 
-void PlayerScript::DoInteraction(std::shared_ptr<GameObject>& target) {
+void PlayerScript::DoInteraction(const std::shared_ptr<GameObject>& target) {
     auto owner = GetOwner();
     if (nullptr == owner or nullptr == target or not target->mSpec.active) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Do Interaction Failure - target or owner is null");
