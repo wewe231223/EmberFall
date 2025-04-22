@@ -26,7 +26,7 @@ inline constexpr size_t MEM_BLOCK_SIZE_CNT = sizeof(MEM_BLOCK_SIZES) / sizeof(si
 
 class SendBuffers {
 public:
-    inline static constexpr size_t BUFFER_COUNT = 10000;
+    inline static constexpr size_t BUFFER_COUNT = 1'000'000;
 
 public:
     SendBuffers();

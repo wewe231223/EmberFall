@@ -10,7 +10,11 @@ const PacketHeaderCS* FbsPacketFactory::GetHeaderPtrCS(const uint8_t* const data
 }
 
 void FbsPacketFactory::ReleasePacketBuf(OverlappedSend* const overlapped) {
-    mSendPacketBuffers->ReleaseOverlapped(overlapped);
+    if (true == mSendPacketBuffers->ReleaseOverlapped(overlapped)) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Release Send Overlapped");
+        return;
+    }
+    gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Release Send Overlapped Failure!");
 }
 
 OverlappedSend* FbsPacketFactory::ProtocolVersionSC() {
