@@ -8,6 +8,10 @@
 #include "ServerFrame.h"
 #include "ObjectSpawner.h"
 
+#include <profileapi.h>
+
+#include "GameTimer.h"
+
 IServerGameScene::IServerGameScene() { }
 
 IServerGameScene::~IServerGameScene() { }

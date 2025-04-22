@@ -57,7 +57,8 @@ const uint8_t* ProcessPacket(std::shared_ptr<IServerGameScene>& gameScene, const
     case Packets::PacketTypes_PT_LATENCY_CS:
     {
         decltype(auto) packetLatency = FbsPacketFactory::GetDataPtrCS<Packets::PacketLatencyCS>(buffer);
-        ProcessLatencyCS(packetLatency);
+        gServerCore->Send(header->senderId, FbsPacketFactory::PacketLatencySC(packetLatency->latency()));
+        //ProcessLatencyCS(packetLatency);
         break;
     }
 
@@ -114,7 +115,6 @@ void ProcessPlayerSelectRoleCS(const Packets::PlayerSelectRoleCS* const roll, st
 }
 
 void ProcessLatencyCS(const Packets::PacketLatencyCS* const latency) {
-
 }
 
 void ProcessRequestAttackCS(const Packets::RequestAttackCS* const attack, std::shared_ptr<GameObject>& player) {
