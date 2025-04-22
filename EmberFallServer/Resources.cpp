@@ -39,13 +39,14 @@ void ResourceManager::LoadAnimationFromFile(const std::filesystem::path& path) {
         key.resize(keyLength);
 
         envs.read(key.data(), keyLength);
-        mAnimInfos.try_emplace(key, AnimationInfos{ });
+        mAnimInfos.try_emplace(key, std::make_shared<AnimationInfo>());
 
         envs.read(reinterpret_cast<char*>(&numOfDurations), sizeof(numOfDurations));
         if (NUM_OF_ANIM != numOfDurations) {
             gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "File Format Is Incorrect");
         }
-        envs.read(reinterpret_cast<char*>(mAnimInfos[key].durations), numOfDurations * sizeof(float));
+
+        envs.read(reinterpret_cast<char*>(mAnimInfos[key]->states), numOfDurations * sizeof(AnimationState));
     }
 
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Anim File Load Sucess");
@@ -82,7 +83,7 @@ void ResourceManager::LoadEntityFromFile(const std::filesystem::path& path) {
         envs.read(reinterpret_cast<char*>(&info), sizeof(DirectX::BoundingOrientedBox) + sizeof(SimpleMath::Vector3));
     }
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Anim File Load Sucess");
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Entities File Load Sucess");
 }
 
 const EntityInfo& ResourceManager::GetEntityInfo(const std::string& name) {
@@ -94,7 +95,7 @@ const EntityInfo& ResourceManager::GetEntityInfo(const std::string& name) {
     return mEntityInfos[name];
 }
 
-const AnimationInfos& ResourceManager::GetAnimInfo(const std::string& key) {
+std::shared_ptr<AnimationInfo> ResourceManager::GetAnimInfo(const std::string& key) {
     if (not mAnimInfos.contains(key)) {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Bad Access - Invalid Animation Key: {}", key);
         Crash("");

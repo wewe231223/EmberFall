@@ -24,8 +24,7 @@ std::shared_ptr<class InputManager> ServerFrame::GetInputManager() const {
 void ServerFrame::Run() {
     ResourceManager::LoadEnvFromFile("../Resources/Binarys/Collider/EnvBB.bin");
     ResourceManager::LoadEntityFromFile("../Resources/Binarys/Collider/Entitybb.bin");
-    ResourceManager::LoadEnvFromFile("../Resources/Binarys/Collider/AnimationInfo.bin");
-    BoundingBoxImporter::LoadFromFile();
+    ResourceManager::LoadAnimationFromFile("../Resources/Binarys/Collider/AnimationInfo.bin");
     gObjectManager->Init();
 
     gServerCore->Init();

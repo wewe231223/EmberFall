@@ -41,7 +41,7 @@ void EventTrigger::OnCollision(const std::shared_ptr<GameObject>& opponent, cons
         return;
     }
 
-    auto& [count, delay] = mProducedEventCounter[opponentId];
+    auto& [delay, count] = mProducedEventCounter[opponentId];
     delay += GetOwner()->GetDeltaTime();
     if (delay >= mProduceEventDelay and count < mProduceEventCount) {
         count += 1;

@@ -6,20 +6,27 @@ AnimationStateMachine::AnimationStateMachine() { }
 
 AnimationStateMachine::~AnimationStateMachine() { }
 
+void AnimationStateMachine::Init(const std::string& entityKey) {
+    mAnimInfo = ResourceManager::GetAnimInfo(entityKey);
+
+    mDefaultState = Packets::AnimationState_IDLE;
+    mDefaultAnimInfo = mAnimInfo->states[static_cast<size_t>(mDefaultState)];
+}
+
 bool AnimationStateMachine::IsChangable() const {
     return mIsLoopAnimation;
 }
 
 Packets::AnimationState AnimationStateMachine::GetCurrState() const {
-    return mCurrState.state;
+    return mCurrState;
 }
 
 float AnimationStateMachine::GetDuration(Packets::AnimationState state) const {
-    return mAnimationInfo[static_cast<size_t>(state)].duration;
+    return mAnimInfo->states[state].duration;
 }
 
 float AnimationStateMachine::GetRemainDuration() const {
-    return mCurrState.duration - mAnimationCounter;
+    return mCurrAnimInfo.duration - mAnimationCounter;
 }
 
 void AnimationStateMachine::SetOwner(std::shared_ptr<class GameObject> owner) {
@@ -27,34 +34,35 @@ void AnimationStateMachine::SetOwner(std::shared_ptr<class GameObject> owner) {
 }
 
 void AnimationStateMachine::SetDefaultState(Packets::AnimationState state) {
-    mDefaultState = mAnimationInfo[static_cast<size_t>(state)];
+    mDefaultState = state;
+    mDefaultAnimInfo = mAnimInfo->states[static_cast<size_t>(state)];
 }
 
 void AnimationStateMachine::ChangeState(Packets::AnimationState nextState, bool force) {
-    if (false == force and mCurrState.state == nextState) {
+    if (false == force and mCurrState == nextState) {
         return;
     }
 
     auto ownerId = mOwner->GetId();
+    mCurrState = nextState;
+    mCurrAnimInfo = mAnimInfo->states[static_cast<size_t>(nextState)];
 
-    mCurrState = mAnimationInfo[static_cast<size_t>(nextState)];
-
-    mIsLoopAnimation = mCurrState.loop;
+    mIsLoopAnimation = mCurrAnimInfo.loop;
     mAnimationCounter = 0.0f;
     mAnimationChanged = true;
 }
 
 void AnimationStateMachine::Update(const float deltaTime) {
-    if (true == mCurrState.loop) {
+    if (true == mCurrAnimInfo.loop) {
         return;
     }
 
     mAnimationCounter += deltaTime;
-    if (mAnimationCounter < mCurrState.duration) {
+    if (mAnimationCounter < mCurrAnimInfo.duration) {
         return;
     }
 
-    if (not mIsLoopAnimation and mCurrState.state != Packets::AnimationState_DEAD) {
-        ChangeState(mDefaultState.state);
+    if (not mIsLoopAnimation and mCurrState != Packets::AnimationState_DEAD) {
+        ChangeState(mDefaultState);
     }
 }

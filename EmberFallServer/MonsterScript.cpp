@@ -21,6 +21,7 @@ void MonsterScript::Init() {
         return;
     }
 
+    owner->mAnimationStateMachine.Init(ANIM_KEY_MONSTER);
     auto& spec = owner->mSpec;
     spec.active = true;
     spec.attackable = true;
@@ -254,7 +255,6 @@ BT::NodeStatus MonsterScript::Attack(const float deltaTime) {
     }
 
     if (Packets::AnimationState_ATTACK == currState and owner->mAnimationStateMachine.IsChangable()) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster Attack end");
         return BT::NodeStatus::SUCCESS;
     }
 
@@ -262,7 +262,6 @@ BT::NodeStatus MonsterScript::Attack(const float deltaTime) {
         auto toTargetLook = MathUtil::Normalize(chaseTarget->GetPosition() - owner->GetPosition());
         owner->GetTransform()->SetLook(toTargetLook);
         owner->Attack();
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster Attack");
     }
 
     return BT::NodeStatus::RUNNING;

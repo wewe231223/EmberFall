@@ -28,8 +28,13 @@ struct EnvironmentsInfo {
 
 inline constexpr size_t NUM_OF_ANIM = Packets::AnimationState_MAX + 1;
 
-struct AnimationInfos {
-    float durations[NUM_OF_ANIM];
+struct AnimationState {
+    double duration;
+    bool loop;
+};
+
+struct AnimationInfo {
+    AnimationState states[NUM_OF_ANIM];
 };
 
 class ResourceManager {
@@ -49,11 +54,11 @@ public:
     static void LoadEntityFromFile(const std::filesystem::path& path);
 
     static const EntityInfo& GetEntityInfo(const std::string& name);
-    static const AnimationInfos& GetAnimInfo(const std::string& key);
+    static std::shared_ptr<AnimationInfo> GetAnimInfo(const std::string& key);
     static const EnvironmentsInfo& GetEnvInfo(GameProtocol::EnvironmentType envType);
 
 private:
-    inline static std::unordered_map<std::string, AnimationInfos> mAnimInfos;
+    inline static std::unordered_map<std::string, std::shared_ptr<AnimationInfo>> mAnimInfos;
     inline static std::unordered_map<std::string, EntityInfo> mEntityInfos;
     inline static std::unordered_map<GameProtocol::EnvironmentType, EnvironmentsInfo> mEnvInfos;
 };

@@ -89,6 +89,8 @@ void PlayerScript::Init() {
         return;
     }
 
+    owner->mAnimationStateMachine.Init(ANIM_KEY_LONGSWORD_MAN);
+
     const auto pos = owner->GetPosition();
     const auto look = owner->GetTransform()->Forward();
     mInteractionTrigger = gObjectManager->SpawnTrigger(pos, SimpleMath::Vector3{ 0.5f, 2.0f, 0.5f }, look, std::numeric_limits<float>::max());
@@ -127,7 +129,7 @@ void PlayerScript::Update(const float deltaTime) {
     CheckAndMove(deltaTime);
 
     // Attack
-    if (mInput->IsActiveKey('P')) {
+    if (mInput->IsActiveKey(VK_SPACE)) {
         owner->Attack();
     }
 
