@@ -13,7 +13,14 @@ CorruptedGemScript::CorruptedGemScript(std::shared_ptr<GameObject> owner)
 
 CorruptedGemScript::~CorruptedGemScript() { }
 
-void CorruptedGemScript::Init() { }
+void CorruptedGemScript::Init() { 
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    owner->mSpec.hp = 100.0f;
+}
 
 void CorruptedGemScript::Update(const float deltaTime) { }
 

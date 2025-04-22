@@ -204,11 +204,11 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
 
     case Packets::EntityType_PROJECTILE:
     {
-        if (false == mNPCIndices.try_pop(validId)) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max NPC");
-            break;
-        }
+        break;
+    }
 
+    case Packets::EntityType_CORRUPTED_GEM:
+    {
         auto obj = GetObjectFromId(validId);
         obj->mSpec.active = true;
         obj->CreateScript<CorruptedGemScript>(obj);
@@ -219,12 +219,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->RegisterUpdate();
 
         return obj;
-        break;
-    }
-
-    case Packets::EntityType_CORRUPTED_GEM:
-    {
-        break;
     }
 
     case Packets::EntityType_BOSS:

@@ -44,7 +44,13 @@ void ServerFrame::Run() {
     
     gObjectManager->LoadEnvFromFile("../Resources/Binarys/Collider/env1.bin");
 
-    for (int32_t test = 0; test < 10; ++test) {
+    for (int32_t test = 0; test < 100; ++test) {
+        if (test == 0) {
+            decltype(auto) corruptedGem = gObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+            corruptedGem->GetTransform()->SetPosition(SimpleMath::Vector3::Zero);
+        }
+
+
         decltype(auto) monster = gObjectManager->SpawnObject(Packets::EntityType_MONSTER);
         std::this_thread::sleep_for(1ms);
         monster->GetTransform()->SetY(0.0f);

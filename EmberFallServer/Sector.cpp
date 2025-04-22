@@ -269,7 +269,7 @@ void SectorSystem::RemoveInSector(NetworkObjectIdType id, const SimpleMath::Vect
 void SectorSystem::AddInSector(NetworkObjectIdType id, Short2 sectorIdx) {
     decltype(auto) sector = GetSector(sectorIdx);
     Lock::SRWLockGuard sectorGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, sector.GetLock() };
-    sector.RemoveObject(id);
+    sector.TryInsert(id);
 }
 
 void SectorSystem::RemoveInSector(NetworkObjectIdType id, Short2 sectorIdx) {
@@ -295,6 +295,11 @@ Short2 SectorSystem::UpdateSectorPos(NetworkObjectIdType id, const SimpleMath::V
     const auto prevIdx = GetSectorIdxFromPos(prevPos);
     const auto currIdx = GetSectorIdxFromPos(currPos);
     if (prevIdx == currIdx) {
+        return currIdx;
+    }
+
+    auto obj = gObjectManager->GetObjectFromId(id);
+    if (nullptr == obj) {
         return currIdx;
     }
 
