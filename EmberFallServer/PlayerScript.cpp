@@ -44,6 +44,10 @@ void PlayerScript::UpdateViewList(const std::vector<NetworkObjectIdType>& inView
         return;
     }
 
+    if (SESSION_INGAME != std::static_pointer_cast<GameSession>(session)->GetSessionState()) {
+        return;
+    }
+
     ViewList newViewList{ };
     for (const auto id : inViewRangePlayer) {
         auto success = newViewList.TryInsert(id);

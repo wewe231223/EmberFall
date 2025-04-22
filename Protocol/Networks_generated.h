@@ -30,6 +30,9 @@ struct PlayerExitSCBuilder;
 struct PlayerExitCS;
 struct PlayerExitCSBuilder;
 
+struct PlayerEnterInGame;
+struct PlayerEnterInGameBuilder;
+
 struct PlayerInputCS;
 struct PlayerInputCSBuilder;
 
@@ -211,6 +214,35 @@ struct PlayerExitCSBuilder {
 inline ::flatbuffers::Offset<PlayerExitCS> CreatePlayerExitCS(
     ::flatbuffers::FlatBufferBuilder &_fbb) {
   PlayerExitCSBuilder builder_(_fbb);
+  return builder_.Finish();
+}
+
+struct PlayerEnterInGame FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PlayerEnterInGameBuilder Builder;
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           verifier.EndTable();
+  }
+};
+
+struct PlayerEnterInGameBuilder {
+  typedef PlayerEnterInGame Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  explicit PlayerEnterInGameBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<PlayerEnterInGame> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<PlayerEnterInGame>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<PlayerEnterInGame> CreatePlayerEnterInGame(
+    ::flatbuffers::FlatBufferBuilder &_fbb) {
+  PlayerEnterInGameBuilder builder_(_fbb);
   return builder_.Finish();
 }
 

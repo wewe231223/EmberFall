@@ -9,18 +9,19 @@
 #include "Sector.h"
 
 GameSession::GameSession() 
-    : Session{ NetworkType::SERVER } { }
+    : Session{ NetworkType::SERVER }, mSessionState{ SESSION_CONNECT } { }
 
 GameSession::~GameSession() { 
     gSectorSystem->RemoveInSector(GetId(), mUserObject->GetPosition());
     mUserObject->Reset();
+
+    mSessionState = SESSION_CLOSE;
 
     Session::Close();
 }
 
 void GameSession::OnConnect() {
     Session::OnConnect();
-    InitUserObject();
 }
 
 void GameSession::ProcessRecv(INT32 numOfBytes) {
@@ -54,6 +55,8 @@ void GameSession::ProcessRecv(INT32 numOfBytes) {
 }
 
 void GameSession::InitUserObject() {
+    mSessionState = SESSION_INGAME;
+
     static auto TestPos = SimpleMath::Vector3::Zero;
     const static auto PosInc = SimpleMath::Vector3::Left * 2.0f;
 
@@ -92,4 +95,8 @@ void GameSession::InitUserObject() {
 
 std::shared_ptr<GameObject> GameSession::GetUserObject() const {
     return mUserObject;
+}
+
+uint8_t GameSession::GetSessionState() const {
+    return mSessionState.load();
 }

@@ -68,6 +68,7 @@ void SessionManager::Send(SessionIdType to, OverlappedSend* const overlappedSend
 
     auto session = it->second;
     if (false == session->IsConnected()) {
+        FbsPacketFactory::ReleasePacketBuf(overlappedSend);
         return;
     }
 

@@ -29,6 +29,8 @@ table PlayerExitSC {
 
 table PlayerExitCS { }
 
+table PlayerEnterInGame { }
+
 table PlayerInputCS {
 	key: ubyte;
 	down: bool;

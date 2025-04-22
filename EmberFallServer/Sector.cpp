@@ -2,6 +2,7 @@
 #include "Sector.h"
 #include "ObjectManager.h"
 #include "PlayerScript.h"
+#include "GameSession.h"
 
 Sector::Sector(uint8_t row, uint8_t col) 
     : mIndex{ col, row } {
@@ -346,6 +347,11 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
         auto playerObj = gObjectManager->GetObjectFromId(playerId);
         auto viewRange = playerObj->GetScript<PlayerScript>()->GetViewList().mViewRange.Count();
         if (false == gObjectManager->InViewRange(playerId, id, viewRange)) {
+            continue;
+        }
+
+        auto session = gServerCore->GetSessionManager()->GetSession(playerId);
+        if (nullptr == session or SESSION_INGAME != std::static_pointer_cast<GameSession>(session)->GetSessionState()) {
             continue;
         }
 

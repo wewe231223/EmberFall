@@ -97,6 +97,10 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
     return buffer + header->size;
 }
 
+void ProcessPlayerEnterInGame(std::shared_ptr<class GameSession>& session, const Packets::PlayerEnterInGame* const enter) {
+    session->InitUserObject();
+}
+
 void ProcessPlayerInputCS(std::shared_ptr<GameSession>& session, const Packets::PlayerInputCS* const input) {
     const auto userObject = session->GetUserObject();
     if (nullptr == userObject) {
@@ -104,6 +108,10 @@ void ProcessPlayerInputCS(std::shared_ptr<GameSession>& session, const Packets::
     }
 
     auto player = userObject->GetScript<PlayerScript>();
+    if (nullptr == player) {
+        return;
+    }
+
     player->GetInput()->UpdateInput(input->key(), input->down());
     userObject->Update();
     userObject->LateUpdate();

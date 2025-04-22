@@ -56,6 +56,7 @@ public:
         const SimpleMath::Vector3& dir, float speed, Packets::ProjectileTypes projectile);
 
     // Client to Server
+    static OverlappedSend* PlayerEnterInGame(SessionIdType id);
     static OverlappedSend* PlayerExitCS(SessionIdType id);
     static OverlappedSend* PlayerInputCS(SessionIdType id, uint8_t key, bool down);
     static OverlappedSend* PlayerLookCS(SessionIdType id, const SimpleMath::Vector3& look);

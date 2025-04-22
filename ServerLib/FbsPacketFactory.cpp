@@ -11,7 +11,6 @@ const PacketHeaderCS* FbsPacketFactory::GetHeaderPtrCS(const uint8_t* const data
 
 void FbsPacketFactory::ReleasePacketBuf(OverlappedSend* const overlapped) {
     if (true == mSendPacketBuffers->ReleaseOverlapped(overlapped)) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Release Send Overlapped");
         return;
     }
     gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Release Send Overlapped Failure!");
@@ -232,6 +231,19 @@ OverlappedSend* FbsPacketFactory::FireProjectileSC(NetworkObjectIdType id, const
 
     PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes::PacketTypes_PT_FIRE_PROJECTILE_SC };
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
+}
+
+OverlappedSend* FbsPacketFactory::PlayerEnterInGame(SessionIdType id) {
+    flatbuffers::FlatBufferBuilder builder{ };
+
+    auto offset = Packets::CreatePlayerEnterInGame(builder);
+    builder.Finish(offset);
+
+    const uint8_t* payload = builder.GetBufferPointer();
+    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
+
+    PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes_PT_PLAYER_ENTER_INGAME, id };
+    return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
 }
 
 OverlappedSend* FbsPacketFactory::PlayerExitCS(SessionIdType id) {
