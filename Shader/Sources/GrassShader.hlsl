@@ -168,11 +168,24 @@ void mainMS(
     outIndices[idxBase + 1] = uint3(vtxBase + 0, vtxBase + 3, vtxBase + 2);
 }
 
+struct Deffered_POUT
+{
+    float4 diffuse : SV_TARGET0;
+    float4 normal : SV_TARGET1;
+    float4 position : SV_TARGET2;
+};
+
 // Pixel Shader
-float4 mainPS(VSOutput input) : SV_Target
+Deffered_POUT mainPS(VSOutput input)
 {
     Texture2D tex = textures[materialConstants[materialIndex].diffuseTexture[input.texIndex]];
     float4 color = tex.Sample(anisotropicWrapSampler, input.uv);
-    clip(color.a - 0.2f);
-    return color;
+    
+    clip(color.a - 0.5f);
+    
+    Deffered_POUT output = (Deffered_POUT) 0;
+    output.diffuse = color;
+    output.normal = float4(0.0f, 1.0f, 0.0f, 5.0f);
+    
+    return output; 
 }

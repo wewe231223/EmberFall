@@ -54,7 +54,6 @@ private:
 	void ProcessPackets(const uint8_t* buffer, size_t size); 
 	const uint8_t* ProcessPacket(const uint8_t* buffer);
 
-
 	void ProcessPacketProtocolVersion(const uint8_t* buffer);
 	void ProcessNotifyId(const uint8_t* buffer);
 	void ProcessPlayerExit(const uint8_t* buffer);
@@ -72,7 +71,6 @@ private:
 	void ProcessAcquiredItem(const uint8_t* buffer);
 	void ProcessFireProjectile(const uint8_t* buffer);
 	void ProcessProjectileMove(const uint8_t* buffer);
-
 private:
 	std::shared_ptr<TextureManager> mTextureManager{ nullptr };
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{ nullptr };
@@ -105,8 +103,6 @@ private:
 	
 	Player* mMyPlayer{ nullptr };
 
-	
-	
 	std::unordered_map<std::string, EquipmentObject> mEquipments{}; 
 
 	AnimatorGraph::BoneMaskAnimationGraphController mBaseAnimationController{};

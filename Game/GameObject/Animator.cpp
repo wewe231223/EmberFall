@@ -724,6 +724,7 @@ namespace AnimatorGraph {
                 if (targetState < mStates.size() && targetState != mCurrentStateIndex) {
 					mAnimator.SetTransitionDuration(transition.blendDuration);
                     mAnimator.TransitionToClip(targetState);
+					mAnimator.SetLoop(mStates[targetState].loop);
                     mCurrentStateIndex = targetState;
                     break;
                 }
