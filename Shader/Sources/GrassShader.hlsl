@@ -126,6 +126,9 @@ float hash(uint x)
     return frac(x * (1.0 / 4294967296.0));
 }
 
+#define WIND_STRENGTH 0.2f   
+#define WIND_FREQ     0.002f 
+
 [outputtopology("triangle")]
 [numthreads(GRASS_PER_DISPATCH, 1, 1)]
 void mainMS(
@@ -139,47 +142,48 @@ void mainMS(
     const uint localId = groupThreadId.x;
     const uint groupIndex = threadId.x / GRASS_PER_DISPATCH;
     const uint offsetInGrid = localId;
-    // baseIndex + (Mesh Shader Group Id * GRASS_PER_DISPATCH) + localId
     const uint grassIndex = pl.baseIndex + groupIndex * GRASS_PER_DISPATCH + offsetInGrid;
 
-   
     bool shouldCull = pl.culled;
     SetMeshOutputCounts(shouldCull ? 0 : 8, shouldCull ? 0 : 12);
 
     if (shouldCull)
         return;
-                                                                                                    
-    GrassPosition grass = grassVertices[grassIndex];
-    
-    float rand = hash(grassIndex);
-    
-    float3 basePos = grass.position;
-    float halfSize = grass.scale * 0.6f;
-   // rand < 0.5 ? halfSize = 0.f : halfSize = halfSize; 
-    basePos.y += halfSize;
 
-    // 고정 방향 기반으로 mesh 잔디 구성
+    GrassPosition grass = grassVertices[grassIndex];
+
+    float randPhase = hash(grassIndex);
+    float halfSize = grass.scale * 0.6f;
+
+    // 흔들림 세기 = WIND_STRENGTH * halfSize 
+    float sway = sin(globalTime * WIND_FREQ + randPhase * 6.2831f) * (WIND_STRENGTH * halfSize);
+    float3 swayDir = float3(0.0f, 0.0f, 1.0f); // Z+ 방향
+    float3 swayOffset = swayDir * sway;
+
+    float3 basePos = grass.position;
+    basePos.y += halfSize * 0.9f;
+
     const float3 up = float3(0.0f, 1.0f, 0.0f);
-    float3 right = float3(1.0f, 0.0f, 0.0f); // X 방향
-    float3 forward = float3(0.0f, 0.0f, 1.0f); // Z 방향
-    
-  
-    // 2장 교차하는 평면 잔디 (8 정점)
+    float3 right = float3(1.0f, 0.0f, 0.0f);
+    float3 forward = float3(0.0f, 0.0f, 1.0f);
+
     float3 verts[8];
-    verts[0] = basePos + (-right + up) * halfSize;
-    verts[1] = basePos + (right + up) * halfSize;
+
+    // right-plane
+    verts[0] = basePos + (-right + up) * halfSize + swayOffset;
+    verts[1] = basePos + (right + up) * halfSize + swayOffset;
     verts[2] = basePos + (right - up) * halfSize;
     verts[3] = basePos + (-right - up) * halfSize;
 
-    verts[4] = basePos + (-forward + up) * halfSize;
-    verts[5] = basePos + (forward + up) * halfSize;
+    // forward-plane
+    verts[4] = basePos + (-forward + up) * halfSize + swayOffset;
+    verts[5] = basePos + (forward + up) * halfSize + swayOffset;
     verts[6] = basePos + (forward - up) * halfSize;
     verts[7] = basePos + (-forward - up) * halfSize;
 
-    // 교차 평면 normal 계산
-    float3 normal1 = normalize(cross(right, up)); // right 평면
-    float3 normal2 = normalize(cross(forward, up)); // forward 평면
-    
+    float3 normal1 = normalize(cross(right, up));
+    float3 normal2 = normalize(cross(forward, up));
+
     uint vtxBase = localId * 8;
     uint idxBase = localId * 4;
 
@@ -188,7 +192,7 @@ void mainMS(
     {
         outVerts[vtxBase + i].position = mul(float4(verts[i], 1.0f), viewProj);
         outVerts[vtxBase + i].texIndex = grass.tex;
-        
+
         if (i % 4 == 0)
             outVerts[vtxBase + i].uv = float2(0, 0);
         if (i % 4 == 1)
@@ -197,15 +201,12 @@ void mainMS(
             outVerts[vtxBase + i].uv = float2(1, 1);
         if (i % 4 == 3)
             outVerts[vtxBase + i].uv = float2(0, 1);
-        
+
         outVerts[vtxBase + i].normal = (i < 4) ? normal1 : normal2;
     }
 
-    // Plane 1 (right 방향)
     outIndices[idxBase + 0] = uint3(vtxBase + 2, vtxBase + 1, vtxBase + 0);
     outIndices[idxBase + 1] = uint3(vtxBase + 0, vtxBase + 3, vtxBase + 2);
-
-    // Plane 2 (forward 방향)
     outIndices[idxBase + 2] = uint3(vtxBase + 6, vtxBase + 5, vtxBase + 4);
     outIndices[idxBase + 3] = uint3(vtxBase + 4, vtxBase + 7, vtxBase + 6);
 }
