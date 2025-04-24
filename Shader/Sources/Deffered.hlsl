@@ -63,7 +63,7 @@ float4 DirectionalLight(float3 normal, float3 toCamera, float2 texcoord)
     float dotNormalLight = dot(direct, normal);
 
     float4 diffuse = float4(1.0f,1.0f,1.0f,1.0f);
-    float4 ambient = float4(0.30f, 0.30f, 0.30f, 1.0f);
+    float4 ambient = float4(0.20f, 0.20f, 0.20f, 1.0f);
     
     diffuse.xyz = diffuse.xyz * max(dotNormalLight, 0.0f);
 

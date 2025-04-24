@@ -66,11 +66,11 @@ struct Payload
 
 #define GRASS_GRID_COUNT 2500
 #define GRASS_PER_GRID 512
-#define GRASS_PER_DISPATCH 64
+#define GRASS_PER_DISPATCH 16
 #define GRASS_CULL_DISTANCE 200.0f
 #define GRASS_COUNT GRASS_PER_GRID * GRASS_GRID_COUNT
-#define MAX_VERTEX_COUNT (GRASS_PER_DISPATCH * 4)
-#define MAX_INDEX_COUNT (GRASS_PER_DISPATCH * 2)
+#define MAX_VERTEX_COUNT (GRASS_PER_DISPATCH * 8)
+#define MAX_INDEX_COUNT  (GRASS_PER_DISPATCH * 12)
 
 
 [numthreads(1, 1, 1)]
@@ -111,6 +111,7 @@ struct VSOutput
 {
     float4 position : SV_Position;
     float2 uv : TEXCOORD;
+    float3 normal : NORMAL;
     uint texIndex : TEXID;
 };
 
@@ -124,49 +125,77 @@ void mainMS(
     out vertices VSOutput outVerts[MAX_VERTEX_COUNT])
 {
     const uint localId = groupThreadId.x;
-    const uint grassIndex = pl.baseIndex + localId;
 
-    SetMeshOutputCounts(pl.culled ? 0 : MAX_VERTEX_COUNT, pl.culled ? 0 : MAX_INDEX_COUNT);
+    const uint groupIndex = threadId.x / GRASS_PER_DISPATCH;
+    const uint offsetInGrid = localId;
+    // baseIndex + (Mesh Shader Group Id * GRASS_PER_DISPATCH) + localId
+    const uint grassIndex = pl.baseIndex + groupIndex * GRASS_PER_DISPATCH + offsetInGrid;
 
-    if (pl.culled) 
-        return; 
-    
+    SetMeshOutputCounts(pl.culled ? 0 : 8, pl.culled ? 0 : 12);
+
+    if (pl.culled)
+        return;
+
     GrassPosition grass = grassVertices[grassIndex];
-    float3 basePos = grass.position;
-
-    float halfSize = grass.scale * 0.5f;
     
-    basePos.y += halfSize; 
-    float3 toCameraXZ = normalize(float3(cameraPosition.x - basePos.x, 0.0f, cameraPosition.z - basePos.z));
-    float3 right = float3(toCameraXZ.z, 0.0f, -toCameraXZ.x);
+    
+    float3 basePos = grass.position;
+    float halfSize = grass.scale * 0.6f;
+    basePos.y += halfSize;
+
+    // 고정 방향 기반으로 mesh 잔디 구성
     const float3 up = float3(0.0f, 1.0f, 0.0f);
+    float3 right = float3(1.0f, 0.0f, 0.0f); // X 방향
+    float3 forward = float3(0.0f, 0.0f, 1.0f); // Z 방향
+    
+  
+    // 2장 교차하는 평면 잔디 (8 정점)
+    float3 verts[8];
+    verts[0] = basePos + (-right + up) * halfSize;
+    verts[1] = basePos + (right + up) * halfSize;
+    verts[2] = basePos + (right - up) * halfSize;
+    verts[3] = basePos + (-right - up) * halfSize;
 
-    float3 v0 = basePos + (-right + up) * halfSize;
-    float3 v1 = basePos + (right + up) * halfSize;
-    float3 v2 = basePos + (right - up) * halfSize;
-    float3 v3 = basePos + (-right - up) * halfSize;
+    verts[4] = basePos + (-forward + up) * halfSize;
+    verts[5] = basePos + (forward + up) * halfSize;
+    verts[6] = basePos + (forward - up) * halfSize;
+    verts[7] = basePos + (-forward - up) * halfSize;
 
-    uint vtxBase = localId * 4;
-    uint idxBase = localId * 2;
-
-
-    outVerts[vtxBase + 0].position = mul(float4(v0, 1.0), viewProj);
-    outVerts[vtxBase + 1].position = mul(float4(v1, 1.0), viewProj);
-    outVerts[vtxBase + 2].position = mul(float4(v2, 1.0), viewProj);
-    outVerts[vtxBase + 3].position = mul(float4(v3, 1.0), viewProj);
-
-    outVerts[vtxBase + 0].uv = float2(0, 0);
-    outVerts[vtxBase + 1].uv = float2(1, 0);
-    outVerts[vtxBase + 2].uv = float2(1, 1);
-    outVerts[vtxBase + 3].uv = float2(0, 1);
+    // 교차 평면 normal 계산
+    float3 normal1 = normalize(cross(right, up)); // right 평면
+    float3 normal2 = normalize(cross(forward, up)); // forward 평면
+    
+    uint vtxBase = localId * 8;
+    uint idxBase = localId * 4;
 
     [unroll]
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < 8; ++i)
+    {
+        outVerts[vtxBase + i].position = mul(float4(verts[i], 1.0f), viewProj);
         outVerts[vtxBase + i].texIndex = grass.tex;
+        
+        if (i % 4 == 0)
+            outVerts[vtxBase + i].uv = float2(0, 0);
+        if (i % 4 == 1)
+            outVerts[vtxBase + i].uv = float2(1, 0);
+        if (i % 4 == 2)
+            outVerts[vtxBase + i].uv = float2(1, 1);
+        if (i % 4 == 3)
+            outVerts[vtxBase + i].uv = float2(0, 1);
+        
+        outVerts[vtxBase + i].normal = (i < 4) ? normal1 : normal2;
+    }
 
+    // Plane 1 (right 방향)
     outIndices[idxBase + 0] = uint3(vtxBase + 2, vtxBase + 1, vtxBase + 0);
     outIndices[idxBase + 1] = uint3(vtxBase + 0, vtxBase + 3, vtxBase + 2);
+
+    // Plane 2 (forward 방향)
+    outIndices[idxBase + 2] = uint3(vtxBase + 6, vtxBase + 5, vtxBase + 4);
+    outIndices[idxBase + 3] = uint3(vtxBase + 4, vtxBase + 7, vtxBase + 6);
 }
+
+
 
 struct Deffered_POUT
 {
@@ -185,7 +214,8 @@ Deffered_POUT mainPS(VSOutput input)
     
     Deffered_POUT output = (Deffered_POUT) 0;
     output.diffuse = color;
-    output.normal = float4(0.0f, 1.0f, 0.0f, 5.0f);
+    output.normal = float4(input.normal, 1.f);
+    output.position = input.position;
     
     return output; 
 }
