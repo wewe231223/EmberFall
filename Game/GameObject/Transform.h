@@ -44,6 +44,7 @@ public:
 	void Scaling(const SimpleMath::Vector3&);
 	void Scaling(float x = 1.f, float y = 1.f, float z = 1.f);
 
+	void SetRotation(const SimpleMath::Quaternion& rotation);
 	void Rotate(float pitch = 0.f, float yaw = 0.f, float roll = 0.f);
 
 	void Look(const Transform& target);

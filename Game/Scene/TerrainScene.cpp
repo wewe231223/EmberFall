@@ -75,9 +75,9 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					Crash("There is no more space for My Player!!");
 				}
 				
-				*nextLoc = Player(mMeshMap["Demon"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("DemonMaterial"), mDemonAnimationController);
+				//*nextLoc = Player(mMeshMap["Demon"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("DemonMaterial"), mDemonAnimationController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mMageAnimationController);
-				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mShieldManController);
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mShieldManController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
 
 
@@ -87,14 +87,14 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		
 				//mMyPlayer->AddEquipment(mEquipments["GreatSword"].Clone());
 
-				//mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
-				//mMyPlayer->AddEquipment(mEquipments["Shield"].Clone());
+				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
+				mMyPlayer->AddEquipment(mEquipments["Shield"].Clone());
 
 				//mMyPlayer->AddEquipment(mEquipments["Bow"].Clone());
 				//mMyPlayer->AddEquipment(mEquipments["Quiver"].Clone());
 
-				mMyPlayer->AddEquipment(mEquipments["DemonCloth"].Clone());
-				mMyPlayer->AddEquipment(mEquipments["DemonWeapon"].Clone());
+				//mMyPlayer->AddEquipment(mEquipments["DemonCloth"].Clone());
+				//mMyPlayer->AddEquipment(mEquipments["DemonWeapon"].Clone());
 
 				mMyPlayer->SetMyPlayer();
 				
@@ -106,9 +106,9 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 
 
-				const SimpleMath::Vector3 cameraOffset{ 0.f, 1.8f, 3.f };
+				const SimpleMath::Vector3 cameraOffset{ 0.f, 1.0f, 3.f };
 
-				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset * 3);
+				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
 				mCameraMode->Enter();
 			}
 			else {
@@ -659,6 +659,8 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 
 
 void TerrainScene::Update() {
+
+
 	for (auto& player : mPlayers) {
 		if (false == player.GetActiveState()) {
 			continue; 
@@ -687,6 +689,14 @@ void TerrainScene::Update() {
 
 	if (mCameraMode) {
 		mCameraMode->Update();
+
+		auto& pos = mCamera.GetTransform().GetPosition();
+		auto y = tCollider.GetHeight(pos.x, pos.z);
+		if (pos.y <= y + 0.5f) {
+			pos.y = y + 0.5f;
+		}
+		
+		mCameraMode->FocusUpdate(); 
 	}
 	mCamera.UpdateBuffer(); 
 	mShadowRenderer->Update();

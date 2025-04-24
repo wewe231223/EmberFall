@@ -46,6 +46,7 @@ public:
 	virtual void Enter() PURE;
 	virtual void Exit() PURE;
 	virtual void Update() PURE;
+	virtual void FocusUpdate() PURE;
 
 	virtual ECameraMode GetMode() const PURE; 
 protected:
@@ -61,6 +62,7 @@ public:
 	virtual void Enter() override;
 	virtual void Exit() override;
 	virtual void Update() override;
+	virtual void FocusUpdate() override;
 	
 	virtual ECameraMode GetMode() const override { return ECameraMode::Free; }
 };
@@ -73,6 +75,8 @@ public:
 	virtual void Enter() override;
 	virtual void Exit() override;
 	virtual void Update() override;
+	virtual void FocusUpdate() override;
+
 	virtual ECameraMode GetMode() const;
 private:
 	Transform& mTargetTransform;
