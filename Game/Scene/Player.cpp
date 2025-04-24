@@ -16,6 +16,18 @@ Player::Player(Mesh* mesh, GraphicsShaderBase* shader, MaterialIndex material, A
 
 }
 
+Player::Player(Mesh* mesh, GraphicsShaderBase* shader, MaterialIndex material, AnimatorGraph::AnimationGraphController animController) {
+	mMesh = mesh;
+	mShader = shader;
+	mMaterial = material;
+	mAnimController = animController;
+
+	mActiveState = true;
+
+	DirectX::BoundingBox box{ {0.f,0.8f,0.f}, {0.25f, 0.8f, 0.25f} };
+	mCollider = Collider{ box };
+}
+
 bool Player::GetActiveState() const {
 	return mActiveState;
 }
@@ -70,7 +82,13 @@ void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 
 	static BoneTransformBuffer boneTransformBuffer{};
 
-	mBoneMaskController.Update(Time.GetDeltaTime(), boneTransformBuffer);
+
+	if (mBoneMaskController.GetActiveState()) {
+		mBoneMaskController.Update(Time.GetDeltaTime(), boneTransformBuffer);
+	}
+	else if (mAnimController.GetActiveState()) {
+		mAnimController.Update(Time.GetDeltaTime(), boneTransformBuffer);
+	}
 
 	mTransform.Update(Time.GetDeltaTime<float>());
 	mTransform.UpdateWorldMatrix();
@@ -97,10 +115,6 @@ Transform& Player::GetTransform() {
 	return mTransform; 
 }
 
-AnimatorGraph::BoneMaskAnimationGraphController& Player::GetBoneMaskController() {
-	return mBoneMaskController;
-}
-
 void Player::SetMesh(Mesh* mesh) {
 	mMesh = mesh;
 }
@@ -113,8 +127,17 @@ void Player::SetMaterial(MaterialIndex material) {
 	mMaterial = material;
 }
 
-void Player::SetBoneMaskController(AnimatorGraph::BoneMaskAnimationGraphController boneMaskController) {
-	mBoneMaskController = boneMaskController;
+void Player::SetAnimation(Packets::AnimationState state) {
+	if (mBoneMaskController.GetActiveState()) {
+		mBoneMaskController.Transition(static_cast<size_t>(state));
+		return; 
+	} 
+
+
+	if (mAnimController.GetActiveState()) {
+		mAnimController.Transition(static_cast<size_t>(state)); 
+		return; 
+	}
 }
 
 void Player::SetMyPlayer() {

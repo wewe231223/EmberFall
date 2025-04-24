@@ -75,7 +75,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					Crash("There is no more space for My Player!!");
 				}
 				
-				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				*nextLoc = Player(mMeshMap["Demon"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("DemonMaterial"), mDemonAnimationController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mMageAnimationController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mShieldManController);
 				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
@@ -85,7 +85,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
 		
-				mMyPlayer->AddEquipment(mEquipments["GreatSword"].Clone());
+				//mMyPlayer->AddEquipment(mEquipments["GreatSword"].Clone());
 
 				//mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
 				//mMyPlayer->AddEquipment(mEquipments["Shield"].Clone());
@@ -93,17 +93,22 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				//mMyPlayer->AddEquipment(mEquipments["Bow"].Clone());
 				//mMyPlayer->AddEquipment(mEquipments["Quiver"].Clone());
 
+				mMyPlayer->AddEquipment(mEquipments["DemonCloth"].Clone());
+				mMyPlayer->AddEquipment(mEquipments["DemonWeapon"].Clone());
 
 				mMyPlayer->SetMyPlayer();
 				
 				mMyPlayer->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
 
-				mMyPlayer->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
+				mMyPlayer->SetAnimation(data->animation()); 
 
 					
 				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 
-				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
+
+				const SimpleMath::Vector3 cameraOffset{ 0.f, 1.8f, 3.f };
+
+				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset * 3);
 				mCameraMode->Enter();
 			}
 			else {
@@ -124,7 +129,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mPlayerIndexmap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
-				mPlayerIndexmap[data->objectId()]->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
+				mPlayerIndexmap[data->objectId()]->SetAnimation(data->animation());
 
 				mPlayerIndexmap[data->objectId()]->AddEquipment(mEquipments["Sword"].Clone());
 
@@ -283,8 +288,7 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 			//	DebugBreak();
 			//}
 
-
-			mPlayerIndexmap[data->objectId()]->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
+			mPlayerIndexmap[data->objectId()]->SetAnimation(data->animation());
 		}
 	}
 	else {
@@ -463,6 +467,26 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 		mEquipments["Shield"].mCollider = mColliderMap["Shield"];
 		mEquipments["Shield"].mEquipJointIndex = 11;
 		mEquipments["Shield"].SetActiveState(true);
+	}
+
+	{
+		mEquipments["DemonCloth"] = EquipmentObject{};
+		mEquipments["DemonCloth"].mMesh = mMeshMap["DemonCloth"].get();
+		mEquipments["DemonCloth"].mShader = mShaderMap["StandardShader"].get();
+		mEquipments["DemonCloth"].mMaterial = mMaterialManager->GetMaterial("DemonClothMaterial");
+		mEquipments["DemonCloth"].mCollider = mColliderMap["DemonCloth"];
+		mEquipments["DemonCloth"].mEquipJointIndex = 0;
+		mEquipments["DemonCloth"].SetActiveState(true);
+	}
+
+	{
+		mEquipments["DemonWeapon"] = EquipmentObject{};
+		mEquipments["DemonWeapon"].mMesh = mMeshMap["DemonWeapon"].get();
+		mEquipments["DemonWeapon"].mShader = mShaderMap["StandardShader"].get();
+		mEquipments["DemonWeapon"].mMaterial = mMaterialManager->GetMaterial("DemonWeaponMaterial");
+		mEquipments["DemonWeapon"].mCollider = mColliderMap["DemonWeapon"];
+		mEquipments["DemonWeapon"].mEquipJointIndex = 28;
+		mEquipments["DemonWeapon"].SetActiveState(true);
 	}
 
 	for (auto& environment : mEnvironmentObjects) {
@@ -821,6 +845,13 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 	mMeshMap["Shield"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Shield"] = Collider{ data.position };
 
+	data = Loader.Load("Resources/Assets/Demon/DemonWeapon.glb");
+	mMeshMap["DemonWeapon"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["DemonWeapon"] = Collider{ data.position };
+
+	data = Loader.Load("Resources/Assets/Demon/DemonCloth.glb");
+	mMeshMap["DemonCloth"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["DemonCloth"] = Collider{ data.position };
 
 	data = Loader.Load("Resources/Assets/CorruptedGem/CorruptedGem.glb");
 	mMeshMap["CorruptedGem"] = std::make_unique<Mesh>(device, commandList, data);
@@ -852,6 +883,7 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 
 	data = Loader.Load("Resources/Assets/Tree/pine2/pine3.glb", 1);
 	mMeshMap["Pine3_Leaves"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Pine3_Leaves"] = Collider{ data.position };
 
 	data = Loader.Load("Resources/Assets/Tree/pine2/pine4.glb");
 	mMeshMap["Pine4"] = std::make_unique<Mesh>(device, commandList, data);
@@ -968,6 +1000,12 @@ void TerrainScene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("T_BigDemonWarrior_Body_Albedo_Skin_3");
 	mMaterialManager->CreateMaterial("DemonMaterial", mat);
 
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("T_BigDemonWarrior_Axe_Albedo_Skin_1");
+	mMaterialManager->CreateMaterial("DemonWeaponMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("T_BigDemonWarrior_Clothes_Albedo_Skin_1");
+	mMaterialManager->CreateMaterial("DemonClothMaterial", mat);
+
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("ferns");
 	mMaterialManager->CreateMaterial("FernMaterial", mat);
 
@@ -1079,7 +1117,7 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 	leaves.mMaterial = mMaterialManager->GetMaterial("Pine3LeavesMaterial");
 	leaves.SetActiveState(true);
 	leaves.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
-	// leaves.mCollider = mColliderMap["Pine3_Stem"];
+	leaves.mCollider = mColliderMap["Pine3_Leaves"];
 
 	GameObject pinetree{};
 	pinetree.mShader = mShaderMap["TreeShader"].get();

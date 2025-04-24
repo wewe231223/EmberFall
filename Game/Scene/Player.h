@@ -13,6 +13,7 @@ class Player {
 public:
 	Player() = default;
 	Player(Mesh* mesh, GraphicsShaderBase* shader, MaterialIndex material, AnimatorGraph::BoneMaskAnimationGraphController boneMaskController);
+	Player(Mesh* mesh, GraphicsShaderBase* shader, MaterialIndex material, AnimatorGraph::AnimationGraphController animController);
 	~Player() = default;
 
 	Player(const Player&) = default;
@@ -29,13 +30,12 @@ public:
 	void Update(std::shared_ptr<MeshRenderManager>&);
 
 	Transform& GetTransform();
-	AnimatorGraph::BoneMaskAnimationGraphController& GetBoneMaskController();
 
 	void SetMesh(Mesh* mesh);
 	void SetShader(GraphicsShaderBase* shader);
 	void SetMaterial(MaterialIndex material);
 
-	void SetBoneMaskController(AnimatorGraph::BoneMaskAnimationGraphController boneMaskController);
+	void SetAnimation(Packets::AnimationState state);
 
 	void SetMyPlayer();
 	
@@ -46,6 +46,7 @@ private:
 	std::vector<EquipmentObject> mEquipments{}; 
 
 	AnimatorGraph::BoneMaskAnimationGraphController mBoneMaskController{};
+	AnimatorGraph::AnimationGraphController mAnimController{}; 
 
 	ModelContext mModelContext{};
 	Transform mTransform{}; 

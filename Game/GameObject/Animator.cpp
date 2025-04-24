@@ -606,8 +606,8 @@ namespace AnimatorGraph {
         mActiveState = true;
     }
 
-    AnimationGraphController::operator bool() const {
-        return mActiveState; 
+    bool AnimationGraphController::GetActiveState() const {
+        return mActiveState;
     }
 
     void AnimationGraphController::Update(double deltaTime, BoneTransformBuffer& boneTransforms) {
@@ -1138,8 +1138,8 @@ namespace AnimatorGraph {
         mActiveState = true; 
     }
 
-    BoneMaskAnimationGraphController::operator bool() const {
-        return mActiveState; 
+    bool BoneMaskAnimationGraphController::GetActiveState() const {
+        return mActiveState;
     }
 
     void BoneMaskAnimationGraphController::Update(double deltaTime, BoneTransformBuffer& boneTransforms) {
