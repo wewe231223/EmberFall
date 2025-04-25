@@ -106,7 +106,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 
 
-				const SimpleMath::Vector3 cameraOffset{ 0.f, 1.0f, 3.f };
+				const SimpleMath::Vector3 cameraOffset{ 0.f, 1.75f, 3.f };
 
 				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
 				mCameraMode->Enter();

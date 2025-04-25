@@ -119,8 +119,8 @@ void TPPCameraMode::Update() {
 	static float pitch = 0.f;
 
 
-	pitch += Input.GetDeltaMouseY() * Time.GetSmoothDeltaTime<float>() * 0.3f;
-	pitch = std::clamp(pitch, DirectX::XMConvertToRadians(-60.f), DirectX::XMConvertToRadians(90.f));
+	pitch -= Input.GetDeltaMouseY() * Time.GetSmoothDeltaTime<float>() * 0.3f;
+	pitch = std::clamp(pitch, DirectX::XMConvertToRadians(-35.f), DirectX::XMConvertToRadians(65.f));
 
 	auto forward = mTargetTransform.GetForward();
 	auto right = mTargetTransform.GetRight();
