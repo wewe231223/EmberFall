@@ -56,9 +56,9 @@ private:
     void CheckAndMove(const float deltaTime);
     void CheckAndJump(const float deltaTime);
 
-
     void CancelInteraction();
-    void DestroyGem(const float deltaTime, const std::shared_ptr<GameObject>& gem);
+    void DestroyingGem(const float deltaTime, const std::shared_ptr<GameObject>& gem);
+    void SuccessInteraction();
     void AcquireItem(const float deltaTime, const std::shared_ptr<GameObject>& item);
     void UseItem();
 

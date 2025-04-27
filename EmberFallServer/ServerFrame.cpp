@@ -50,11 +50,10 @@ void ServerFrame::Run() {
             corruptedGem->GetTransform()->SetPosition(SimpleMath::Vector3::Zero);
         }
 
-
         decltype(auto) monster = gObjectManager->SpawnObject(Packets::EntityType_MONSTER);
         std::this_thread::sleep_for(1ms);
         monster->GetTransform()->SetY(0.0f);
-        monster->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -100.0f, 0.0f, -100.0f }, SimpleMath::Vector3{ 100.0f, 0.0f, 100.0f }));
+        monster->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -200.0f, 0.0f, -200.0f }, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
     }
 
     while (not mDone);

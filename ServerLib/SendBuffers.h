@@ -41,6 +41,7 @@ public:
     void Init(size_t bufferSize);
     OverlappedSend* GetOverlapped(const PacketHeaderSC* const header, const uint8_t* const payload, const PacketSizeT payloadSize);
     OverlappedSend* GetOverlapped(const PacketHeaderCS* const header, const uint8_t* const payload, const PacketSizeT payloadSize);
+    OverlappedSend* GetOverlapped(OverlappedSend* const srcOverlapped);
     OverlappedSend* GetOverlapped(void* data, size_t dataSize);
     bool ReleaseOverlapped(OverlappedSend* const overlapped);
 
@@ -56,6 +57,7 @@ public:
 public:
     OverlappedSend* GetOverlapped(const PacketHeaderSC* const header, const uint8_t* const payload, const PacketSizeT payloadSize);
     OverlappedSend* GetOverlapped(const PacketHeaderCS* const header, const uint8_t* const payload, const PacketSizeT payloadSize);
+    OverlappedSend* GetOverlapped(OverlappedSend* const srcOverlapped);
     OverlappedSend* GetOverlapped(void* data, size_t dataSize);
     bool ReleaseOverlapped(OverlappedSend* const overlapped);
 

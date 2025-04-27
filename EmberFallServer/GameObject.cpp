@@ -158,6 +158,14 @@ void GameObject::Update() {
 
     mBoundingObject->Update(mTransform->GetWorld());
 
+    auto movePacket = FbsPacketFactory::ObjectMoveSC(
+        GetId(),
+        GetTransform()->GetEulerRotation().y, 
+        GetPosition(), mTransform->Forward(), 
+        mPhysics->GetSpeed()
+    );
+    StorePacket(movePacket);
+
     decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
     gCollisionManager->UpdateCollision(sharedThis);
 }
@@ -191,6 +199,7 @@ void GameObject::OnCollision(const std::shared_ptr<GameObject>& opponent, const 
     }
 
     mEntityScript->OnCollision(opponent, impulse);
+    mPhysics->ResizeVelocity(0.0f);
     if (ObjectTag::TRIGGER == opponent->GetTag()) {
         opponent->OnCollision(std::static_pointer_cast<GameObject>(shared_from_this()), impulse);
     }

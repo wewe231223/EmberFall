@@ -207,12 +207,22 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
         break;
     }
 
+    case GameEventType::DESTROY_GEM_COMPLETE:
+    {
+        SuccessInteraction();
+        break;
+    }
+
     default:
         break;
     }
 }
 
 std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
+    if (true == mInteraction) {
+        return gObjectManager->GetObjectFromId(mInteractionObj);
+    }
+
     decltype(auto) objects = mInteractionTrigger->GetScript<Trigger>()->GetObjects();
     if (objects.empty()) {
         return nullptr;
@@ -223,7 +233,7 @@ std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
     auto ownerId = owner->GetId();
     decltype(auto) filterObjects = std::views::filter(objects, [this](NetworkObjectIdType id) {
         decltype(auto) obj = gObjectManager->GetObjectFromId(id);
-        if (/*false == obj->mSpec.interactable or*/ false == obj->mSpec.active) {
+        if (false == obj->mSpec.interactable or false == obj->mSpec.active) {
             return false;
         }
 
@@ -350,7 +360,7 @@ void PlayerScript::DoInteraction(const std::shared_ptr<GameObject>& target) {
     mInteractionObj = target->GetId();
     switch (target->GetTag()) {
     case ObjectTag::CORRUPTED_GEM:
-        DestroyGem(deltaTime, target);
+        DestroyingGem(deltaTime, target);
         break;
 
     case ObjectTag::ITEM:
@@ -369,30 +379,52 @@ void PlayerScript::CancelInteraction() {
         return;
     }
 
-    mInteraction = false;
-
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Cancel");
     auto ownerId = owner->GetId();
+
+    auto obj = gObjectManager->GetObjectFromId(mInteractionObj);
+    if (nullptr == obj) {
+        mInteractionObj = INVALID_OBJ_ID;
+        mInteraction = false;
+        owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE, true);
+        return;
+    }
+
+    auto eventCancel = GameEventFactory::GetEvent<DestroyingGemCancel>(ownerId, mInteractionObj);
+    obj->DispatchGameEvent(eventCancel);
 
     owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE, true);
     mInteractionObj = INVALID_OBJ_ID;
+    mInteraction = false;
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Cancel");
 }
 
-void PlayerScript::DestroyGem(const float deltaTime, const std::shared_ptr<GameObject>& gem) {
-    static float holdStart = 0.0f; // test
-    holdStart += deltaTime;
-
+void PlayerScript::DestroyingGem(const float deltaTime, const std::shared_ptr<GameObject>& gem) {
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+    
     auto gemId = gem->GetId();
     if (mInteractionObj != gemId) {
         mInteractionObj = gemId;
-        holdStart = 0.0f;
     }
 
-    gEventManager->PushEvent<GemDestroyStart>(
-        GetOwner()->GetId(),
-        gemId,
-        holdStart
-    );
+    auto event = GameEventFactory::GetEvent<DestroyingGemEvent>(owner->GetId(), gemId, deltaTime);
+    gem->DispatchGameEvent(event);
+}
+
+void PlayerScript::SuccessInteraction() {
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE, true);
+    mInteractionObj = INVALID_OBJ_ID;
+    mInteraction = false;
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Success");
 }
 
 void PlayerScript::AcquireItem(const float deltaTime, const std::shared_ptr<GameObject>& item) {

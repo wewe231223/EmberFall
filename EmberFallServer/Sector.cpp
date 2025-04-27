@@ -349,31 +349,47 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
 
     const float range = 100.0f;
     const std::vector<NetworkObjectIdType> nearbyPlayers = std::move(GetNearbyPlayers(currPos, range));
-    for (const auto playerId : nearbyPlayers) {
-        auto playerObj = gObjectManager->GetObjectFromId(playerId);
-        auto viewRange = playerObj->GetScript<PlayerScript>()->GetViewList().mViewRange.Count();
-        if (false == gObjectManager->InViewRange(playerId, id, viewRange)) {
-            continue;
+    OverlappedSend* sendPacket{ nullptr };
+    if (nearbyPlayers.empty()) {
+        while (true == object->GetSendBuf().try_pop(sendPacket)); // clear
+        return;
+    }
+
+    while (true == object->GetSendBuf().try_pop(sendPacket)) {
+        if (nullptr == sendPacket) {
+            break;
         }
 
-        auto session = gServerCore->GetSessionManager()->GetSession(playerId);
-        if (nullptr == session or SESSION_INGAME != std::static_pointer_cast<GameSession>(session)->GetSessionState()) {
-            continue;
+        for (const auto playerId : nearbyPlayers) {
+            auto playerObj = gObjectManager->GetObjectFromId(playerId);
+            auto viewRange = playerObj->GetScript<PlayerScript>()->GetViewList().mViewRange.Count();
+            if (false == gObjectManager->InViewRange(playerId, id, viewRange)) {
+                continue;
+            }
+
+            auto session = gServerCore->GetSessionManager()->GetSession(static_cast<SessionIdType>(playerId));
+            if (nullptr == session or SESSION_INGAME != std::static_pointer_cast<GameSession>(session)->GetSessionState()) {
+                continue;
+            }
+
+            auto packet = FbsPacketFactory::ClonePacket(sendPacket);
+            session->RegisterSend(packet);
+            //if (false == object->mSpec.active) {
+            //    auto packetRemove = FbsPacketFactory::ObjectRemoveSC(id);
+            //    gServerCore->Send(static_cast<SessionIdType>(playerId), packetRemove);
+            //    continue;
+            //}
+
+            //if (object->mAnimationStateMachine.mAnimationChanged) {
+            //    auto packetAnim = FbsPacketFactory::ObjectAnimationChangedSC(id, object->mAnimationStateMachine.GetCurrState());
+            //    gServerCore->Send(static_cast<SessionIdType>(playerId), packetAnim);
+            //}
+
+            //auto packetMove = FbsPacketFactory::ObjectMoveSC(id, yaw, currPos, dir, speed);
+            //gServerCore->Send(static_cast<SessionIdType>(playerId), packetMove);
         }
 
-        if (false == object->mSpec.active) {
-            auto packetRemove = FbsPacketFactory::ObjectRemoveSC(id);
-            gServerCore->Send(static_cast<SessionIdType>(playerId), packetRemove);
-            continue;
-        }
-
-        if (object->mAnimationStateMachine.mAnimationChanged) {
-            auto packetAnim = FbsPacketFactory::ObjectAnimationChangedSC(id, object->mAnimationStateMachine.GetCurrState());
-            gServerCore->Send(static_cast<SessionIdType>(playerId), packetAnim);
-        }
-
-        auto packetMove = FbsPacketFactory::ObjectMoveSC(id, yaw, currPos, dir, speed);
-        gServerCore->Send(static_cast<SessionIdType>(playerId), packetMove);
+        FbsPacketFactory::ReleasePacketBuf(sendPacket);
     }
 
     object->mAnimationStateMachine.mAnimationChanged = false;

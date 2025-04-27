@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "FbsPacketFactory.h"
+#include "Session.h"
 
 const PacketHeaderSC* FbsPacketFactory::GetHeaderPtrSC(const uint8_t* const data) {
     return reinterpret_cast<const PacketHeaderSC*>(data);
@@ -7,6 +8,11 @@ const PacketHeaderSC* FbsPacketFactory::GetHeaderPtrSC(const uint8_t* const data
 
 const PacketHeaderCS* FbsPacketFactory::GetHeaderPtrCS(const uint8_t* const data) {
     return reinterpret_cast<const PacketHeaderCS*>(data);
+}
+
+OverlappedSend* FbsPacketFactory::ClonePacket(OverlappedSend* const overlapped) {
+    auto copyOverlapped = mSendPacketBuffers->GetOverlapped(overlapped);
+    return copyOverlapped;
 }
 
 void FbsPacketFactory::ReleasePacketBuf(OverlappedSend* const overlapped) {

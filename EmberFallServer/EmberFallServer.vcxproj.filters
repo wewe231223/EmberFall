@@ -159,9 +159,6 @@
     <ClCompile Include="ViewList.cpp">
       <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
     </ClCompile>
-    <ClCompile Include="GameEventManager.cpp">
-      <Filter>Regacy</Filter>
-    </ClCompile>
     <ClCompile Include="GraphBase.cpp">
       <Filter>Regacy</Filter>
     </ClCompile>
@@ -245,6 +242,9 @@
     </ClCompile>
     <ClCompile Include="Item.cpp">
       <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEventManager.cpp">
+      <Filter>MultiThreadLoopTest\Events</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

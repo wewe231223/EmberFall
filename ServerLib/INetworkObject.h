@@ -10,6 +10,8 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+struct OverlappedSend;
+
 class INetworkObject abstract : public std::enable_shared_from_this<INetworkObject> {
 public:
     INetworkObject();
@@ -20,10 +22,14 @@ public:
     NetworkObjectIdType GetId() const;
     virtual bool IsClosed() const { return false;  }
 
+    void StorePacket(OverlappedSend* sendBuf);
+    Concurrency::concurrent_queue<OverlappedSend*>& GetSendBuf();
+
     virtual void Close() { }
     virtual HANDLE GetHandle() const { return INVALID_HANDLE_VALUE; }
     virtual void ProcessOverlapped(struct OverlappedEx* overlapped, int32_t numOfBytes) abstract;
 
 private:
     NetworkObjectIdType mId{ INVALID_SESSION_ID };
+    Concurrency::concurrent_queue<OverlappedSend*> mSendBuf{ };
 };

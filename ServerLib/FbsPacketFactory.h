@@ -26,8 +26,8 @@ public:
         return flatbuffers::GetRoot<PacketType>(data + sizeof(PacketHeaderCS));
     }
 
-
 public:
+    static OverlappedSend* ClonePacket(OverlappedSend* const overlapped);
     static void ReleasePacketBuf(OverlappedSend* const overlapped);
 
 public:
