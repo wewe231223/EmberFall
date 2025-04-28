@@ -95,6 +95,7 @@ void PlayerScript::Init() {
     }
 
     owner->mAnimationStateMachine.Init(ANIM_KEY_LONGSWORD_MAN);
+    owner->mSpec.hp = 10.0f;
 
     const auto pos = owner->GetPosition();
     const auto look = owner->GetTransform()->Forward();
@@ -147,21 +148,21 @@ void PlayerScript::LateUpdate(const float deltaTime) {
         return;
     }
 
-    //if (owner->mSpec.hp > MathUtil::EPSILON) {
-    //    return;
-    //}
+    if (owner->mSpec.hp > MathUtil::EPSILON) {
+        return;
+    }
 
-    //auto isDead = owner->IsDead();
-    //if (not isDead) {
-    //    owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_DEAD);
-    //}
+    auto isDead = owner->IsDead();
+    if (not isDead) {
+        owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_DEAD);
+    }
 
-    //if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
-    //    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster Remove");
-    //    gServerFrame->AddTimerEvent(owner->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
-    //    owner->mSpec.active = false;
-    //    return;
-    //}
+    if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster Remove");
+        gServerFrame->AddTimerEvent(owner->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
+        owner->mSpec.active = false;
+        return;
+    }
 }
 
 void PlayerScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 
@@ -374,7 +375,7 @@ void PlayerScript::DoInteraction(const std::shared_ptr<GameObject>& target) {
 
 void PlayerScript::CancelInteraction() {
     auto owner = GetOwner();
-    if (nullptr == owner or INVALID_OBJ_ID == mInteractionObj or false == mInteraction) {
+    if (false == mInteraction or INVALID_OBJ_ID == mInteractionObj or nullptr == owner) {
         mInteraction = false;
         return;
     }

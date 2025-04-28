@@ -361,14 +361,23 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
         }
 
         for (const auto playerId : nearbyPlayers) {
-            auto playerObj = gObjectManager->GetObjectFromId(playerId);
-            auto viewRange = playerObj->GetScript<PlayerScript>()->GetViewList().mViewRange.Count();
-            if (false == gObjectManager->InViewRange(playerId, id, viewRange)) {
+            auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(static_cast<SessionIdType>(playerId)));
+            if (nullptr == session or SESSION_INGAME != session->GetSessionState()) {
                 continue;
             }
 
-            auto session = gServerCore->GetSessionManager()->GetSession(static_cast<SessionIdType>(playerId));
-            if (nullptr == session or SESSION_INGAME != std::static_pointer_cast<GameSession>(session)->GetSessionState()) {
+            auto playerObj = session->GetUserObject();
+            if (nullptr == playerObj) {
+                continue;
+            }
+
+            auto playerScript = playerObj->GetScript<PlayerScript>();
+            if (nullptr == playerScript) {
+                continue;
+            }
+
+            auto viewRange = playerScript->GetViewList().mViewRange.Count();
+            if (false == gObjectManager->InViewRange(playerId, id, viewRange)) {
                 continue;
             }
 
