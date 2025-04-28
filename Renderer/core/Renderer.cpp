@@ -24,7 +24,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitRenderTargets();
 	Renderer::InitDepthStencilBuffer();
 	Renderer::InitStringRenderer();
-	
+	Renderer::InitBlurComputeProcesser();
 
 	Renderer::ResetCommandList();
 
@@ -212,6 +212,14 @@ void Renderer::Render() {
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
 	mDefferedRenderer.Render(mCommandList, mShadowRenderer->GetShadowCameraBuffer(0), mLightingManager->GetLightingBuffer());
+
+	// Blurring Pass
+	/*currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
+	mBlurComputeProcessor.DispatchHorzBlur(mDevice, mCommandList, currentBackBuffer.GetResource());
+
+	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+	mBlurComputeProcessor.DispatchVertBlur(mDevice, mCommandList, currentBackBuffer.GetResource());
+	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);*/
 
 	mTextureManager->Bind(mCommandList);
 
@@ -552,6 +560,10 @@ void Renderer::InitDefferedRenderer() {
 	mDefferedRenderer.RegisterGBufferTexture(mDevice, mGBuffers);
 	mDefferedRenderer.RegisterShadowMap(mDevice, mShadowRenderer->GetShadowMapArray());
 
+}
+
+void Renderer::InitBlurComputeProcesser() {
+	mBlurComputeProcessor = BlurComputeProcessor(mDevice);
 }
 
 void Renderer::TransitionGBuffers(D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState) {
