@@ -4,12 +4,12 @@
 const float healthPaddingX = 10.f; // 가로 방향 패딩
 const float healthPaddingY = 10.f; // 세로 방향 패딩
 
-void HealthBar::Init(std::shared_ptr<Canvas> canvas, UINT frame, UINT health) {
-	mBaseFrame = canvas->CreateCanvasObject();
+void HealthBar::Init(Canvas& canvas, UINT frame, UINT health) {
+	mBaseFrame = canvas.CreateCanvasObject();
 	mBaseFrame.ChangeImage(frame);
 	mBaseFrame.GetRect() = { 191.f, 50.f, 630.f, 50.f };
 
-	mHealthBar = canvas->CreateCanvasObject();
+	mHealthBar = canvas.CreateCanvasObject();
 	mHealthBar.ChangeImage(health);
 	mHealthBar.GetRect() = { 
 		mBaseFrame.GetRect().LTx + healthPaddingX, 

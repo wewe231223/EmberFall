@@ -40,7 +40,7 @@ void Player::AddEquipment(EquipmentObject equipment) {
 	mEquipments.emplace_back(equipment);
 }
 
-void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
+void Player::Update(MeshRenderManager& manager) {
 
 	if (mMyPlayer) {
 		static const SimpleMath::Matrix localRotations[] = {
@@ -96,8 +96,8 @@ void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 
 	mCollider.UpdateBox(mTransform.GetWorldMatrix());
 
-	manager->AppendBonedMeshContext(mShader, mMesh, ModelContext{mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
-	manager->AppendShadowBonedMeshContext(mShader, mMesh, ModelContext{mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
+	manager.AppendBonedMeshContext(mShader, mMesh, ModelContext{mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
+	manager.AppendShadowBonedMeshContext(mShader, mMesh, ModelContext{mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
 
 	for (auto& equipment : mEquipments) {
 		if (false == equipment.GetActiveState()) {
@@ -105,8 +105,8 @@ void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 		}
 		equipment.UpdateShaderVariables(boneTransformBuffer, mTransform.GetWorldMatrix());
 		auto [mesh, shader, ModelContext] = equipment.GetRenderData();
-		manager->AppendPlaneMeshContext(shader, mesh, ModelContext);
-		manager->AppendShadowPlaneMeshContext(shader, mesh, ModelContext, 0);
+		manager.AppendPlaneMeshContext(shader, mesh, ModelContext);
+		manager.AppendShadowPlaneMeshContext(shader, mesh, ModelContext, 0);
 	}
 
 }

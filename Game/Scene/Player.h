@@ -27,7 +27,7 @@ public:
 
 	void AddEquipment(EquipmentObject equipment);
 
-	void Update(std::shared_ptr<MeshRenderManager>&);
+	void Update(MeshRenderManager& manager);
 
 	Transform& GetTransform();
 

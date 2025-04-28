@@ -1,7 +1,5 @@
 #pragma once 
-#include "../Renderer/Manager/TextureManager.h"
-#include "../Renderer/Manager/MeshRenderManager.h"
-#include "../Renderer/Render/Canvas.h"
+#include "../Renderer/Manager/RenderManager.h"
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Game/System/Input.h"
 #include "../Game/System/Timer.h"
@@ -11,7 +9,7 @@
 
 class LobbyScene : public IScene {
 public:
-	LobbyScene(std::shared_ptr<TextureManager> textureManager, std::shared_ptr<MaterialManager> materialManager,std::shared_ptr<Canvas> canvas);
+	LobbyScene(std::shared_ptr<RenderManager> renderMgr);
 	virtual ~LobbyScene();
 public:
 	virtual void Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) override;

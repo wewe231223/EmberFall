@@ -1,13 +1,8 @@
 #pragma once 
 #include <array>
-#include "../Renderer/Manager/TextureManager.h"
-#include "../Renderer/Manager/MeshRenderManager.h"
-#include "../Renderer/Manager/ParticleManager.h"
-#include "../Renderer/Render/Canvas.h"
-#include "../Renderer/Render/GrassRenderer.h"
-#include "../Renderer/Manager/LightingManager.h"
+#include "../Renderer/Manager/RenderManager.h"
+
 #include "../Renderer/Core/StringRenderer.h"
-#include "../Renderer/core/ShadowRenderer.h"
 #include "../Game/System/Input.h"
 #include "../Game/System/Timer.h"
 #include "../Game/GameObject/GameObject.h"
@@ -24,7 +19,7 @@
 
 class TerrainScene : public IScene {
 public:
-	TerrainScene(std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation, std::shared_ptr<ShadowRenderer> shadowRenderer); 
+	TerrainScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCamLocation); 
 	virtual ~TerrainScene();
 
 public:
@@ -72,13 +67,7 @@ private:
 	void ProcessFireProjectile(const uint8_t* buffer);
 	void ProcessProjectileMove(const uint8_t* buffer);
 private:
-	std::shared_ptr<TextureManager> mTextureManager{ nullptr };
-	std::shared_ptr<MeshRenderManager> mMeshRenderManager{ nullptr };
-	std::shared_ptr<MaterialManager> mMaterialManager{ nullptr };
-	std::shared_ptr<ParticleManager> mParticleManager{ nullptr };
-	std::shared_ptr<Canvas> mCanvas{ nullptr };
-	std::shared_ptr<LightingManager> mLightingManager{ nullptr };
-	std::shared_ptr<ShadowRenderer> mShadowRenderer{ nullptr };
+	std::shared_ptr<RenderManager> mRenderManager{};
 
 	std::unordered_map<std::string, Collider> mColliderMap{};
 	std::unordered_map<std::string, std::unique_ptr<Mesh>> mMeshMap{};
@@ -127,11 +116,7 @@ private:
 	Particle test1{};
 	Particle test2{}; 
 
-	//TextBlock* mNetworkInfoText{ TextBlockManager::GetInstance().CreateTextBlock(L"",D2D1_RECT_F{100.f,0.f,800.f,100.f},StringColor::Black, "NotoSansKR") };
-	
 	IntervalTimer mIntervalTimer{};
-
-	std::unordered_map<std::string, std::vector<double>> mAnimationTimeMap{};
 
 	Inventory mInventoryUI{};
 	HealthBar mHealthBarUI{};

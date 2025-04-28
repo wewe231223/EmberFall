@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Inventory.h"
 
-void Inventory::Init(std::shared_ptr<Canvas> canvas, UINT base, UINT frame, UINT health, UINT cross, UINT holyWater) {
+void Inventory::Init(Canvas& canvas, UINT base, UINT frame, UINT health, UINT cross, UINT holyWater) {
 	float screenWidth = Config::WINDOW_WIDTH<float>;
 	float screenHeight = Config::WINDOW_HEIGHT<float>;
 
@@ -19,7 +19,7 @@ void Inventory::Init(std::shared_ptr<Canvas> canvas, UINT base, UINT frame, UINT
 	float frameX = (screenWidth - frameWidth) / 2.f;
 	float frameY = screenHeight - frameHeight;
 
-	mBaseFrame = canvas->CreateCanvasObject();
+	mBaseFrame = canvas.CreateCanvasObject();
 	mBaseFrame.ChangeImage(base);
 	mBaseFrame.GetRect() = { frameX, frameY, frameWidth, frameHeight };
 
@@ -30,8 +30,8 @@ void Inventory::Init(std::shared_ptr<Canvas> canvas, UINT base, UINT frame, UINT
 
 	for (int i = 0; i < ITEM_COUNT; ++i) {
 		auto& pair = mItem[i];
-		pair.first = canvas->CreateCanvasObject();
-		pair.second = canvas->CreateCanvasObject();
+		pair.first = canvas.CreateCanvasObject();
+		pair.second = canvas.CreateCanvasObject();
 
 		pair.first.ChangeImage(frame);
 		pair.second.SetActive(false);

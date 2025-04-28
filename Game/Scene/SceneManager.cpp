@@ -1,10 +1,10 @@
 #include "pch.h"
 #include "SceneManager.h"
 
-SceneManager::SceneManager(std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation, std::shared_ptr<ShadowRenderer> shadowRenderer, ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList, std::function<void()> initLoadFunc) {
+SceneManager::SceneManager(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCameraBufferLocation, ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList, std::function<void()> initLoadFunc) {
 
-	mScenes[static_cast<size_t>(SceneType::TERRAIN)] = std::make_unique<TerrainScene>(managers, mainCameraBufferLocation, shadowRenderer);
-	mScenes[static_cast<size_t>(SceneType::LOADING)] = std::make_unique<LoadingScene>(managers);
+	mScenes[static_cast<size_t>(SceneType::TERRAIN)] = std::make_unique<TerrainScene>(renderMgr, mainCameraBufferLocation);
+	mScenes[static_cast<size_t>(SceneType::LOADING)] = std::make_unique<LoadingScene>(renderMgr);
 
 
 	mSceneFeatureType[static_cast<size_t>(SceneType::LOADING)] = std::make_tuple(false, false);
@@ -22,7 +22,6 @@ SceneManager::SceneManager(std::tuple<std::shared_ptr<MeshRenderManager>, std::s
 	mLoadingThread = std::thread([this, device, loadCommandList, initLoadFunc]() {
 		initLoadFunc();
 		mScenes[static_cast<size_t>(SceneType::TERRAIN)]->Init(device, loadCommandList);
-		//std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 		mLoaded.store(true);
 		});
 

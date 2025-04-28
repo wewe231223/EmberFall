@@ -7,7 +7,7 @@ public:
 	~SpriteImage() = default;
 
 public:
-	void Init(std::shared_ptr<Canvas> canvas, UINT img, UINT frameinRow, UINT frameinCol, float duration);
+	void Init(Canvas& canvas, UINT img, UINT frameinRow, UINT frameinCol, float duration);
 	CanvasRect& GetRect();
 
 	void Update(); 

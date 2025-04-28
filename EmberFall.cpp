@@ -80,9 +80,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     Input.Initialize(hWnd);
 
     SceneManager sceneManager{
-        renderer.GetManagers(),
+        renderer.GetRenderManager(),
         renderer.GetMainCameraBuffer(),
-        renderer.GetShadowRenderer(), 
         renderer.GetDevice(),
         renderer.GetLoadCommandList(),
         [&renderer]() { renderer.LoadTextures();  }

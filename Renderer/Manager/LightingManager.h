@@ -1,9 +1,7 @@
 #pragma once
 #include "../Core/ShadowRenderer.h"
 
-struct Light
-{
-    
+struct Light {
     SimpleMath::Vector4 Diffuse{ 1.0f, 1.0f, 1.0f, 1.0f };          // Diffuse 색상
     SimpleMath::Vector4 Ambient{ 0.3f, 0.3f, 0.3f, 1.0f };          // Ambient 색상
     SimpleMath::Vector4 Specular{ 1.0f, 1.0f, 1.0f, 1.0f };         // Specular 색상
@@ -15,11 +13,12 @@ struct Light
 
 class LightingManager {
 public:
+	LightingManager() = default;
 	LightingManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
 	~LightingManager() = default;
 
-	LightingManager(const LightingManager& other) = delete;
-	LightingManager& operator=(const LightingManager& other) = delete;
+	LightingManager(const LightingManager& other) = default;
+	LightingManager& operator=(const LightingManager& other) = default;
 
 	LightingManager(LightingManager&& other) = default;
 	LightingManager& operator=(LightingManager&& other) = default;
@@ -34,6 +33,6 @@ private:
 private:
     int mLightCount{};
 
-	std::vector<Light> mLightings; // TODO : 자료구조 바꾸기
+    std::vector<Light> mLightings{}; // TODO : 자료구조 바꾸기
 	DefaultBuffer mLightingBuffer{};
 };
