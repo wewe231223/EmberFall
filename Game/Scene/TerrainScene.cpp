@@ -923,6 +923,7 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 
 void TerrainScene::BuildMaterial() {
 	MaterialConstants mat{};
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Rolling Hills");
 	mat.mDiffuseTexture[1] = mTextureManager->GetTexture("dirt_2");
@@ -950,7 +951,9 @@ void TerrainScene::BuildMaterial() {
 	mMaterialManager->CreateMaterial("SwordMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("sword_base");
+	mat.mEmissiveColor = SimpleMath::Color(1.0f, 0.0f, 0.0f, 1.0f);
 	mMaterialManager->CreateMaterial("GreatSwordMaterial", mat);
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Bow_DIFF");
 	mMaterialManager->CreateMaterial("BowMaterial", mat);

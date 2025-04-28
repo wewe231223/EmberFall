@@ -133,7 +133,7 @@ private:
 	2. normal
 	3. position 
 	*/
-	std::array<Texture, 3> mGBuffers{};
+	std::array<Texture, Config::GBUFFER_COUNT<UINT>> mGBuffers{};
 	ComPtr<ID3D12DescriptorHeap> mGBufferHeap{ nullptr };
 
 	DefferedRenderer mDefferedRenderer{};

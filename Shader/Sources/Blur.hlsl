@@ -1,5 +1,6 @@
 
 Texture2D gInput : register(t0);
+Texture2D EmissiveGBuffer : register(t1);
 
 RWTexture2D<float4> gRWOutput : register(u0);
 
