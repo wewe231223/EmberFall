@@ -77,7 +77,6 @@ private:
 	Camera mCamera{};
 	std::unique_ptr<CameraMode> mCameraMode{ nullptr };
 
-
 	std::unordered_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
 	std::vector<GameObject> mGameObjects{};
 
@@ -85,7 +84,6 @@ private:
 
 	int mNetworkSign{};
 	int mInputSign{}; 
-	std::vector<DirectX::Keyboard::Keys> mSendKeyList{};
 
 	std::unordered_map<NetworkObjectIdType, Player*> mPlayerIndexmap{};
 	std::array<Player, 5> mPlayers{ Player{}, };
@@ -104,7 +102,6 @@ private:
 	AnimatorGraph::AnimationGraphController mDemonAnimationController{};
 
 	GameObject mSkyBox{};
-	GameObject mSkyFog{};
 
 	TerrainLoader tLoader{}; 
 	TerrainCollider tCollider{};

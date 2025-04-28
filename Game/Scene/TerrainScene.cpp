@@ -369,11 +369,6 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
 	mSkyBox.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("SkyBoxMaterial");
 
-	mSkyFog.mShader = mShaderMap["SkyFogShader"].get();
-	mSkyFog.mMesh = mMeshMap["SkyFog"].get();
-	mSkyFog.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("SkyFogMaterial");
-
-
 	TerrainScene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
 
 	{
