@@ -5,12 +5,19 @@ SceneManager::SceneManager(std::shared_ptr<RenderManager> renderMgr, DefaultBuff
 
 	mScenes[static_cast<size_t>(SceneType::TERRAIN)] = std::make_unique<TerrainScene>(renderMgr, mainCameraBufferLocation);
 	mScenes[static_cast<size_t>(SceneType::LOADING)] = std::make_unique<LoadingScene>(renderMgr);
-
+	mScenes[static_cast<size_t>(SceneType::LOBBY)] = std::make_unique<LobbyScene>(renderMgr, mainCameraBufferLocation);
 
 	mSceneFeatureType[static_cast<size_t>(SceneType::LOADING)] = std::make_tuple(false, false);
+	mSceneFeatureType[static_cast<size_t>(SceneType::LOBBY)] = std::make_tuple(false, false);
 	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)] = std::make_tuple(true, true);
 
-	mCurrentScene = mScenes[static_cast<size_t>(SceneType::LOADING)].get();
+
+	mSceneGraph[0] = std::make_pair(mScenes[static_cast<size_t>(SceneType::LOADING)].get(), mScenes[static_cast<size_t>(SceneType::LOBBY)].get());
+	mSceneGraph[1] = std::make_pair(mScenes[static_cast<size_t>(SceneType::LOBBY)].get(), mScenes[static_cast<size_t>(SceneType::TERRAIN)].get());
+
+	mCurrentSceneNode = mSceneGraph.begin(); 
+	mCurrentSceneFeatureType = mSceneFeatureType.begin();
+
 
 	gClientCore->Init();
 	auto res = gClientCore->Start("127.0.0.1", 7777);
@@ -21,7 +28,7 @@ SceneManager::SceneManager(std::shared_ptr<RenderManager> renderMgr, DefaultBuff
 
 	mLoadingThread = std::thread([this, device, loadCommandList, initLoadFunc]() {
 		initLoadFunc();
-		mScenes[static_cast<size_t>(SceneType::TERRAIN)]->Init(device, loadCommandList);
+		mCurrentSceneNode->second->Init(device, loadCommandList);
 		mLoaded.store(true);
 		});
 
@@ -34,8 +41,8 @@ SceneManager::~SceneManager() {
 	}
 }
 
-std::tuple<bool, bool> SceneManager::GetCurrentSceneFeatureType() {
-	return mSceneFeatureType[static_cast<size_t>(mCurrentSceneType)];
+SceneFeatureType SceneManager::GetCurrentSceneFeatureType() {
+	return *mCurrentSceneFeatureType; 
 }
 
 bool SceneManager::CheckLoaded() {
@@ -47,8 +54,9 @@ bool SceneManager::CheckLoaded() {
 		auto packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
 		gClientCore->Send(packet); 
 
-		mCurrentScene = mScenes[static_cast<size_t>(SceneType::TERRAIN)].get();
-		mCurrentSceneType = SceneType::TERRAIN;
+		mCurrentSceneFeatureType++;
+		mCurrentSceneNode++;
+
 		mLoaded.store(false);
 	}
 
@@ -56,9 +64,9 @@ bool SceneManager::CheckLoaded() {
 }
 
 void SceneManager::Update() {
-	if (mCurrentScene) {
-		mCurrentScene->ProcessNetwork();
-		mCurrentScene->Update();
-		mCurrentScene->SendNetwork(); 
+	if (mCurrentSceneNode->first != nullptr) {
+		mCurrentSceneNode->first->ProcessNetwork();
+		mCurrentSceneNode->first->Update();
+		mCurrentSceneNode->first->SendNetwork(); 
 	}
 }

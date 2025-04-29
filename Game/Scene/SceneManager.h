@@ -2,6 +2,7 @@
 #include "../Utility/Defines.h"
 #include "../Scene/LoadingScene.h"
 #include "../Scene/TerrainScene.h"
+#include "../Scene/LobbyScene.h"
 
 // 어느 한 Scene 을 로딩하면, 다음 씬 로드, 
 // 현재 Scene 이 다음 Scene 으로 전환 되어야 할 때, 
@@ -26,21 +27,19 @@ public:
 	~SceneManager();
 
 public:
-	std::tuple<bool, bool> GetCurrentSceneFeatureType();
+	SceneFeatureType GetCurrentSceneFeatureType();
 
 	bool CheckLoaded(); 
 	void Update();
  
 private:
 	std::array<std::unique_ptr<IScene>, static_cast<size_t>(SceneType::END)> mScenes{};
-	std::array<std::tuple<bool, bool>, static_cast<size_t>(SceneType::END)> mSceneFeatureType{};
+	std::array<SceneFeatureType, static_cast<size_t>(SceneType::END)> mSceneFeatureType{};
+	std::array<SceneFeatureType, static_cast<size_t>(SceneType::END)>::iterator mCurrentSceneFeatureType{};
 
 	std::array<std::pair<IScene*, IScene*>, 3> mSceneGraph{};
+	std::array<std::pair<IScene*, IScene*>, 3>::iterator mCurrentSceneNode{};
 	
-	SceneType mCurrentSceneType{ SceneType::LOADING };
-	IScene* mCurrentScene{ nullptr };
-
 	std::atomic<bool> mLoaded{ false };
 	std::thread mLoadingThread{};
-
 };

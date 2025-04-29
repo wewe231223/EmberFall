@@ -50,7 +50,7 @@ public:
 	void ResetLoadCommandList(); 
 	void ExecuteLoadCommandList();
 
-	void SetFeatureEnabled(std::tuple<bool, bool> type);
+	void SetFeatureEnabled(SceneFeatureType type);
 
 	void Update();
 
@@ -131,7 +131,7 @@ private:
 
 	std::shared_ptr<RenderManager> mRenderManager{ nullptr };
 
-	std::tuple<bool, bool> mFeatureEnabled{ false, false };
+	SceneFeatureType mFeatureEnabled{ false, false };
 	GrassRenderer mGrassRenderer{};
 
 	DefaultBuffer mTerrainHeaderBuffer{}; 

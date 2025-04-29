@@ -98,7 +98,7 @@ void Renderer::ExecuteLoadCommandList() {
 	mExecute = true; 
 }
 
-void Renderer::SetFeatureEnabled(std::tuple<bool, bool> type) {
+void Renderer::SetFeatureEnabled(SceneFeatureType type) {
 	mFeatureEnabled = type;
 }
 
