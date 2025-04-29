@@ -3,7 +3,6 @@
 #include "Input.h"
 
 #include "GameObject.h"
-#include "GameEventManager.h"
 #include "ObjectManager.h"
 #include "ServerFrame.h"
 
@@ -99,7 +98,7 @@ void PlayerScript::Init() {
 
     const auto pos = owner->GetPosition();
     const auto look = owner->GetTransform()->Forward();
-    mInteractionTrigger = gObjectManager->SpawnTrigger(pos, SimpleMath::Vector3{ 0.5f, 2.0f, 0.5f }, look, std::numeric_limits<float>::max());
+    mInteractionTrigger = gObjectManager->SpawnTrigger(pos, SimpleMath::Vector3{ 1.0f, 3.0f, 1.0f }, look, std::numeric_limits<float>::max());
 }
 
 void PlayerScript::Update(const float deltaTime) {
@@ -148,6 +147,8 @@ void PlayerScript::LateUpdate(const float deltaTime) {
         return;
     }
 
+    mInteractionTrigger->LateUpdate();
+
     if (owner->mSpec.hp > MathUtil::EPSILON) {
         return;
     }
@@ -166,6 +167,10 @@ void PlayerScript::LateUpdate(const float deltaTime) {
 }
 
 void PlayerScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { 
+    if (ObjectTag::TRIGGER == opponent->GetTag()) {
+        return;
+    }
+
     auto owner = GetOwner();
     if (nullptr == owner) {
         return;
@@ -234,7 +239,7 @@ std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
     auto ownerId = owner->GetId();
     decltype(auto) filterObjects = std::views::filter(objects, [this](NetworkObjectIdType id) {
         decltype(auto) obj = gObjectManager->GetObjectFromId(id);
-        if (false == obj->mSpec.interactable or false == obj->mSpec.active) {
+        if (nullptr == obj or false == obj->mSpec.interactable or false == obj->mSpec.active) {
             return false;
         }
 
@@ -339,15 +344,13 @@ void PlayerScript::CheckAndJump(const float deltaTime) {
 void PlayerScript::DoInteraction(const std::shared_ptr<GameObject>& target) {
     auto owner = GetOwner();
     if (nullptr == owner or nullptr == target or not target->mSpec.active) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Do Interaction Failure - target or owner is null");
         mInteractionObj = INVALID_OBJ_ID;
         return;
     }
 
     auto isAttacked = owner->mAnimationStateMachine.GetCurrState() == Packets::AnimationState_ATTACKED;
     if (isAttacked) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Do Interaction Failure - Player Is in Attacked Anim");
-        mInteractionObj = INVALID_OBJ_ID;
+        CancelInteraction();
         return;
     }
 
@@ -355,7 +358,6 @@ void PlayerScript::DoInteraction(const std::shared_ptr<GameObject>& target) {
     mInteraction = true;
     if (target->GetId() != mInteractionObj) {
         owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_INTERACTION, true);
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Start");
     }
 
     mInteractionObj = target->GetId();

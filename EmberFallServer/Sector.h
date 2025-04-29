@@ -2,6 +2,13 @@
 
 #include "GameObject.h"
 
+enum class GameStage : uint8_t {
+    LOBBY,
+    STAGE1,
+    STAGE2,
+    STAGE3,
+};
+
 class Sector {
 public:
     static constexpr float DEFAULT_SECTOR_WIDTH = 200.0f;

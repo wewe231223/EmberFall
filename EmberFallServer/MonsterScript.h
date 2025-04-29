@@ -54,7 +54,7 @@ private:
 
     // range to detecting player 
     NetworkObjectIdType mChaseTarget{ INVALID_OBJ_ID };
-    GameUnits::GameUnit<GameUnits::Meter> mAttackRange{ 3.0m };
+    GameUnits::GameUnit<GameUnits::Meter> mAttackRange{ 1.0m };
     GameUnits::GameUnit<GameUnits::Meter> mPlayerDetectRange{ 10.0m };
 
     BT_Monster mMonsterBT{ };

@@ -65,6 +65,10 @@ void MonsterScript::LateUpdate(const float deltaTime) {
 }
 
 void MonsterScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+    if (ObjectTag::TRIGGER == opponent->GetTag()) {
+        return;
+    }
+
     auto owner = GetOwner();
     if (nullptr == owner) {
         return;

@@ -22,15 +22,14 @@
 #endif
 
 // Util & Global Include
-#include "Events.h"
 #include "GameRandom.h"
 #include "GameTimer.h"
+#include "GameEventFactory.h"
 
 #include "../ServerLib/GameProtocol.h"
 
 // Global Instance
 extern std::unique_ptr<class ServerFrame> gServerFrame;
-extern std::shared_ptr<class GameEventManager> gEventManager;
 
 extern std::unique_ptr<class SectorSystem> gSectorSystem;
 extern std::unique_ptr<class ObjectManager> gObjectManager;

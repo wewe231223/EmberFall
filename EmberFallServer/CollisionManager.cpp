@@ -38,13 +38,18 @@ void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj) {
     }
 
     const auto pos = obj->GetPosition();
+    const auto bb = obj->GetBoundingObject();
+    if (nullptr == bb) {
+        return;
+    }
 
-    decltype(auto) sectors = gSectorSystem->GetMustCheckSectors(pos, 10.0f);
+    auto bbExtents = bb->GetRadiusCircumplex();
+    decltype(auto) sectors = gSectorSystem->GetMustCheckSectors(pos, bbExtents);
     const auto myId = obj->GetId();
     for (const auto sector : sectors) {
-        decltype(auto) collisionCheckPlayers = std::move(gSectorSystem->GetSector(sector).GetPlayersInRange(pos, 10.0f));
-        decltype(auto) collisionCheckMonsters = gSectorSystem->GetSector(sector).GetNPCsInRange(pos, 10.0f);
-        decltype(auto) collisionCheckEnvs = gSectorSystem->GetSector(sector).GetEnvInRange(pos, 10.0f);
+        decltype(auto) collisionCheckPlayers = std::move(gSectorSystem->GetSector(sector).GetPlayersInRange(pos, bbExtents));
+        decltype(auto) collisionCheckMonsters = gSectorSystem->GetSector(sector).GetNPCsInRange(pos, bbExtents);
+        decltype(auto) collisionCheckEnvs = gSectorSystem->GetSector(sector).GetEnvInRange(pos, bbExtents);
 
         UpdateCollisionMonster(obj, myId, collisionCheckMonsters);
         UpdateCollisionPlayer(obj, myId, collisionCheckPlayers);
@@ -124,7 +129,7 @@ void CollisionManager::UpdateCollisionEnv(const std::shared_ptr<GameObject>& obj
         }
 
         // Todo Collision Check And Resolve
-        auto env = gObjectManager->GetEnv(envId);
+        auto env = gObjectManager->GetObjectFromId(envId);
         if (nullptr == env or false == env->mSpec.active) {
             PopCollisionPair(envId, objId);
             continue;

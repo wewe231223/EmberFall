@@ -177,7 +177,6 @@
     <ClCompile Include="CorruptedGem.cpp" />
     <ClCompile Include="EmberFallServer.cpp" />
     <ClCompile Include="Events.cpp" />
-    <ClCompile Include="GameEventManager.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GameObjectComponent.cpp" />
     <ClCompile Include="GameTimer.cpp" />
@@ -233,7 +232,6 @@
     <ClInclude Include="TerrainCollider.h" />
     <ClInclude Include="CorruptedGem.h" />
     <ClInclude Include="Events.h" />
-    <ClInclude Include="GameEventManager.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GameObjectComponent.h" />
     <ClInclude Include="GameTimer.h" />

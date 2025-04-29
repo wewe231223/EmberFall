@@ -16,6 +16,10 @@ ObjectManager::ObjectManager() { }
 
 ObjectManager::~ObjectManager() { }
 
+uint8_t ObjectManager::GetGemCount() const {
+    return mCorruptedGemCount.load();
+}
+
 void ObjectManager::Init() {
     for (NetworkObjectIdType id{ USER_ID_START }; auto & user : mPlayers) {
         user = std::make_shared<GameObject>();
@@ -172,7 +176,7 @@ bool ObjectManager::InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2
     const auto pos2 = obj2->GetPosition();
 
     auto dist = SimpleMath::Vector3::DistanceSquared(pos1, pos2);
-    return dist < (range * range);
+    return dist < MathUtil::Square(range);
 }
 
 std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entity) {
@@ -195,6 +199,9 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->CreateScript<MonsterScript>(obj);
         obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         obj->Init();
+
+        obj->GetTransform()->SetY(0.0f);
+        obj->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -200.0f, 0.0f, -200.0f }, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
         
         gSectorSystem->AddInSector(validId, obj->GetPosition());
         obj->RegisterUpdate();
@@ -214,11 +221,16 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
             break;
         }
 
+        mCorruptedGemCount.fetch_add(1);
+        
         auto obj = GetObjectFromId(validId);
         obj->mSpec.active = true;
         obj->CreateScript<CorruptedGemScript>(obj);
         obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         obj->Init();
+
+        obj->GetTransform()->SetY(0.0f);
+        obj->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f }, SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f }));
 
         gSectorSystem->AddInSector(validId, obj->GetPosition());
         obj->RegisterUpdate();
@@ -265,7 +277,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnTrigger(const SimpleMath::Vector
     obj->Init();
 
     gSectorSystem->AddInSector(validId, obj->GetPosition());
-    obj->RegisterUpdate();
 
     return obj;
 }
@@ -306,6 +317,12 @@ void ObjectManager::ReleaseObject(NetworkObjectIdType id) {
     }
     else if (id < PROJECTILE_ID_START) {
         mNPCIndices.push(id);
+
+        if (ObjectTag::CORRUPTED_GEM == GetObjectFromId(id)->GetTag()) {
+            mCorruptedGemCount.fetch_sub(1);
+
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Corrupted Gem, Gem Count : {}", GetGemCount());
+        }
         return;
     }
     else if (id < TRIGGER_ID_START) {

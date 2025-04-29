@@ -50,6 +50,7 @@ void Sector::TryInsert(NetworkObjectIdType id) {
     }
 
     case ObjectTag::ENV:
+    case ObjectTag::TRIGGER:
     {
         mEnvs.insert(id);
         break;
@@ -82,6 +83,17 @@ void Sector::RemoveObject(NetworkObjectIdType id) {
         }
 
         mNPCs.erase(id);
+        break;
+    }
+
+    case ObjectTag::ENV:
+    case ObjectTag::TRIGGER:
+    {
+        if (false == mEnvs.contains(id)) {
+            return;
+        }
+
+        mEnvs.erase(id);
         break;
     }
 

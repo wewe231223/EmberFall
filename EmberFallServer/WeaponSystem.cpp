@@ -31,7 +31,7 @@ void WeaponSystem::SetWeapon(Packets::Weapon weapon) {
 
     switch (weapon) {
     case Packets::Weapon_SWORD:
-        mWeapon = std::make_shared<Weapons::Sword>(ResourceManager::GetEntityInfo(ENTITY_KEY_SWORD).bb.Extents);
+        mWeapon = std::make_shared<Weapons::Sword>(SimpleMath::Vector3{ 0.5f, 0.5f, 1.5f });
         break;
 
     case Packets::Weapon_SPEAR:
