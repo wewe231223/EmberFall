@@ -117,11 +117,11 @@ Deffered_POUT Standard_PS(Standard_VOUT input) {
     output.normal = float4(input.normal, 1.0f);
     output.position = float4(input.wPosition, 1.0f);
     float4 emissiveColor = materialConstants[input.material].emissive;
-    if (emissiveColor.a >= 0.5f)
+    
+    float isEmissive = step(1.0f, emissiveColor.a);
+    for (int i = 0; i < isEmissive; ++i)
     {
-        
         output.emissive = float4(emissiveColor.rgb, 1.0f);
-
     }
     
     return output;
