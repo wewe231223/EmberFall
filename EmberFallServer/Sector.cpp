@@ -105,11 +105,16 @@ void Sector::RemoveObject(NetworkObjectIdType id) {
 std::vector<NetworkObjectIdType> Sector::GetNPCsInRange(SimpleMath::Vector3 pos, const float range) {
     Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
     std::vector<NetworkObjectIdType> inRangeMonsters{ };
-    for (const auto monsterId : mNPCs) {
-        decltype(auto) monsterPos = gObjectManager->GetObjectFromId(monsterId)->GetPosition();
+    for (const auto npcId : mNPCs) {
+        auto npc = gObjectManager->GetObjectFromId(npcId);
+        if (nullptr == npc or ObjectTag::TRIGGER == npc->GetTag()) {
+            continue;
+        }
 
-        auto dist = SimpleMath::Vector3::DistanceSquared(pos, monsterPos);
-        inRangeMonsters.emplace_back(monsterId);
+        decltype(auto) npcPos = npc->GetPosition();
+
+        auto dist = SimpleMath::Vector3::DistanceSquared(pos, npcPos);
+        inRangeMonsters.emplace_back(npcId);
     }
 
     return inRangeMonsters;
