@@ -951,7 +951,7 @@ void TerrainScene::BuildMaterial() {
 	mMaterialManager->CreateMaterial("SwordMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("sword_base");
-	mat.mEmissiveColor = SimpleMath::Color(1.0f, 0.0f, 0.0f, 1.0f);
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.8f, 1.0f, 1.0f);
 	mMaterialManager->CreateMaterial("GreatSwordMaterial", mat);
 	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 

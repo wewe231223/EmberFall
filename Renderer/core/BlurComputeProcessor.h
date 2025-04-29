@@ -21,7 +21,7 @@ public:
 	void DispatchHorzBlur(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, ComPtr<ID3D12Resource> input);
 	void DispatchVertBlur(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, ComPtr<ID3D12Resource> output);
 
-	void RegisteremissiveView(ComPtr<ID3D12Device> device, Texture& EmissiveGbuffer);
+	
 
 	Texture& GetHorzBlurMap();
 	Texture& GetVertBlurMap();

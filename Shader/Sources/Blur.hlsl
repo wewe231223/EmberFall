@@ -1,6 +1,5 @@
 
 Texture2D gInput : register(t0);
-Texture2D EmissiveGBuffer : register(t1);
 
 RWTexture2D<float4> gRWOutput : register(u0);
 
@@ -16,12 +15,12 @@ groupshared float4 gGroupSharedCache[256 + 5 + 5];
 void HorzBlur_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : SV_DispatchThreadID)
 {
    
-    int leftEdge = (int)step(groupThreadID.x, 4);
+    int leftEdge = (int) step(groupThreadID.x, maskWidth-1);
 
     [unroll]
     for (int i = 0; i < 1 * leftEdge; ++i)
     {
-        gGroupSharedCache[groupThreadID.x] = gInput[int2(max(dispatchThreadID.x - 5, 0), dispatchThreadID.y)];
+        gGroupSharedCache[groupThreadID.x] = gInput[int2(max(dispatchThreadID.x - maskWidth, 0), dispatchThreadID.y)];
     }
     
     int rightEdge = (int)step(threadGroupSize - maskWidth, groupThreadID.x);
@@ -29,11 +28,11 @@ void HorzBlur_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : 
     [unroll]
     for (int i = 0; i < 1 * rightEdge; ++i)
     {
-        gGroupSharedCache[groupThreadID.x + (2 * 5)] = gInput[int2(min(dispatchThreadID.x + 5, gInput.Length.x - 1), dispatchThreadID.y)];
+        gGroupSharedCache[groupThreadID.x + (2 * maskWidth)] = gInput[int2(min(dispatchThreadID.x + maskWidth, gInput.Length.x - 1), dispatchThreadID.y)];
 
     }
     
-    gGroupSharedCache[groupThreadID.x + 5] = gInput[min(dispatchThreadID.xy, gInput.Length.xy - 1)];
+    gGroupSharedCache[groupThreadID.x + maskWidth] = gInput[min(dispatchThreadID.xy, gInput.Length.xy - 1)];
     
     
    
@@ -42,9 +41,10 @@ void HorzBlur_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : 
         GroupMemoryBarrierWithGroupSync();
 
     float4 color = float4(0, 0, 0, 0);
+
     [unroll]
-    for (int i = -5; i <= 5; i++)
-        color += gGaussianBlurMask1D[i + 5] * gGroupSharedCache[groupThreadID.x + 5 + i];
+    for (int i = -maskWidth; i <= maskWidth; i++)
+        color += gGaussianBlurMask1D[i + maskWidth] * gGroupSharedCache[groupThreadID.x + maskWidth + i];
 
     gRWOutput[dispatchThreadID.xy] = color;
 }
@@ -54,12 +54,12 @@ void VertBlur_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : 
 {
     
     
-    int topEdge = (int) step(groupThreadID.y, 4);
+    int topEdge = (int) step(groupThreadID.y, maskWidth-1);
 
     [unroll]
     for (int i = 0; i < 1 * topEdge; ++i)
     {
-        gGroupSharedCache[groupThreadID.y] = gInput[int2(dispatchThreadID.x, max(dispatchThreadID.y - 5, 0))];
+        gGroupSharedCache[groupThreadID.y] = gInput[int2(dispatchThreadID.x, max(dispatchThreadID.y - maskWidth, 0))];
     }
     
     int bottomEdge = (int) step(threadGroupSize - maskWidth, groupThreadID.y);
@@ -67,11 +67,11 @@ void VertBlur_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : 
     [unroll]
     for (int i = 0; i < 1 * bottomEdge; ++i)
     {
-        gGroupSharedCache[groupThreadID.y + (2 * 5)] = gInput[int2(dispatchThreadID.x, min(dispatchThreadID.y + 5, gInput.Length.x - 1))];
+        gGroupSharedCache[groupThreadID.y + (2 * maskWidth)] = gInput[int2(dispatchThreadID.x, min(dispatchThreadID.y + maskWidth, gInput.Length.x - 1))];
 
     }
     
-    gGroupSharedCache[groupThreadID.y + 5] = gInput[min(dispatchThreadID.xy, gInput.Length.xy - 1)];
+    gGroupSharedCache[groupThreadID.y + maskWidth] = gInput[min(dispatchThreadID.xy, gInput.Length.xy - 1)];
     
     
 
@@ -81,8 +81,8 @@ void VertBlur_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : 
 
     float4 color = float4(0, 0, 0, 0);
     [unroll]
-    for (int i = -5; i <= 5; i++)
-        color += gGaussianBlurMask1D[i + 5] * gGroupSharedCache[groupThreadID.y + 5 + i];
+    for (int i = -maskWidth; i <= maskWidth; i++)
+        color += gGaussianBlurMask1D[i + maskWidth] * gGroupSharedCache[groupThreadID.y + maskWidth + i];
 
     gRWOutput[dispatchThreadID.xy] = color;
 }
