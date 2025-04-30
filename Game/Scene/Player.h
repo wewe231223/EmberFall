@@ -39,6 +39,7 @@ public:
 
 	void SetMyPlayer();
 	
+	Player Clone();
 private:
 	Mesh* mMesh{};
 	GraphicsShaderBase* mShader{};

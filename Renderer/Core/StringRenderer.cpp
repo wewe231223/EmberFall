@@ -1,3 +1,5 @@
+#include "StringRenderer.h"
+#include "StringRenderer.h"
 #include "pch.h"
 #include "StringRenderer.h"
 #include "../Utility/Exceptions.h"
@@ -140,6 +142,7 @@ void StringRenderer::Render() {
 
     for (auto& text : TextBlockManager::GetInstance()) {
 
+		if (!text.GetActiveState()) continue;
         auto& rect = text.GetRect();
 
         mD2DDeviceContext->DrawText(
@@ -1193,6 +1196,14 @@ TextBlock::TextBlock(const std::wstring& text, const D2D1_RECT_F& rect, const St
 	mRect = rect;
 	mColor = color;
 	mInitialFontName = font;
+}
+
+bool TextBlock::GetActiveState() const {
+    return mActiveState;
+}
+
+void TextBlock::SetActiveState(bool state) {
+	mActiveState = state;
 }
 
 void TextBlock::SetRenderer(StringRenderer* stringRenderer) {

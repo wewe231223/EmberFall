@@ -143,3 +143,31 @@ void Player::SetAnimation(Packets::AnimationState state) {
 void Player::SetMyPlayer() {
 	mMyPlayer = true;
 }
+
+Player Player::Clone() {
+	Player result{};
+
+	result.mMesh = mMesh;
+	result.mShader = mShader;
+	result.mMaterial = mMaterial;
+
+	if (mBoneMaskController.GetActiveState()) {
+		result.mBoneMaskController = mBoneMaskController;
+	}
+	else if (mAnimController.GetActiveState()) {
+		result.mAnimController = mAnimController;
+	}
+
+	result.mModelContext = mModelContext;
+	result.mTransform = mTransform;
+
+	if (mCollider.GetActiveState()) {
+		result.mCollider = mCollider;
+	}
+
+	result.mEquipments = mEquipments;
+	result.mActiveState = mActiveState;
+	result.mMyPlayer = mMyPlayer;
+
+	return result;
+}

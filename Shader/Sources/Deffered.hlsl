@@ -6,15 +6,22 @@ SamplerState anisotropicWrapSampler : register(s4);
 SamplerState anisotropicClampSampler : register(s5);
 SamplerComparisonState PCFSampler : register(s6);
 
+#define MAX_LIGHT_COUNT 8 
+#define LightType_Directional   1 
+#define LightType_Point         2
+#define LightType_Spot          3
+
 struct Light
 {
-    
+    uint lightType; 
     float4 Diffuse;
     float4 Ambient; 
     float4 Specular;
     float3 Position; 
     float3 Direction; 
     float3 Attenuation;
+    float InnerAngle;
+    float OuterAngle; 
     float Range;
     
 };
@@ -57,17 +64,17 @@ Deffered_VOUT Deffered_VS(Deffered_VIN input)
 }
 
 
-float4 DirectionalLight(float3 normal, float3 toCamera, float2 texcoord)
+float4 DirectionalLight(float3 direct, float3 normal, float3 toCamera, float2 texcoord)
 {
-    float3 direct = normalize(float3(-1.0f,3.0f,1.0f));
-    float dotNormalLight = dot(direct, normal);
+    float3 nDir = normalize(direct);
+    float dotNormalLight = dot(nDir, normal);
 
     float4 diffuse = float4(1.0f,1.0f,1.0f,1.0f);
     float4 ambient = float4(0.20f, 0.20f, 0.20f, 1.0f);
     
     diffuse.xyz = diffuse.xyz * max(dotNormalLight, 0.0f);
 
-    float3 vReflect = reflect(-direct, normal);
+    float3 vReflect = reflect(-nDir, normal);
     float specularFactor = pow(max(dot(toCamera, vReflect), 0.0f), 32.0f);
 
     float4 specular = float4(0.4f, 0.4f, 0.4f, 1.0f);
@@ -82,42 +89,77 @@ float4 PointLight(int index, float3 position, float3 normal, float3 toCamera, fl
 {
     float3 toLight = gLight[index].Position - position;
     float distance = length(toLight);
-    
-    float4 ambient = gLight[index].Ambient;
-    
-    if (distance > gLight[index].Range)
-    {
-        float4 color = float4(0.0f, 0.0f, 0.0f, 1.0f);
-        return color;
-    }
     toLight = normalize(toLight);
     normal = normalize(normal);
-    float dotNormalLight = dot(toLight, normal);
-    
-    float4 diffuse = float4(gLight[index].Diffuse.xyz * max(dotNormalLight, 0.0f), 1.0f);
-    
-        
-    float3 vReflect = reflect(-toLight, normal);
-    float specularSpot = pow(max(dot(toCamera, vReflect), 0.0f), 32.0f);
-    float4 specular = float4(gLight[index].Specular.xyz * specularSpot, 1.0f);
-    
-    float attenFactor = 1.0f / dot(gLight[index].Attenuation, float3(1.0f, distance, distance * distance));
-    
-    float4 color = (diffuse + specular) * attenFactor + ambient;
-    return color;
 
+    float3 reflectVec = reflect(-toLight, normal);
+    float NdotL = max(dot(toLight, normal), 0.0f);
+    float spec = pow(max(dot(toCamera, reflectVec), 0.0f), 32.0f);
+
+    float sharpness = 4.0f; 
+    float rangeFade = saturate(1.0f - pow(distance / gLight[index].Range, sharpness));
+
+    float4 ambient = gLight[index].Ambient;
+    float4 diffuse = float4(gLight[index].Diffuse.rgb * NdotL, 1.0f);
+    float4 specular = float4(gLight[index].Specular.rgb * spec, 1.0f);
+
+    return ambient * rangeFade + (diffuse + specular) * rangeFade;
+}
+
+float4 SpotLight(int index, float3 position, float3 normal, float3 toCamera, float2 texcoord)
+{
+    float3 toLight = gLight[index].Position - position;
+    float distance = length(toLight);
+    toLight = normalize(toLight);
+    normal = normalize(normal);
+
+    float NdotL = max(dot(toLight, normal), 0.0f);
+    float3 reflectVec = reflect(-toLight, normal);
+    float spec = pow(max(dot(toCamera, reflectVec), 0.0f), 32.0f);
+
+    // 기본 감쇄 (거리 기반)
+    float sharpness = 4.0f;
+    float rangeFade = saturate(1.0f - pow(distance / gLight[index].Range, sharpness));
+
+    float3 lightDir = normalize(-gLight[index].Direction); 
+    float spotCos = dot(toLight, lightDir); 
+
+    float innerCos = cos(radians(gLight[index].InnerAngle));
+    float outerCos = cos(radians(gLight[index].OuterAngle));
+
+    float spotFade = saturate((spotCos - outerCos) / (innerCos - outerCos));
+
+    float attenuation = rangeFade * spotFade;
+
+    float4 ambient = gLight[index].Ambient;
+    float4 diffuse = float4(gLight[index].Diffuse.rgb * NdotL, 1.0f);
+    float4 specular = float4(gLight[index].Specular.rgb * spec, 1.0f);
+
+    return ambient * attenuation + (diffuse + specular) * attenuation;
 }
 
 float4 Lighting(float3 normal, float3 toCamera, float3 worldPos, float2 texcoord)
 {
-    float4 Color = DirectionalLight(normal, toCamera, texcoord);
-    
+    float4 Color = float4(0.2f, 0.2f, 0.2f, 1.f); 
     [unroll]
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < MAX_LIGHT_COUNT; ++i)
     {
-        Color += PointLight(i, worldPos.xyz, normal, toCamera, texcoord);
-
+        if(gLight[i].lightType == LightType_Directional)
+        {
+            Color += DirectionalLight(gLight[i].Direction, normal, toCamera, texcoord);
+        }
+        else if (gLight[i].lightType == LightType_Point)
+        {
+            Color += PointLight(i, worldPos, normal, toCamera, texcoord);
+        }
+        else if (gLight[i].lightType == LightType_Spot)
+        {
+            Color += SpotLight(i, worldPos, normal, toCamera, texcoord);
+        }
     }
+    
+    
+    
     return Color;
 }
 

@@ -30,8 +30,9 @@ public:
 	SceneFeatureType GetCurrentSceneFeatureType();
 
 	bool CheckLoaded(); 
-	void Update();
+	void Update(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList);
  
+	void AdvanceScene();
 private:
 	std::array<std::unique_ptr<IScene>, static_cast<size_t>(SceneType::END)> mScenes{};
 	std::array<SceneFeatureType, static_cast<size_t>(SceneType::END)> mSceneFeatureType{};
@@ -42,4 +43,6 @@ private:
 	
 	std::atomic<bool> mLoaded{ false };
 	std::thread mLoadingThread{};
+
+	bool mAdvance{ false }; 
 };

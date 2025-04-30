@@ -111,8 +111,6 @@ void Renderer::Render() {
 	Renderer::ResetCommandList();
 	D3D12_VIEWPORT viewport{};
 
-
-
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.Width = ShadowRenderer::GetShadowMapSize<float>();
@@ -196,6 +194,8 @@ void Renderer::Render() {
 	}
 
 	// Deffered Rendering Pass 
+	mRenderManager->GetLightingManager().UpdateLight(mCommandList);
+
 	mRenderManager->GetShadowRenderer().TransitionShadowMap(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -232,9 +232,16 @@ void Renderer::ExecuteRender() {
 	}
 
 	mCommandQueue->ExecuteCommandLists(mExecute ? 2 : 1, commandLists);
-	mExecute = false;
+	
 
 	Renderer::FlushCommandQueue();
+
+	if (mExecute) {
+		CheckHR(mLoadAllocator->Reset()); 
+		CheckHR(mLoadCommandList->Reset(mLoadAllocator.Get(), nullptr));
+
+		mExecute = false; 
+	}
 
 	mStringRenderer.Render();
 	mRenderManager->GetParticleManager().PostRender();

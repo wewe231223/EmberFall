@@ -14,6 +14,7 @@ SceneManager::SceneManager(std::shared_ptr<RenderManager> renderMgr, DefaultBuff
 
 	mSceneGraph[0] = std::make_pair(mScenes[static_cast<size_t>(SceneType::LOADING)].get(), mScenes[static_cast<size_t>(SceneType::LOBBY)].get());
 	mSceneGraph[1] = std::make_pair(mScenes[static_cast<size_t>(SceneType::LOBBY)].get(), mScenes[static_cast<size_t>(SceneType::TERRAIN)].get());
+	mSceneGraph[2] = std::make_pair(mScenes[static_cast<size_t>(SceneType::TERRAIN)].get(), mScenes[static_cast<size_t>(SceneType::LOADING)].get());
 
 	mCurrentSceneNode = mSceneGraph.begin(); 
 	mCurrentSceneFeatureType = mSceneFeatureType.begin();
@@ -50,9 +51,6 @@ bool SceneManager::CheckLoaded() {
 
 	if (loaded) {
 		mLoadingThread.join();
-		
-		auto packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
-		gClientCore->Send(packet); 
 
 		mCurrentSceneFeatureType++;
 		mCurrentSceneNode++;
@@ -63,10 +61,31 @@ bool SceneManager::CheckLoaded() {
 	return loaded;
 }
 
-void SceneManager::Update() {
+void SceneManager::Update(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList) {
+
+	if (mAdvance and not mLoadingThread.joinable()) {
+		mLoadingThread = std::thread([this, device, loadCommandList]() {
+			mCurrentSceneNode->second->Init(device, loadCommandList);
+			});
+		mAdvance = false;
+		mLoaded.store(true);
+	}
+
+	if (mLoadingThread.joinable()) {
+		auto& loadingScene = mScenes[static_cast<size_t>(SceneType::LOADING)];
+		loadingScene->ProcessNetwork();
+		loadingScene->Update();
+		loadingScene->SendNetwork(); 
+		return;
+	}
+
 	if (mCurrentSceneNode->first != nullptr) {
 		mCurrentSceneNode->first->ProcessNetwork();
 		mCurrentSceneNode->first->Update();
 		mCurrentSceneNode->first->SendNetwork(); 
 	}
+}
+
+void SceneManager::AdvanceScene() {
+	mAdvance = true;
 }

@@ -20,6 +20,9 @@ public:
 	TextBlock(TextBlock&& other) noexcept = default;
 	TextBlock& operator=(TextBlock&& other) noexcept = default;
 public:
+	bool GetActiveState() const; 
+	void SetActiveState(bool state);
+
 	void SetRenderer(StringRenderer* stringRenderer);
 
 	std::wstring& GetText();
@@ -41,6 +44,8 @@ private:
 	IDWriteTextFormat* mFont{ nullptr };
 
 	std::string mInitialFontName{};
+
+	bool mActiveState{ true }; 
 };
 
 // Renderer 의 초기화가 끝난 뒤 접근해야 함. 

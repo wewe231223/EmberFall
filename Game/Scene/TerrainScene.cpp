@@ -531,6 +531,11 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 
 
 	mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Devil"));
+
+
+	mRenderManager->GetLightingManager().ClearLight(commandList);
+	mRenderManager->GetLightingManager().CreateDirectionalLight(commandList, { -1.f, 3.f, 1.f },{1.f,1.f,1.f, 1.f});
+
 }
 
 void TerrainScene::ProcessNetwork() {
@@ -990,7 +995,6 @@ void TerrainScene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Quiver_baseColor");
 	mRenderManager->GetMaterialManager().CreateMaterial("QuiverMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("bow_base");
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_Demon_Imp_Monster_Bloody_Albedo_Skin_4");
 	mRenderManager->GetMaterialManager().CreateMaterial("MonsterType1Material", mat);
 
