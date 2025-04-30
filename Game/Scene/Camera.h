@@ -36,6 +36,7 @@ private:
 enum class ECameraMode : BYTE {
 	Free,
 	Follow,
+	Lobby, 
 };
 
 class CameraMode {
@@ -82,4 +83,3 @@ private:
 	Transform& mTargetTransform;
 	DirectX::SimpleMath::Vector3 mOffset{ DirectX::SimpleMath::Vector3::Zero };
 };
-

@@ -48,7 +48,9 @@ private:
 	std::unordered_map<NetworkObjectIdType, Player*> mPlayerIndexmap{};
 	std::array<Player, 5> mPlayers{ Player{}, };
 	std::array<TextBlock*, 5> mPlayerNameTextBlock{};
+
 	UINT mPlayerSelected{ 0 }; 
+	bool mCameraRotating{ false };
 
 	std::unordered_map<std::string, EquipmentObject> mEquipments{};
 	std::unordered_map<std::string, std::unique_ptr<Mesh>> mMeshMap{};

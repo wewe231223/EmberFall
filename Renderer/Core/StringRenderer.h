@@ -1,5 +1,6 @@
 #pragma once 
 #include <array>
+#include <mutex>
 #include "../Resource/Texture.h"
 #include "../Utility/DirectXInclude.h"
 #include "../Config/Config.h"
@@ -62,10 +63,14 @@ public:
 	std::vector<TextBlock>::iterator end();
 
 	TextBlock* CreateTextBlock(const std::wstring& text, const D2D1_RECT_F& rect, const StringColor& color, const std::string& font);
+
+	std::mutex& GetMutex();
 private:
 	StringRenderer* mStringRenderer{ nullptr };
 
 	std::vector<TextBlock> mTextBlocks{};
+
+	std::mutex mMutex{};
 };
 
 

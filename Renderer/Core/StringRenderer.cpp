@@ -137,24 +137,26 @@ void StringRenderer::Render() {
 
 	mD2DDeviceContext->BeginDraw();
 
-    // 	mD2DDeviceContext->DrawText(str.c_str(), static_cast<UINT32>(str.size()), mTestFormat.Get(), D2D1::RectF(0.0f, 0.0f, 800.0f, 600.0f), mBrushes[static_cast<size_t>(StringColor::red)].Get());
+	std::unique_lock<std::mutex> lock(TextBlockManager::GetInstance().GetMutex());
 
+	auto begin = TextBlockManager::GetInstance().begin();
+	auto end = TextBlockManager::GetInstance().end();
 
-    for (auto& text : TextBlockManager::GetInstance()) {
+    for (auto it = begin; it != end; ++it) {
+        auto& text = *it;
+        if (!text.GetActiveState()) continue;
 
-		if (!text.GetActiveState()) continue;
         auto& rect = text.GetRect();
-
         mD2DDeviceContext->DrawText(
             text.GetText().c_str(),
-			static_cast<UINT32>(text.GetText().size()),
+            static_cast<UINT32>(text.GetText().size()),
             text.GetFont(),
             &rect,
             mBrushes[static_cast<size_t>(text.GetColor())].Get()
         );
     }
 
-
+    lock.unlock(); 
 
 	CheckHR(mD2DDeviceContext->EndDraw());
 
@@ -1267,10 +1269,16 @@ std::vector<TextBlock>::iterator TextBlockManager::end() {
 }
 
 TextBlock* TextBlockManager::CreateTextBlock(const std::wstring& text, const D2D1_RECT_F& rect, const StringColor& color, const std::string& font) {
+	std::lock_guard<std::mutex> lock(mMutex);
+
 	if (mStringRenderer != nullptr) {
 		auto& textblock = mTextBlocks.emplace_back(mStringRenderer, text, rect, color, mStringRenderer->GetFont(font));
 		return &textblock;
     } 
     auto& textblock = mTextBlocks.emplace_back(text, rect, color, font);
     return &textblock;
+}
+
+std::mutex& TextBlockManager::GetMutex() {
+    return mMutex; 
 }

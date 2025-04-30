@@ -46,40 +46,21 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 	mPlayers[2].GetTransform().SetPosition({  1.f * Interval * 0.5f , 0.f, 5.f });
 	mPlayers[3].GetTransform().SetPosition({  1.f * Interval * 1.5f , 0.f, 5.f });
 
-	// mRenderManager->GetLightingManager().CreatePointLight(commandList, { -1.f * Interval * 0.5f , 0.f, 5.f }, { 1.f, 1.f, 1.f, 1.f });
-	for (int i = 0; i < 4; ++i) {
-		auto& light = mRenderManager->GetLightingManager().GetLight(i);
-		//light.mType = LightType::Spot; 
-		light.Position = mPlayers[i].GetTransform().GetPosition();
-		light.Position.y += 10.f;
-		light.Diffuse = { 1.f, 1.f, 1.f, 1.f };
-		light.Direction = { 0.f, -1.f, 0.f };
-		light.Range = 20.f;
-		light.InnerAngle = 3.f;
-		light.OuterAngle = 5.f;
-	}
-
-
-
 
 	mPlayers[4] = mPlayerPreFabs["Demon"].Clone();
 	mPlayers[4].GetTransform().SetPosition({ 0.f, 0.f, -10.f });
 	mPlayers[4].GetTransform().Rotate(0.f, 110.f, 0.f);
 
-	{
-		auto& light = mRenderManager->GetLightingManager().GetLight(4);
-		//light.mType = LightType::Spot;
-		light.Position = mPlayers[4].GetTransform().GetPosition();
-		light.Position.y += 20.f;
-		light.Diffuse = { 1.f, 1.f, 1.f, 1.f };
-		light.Direction = { 0.f, -1.f, 0.f };
-		light.Range = 100.f;
-		light.InnerAngle = 5.f;
-		light.OuterAngle = 10.f;
-	}
 
+	mCamera.GetTransform().Look({ 0.f,2.f, 1.f });
 
-	mCamera.GetTransform().Look({ 0.f,0.f, 15.f });
+	mRenderManager->GetLightingManager().ClearLight(commandList);
+	auto& light = mRenderManager->GetLightingManager().GetLight(0);
+	light.mType = LightType::Directional;
+	light.Direction = { -1.f, 3.f, 1.f };
+	light.Diffuse = { 1.f, 1.f, 1.f, 1.f };
+	light.Specular = { 1.f, 1.f, 1.f, 1.f };
+	light.Ambient = { 0.2f, 0.2f, 0.2f, 1.f };
 
 	auto packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
 	gClientCore->Send(packet);
@@ -92,29 +73,48 @@ void LobbyScene::ProcessNetwork() {
 void LobbyScene::Update() {
 
 	if (Input.GetKeyboardTracker().pressed.Tab) {
-		mCamera.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(180.f), 0.f);
-		if (mPlayerSelected == 4) { // 인간 진영 선택 
-			mRenderManager->GetLightingManager().GetLight(mPlayerSelected).mType = LightType::None;
-			mPlayerSelected = 0; 
+		if (not mCameraRotating) {
+			if (mPlayerSelected == 4) { // 인간 진영 선택 
+				mPlayerSelected = 0;
+				mPlayerNameTextBlock[4]->SetActiveState(false);
+				mCameraRotating = true; 
+			}
+			else { // 악마 진영 선택 
+				mPlayerSelected = 4;
+				for (auto i = 0; i < mPlayers.size() - 1; ++i) {
+					mPlayerNameTextBlock[i]->SetActiveState(false);
+				}
+				mCameraRotating = true;
+			}
+		}
+	}
+
+	if (mCameraRotating) {
+		mCamera.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(180.f) * Time.GetDeltaTime<float>(), 0.f); 
+		
+		auto& rot = mCamera.GetTransform().GetRotation();
+
+		auto euler = rot.ToEuler();
+
+		if (mPlayerSelected == 0 and std::fabs(euler.y) - 0.01f <= 0.f) {
+			mCamera.GetTransform().SetRotation(DirectX::SimpleMath::Quaternion::CreateFromYawPitchRoll(0.f, 0.f, 0.f));
+			mCameraRotating = false;
 
 			for (auto i = 0; i < mPlayers.size() - 1; ++i) {
 				mPlayerNameTextBlock[i]->SetActiveState(true);
 			}
 
-			mPlayerNameTextBlock[4]->SetActiveState(false);
 		}
-		else { // 악마 진영 선택 
-			mRenderManager->GetLightingManager().GetLight(mPlayerSelected).mType = LightType::None;
-			mPlayerSelected = 4; 
 
-			for (auto i = 0; i < mPlayers.size() - 1; ++i) {
-				mPlayerNameTextBlock[i]->SetActiveState(false);
-			}
+		if (mPlayerSelected == 4 and std::fabs(std::fabs(euler.y) - DirectX::XM_PI) <= 0.05f) {
+			mCamera.GetTransform().SetRotation(DirectX::SimpleMath::Quaternion::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(180.f), 0.f, 0.f));
+			mCameraRotating = false;
+
 			mPlayerNameTextBlock[4]->SetActiveState(true);
 		}
+
 	}
 
-	//mRenderManager->GetLightingManager().GetLight(mPlayerSelected).mType = LightType::Spot;
 
 	mCamera.UpdateBuffer(); 
 
@@ -401,7 +401,7 @@ void LobbyScene::BuildPlayerNameTextBlock() {
 	const float xInterval = 370.f;
 	const float xPadding = 350.f; 
 
-	const float y = 830.f;
+	const float y = 430.f;
 
 	for (auto i = 0; i < mPlayers.size() - 1; ++i) {
 		auto& block = mPlayerNameTextBlock[i];
