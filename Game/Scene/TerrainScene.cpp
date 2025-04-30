@@ -794,6 +794,10 @@ void TerrainScene::SendNetwork() {
 	gClientCore->Send(packetCamera);
 }
 
+void TerrainScene::Exit() {
+
+}
+
 void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	MeshLoader Loader{};
 	MeshData data{}; 

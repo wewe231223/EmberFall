@@ -70,6 +70,7 @@ public:
 	virtual void ProcessNetwork() PURE;
 	virtual void Update() PURE;
 	virtual void SendNetwork() PURE;
+    virtual void Exit() PURE; 
 };
 
 using SceneFeatureType = std::tuple<bool, bool>;

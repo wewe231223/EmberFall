@@ -15,6 +15,7 @@ public:
 	virtual void ProcessNetwork();
 	virtual void Update();
 	virtual void SendNetwork();
+	virtual void Exit();
 private:
 	SpriteImage mLoading{};
 	Image mBackground{};

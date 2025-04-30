@@ -28,6 +28,7 @@ public:
 	virtual void ProcessNetwork(); 
 	virtual void Update();
 	virtual void SendNetwork(); 
+	virtual void Exit();
 
 private:
 	void BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList); 

@@ -13,6 +13,7 @@ LobbyScene::LobbyScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCP
 }
 
 LobbyScene::~LobbyScene() {
+
 }
 
 void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
@@ -140,6 +141,12 @@ void LobbyScene::Update() {
 }
 
 void LobbyScene::SendNetwork() {
+}
+
+void LobbyScene::Exit() {
+	for (auto& block : mPlayerNameTextBlock) {
+		block->SetActiveState(false);
+	}
 }
 
 void LobbyScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {

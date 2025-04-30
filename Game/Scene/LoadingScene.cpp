@@ -41,3 +41,7 @@ void LoadingScene::Update() {
 
 void LoadingScene::SendNetwork() {
 }
+
+void LoadingScene::Exit() {
+
+}

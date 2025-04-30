@@ -18,6 +18,7 @@ public:
 	virtual void ProcessNetwork() override;
 	virtual void Update() override;
 	virtual void SendNetwork() override;
+	virtual void Exit() override;
 private:
 	void BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
 	void BuildMaterial();
