@@ -2,13 +2,6 @@
 
 #include "GameObject.h"
 
-enum class GameStage : uint8_t {
-    LOBBY,
-    STAGE1,
-    STAGE2,
-    STAGE3,
-};
-
 class Sector {
 public:
     static constexpr float DEFAULT_SECTOR_WIDTH = 200.0f;
@@ -29,6 +22,7 @@ public:
 
     void TryInsert(NetworkObjectIdType id);
     void RemoveObject(NetworkObjectIdType id);
+    std::vector<NetworkObjectIdType> GetTriggersInTange(SimpleMath::Vector3 pos, const float range);
     std::vector<NetworkObjectIdType> GetNPCsInRange(SimpleMath::Vector3 pos, const float range);
     std::vector<NetworkObjectIdType> GetPlayersInRange(SimpleMath::Vector3 pos, const float range);
     std::vector<NetworkObjectIdType> GetEnvInRange(SimpleMath::Vector3 pos, const float range);
@@ -39,6 +33,8 @@ private:
     std::unordered_set<NetworkObjectIdType> mPlayers{ };
     std::unordered_set<NetworkObjectIdType> mNPCs{ };
     std::unordered_set<NetworkObjectIdType> mEnvs{ };
+    std::unordered_set<NetworkObjectIdType> mTriggers{ };
+    std::unordered_set<NetworkObjectIdType> mProjectiles{ };
 };
 
 class SectorSystem {

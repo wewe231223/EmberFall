@@ -32,7 +32,12 @@ Lock::SRWLock& Sector::GetLock() {
 }
 
 void Sector::TryInsert(NetworkObjectIdType id) {
-    auto tag = gObjectManager->GetObjectFromId(id)->GetTag();
+    auto obj = gObjectManager->GetObjectFromId(id);
+    if (nullptr == obj) {
+        return;
+    }
+
+    auto tag = obj->GetTag();
 
     switch (tag) {
     case ObjectTag::PLAYER:
@@ -50,9 +55,14 @@ void Sector::TryInsert(NetworkObjectIdType id) {
     }
 
     case ObjectTag::ENV:
-    case ObjectTag::TRIGGER:
     {
         mEnvs.insert(id);
+        break;
+    }
+
+    case ObjectTag::TRIGGER:
+    {
+        mTriggers.insert(id);
         break;
     }
 
@@ -86,8 +96,7 @@ void Sector::RemoveObject(NetworkObjectIdType id) {
         break;
     }
 
-    case ObjectTag::ENV:
-    case ObjectTag::TRIGGER:
+    case ObjectTag::ENV: 
     {
         if (false == mEnvs.contains(id)) {
             return;
@@ -97,27 +106,55 @@ void Sector::RemoveObject(NetworkObjectIdType id) {
         break;
     }
 
+    case ObjectTag::TRIGGER:
+    {
+        if (false == mTriggers.contains(id)) {
+            return;
+        }
+
+        mTriggers.erase(id);
+        break;
+    }
+
     default:
         break;
     }
 }
 
+std::vector<NetworkObjectIdType> Sector::GetTriggersInTange(SimpleMath::Vector3 pos, const float range) {
+    Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
+    std::vector<NetworkObjectIdType> inRangeTriggers{ };
+    for (const auto triggerId : mTriggers) {
+        auto trigger = gObjectManager->GetTrigger(triggerId);
+        if (nullptr == trigger) {
+            continue;
+        }
+
+        decltype(auto) triggerPos = trigger->GetPosition();
+
+        auto dist = SimpleMath::Vector3::DistanceSquared(pos, triggerPos);
+        inRangeTriggers.emplace_back(triggerId);
+    }
+
+    return inRangeTriggers;
+}
+
 std::vector<NetworkObjectIdType> Sector::GetNPCsInRange(SimpleMath::Vector3 pos, const float range) {
     Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
-    std::vector<NetworkObjectIdType> inRangeMonsters{ };
+    std::vector<NetworkObjectIdType> inRangeNPCs{ };
     for (const auto npcId : mNPCs) {
-        auto npc = gObjectManager->GetObjectFromId(npcId);
-        if (nullptr == npc or ObjectTag::TRIGGER == npc->GetTag()) {
+        auto npc = gObjectManager->GetNPC(npcId);
+        if (nullptr == npc) {
             continue;
         }
 
         decltype(auto) npcPos = npc->GetPosition();
 
         auto dist = SimpleMath::Vector3::DistanceSquared(pos, npcPos);
-        inRangeMonsters.emplace_back(npcId);
+        inRangeNPCs.emplace_back(npcId);
     }
 
-    return inRangeMonsters;
+    return inRangeNPCs;
 }
 
 std::vector<NetworkObjectIdType> Sector::GetPlayersInRange(SimpleMath::Vector3 pos, const float range) {

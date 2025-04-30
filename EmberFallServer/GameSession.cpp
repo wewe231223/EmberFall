@@ -62,7 +62,6 @@ void GameSession::InitUserObject() {
 
     mUserObject = gObjectManager->GetObjectFromId(GetId());
     mUserObject->mSpec.active = true;
-    mUserObject->mSpec.attackable = true;
     mUserObject->CreateScript<PlayerScript>(mUserObject, std::make_shared<Input>());
     mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
     mUserObject->GetTransform()->SetY(0.0f);
@@ -72,6 +71,10 @@ void GameSession::InitUserObject() {
 
     auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
     auto player = mUserObject->GetScript<PlayerScript>();
+    if (nullptr == player) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
+    }
+
     player->SetOwnerSession(sharedFromThis);
 
     player->GetTransform()->Translate(TestPos);

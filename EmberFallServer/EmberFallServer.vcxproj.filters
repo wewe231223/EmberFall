@@ -243,6 +243,7 @@
     <ClCompile Include="GraphBase.cpp">
       <Filter>MaybeReuse\Graph\GraphBase</Filter>
     </ClCompile>
+    <ClCompile Include="Stage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BehaviorTreeBase.h">
@@ -395,5 +396,6 @@
     <ClInclude Include="ItemScript.h">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClInclude>
+    <ClInclude Include="Stage.h" />
   </ItemGroup>
 </Project>

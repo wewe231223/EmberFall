@@ -45,7 +45,7 @@ public:
     void ReleaseObject(NetworkObjectIdType id);
 
 private:
-    std::atomic<uint8_t> mCorruptedGemCount{ 0 };
+    std::atomic_uint8_t mCorruptedGemCount{ 0 };
 
     std::array<std::shared_ptr<GameObject>, MAX_USER> mPlayers{ };
 

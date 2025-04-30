@@ -15,6 +15,7 @@ public:
     void UpdateCollisionMonster(const std::shared_ptr<GameObject>& obj, NetworkObjectIdType objId, const std::vector<NetworkObjectIdType>& collisionCheckMonsters);
     void UpdateCollisionPlayer(const std::shared_ptr<GameObject>& obj, NetworkObjectIdType objId, const std::vector<NetworkObjectIdType>& collisionCheckPlayers);
     void UpdateCollisionEnv(const std::shared_ptr<GameObject>& obj, NetworkObjectIdType objId, const std::vector<NetworkObjectIdType>& collisionCheckEnvs);
+    void UpdateCollisionTrigger(const std::shared_ptr<GameObject>& obj, NetworkObjectIdType objId, const std::vector<NetworkObjectIdType>& collisionCheckTriggers);
 
 public:
     Lock::SRWLock mCollisionPairLock{ };

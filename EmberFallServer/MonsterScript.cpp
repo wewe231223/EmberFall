@@ -24,18 +24,14 @@ void MonsterScript::Init() {
     owner->mAnimationStateMachine.Init(ANIM_KEY_MONSTER);
     auto& spec = owner->mSpec;
     spec.active = true;
-    spec.attackable = true;
     spec.hp = 10.0f;
 
-    mAttackRange = owner->mWeaponSystem.GetHitBoxSize().Length() + 1.0f;
     mMonsterBT.Build(std::static_pointer_cast<MonsterScript>(shared_from_this()));
     owner->GetPhysics()->mFactor.maxMoveSpeed = 1.5mps;
 }
 
 void MonsterScript::Update(const float deltaTime) {
     mMonsterBT.Update(deltaTime);
-
-    //gSectorSystem->UpdateEntityMove(GetOwner());
 }
 
 void MonsterScript::LateUpdate(const float deltaTime) { 

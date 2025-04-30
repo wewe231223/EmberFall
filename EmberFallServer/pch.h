@@ -35,6 +35,13 @@ extern std::unique_ptr<class SectorSystem> gSectorSystem;
 extern std::unique_ptr<class ObjectManager> gObjectManager;
 extern std::unique_ptr<class CollisionManager> gCollisionManager;
 
+enum class GameStage : uint8_t {
+    LOBBY,
+    STAGE1,
+    STAGE2,
+    STAGE3,
+};
+
 // Add std::hash for std::pair
 namespace std {
     template <typename T1, typename T2>

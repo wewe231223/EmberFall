@@ -48,12 +48,14 @@ void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj) {
     const auto myId = obj->GetId();
     for (const auto sector : sectors) {
         decltype(auto) collisionCheckPlayers = std::move(gSectorSystem->GetSector(sector).GetPlayersInRange(pos, bbExtents));
-        decltype(auto) collisionCheckMonsters = gSectorSystem->GetSector(sector).GetNPCsInRange(pos, bbExtents);
-        decltype(auto) collisionCheckEnvs = gSectorSystem->GetSector(sector).GetEnvInRange(pos, bbExtents);
+        decltype(auto) collisionCheckMonsters = std::move(gSectorSystem->GetSector(sector).GetNPCsInRange(pos, bbExtents));
+        decltype(auto) collisionCheckEnvs = std::move(gSectorSystem->GetSector(sector).GetEnvInRange(pos, bbExtents));
+        decltype(auto) collisionCheckTriggers = std::move(gSectorSystem->GetSector(sector).GetTriggersInTange(pos, bbExtents));
 
         UpdateCollisionMonster(obj, myId, collisionCheckMonsters);
         UpdateCollisionPlayer(obj, myId, collisionCheckPlayers);
         UpdateCollisionEnv(obj, myId, collisionCheckEnvs);
+        UpdateCollisionTrigger(obj, myId, collisionCheckTriggers);
     }
 }
 
@@ -129,7 +131,7 @@ void CollisionManager::UpdateCollisionEnv(const std::shared_ptr<GameObject>& obj
         }
 
         // Todo Collision Check And Resolve
-        auto env = gObjectManager->GetObjectFromId(envId);
+        auto env = gObjectManager->GetEnv(envId);
         if (nullptr == env or false == env->mSpec.active) {
             PopCollisionPair(envId, objId);
             continue;
@@ -144,5 +146,35 @@ void CollisionManager::UpdateCollisionEnv(const std::shared_ptr<GameObject>& obj
         }
 
         PopCollisionPair(envId, objId);
+    }
+}
+
+void CollisionManager::UpdateCollisionTrigger(const std::shared_ptr<GameObject>& obj, NetworkObjectIdType objId, const std::vector<NetworkObjectIdType>& collisionCheckTriggers) {
+    for (const auto triggerId : collisionCheckTriggers) {
+        if (objId == triggerId) {
+            continue;
+        }
+
+        auto result = PushCollisionPair(triggerId, objId);
+        if (false == result) {
+            continue;
+        }
+
+        // Todo Collision Check And Resolve
+        auto trigger = gObjectManager->GetTrigger(triggerId);
+        if (nullptr == trigger or false == trigger->mSpec.active) {
+            PopCollisionPair(triggerId, objId);
+            continue;
+        }
+
+        const auto boundingObj1 = trigger->GetBoundingObject();
+        const auto boundingObj2 = obj->GetBoundingObject();
+
+        auto [intersects, penetration] = boundingObj2->IsColliding(boundingObj1);
+        if (intersects) {
+            obj->OnCollision(trigger, penetration);
+        }
+
+        PopCollisionPair(triggerId, objId);
     }
 }
