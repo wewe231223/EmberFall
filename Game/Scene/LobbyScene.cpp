@@ -49,6 +49,7 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 	// mRenderManager->GetLightingManager().CreatePointLight(commandList, { -1.f * Interval * 0.5f , 0.f, 5.f }, { 1.f, 1.f, 1.f, 1.f });
 	for (int i = 0; i < 4; ++i) {
 		auto& light = mRenderManager->GetLightingManager().GetLight(i);
+		//light.mType = LightType::Spot; 
 		light.Position = mPlayers[i].GetTransform().GetPosition();
 		light.Position.y += 10.f;
 		light.Diffuse = { 1.f, 1.f, 1.f, 1.f };
@@ -113,7 +114,7 @@ void LobbyScene::Update() {
 		}
 	}
 
-	mRenderManager->GetLightingManager().GetLight(mPlayerSelected).mType = LightType::Spot;
+	//mRenderManager->GetLightingManager().GetLight(mPlayerSelected).mType = LightType::Spot;
 
 	mCamera.UpdateBuffer(); 
 

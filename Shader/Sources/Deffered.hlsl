@@ -140,7 +140,7 @@ float4 SpotLight(int index, float3 position, float3 normal, float3 toCamera, flo
 
 float4 Lighting(float3 normal, float3 toCamera, float3 worldPos, float2 texcoord)
 {
-    float4 Color = float4(0.2f, 0.2f, 0.2f, 1.f); 
+    float4 Color = float4(1.f, 1.f, 1.f, 1.f);
     [unroll]
     for (int i = 0; i < MAX_LIGHT_COUNT; ++i)
     {
