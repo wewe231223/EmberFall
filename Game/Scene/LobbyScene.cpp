@@ -398,10 +398,10 @@ void LobbyScene::BuildPlayerPrefab() {
 }
 
 void LobbyScene::BuildPlayerNameTextBlock() {
-	const float xInterval = 370.f;
-	const float xPadding = 350.f; 
+	const float xInterval = 380.f;
+	const float xPadding = 320.f; 
 
-	const float y = 430.f;
+	const float y = 570.f;
 
 	for (auto i = 0; i < mPlayers.size() - 1; ++i) {
 		auto& block = mPlayerNameTextBlock[i];
@@ -411,7 +411,7 @@ void LobbyScene::BuildPlayerNameTextBlock() {
 	}
 
 	auto& block = mPlayerNameTextBlock[4];
-	block = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 760.f, 630.f, 760.f + xInterval, 730.f }, StringColor::White, "NotoSansKR");
+	block = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 760.f, 750.f, 760.f + xInterval, 850.f }, StringColor::White, "NotoSansKR");
 	block->GetText() = L"Player" + std::to_wstring(4);
 	block->SetActiveState(false);
 }
