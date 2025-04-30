@@ -21,10 +21,6 @@ void LightingManager::CreatePointLight(ComPtr<ID3D12GraphicsCommandList> command
 	pointLight.Diffuse = diffuse;
 	pointLight.Specular = { 0.f,0.f,0.f,0.f };
 
-	mLightings.emplace_back(pointLight);
-	std::memcpy(*mLightingBuffer.CPUBegin(), mLightings.data(), sizeof(Light) * mLightings.size());
-
-	mLightingBuffer.Upload(commandList);
 }
 
 void LightingManager::CreateDirectionalLight(ComPtr<ID3D12GraphicsCommandList> commandList, const SimpleMath::Vector3& direction, const SimpleMath::Vector4& diffuse) {
@@ -33,10 +29,6 @@ void LightingManager::CreateDirectionalLight(ComPtr<ID3D12GraphicsCommandList> c
 	directionalLight.Diffuse = diffuse;
 	directionalLight.mType = LightType::Directional;
 
-	mLightings.emplace_back(directionalLight);
-	std::memcpy(*mLightingBuffer.CPUBegin(), mLightings.data(), sizeof(Light) * mLightings.size());
-
-	mLightingBuffer.Upload(commandList);
 }
 
 Light& LightingManager::GetLight(int index) {

@@ -1273,5 +1273,4 @@ TextBlock* TextBlockManager::CreateTextBlock(const std::wstring& text, const D2D
     } 
     auto& textblock = mTextBlocks.emplace_back(text, rect, color, font);
     return &textblock;
-
 }

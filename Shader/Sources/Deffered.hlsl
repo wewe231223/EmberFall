@@ -146,15 +146,15 @@ float4 Lighting(float3 normal, float3 toCamera, float3 worldPos, float2 texcoord
     {
         if(gLight[i].lightType == LightType_Directional)
         {
-            Color += DirectionalLight(gLight[i].Direction, normal, toCamera, texcoord);
+            Color = DirectionalLight(gLight[i].Direction, normal, toCamera, texcoord);
         }
         else if (gLight[i].lightType == LightType_Point)
         {
-            Color += PointLight(i, worldPos, normal, toCamera, texcoord);
+            Color = PointLight(i, worldPos, normal, toCamera, texcoord);
         }
         else if (gLight[i].lightType == LightType_Spot)
         {
-            Color += SpotLight(i, worldPos, normal, toCamera, texcoord);
+            Color = SpotLight(i, worldPos, normal, toCamera, texcoord);
         }
     }
     

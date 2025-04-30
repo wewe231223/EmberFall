@@ -66,9 +66,9 @@ void SceneManager::Update(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCo
 	if (mAdvance and not mLoadingThread.joinable()) {
 		mLoadingThread = std::thread([this, device, loadCommandList]() {
 			mCurrentSceneNode->second->Init(device, loadCommandList);
+			mLoaded.store(true);
 			});
 		mAdvance = false;
-		mLoaded.store(true);
 	}
 
 	if (mLoadingThread.joinable()) {

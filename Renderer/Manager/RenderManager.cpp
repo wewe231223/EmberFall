@@ -4,7 +4,7 @@
 RenderManager::RenderManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator mainCameraBufferLocation) {
 	mLightingManager = LightingManager(device, commandList);
 	mTextureManager = TextureManager(device, commandList);
-	mMaterialManager = MaterialManager();
+	mMaterialManager = MaterialManager(device);
 	mMeshRenderManager = MeshRenderManager(device);
 	mParticleManager = ParticleManager(device, commandList);
 	mShadowRenderer = ShadowRenderer(device, mainCameraBufferLocation);

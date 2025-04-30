@@ -244,8 +244,12 @@ void Renderer::ExecuteRender() {
 	}
 
 	mStringRenderer.Render();
-	mRenderManager->GetParticleManager().PostRender();
-	mRenderManager->GetParticleManager().ValidateParticle();
+
+	if (std::get<static_cast<size_t>(RenderFeature::PARTICLE)>(mFeatureEnabled)) {
+		mRenderManager->GetParticleManager().PostRender();
+		mRenderManager->GetParticleManager().ValidateParticle();
+	}
+
 
 	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
 	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
