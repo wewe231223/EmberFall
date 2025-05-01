@@ -53,6 +53,14 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 	mPlayers[4].GetTransform().Rotate(0.f, 110.f, 0.f);
 
 
+	mPlayers[0].SetActiveState(false);
+	mPlayers[1].SetActiveState(false);
+	mPlayers[2].SetActiveState(false);
+	mPlayers[3].SetActiveState(false);
+	mPlayers[4].SetActiveState(false);
+
+
+
 	mCamera.GetTransform().Look({ 0.f,2.f, 1.f });
 
 	mRenderManager->GetLightingManager().ClearLight(commandList);
@@ -65,14 +73,21 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 
 	auto packet = FbsPacketFactory::PlayerEnterInLobbyCS(gClientCore->GetSessionId()); 
 	gClientCore->Send(packet); 
+
+
+	mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[0];
+	mPlayerIndexmap[gClientCore->GetSessionId()]->SetActiveState(true);
+
 }
 
 void LobbyScene::ProcessNetwork() {
+	auto packetHandler = gClientCore->GetPacketHandler();
+	decltype(auto) buffer = packetHandler->GetBuffer();
 
+	LobbyScene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
 }
 
 void LobbyScene::Update() {
-
 	if (Input.GetKeyboardTracker().pressed.Tab) {
 		if (not mCameraRotating) {
 			if (mPlayerSelected == 4) { // 인간 진영 선택 
@@ -102,7 +117,9 @@ void LobbyScene::Update() {
 			mCameraRotating = false;
 
 			for (auto i = 0; i < mPlayers.size() - 1; ++i) {
-				mPlayerNameTextBlock[i]->SetActiveState(true);
+				if (mPlayers[i].GetActiveState()) {
+					mPlayerNameTextBlock[i]->SetActiveState(true);
+				}
 			}
 
 		}
@@ -111,7 +128,9 @@ void LobbyScene::Update() {
 			mCamera.GetTransform().SetRotation(DirectX::SimpleMath::Quaternion::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(180.f), 0.f, 0.f));
 			mCameraRotating = false;
 
-			mPlayerNameTextBlock[4]->SetActiveState(true);
+			if (mPlayers[4].GetActiveState()) {
+				mPlayerNameTextBlock[4]->SetActiveState(true);
+			}
 		}
 
 	}
@@ -141,6 +160,10 @@ void LobbyScene::Update() {
 }
 
 void LobbyScene::SendNetwork() {
+	if (Input.GetKeyboardTracker().pressed.Enter and not mIsReady) {
+		decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId(), Packets::PlayerRole::PlayerRole_HUMAN);
+		gClientCore->Send(packet);
+	}
 }
 
 void LobbyScene::Exit() {
@@ -414,11 +437,81 @@ void LobbyScene::BuildPlayerNameTextBlock() {
 		auto& block = mPlayerNameTextBlock[i];
 		block = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ xPadding + xInterval * i , y, xPadding + xInterval * i + 100.f, y + 100.f }, StringColor::White, "NotoSansKR");
 		block->GetText() = L"Player" + std::to_wstring(i);
-		block->SetActiveState(true);
+		block->SetActiveState(false);
 	}
 
 	auto& block = mPlayerNameTextBlock[4];
 	block = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 760.f, 750.f, 760.f + xInterval, 850.f }, StringColor::White, "NotoSansKR");
 	block->GetText() = L"Player" + std::to_wstring(4);
 	block->SetActiveState(false);
+}
+
+void LobbyScene::ProcessPackets(const uint8_t* buffer, size_t size) {
+	const uint8_t* iter = buffer; 
+
+	while (iter < buffer + size) {
+		iter = ProcessPacket(iter);
+	}
+}
+
+const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
+
+	decltype(auto) header = FbsPacketFactory::GetHeaderPtrSC(buffer);
+
+	auto FindNextPlayerLoc = [this]() {
+		for (auto iter = mPlayers.begin(); iter != mPlayers.end(); ++iter) {
+			if (not iter->GetActiveState()) {
+				return iter;
+			}
+		}
+		return mPlayers.end();
+		};
+
+	switch (header->type) {
+	case Packets::PacketTypes_PT_PLAYER_READY_IN_LOBBY_SC:
+	{
+		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerReadyInLobbySC>(buffer);
+
+		
+		// 누군가 로비 씬에서 Ready 한 경우 
+		break;
+	}
+	case Packets::PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_SC:
+	{
+		// 누군가 로비 씬에 들어온 경우 
+		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerEnterInLobbySC>(buffer);
+
+		auto nextLoc = FindNextPlayerLoc(); 
+
+		if (mPlayerIndexmap[packet->playerId()] != nullptr) {
+			if (mPlayerIndexmap[packet->playerId()]->GetActiveState()) {
+				break; 
+			}
+		}
+
+		if (nextLoc == mPlayers.end()) {
+			Crash("There is no more space for Other Player!!");
+		}
+
+		mPlayerIndexmap[packet->playerId()] = &(*nextLoc);
+		mPlayerIndexmap[packet->playerId()]->SetActiveState(true); 
+		
+		break;
+	}
+	case Packets::PacketTypes_PT_PLAYER_EXIT_SC:
+	{
+		// 누군가 로비 씬에서 나간 경우 
+		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerExitSC>(buffer);
+
+		if (mPlayerIndexmap.contains(packet->playerId())) {
+			mPlayerIndexmap[packet->playerId()]->SetActiveState(false);
+		}
+
+		break;
+	}
+	default:
+		break;
+	}
+
+	return buffer + header->size; 
 }

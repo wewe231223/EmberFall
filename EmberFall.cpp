@@ -151,6 +151,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     ::DestroyWindow(hWnd);
 
+    decltype(auto) packet = FbsPacketFactory::PlayerExitCS(gClientCore->GetSessionId());
+    gClientCore->Send(packet);
+
+    gClientCore->End();
+
     return (int) msg.wParam;
 }
 

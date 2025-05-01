@@ -37,6 +37,9 @@ private:
 	void BuildPlayerPrefab();
 
 	void BuildPlayerNameTextBlock();
+
+	void ProcessPackets(const uint8_t* buffer, size_t size);
+	const uint8_t* ProcessPacket(const uint8_t* buffer);
 private:
 	std::shared_ptr<RenderManager> mRenderManager{};
 
@@ -65,4 +68,6 @@ private:
 	AnimatorGraph::AnimationGraphController mShieldManAnimationController{};
 
 	AnimatorGraph::AnimationGraphController mDemonAnimationController{};
+
+	bool mIsReady{ false }; 
 };
