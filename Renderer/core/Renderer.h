@@ -56,6 +56,9 @@ public:
 
 	void Render();
 	void ExecuteRender();
+
+	void ToggleFullScreen();
+	void SetFullScreenState(bool state); 
 private:
 	void InitFactory();
 	
@@ -85,6 +88,9 @@ private:
 
 	void ResetCommandList();
 	void FlushCommandQueue();
+
+	void SetWindowFullScreen(); 
+	void SetWindowedMode();
 
 private:
 	HWND mRendererWindow{ nullptr };
@@ -138,4 +144,6 @@ private:
 	DefaultBuffer mTerrainDataBuffer{}; 
 
 	DefaultBuffer mMainCameraBuffer{};
+
+	bool mIsFullScreen{ false };
 };

@@ -95,6 +95,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F3, n, [&sceneManager]() { sceneManager.AdvanceScene(); });
 
+    Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F5, n, [&renderer]() { renderer.ToggleFullScreen(); });
     size_t frameCount = 0;
     Time.AddEvent(1s, [&frameCount]() {
         std::string title = "FPS : " + std::to_string(frameCount);

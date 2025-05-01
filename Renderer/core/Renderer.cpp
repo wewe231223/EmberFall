@@ -35,6 +35,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitTerrainBuffer();
 	Renderer::InitParticleManager();
 	Renderer::InitGrassRenderer();
+
 }
 
 Renderer::~Renderer() {
@@ -254,6 +255,26 @@ void Renderer::ExecuteRender() {
 	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
 	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
 #endif
+}
+
+void Renderer::ToggleFullScreen() {
+	SetFullScreenState(!mIsFullScreen);
+}
+
+void Renderer::SetFullScreenState(bool state)
+{
+	if (mIsFullScreen == state) {
+		return;
+	}
+
+	if (state) {
+		SetWindowFullScreen();
+	}
+	else {
+		SetWindowedMode();
+	}
+
+	mIsFullScreen = state;
 }
 
 void Renderer::InitFactory() {
@@ -573,3 +594,47 @@ void Renderer::FlushCommandQueue() {
 		::CloseHandle(eventHandle);
 	}
 }
+
+void Renderer::SetWindowFullScreen() {
+	HMONITOR hMonitor = MonitorFromWindow(mRendererWindow, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO monitorInfo = {};
+	monitorInfo.cbSize = sizeof(MONITORINFO);
+	GetMonitorInfo(hMonitor, &monitorInfo);
+	RECT rcMonitor = monitorInfo.rcMonitor;
+
+
+	SetWindowLong(mRendererWindow, GWL_EXSTYLE, 0);
+	SetWindowLong(mRendererWindow, GWL_STYLE, WS_POPUP | WS_VISIBLE);
+
+	SetWindowPos(mRendererWindow, HWND_TOP,
+		rcMonitor.left, rcMonitor.top,
+		rcMonitor.right - rcMonitor.left,
+		rcMonitor.bottom - rcMonitor.top,
+		SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+}
+
+void Renderer::SetWindowedMode() {
+	DWORD style = WS_OVERLAPPEDWINDOW;
+	DWORD exStyle = WS_EX_OVERLAPPEDWINDOW;
+
+	SetWindowLong(mRendererWindow, GWL_STYLE, style);
+	SetWindowLong(mRendererWindow, GWL_EXSTYLE, exStyle);
+
+	RECT adjustedRect = { 0, 0, Config::WINDOW_WIDTH<long>, Config::WINDOW_HEIGHT<long> };
+	AdjustWindowRectEx(&adjustedRect, style, FALSE, exStyle);
+
+	int windowWidth = adjustedRect.right - adjustedRect.left;
+	int windowHeight = adjustedRect.bottom - adjustedRect.top;
+
+	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+
+	int windowX = (screenWidth - windowWidth) / 2;
+	int windowY = (screenHeight - windowHeight) / 2;
+
+	SetWindowPos(mRendererWindow, HWND_NOTOPMOST,
+		windowX, windowY,
+		windowWidth, windowHeight,
+		SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_SHOWWINDOW);
+}
+
