@@ -31,6 +31,9 @@
     <Filter Include="LoadingScene">
       <UniqueIdentifier>{0d708428-ebef-4ede-b95d-e260bdfa5966}</UniqueIdentifier>
     </Filter>
+    <Filter Include="LobbyScene">
+      <UniqueIdentifier>{5123c4fc-c89a-44b1-86fe-65a36242f930}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -87,6 +90,9 @@
     <ClCompile Include="UI\Image.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\LobbyScene.cpp">
+      <Filter>LobbyScene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -142,6 +148,9 @@
     </ClInclude>
     <ClInclude Include="UI\Image.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\LobbyScene.h">
+      <Filter>LobbyScene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

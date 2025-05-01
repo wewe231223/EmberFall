@@ -29,23 +29,21 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::ResetCommandList();
 
 	
-	Renderer::InitCoreResources(); 
 	Renderer::InitCameraBuffer(); 
-	Renderer::InitShadowRenderer();
+	Renderer::InitCoreResources(); 
 	Renderer::InitDefferedRenderer();
 	Renderer::InitTerrainBuffer();
 	Renderer::InitParticleManager();
-	Renderer::InitGrassRender();
-	Renderer::InitCanvas(); 
+	Renderer::InitGrassRenderer();
+
 }
 
 Renderer::~Renderer() {
 	Renderer::FlushCommandQueue(); 
 }
 
-
-std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> Renderer::GetManagers() {
-	return std::make_tuple(mMeshRenderManager, mTextureManager, mMaterialManager, mParticleManager, mCanvas);
+std::shared_ptr<RenderManager> Renderer::GetRenderManager() {
+	return mRenderManager; 
 }
 
 DefaultBufferCPUIterator Renderer::GetMainCameraBuffer() {
@@ -64,28 +62,24 @@ ComPtr<ID3D12GraphicsCommandList> Renderer::GetLoadCommandList() {
 	return mLoadCommandList;
 }
 
-std::shared_ptr<ShadowRenderer> Renderer::GetShadowRenderer() {
-	return mShadowRenderer;
-}
-
 void Renderer::LoadTextures() {
-	mTextureManager->LoadAllImages(mDevice, mLoadCommandList); 
+	mRenderManager->GetTextureManager().LoadAllImages(mDevice, mLoadCommandList); 
 
 	MaterialConstants material{};
 
-	material.mDiffuseTexture[0] = mTextureManager->GetTexture("Grass0");
-	material.mDiffuseTexture[1] = mTextureManager->GetTexture("Grass1");
-	material.mDiffuseTexture[2] = mTextureManager->GetTexture("Grass2");
-	material.mDiffuseTexture[3] = mTextureManager->GetTexture("Grass3");
+	material.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Grass0");
+	material.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("Grass1");
+	material.mDiffuseTexture[2] = mRenderManager->GetTextureManager().GetTexture("Grass2");
+	material.mDiffuseTexture[3] = mRenderManager->GetTextureManager().GetTexture("Grass3");
 
-	mMaterialManager->CreateMaterial("GrassMaterial", material);
+	mRenderManager->GetMaterialManager().CreateMaterial("GrassMaterial", material);
 
-	mGrassRenderer.SetMaterial(mMaterialManager->GetMaterial("GrassMaterial"));
+	mGrassRenderer.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("GrassMaterial"));
 
 }
 
 void Renderer::UploadResource(){ 
-	mMaterialManager->UploadMaterial(mDevice, mCommandList);
+	mRenderManager->GetMaterialManager().UploadMaterial(mDevice, mCommandList);
 	CheckHR(mCommandList->Close());
 
 	ID3D12CommandList* commandLists[] = { mCommandList.Get() };
@@ -101,11 +95,11 @@ void Renderer::ResetLoadCommandList() {
 }
 
 void Renderer::ExecuteLoadCommandList() {
-	mMaterialManager->UploadMaterial(mDevice, mLoadCommandList);
+	mRenderManager->GetMaterialManager().UploadMaterial(mDevice, mLoadCommandList);
 	mExecute = true; 
 }
 
-void Renderer::SetFeatureEnabled(std::tuple<bool, bool> type) {
+void Renderer::SetFeatureEnabled(SceneFeatureType type) {
 	mFeatureEnabled = type;
 }
 
@@ -117,8 +111,6 @@ void Renderer::Update() {
 void Renderer::Render() {
 	Renderer::ResetCommandList();
 	D3D12_VIEWPORT viewport{};
-
-
 
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
@@ -137,18 +129,18 @@ void Renderer::Render() {
 	mCommandList->RSSetScissorRects(1, &scissorRect);
 
 	mMainCameraBuffer.Upload(mCommandList);
-	mShadowRenderer->Upload(mCommandList);
-	mMeshRenderManager->PrepareRender(mCommandList);
-	mTextureManager->Bind(mCommandList);
+	mRenderManager->GetShadowRenderer().Upload(mCommandList);
+	mRenderManager->GetMeshRenderManager().PrepareRender(mCommandList);
+	mRenderManager->GetTextureManager().Bind(mCommandList);
 
-	mShadowRenderer->TransitionShadowMap(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 0);
-	mMeshRenderManager->RenderShadowPass(0, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(0));
+	mRenderManager->GetShadowRenderer().TransitionShadowMap(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	mRenderManager->GetShadowRenderer().SetShadowDSVRTV(mDevice, mCommandList, 0);
+	mRenderManager->GetMeshRenderManager().RenderShadowPass(0, mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0));
 
 	// mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
 
-	mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 1);
-	mMeshRenderManager->RenderShadowPass(1, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(1));
+	mRenderManager->GetShadowRenderer().SetShadowDSVRTV(mDevice, mCommandList, 1);
+	mRenderManager->GetMeshRenderManager().RenderShadowPass(1, mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(1));
 
 	//mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 2);
 	//mMeshRenderManager->RenderShadowPass(2, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(2));
@@ -191,17 +183,17 @@ void Renderer::Render() {
 
 	auto& currentBackBuffer = mRenderTargets[mRTIndex];
 
-	mTextureManager->Bind(mCommandList);
-	mMeshRenderManager->RenderGPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin() );
-	mMeshRenderManager->Reset();
+	mRenderManager->GetTextureManager().Bind(mCommandList);
+	mRenderManager->GetMeshRenderManager().RenderGPass(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
+	mRenderManager->GetMeshRenderManager().Reset();
 
 	if (std::get<static_cast<size_t>(RenderFeature::GRASS)>(mFeatureEnabled)) {
-		mGrassRenderer.Render(mCommandList, mMainCameraBuffer.GPUBegin(), mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress());
+		mGrassRenderer.Render(mCommandList, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
 
 	if (std::get<static_cast<size_t>(RenderFeature::PARTICLE)>(mFeatureEnabled)) {
-		mParticleManager->RenderSO(mCommandList);
-		mParticleManager->RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress());
+		mRenderManager->GetParticleManager().RenderSO(mCommandList);
+		mRenderManager->GetParticleManager().RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
 
 	// Blurring Pass
@@ -213,7 +205,9 @@ void Renderer::Render() {
 	mGBuffers[3].Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 	// Deffered Rendering Pass 
-	mShadowRenderer->TransitionShadowMap(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+	mRenderManager->GetLightingManager().UpdateLight(mCommandList);
+
+	mRenderManager->GetShadowRenderer().TransitionShadowMap(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
@@ -221,13 +215,11 @@ void Renderer::Render() {
 	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
-	mDefferedRenderer.Render(mCommandList, mShadowRenderer->GetShadowCameraBuffer(0), mLightingManager->GetLightingBuffer());
+	mDefferedRenderer.Render(mCommandList, mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0), mRenderManager->GetLightingManager().GetLightingBuffer());
 
-	
+	mRenderManager->GetTextureManager().Bind(mCommandList);
 
-	mTextureManager->Bind(mCommandList);
-
-	mCanvas->Render(mCommandList, mTextureManager->GetTextureHeapAddress());
+	mRenderManager->GetCanvas().Render(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress()); 
 }
 
 void Renderer::ExecuteRender() {
@@ -251,17 +243,48 @@ void Renderer::ExecuteRender() {
 	}
 
 	mCommandQueue->ExecuteCommandLists(mExecute ? 2 : 1, commandLists);
-	mExecute = false;
+	
 
 	Renderer::FlushCommandQueue();
 
+	if (mExecute) {
+		CheckHR(mLoadAllocator->Reset()); 
+		CheckHR(mLoadCommandList->Reset(mLoadAllocator.Get(), nullptr));
+
+		mExecute = false; 
+	}
+
 	mStringRenderer.Render();
-	mParticleManager->PostRender();
-	mParticleManager->ValidateParticle();
+
+	if (std::get<static_cast<size_t>(RenderFeature::PARTICLE)>(mFeatureEnabled)) {
+		mRenderManager->GetParticleManager().PostRender();
+		mRenderManager->GetParticleManager().ValidateParticle();
+	}
+
 
 	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
 	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
 #endif
+}
+
+void Renderer::ToggleFullScreen() {
+	SetFullScreenState(!mIsFullScreen);
+}
+
+void Renderer::SetFullScreenState(bool state)
+{
+	if (mIsFullScreen == state) {
+		return;
+	}
+
+	if (state) {
+		SetWindowFullScreen();
+	}
+	else {
+		SetWindowedMode();
+	}
+
+	mIsFullScreen = state;
 }
 
 void Renderer::InitFactory() {
@@ -520,21 +543,12 @@ void Renderer::InitCameraBuffer() {
 	mMainCameraBuffer = DefaultBuffer(mDevice, sizeof(CameraConstants), 1, true);
 }
 
-void Renderer::InitShadowRenderer() {
-	mShadowRenderer = std::make_shared<ShadowRenderer>(mDevice, mMainCameraBuffer.CPUBegin());
-}
-
 void Renderer::InitParticleManager() {
-	mParticleManager = std::make_shared<ParticleManager>(mDevice, mCommandList);
-	mParticleManager->SetTerrain(mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
+	mRenderManager->GetParticleManager().SetTerrain(mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
 }
 
-void Renderer::InitGrassRender() {
+void Renderer::InitGrassRenderer() {
 	mGrassRenderer = GrassRenderer(mDevice, mCommandList, mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
-}
-
-void Renderer::InitCanvas() {
-	mCanvas = std::make_unique<Canvas>(mDevice, mCommandList);
 }
 
 void Renderer::InitTerrainBuffer() {
@@ -555,18 +569,14 @@ void Renderer::InitTerrainBuffer() {
 }
 
 void Renderer::InitCoreResources() {
-	mMeshRenderManager = std::make_shared<MeshRenderManager>(mDevice);
-	mTextureManager = std::make_shared<TextureManager>(mDevice, mCommandList);
-	mMaterialManager = std::make_shared<MaterialManager>();
-	mLightingManager = std::make_shared<LightingManager>(mDevice, mCommandList);
-
+	mRenderManager = std::make_shared<RenderManager>(mDevice, mCommandList, mMainCameraBuffer.CPUBegin()); 
 }
 
 void Renderer::InitDefferedRenderer() {
 	mDefferedRenderer = DefferedRenderer(mDevice, mCommandList);
 
 	mDefferedRenderer.RegisterGBufferTexture(mDevice, mGBuffers);
-	mDefferedRenderer.RegisterShadowMap(mDevice, mShadowRenderer->GetShadowMapArray());
+	mDefferedRenderer.RegisterShadowMap(mDevice, mRenderManager->GetShadowRenderer().GetShadowMapArray());
 
 }
 
@@ -604,3 +614,47 @@ void Renderer::FlushCommandQueue() {
 		::CloseHandle(eventHandle);
 	}
 }
+
+void Renderer::SetWindowFullScreen() {
+	HMONITOR hMonitor = MonitorFromWindow(mRendererWindow, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO monitorInfo = {};
+	monitorInfo.cbSize = sizeof(MONITORINFO);
+	GetMonitorInfo(hMonitor, &monitorInfo);
+	RECT rcMonitor = monitorInfo.rcMonitor;
+
+
+	SetWindowLong(mRendererWindow, GWL_EXSTYLE, 0);
+	SetWindowLong(mRendererWindow, GWL_STYLE, WS_POPUP | WS_VISIBLE);
+
+	SetWindowPos(mRendererWindow, HWND_TOP,
+		rcMonitor.left, rcMonitor.top,
+		rcMonitor.right - rcMonitor.left,
+		rcMonitor.bottom - rcMonitor.top,
+		SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+}
+
+void Renderer::SetWindowedMode() {
+	DWORD style = WS_OVERLAPPEDWINDOW;
+	DWORD exStyle = WS_EX_OVERLAPPEDWINDOW;
+
+	SetWindowLong(mRendererWindow, GWL_STYLE, style);
+	SetWindowLong(mRendererWindow, GWL_EXSTYLE, exStyle);
+
+	RECT adjustedRect = { 0, 0, Config::WINDOW_WIDTH<long>, Config::WINDOW_HEIGHT<long> };
+	AdjustWindowRectEx(&adjustedRect, style, FALSE, exStyle);
+
+	int windowWidth = adjustedRect.right - adjustedRect.left;
+	int windowHeight = adjustedRect.bottom - adjustedRect.top;
+
+	int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+	int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+
+	int windowX = (screenWidth - windowWidth) / 2;
+	int windowY = (screenHeight - windowHeight) / 2;
+
+	SetWindowPos(mRendererWindow, HWND_NOTOPMOST,
+		windowX, windowY,
+		windowWidth, windowHeight,
+		SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_SHOWWINDOW);
+}
+

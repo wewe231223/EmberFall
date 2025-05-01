@@ -606,8 +606,8 @@ namespace AnimatorGraph {
         mActiveState = true;
     }
 
-    AnimationGraphController::operator bool() const {
-        return mActiveState; 
+    bool AnimationGraphController::GetActiveState() const {
+        return mActiveState;
     }
 
     void AnimationGraphController::Update(double deltaTime, BoneTransformBuffer& boneTransforms) {
@@ -724,6 +724,7 @@ namespace AnimatorGraph {
                 if (targetState < mStates.size() && targetState != mCurrentStateIndex) {
 					mAnimator.SetTransitionDuration(transition.blendDuration);
                     mAnimator.TransitionToClip(targetState);
+					mAnimator.SetLoop(mStates[targetState].loop);
                     mCurrentStateIndex = targetState;
                     break;
                 }
@@ -1137,8 +1138,8 @@ namespace AnimatorGraph {
         mActiveState = true; 
     }
 
-    BoneMaskAnimationGraphController::operator bool() const {
-        return mActiveState; 
+    bool BoneMaskAnimationGraphController::GetActiveState() const {
+        return mActiveState;
     }
 
     void BoneMaskAnimationGraphController::Update(double deltaTime, BoneTransformBuffer& boneTransforms) {

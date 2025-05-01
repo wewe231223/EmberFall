@@ -81,6 +81,9 @@
     <ClCompile Include="Manager\LightingManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
+    <ClCompile Include="Manager\RenderManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
     <ClCompile Include="core\BlurComputeProcessor.cpp">
       <Filter>Core</Filter>
     </ClCompile>
@@ -139,6 +142,9 @@
     </ClInclude>
     <ClInclude Include="core\BlurComputeProcessor.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Manager\RenderManager.h">
+      <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

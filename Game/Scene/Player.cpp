@@ -16,6 +16,18 @@ Player::Player(Mesh* mesh, GraphicsShaderBase* shader, MaterialIndex material, A
 
 }
 
+Player::Player(Mesh* mesh, GraphicsShaderBase* shader, MaterialIndex material, AnimatorGraph::AnimationGraphController animController) {
+	mMesh = mesh;
+	mShader = shader;
+	mMaterial = material;
+	mAnimController = animController;
+
+	mActiveState = true;
+
+	DirectX::BoundingBox box{ {0.f,0.8f,0.f}, {0.25f, 0.8f, 0.25f} };
+	mCollider = Collider{ box };
+}
+
 bool Player::GetActiveState() const {
 	return mActiveState;
 }
@@ -28,7 +40,7 @@ void Player::AddEquipment(EquipmentObject equipment) {
 	mEquipments.emplace_back(equipment);
 }
 
-void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
+void Player::Update(MeshRenderManager& manager) {
 
 	if (mMyPlayer) {
 		static const SimpleMath::Matrix localRotations[] = {
@@ -70,7 +82,13 @@ void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 
 	static BoneTransformBuffer boneTransformBuffer{};
 
-	mBoneMaskController.Update(Time.GetDeltaTime(), boneTransformBuffer);
+
+	if (mBoneMaskController.GetActiveState()) {
+		mBoneMaskController.Update(Time.GetDeltaTime(), boneTransformBuffer);
+	}
+	else if (mAnimController.GetActiveState()) {
+		mAnimController.Update(Time.GetDeltaTime(), boneTransformBuffer);
+	}
 
 	mTransform.Update(Time.GetDeltaTime<float>());
 	mTransform.UpdateWorldMatrix();
@@ -78,8 +96,8 @@ void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 
 	mCollider.UpdateBox(mTransform.GetWorldMatrix());
 
-	manager->AppendBonedMeshContext(mShader, mMesh, ModelContext{mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
-	manager->AppendShadowBonedMeshContext(mShader, mMesh, ModelContext{mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
+	manager.AppendBonedMeshContext(mShader, mMesh, ModelContext{mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
+	manager.AppendShadowBonedMeshContext(mShader, mMesh, ModelContext{mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
 
 	for (auto& equipment : mEquipments) {
 		if (false == equipment.GetActiveState()) {
@@ -87,18 +105,14 @@ void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 		}
 		equipment.UpdateShaderVariables(boneTransformBuffer, mTransform.GetWorldMatrix());
 		auto [mesh, shader, ModelContext] = equipment.GetRenderData();
-		manager->AppendPlaneMeshContext(shader, mesh, ModelContext);
-		manager->AppendShadowPlaneMeshContext(shader, mesh, ModelContext, 0);
+		manager.AppendPlaneMeshContext(shader, mesh, ModelContext);
+		manager.AppendShadowPlaneMeshContext(shader, mesh, ModelContext, 0);
 	}
 
 }
 
 Transform& Player::GetTransform() {
 	return mTransform; 
-}
-
-AnimatorGraph::BoneMaskAnimationGraphController& Player::GetBoneMaskController() {
-	return mBoneMaskController;
 }
 
 void Player::SetMesh(Mesh* mesh) {
@@ -113,10 +127,47 @@ void Player::SetMaterial(MaterialIndex material) {
 	mMaterial = material;
 }
 
-void Player::SetBoneMaskController(AnimatorGraph::BoneMaskAnimationGraphController boneMaskController) {
-	mBoneMaskController = boneMaskController;
+void Player::SetAnimation(Packets::AnimationState state) {
+	if (mBoneMaskController.GetActiveState()) {
+		mBoneMaskController.Transition(static_cast<size_t>(state));
+		return; 
+	} 
+
+
+	if (mAnimController.GetActiveState()) {
+		mAnimController.Transition(static_cast<size_t>(state)); 
+		return; 
+	}
 }
 
 void Player::SetMyPlayer() {
 	mMyPlayer = true;
+}
+
+Player Player::Clone() {
+	Player result{};
+
+	result.mMesh = mMesh;
+	result.mShader = mShader;
+	result.mMaterial = mMaterial;
+
+	if (mBoneMaskController.GetActiveState()) {
+		result.mBoneMaskController = mBoneMaskController;
+	}
+	else if (mAnimController.GetActiveState()) {
+		result.mAnimController = mAnimController;
+	}
+
+	result.mModelContext = mModelContext;
+	result.mTransform = mTransform;
+
+	if (mCollider.GetActiveState()) {
+		result.mCollider = mCollider;
+	}
+
+	result.mEquipments = mEquipments;
+	result.mActiveState = mActiveState;
+	result.mMyPlayer = mMyPlayer;
+
+	return result;
 }

@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "Image.h"
 
-void Image::Init(std::shared_ptr<Canvas> canvas, UINT img) {
-	mObject = canvas->CreateCanvasObject();
+void Image::Init(Canvas& canvas, UINT img) {
+	mObject = canvas.CreateCanvasObject();
 	mObject.ChangeImage(img);
 	mObject.SetActive(true);
 

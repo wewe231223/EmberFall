@@ -96,6 +96,10 @@ void TextureManager::LoadAllImages(ComPtr<ID3D12Device> device, ComPtr<ID3D12Gra
 }
 
 
+MaterialManager::MaterialManager(ComPtr<ID3D12Device> device) {
+	mMaterialBuffer = DefaultBuffer(device, sizeof(MaterialConstants), MAX_MATERIAL_COUNTS);
+}
+
 void MaterialManager::CreateMaterial(const std::string& name, const MaterialConstants& material) {
 	mMaterialData.emplace_back(material);
 	mMaterials[name] = static_cast<UINT>(mMaterialData.size() - 1);
@@ -115,10 +119,7 @@ void MaterialManager::UploadMaterial(ComPtr<ID3D12Device> device, ComPtr<ID3D12G
 		mMaterialData.emplace_back(dummy);
 	}
 
-	mMaterialBuffer = DefaultBuffer(device, commandList, sizeof(MaterialConstants), mMaterialData.size(), mMaterialData.data());
-
-	::memcpy(mMaterialBuffer.Data(), mMaterialData.data(), mMaterialData.size() * sizeof(MaterialConstants));
-	
+	::memcpy(*mMaterialBuffer.CPUBegin(), mMaterialData.data(), mMaterialData.size() * sizeof(MaterialConstants));
 	mMaterialBuffer.Upload(commandList);
 }
 

@@ -178,8 +178,9 @@ namespace AnimatorGraph {
 		AnimationGraphController(AnimationGraphController&&) = default;
 		AnimationGraphController& operator=(AnimationGraphController&&) = default;
 
-		operator bool() const;
     public:
+        bool GetActiveState() const; 
+
         void Update(double deltaTime, BoneTransformBuffer& boneTransforms);
 
         void AddParameter(const std::string& name, ParameterType type);
@@ -285,7 +286,7 @@ namespace AnimatorGraph {
 		BoneMaskAnimationGraphController(BoneMaskAnimationGraphController&&) = default;
 		BoneMaskAnimationGraphController& operator=(BoneMaskAnimationGraphController&&) = default;
     public:
-        operator bool() const; 
+        bool GetActiveState() const; 
 
         void Update(double deltaTime, BoneTransformBuffer& boneTransforms);
 

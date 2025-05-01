@@ -1,5 +1,6 @@
 #pragma once 
 #include <array>
+#include <mutex>
 #include "../Resource/Texture.h"
 #include "../Utility/DirectXInclude.h"
 #include "../Config/Config.h"
@@ -20,6 +21,9 @@ public:
 	TextBlock(TextBlock&& other) noexcept = default;
 	TextBlock& operator=(TextBlock&& other) noexcept = default;
 public:
+	bool GetActiveState() const; 
+	void SetActiveState(bool state);
+
 	void SetRenderer(StringRenderer* stringRenderer);
 
 	std::wstring& GetText();
@@ -41,6 +45,8 @@ private:
 	IDWriteTextFormat* mFont{ nullptr };
 
 	std::string mInitialFontName{};
+
+	bool mActiveState{ true }; 
 };
 
 // Renderer 의 초기화가 끝난 뒤 접근해야 함. 
@@ -57,10 +63,14 @@ public:
 	std::vector<TextBlock>::iterator end();
 
 	TextBlock* CreateTextBlock(const std::wstring& text, const D2D1_RECT_F& rect, const StringColor& color, const std::string& font);
+
+	std::mutex& GetMutex();
 private:
 	StringRenderer* mStringRenderer{ nullptr };
 
 	std::vector<TextBlock> mTextBlocks{};
+
+	std::mutex mMutex{};
 };
 
 

@@ -8,7 +8,7 @@ public:
 	~HealthBar() = default;
 
 public:
-	void Init(std::shared_ptr<Canvas> canvas, UINT frame, UINT health);
+	void Init(Canvas& canvas, UINT frame, UINT health);
 
 	void Update(); 
 

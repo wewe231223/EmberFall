@@ -4,6 +4,7 @@
 #include <fstream>
 #include <filesystem>
 #include "../Utility/Exceptions.h"
+#include "../Game/System/Timer.h"
 
 GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator terrainHeader, DefaultBufferGPUIterator terrainData) {
 	mTerrainHeader = terrainHeader;
@@ -145,32 +146,23 @@ void GrassRenderer::SetMaterial(UINT materialIndex) {
 	mMaterialIndex = materialIndex;
 }
 
-// 1. Camera 
-// 2. terrain header
-// 3. terrain data
-// 4. grass position
-// 5. material Index 
-// 6. material 
-// 7. textures 
 void GrassRenderer::Render(ComPtr<ID3D12GraphicsCommandList6> commandList, DefaultBufferGPUIterator cameraBuffer, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS material) {
 	commandList->SetGraphicsRootSignature(mRootSignature.Get());
 	commandList->SetPipelineState(mPipelineState.Get());
 
 
-	// 1. Camera 
-	// 2. terrain header
-	// 3. terrain data
-	// 4. grass position
-	// 5. material Index 
-	// 6. material 
-	// 7. textures 
+	// 0. Camera 
+	// 1. Time
+	// 2. grass position
+	// 3. material Index 
+	// 4. material 
+	// 5. textures 
 	commandList->SetGraphicsRootConstantBufferView(0, *cameraBuffer);
-	commandList->SetGraphicsRootConstantBufferView(1, *mTerrainHeader);
-	commandList->SetGraphicsRootShaderResourceView(2, *mTerrainData);
-	commandList->SetGraphicsRootShaderResourceView(3, *mGrassPosition.GPUBegin());
-	commandList->SetGraphicsRoot32BitConstants(4, 1, &mMaterialIndex, 0);
-	commandList->SetGraphicsRootShaderResourceView(5, material);
-	commandList->SetGraphicsRootDescriptorTable(6, tex);
+	commandList->SetGraphicsRoot32BitConstant(1, Time.GetTimeSinceSceneStarted<UINT, std::chrono::milliseconds>(), 0);
+	commandList->SetGraphicsRootShaderResourceView(2, *mGrassPosition.GPUBegin());
+	commandList->SetGraphicsRoot32BitConstants(3, 1, &mMaterialIndex, 0);
+	commandList->SetGraphicsRootShaderResourceView(4, material);
+	commandList->SetGraphicsRootDescriptorTable(5, tex);
 
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
 
@@ -253,6 +245,18 @@ void GrassRenderer::CreatePipelineState(ComPtr<ID3D12Device10> device) {
 	stream.Blend.Type = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_BLEND;
 	stream.Blend.Desc = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 
+	stream.Blend.Desc.AlphaToCoverageEnable = FALSE;
+	stream.Blend.Desc.IndependentBlendEnable = TRUE;
+
+	stream.Blend.Desc.RenderTarget[0].BlendEnable = FALSE;
+	stream.Blend.Desc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	stream.Blend.Desc.RenderTarget[1].BlendEnable = FALSE;
+	stream.Blend.Desc.RenderTarget[1].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	stream.Blend.Desc.RenderTarget[2].BlendEnable = FALSE;
+	stream.Blend.Desc.RenderTarget[2].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
 	stream.Rasterizer.Type = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER;
 	stream.Rasterizer.Desc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	stream.Rasterizer.Desc.CullMode = D3D12_CULL_MODE_NONE;
@@ -297,27 +301,27 @@ void GrassRenderer::CreateRootSignature(ComPtr<ID3D12Device10> device) {
 	D3D12_DESCRIPTOR_RANGE descriptorRange{};
 	descriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	descriptorRange.NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
-	descriptorRange.BaseShaderRegister = 3;
+	descriptorRange.BaseShaderRegister = 2;
 	descriptorRange.RegisterSpace = 0;
 	descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 	// 1. Camera 
-	// 2. terrain header
-	// 3. terrain data
-	// 4. grass position
-	// 5. material Index 
-	// 6. material 
-	// 7. textures 
-	D3D12_ROOT_PARAMETER rootParameters[7]{};
+	// 2. Time
+	// 3. grass position
+	// 4. material Index 
+	// 5. material 
+	// 6. textures 
+	D3D12_ROOT_PARAMETER rootParameters[6]{};
 
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[0].Descriptor.ShaderRegister = 0;
 	rootParameters[0].Descriptor.RegisterSpace = 0;
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[1].Descriptor.ShaderRegister = 1;
-	rootParameters[1].Descriptor.RegisterSpace = 0;
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	rootParameters[1].Constants.ShaderRegister = 1;
+	rootParameters[1].Constants.RegisterSpace = 0;
+	rootParameters[1].Constants.Num32BitValues = 1;
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
@@ -325,26 +329,21 @@ void GrassRenderer::CreateRootSignature(ComPtr<ID3D12Device10> device) {
 	rootParameters[2].Descriptor.RegisterSpace = 0;
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	rootParameters[3].Descriptor.ShaderRegister = 1;
-	rootParameters[3].Descriptor.RegisterSpace = 0;
+	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	rootParameters[3].Constants.ShaderRegister = 2;
+	rootParameters[3].Constants.RegisterSpace = 0;
+	rootParameters[3].Constants.Num32BitValues = 1;
 	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-	rootParameters[4].Constants.ShaderRegister = 2;
-	rootParameters[4].Constants.RegisterSpace = 0;
-	rootParameters[4].Constants.Num32BitValues = 1;
+	rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	rootParameters[4].Descriptor.ShaderRegister = 1;
+	rootParameters[4].Descriptor.RegisterSpace = 0;
 	rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	rootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	rootParameters[5].Descriptor.ShaderRegister = 2;
-	rootParameters[5].Descriptor.RegisterSpace = 0;
-	rootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
-	rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[6].DescriptorTable.NumDescriptorRanges = 1;
-	rootParameters[6].DescriptorTable.pDescriptorRanges = &descriptorRange;
-	rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[5].DescriptorTable.NumDescriptorRanges = 1;
+	rootParameters[5].DescriptorTable.pDescriptorRanges = &descriptorRange;
+	rootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};

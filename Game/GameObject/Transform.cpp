@@ -92,6 +92,11 @@ void Transform::Scaling(float x, float y, float z) {
 	mScale.z *= z;
 }
 
+void Transform::SetRotation(const SimpleMath::Quaternion& rotation) {
+	mRotation = rotation;
+	mRotation.Normalize();
+}
+
 void Transform::Rotate(float pitch, float yaw, float roll) {
 	mRotation = SimpleMath::Quaternion::Concatenate(SimpleMath::Quaternion::CreateFromYawPitchRoll(yaw, pitch, roll), mRotation);
 	mRotation.Normalize(); 

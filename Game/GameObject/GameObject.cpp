@@ -60,10 +60,10 @@ void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer)
 
 	mModelContext.world = mTransform.GetWorldMatrix();
 
-	if (mGraphController) {
+	if (mGraphController.GetActiveState()) {
 		mGraphController.Update(Time.GetDeltaTime(), boneTransformBuffer);
 	}
-	else if (mBoneMaskGraphController) {
+	else if (mBoneMaskGraphController.GetActiveState()) {
 		mBoneMaskGraphController.Update(Time.GetDeltaTime(), boneTransformBuffer);
 	}
 }
