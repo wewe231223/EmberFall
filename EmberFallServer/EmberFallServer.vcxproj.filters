@@ -88,6 +88,9 @@
     <Filter Include="MultiThreadLoopTest\Events">
       <UniqueIdentifier>{74abd418-50dc-437c-b5e2-b0062e0901c8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MultiThreadLoopTest\Script\Buff">
+      <UniqueIdentifier>{4465a545-16a2-4eec-91fe-17e93b49cec2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TerrainCollider.cpp">
@@ -244,6 +247,9 @@
       <Filter>MaybeReuse\Graph\GraphBase</Filter>
     </ClCompile>
     <ClCompile Include="Stage.cpp" />
+    <ClCompile Include="BuffHealScript.cpp">
+      <Filter>MultiThreadLoopTest\Script\Buff</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BehaviorTreeBase.h">
@@ -397,5 +403,8 @@
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClInclude>
     <ClInclude Include="Stage.h" />
+    <ClInclude Include="BuffHealScript.h">
+      <Filter>MultiThreadLoopTest\Script\Buff</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

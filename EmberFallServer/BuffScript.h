@@ -14,21 +14,25 @@ enum class BuffType : uint8_t {
 
 class BuffScript : public Script {
 public:
-    BuffScript(std::shared_ptr<GameObject> owner);
+    BuffScript(std::shared_ptr<GameObject> owner, float duration);
     virtual ~BuffScript();
 
 public:
+    Buff GetBuffType() const;
+
     virtual void Init() abstract;
 
     virtual void Update(const float deltaTime) abstract;
-    virtual void LateUpdate(const float deltaTime) abstract;
+    virtual void LateUpdate(const float deltaTime) override;
 
-    virtual void OnAttacked(const float damage, const SimpleMath::Vector3& knockbackForce);
-
+    virtual void OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) abstract;
     virtual void OnCollisionTerrain(const float height) abstract;
 
     virtual void DispatchGameEvent(struct GameEvent* event) abstract;
 
 private:
+    bool mActive{ true };
+    float mDuration{ };
+    float mDurationCounter{ };
     Buff mBuff{ static_cast<Buff>(BuffType::NONE) };
 };
