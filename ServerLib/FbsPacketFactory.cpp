@@ -242,7 +242,7 @@ OverlappedSend* FbsPacketFactory::FireProjectileSC(NetworkObjectIdType id, const
 OverlappedSend* FbsPacketFactory::PlayerEnterInLobbyCS(SessionIdType id) {
     flatbuffers::FlatBufferBuilder builder{ };
 
-    auto offset = Packets::CreatePlayerEnterInGame(builder);
+    auto offset = Packets::CreatePlayerEnterInLobbyCS(builder);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();

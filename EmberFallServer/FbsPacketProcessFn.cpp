@@ -45,6 +45,13 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
         break;
     }
 
+    case Packets::PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_CS:
+    {
+        decltype(auto) packetEnter = FbsPacketFactory::GetDataPtrCS<Packets::PlayerEnterInLobbyCS>(buffer);
+        ProcessPlayerEnterInLobby(session, packetEnter);
+        break;
+    }
+
     case Packets::PacketTypes_PT_PLAYER_EXIT_CS:
     {
         break;
@@ -105,6 +112,7 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
 }
 
 void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, const Packets::PlayerEnterInLobbyCS* const enter) {
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player [{}] Enter In Lobby!", session->GetId());
     session->EnterLobby();
 }
 
