@@ -15,15 +15,10 @@
 #include "../Resource/Texture.h"
 #include "../Renderer/core/Shader.h"
 #include "../Renderer/Core/DefferedRenderer.h"
-#include "../Manager/MeshRenderManager.h"
-#include "../Manager/TextureManager.h"
+#include "../Renderer/Manager/RenderManager.h"
 #include "../Resource/Mesh.h"
 #include "../Renderer/Core/StringRenderer.h"
-#include "../Renderer/Core/ShadowRenderer.h"
-#include "../Renderer/Manager/LightingManager.h"
-#include "../Renderer/Manager/ParticleManager.h"
 #include "../Renderer/Render/GrassRenderer.h"
-#include "../Renderer/Render/Canvas.h"
 
 enum class RenderFeature : BYTE {
 	PARTICLE, 
@@ -42,14 +37,12 @@ public:
 	Renderer(Renderer&& other) = delete;
 	Renderer& operator=(Renderer&& other) = delete;
 public:
-	std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> GetManagers();
+	std::shared_ptr<RenderManager> GetRenderManager(); 
 	DefaultBufferCPUIterator GetMainCameraBuffer();
 
 	ComPtr<ID3D12Device10> GetDevice();
 	ComPtr<ID3D12GraphicsCommandList> GetCommandList();
 	ComPtr<ID3D12GraphicsCommandList> GetLoadCommandList(); 
-
-	std::shared_ptr<ShadowRenderer> GetShadowRenderer(); 
 
 	void LoadTextures(); 
 
@@ -57,12 +50,15 @@ public:
 	void ResetLoadCommandList(); 
 	void ExecuteLoadCommandList();
 
-	void SetFeatureEnabled(std::tuple<bool, bool> type);
+	void SetFeatureEnabled(SceneFeatureType type);
 
 	void Update();
 
 	void Render();
 	void ExecuteRender();
+
+	void ToggleFullScreen();
+	void SetFullScreenState(bool state); 
 private:
 	void InitFactory();
 	
@@ -81,11 +77,9 @@ private:
 	void InitFonts(); 
 
 	void InitCameraBuffer(); 
-	void InitShadowRenderer();
-	void InitCanvas();
 	void InitTerrainBuffer();
 	void InitParticleManager();
-	void InitGrassRender(); 
+	void InitGrassRenderer(); 
 
 	void InitCoreResources(); 
 	void InitDefferedRenderer();
@@ -94,6 +88,9 @@ private:
 
 	void ResetCommandList();
 	void FlushCommandQueue();
+
+	void SetWindowFullScreen(); 
+	void SetWindowedMode();
 
 private:
 	HWND mRendererWindow{ nullptr };
@@ -125,7 +122,6 @@ private:
 	UINT mRTIndex{ 0 };
 
 	StringRenderer mStringRenderer{}; 
-	std::shared_ptr<ShadowRenderer> mShadowRenderer{};
 	/*
 	1. diffuse 
 	2. normal
@@ -139,18 +135,15 @@ private:
 	ComPtr<ID3D12DescriptorHeap> mDSHeap{ nullptr };
 	Texture mDepthStencilBuffer{};
 
-	std::shared_ptr<TextureManager> mTextureManager{};
-	std::shared_ptr<MaterialManager> mMaterialManager{};
-	std::shared_ptr<MeshRenderManager> mMeshRenderManager{};
-	std::shared_ptr<ParticleManager> mParticleManager{};
-	std::shared_ptr<LightingManager> mLightingManager{};
-	std::shared_ptr<Canvas> mCanvas{};
+	std::shared_ptr<RenderManager> mRenderManager{ nullptr };
 
-	std::tuple<bool, bool> mFeatureEnabled{ false, false };
+	SceneFeatureType mFeatureEnabled{ false, false };
 	GrassRenderer mGrassRenderer{};
 
 	DefaultBuffer mTerrainHeaderBuffer{}; 
 	DefaultBuffer mTerrainDataBuffer{}; 
 
 	DefaultBuffer mMainCameraBuffer{};
+
+	bool mIsFullScreen{ false };
 };

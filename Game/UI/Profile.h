@@ -7,7 +7,7 @@ public:
 	Profile() = default;
 	~Profile() = default;
 public:
-	void Init(std::shared_ptr<Canvas> canvas, UINT frame, UINT profile);
+	void Init(Canvas& canvas, UINT frame, UINT profile);
 	void Update();
 private:
 	CanvasObject mBaseFrame{};

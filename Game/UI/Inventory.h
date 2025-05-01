@@ -14,7 +14,7 @@ public:
 	Inventory() = default; 
 	~Inventory() = default;
 public:
-	void Init(std::shared_ptr<Canvas> canvas, UINT base, UINT frame, UINT health, UINT cross, UINT holyWater);
+	void Init(Canvas& canvas, UINT base, UINT frame, UINT health, UINT cross, UINT holyWater);
 
 	void SetItem(ItemType type, UINT slot, bool active); 
 

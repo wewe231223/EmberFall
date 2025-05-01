@@ -1,13 +1,8 @@
 #pragma once 
 #include <array>
-#include "../Renderer/Manager/TextureManager.h"
-#include "../Renderer/Manager/MeshRenderManager.h"
-#include "../Renderer/Manager/ParticleManager.h"
-#include "../Renderer/Render/Canvas.h"
-#include "../Renderer/Render/GrassRenderer.h"
-#include "../Renderer/Manager/LightingManager.h"
+#include "../Renderer/Manager/RenderManager.h"
+
 #include "../Renderer/Core/StringRenderer.h"
-#include "../Renderer/core/ShadowRenderer.h"
 #include "../Game/System/Input.h"
 #include "../Game/System/Timer.h"
 #include "../Game/GameObject/GameObject.h"
@@ -24,7 +19,7 @@
 
 class TerrainScene : public IScene {
 public:
-	TerrainScene(std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation, std::shared_ptr<ShadowRenderer> shadowRenderer); 
+	TerrainScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCamLocation); 
 	virtual ~TerrainScene();
 
 public:
@@ -33,6 +28,7 @@ public:
 	virtual void ProcessNetwork(); 
 	virtual void Update();
 	virtual void SendNetwork(); 
+	virtual void Exit();
 
 private:
 	void BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList); 
@@ -54,7 +50,6 @@ private:
 	void ProcessPackets(const uint8_t* buffer, size_t size); 
 	const uint8_t* ProcessPacket(const uint8_t* buffer);
 
-
 	void ProcessPacketProtocolVersion(const uint8_t* buffer);
 	void ProcessNotifyId(const uint8_t* buffer);
 	void ProcessPlayerExit(const uint8_t* buffer);
@@ -72,15 +67,8 @@ private:
 	void ProcessAcquiredItem(const uint8_t* buffer);
 	void ProcessFireProjectile(const uint8_t* buffer);
 	void ProcessProjectileMove(const uint8_t* buffer);
-
 private:
-	std::shared_ptr<TextureManager> mTextureManager{ nullptr };
-	std::shared_ptr<MeshRenderManager> mMeshRenderManager{ nullptr };
-	std::shared_ptr<MaterialManager> mMaterialManager{ nullptr };
-	std::shared_ptr<ParticleManager> mParticleManager{ nullptr };
-	std::shared_ptr<Canvas> mCanvas{ nullptr };
-	std::shared_ptr<LightingManager> mLightingManager{ nullptr };
-	std::shared_ptr<ShadowRenderer> mShadowRenderer{ nullptr };
+	std::shared_ptr<RenderManager> mRenderManager{};
 
 	std::unordered_map<std::string, Collider> mColliderMap{};
 	std::unordered_map<std::string, std::unique_ptr<Mesh>> mMeshMap{};
@@ -90,7 +78,6 @@ private:
 	Camera mCamera{};
 	std::unique_ptr<CameraMode> mCameraMode{ nullptr };
 
-
 	std::unordered_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
 	std::vector<GameObject> mGameObjects{};
 
@@ -98,15 +85,12 @@ private:
 
 	int mNetworkSign{};
 	int mInputSign{}; 
-	std::vector<DirectX::Keyboard::Keys> mSendKeyList{};
 
 	std::unordered_map<NetworkObjectIdType, Player*> mPlayerIndexmap{};
 	std::array<Player, 5> mPlayers{ Player{}, };
 	
 	Player* mMyPlayer{ nullptr };
 
-	
-	
 	std::unordered_map<std::string, EquipmentObject> mEquipments{}; 
 
 	AnimatorGraph::BoneMaskAnimationGraphController mBaseAnimationController{};
@@ -119,7 +103,6 @@ private:
 	AnimatorGraph::AnimationGraphController mDemonAnimationController{};
 
 	GameObject mSkyBox{};
-	GameObject mSkyFog{};
 
 	TerrainLoader tLoader{}; 
 	TerrainCollider tCollider{};
@@ -131,11 +114,7 @@ private:
 	Particle test1{};
 	Particle test2{}; 
 
-	//TextBlock* mNetworkInfoText{ TextBlockManager::GetInstance().CreateTextBlock(L"",D2D1_RECT_F{100.f,0.f,800.f,100.f},StringColor::Black, "NotoSansKR") };
-	
 	IntervalTimer mIntervalTimer{};
-
-	std::unordered_map<std::string, std::vector<double>> mAnimationTimeMap{};
 
 	Inventory mInventoryUI{};
 	HealthBar mHealthBarUI{};

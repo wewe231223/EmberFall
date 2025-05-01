@@ -49,8 +49,10 @@ struct MaterialConstants {
 };
 
 class MaterialManager {
+	static constexpr size_t MAX_MATERIAL_COUNTS = 512; 
 public:
 	MaterialManager() = default;
+	MaterialManager(ComPtr<ID3D12Device> device);
 	~MaterialManager() = default;
 
 	MaterialManager(const MaterialManager& other) = delete;

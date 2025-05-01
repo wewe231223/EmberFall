@@ -7,7 +7,7 @@ public:
 	~Image() = default;
 
 public:
-	void Init(std::shared_ptr<Canvas> canvas, UINT img);
+	void Init(Canvas& canvas, UINT img);
 	CanvasRect& GetRect();
 
 	void Update();

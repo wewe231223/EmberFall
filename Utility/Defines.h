@@ -70,7 +70,10 @@ public:
 	virtual void ProcessNetwork() PURE;
 	virtual void Update() PURE;
 	virtual void SendNetwork() PURE;
+    virtual void Exit() PURE; 
 };
+
+using SceneFeatureType = std::tuple<bool, bool>;
 
 struct BoneTransformBuffer {
 	std::array< SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<size_t> >	boneTransforms;

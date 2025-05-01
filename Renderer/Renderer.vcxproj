@@ -153,6 +153,7 @@
     <ClCompile Include="Manager\LightingManager.cpp" />
     <ClCompile Include="Manager\MeshRenderManager.cpp" />
     <ClCompile Include="Manager\ParticleManager.cpp" />
+    <ClCompile Include="Manager\RenderManager.cpp" />
     <ClCompile Include="Manager\TextureManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -175,6 +176,7 @@
     <ClInclude Include="Manager\LightingManager.h" />
     <ClInclude Include="Manager\MeshRenderManager.h" />
     <ClInclude Include="Manager\ParticleManager.h" />
+    <ClInclude Include="Manager\RenderManager.h" />
     <ClInclude Include="Manager\TextureManager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Render\Canvas.h" />

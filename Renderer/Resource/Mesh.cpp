@@ -25,7 +25,7 @@ Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comman
 		};
 
 		SimpleMath::Vector2 planeTexcoords[] = {
-			{ 0.0f, 100.0f }, { 100.0f, 100.0f }, { 100.0f, 0.0f }, { 0.0f, 0.0f }
+			{ 0.0f, 10.0f }, { 10.0f, 10.0f }, { 10.0f, 0.0f }, { 0.0f, 0.0f }
 		};
 
 		UINT planeIndices[] = {

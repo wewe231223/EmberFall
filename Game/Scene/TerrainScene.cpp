@@ -75,35 +75,40 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					Crash("There is no more space for My Player!!");
 				}
 				
-				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
-				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mMageAnimationController);
-				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mShieldManController);
-				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mArcherAnimationController);
+				//*nextLoc = Player(mMeshMap["Demon"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial"), mDemonAnimationController);
+				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mMageAnimationController);
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mShieldManController);
+				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mArcherAnimationController);
 
 
 
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
 		
-				mMyPlayer->AddEquipment(mEquipments["GreatSword"].Clone());
+				//mMyPlayer->AddEquipment(mEquipments["GreatSword"].Clone());
 
-				//mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
-				//mMyPlayer->AddEquipment(mEquipments["Shield"].Clone());
+				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
+				mMyPlayer->AddEquipment(mEquipments["Shield"].Clone());
 
 				//mMyPlayer->AddEquipment(mEquipments["Bow"].Clone());
 				//mMyPlayer->AddEquipment(mEquipments["Quiver"].Clone());
 
+				//mMyPlayer->AddEquipment(mEquipments["DemonCloth"].Clone());
+				//mMyPlayer->AddEquipment(mEquipments["DemonWeapon"].Clone());
 
 				mMyPlayer->SetMyPlayer();
 				
 				mMyPlayer->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
 
-				mMyPlayer->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
+				mMyPlayer->SetAnimation(data->animation()); 
 
 					
 				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 
-				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), SimpleMath::Vector3{ 0.f, 1.8f, 3.f });
+
+				const SimpleMath::Vector3 cameraOffset{ 0.f, 1.75f, 3.f };
+
+				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
 				mCameraMode->Enter();
 			}
 			else {
@@ -121,10 +126,10 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					Crash("There is no more space for Other Player!!"); 
 				}
 		
-				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mMaterialManager->GetMaterial("CubeMaterial"), mSwordManAnimationController);
+				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mSwordManAnimationController);
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mPlayerIndexmap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
-				mPlayerIndexmap[data->objectId()]->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
+				mPlayerIndexmap[data->objectId()]->SetAnimation(data->animation());
 
 				mPlayerIndexmap[data->objectId()]->AddEquipment(mEquipments["Sword"].Clone());
 
@@ -151,7 +156,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		
 					nextLoc->mShader = mShaderMap["SkinnedShader"].get();
 					nextLoc->mMesh = mMeshMap["MonsterType1"].get();
-					nextLoc->mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
+					nextLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("MonsterType1Material");
 					nextLoc->mGraphController = mMonsterAnimationController;
 					nextLoc->mCollider = mColliderMap["MonsterType1"];
 					nextLoc->mAnimated = true;
@@ -168,7 +173,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					mGameObjectMap[data->objectId()] = &(*nextLoc);
 					nextLoc->mShader = mShaderMap["StandardShader"].get();
 					nextLoc->mMesh = mMeshMap["CorruptedGem"].get();
-					nextLoc->mMaterial = mMaterialManager->GetMaterial("CorruptedGemMaterial");
+					nextLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("CorruptedGemMaterial");
 					nextLoc->SetActiveState(true);
 		
 
@@ -181,7 +186,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					mGameObjectMap[data->objectId()] = &(*nextLoc);
 					nextLoc->mShader = mShaderMap["StandardShader"].get();
 					nextLoc->mMesh = mMeshMap["Cube"].get();
-					nextLoc->mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+					nextLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial");
 					nextLoc->SetActiveState(true);
 
 					nextLoc->GetTransform().Scaling(0.3f, 0.3f, 0.3f);
@@ -283,8 +288,7 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 			//	DebugBreak();
 			//}
 
-
-			mPlayerIndexmap[data->objectId()]->GetBoneMaskController().Transition(static_cast<size_t>(data->animation()));
+			mPlayerIndexmap[data->objectId()]->SetAnimation(data->animation());
 		}
 	}
 	else {
@@ -335,19 +339,14 @@ void TerrainScene::ProcessProjectileMove(const uint8_t* buffer) {
 #pragma endregion 
 
 
-TerrainScene::TerrainScene(std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> managers, DefaultBufferCPUIterator mainCameraBufferLocation, std::shared_ptr<ShadowRenderer> shadowRenderer) {
+TerrainScene::TerrainScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCamLocation) {
 
 	mInputSign = NonReplacementSampler::GetInstance().Sample();
 	mNetworkSign = NonReplacementSampler::GetInstance().Sample();
 
-	mMeshRenderManager = std::get<0>(managers);
-	mTextureManager = std::get<1>(managers);
-	mMaterialManager = std::get<2>(managers);
-	mParticleManager = std::get<3>(managers);
-	mCanvas = std::get<4>(managers);
-	mShadowRenderer = shadowRenderer;
+	mRenderManager = renderMgr; 
 
-	mCamera = Camera(mainCameraBufferLocation);
+	mCamera = Camera(mainCamLocation);
 	auto& cameraTransform = mCamera.GetTransform();
 	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
 	cameraTransform.Look({ 0.f,85.f,0.f });
@@ -368,12 +367,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 
 	mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
-	mSkyBox.mMaterial = mMaterialManager->GetMaterial("SkyBoxMaterial");
-
-	mSkyFog.mShader = mShaderMap["SkyFogShader"].get();
-	mSkyFog.mMesh = mMeshMap["SkyFog"].get();
-	mSkyFog.mMaterial = mMaterialManager->GetMaterial("SkyFogMaterial");
-
+	mSkyBox.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("SkyBoxMaterial");
 
 	TerrainScene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
 
@@ -381,7 +375,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 		auto& object = mGameObjects.emplace_back();
 		object.mShader = mShaderMap["TerrainShader"].get();
 		object.mMesh = mMeshMap["Terrain"].get();
-		object.mMaterial = mMaterialManager->GetMaterial("TerrainMaterial");
+		object.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("TerrainMaterial");
 		object.SetActiveState(true);
 
 		object.GetTransform().GetPosition() = { 0.f, 0.f, 0.f };
@@ -394,7 +388,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 		auto& boss = mGameObjects.emplace_back();
 		boss.mShader = mShaderMap["SkinnedShader"].get();
 		boss.mMesh = mMeshMap["Demon"].get();
-		boss.mMaterial = mMaterialManager->GetMaterial("DemonMaterial");
+		boss.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial");
 		boss.mGraphController = mDemonAnimationController;
 		boss.mAnimated = true;
 		boss.mCollider = mColliderMap["Demon"];
@@ -406,7 +400,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 		auto& imp = mGameObjects.emplace_back();
 		imp.mShader = mShaderMap["SkinnedShader"].get();
 		imp.mMesh = mMeshMap["MonsterType1"].get();
-		imp.mMaterial = mMaterialManager->GetMaterial("MonsterType1Material");
+		imp.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("MonsterType1Material");
 		imp.mGraphController = mMonsterAnimationController;
 		imp.mAnimated = true;
 		imp.mCollider = mColliderMap["MonsterType1"];
@@ -418,7 +412,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 		mEquipments["Sword"] = EquipmentObject{};
 		mEquipments["Sword"].mMesh = mMeshMap["Sword"].get();
 		mEquipments["Sword"].mShader = mShaderMap["StandardShader"].get();
-		mEquipments["Sword"].mMaterial = mMaterialManager->GetMaterial("SwordMaterial");
+		mEquipments["Sword"].mMaterial = mRenderManager->GetMaterialManager().GetMaterial("SwordMaterial");
 		mEquipments["Sword"].mCollider = mColliderMap["Sword"];
 		mEquipments["Sword"].mEquipJointIndex = 36;
 		mEquipments["Sword"].SetActiveState(true);
@@ -429,7 +423,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 		mEquipments["GreatSword"] = EquipmentObject{};
 		mEquipments["GreatSword"].mMesh = mMeshMap["GreatSword"].get();
 		mEquipments["GreatSword"].mShader = mShaderMap["StandardShader"].get();
-		mEquipments["GreatSword"].mMaterial = mMaterialManager->GetMaterial("GreatSwordMaterial");
+		mEquipments["GreatSword"].mMaterial = mRenderManager->GetMaterialManager().GetMaterial("GreatSwordMaterial");
 		mEquipments["GreatSword"].mCollider = mColliderMap["GreatSword"];
 		mEquipments["GreatSword"].mEquipJointIndex = 36;
 		mEquipments["GreatSword"].SetActiveState(true);
@@ -439,7 +433,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 		mEquipments["Bow"] = EquipmentObject{};
 		mEquipments["Bow"].mMesh = mMeshMap["Bow"].get();
 		mEquipments["Bow"].mShader = mShaderMap["StandardShader"].get();
-		mEquipments["Bow"].mMaterial = mMaterialManager->GetMaterial("BowMaterial");
+		mEquipments["Bow"].mMaterial = mRenderManager->GetMaterialManager().GetMaterial("BowMaterial");
 		mEquipments["Bow"].mCollider = mColliderMap["Bow"];
 		mEquipments["Bow"].mEquipJointIndex = 12;
 		mEquipments["Bow"].SetActiveState(true);
@@ -449,7 +443,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 		mEquipments["Quiver"] = EquipmentObject{};
 		mEquipments["Quiver"].mMesh = mMeshMap["Quiver"].get();
 		mEquipments["Quiver"].mShader = mShaderMap["StandardShader"].get();
-		mEquipments["Quiver"].mMaterial = mMaterialManager->GetMaterial("QuiverMaterial");
+		mEquipments["Quiver"].mMaterial = mRenderManager->GetMaterialManager().GetMaterial("QuiverMaterial");
 		mEquipments["Quiver"].mCollider = mColliderMap["Quiver"];
 		mEquipments["Quiver"].mEquipJointIndex = 3;
 		mEquipments["Quiver"].SetActiveState(true);
@@ -459,10 +453,30 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 		mEquipments["Shield"] = EquipmentObject{};
 		mEquipments["Shield"].mMesh = mMeshMap["Shield"].get();
 		mEquipments["Shield"].mShader = mShaderMap["StandardShader"].get();
-		mEquipments["Shield"].mMaterial = mMaterialManager->GetMaterial("CubeMaterial");
+		mEquipments["Shield"].mMaterial = mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial");
 		mEquipments["Shield"].mCollider = mColliderMap["Shield"];
 		mEquipments["Shield"].mEquipJointIndex = 11;
 		mEquipments["Shield"].SetActiveState(true);
+	}
+
+	{
+		mEquipments["DemonCloth"] = EquipmentObject{};
+		mEquipments["DemonCloth"].mMesh = mMeshMap["DemonCloth"].get();
+		mEquipments["DemonCloth"].mShader = mShaderMap["StandardShader"].get();
+		mEquipments["DemonCloth"].mMaterial = mRenderManager->GetMaterialManager().GetMaterial("DemonClothMaterial");
+		mEquipments["DemonCloth"].mCollider = mColliderMap["DemonCloth"];
+		mEquipments["DemonCloth"].mEquipJointIndex = 0;
+		mEquipments["DemonCloth"].SetActiveState(true);
+	}
+
+	{
+		mEquipments["DemonWeapon"] = EquipmentObject{};
+		mEquipments["DemonWeapon"].mMesh = mMeshMap["DemonWeapon"].get();
+		mEquipments["DemonWeapon"].mShader = mShaderMap["StandardShader"].get();
+		mEquipments["DemonWeapon"].mMaterial = mRenderManager->GetMaterialManager().GetMaterial("DemonWeaponMaterial");
+		mEquipments["DemonWeapon"].mCollider = mColliderMap["DemonWeapon"];
+		mEquipments["DemonWeapon"].mEquipJointIndex = 28;
+		mEquipments["DemonWeapon"].SetActiveState(true);
 	}
 
 	for (auto& environment : mEnvironmentObjects) {
@@ -492,31 +506,41 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 	v.emitIndex = 0;
 
 
-	test = mParticleManager->CreateEmitParticle(commandList, v);
+	test = mRenderManager->GetParticleManager().CreateEmitParticle(commandList, v);
 
 	v.position = DirectX::XMFLOAT3(10.f, 20.f, 10.f);
-	test1 = mParticleManager->CreateEmitParticle(commandList, v);
+	test1 = mRenderManager->GetParticleManager().CreateEmitParticle(commandList, v);
 
 	v.position = DirectX::XMFLOAT3(10.f, 30.f, 10.f);
-	test2 = mParticleManager->CreateEmitParticle(commandList, v);
+	test2 = mRenderManager->GetParticleManager().CreateEmitParticle(commandList, v);
 
-	mInventoryUI.Init(mCanvas,
-		mTextureManager->GetTexture("mid_dark_bar"),
-		mTextureManager->GetTexture("mid_frame"),
-		mTextureManager->GetTexture("Health"),
-		mTextureManager->GetTexture("HolyWater"),
-		mTextureManager->GetTexture("Cross")
+	mInventoryUI.Init(mRenderManager->GetCanvas(),
+		mRenderManager->GetTextureManager().GetTexture("mid_dark_bar"),
+		mRenderManager->GetTextureManager().GetTexture("mid_frame"),
+		mRenderManager->GetTextureManager().GetTexture("Health"),
+		mRenderManager->GetTextureManager().GetTexture("HolyWater"),
+		mRenderManager->GetTextureManager().GetTexture("Cross")
 	);
 
 	mInventoryUI.SetItem(ItemType::Health, 0, true);
 	mInventoryUI.SetItem(ItemType::HolyWater, 1, true);
 	mInventoryUI.SetItem(ItemType::Cross, 2, true);
 
-	mHealthBarUI.Init(mCanvas, mTextureManager->GetTexture("health_frame"), mTextureManager->GetTexture("health_bar"));
+	mHealthBarUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("health_frame"), mRenderManager->GetTextureManager().GetTexture("health_bar"));
 	mHealthBarUI.SetHealth(50.f);
 
 
-	mProfileUI.Init(mCanvas, mTextureManager->GetTexture("big_circle_frame"), mTextureManager->GetTexture("Devil"));
+	mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Devil"));
+
+
+	mRenderManager->GetLightingManager().ClearLight(commandList);
+	
+	auto& light = mRenderManager->GetLightingManager().GetLight(0);
+	light.mType = LightType::Directional;
+	light.Direction = { -1.f, 3.f, 1.f };
+	light.Diffuse = { 1.f, 1.f, 1.f, 1.f };
+	light.Specular = { 1.f, 1.f, 1.f, 1.f };
+	light.Ambient = { 0.2f, 0.2f, 0.2f, 1.f };
 }
 
 void TerrainScene::ProcessNetwork() {
@@ -635,6 +659,8 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 
 
 void TerrainScene::Update() {
+
+
 	for (auto& player : mPlayers) {
 		if (false == player.GetActiveState()) {
 			continue; 
@@ -663,9 +689,17 @@ void TerrainScene::Update() {
 
 	if (mCameraMode) {
 		mCameraMode->Update();
+
+		auto& pos = mCamera.GetTransform().GetPosition();
+		auto y = tCollider.GetHeight(pos.x, pos.z);
+		if (pos.y <= y + 0.5f) {
+			pos.y = y + 0.5f;
+		}
+		
+		mCameraMode->FocusUpdate(); 
 	}
 	mCamera.UpdateBuffer(); 
-	mShadowRenderer->Update();
+	mRenderManager->GetShadowRenderer().Update();
 
 	static BoneTransformBuffer boneTransformBuffer{};
 	static BoneTransformBuffer shadowBoneTransformBuffer{};
@@ -675,16 +709,16 @@ void TerrainScene::Update() {
 			if (gameObject.mAnimated) {
 				gameObject.UpdateShaderVariables(boneTransformBuffer); 
 				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
-				mMeshRenderManager->AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
+				mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
 
 				
 			}
 			else {
 				gameObject.UpdateShaderVariables();
 				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
-				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
-				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
-				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
+				mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
+				mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
+				mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
 
 			}
 		}
@@ -695,25 +729,25 @@ void TerrainScene::Update() {
 		
 		if (object.mCollider.GetActiveState()) {
 			for(int i = 0 ; i< Config::SHADOWMAP_COUNT<int> ; ++i)
-			if (mShadowRenderer->ShadowMapCulling(i, object.mCollider)) {
+			if (mRenderManager->GetShadowRenderer().ShadowMapCulling(i, object.mCollider)) {
 				auto [mesh, shader, modelContext] = object.GetRenderData();
-				mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, i);
+				mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, i);
 			}
 
 
 			if (mCamera.FrustumCulling(object.mCollider)) {
 				auto [mesh, shader, modelContext] = object.GetRenderData();
 
-				mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+				mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
 			}
 		}
 		else {
 
 			auto [mesh, shader, modelContext] = object.GetRenderData();
-			mMeshRenderManager->AppendPlaneMeshContext(shader, mesh, modelContext);
+			mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
 
-			mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
-			mMeshRenderManager->AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
+			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
+			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
 
 		}
 		
@@ -723,7 +757,7 @@ void TerrainScene::Update() {
 
 	for (auto& player : mPlayers) {
 		if (player.GetActiveState()) {
-			player.Update(mMeshRenderManager);
+			player.Update(mRenderManager->GetMeshRenderManager());
 		}
 	}
 
@@ -731,7 +765,7 @@ void TerrainScene::Update() {
 	
 	mSkyBox.UpdateShaderVariables();
 	auto [skyBoxMesh, skyBoxShader, skyBoxModelContext] = mSkyBox.GetRenderData();
-	mMeshRenderManager->AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);
+	mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);
 }
 
 void TerrainScene::SendNetwork() {
@@ -758,6 +792,10 @@ void TerrainScene::SendNetwork() {
 
 	decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(id, look);
 	gClientCore->Send(packetCamera);
+}
+
+void TerrainScene::Exit() {
+
 }
 
 void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
@@ -821,6 +859,13 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 	mMeshMap["Shield"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Shield"] = Collider{ data.position };
 
+	data = Loader.Load("Resources/Assets/Demon/DemonWeapon.glb");
+	mMeshMap["DemonWeapon"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["DemonWeapon"] = Collider{ data.position };
+
+	data = Loader.Load("Resources/Assets/Demon/DemonCloth.glb");
+	mMeshMap["DemonCloth"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["DemonCloth"] = Collider{ data.position };
 
 	data = Loader.Load("Resources/Assets/CorruptedGem/CorruptedGem.glb");
 	mMeshMap["CorruptedGem"] = std::make_unique<Mesh>(device, commandList, data);
@@ -852,6 +897,7 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 
 	data = Loader.Load("Resources/Assets/Tree/pine2/pine3.glb", 1);
 	mMeshMap["Pine3_Leaves"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["Pine3_Leaves"] = Collider{ data.position };
 
 	data = Loader.Load("Resources/Assets/Tree/pine2/pine4.glb");
 	mMeshMap["Pine4"] = std::make_unique<Mesh>(device, commandList, data);
@@ -924,96 +970,101 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 void TerrainScene::BuildMaterial() {
 	MaterialConstants mat{};
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Rolling Hills");
-	mat.mDiffuseTexture[1] = mTextureManager->GetTexture("dirt_2");
-	mMaterialManager->CreateMaterial("TerrainMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Rolling Hills");
+	mat.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("dirt_2");
+	mRenderManager->GetMaterialManager().CreateMaterial("TerrainMaterial", mat);
 
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("SkyBox_Front_0");
-	mat.mDiffuseTexture[1] = mTextureManager->GetTexture("SkyBox_Back_0");
-	mat.mDiffuseTexture[2] = mTextureManager->GetTexture("SkyBox_Top_0");
-	mat.mDiffuseTexture[3] = mTextureManager->GetTexture("SkyBox_Bottom_0");
-	mat.mDiffuseTexture[4] = mTextureManager->GetTexture("SkyBox_Left_0");
-	mat.mDiffuseTexture[5] = mTextureManager->GetTexture("SkyBox_Right_0");
-	mMaterialManager->CreateMaterial("SkyBoxMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("SkyBox_Front_0");
+	mat.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("SkyBox_Back_0");
+	mat.mDiffuseTexture[2] = mRenderManager->GetTextureManager().GetTexture("SkyBox_Top_0");
+	mat.mDiffuseTexture[3] = mRenderManager->GetTextureManager().GetTexture("SkyBox_Bottom_0");
+	mat.mDiffuseTexture[4] = mRenderManager->GetTextureManager().GetTexture("SkyBox_Left_0");
+	mat.mDiffuseTexture[5] = mRenderManager->GetTextureManager().GetTexture("SkyBox_Right_0");
+	mRenderManager->GetMaterialManager().CreateMaterial("SkyBoxMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Paladin_diffuse");
-	mMaterialManager->CreateMaterial("CubeMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Paladin_diffuse");
+	mRenderManager->GetMaterialManager().CreateMaterial("CubeMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Default_OBJ_baseColor");
-	mMaterialManager->CreateMaterial("MountainMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Default_OBJ_baseColor");
+	mRenderManager->GetMaterialManager().CreateMaterial("MountainMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("rock_base_color");
-	mMaterialManager->CreateMaterial("Mountain1Material", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("rock_base_color");
+	mRenderManager->GetMaterialManager().CreateMaterial("Mountain1Material", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("SwordA_v004_Default_AlbedoTransparency");
-	mMaterialManager->CreateMaterial("SwordMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("SwordA_v004_Default_AlbedoTransparency");
+	mRenderManager->GetMaterialManager().CreateMaterial("SwordMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("sword_base");
-	mMaterialManager->CreateMaterial("GreatSwordMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("sword_base");
+	mRenderManager->GetMaterialManager().CreateMaterial("GreatSwordMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Bow_DIFF");
-	mMaterialManager->CreateMaterial("BowMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Bow_DIFF");
+	mRenderManager->GetMaterialManager().CreateMaterial("BowMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Quiver_baseColor");
-	mMaterialManager->CreateMaterial("QuiverMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Quiver_baseColor");
+	mRenderManager->GetMaterialManager().CreateMaterial("QuiverMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("bow_base");
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("T_Demon_Imp_Monster_Bloody_Albedo_Skin_4");
-	mMaterialManager->CreateMaterial("MonsterType1Material", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_Demon_Imp_Monster_Bloody_Albedo_Skin_4");
+	mRenderManager->GetMaterialManager().CreateMaterial("MonsterType1Material", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("CorrupedGem_BaseColor");
-	mMaterialManager->CreateMaterial("CorruptedGemMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("CorrupedGem_BaseColor");
+	mRenderManager->GetMaterialManager().CreateMaterial("CorruptedGemMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("T_BigDemonWarrior_Body_Albedo_Skin_3");
-	mMaterialManager->CreateMaterial("DemonMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Albedo_Skin_3");
+	mRenderManager->GetMaterialManager().CreateMaterial("DemonMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("ferns");
-	mMaterialManager->CreateMaterial("FernMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Axe_Albedo_Skin_1");
+	mRenderManager->GetMaterialManager().CreateMaterial("DemonWeaponMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("pinetree-albedo");
-	mMaterialManager->CreateMaterial("Pine2Material", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Clothes_Albedo_Skin_1");
+	mRenderManager->GetMaterialManager().CreateMaterial("DemonClothMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("bark01");
-	mMaterialManager->CreateMaterial("Pine3StemMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("ferns");
+	mRenderManager->GetMaterialManager().CreateMaterial("FernMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("pinebranch");
-	mMaterialManager->CreateMaterial("Pine3LeavesMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("pinetree-albedo");
+	mRenderManager->GetMaterialManager().CreateMaterial("Pine2Material", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Small Rock 1 RFS_DefaultMaterial_AlbedoTransparency");
-	mMaterialManager->CreateMaterial("Rock_1_Material", mat);
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Small Rock 2 RFS_DefaultMaterial_AlbedoTransparency");
-	mMaterialManager->CreateMaterial("Rock_2_Material", mat);
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Small Rock 3 RFS_DefaultMaterial_AlbedoTransparency");
-	mMaterialManager->CreateMaterial("Rock_3_Material", mat);
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Small Rock 4 Moss RFS_DefaultMaterial_AlbedoTransparency");
-	mMaterialManager->CreateMaterial("Rock_4_Material", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("bark01");
+	mRenderManager->GetMaterialManager().CreateMaterial("Pine3StemMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Large Rock 1 RFS_DefaultMaterial_AlbedoTransparency");
-	mMaterialManager->CreateMaterial("LargeRock1_Material", mat);
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Large Rock 2 RFS_DefaultMaterial_AlbedoTransparency");
-	mMaterialManager->CreateMaterial("LargeRock2_Material", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("pinebranch");
+	mRenderManager->GetMaterialManager().CreateMaterial("Pine3LeavesMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Timber house_AlbedoTransparency");
-	mMaterialManager->CreateMaterial("TimberHouseMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 1 RFS_DefaultMaterial_AlbedoTransparency");
+	mRenderManager->GetMaterialManager().CreateMaterial("Rock_1_Material", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 2 RFS_DefaultMaterial_AlbedoTransparency");
+	mRenderManager->GetMaterialManager().CreateMaterial("Rock_2_Material", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 3 RFS_DefaultMaterial_AlbedoTransparency");
+	mRenderManager->GetMaterialManager().CreateMaterial("Rock_3_Material", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 4 Moss RFS_DefaultMaterial_AlbedoTransparency");
+	mRenderManager->GetMaterialManager().CreateMaterial("Rock_4_Material", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Farmhouse_Albedo");
-	mMaterialManager->CreateMaterial("StoneHouseMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Large Rock 1 RFS_DefaultMaterial_AlbedoTransparency");
+	mRenderManager->GetMaterialManager().CreateMaterial("LargeRock1_Material", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Large Rock 2 RFS_DefaultMaterial_AlbedoTransparency");
+	mRenderManager->GetMaterialManager().CreateMaterial("LargeRock2_Material", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Log_House_AlbedoTransparency");
-	mMaterialManager->CreateMaterial("LogHouseMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Timber house_AlbedoTransparency");
+	mRenderManager->GetMaterialManager().CreateMaterial("TimberHouseMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("Door_AlbedoTransparency");
-	mMaterialManager->CreateMaterial("LogHouseDoorMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Farmhouse_Albedo");
+	mRenderManager->GetMaterialManager().CreateMaterial("StoneHouseMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("windmill_001_base_COL");
-	mMaterialManager->CreateMaterial("WindMillMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Log_House_AlbedoTransparency");
+	mRenderManager->GetMaterialManager().CreateMaterial("LogHouseMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("windmill_001_lopatky_COL");
-	mMaterialManager->CreateMaterial("WindMillBladeMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Door_AlbedoTransparency");
+	mRenderManager->GetMaterialManager().CreateMaterial("LogHouseDoorMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mTextureManager->GetTexture("well_albedo");
-	mMaterialManager->CreateMaterial("WellMaterial", mat);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("windmill_001_base_COL");
+	mRenderManager->GetMaterialManager().CreateMaterial("WindMillMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("windmill_001_lopatky_COL");
+	mRenderManager->GetMaterialManager().CreateMaterial("WindMillBladeMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("well_albedo");
+	mRenderManager->GetMaterialManager().CreateMaterial("WellMaterial", mat);
 
 } 
 
@@ -1069,136 +1120,136 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 
 	stem.mShader = mShaderMap["TreeShader"].get();
 	stem.mMesh = mMeshMap["Pine3_Stem"].get();
-	stem.mMaterial = mMaterialManager->GetMaterial("Pine3StemMaterial");
+	stem.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine3StemMaterial");
 	stem.SetActiveState(true);
 	stem.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
 	stem.mCollider = mColliderMap["Pine3_Stem"];
 
 	leaves.mShader = mShaderMap["TreeShader"].get();
 	leaves.mMesh = mMeshMap["Pine3_Leaves"].get();
-	leaves.mMaterial = mMaterialManager->GetMaterial("Pine3LeavesMaterial");
+	leaves.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine3LeavesMaterial");
 	leaves.SetActiveState(true);
 	leaves.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
-	// leaves.mCollider = mColliderMap["Pine3_Stem"];
+	leaves.mCollider = mColliderMap["Pine3_Leaves"];
 
 	GameObject pinetree{};
 	pinetree.mShader = mShaderMap["TreeShader"].get();
 	pinetree.mMesh = mMeshMap["Pine2"].get();
 	pinetree.SetActiveState(true);
-	pinetree.mMaterial = mMaterialManager->GetMaterial("Pine2Material");
+	pinetree.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine2Material");
 	pinetree.mCollider = mColliderMap["Pine2"];
 
 	GameObject pinetree2{};
 	pinetree2.mShader = mShaderMap["TreeShader"].get();
 	pinetree2.mMesh = mMeshMap["Pine4"].get();
 	pinetree2.SetActiveState(true);
-	pinetree2.mMaterial = mMaterialManager->GetMaterial("Pine2Material");
+	pinetree2.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine2Material");
 	pinetree2.mCollider = mColliderMap["Pine4"];
 
 	GameObject rock1{};
 	rock1.mShader = mShaderMap["StandardShader"].get();
 	rock1.mMesh = mMeshMap["Rock_1"].get();
-	rock1.mMaterial = mMaterialManager->GetMaterial("Rock_1_Material");
+	rock1.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_1_Material");
 	rock1.SetActiveState(true);
 	rock1.mCollider = mColliderMap["Rock_1"];
 
 	GameObject rock2{};
 	rock2.mShader = mShaderMap["StandardShader"].get();
 	rock2.mMesh = mMeshMap["Rock_2"].get();
-	rock2.mMaterial = mMaterialManager->GetMaterial("Rock_2_Material");
+	rock2.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_2_Material");
 	rock2.SetActiveState(true);
 	rock2.mCollider = mColliderMap["Rock_2"];
 
 	GameObject rock3{};
 	rock3.mShader = mShaderMap["StandardShader"].get();
 	rock3.mMesh = mMeshMap["Rock_3"].get();
-	rock3.mMaterial = mMaterialManager->GetMaterial("Rock_3_Material");
+	rock3.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_3_Material");
 	rock3.SetActiveState(true);
 	rock3.mCollider = mColliderMap["Rock_3"];
 
 	GameObject rock4{};
 	rock4.mShader = mShaderMap["StandardShader"].get();
 	rock4.mMesh = mMeshMap["Rock_4"].get();
-	rock4.mMaterial = mMaterialManager->GetMaterial("Rock_4_Material");
+	rock4.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_4_Material");
 	rock4.SetActiveState(true);
 	rock4.mCollider = mColliderMap["Rock_4"];
 
 	GameObject bigrock1{};
 	bigrock1.mShader = mShaderMap["StandardShader"].get();
 	bigrock1.mMesh = mMeshMap["LargeRock1"].get();
-	bigrock1.mMaterial = mMaterialManager->GetMaterial("LargeRock1_Material");
+	bigrock1.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LargeRock1_Material");
 	bigrock1.SetActiveState(true);
 	bigrock1.mCollider = mColliderMap["LargeRock1"];
 
 	GameObject bigrock2{};
 	bigrock2.mShader = mShaderMap["StandardShader"].get();
 	bigrock2.mMesh = mMeshMap["LargeRock2"].get();
-	bigrock2.mMaterial = mMaterialManager->GetMaterial("LargeRock2_Material");
+	bigrock2.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LargeRock2_Material");
 	bigrock2.SetActiveState(true);
 	bigrock2.mCollider = mColliderMap["LargeRock2"];
 
 	GameObject fern{};
 	fern.mShader = mShaderMap["TreeShader"].get();
 	fern.mMesh = mMeshMap["Fern"].get();
-	fern.mMaterial = mMaterialManager->GetMaterial("FernMaterial");
+	fern.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("FernMaterial");
 	fern.SetActiveState(true);
 	//fern.mCollider = mColliderMap["Fern"];
 
 	GameObject baseMountain;
 	baseMountain.mShader = mShaderMap["StandardShader"].get();
 	baseMountain.mMesh = mMeshMap["Mountain"].get();
-	baseMountain.mMaterial = mMaterialManager->GetMaterial("MountainMaterial");
+	baseMountain.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("MountainMaterial");
 	baseMountain.mCollider = mColliderMap["Mountain"];
 
 	GameObject baseMountain1;
 	baseMountain1.mMesh = mMeshMap["Mountain1"].get();
 	baseMountain1.mShader = mShaderMap["StandardShader"].get();
-	baseMountain1.mMaterial = mMaterialManager->GetMaterial("Mountain1Material");
+	baseMountain1.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Mountain1Material");
 	baseMountain1.mCollider = mColliderMap["Mountain1"];
 
 	GameObject baseMountain2;
 	baseMountain2.mMesh = mMeshMap["Mountain3"].get();
 	baseMountain2.mShader = mShaderMap["StandardShader"].get();
-	baseMountain2.mMaterial = mMaterialManager->GetMaterial("Mountain3Material");
+	baseMountain2.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Mountain3Material");
 	baseMountain2.mCollider = mColliderMap["Mountain3"];
 
 	GameObject baseTimberHouse;
 	baseTimberHouse.mShader = mShaderMap["StandardShader"].get();
 	baseTimberHouse.mMesh = mMeshMap["TimberHouse"].get();
-	baseTimberHouse.mMaterial = mMaterialManager->GetMaterial("TimberHouseMaterial");
+	baseTimberHouse.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("TimberHouseMaterial");
 	baseTimberHouse.mCollider = mColliderMap["TimberHouse"];
 
 	GameObject baseStoneHouse = baseTimberHouse.Clone();
 	baseStoneHouse.mMesh = mMeshMap["StoneHouse"].get();
-	baseStoneHouse.mMaterial = mMaterialManager->GetMaterial("StoneHouseMaterial");
+	baseStoneHouse.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("StoneHouseMaterial");
 	baseStoneHouse.mCollider = mColliderMap["StoneHouse"];
 
 	GameObject baseLogHouse = baseTimberHouse.Clone();
 	baseLogHouse.mMesh = mMeshMap["LogHouse"].get();
-	baseLogHouse.mMaterial = mMaterialManager->GetMaterial("LogHouseMaterial");
+	baseLogHouse.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LogHouseMaterial");
 	baseLogHouse.mCollider = mColliderMap["LogHouse"];
 
 	GameObject baseLogHouseDoor = baseLogHouse.Clone();
 	baseLogHouseDoor.mMesh = mMeshMap["LogHouseDoor"].get();
-	baseLogHouseDoor.mMaterial = mMaterialManager->GetMaterial("LogHouseDoorMaterial");
+	baseLogHouseDoor.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LogHouseDoorMaterial");
 	//baseLogHouseDoor.mCollider = mColliderMap["LogHouse"];
 
 	GameObject baseWindMill;
 	baseWindMill.mShader = mShaderMap["StandardShader"].get();
 	baseWindMill.mMesh = mMeshMap["WindMill"].get();
-	baseWindMill.mMaterial = mMaterialManager->GetMaterial("WindMillMaterial");
+	baseWindMill.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("WindMillMaterial");
 	baseWindMill.mCollider = mColliderMap["WindMill"];
 
 	GameObject baseWindMillBlade = baseWindMill.Clone();
 	baseWindMillBlade.mShader = mShaderMap["TreeShader"].get();
 	baseWindMillBlade.mMesh = mMeshMap["WindMillBlade"].get();
-	baseWindMillBlade.mMaterial = mMaterialManager->GetMaterial("WindMillBladeMaterial");
+	baseWindMillBlade.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("WindMillBladeMaterial");
 	//baseWindMillBlade.mCollider = mColliderMap["WindMill"];
 
 
 	GameObject baseWell = baseTimberHouse.Clone();
 	baseWell.mMesh = mMeshMap["Well"].get();
-	baseWell.mMaterial = mMaterialManager->GetMaterial("WellMaterial");
+	baseWell.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("WellMaterial");
 	baseWell.mCollider = mColliderMap["Well"];
 
 
@@ -1510,20 +1561,6 @@ void TerrainScene::BuildArcherAnimationController() {
 
 		std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState };
 		mArcherAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
-
-
-		mAnimationTimeMap["Archer"] = std::vector<double>{
-		loader.GetClip(0)->duration / loader.GetClip(0)->ticksPerSecond,
-		loader.GetClip(1)->duration / loader.GetClip(1)->ticksPerSecond,
-		loader.GetClip(2)->duration / loader.GetClip(2)->ticksPerSecond,
-		loader.GetClip(3)->duration / loader.GetClip(3)->ticksPerSecond,
-		loader.GetClip(4)->duration / loader.GetClip(4)->ticksPerSecond,
-		loader.GetClip(5)->duration / loader.GetClip(5)->ticksPerSecond,
-		loader.GetClip(6)->duration / loader.GetClip(6)->ticksPerSecond,
-		loader.GetClip(11)->duration / loader.GetClip(11)->ticksPerSecond,
-		loader.GetClip(9)->duration / loader.GetClip(9)->ticksPerSecond,
-		loader.GetClip(10)->duration / loader.GetClip(10)->ticksPerSecond,
-		};
 	}
 }
 
@@ -1607,19 +1644,6 @@ void TerrainScene::BuildSwordManAnimationController() {
 
 		std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState };
 		mSwordManAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
-
-		mAnimationTimeMap["LongSword"] = std::vector<double>{
-		loader.GetClip(0)->duration / loader.GetClip(0)->ticksPerSecond,
-		loader.GetClip(1)->duration / loader.GetClip(1)->ticksPerSecond,
-		loader.GetClip(2)->duration / loader.GetClip(2)->ticksPerSecond,
-		loader.GetClip(3)->duration / loader.GetClip(3)->ticksPerSecond,
-		loader.GetClip(4)->duration / loader.GetClip(4)->ticksPerSecond,
-		loader.GetClip(5)->duration / loader.GetClip(5)->ticksPerSecond,
-		loader.GetClip(6)->duration / loader.GetClip(6)->ticksPerSecond,
-		loader.GetClip(7)->duration / loader.GetClip(7)->ticksPerSecond,
-		loader.GetClip(8)->duration / loader.GetClip(8)->ticksPerSecond,
-		loader.GetClip(9)->duration / loader.GetClip(9)->ticksPerSecond,
-		};
 	}
 }
 
@@ -1702,19 +1726,6 @@ void TerrainScene::BuildMageAnimationController() {
 
 		std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState };
 		mMageAnimationController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
-
-		mAnimationTimeMap["Magician"] = std::vector<double>{
-			loader.GetClip(0)->duration / loader.GetClip(0)->ticksPerSecond,
-			loader.GetClip(1)->duration / loader.GetClip(1)->ticksPerSecond,
-			loader.GetClip(2)->duration / loader.GetClip(2)->ticksPerSecond,
-			loader.GetClip(3)->duration / loader.GetClip(3)->ticksPerSecond,
-			loader.GetClip(4)->duration / loader.GetClip(4)->ticksPerSecond,
-			loader.GetClip(5)->duration / loader.GetClip(5)->ticksPerSecond,
-			loader.GetClip(6)->duration / loader.GetClip(6)->ticksPerSecond,
-			loader.GetClip(7)->duration / loader.GetClip(7)->ticksPerSecond,
-			loader.GetClip(8)->duration / loader.GetClip(8)->ticksPerSecond,
-			loader.GetClip(9)->duration / loader.GetClip(9)->ticksPerSecond,
-		};
 	}
 }
 
@@ -1796,19 +1807,6 @@ void TerrainScene::BuildShieldManController() {
 
 	std::vector<AnimatorGraph::BoneMaskAnimationState> states{ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState };
 	mShieldManController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
-
-	mAnimationTimeMap["ShieldMan"] = std::vector<double>{
-		loader.GetClip(0)->duration / loader.GetClip(0)->ticksPerSecond,
-		loader.GetClip(1)->duration / loader.GetClip(1)->ticksPerSecond,
-		loader.GetClip(2)->duration / loader.GetClip(2)->ticksPerSecond,
-		loader.GetClip(3)->duration / loader.GetClip(3)->ticksPerSecond,
-		loader.GetClip(4)->duration / loader.GetClip(4)->ticksPerSecond,
-		loader.GetClip(5)->duration / loader.GetClip(5)->ticksPerSecond,
-		loader.GetClip(6)->duration / loader.GetClip(6)->ticksPerSecond,
-		loader.GetClip(7)->duration / loader.GetClip(7)->ticksPerSecond,
-		loader.GetClip(8)->duration / loader.GetClip(8)->ticksPerSecond,
-		loader.GetClip(9)->duration / loader.GetClip(9)->ticksPerSecond,
-	};
 }
 
 void TerrainScene::BuildMonsterType1AnimationController() {
@@ -1866,19 +1864,6 @@ void TerrainScene::BuildMonsterType1AnimationController() {
 	deathState.loop = false;
 
 	mMonsterAnimationController = AnimatorGraph::AnimationGraphController({ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState });
-
-	mAnimationTimeMap["Monster"] = std::vector<double>{
-		loader.GetClip(0)->duration / loader.GetClip(0)->ticksPerSecond,
-		loader.GetClip(1)->duration / loader.GetClip(1)->ticksPerSecond,
-		loader.GetClip(2)->duration / loader.GetClip(2)->ticksPerSecond,
-		loader.GetClip(3)->duration / loader.GetClip(3)->ticksPerSecond,
-		loader.GetClip(4)->duration / loader.GetClip(4)->ticksPerSecond,
-		loader.GetClip(5)->duration / loader.GetClip(5)->ticksPerSecond,
-		loader.GetClip(6)->duration / loader.GetClip(6)->ticksPerSecond,
-		loader.GetClip(7)->duration / loader.GetClip(7)->ticksPerSecond,
-		0.0, 
-		loader.GetClip(8)->duration / loader.GetClip(8)->ticksPerSecond,
-	};
 }
 
 void TerrainScene::BuildDemonAnimationController() {
@@ -1936,17 +1921,4 @@ void TerrainScene::BuildDemonAnimationController() {
 	deathState.loop = false;
 
 	mDemonAnimationController = AnimatorGraph::AnimationGraphController({ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState });
-
-	mAnimationTimeMap["Demon"] = std::vector<double>{
-		loader.GetClip(0)->duration / loader.GetClip(0)->ticksPerSecond,
-		loader.GetClip(1)->duration / loader.GetClip(1)->ticksPerSecond,
-		loader.GetClip(2)->duration / loader.GetClip(2)->ticksPerSecond,
-		loader.GetClip(3)->duration / loader.GetClip(3)->ticksPerSecond,
-		loader.GetClip(4)->duration / loader.GetClip(4)->ticksPerSecond,
-		loader.GetClip(5)->duration / loader.GetClip(5)->ticksPerSecond,
-		loader.GetClip(6)->duration / loader.GetClip(6)->ticksPerSecond,
-		loader.GetClip(7)->duration / loader.GetClip(7)->ticksPerSecond,
-		0.0,
-		loader.GetClip(8)->duration / loader.GetClip(8)->ticksPerSecond,
-	};
 }
