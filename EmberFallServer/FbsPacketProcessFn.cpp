@@ -114,6 +114,31 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
 void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, const Packets::PlayerEnterInLobbyCS* const enter) {
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player [{}] Enter In Lobby!", session->GetId());
     session->EnterLobby();
+
+    auto sessionId = session->GetId();
+    auto sessionRole = session->GetPlayerRole();
+    auto packetReady = FbsPacketFactory::PlayerReadInLobbySC(sessionId, sessionRole);
+
+    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
+    decltype(auto) sessionMap = gServerCore->GetSessionManager()->GetSessionMap();
+
+    {
+        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
+        for (auto& [id, session] : sessionMap) {
+            auto gameSession = std::static_pointer_cast<GameSession>(session);
+            if (SESSION_INLOBBY != gameSession->GetSessionState()) {
+                continue;
+            }
+
+            auto clonedPacket = FbsPacketFactory::ClonePacket(packetReady);
+            session->RegisterSend(clonedPacket);
+        }
+    }
+}
+
+void ProcessPlayerReadyInLobby(std::shared_ptr<class GameSession>& session, const Packets::PlayerReadyInLobbyCS* const ready) {
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[{}] Ready!", session->GetId());
+    session->Ready(ready->role());
 }
 
 void ProcessPlayerEnterInGame(std::shared_ptr<class GameSession>& session, const Packets::PlayerEnterInGame* const enter) {
@@ -156,6 +181,7 @@ void ProcessPlayerLookCS(std::shared_ptr<GameSession>& session, const Packets::P
     auto lookVec = FbsPacketFactory::GetVector3(look->look());
     userObject->GetTransform()->SetLook(lookVec);
     userObject->Update();
+    userObject->LateUpdate();
 }
 
 void ProcessPlayerSelectWeaponCS(std::shared_ptr<class GameSession>& session, const Packets::PlayerSelectWeaponCS* const weapon) {

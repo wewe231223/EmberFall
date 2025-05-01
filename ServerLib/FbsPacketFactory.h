@@ -37,6 +37,11 @@ public:
     static OverlappedSend* PlayerExitSC(SessionIdType id);
     static OverlappedSend* PacketLatencySC(uint64_t time);
 
+    // In Lobby
+    static OverlappedSend* PlayerReadInLobbySC(SessionIdType id, Packets::PlayerRole role);
+    static OverlappedSend* ChangeToNextSceneSC();
+    static OverlappedSend* GameEndSC(Packets::PlayerRole winner);
+
     static OverlappedSend* ObjectAppearedSC(NetworkObjectIdType id, Packets::EntityType entity, float yaw,
         Packets::AnimationState animation, float hp, const SimpleMath::Vector3& pos);
     static OverlappedSend* ObjectDisappearedSC(NetworkObjectIdType id);
@@ -56,7 +61,11 @@ public:
         const SimpleMath::Vector3& dir, float speed, Packets::ProjectileTypes projectile);
 
     // Client to Server
+    // In Lobby
     static OverlappedSend* PlayerEnterInLobbyCS(SessionIdType id);
+    static OverlappedSend* PlayerReadyInLobbyCS(SessionIdType id, Packets::PlayerRole role);
+
+    // InGame
     static OverlappedSend* PlayerEnterInGame(SessionIdType id);
     static OverlappedSend* PlayerExitCS(SessionIdType id);
     static OverlappedSend* PlayerInputCS(SessionIdType id, uint8_t key, bool down);

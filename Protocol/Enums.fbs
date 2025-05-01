@@ -5,6 +5,7 @@ enum PacketTypes : ubyte {
     //      Networks Packet (Networks.fbs)
     PT_PLAYER_EXIT_CS = 0x00,
     PT_PLAYER_ENTER_IN_LOBBY_CS,
+    PT_PLAYER_READY_IN_LOBBY_CS,
     PT_PLAYER_ENTER_INGAME,
     PT_PLAYER_INPUT_CS,
     PT_PLAYER_LOOK_CS,
@@ -25,6 +26,11 @@ enum PacketTypes : ubyte {
     PT_NOTIFY_ID_SC,
     PT_PLAYER_EXIT_SC,
     PT_LATENCT_SC,
+
+    //      InLobby
+    PT_PLAYER_READY_IN_LOBBY_SC,
+    PT_CHANGE_TO_NEXT_SCENE_SC,
+    PT_GAME_END_SC,
 
     //      Common Object Packet (CommentObjects.fbs)
     PT_OBJECT_APPEARED_SC,
@@ -62,7 +68,8 @@ enum AnimationState : ubyte {
 }
 
 enum PlayerRole : ubyte {
-    HUMAN = 0,
+    NONE = 0,
+    HUMAN,
     BOSS
 }
 

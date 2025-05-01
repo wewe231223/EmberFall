@@ -103,10 +103,18 @@ void GameSession::EnterInGame() {
     InitUserObject();
 }
 
+void GameSession::Ready(Packets::PlayerRole role) {
+    mPlayerRole = role;
+}
+
 std::shared_ptr<GameObject> GameSession::GetUserObject() const {
     return mUserObject;
 }
 
 uint8_t GameSession::GetSessionState() const {
     return mSessionState.load();
+}
+
+Packets::PlayerRole GameSession::GetPlayerRole() const {
+    return mPlayerRole;
 }

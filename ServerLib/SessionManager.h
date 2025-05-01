@@ -44,12 +44,14 @@ public:
 public:
     void RegisterCreateSessionFn(std::function<std::shared_ptr<Session>()>&& fn);
     std::shared_ptr<Session> CreateSessionObject();
+
     bool AddSession(std::shared_ptr<Session> session);
     void CloseSession(SessionIdType id);
 
     void ReleaseSessionId(SessionIdType id);
 
     std::shared_ptr<Session> GetSession(SessionIdType id);
+    Concurrency::concurrent_unordered_map<SessionIdType, std::shared_ptr<Session>>& GetSessionMap();
 
     void Send(SessionIdType to, OverlappedSend* const overlappedSend);
 

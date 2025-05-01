@@ -55,8 +55,16 @@ void SessionManager::ReleaseSessionId(SessionIdType id) {
     mSessionIdMap.push(id);
 }
 
+Lock::SRWLock& SessionManager::GetSessionLock() {
+    return mSessionsLock;
+}
+
 std::shared_ptr<Session> SessionManager::GetSession(SessionIdType id) {
     return mSessions[id];
+}
+
+Concurrency::concurrent_unordered_map<SessionIdType, std::shared_ptr<Session>>& SessionManager::GetSessionMap() {
+    return mSessions;
 }
 
 void SessionManager::Send(SessionIdType to, OverlappedSend* const overlappedSend) {

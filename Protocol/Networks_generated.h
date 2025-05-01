@@ -204,7 +204,7 @@ struct PlayerReadyInLobbySCBuilder {
 inline ::flatbuffers::Offset<PlayerReadyInLobbySC> CreatePlayerReadyInLobbySC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint8_t playerId = 0,
-    Packets::PlayerRole role = Packets::PlayerRole_HUMAN) {
+    Packets::PlayerRole role = Packets::PlayerRole_NONE) {
   PlayerReadyInLobbySCBuilder builder_(_fbb);
   builder_.add_role(role);
   builder_.add_playerId(playerId);
@@ -275,7 +275,7 @@ struct GameEndSCBuilder {
 
 inline ::flatbuffers::Offset<GameEndSC> CreateGameEndSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    Packets::PlayerRole winner = Packets::PlayerRole_HUMAN) {
+    Packets::PlayerRole winner = Packets::PlayerRole_NONE) {
   GameEndSCBuilder builder_(_fbb);
   builder_.add_winner(winner);
   return builder_.Finish();
@@ -417,7 +417,7 @@ struct PlayerReadyInLobbyCSBuilder {
 
 inline ::flatbuffers::Offset<PlayerReadyInLobbyCS> CreatePlayerReadyInLobbyCS(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    Packets::PlayerRole role = Packets::PlayerRole_HUMAN) {
+    Packets::PlayerRole role = Packets::PlayerRole_NONE) {
   PlayerReadyInLobbyCSBuilder builder_(_fbb);
   builder_.add_role(role);
   return builder_.Finish();
@@ -620,7 +620,7 @@ struct PlayerSelectRoleCSBuilder {
 
 inline ::flatbuffers::Offset<PlayerSelectRoleCS> CreatePlayerSelectRoleCS(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    Packets::PlayerRole role = Packets::PlayerRole_HUMAN) {
+    Packets::PlayerRole role = Packets::PlayerRole_NONE) {
   PlayerSelectRoleCSBuilder builder_(_fbb);
   builder_.add_role(role);
   return builder_.Finish();

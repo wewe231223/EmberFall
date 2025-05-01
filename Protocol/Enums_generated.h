@@ -18,40 +18,45 @@ namespace Packets {
 enum PacketTypes : uint8_t {
   PacketTypes_PT_PLAYER_EXIT_CS = 0,
   PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_CS = 1,
-  PacketTypes_PT_PLAYER_ENTER_INGAME = 2,
-  PacketTypes_PT_PLAYER_INPUT_CS = 3,
-  PacketTypes_PT_PLAYER_LOOK_CS = 4,
-  PacketTypes_PT_PLAYER_SELECT_WEAPON_CS = 5,
-  PacketTypes_PT_PLAYER_SELECT_ROLE_CS = 6,
-  PacketTypes_PT_LATENCY_CS = 7,
-  PacketTypes_PT_REQUEST_USE_ITEM_CS = 8,
-  PacketTypes_PT_REQUEST_ATTACK_CS = 9,
-  PacketTypes_PT_REQUEST_FIRE_CS = 10,
+  PacketTypes_PT_PLAYER_READY_IN_LOBBY_CS = 2,
+  PacketTypes_PT_PLAYER_ENTER_INGAME = 3,
+  PacketTypes_PT_PLAYER_INPUT_CS = 4,
+  PacketTypes_PT_PLAYER_LOOK_CS = 5,
+  PacketTypes_PT_PLAYER_SELECT_WEAPON_CS = 6,
+  PacketTypes_PT_PLAYER_SELECT_ROLE_CS = 7,
+  PacketTypes_PT_LATENCY_CS = 8,
+  PacketTypes_PT_REQUEST_USE_ITEM_CS = 9,
+  PacketTypes_PT_REQUEST_ATTACK_CS = 10,
+  PacketTypes_PT_REQUEST_FIRE_CS = 11,
   PacketTypes_PT_PROTOCOL_VERSION_SC = 128,
   PacketTypes_PT_NOTIFY_ID_SC = 129,
   PacketTypes_PT_PLAYER_EXIT_SC = 130,
   PacketTypes_PT_LATENCT_SC = 131,
-  PacketTypes_PT_OBJECT_APPEARED_SC = 132,
-  PacketTypes_PT_OBJECT_DISAPPEARED_SC = 133,
-  PacketTypes_PT_OBJECT_REMOVED_SC = 134,
-  PacketTypes_PT_OBJECT_MOVE_SC = 135,
-  PacketTypes_PT_OBJECT_ATTACKED_SC = 136,
-  PacketTypes_PT_OBJECT_ANIMATION_CHANGED_SC = 137,
-  PacketTypes_PT_GEM_INTERACT_SC = 138,
-  PacketTypes_PT_GEM_CANCEL_INTERACTOIN_SC = 139,
-  PacketTypes_PT_GEM_DESTROYED_SC = 140,
-  PacketTypes_PT_USE_ITEM_SC = 141,
-  PacketTypes_PT_ACQUIRED_ITEM_SC = 142,
-  PacketTypes_PT_FIRE_PROJECTILE_SC = 143,
-  PacketTypes_PT_PROJECTILE_MOVE_SC = 144,
+  PacketTypes_PT_PLAYER_READY_IN_LOBBY_SC = 132,
+  PacketTypes_PT_CHANGE_TO_NEXT_SCENE_SC = 133,
+  PacketTypes_PT_GAME_END_SC = 134,
+  PacketTypes_PT_OBJECT_APPEARED_SC = 135,
+  PacketTypes_PT_OBJECT_DISAPPEARED_SC = 136,
+  PacketTypes_PT_OBJECT_REMOVED_SC = 137,
+  PacketTypes_PT_OBJECT_MOVE_SC = 138,
+  PacketTypes_PT_OBJECT_ATTACKED_SC = 139,
+  PacketTypes_PT_OBJECT_ANIMATION_CHANGED_SC = 140,
+  PacketTypes_PT_GEM_INTERACT_SC = 141,
+  PacketTypes_PT_GEM_CANCEL_INTERACTOIN_SC = 142,
+  PacketTypes_PT_GEM_DESTROYED_SC = 143,
+  PacketTypes_PT_USE_ITEM_SC = 144,
+  PacketTypes_PT_ACQUIRED_ITEM_SC = 145,
+  PacketTypes_PT_FIRE_PROJECTILE_SC = 146,
+  PacketTypes_PT_PROJECTILE_MOVE_SC = 147,
   PacketTypes_MIN = PacketTypes_PT_PLAYER_EXIT_CS,
   PacketTypes_MAX = PacketTypes_PT_PROJECTILE_MOVE_SC
 };
 
-inline const PacketTypes (&EnumValuesPacketTypes())[28] {
+inline const PacketTypes (&EnumValuesPacketTypes())[32] {
   static const PacketTypes values[] = {
     PacketTypes_PT_PLAYER_EXIT_CS,
     PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_CS,
+    PacketTypes_PT_PLAYER_READY_IN_LOBBY_CS,
     PacketTypes_PT_PLAYER_ENTER_INGAME,
     PacketTypes_PT_PLAYER_INPUT_CS,
     PacketTypes_PT_PLAYER_LOOK_CS,
@@ -65,6 +70,9 @@ inline const PacketTypes (&EnumValuesPacketTypes())[28] {
     PacketTypes_PT_NOTIFY_ID_SC,
     PacketTypes_PT_PLAYER_EXIT_SC,
     PacketTypes_PT_LATENCT_SC,
+    PacketTypes_PT_PLAYER_READY_IN_LOBBY_SC,
+    PacketTypes_PT_CHANGE_TO_NEXT_SCENE_SC,
+    PacketTypes_PT_GAME_END_SC,
     PacketTypes_PT_OBJECT_APPEARED_SC,
     PacketTypes_PT_OBJECT_DISAPPEARED_SC,
     PacketTypes_PT_OBJECT_REMOVED_SC,
@@ -82,38 +90,165 @@ inline const PacketTypes (&EnumValuesPacketTypes())[28] {
   return values;
 }
 
+inline const char * const *EnumNamesPacketTypes() {
+  static const char * const names[149] = {
+    "PT_PLAYER_EXIT_CS",
+    "PT_PLAYER_ENTER_IN_LOBBY_CS",
+    "PT_PLAYER_READY_IN_LOBBY_CS",
+    "PT_PLAYER_ENTER_INGAME",
+    "PT_PLAYER_INPUT_CS",
+    "PT_PLAYER_LOOK_CS",
+    "PT_PLAYER_SELECT_WEAPON_CS",
+    "PT_PLAYER_SELECT_ROLE_CS",
+    "PT_LATENCY_CS",
+    "PT_REQUEST_USE_ITEM_CS",
+    "PT_REQUEST_ATTACK_CS",
+    "PT_REQUEST_FIRE_CS",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "PT_PROTOCOL_VERSION_SC",
+    "PT_NOTIFY_ID_SC",
+    "PT_PLAYER_EXIT_SC",
+    "PT_LATENCT_SC",
+    "PT_PLAYER_READY_IN_LOBBY_SC",
+    "PT_CHANGE_TO_NEXT_SCENE_SC",
+    "PT_GAME_END_SC",
+    "PT_OBJECT_APPEARED_SC",
+    "PT_OBJECT_DISAPPEARED_SC",
+    "PT_OBJECT_REMOVED_SC",
+    "PT_OBJECT_MOVE_SC",
+    "PT_OBJECT_ATTACKED_SC",
+    "PT_OBJECT_ANIMATION_CHANGED_SC",
+    "PT_GEM_INTERACT_SC",
+    "PT_GEM_CANCEL_INTERACTOIN_SC",
+    "PT_GEM_DESTROYED_SC",
+    "PT_USE_ITEM_SC",
+    "PT_ACQUIRED_ITEM_SC",
+    "PT_FIRE_PROJECTILE_SC",
+    "PT_PROJECTILE_MOVE_SC",
+    nullptr
+  };
+  return names;
+}
+
 inline const char *EnumNamePacketTypes(PacketTypes e) {
-  switch (e) {
-    case PacketTypes_PT_PLAYER_EXIT_CS: return "PT_PLAYER_EXIT_CS";
-    case PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_CS: return "PT_PLAYER_ENTER_IN_LOBBY_CS";
-    case PacketTypes_PT_PLAYER_ENTER_INGAME: return "PT_PLAYER_ENTER_INGAME";
-    case PacketTypes_PT_PLAYER_INPUT_CS: return "PT_PLAYER_INPUT_CS";
-    case PacketTypes_PT_PLAYER_LOOK_CS: return "PT_PLAYER_LOOK_CS";
-    case PacketTypes_PT_PLAYER_SELECT_WEAPON_CS: return "PT_PLAYER_SELECT_WEAPON_CS";
-    case PacketTypes_PT_PLAYER_SELECT_ROLE_CS: return "PT_PLAYER_SELECT_ROLE_CS";
-    case PacketTypes_PT_LATENCY_CS: return "PT_LATENCY_CS";
-    case PacketTypes_PT_REQUEST_USE_ITEM_CS: return "PT_REQUEST_USE_ITEM_CS";
-    case PacketTypes_PT_REQUEST_ATTACK_CS: return "PT_REQUEST_ATTACK_CS";
-    case PacketTypes_PT_REQUEST_FIRE_CS: return "PT_REQUEST_FIRE_CS";
-    case PacketTypes_PT_PROTOCOL_VERSION_SC: return "PT_PROTOCOL_VERSION_SC";
-    case PacketTypes_PT_NOTIFY_ID_SC: return "PT_NOTIFY_ID_SC";
-    case PacketTypes_PT_PLAYER_EXIT_SC: return "PT_PLAYER_EXIT_SC";
-    case PacketTypes_PT_LATENCT_SC: return "PT_LATENCT_SC";
-    case PacketTypes_PT_OBJECT_APPEARED_SC: return "PT_OBJECT_APPEARED_SC";
-    case PacketTypes_PT_OBJECT_DISAPPEARED_SC: return "PT_OBJECT_DISAPPEARED_SC";
-    case PacketTypes_PT_OBJECT_REMOVED_SC: return "PT_OBJECT_REMOVED_SC";
-    case PacketTypes_PT_OBJECT_MOVE_SC: return "PT_OBJECT_MOVE_SC";
-    case PacketTypes_PT_OBJECT_ATTACKED_SC: return "PT_OBJECT_ATTACKED_SC";
-    case PacketTypes_PT_OBJECT_ANIMATION_CHANGED_SC: return "PT_OBJECT_ANIMATION_CHANGED_SC";
-    case PacketTypes_PT_GEM_INTERACT_SC: return "PT_GEM_INTERACT_SC";
-    case PacketTypes_PT_GEM_CANCEL_INTERACTOIN_SC: return "PT_GEM_CANCEL_INTERACTOIN_SC";
-    case PacketTypes_PT_GEM_DESTROYED_SC: return "PT_GEM_DESTROYED_SC";
-    case PacketTypes_PT_USE_ITEM_SC: return "PT_USE_ITEM_SC";
-    case PacketTypes_PT_ACQUIRED_ITEM_SC: return "PT_ACQUIRED_ITEM_SC";
-    case PacketTypes_PT_FIRE_PROJECTILE_SC: return "PT_FIRE_PROJECTILE_SC";
-    case PacketTypes_PT_PROJECTILE_MOVE_SC: return "PT_PROJECTILE_MOVE_SC";
-    default: return "";
-  }
+  if (::flatbuffers::IsOutRange(e, PacketTypes_PT_PLAYER_EXIT_CS, PacketTypes_PT_PROJECTILE_MOVE_SC)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesPacketTypes()[index];
 }
 
 enum AnimationState : uint8_t {
@@ -171,14 +306,16 @@ inline const char *EnumNameAnimationState(AnimationState e) {
 }
 
 enum PlayerRole : uint8_t {
-  PlayerRole_HUMAN = 0,
-  PlayerRole_BOSS = 1,
-  PlayerRole_MIN = PlayerRole_HUMAN,
+  PlayerRole_NONE = 0,
+  PlayerRole_HUMAN = 1,
+  PlayerRole_BOSS = 2,
+  PlayerRole_MIN = PlayerRole_NONE,
   PlayerRole_MAX = PlayerRole_BOSS
 };
 
-inline const PlayerRole (&EnumValuesPlayerRole())[2] {
+inline const PlayerRole (&EnumValuesPlayerRole())[3] {
   static const PlayerRole values[] = {
+    PlayerRole_NONE,
     PlayerRole_HUMAN,
     PlayerRole_BOSS
   };
@@ -186,7 +323,8 @@ inline const PlayerRole (&EnumValuesPlayerRole())[2] {
 }
 
 inline const char * const *EnumNamesPlayerRole() {
-  static const char * const names[3] = {
+  static const char * const names[4] = {
+    "NONE",
     "HUMAN",
     "BOSS",
     nullptr
@@ -195,7 +333,7 @@ inline const char * const *EnumNamesPlayerRole() {
 }
 
 inline const char *EnumNamePlayerRole(PlayerRole e) {
-  if (::flatbuffers::IsOutRange(e, PlayerRole_HUMAN, PlayerRole_BOSS)) return "";
+  if (::flatbuffers::IsOutRange(e, PlayerRole_NONE, PlayerRole_BOSS)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPlayerRole()[index];
 }

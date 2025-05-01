@@ -436,9 +436,6 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
             }
 
             auto packet = FbsPacketFactory::ClonePacket(sendPacket);
-            if (object->GetTag() == ObjectTag::PLAYER) {
-                gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Send Move Packet!!!");
-            }
             session->RegisterSend(packet);
             //if (false == object->mSpec.active) {
             //    auto packetRemove = FbsPacketFactory::ObjectRemoveSC(id);

@@ -74,6 +74,45 @@ OverlappedSend* FbsPacketFactory::PacketLatencySC(uint64_t time) {
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 
+OverlappedSend* FbsPacketFactory::PlayerReadInLobbySC(SessionIdType id, Packets::PlayerRole role) {
+    flatbuffers::FlatBufferBuilder builder{ };
+
+    auto offset = Packets::CreatePlayerReadyInLobbySC(builder, id, role);
+    builder.Finish(offset);
+
+    const uint8_t* payload = builder.GetBufferPointer();
+    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
+
+    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes_PT_PLAYER_READY_IN_LOBBY_SC };
+    return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
+}
+
+OverlappedSend* FbsPacketFactory::ChangeToNextSceneSC() {
+    flatbuffers::FlatBufferBuilder builder{ };
+
+    auto offset = Packets::CreateChangeToNextSceneSC(builder);
+    builder.Finish(offset);
+
+    const uint8_t* payload = builder.GetBufferPointer();
+    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
+
+    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes_PT_CHANGE_TO_NEXT_SCENE_SC };
+    return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
+}
+
+OverlappedSend* FbsPacketFactory::GameEndSC(Packets::PlayerRole winner) {
+    flatbuffers::FlatBufferBuilder builder{ };
+
+    auto offset = Packets::CreateGameEndSC(builder, winner);
+    builder.Finish(offset);
+
+    const uint8_t* payload = builder.GetBufferPointer();
+    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
+
+    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes_PT_GAME_END_SC };
+    return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
+}
+
 OverlappedSend* FbsPacketFactory::ObjectAppearedSC(NetworkObjectIdType id, Packets::EntityType entity, float yaw,
     Packets::AnimationState animation, float hp, const SimpleMath::Vector3& pos) {
     flatbuffers::FlatBufferBuilder builder{ };
@@ -249,6 +288,19 @@ OverlappedSend* FbsPacketFactory::PlayerEnterInLobbyCS(SessionIdType id) {
     const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
 
     PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_CS, id };
+    return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
+}
+
+OverlappedSend* FbsPacketFactory::PlayerReadyInLobbyCS(SessionIdType id, Packets::PlayerRole role) {
+    flatbuffers::FlatBufferBuilder builder{ };
+
+    auto offset = Packets::CreatePlayerReadyInLobbyCS(builder, role);
+    builder.Finish(offset);
+
+    const uint8_t* payload = builder.GetBufferPointer();
+    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
+
+    PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes_PT_PLAYER_READY_IN_LOBBY_CS, id };
     return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
 }
 
