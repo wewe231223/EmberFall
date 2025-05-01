@@ -153,7 +153,7 @@ void mainMS(
     GrassPosition grass = grassVertices[grassIndex];
 
     float randPhase = hash(grassIndex);
-    float halfSize = grass.scale * 0.6f;
+    float halfSize = grass.scale * 0.4f;
 
     // 흔들림 세기 = WIND_STRENGTH * halfSize 
     float sway = sin(globalTime * WIND_FREQ + randPhase * 6.2831f) * (WIND_STRENGTH * halfSize);
