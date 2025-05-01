@@ -132,7 +132,7 @@ void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, cons
             auto clonedPacket = FbsPacketFactory::ClonePacket(packetEnter);
             oldSession->RegisterSend(clonedPacket);
 
-            auto oldUserEnter = FbsPacketFactory::PlayerEnterInLobbyCS(id);
+            auto oldUserEnter = FbsPacketFactory::PlayerEnterInLobbySC(id);
             session->RegisterSend(oldUserEnter);
         }
     }
