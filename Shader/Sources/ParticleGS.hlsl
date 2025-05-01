@@ -141,8 +141,8 @@ void CreateBillBoard(ParticleVertex vertex, inout TriangleStream<Particle_PS_IN>
     [unroll(4)]
     for (uint i = 0; i < 4; i++)
     {
-        outpoint.positionV = mul(positions[i], viewMatrix).xyz;
-        outpoint.positionH = mul(positions[i], viewProjectionMatrix);
+        outpoint.positionV = mul(positions[i], view).xyz;
+        outpoint.positionH = mul(positions[i], viewProj);
         outpoint.material = vertex.material;
         outpoint.uv = mul(uvTransform, float3(uvs[i], 1.f)).xy;
         

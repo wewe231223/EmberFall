@@ -541,6 +541,10 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 	light.Diffuse = { 1.f, 1.f, 1.f, 1.f };
 	light.Specular = { 1.f, 1.f, 1.f, 1.f };
 	light.Ambient = { 0.2f, 0.2f, 0.2f, 1.f };
+
+	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
+	gClientCore->Send(packet);
+
 }
 
 void TerrainScene::ProcessNetwork() {
