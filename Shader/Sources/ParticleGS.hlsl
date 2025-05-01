@@ -4,13 +4,14 @@
 
 cbuffer CameraCB : register(b0)
 {
-    matrix viewMatrix;
-    matrix projectionMatrix;
-    matrix viewProjectionMatrix;
+    matrix view;
+    matrix proj;
+    matrix viewProj;
+    matrix middleViewProjection;
     float3 cameraPosition;
- 
-
+    int isShadow;
 };
+
 
 cbuffer GlobalCB : register(b1)
 {

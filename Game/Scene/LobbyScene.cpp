@@ -63,8 +63,8 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 	light.Specular = { 1.f, 1.f, 1.f, 1.f };
 	light.Ambient = { 0.2f, 0.2f, 0.2f, 1.f };
 
-	auto packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
-	gClientCore->Send(packet);
+	auto packet = FbsPacketFactory::PlayerEnterInLobbyCS(gClientCore->GetSessionId()); 
+	gClientCore->Send(packet); 
 }
 
 void LobbyScene::ProcessNetwork() {
