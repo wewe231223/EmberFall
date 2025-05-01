@@ -98,6 +98,12 @@ namespace MathUtil {
         }
     }
 
+    template <typename T> requires std::is_arithmetic_v<T>
+    inline T Square(T val)
+    {
+        return val * val;
+    }
+
     // Projection Vector to Axis
     inline float Projection(const SimpleMath::Vector3& vector, SimpleMath::Vector3 axis)
     {
@@ -132,15 +138,17 @@ namespace MathUtil {
         return VectorLengthSq(center, point) < (radius * radius);
     }
 
-    inline bool IsInRange(const SimpleMath::Vector3& center, GameUnits::GameUnit<GameUnits::Meter> radius, const SimpleMath::Vector3& point)
+    // Convert Vector3 to Vector2 , Ignore Y
+    inline SimpleMath::Vector3 ConvertXZVector(const SimpleMath::Vector3& v)
     {
-        return VectorLengthSq(center, point) < (radius * radius).Count();
+        return SimpleMath::Vector3{ v.x, 0.0f,  v.z };
     }
 
-    // Convert Vector3 to Vector2 , Ignore Y
-    inline SimpleMath::Vector2 ConvertXZVector(const SimpleMath::Vector3& v)
+    inline bool IsInRange(const SimpleMath::Vector3& center, GameUnits::GameUnit<GameUnits::Meter> radius, const SimpleMath::Vector3& point)
     {
-        return SimpleMath::Vector2{ v.x, v.z };
+        auto centerXZ = MathUtil::ConvertXZVector(center);
+        auto pointXZ = MathUtil::ConvertXZVector(point);
+        return SimpleMath::Vector3::DistanceSquared(centerXZ, pointXZ) < (radius * radius).Count();
     }
 
     inline SimpleMath::Vector3 Normalize(const SimpleMath::Vector3& v)
@@ -278,7 +286,7 @@ namespace Collision {
             auto range1 = GetProjectionRange(b1Points, axis);
             auto range2 = GetProjectionRange(b2Points, axis);
 
-            auto overlap = ::fabs(range1.max - range2.min);
+            float overlap = std::min(range1.max, range2.max) - std::max(range1.min, range2.min);
             if (overlap < minRange and false == MathUtil::IsZero(overlap)) {
                 shortestAxis = axis;
                 minRange = overlap;
@@ -289,7 +297,7 @@ namespace Collision {
             auto range1 = GetProjectionRange(b1Points, axis);
             auto range2 = GetProjectionRange(b2Points, axis);
 
-            auto overlap = ::fabs(range1.max - range2.min);
+            float overlap = std::min(range1.max, range2.max) - std::max(range1.min, range2.min);
             if (overlap < minRange and false == MathUtil::IsZero(overlap)) {
                 shortestAxis = axis;
                 minRange = overlap;
@@ -304,7 +312,7 @@ namespace Collision {
                 auto range1 = GetProjectionRange(b1Points, axis);
                 auto range2 = GetProjectionRange(b2Points, axis);
 
-                auto overlap = ::fabs(range1.max - range2.min);
+                float overlap = std::min(range1.max, range2.max) - std::max(range1.min, range2.min);
                 if (overlap < minRange and false == MathUtil::IsZero(overlap)) {
                     shortestAxis = axis;
                     minRange = overlap;
@@ -320,6 +328,7 @@ namespace Collision {
             shortestAxis = -shortestAxis;
         }
 
+        shortestAxis.y = 0.0f; // y성분 삭제
         return shortestAxis * minRange;
     }
 

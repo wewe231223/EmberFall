@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "FbsPacketFactory.h"
+#include "Session.h"
 
 const PacketHeaderSC* FbsPacketFactory::GetHeaderPtrSC(const uint8_t* const data) {
     return reinterpret_cast<const PacketHeaderSC*>(data);
@@ -9,8 +10,16 @@ const PacketHeaderCS* FbsPacketFactory::GetHeaderPtrCS(const uint8_t* const data
     return reinterpret_cast<const PacketHeaderCS*>(data);
 }
 
+OverlappedSend* FbsPacketFactory::ClonePacket(OverlappedSend* const overlapped) {
+    auto copyOverlapped = mSendPacketBuffers->GetOverlapped(overlapped);
+    return copyOverlapped;
+}
+
 void FbsPacketFactory::ReleasePacketBuf(OverlappedSend* const overlapped) {
-    mSendPacketBuffers->ReleaseOverlapped(overlapped);
+    if (true == mSendPacketBuffers->ReleaseOverlapped(overlapped)) {
+        return;
+    }
+    gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Release Send Overlapped Failure!");
 }
 
 OverlappedSend* FbsPacketFactory::ProtocolVersionSC() {
@@ -112,7 +121,7 @@ OverlappedSend* FbsPacketFactory::ObjectMoveSC(NetworkObjectIdType id, float yaw
 
     Packets::Vec3 fbsPos = GetVec3(pos);
     Packets::Vec3 fbsDir = GetVec3(dir);
-    auto offset = Packets::CreateObjectMoveSC(builder, id, yaw, &fbsPos, &fbsDir, speed);
+    auto offset = Packets::CreateObjectMoveSC(builder, id, &fbsPos, &fbsDir, yaw, speed);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();
@@ -135,10 +144,10 @@ OverlappedSend* FbsPacketFactory::ObjectAttackedSC(NetworkObjectIdType id, float
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::ObjectAnimationChangedSC(NetworkObjectIdType id, AnimationState animation) {
+OverlappedSend* FbsPacketFactory::ObjectAnimationChangedSC(NetworkObjectIdType id, Packets::AnimationState animation) {
     flatbuffers::FlatBufferBuilder builder{ };
 
-    auto offset = Packets::CreateObjectAnimationChangedSC(builder, animation);
+    auto offset = Packets::CreateObjectAnimationChangedSC(builder, id, animation);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();
@@ -230,6 +239,19 @@ OverlappedSend* FbsPacketFactory::FireProjectileSC(NetworkObjectIdType id, const
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 
+OverlappedSend* FbsPacketFactory::PlayerEnterInGame(SessionIdType id) {
+    flatbuffers::FlatBufferBuilder builder{ };
+
+    auto offset = Packets::CreatePlayerEnterInGame(builder);
+    builder.Finish(offset);
+
+    const uint8_t* payload = builder.GetBufferPointer();
+    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
+
+    PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes_PT_PLAYER_ENTER_INGAME, id };
+    return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
+}
+
 OverlappedSend* FbsPacketFactory::PlayerExitCS(SessionIdType id) {
     flatbuffers::FlatBufferBuilder builder{ };
 
@@ -246,7 +268,7 @@ OverlappedSend* FbsPacketFactory::PlayerExitCS(SessionIdType id) {
 OverlappedSend* FbsPacketFactory::PlayerInputCS(SessionIdType id, uint8_t key, bool down) {
     flatbuffers::FlatBufferBuilder builder{ };
 
-    auto offset = Packets::CreatePlayerInput(builder, key, down);
+    auto offset = Packets::CreatePlayerInputCS(builder, key, down);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();

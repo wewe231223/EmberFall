@@ -2,13 +2,15 @@
 #include "Session.h"
 #include "NetworkCore.h"
 
-Session::Session(std::shared_ptr<class INetworkCore> coreService) 
-    : INetworkObject{ coreService } {
+Session::Session(NetworkType networkType) 
+    : INetworkObject{ }, mNetworkType{ networkType } {
     mSocket = NetworkUtil::CreateSocket();
     CrashExp(INVALID_SOCKET != mSocket, "");
 }
 
 Session::~Session() {
+    auto myId = GetId();
+    gServerCore->GetSessionManager()->ReleaseSessionId(myId);
     Close();
 }
 
@@ -89,7 +91,13 @@ void Session::RegisterSend(OverlappedSend* const overlappedSend) {
         return;
     }
 
-    overlappedSend->owner = shared_from_this();
+    auto sharedThis = shared_from_this();
+    overlappedSend->owner = sharedThis;
+    if (nullptr == overlappedSend->owner) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Overlapped Send's owner is Null");
+        Crash("Overlapped Send's owner is Null");
+    }
+
     auto result = ::WSASend(
         mSocket,
         &overlappedSend->wsaBuf,
@@ -103,70 +111,7 @@ void Session::RegisterSend(OverlappedSend* const overlappedSend) {
     if (SOCKET_ERROR == result) {
         auto errorCode = ::WSAGetLastError();
         if (WSA_IO_PENDING != errorCode) {
-            HandleSocketError(errorCode);
-        }
-    }
-}
-
-void Session::RegisterSend(void* packet) {
-    if (false == mConnected.load()) {
-        return;
-    }
-
-    auto sendBufferFactory = GetCore()->GetSendBufferFactory();
-    auto overlappedSend = sendBufferFactory->GetOverlapped(packet, reinterpret_cast<PacketSizeT*>(packet)[0]);
-    if (nullptr == overlappedSend) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Get Overlapped Send Failure");
-        return;
-    }
-
-    overlappedSend->owner = shared_from_this();
-    auto result = ::WSASend(
-        mSocket,
-        &overlappedSend->wsaBuf,
-        1,
-        0,
-        0,
-        overlappedSend,
-        nullptr
-    );
-
-    if (SOCKET_ERROR == result) {
-        auto errorCode = ::WSAGetLastError();
-        if (WSA_IO_PENDING != errorCode) {
-            sendBufferFactory->ReleaseOverlapped(overlappedSend);
-            HandleSocketError(errorCode);
-        }
-    }
-}
-
-void Session::RegisterSend(void* data, size_t size) {
-    if (false == mConnected.load()) {
-        return;
-    }
-
-    auto sendBufferFactory = GetCore()->GetSendBufferFactory();
-    auto overlappedSend = sendBufferFactory->GetOverlapped(data, size);
-    if (nullptr == overlappedSend) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Get Overlapped Send Failure");
-        return;
-    }
-
-    overlappedSend->owner = shared_from_this();
-    auto result = ::WSASend(
-        mSocket,
-        &overlappedSend->wsaBuf,
-        1,
-        0,
-        0,
-        overlappedSend,
-        nullptr
-    );
-
-    if (SOCKET_ERROR == result) {
-        auto errorCode = ::WSAGetLastError();
-        if (WSA_IO_PENDING != errorCode) {
-            sendBufferFactory->ReleaseOverlapped(overlappedSend);
+            FbsPacketFactory::ReleasePacketBuf(overlappedSend);
             HandleSocketError(errorCode);
         }
     }
@@ -186,7 +131,7 @@ void Session::ProcessRecv(INT32 numOfBytes) {
     auto dataSize = numOfBytes - mPrevRemainSize;
 
     // 받아온 Recv 버퍼의 내용을 저장.
-    auto coreService = GetCore();
+    auto coreService = gClientCore;
     if (0 == mPrevRemainSize) {
         coreService->GetPacketHandler()->Write(mOverlappedRecv.buffer.data(), dataSize);
         RegisterRecv();
@@ -198,14 +143,12 @@ void Session::ProcessRecv(INT32 numOfBytes) {
 }
 
 void Session::ProcessSend(INT32 numOfBytes, OverlappedSend* overlappedSend) {
-    auto coreService = GetCore();
     if (0 >= numOfBytes) {
         Disconnect();
         return;
     }
 
-    auto sendBufferFactory = coreService->GetSendBufferFactory();
-    sendBufferFactory->ReleaseOverlapped(overlappedSend);
+    FbsPacketFactory::ReleasePacketBuf(overlappedSend);
 }
 
 bool Session::IsConnected() const { 
@@ -260,7 +203,7 @@ bool Session::Connect(const std::string& serverIp, const UINT16 port) {
     }
 
     DWORD bytes{ };
-    auto clientCore = std::static_pointer_cast<ClientCore>(GetCore());
+    auto clientCore = gClientCore;
     auto overlappedConnect = clientCore->GetOverlappedConnect();
     overlappedConnect->owner = shared_from_this();
     auto result = NetworkUtil::ConnectEx(
@@ -312,19 +255,15 @@ RecvBuf::iterator Session::ValidatePackets(RecvBuf::iterator iter, RecvBuf::iter
     return it;
 }
 
-void Session::OnConnect() { }
+void Session::OnConnect() { 
+    decltype(auto) packetId = FbsPacketFactory::NotifyIdSC(static_cast<SessionIdType>(GetId()));
+    RegisterSend(packetId);
+
+    decltype(auto) packetProtocolVersion = FbsPacketFactory::ProtocolVersionSC();
+    RegisterSend(packetProtocolVersion);
+}
 
 void Session::Disconnect() {
-    auto coreService = GetCore();
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Session [{}] Disconnected", GetId());
-    if (NetworkType::SERVER == coreService->GetType()) {
-        auto serverCore = std::static_pointer_cast<ServerCore>(coreService);
-        serverCore->GetSessionManager()->CloseSession(GetId());
-    }
-    else {
-        auto clientCore = std::static_pointer_cast<ClientCore>(coreService);
-        clientCore->CloseSession();
-    }
 }
 
 void Session::HandleSocketError(INT32 errorCore) {

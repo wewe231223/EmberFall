@@ -16,10 +16,11 @@ public:
     ~WeaponSystem();
 
 public:
-    Weapon GetWeaponType() const;
+    Packets::Weapon GetWeaponType() const;
+    SimpleMath::Vector3 GetHitBoxSize() const;
 
     void SetOwnerId(NetworkObjectIdType id);
-    void SetWeapon(Weapon weapon);
+    void SetWeapon(Packets::Weapon weapon);
 
     void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir);
 

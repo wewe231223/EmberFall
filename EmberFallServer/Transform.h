@@ -52,7 +52,6 @@ public:
     void Scale(const SimpleMath::Vector3& v);
 
     void Update();
-    void LateUpdate(const float deltaTime);
 
 private:
     SimpleMath::Vector3 mPosition{ SimpleMath::Vector3::Zero };

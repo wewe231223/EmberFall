@@ -2,19 +2,14 @@
 #include "../Renderer/Resource/DefaultBuffer.h"
 #include "../Game/GameObject/Transform.h"
 #include "../Config/Config.h"
+#include "../Game/GameObject/Collider.h"
+#include "../Utility/Defines.h"
 
 struct CameraParameter {
 	float aspect{Config::WINDOW_WIDTH<float> / Config::WINDOW_HEIGHT<float> };
 	float fov{ DirectX::XMConvertToRadians(60.f) };
 	float nearZ{ 0.1f };
 	float farZ{ 2000.f };
-};
-
-struct CameraConstant {
-	SimpleMath::Matrix view{};
-	SimpleMath::Matrix proj{};
-	SimpleMath::Matrix viewProj{};
-	SimpleMath::Vector3 cameraPos{};
 };
 
 class Camera {
@@ -25,12 +20,16 @@ public:
 public:
 	void UpdateBuffer();
 	Transform& GetTransform() { return mTransform; }
+	bool FrustumCulling(Collider& other) const; 
 public:
 	CameraParameter CameraParam{};
 private:
 	DefaultBufferCPUIterator mCameraBufferCPU{};
 
-	CameraConstant mCameraConstant{};
+	DirectX::BoundingFrustum mViewFrustum{};
+	DirectX::BoundingFrustum mWorldFrustum{};
+
+	CameraConstants mCameraConstant{};
 	Transform mTransform{};
 };
 

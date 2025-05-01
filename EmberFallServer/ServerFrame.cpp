@@ -1,30 +1,18 @@
 #include "pch.h"
 #include "ServerFrame.h"
-#include "ServerGameScene.h"
 #include "GameTimer.h"
 #include "GameObject.h"
-#include "ObjectSpawner.h"
-#include "GameEventManager.h"
 #include "BoundingBoxImporter.h"
 #include "Input.h"
 
 #include "PlayerScript.h"
+#include "GameSession.h"
+#include "ObjectManager.h"
+#include "Resources.h"
 
-ServerFrame::ServerFrame() {
-    gServerCore->Init();
-
-    mInputManager = std::make_shared<InputManager>();
-
-    //mTimer = std::make_shared<GameTimer>();
-
-    gServerCore->Start("", SERVER_PORT);
-    auto sessionManager = gServerCore->GetSessionManager();
-    sessionManager->RegisterOnSessionConnect(std::bind_front(&ServerFrame::OnPlayerConnect, this));
-    sessionManager->RegisterOnSessionDisconnect(std::bind_front(&ServerFrame::OnPlayerDisconnect, this));
-}
+ServerFrame::ServerFrame() {}
 
 ServerFrame::~ServerFrame() { 
-    mGameScenes.clear();
     gServerCore->End();
 }
 
@@ -32,58 +20,104 @@ std::shared_ptr<class InputManager> ServerFrame::GetInputManager() const {
     return mInputManager;
 }
 
-void ServerFrame::InitGameScenes() {
-    BoundingBoxImporter::LoadFromFile();
+void ServerFrame::Run() {
+    ResourceManager::LoadEnvFromFile("../Resources/Binarys/Collider/EnvBB.bin");
+    ResourceManager::LoadEntityFromFile("../Resources/Binarys/Collider/Entitybb.bin");
+    ResourceManager::LoadAnimationFromFile("../Resources/Binarys/Collider/AnimationInfo.bin");
+    gObjectManager->Init();
 
-    mGameScenes.emplace_back(std::make_shared<PlayScene>());
+    gServerCore->Init();
 
-    mCurrentScene = mGameScenes.front();
-    gObjectSpawner->SetCurrentScene(mCurrentScene);
-    gEventManager->SetCurrentGameScene(mCurrentScene);
+    mInputManager = std::make_shared<InputManager>();
 
-    mCurrentScene->Init();
-    mCurrentScene->RegisterPacketProcessFunctions();
+    auto sessionManager = gServerCore->GetSessionManager();
+    static auto createSessionFn = []() { 
+        return std::make_shared<GameSession>();
+    };
 
-    StaticTimer::Sync(15);
-}
+    sessionManager->RegisterCreateSessionFn(createSessionFn);
 
-void ServerFrame::GameLoop() {
-    while (true) {
-        StaticTimer::Update();
-        const float deltaTime = StaticTimer::GetDeltaTime();
+    gServerCore->Start("", SERVER_PORT);
 
-        mCurrentScene->DispatchPlayerEvent(mPlayerEventQueue);
-        mCurrentScene->Update(deltaTime);
-        mCurrentScene->LateUpdate(deltaTime);
-    }
-}
-
-void ServerFrame::OnPlayerConnect(SessionIdType id) {
-    auto object = std::make_shared<GameObject>(mCurrentScene);
+    mTimerThread = std::thread{ [this]() { TimerThread(); } };
     
-    object->InitId(id);
-    //object->CreateCollider<OrientedBoxCollider>(BoundingBoxImporter::GetBoundingBox(EntryKeys::PLAYER_BOUNDING_BOX));
-    object->CreateCollider<OrientedBoxCollider>(SimpleMath::Vector3::Zero, SimpleMath::Vector3{ 0.4f, 1.5f, 0.4f });
-    object->CreateComponent<PlayerScript>(object, mInputManager->GetInput(id));
+    gObjectManager->LoadEnvFromFile("../Resources/Binarys/Collider/env1.bin");
 
-    Lock::SRWLockGuard playersGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mPlayersLock };
-    mPlayers[id] = object;
+    for (int32_t test = 0; test < 100; ++test) {
+        if (test < 8) {
+            decltype(auto) corruptedGem = gObjectManager->SpawnObject(Packets::EntityType_CORRUPTED_GEM);
+        }
 
-    PlayerEvent event{ PlayerEvent::EventType::CONNECT, id, object };
-    mPlayerEventQueue.push(event);
-}
-
-void ServerFrame::OnPlayerDisconnect(SessionIdType id) {
-    Lock::SRWLockGuard playersGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mPlayersLock };
-
-    auto it = mPlayers.find(id);
-    if (it == mPlayers.end()) {
-        return;
+        decltype(auto) monster = gObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+        std::this_thread::sleep_for(1ms);
     }
 
-    PlayerEvent event{ PlayerEvent::EventType::DISCONNECT, id, it->second };
-    mPlayerEventQueue.push(event);
+    while (not mDone);
+}
 
-    mPlayers.erase(it);
-    mInputManager->DeleteInput(id);
+void ServerFrame::Done() {
+    mDone = true;
+    if (mTimerThread.joinable()) {
+        mTimerThread.join();
+    }
+}
+
+void ServerFrame::PQCS(int32_t transfferedBytes, ULONG_PTR completionKey, OverlappedEx* overlapped) {
+    gServerCore->PQCS(transfferedBytes, completionKey, overlapped);
+}
+
+void ServerFrame::AddTimerEvent(NetworkObjectIdType id, SysClock::time_point executeTime, TimerEventType eventType) {
+    mTimerEvents.push(TimerEvent{ id, executeTime, eventType });
+}
+
+void ServerFrame::TimerThread() {
+    while (not mDone) {
+        auto currentTime = SysClock::now();
+
+        TimerEvent event;
+        if (false == mTimerEvents.try_pop(event)) {
+            std::this_thread::sleep_for(1ms);
+            continue;
+        }
+
+        if (event.executeTime > currentTime) {
+            mTimerEvents.push(event);
+            std::this_thread::sleep_for(1ms);
+            continue;
+        }
+
+        auto obj = gObjectManager->GetObjectFromId(event.id);
+
+        if (nullptr == obj) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Object Is Dead");
+            continue;
+        }
+
+        switch (event.eventType) {
+        case TimerEventType::UPDATE_NPC:
+        {
+            if (false == obj->mSpec.active) {
+                break;
+            }
+
+            obj->RegisterUpdate();
+            break;
+        }
+
+        case TimerEventType::REMOVE_NPC:
+        {
+            obj->Reset();
+            break;
+        }
+
+        case TimerEventType::REMOVE_TRIGGER:
+        {
+            obj->Reset();
+            break;
+        }
+
+        default:
+            break;
+        }
+    }
 }

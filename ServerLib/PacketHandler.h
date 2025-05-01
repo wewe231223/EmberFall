@@ -55,25 +55,6 @@ public:
     void Write(void* data, size_t size);
     void Reset();
 
-    template <typename T>
-    void Read(T& data) {
-        auto srcIter = mBuffer.begin() + mReadPos;
-        if constexpr (std::is_same_v<T, PacketHeader>) {
-            ::memcpy(&data, NetworkUtil::AddressOf(srcIter), sizeof(PacketHeader));
-            return;
-        }
-
-        auto packetSize = NetworkUtil::GetPacketSizeFromIter(srcIter);
-        if (sizeof(T) < packetSize) {
-            return;
-        }
-
-        ::memcpy(&data, NetworkUtil::AddressOf(srcIter), packetSize);
-        mReadPos += sizeof(T);
-    }
-
-    PacketHeader* GetCurrPosToHeader();
-
 private:
     std::atomic_ullong mWritePos{ };
     size_t mReadPos{ };

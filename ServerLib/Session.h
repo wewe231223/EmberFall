@@ -36,7 +36,7 @@ using RecvBuf = NetworkBuf<BUF_NETWORK_RECV_SIZE>;
 
 class Session : public INetworkObject {
 public:
-    Session(std::shared_ptr<class INetworkCore> coreService);
+    Session(NetworkType networkType=NetworkType::CLIENT);
     ~Session();
 
 public:
@@ -48,9 +48,7 @@ public:
 
     void RegisterRecv();
     void RegisterSend(OverlappedSend* const overlapped);
-    void RegisterSend(void* packet);
-    void RegisterSend(void* data, size_t size);
-    void ProcessRecv(INT32 numOfBytes);
+    virtual void ProcessRecv(INT32 numOfBytes);
     void ProcessSend(INT32 numOfBytes, OverlappedSend* overlappedSend);
 
     bool IsConnected() const;
@@ -74,10 +72,13 @@ public:
 private:
     std::string mIP{ };
     UINT16 mPort{ };
+    NetworkType mNetworkType{ NetworkType::CLIENT };
 
     std::atomic_bool mConnected{ false }; // 01-14 클라이언트 연결여부를 atomic_bool로 수정
-    size_t mPrevRemainSize{ };
-
     SOCKET mSocket{ INVALID_SOCKET };
+
+
+protected:
+    size_t mPrevRemainSize{ };
     OverlappedRecv mOverlappedRecv{ };
 };

@@ -7,7 +7,7 @@ GameObject::operator bool() const {
 }
 
 std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GameObject::GetRenderData() const {
-	return std::make_tuple(mMesh, mShader, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter() , mCollider.GetExtents() ,mMaterial});
+	return std::make_tuple(mMesh, mShader, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents() ,mMaterial});
 }
 
 const Transform& GameObject::GetTransform() const {
@@ -27,6 +27,7 @@ void GameObject::ToggleActiveState() {
 }
 
 void GameObject::UpdateShaderVariables() {
+	mTransform.Update(Time.GetDeltaTime<float>()); 
 	mTransform.UpdateWorldMatrix();
 
 	if (mCollider.GetActiveState()) {
@@ -37,6 +38,7 @@ void GameObject::UpdateShaderVariables() {
 }
 
 void GameObject::UpdateShaderVariables(SimpleMath::Matrix& parent) {
+	mTransform.Update(Time.GetDeltaTime<float>());
 	mTransform.UpdateWorldMatrix(parent);
 
 	if (mCollider.GetActiveState()) {
@@ -47,11 +49,14 @@ void GameObject::UpdateShaderVariables(SimpleMath::Matrix& parent) {
 }
 
 void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer) {
+	mTransform.Update(Time.GetDeltaTime<float>());
 	mTransform.UpdateWorldMatrix();
 
 	if (mCollider.GetActiveState()) {
 		mCollider.UpdateBox(mTransform.GetWorldMatrix());
 	}
+
+
 
 	mModelContext.world = mTransform.GetWorldMatrix();
 

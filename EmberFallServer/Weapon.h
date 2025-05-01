@@ -13,12 +13,12 @@
 namespace Weapons {
     class IWeapon abstract {
     public:
-        IWeapon(Weapon type);
+        IWeapon(Packets::Weapon type);
         virtual ~IWeapon();
 
     public:
-        Weapon GetWeaponType() const;
-        std::shared_ptr<Collider> GetHitbox() const;
+        Packets::Weapon GetWeaponType() const;
+        SimpleMath::Vector3 GetHitBoxSize() const;
 
         virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) abstract;
 
@@ -28,10 +28,10 @@ namespace Weapons {
     protected:
         bool mAttackable{ true };
         float mDamage{ };
-        std::shared_ptr<Collider> mHitbox{ };
+        SimpleMath::Vector3 mHitBox;
 
     private:
-        Weapon mWeaponType;
+        Packets::Weapon mWeaponType;
     };
 
     class Fist : public IWeapon {

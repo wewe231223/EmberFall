@@ -8,6 +8,8 @@ namespace Packets;
 //		Basic communication packets
 //////////////////////////////////////////////////////////////
 
+// Stage : Lobby, Terrain
+
 table ProtocolVersionSC {
 	major: ubyte = 2;
 	minor: ubyte = 0;
@@ -16,6 +18,17 @@ table ProtocolVersionSC {
 // notify id to client
 table NotifyIdSC {
 	playerId: ubyte;
+}
+
+table PlayerReadyInLobbySC {
+	playerId: ubyte;
+	role: PlayerRole;
+}
+
+table ChangeToNextSceneSC { }
+
+table GameEndSC {
+	winner: PlayerRole;
 }
 
 table PlayerExitSC { 
@@ -27,12 +40,24 @@ table PlayerExitSC {
 //		Basic communication packets
 //////////////////////////////////////////////////////////////
 
-table PlayerInput { 
+// Stage : Lobby, Terrain
+
+table PlayerExitCS { }
+
+table PlayerEnterInGame { }
+
+table PlayerReadyInLobbyCS { 
+	role: PlayerRole;
+}
+
+table PlayerEnterInLobbyCS { }
+
+table PlayerEnterInTerrainCS { }
+
+table PlayerInputCS {
 	key: ubyte;
 	down: bool;
 }
-
-table PlayerExitCS { }
 
 table PlayerLookCS {
 	look: Vec3;

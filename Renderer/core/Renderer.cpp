@@ -5,17 +5,16 @@
 #include "../Utility/Serializer.h"
 #include "../Utility/Exceptions.h"
 #include "../Utility/Crash.h"
+#include "../Utility/IntervalTimer.h"
+
 #define DIRECTWRITE
 
 Renderer::Renderer(HWND rendererWindowHandle)
 	: mRendererWindow(rendererWindowHandle) {
 
-
-
-
-	// 셰이더 매니저 테스트용.. 
 	gShaderManager.Test();
 
+	// 기존 렌더러에 있는 초기화 작업은 이미지 로딩 이외에 모두 메인 쓰레드에서 해도 무방함. ( 충분히 빠른 시간 안에 완료됨 ) 
 	Renderer::InitFactory();
 	Renderer::InitDevice();
 	Renderer::InitCommandQueue();
@@ -25,13 +24,19 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitRenderTargets();
 	Renderer::InitDepthStencilBuffer();
 	Renderer::InitStringRenderer();
-	Renderer::InitShadowRenderer();
+	
 
 	Renderer::ResetCommandList();
 
+	
 	Renderer::InitCoreResources(); 
+	Renderer::InitCameraBuffer(); 
+	Renderer::InitShadowRenderer();
 	Renderer::InitDefferedRenderer();
-
+	Renderer::InitTerrainBuffer();
+	Renderer::InitParticleManager();
+	Renderer::InitGrassRender();
+	Renderer::InitCanvas(); 
 }
 
 Renderer::~Renderer() {
@@ -39,15 +44,15 @@ Renderer::~Renderer() {
 }
 
 
-std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> Renderer::GetManagers() {
-	return std::make_tuple(mMeshRenderManager, mTextureManager, mMaterialManager);
+std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> Renderer::GetManagers() {
+	return std::make_tuple(mMeshRenderManager, mTextureManager, mMaterialManager, mParticleManager, mCanvas);
 }
 
 DefaultBufferCPUIterator Renderer::GetMainCameraBuffer() {
 	return mMainCameraBuffer.CPUBegin();
 }
 
-ComPtr<ID3D12Device> Renderer::GetDevice() {
+ComPtr<ID3D12Device10> Renderer::GetDevice() {
 	return mDevice;
 }
 
@@ -55,9 +60,32 @@ ComPtr<ID3D12GraphicsCommandList> Renderer::GetCommandList() {
 	return mCommandList;
 }
 
-void Renderer::UploadResource(){
-	mMaterialManager->UploadMaterial(mDevice, mCommandList);
+ComPtr<ID3D12GraphicsCommandList> Renderer::GetLoadCommandList() {
+	return mLoadCommandList;
+}
 
+std::shared_ptr<ShadowRenderer> Renderer::GetShadowRenderer() {
+	return mShadowRenderer;
+}
+
+void Renderer::LoadTextures() {
+	mTextureManager->LoadAllImages(mDevice, mLoadCommandList); 
+
+	MaterialConstants material{};
+
+	material.mDiffuseTexture[0] = mTextureManager->GetTexture("Grass0");
+	material.mDiffuseTexture[1] = mTextureManager->GetTexture("Grass1");
+	material.mDiffuseTexture[2] = mTextureManager->GetTexture("Grass2");
+	material.mDiffuseTexture[3] = mTextureManager->GetTexture("Grass3");
+
+	mMaterialManager->CreateMaterial("GrassMaterial", material);
+
+	mGrassRenderer.SetMaterial(mMaterialManager->GetMaterial("GrassMaterial"));
+
+}
+
+void Renderer::UploadResource(){ 
+	mMaterialManager->UploadMaterial(mDevice, mCommandList);
 	CheckHR(mCommandList->Close());
 
 	ID3D12CommandList* commandLists[] = { mCommandList.Get() };
@@ -65,6 +93,20 @@ void Renderer::UploadResource(){
 	Renderer::FlushCommandQueue();
 
 	Console.Log("Renderer 초기화가 완료되었습니다.", LogType::Info);
+}
+
+void Renderer::ResetLoadCommandList() {
+	CheckHR(mLoadAllocator->Reset());
+	CheckHR(mLoadCommandList->Reset(mLoadAllocator.Get(), nullptr));
+}
+
+void Renderer::ExecuteLoadCommandList() {
+	mMaterialManager->UploadMaterial(mDevice, mLoadCommandList);
+	mExecute = true; 
+}
+
+void Renderer::SetFeatureEnabled(std::tuple<bool, bool> type) {
+	mFeatureEnabled = type;
 }
 
 void Renderer::Update() {
@@ -95,14 +137,22 @@ void Renderer::Render() {
 	mCommandList->RSSetScissorRects(1, &scissorRect);
 
 	mMainCameraBuffer.Upload(mCommandList);
+	mShadowRenderer->Upload(mCommandList);
 	mMeshRenderManager->PrepareRender(mCommandList);
+	mTextureManager->Bind(mCommandList);
 
+	mShadowRenderer->TransitionShadowMap(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 0);
+	mMeshRenderManager->RenderShadowPass(0, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(0));
 
-	mShadowRenderer.SetShadowDSV(mCommandList);
-	mShadowRenderer.Update(mCommandList, mMainCameraBuffer.CPUBegin());
-
-	mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer.GetShadowCameraBuffer());
 	// mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
+
+	mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 1);
+	mMeshRenderManager->RenderShadowPass(1, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(1));
+
+	//mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 2);
+	//mMeshRenderManager->RenderShadowPass(2, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(2));
+
 
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
@@ -122,7 +172,7 @@ void Renderer::Render() {
 	// G-Buffer Pass 
 	auto rtvDescriptorSize = mDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	auto dsvHandle = mDSHeap->GetCPUDescriptorHandleForHeapStart();
-	mCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	mCommandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 0.0f, 0, 0, nullptr);
 
 	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	CD3DX12_CPU_DESCRIPTOR_HANDLE gBufferHandle{ mGBufferHeap->GetCPUDescriptorHandleForHeapStart() };
@@ -143,8 +193,17 @@ void Renderer::Render() {
 	mMeshRenderManager->RenderGPass(mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin() );
 	mMeshRenderManager->Reset();
 
+	if (std::get<static_cast<size_t>(RenderFeature::GRASS)>(mFeatureEnabled)) {
+		mGrassRenderer.Render(mCommandList, mMainCameraBuffer.GPUBegin(), mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress());
+	}
+
+	if (std::get<static_cast<size_t>(RenderFeature::PARTICLE)>(mFeatureEnabled)) {
+		mParticleManager->RenderSO(mCommandList);
+		mParticleManager->RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress());
+	}
+
 	// Deffered Rendering Pass 
-	mShadowRenderer.TransitionShadowMap(mCommandList);
+	mShadowRenderer->TransitionShadowMap(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 	Renderer::TransitionGBuffers(D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
@@ -152,7 +211,11 @@ void Renderer::Render() {
 	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
-	mDefferedRenderer.Render(mCommandList, mShadowRenderer.GetShadowCameraBuffer());
+	mDefferedRenderer.Render(mCommandList, mShadowRenderer->GetShadowCameraBuffer(0), mLightingManager->GetLightingBuffer());
+
+	mTextureManager->Bind(mCommandList);
+
+	mCanvas->Render(mCommandList, mTextureManager->GetTextureHeapAddress());
 }
 
 void Renderer::ExecuteRender() {
@@ -168,11 +231,21 @@ void Renderer::ExecuteRender() {
 	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
 #else 
 	CheckHR(mCommandList->Close());
-	ID3D12CommandList* commandLists[] = { mCommandList.Get() };
-	mCommandQueue->ExecuteCommandLists(1, commandLists);
+	ID3D12CommandList* commandLists[2] = { mCommandList.Get(), nullptr };
+	
+	if (mExecute) {
+		CheckHR(mLoadCommandList->Close());
+		commandLists[1] = mLoadCommandList.Get();
+	}
+
+	mCommandQueue->ExecuteCommandLists(mExecute ? 2 : 1, commandLists);
+	mExecute = false;
+
 	Renderer::FlushCommandQueue();
 
 	mStringRenderer.Render();
+	mParticleManager->PostRender();
+	mParticleManager->ValidateParticle();
 
 	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
 	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
@@ -235,18 +308,53 @@ ComPtr<IDXGIAdapter1> Renderer::GetBestAdapter() {
 	return bestAdapter;
 }
 
+bool Renderer::CheckMeshShaderSupport() {
+	// Shader Model 6.5 이상 확인
+	D3D12_FEATURE_DATA_SHADER_MODEL shaderModel = {};
+	shaderModel.HighestShaderModel = D3D_SHADER_MODEL_6_5;
+
+	if (FAILED(mDevice->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel))) ||
+		shaderModel.HighestShaderModel < D3D_SHADER_MODEL_6_5)
+	{
+		MessageBoxW(nullptr, L"Shader Model 6.5 미지원", L"Mesh Shader 확인", MB_ICONERROR | MB_OK);
+		return false;
+	}
+
+	// Mesh Shader Tier 지원 여부 확인
+	D3D12_FEATURE_DATA_D3D12_OPTIONS7 options7 = {};
+	if (FAILED(mDevice->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS7, &options7, sizeof(options7))) ||
+		options7.MeshShaderTier == D3D12_MESH_SHADER_TIER_NOT_SUPPORTED)
+	{
+		MessageBoxW(nullptr, L"Mesh Shader Tier 미지원", L"Mesh Shader 확인", MB_ICONERROR | MB_OK);
+		return false;
+	}
+
+	MessageBoxW(nullptr, L"Mesh Shader 지원됨!", L"Mesh Shader 확인", MB_ICONINFORMATION | MB_OK);
+	return true;
+}
+
 void Renderer::InitDevice() {
 	ComPtr<IDXGIAdapter1> adapter = GetBestAdapter();
 
 	CrashExp(adapter != nullptr, "No suitable GPU found.");
 
-	auto hr = ::D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice));
+
+	ComPtr<ID3D12Device> base{};
+	auto hr = ::D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&base));
+
+
 
 	if (FAILED(hr)) {
 		ComPtr<IDXGIAdapter> warpAdapter{ nullptr };
 		CheckHR(mFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
-		CheckHR(::D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice)));
+		CheckHR(::D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&base)));
 	}
+
+
+	CheckHR(base.As(&mDevice));
+
+	// 메시 셰이더 지원됨 
+	// Renderer::CheckMeshShaderSupport(); 
 }
 
 void Renderer::InitCommandQueue() {
@@ -290,8 +398,20 @@ void Renderer::InitSwapChain() {
 }
 
 void Renderer::InitCommandList() {
+
+	CheckHR(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&mLoadAllocator)));
+	CheckHR(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mLoadAllocator.Get(), nullptr, IID_PPV_ARGS(&mLoadCommandList)));
+
+	CheckHR(mLoadCommandList->Close());
+
+	ComPtr<ID3D12GraphicsCommandList> base{}; 
+
 	CheckHR(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&mAllocator)));
-	CheckHR(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mAllocator.Get(), nullptr, IID_PPV_ARGS(&mCommandList)));
+	CheckHR(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mAllocator.Get(), nullptr, IID_PPV_ARGS(&base)));
+
+
+	CheckHR(base.As(&mCommandList));
+
 
 	mCommandList->SetName(L"Main Command List");
 	mAllocator->SetName(L"Main Command Allocator");
@@ -347,7 +467,7 @@ void Renderer::InitDepthStencilBuffer() {
 
 	CheckHR(mDevice->CreateDescriptorHeap(&desc, IID_PPV_ARGS(mDSHeap.GetAddressOf())));
 
-	CD3DX12_CLEAR_VALUE clearValue{ DXGI_FORMAT_D24_UNORM_S8_UINT, 1.0f, 0 };
+	CD3DX12_CLEAR_VALUE clearValue{ DXGI_FORMAT_D24_UNORM_S8_UINT, 0.0f, 0 };
 	auto heapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
 
 	auto resourceDesc = CD3DX12_RESOURCE_DESC::Tex2D(
@@ -380,16 +500,49 @@ void Renderer::InitFonts() {
 	mStringRenderer.LoadExternalFont("NotoSansKR", "Resources/Font/NotoSansKR-Regular-Hestia.otf", L"Noto Sans KR", L"ko-kr");
 }
 
+void Renderer::InitCameraBuffer() {
+	mMainCameraBuffer = DefaultBuffer(mDevice, sizeof(CameraConstants), 1, true);
+}
+
 void Renderer::InitShadowRenderer() {
-	mShadowRenderer = ShadowRenderer(mDevice);
+	mShadowRenderer = std::make_shared<ShadowRenderer>(mDevice, mMainCameraBuffer.CPUBegin());
+}
+
+void Renderer::InitParticleManager() {
+	mParticleManager = std::make_shared<ParticleManager>(mDevice, mCommandList);
+	mParticleManager->SetTerrain(mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
+}
+
+void Renderer::InitGrassRender() {
+	mGrassRenderer = GrassRenderer(mDevice, mCommandList, mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
+}
+
+void Renderer::InitCanvas() {
+	mCanvas = std::make_unique<Canvas>(mDevice, mCommandList);
+}
+
+void Renderer::InitTerrainBuffer() {
+	TerrainHeader header{};
+	std::vector<SimpleMath::Vector3> vertices{};
+
+	std::ifstream file("Resources/Binarys/Terrain/TerrainBaked.bin", std::ios::binary);
+
+	file.read(reinterpret_cast<char*>(&header), sizeof(TerrainHeader));
+
+
+	vertices.resize(header.globalWidth * header.globalHeight);
+	file.read(reinterpret_cast<char*>(vertices.data()), vertices.size() * sizeof(SimpleMath::Vector3));
+
+
+	mTerrainHeaderBuffer = DefaultBuffer(mDevice, mCommandList, sizeof(TerrainHeader), 1, &header, true);
+	mTerrainDataBuffer = DefaultBuffer(mDevice, mCommandList, sizeof(SimpleMath::Vector3), header.globalWidth * header.globalHeight,  vertices.data() );
 }
 
 void Renderer::InitCoreResources() {
 	mMeshRenderManager = std::make_shared<MeshRenderManager>(mDevice);
 	mTextureManager = std::make_shared<TextureManager>(mDevice, mCommandList);
 	mMaterialManager = std::make_shared<MaterialManager>();
-
-	mMainCameraBuffer = DefaultBuffer(mDevice, sizeof(CameraConstants), 1, true);
+	mLightingManager = std::make_shared<LightingManager>(mDevice, mCommandList);
 
 }
 
@@ -397,7 +550,7 @@ void Renderer::InitDefferedRenderer() {
 	mDefferedRenderer = DefferedRenderer(mDevice, mCommandList);
 
 	mDefferedRenderer.RegisterGBufferTexture(mDevice, mGBuffers);
-	mDefferedRenderer.RegisterShadowMap(mDevice, mShadowRenderer.GetShadowMap());
+	mDefferedRenderer.RegisterShadowMap(mDevice, mShadowRenderer->GetShadowMapArray());
 
 }
 

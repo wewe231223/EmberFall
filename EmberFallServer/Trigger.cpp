@@ -1,12 +1,13 @@
 #include "pch.h"
 #include "Trigger.h"
 #include "Collider.h"
-#include "GameEventManager.h"
 #include "GameTimer.h"
 #include "GameEventFactory.h"
+#include "GameObject.h"
+#include "ServerFrame.h"
 
 Trigger::Trigger(std::shared_ptr<GameObject> owner, float lifeTime)
-    : Script{ owner, ObjectTag::TRIGGER }, mLifeTime{ lifeTime } {  }
+    : Script{ owner, ObjectTag::TRIGGER, ScriptType::TRIGGER }, mLifeTime{ lifeTime } {  }
 
 Trigger::~Trigger() { }
 
@@ -19,31 +20,28 @@ void Trigger::Init() {
         return;
     }
 
-    StaticTimer::PushTimerEvent([=]() { GetOwner()->SetActive(false); gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Trigger Die"); }, mLifeTime, 1);
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    auto id = owner->GetId();
+    auto excuteTime = mLifeTime;
+    gServerFrame->AddTimerEvent(id, SysClock::now() + std::chrono::milliseconds{ static_cast<long long>(excuteTime * 1000.0f) }, TimerEventType::REMOVE_TRIGGER);
 }
 
 void Trigger::Update(const float deltaTime) { }
 
-void Trigger::LateUpdate(const float deltaTime) { }
-
-void Trigger::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    auto opponentId = opponent->GetId();
-    if (mInTriggerObjects.contains(opponentId) or ObjectTag::TRIGGER == opponent->GetTag()) {
-        return;
-    }
-
-    mInTriggerObjects.insert(opponentId);
+void Trigger::LateUpdate(const float deltaTime) { 
+    mInTriggerObjects.clear();
 }
 
-void Trigger::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
-
-void Trigger::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse){ 
-    auto opponentId = opponent->GetId();
-    if (not mInTriggerObjects.contains(opponentId) or ObjectTag::TRIGGER == opponent->GetTag()) {
+void Trigger::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+    if (ObjectTag::TRIGGER == opponent->GetTag()) {
         return;
     }
 
-    mInTriggerObjects.erase(opponentId);
+    mInTriggerObjects.insert(opponent->GetId());
 }
 
 void Trigger::OnCollisionTerrain(const float height) { }

@@ -14,7 +14,6 @@ Player::Player(Mesh* mesh, GraphicsShaderBase* shader, MaterialIndex material, A
 	DirectX::BoundingBox box{ {0.f,0.8f,0.f}, {0.25f, 0.8f, 0.25f} };
 	mCollider = Collider{ box };
 
-	mWeapon.SetActiveState(false);
 }
 
 bool Player::GetActiveState() const {
@@ -22,12 +21,11 @@ bool Player::GetActiveState() const {
 }
 
 void Player::SetActiveState(bool state) {
-	mActiveState = false; 
+	mActiveState = state; 
 }
 
-void Player::SetWeapon(const GameObject& weapon) {
-	mWeapon = weapon; 
-	mWeapon.SetActiveState(true);
+void Player::AddEquipment(EquipmentObject equipment) {
+	mEquipments.emplace_back(equipment);
 }
 
 void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
@@ -74,19 +72,25 @@ void Player::Update(std::shared_ptr<MeshRenderManager>& manager) {
 
 	mBoneMaskController.Update(Time.GetDeltaTime(), boneTransformBuffer);
 
+	mTransform.Update(Time.GetDeltaTime<float>());
 	mTransform.UpdateWorldMatrix();
 	mModelContext.world = mTransform.GetWorldMatrix();
 
 	mCollider.UpdateBox(mTransform.GetWorldMatrix());
 
 	manager->AppendBonedMeshContext(mShader, mMesh, ModelContext{mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
+	manager->AppendShadowBonedMeshContext(mShader, mMesh, ModelContext{mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
 
-	if (mWeapon) {
-		mWeapon.GetTransform().SetLocalTransform(boneTransformBuffer.boneTransforms[58].Transpose());
-		mWeapon.UpdateShaderVariables(mTransform.GetWorldMatrix());
-		auto [mesh, shader, modelContext] = mWeapon.GetRenderData();
-		manager->AppendPlaneMeshContext(shader, mesh, modelContext);
+	for (auto& equipment : mEquipments) {
+		if (false == equipment.GetActiveState()) {
+			continue; 
+		}
+		equipment.UpdateShaderVariables(boneTransformBuffer, mTransform.GetWorldMatrix());
+		auto [mesh, shader, ModelContext] = equipment.GetRenderData();
+		manager->AppendPlaneMeshContext(shader, mesh, ModelContext);
+		manager->AppendShadowPlaneMeshContext(shader, mesh, ModelContext, 0);
 	}
+
 }
 
 Transform& Player::GetTransform() {

@@ -26,8 +26,8 @@ public:
         return flatbuffers::GetRoot<PacketType>(data + sizeof(PacketHeaderCS));
     }
 
-
 public:
+    static OverlappedSend* ClonePacket(OverlappedSend* const overlapped);
     static void ReleasePacketBuf(OverlappedSend* const overlapped);
 
 public:
@@ -43,7 +43,7 @@ public:
     static OverlappedSend* ObjectRemoveSC(NetworkObjectIdType id);
     static OverlappedSend* ObjectMoveSC(NetworkObjectIdType id, float yaw, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir, float speed);
     static OverlappedSend* ObjectAttackedSC(NetworkObjectIdType id, float hp);
-    static OverlappedSend* ObjectAnimationChangedSC(NetworkObjectIdType id, AnimationState animation);
+    static OverlappedSend* ObjectAnimationChangedSC(NetworkObjectIdType id, Packets::AnimationState animation);
 
     static OverlappedSend* UseItemSC(SessionIdType id, Packets::ItemType item);
     static OverlappedSend* AcquireItemSC(SessionIdType id, Packets::ItemType item);
@@ -56,6 +56,7 @@ public:
         const SimpleMath::Vector3& dir, float speed, Packets::ProjectileTypes projectile);
 
     // Client to Server
+    static OverlappedSend* PlayerEnterInGame(SessionIdType id);
     static OverlappedSend* PlayerExitCS(SessionIdType id);
     static OverlappedSend* PlayerInputCS(SessionIdType id, uint8_t key, bool down);
     static OverlappedSend* PlayerLookCS(SessionIdType id, const SimpleMath::Vector3& look);

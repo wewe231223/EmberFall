@@ -23,24 +23,20 @@ public:
     virtual ~MonsterScript();
 
 public:
-    bool IsDead() const;
-
     virtual void Init() override;
 
     virtual void Update(const float deltaTime) override;
     virtual void LateUpdate(const float deltaTime) override;
 
-    virtual void OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
-    virtual void OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
-    virtual void OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
-
+    virtual void OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
     virtual void OnCollisionTerrain(const float height) override;
 
     virtual void DispatchGameEvent(struct GameEvent* event) override;
 
 public:
-    std::shared_ptr<GameObject> GetChaseTarget() const;
-    std::shared_ptr<GameObject>& GetChaseTarget();
+    NetworkObjectIdType GetChaseTarget() const;
+
+    bool IsPlayerInAttackRange() const;
 
     // 행동트리 관련 함수들 return NodeStatus
     BT::NodeStatus SetRandomTargetLocation(const float deltaTime);
@@ -57,8 +53,8 @@ private:
     SimpleMath::Vector3 mTargetPos{ SimpleMath::Vector3::Zero }; // TestTargetPos....
 
     // range to detecting player 
-    std::shared_ptr<class GameObject> mChaseTarget{ nullptr };
-    GameUnits::GameUnit<GameUnits::Meter> mAttackRange{ 3.0m };
+    NetworkObjectIdType mChaseTarget{ INVALID_OBJ_ID };
+    GameUnits::GameUnit<GameUnits::Meter> mAttackRange{ 1.0m };
     GameUnits::GameUnit<GameUnits::Meter> mPlayerDetectRange{ 10.0m };
 
     BT_Monster mMonsterBT{ };

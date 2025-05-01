@@ -13,7 +13,7 @@ inline static auto GRAVITY_ACCELERATION = 1.0G;
 inline static auto DEFAULT_ACCELERATION = 20.0mps2;
 inline static auto DEFAULT_MASS = 70.0kg;       // kg
 inline static auto DEFAULT_MAX_MOVE_SPEED = 5.0mps; // m/s
-inline static auto DEFAULT_JUMP_FORCE = 10000.0N; // N = F = Mess * accel = kg * m / s^2
+inline static auto DEFAULT_JUMP_FORCE = 6000.0N; // N = F = Mess * accel = kg * m / s^2
 inline static auto DEFAULT_JUMP_TIME = 0.2sec;
 
 struct PhysicsFactor {
@@ -53,16 +53,14 @@ public:
 
     void ResizeVelocity(float speed);
 
-    void Accelerate(const SimpleMath::Vector3& dir);
-    void Accelerate(const SimpleMath::Vector3& dir, const float acceleration);
+    void Accelerate(const SimpleMath::Vector3& dir, const float deltaTime);
 
     void AddVelocity(const SimpleMath::Vector3& velocity);
     void AddForce(const SimpleMath::Vector3& force);
     void AddForce(const SimpleMath::Vector3& dir, const float force);
     void Update(const float deltaTime);
-    void LateUpdate(const float deltaTime);
 
-    void SolvePenetration(const SimpleMath::Vector3& penetrationVec, const std::shared_ptr<class GameObject>& opponent);
+    void SolvePenetration(const SimpleMath::Vector3& penetrationVec);
 
 private:
     void ClampVelocity();
@@ -77,7 +75,6 @@ private:
     bool mOnGround{ true };
     bool mOnOtherObject{ true };
 
-    SimpleMath::Vector3 mPrevImpulse{ };
     SimpleMath::Vector3 mVelocity{ SimpleMath::Vector3::Zero };
     std::weak_ptr<Transform> mTransform{ };
 };

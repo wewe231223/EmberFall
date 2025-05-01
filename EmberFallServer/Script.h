@@ -9,14 +9,24 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "GameObject.h"
 #include "GameObjectComponent.h"
 
 class GameObject;
 
+enum class ScriptType : uint8_t {
+    PLAYER,
+    BOSSPLAYER,
+    MONSTER,
+    CORRUPTED_GEM,
+    TRIGGER,
+    EVENT_TRIGGER,
+    SKILL,
+    ITEM
+};
+
 class Script abstract : public GameObjectComponent {
 public:
-    Script(std::shared_ptr<GameObject> owner, ObjectTag tag);
+    Script(std::shared_ptr<GameObject> owner, ObjectTag tag, ScriptType type);
     virtual ~Script();
 
 public:
@@ -27,14 +37,14 @@ public:
     virtual void Update(const float deltaTime) abstract;
     virtual void LateUpdate(const float deltaTime) abstract;
 
-    virtual void OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) abstract;
-    virtual void OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) abstract;
-    virtual void OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) abstract;
-
+    virtual void OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) abstract;
     virtual void OnCollisionTerrain(const float height) abstract;
+
+    virtual void DoInteraction(const std::shared_ptr<GameObject>& target) { };
 
     virtual void DispatchGameEvent(struct GameEvent* event) abstract;
     
 private:
+    ScriptType mType{ };
     std::weak_ptr<GameObject> mOwner;
 };

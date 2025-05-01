@@ -1,11 +1,10 @@
 #include "pch.h"
 #include "DefferedRenderer.h"
-#include "../Config/Config.h"
 #include <filesystem>
 
 DefferedRenderer::DefferedRenderer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	D3D12_DESCRIPTOR_HEAP_DESC desc{};
-	desc.NumDescriptors = Config::GBUFFER_COUNT<UINT> + 1;
+	desc.NumDescriptors = Config::GBUFFER_COUNT<UINT> + Config::SHADOWMAP_COUNT<UINT>;
 	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 
@@ -33,22 +32,25 @@ void DefferedRenderer::RegisterGBufferTexture(ComPtr<ID3D12Device> device, const
 
 }
 
-void DefferedRenderer::RegisterShadowMap(ComPtr<ID3D12Device> device, Texture& shadowMap) {
+void DefferedRenderer::RegisterShadowMap(ComPtr<ID3D12Device> device, std::array<Texture, Config::SHADOWMAP_COUNT<int>>& shadowMap) {
 	D3D12_SHADER_RESOURCE_VIEW_DESC desc{};
 	desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	desc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	desc.Texture2D.MipLevels = 1;
-	desc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	desc.Format = DXGI_FORMAT_R32_FLOAT;
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE handle{ mGBufferSRVHeap->GetCPUDescriptorHandleForHeapStart() };
 
 	auto descriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	handle.Offset(Config::GBUFFER_COUNT<>, descriptorSize);
-	device->CreateShaderResourceView(shadowMap.GetResource().Get(), &desc, handle);
+	for (auto& texture : shadowMap) {
+	device->CreateShaderResourceView(texture.GetResource().Get(), &desc, handle);
+	handle.Offset(1, descriptorSize);
+	}
 }
 
-void DefferedRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator shadowCameraBuffer) {
+void DefferedRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator shadowCameraBuffer, DefaultBufferGPUIterator lightingBuffer) {
 	mDefferedShader.SetGPassShader(commandList);
 
 	commandList->SetDescriptorHeaps(1, mGBufferSRVHeap.GetAddressOf());
@@ -60,6 +62,7 @@ void DefferedRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList, Def
 
 	commandList->SetGraphicsRootConstantBufferView(0, *shadowCameraBuffer);
 	commandList->SetGraphicsRootDescriptorTable(1, mGBufferSRVHeap->GetGPUDescriptorHandleForHeapStart());
+	commandList->SetGraphicsRootShaderResourceView(2, *lightingBuffer);
 
 	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }

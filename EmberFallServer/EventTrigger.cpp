@@ -1,15 +1,14 @@
 #include "pch.h"
 #include "EventTrigger.h"
+#include "GameObject.h"
 #include "GameTimer.h"
-
-#include "GameEventManager.h"
+#include "ObjectManager.h"
 
 EventTrigger::EventTrigger(std::shared_ptr<GameObject> owner, std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount)
     : Trigger{ owner, lifeTime }, mEvent{ event }, mProduceEventDelay{ eventDelay }, mProduceEventCount{ eventCount } {
     if (0 == mProduceEventCount) {
         mProduceEventCount = static_cast<int32_t>(mLifeTime / mProduceEventDelay);
     }
-    auto pos = GetOwner()->GetPosition();
 }
 
 EventTrigger::~EventTrigger() { }
@@ -18,53 +17,38 @@ void EventTrigger::Init() {
     Trigger::Init();
 }
 
-void EventTrigger::Update(const float deltaTime) { 
-    auto col = std::static_pointer_cast<OrientedBoxCollider>(GetOwner()->GetCollider());
-    auto colpos = col->GetBoundingBox().Center;
-    auto colex = col->GetBoundingBox().Extents;
-}
+void EventTrigger::Update(const float deltaTime) { }
 
 void EventTrigger::LateUpdate(const float deltaTime) { }
 
-void EventTrigger::OnHandleCollisionEnter(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    auto opponentId = opponent->GetId();
-    if (mProducedEventCounter.contains(opponentId) or ObjectTag::TRIGGER == opponent->GetTag()) {
+void EventTrigger::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+    if (ObjectTag::TRIGGER == opponent->GetTag()) {
         return;
     }
 
-    mProducedEventCounter[opponentId] = std::make_pair(mProduceEventDelay, 0);
-}
-
-void EventTrigger::OnHandleCollisionStay(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    if (not GetOwner()->IsActive() or ObjectTag::TRIGGER == opponent->GetTag()) {
+    if (nullptr == opponent and false == GetOwner()->mSpec.active) {
         return;
     }
 
     auto opponentId = opponent->GetId();
-    auto& [delayCounter, eventCount] = mProducedEventCounter[opponentId];
-    if (eventCount >= mProduceEventCount) {
+    auto opponentTag = gObjectManager->GetObjectFromId(opponentId)->GetTag();
+    if (ObjectTag::TRIGGER == opponentTag or ObjectTag::ENV == opponentTag or ObjectTag::NONE == opponentTag) {
         return;
     }
 
-    delayCounter += StaticTimer::GetDeltaTime();
-    if (mProduceEventDelay < delayCounter) {
-        auto cloneEvent = GameEventFactory::CloneEvent(mEvent);
-
-        cloneEvent->receiver = opponentId;
-        gEventManager->PushEvent(cloneEvent);
-
-        delayCounter = 0.0f;
-        ++eventCount;
-    }
-}
-
-void EventTrigger::OnHandleCollisionExit(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    auto opponentId = opponent->GetId();
-    if (not mProducedEventCounter.contains(opponentId)) {
+    if (not mProducedEventCounter.contains(opponentId) and opponentId != mEvent->sender) {
+        mProducedEventCounter.try_emplace(opponentId, 0.0f, 1);
+        mEvent->receiver = opponentId;
+        opponent->DispatchGameEvent(GameEventFactory::CloneEvent(mEvent));
         return;
     }
 
-    mProducedEventCounter.erase(opponentId);
+    auto& [delay, count] = mProducedEventCounter[opponentId];
+    delay += GetOwner()->GetDeltaTime();
+    if (delay >= mProduceEventDelay and count < mProduceEventCount) {
+        count += 1;
+        opponent->DispatchGameEvent(GameEventFactory::CloneEvent(mEvent));
+    }
 }
 
 void EventTrigger::OnCollisionTerrain(const float height) { }

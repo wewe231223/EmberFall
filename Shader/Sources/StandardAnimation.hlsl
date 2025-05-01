@@ -3,7 +3,12 @@ cbuffer Camera : register(b0)
     matrix view;
     matrix projection;
     matrix viewProjection;
+    Matrix middleViewProjection;
+    //Matrix farViewProjection;
+
     float3 cameraPosition;
+    int isShadow;
+
 }
 
 struct ModelContext
@@ -88,7 +93,9 @@ StandardAnimation_PIN StandardAnimation_VS(StandardAnimation_VIN input) {
     output.wPosition = output.position.xyz;
     output.position = mul(output.position, viewProjection);
     
-    output.normal = normalize(mul(input.normal, (float3x3)boneTransform));
+    float3x3 boneWorldTransform = mul((float3x3) boneTransform, (float3x3) modelContext.world);
+    
+    output.normal = normalize(mul(input.normal, boneWorldTransform));
     output.texcoord = input.texcoord;
     output.material = modelContext.material;
     
@@ -99,9 +106,17 @@ Deffered_POUT StandardAnimation_PS(StandardAnimation_PIN input) {
     
     Deffered_POUT output = (Deffered_POUT)0;
     
+    [unroll]
+    for (int i = 0; i < isShadow; ++i)
+    {
+        float depth = input.position.z;
+        output.diffuse = float4(depth, depth, depth, 1.0f);
+        return output;
+    }
+    
     output.diffuse = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord);
     // color += materialConstants[input.material].diffuse;
-    
-    //output.position = float4(input.wPosition, 1.0f);
+    output.normal = float4(input.normal, 1.0f);
+    output.position = float4(input.wPosition, 1.0f);
     return output;
 }

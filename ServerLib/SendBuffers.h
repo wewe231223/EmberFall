@@ -26,7 +26,7 @@ inline constexpr size_t MEM_BLOCK_SIZE_CNT = sizeof(MEM_BLOCK_SIZES) / sizeof(si
 
 class SendBuffers {
 public:
-    inline static constexpr size_t BUFFER_COUNT = 10000;
+    inline static constexpr size_t BUFFER_COUNT = 1'000'000;
 
 public:
     SendBuffers();
@@ -41,6 +41,7 @@ public:
     void Init(size_t bufferSize);
     OverlappedSend* GetOverlapped(const PacketHeaderSC* const header, const uint8_t* const payload, const PacketSizeT payloadSize);
     OverlappedSend* GetOverlapped(const PacketHeaderCS* const header, const uint8_t* const payload, const PacketSizeT payloadSize);
+    OverlappedSend* GetOverlapped(OverlappedSend* const srcOverlapped);
     OverlappedSend* GetOverlapped(void* data, size_t dataSize);
     bool ReleaseOverlapped(OverlappedSend* const overlapped);
 
@@ -56,6 +57,7 @@ public:
 public:
     OverlappedSend* GetOverlapped(const PacketHeaderSC* const header, const uint8_t* const payload, const PacketSizeT payloadSize);
     OverlappedSend* GetOverlapped(const PacketHeaderCS* const header, const uint8_t* const payload, const PacketSizeT payloadSize);
+    OverlappedSend* GetOverlapped(OverlappedSend* const srcOverlapped);
     OverlappedSend* GetOverlapped(void* data, size_t dataSize);
     bool ReleaseOverlapped(OverlappedSend* const overlapped);
 

@@ -20,6 +20,16 @@
 #include "../Resource/Mesh.h"
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Renderer/Core/ShadowRenderer.h"
+#include "../Renderer/Manager/LightingManager.h"
+#include "../Renderer/Manager/ParticleManager.h"
+#include "../Renderer/Render/GrassRenderer.h"
+#include "../Renderer/Render/Canvas.h"
+
+enum class RenderFeature : BYTE {
+	PARTICLE, 
+	GRASS,
+	END,
+};
 
 class Renderer {
 public:
@@ -32,13 +42,22 @@ public:
 	Renderer(Renderer&& other) = delete;
 	Renderer& operator=(Renderer&& other) = delete;
 public:
-	std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>> GetManagers();
+	std::tuple<std::shared_ptr<MeshRenderManager>, std::shared_ptr<TextureManager>, std::shared_ptr<MaterialManager>, std::shared_ptr<ParticleManager>, std::shared_ptr<Canvas>> GetManagers();
 	DefaultBufferCPUIterator GetMainCameraBuffer();
 
-	ComPtr<ID3D12Device> GetDevice();
+	ComPtr<ID3D12Device10> GetDevice();
 	ComPtr<ID3D12GraphicsCommandList> GetCommandList();
+	ComPtr<ID3D12GraphicsCommandList> GetLoadCommandList(); 
+
+	std::shared_ptr<ShadowRenderer> GetShadowRenderer(); 
+
+	void LoadTextures(); 
 
 	void UploadResource();
+	void ResetLoadCommandList(); 
+	void ExecuteLoadCommandList();
+
+	void SetFeatureEnabled(std::tuple<bool, bool> type);
 
 	void Update();
 
@@ -46,7 +65,10 @@ public:
 	void ExecuteRender();
 private:
 	void InitFactory();
+	
 	ComPtr<IDXGIAdapter1> GetBestAdapter();
+	bool CheckMeshShaderSupport();
+
 	void InitDevice();
 	void InitCommandQueue();
 	void InitFence();
@@ -58,7 +80,12 @@ private:
 	void InitStringRenderer(); 
 	void InitFonts(); 
 
+	void InitCameraBuffer(); 
 	void InitShadowRenderer();
+	void InitCanvas();
+	void InitTerrainBuffer();
+	void InitParticleManager();
+	void InitGrassRender(); 
 
 	void InitCoreResources(); 
 	void InitDefferedRenderer();
@@ -77,7 +104,7 @@ private:
 	ComPtr<ID3D12Debug6> mDebugController{ nullptr };
 	ComPtr<IDXGIDebug1> mDXGIDebug{ nullptr };
 #endif 
-	ComPtr<ID3D12Device> mDevice{ nullptr };
+	ComPtr<ID3D12Device10> mDevice{ nullptr };
 
 	ComPtr<ID3D12CommandQueue> mCommandQueue{ nullptr };
 
@@ -86,15 +113,19 @@ private:
 
 	ComPtr<IDXGISwapChain1> mSwapChain{ nullptr };
 
+	bool mExecute{ false };
+	ComPtr<ID3D12CommandAllocator> mLoadAllocator{ nullptr };
+	ComPtr<ID3D12GraphicsCommandList> mLoadCommandList{ nullptr };
+
 	ComPtr<ID3D12CommandAllocator> mAllocator{ nullptr };
-	ComPtr<ID3D12GraphicsCommandList> mCommandList{ nullptr };
+	ComPtr<ID3D12GraphicsCommandList6> mCommandList{ nullptr };
 
 	ComPtr<ID3D12DescriptorHeap> mRTVHeap{ nullptr };
 	std::array<Texture, Config::BACKBUFFER_COUNT<UINT>> mRenderTargets{};
 	UINT mRTIndex{ 0 };
 
 	StringRenderer mStringRenderer{}; 
-	ShadowRenderer mShadowRenderer{};
+	std::shared_ptr<ShadowRenderer> mShadowRenderer{};
 	/*
 	1. diffuse 
 	2. normal
@@ -111,6 +142,15 @@ private:
 	std::shared_ptr<TextureManager> mTextureManager{};
 	std::shared_ptr<MaterialManager> mMaterialManager{};
 	std::shared_ptr<MeshRenderManager> mMeshRenderManager{};
+	std::shared_ptr<ParticleManager> mParticleManager{};
+	std::shared_ptr<LightingManager> mLightingManager{};
+	std::shared_ptr<Canvas> mCanvas{};
+
+	std::tuple<bool, bool> mFeatureEnabled{ false, false };
+	GrassRenderer mGrassRenderer{};
+
+	DefaultBuffer mTerrainHeaderBuffer{}; 
+	DefaultBuffer mTerrainDataBuffer{}; 
 
 	DefaultBuffer mMainCameraBuffer{};
 };

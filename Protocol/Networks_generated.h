@@ -24,6 +24,15 @@ struct ProtocolVersionSCBuilder;
 struct NotifyIdSC;
 struct NotifyIdSCBuilder;
 
+struct PlayerReadyInLobbySC;
+struct PlayerReadyInLobbySCBuilder;
+
+struct ChangeToNextSceneSC;
+struct ChangeToNextSceneSCBuilder;
+
+struct GameEndSC;
+struct GameEndSCBuilder;
+
 struct PlayerExitSC;
 struct PlayerExitSCBuilder;
 
@@ -32,6 +41,21 @@ struct PlayerInputBuilder;
 
 struct PlayerExitCS;
 struct PlayerExitCSBuilder;
+
+struct PlayerEnterInGame;
+struct PlayerEnterInGameBuilder;
+
+struct PlayerReadyInLobbyCS;
+struct PlayerReadyInLobbyCSBuilder;
+
+struct PlayerEnterInLobbyCS;
+struct PlayerEnterInLobbyCSBuilder;
+
+struct PlayerEnterInTerrainCS;
+struct PlayerEnterInTerrainCSBuilder;
+
+struct PlayerInputCS;
+struct PlayerInputCSBuilder;
 
 struct PlayerLookCS;
 struct PlayerLookCSBuilder;
@@ -139,6 +163,127 @@ inline ::flatbuffers::Offset<NotifyIdSC> CreateNotifyIdSC(
     uint8_t playerId = 0) {
   NotifyIdSCBuilder builder_(_fbb);
   builder_.add_playerId(playerId);
+  return builder_.Finish();
+}
+
+struct PlayerReadyInLobbySC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PlayerReadyInLobbySCBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_PLAYERID = 4,
+    VT_ROLE = 6
+  };
+  uint8_t playerId() const {
+    return GetField<uint8_t>(VT_PLAYERID, 0);
+  }
+  Packets::PlayerRole role() const {
+    return static_cast<Packets::PlayerRole>(GetField<uint8_t>(VT_ROLE, 0));
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
+           VerifyField<uint8_t>(verifier, VT_ROLE, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct PlayerReadyInLobbySCBuilder {
+  typedef PlayerReadyInLobbySC Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_playerId(uint8_t playerId) {
+    fbb_.AddElement<uint8_t>(PlayerReadyInLobbySC::VT_PLAYERID, playerId, 0);
+  }
+  void add_role(Packets::PlayerRole role) {
+    fbb_.AddElement<uint8_t>(PlayerReadyInLobbySC::VT_ROLE, static_cast<uint8_t>(role), 0);
+  }
+  explicit PlayerReadyInLobbySCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<PlayerReadyInLobbySC> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<PlayerReadyInLobbySC>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<PlayerReadyInLobbySC> CreatePlayerReadyInLobbySC(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint8_t playerId = 0,
+    Packets::PlayerRole role = Packets::PlayerRole_HUMAN) {
+  PlayerReadyInLobbySCBuilder builder_(_fbb);
+  builder_.add_role(role);
+  builder_.add_playerId(playerId);
+  return builder_.Finish();
+}
+
+struct ChangeToNextSceneSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ChangeToNextSceneSCBuilder Builder;
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           verifier.EndTable();
+  }
+};
+
+struct ChangeToNextSceneSCBuilder {
+  typedef ChangeToNextSceneSC Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  explicit ChangeToNextSceneSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ChangeToNextSceneSC> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ChangeToNextSceneSC>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ChangeToNextSceneSC> CreateChangeToNextSceneSC(
+    ::flatbuffers::FlatBufferBuilder &_fbb) {
+  ChangeToNextSceneSCBuilder builder_(_fbb);
+  return builder_.Finish();
+}
+
+struct GameEndSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef GameEndSCBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_WINNER = 4
+  };
+  Packets::PlayerRole winner() const {
+    return static_cast<Packets::PlayerRole>(GetField<uint8_t>(VT_WINNER, 0));
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_WINNER, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct GameEndSCBuilder {
+  typedef GameEndSC Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_winner(Packets::PlayerRole winner) {
+    fbb_.AddElement<uint8_t>(GameEndSC::VT_WINNER, static_cast<uint8_t>(winner), 0);
+  }
+  explicit GameEndSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<GameEndSC> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<GameEndSC>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<GameEndSC> CreateGameEndSC(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    Packets::PlayerRole winner = Packets::PlayerRole_HUMAN) {
+  GameEndSCBuilder builder_(_fbb);
+  builder_.add_winner(winner);
   return builder_.Finish();
 }
 
@@ -262,6 +407,185 @@ struct PlayerExitCSBuilder {
 inline ::flatbuffers::Offset<PlayerExitCS> CreatePlayerExitCS(
     ::flatbuffers::FlatBufferBuilder &_fbb) {
   PlayerExitCSBuilder builder_(_fbb);
+  return builder_.Finish();
+}
+
+struct PlayerEnterInGame FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PlayerEnterInGameBuilder Builder;
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           verifier.EndTable();
+  }
+};
+
+struct PlayerEnterInGameBuilder {
+  typedef PlayerEnterInGame Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  explicit PlayerEnterInGameBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<PlayerEnterInGame> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<PlayerEnterInGame>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<PlayerEnterInGame> CreatePlayerEnterInGame(
+    ::flatbuffers::FlatBufferBuilder &_fbb) {
+  PlayerEnterInGameBuilder builder_(_fbb);
+  return builder_.Finish();
+}
+
+struct PlayerReadyInLobbyCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PlayerReadyInLobbyCSBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ROLE = 4
+  };
+  Packets::PlayerRole role() const {
+    return static_cast<Packets::PlayerRole>(GetField<uint8_t>(VT_ROLE, 0));
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_ROLE, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct PlayerReadyInLobbyCSBuilder {
+  typedef PlayerReadyInLobbyCS Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_role(Packets::PlayerRole role) {
+    fbb_.AddElement<uint8_t>(PlayerReadyInLobbyCS::VT_ROLE, static_cast<uint8_t>(role), 0);
+  }
+  explicit PlayerReadyInLobbyCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<PlayerReadyInLobbyCS> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<PlayerReadyInLobbyCS>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<PlayerReadyInLobbyCS> CreatePlayerReadyInLobbyCS(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    Packets::PlayerRole role = Packets::PlayerRole_HUMAN) {
+  PlayerReadyInLobbyCSBuilder builder_(_fbb);
+  builder_.add_role(role);
+  return builder_.Finish();
+}
+
+struct PlayerEnterInLobbyCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PlayerEnterInLobbyCSBuilder Builder;
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           verifier.EndTable();
+  }
+};
+
+struct PlayerEnterInLobbyCSBuilder {
+  typedef PlayerEnterInLobbyCS Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  explicit PlayerEnterInLobbyCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<PlayerEnterInLobbyCS> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<PlayerEnterInLobbyCS>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<PlayerEnterInLobbyCS> CreatePlayerEnterInLobbyCS(
+    ::flatbuffers::FlatBufferBuilder &_fbb) {
+  PlayerEnterInLobbyCSBuilder builder_(_fbb);
+  return builder_.Finish();
+}
+
+struct PlayerEnterInTerrainCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PlayerEnterInTerrainCSBuilder Builder;
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           verifier.EndTable();
+  }
+};
+
+struct PlayerEnterInTerrainCSBuilder {
+  typedef PlayerEnterInTerrainCS Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  explicit PlayerEnterInTerrainCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<PlayerEnterInTerrainCS> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<PlayerEnterInTerrainCS>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<PlayerEnterInTerrainCS> CreatePlayerEnterInTerrainCS(
+    ::flatbuffers::FlatBufferBuilder &_fbb) {
+  PlayerEnterInTerrainCSBuilder builder_(_fbb);
+  return builder_.Finish();
+}
+
+struct PlayerInputCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PlayerInputCSBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_KEY = 4,
+    VT_DOWN = 6
+  };
+  uint8_t key() const {
+    return GetField<uint8_t>(VT_KEY, 0);
+  }
+  bool down() const {
+    return GetField<uint8_t>(VT_DOWN, 0) != 0;
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_KEY, 1) &&
+           VerifyField<uint8_t>(verifier, VT_DOWN, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct PlayerInputCSBuilder {
+  typedef PlayerInputCS Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_key(uint8_t key) {
+    fbb_.AddElement<uint8_t>(PlayerInputCS::VT_KEY, key, 0);
+  }
+  void add_down(bool down) {
+    fbb_.AddElement<uint8_t>(PlayerInputCS::VT_DOWN, static_cast<uint8_t>(down), 0);
+  }
+  explicit PlayerInputCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<PlayerInputCS> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<PlayerInputCS>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<PlayerInputCS> CreatePlayerInputCS(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint8_t key = 0,
+    bool down = false) {
+  PlayerInputCSBuilder builder_(_fbb);
+  builder_.add_down(down);
+  builder_.add_key(key);
   return builder_.Finish();
 }
 

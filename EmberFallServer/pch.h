@@ -22,13 +22,34 @@
 #endif
 
 // Util & Global Include
-#include "Events.h"
 #include "GameRandom.h"
+#include "GameTimer.h"
+#include "GameEventFactory.h"
 
 #include "../ServerLib/GameProtocol.h"
 
 // Global Instance
 extern std::unique_ptr<class ServerFrame> gServerFrame;
-extern std::shared_ptr<class GameEventManager> gEventManager;
-extern std::unique_ptr<class ObjectSpawner> gObjectSpawner;
-extern std::shared_ptr<class ServerCore> gServerCore;
+
+extern std::unique_ptr<class SectorSystem> gSectorSystem;
+extern std::unique_ptr<class ObjectManager> gObjectManager;
+extern std::unique_ptr<class CollisionManager> gCollisionManager;
+
+enum class GameStage : uint8_t {
+    LOBBY,
+    STAGE1,
+    STAGE2,
+    STAGE3,
+};
+
+// Add std::hash for std::pair
+namespace std {
+    template <typename T1, typename T2>
+    struct hash<std::pair<T1, T2>> {
+        std::size_t operator()(const std::pair<T1, T2>& p) const noexcept {
+            std::size_t h1 = std::hash<T1>{}(p.first);
+            std::size_t h2 = std::hash<T2>{}(p.second);
+            return h1 ^ (h2 << 1); // boost::hash_combine
+        }
+    };
+}

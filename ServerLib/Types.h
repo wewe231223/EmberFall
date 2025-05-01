@@ -24,6 +24,18 @@ using NetworkObjectIdType = unsigned short;
 
 using ExtraInfo = std::variant<void*, SOCKET, unsigned long long, HANDLE>;
 
+enum class ObjectTag : uint8_t {
+    ENV,
+    BOSSPLAYER,
+    PLAYER,
+    MONSTER,
+    CORRUPTED_GEM,
+    ITEM,
+    TRIGGER,
+    ARROW,
+    NONE,
+};
+
 // --------------------------------- Template ---------------------------------
 template <size_t size>
 using NetworkBuf = std::array<char, size>;
@@ -79,3 +91,24 @@ inline constexpr bool IsAllOf = (std::is_same_v<T, Types> and ...);
 
 template <typename Base, typename... Types>
 inline constexpr bool IsDerivedFrom = (std::derived_from<Types, Base> and ...);
+
+struct Short2 {
+    int16_t x;
+    int16_t y;
+
+    Short2() : x{ }, y{ } { }
+    Short2(int16_t x, int16_t y) : x{ x }, y{ y } {}
+
+    Short2(const Short2& other) = default;
+    Short2(Short2&& other) noexcept = default;
+    Short2& operator=(const Short2& other) = default;
+    Short2& operator=(Short2&& other) noexcept = default;
+
+    bool operator==(Short2 rhs) const {
+        return x == rhs.x and y == rhs.y;
+    }
+
+    Short2 operator-(Short2 rhs) {
+        return Short2{ static_cast<int16_t>(x - rhs.x), static_cast<int16_t>(y - rhs.y) };
+    }
+};

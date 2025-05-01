@@ -13,136 +13,124 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "../ServerLib/INetworkObject.h"
+
+#include "GameTimer.h"
 #include "Collider.h"
-#include "GameObjectComponent.h"
+#include "Script.h"
 #include "WeaponSystem.h"
 #include "AnimationStateMachine.h"
 
-class IServerGameScene;
+struct ObjectSpec {
+    bool active;                    // 활성화 여부
+    bool interactable;              // 상호작용 가능 여부
+    Packets::EntityType entity;     // 외형 정보
+    GameStage stage;                // 스테이지 정보
 
-enum class ObjectTag : uint8_t {
-    ENV,
-    BOSSPLAYER,
-    PLAYER, 
-    MONSTER,
-    CORRUPTED_GEM,
-    ITEM,
-    TRIGGER,
-    ARROW,
-    NONE,
+    float defence;                  // 방어력
+    float damage;                   // 공격력
+
+    float hp;                       // 체력
 };
 
-class GameObject : public std::enable_shared_from_this<GameObject> {
+class GameObject : public INetworkObject {
 public:
-    GameObject(std::shared_ptr<IServerGameScene> gameScene);
+    GameObject();
     ~GameObject();
 
 public:
-    bool IsActive() const;
-    bool IsInteractable() const;
-    bool IsCollidingObject() const;
-
-    float HP() const;
     ObjectTag GetTag() const;
-    NetworkObjectIdType GetId() const;
-    EntityType GetEntityType() const;
 
     std::shared_ptr<Transform> GetTransform() const;
     std::shared_ptr<Physics> GetPhysics() const;
-    std::shared_ptr<Collider> GetCollider() const;
+    std::shared_ptr<BoundingObject> GetBoundingObject() const;
+    std::shared_ptr<Script> GetScript() const;
 
+    SimpleMath::Vector3 GetPrevPosition() const;
     SimpleMath::Vector3 GetPosition() const;
     SimpleMath::Quaternion GetRotation() const;
     SimpleMath::Vector3 GetEulerRotation() const;
     SimpleMath::Vector3 GetScale() const;
     SimpleMath::Matrix GetWorld() const;
 
+    float GetDeltaTime() const;
     float GetSpeed() const;
     SimpleMath::Vector3 GetMoveDir() const;
 
-    std::shared_ptr<IServerGameScene> GetOwnGameScene() const;
+    bool IsDead() const;
 
-    void Init();
-    void InitId(NetworkObjectIdType id);
-
-    void SetActive(bool active);
-    void SetInteractable(bool interactable);
+    // Setter
     void SetTag(ObjectTag tag);
-    void SetEntityType(EntityType type);
 
-    void SetCollider(std::shared_ptr<Collider> collider);
     void DisablePhysics();
+    void ChangeWeapon(Packets::Weapon weapon);
 
     void Reset();
+    
+    // Initialize Function
+    void Init();
 
-    void ChangeWeapon(Weapon weapon);
-    void ReduceHealth(float hp);
-    void RestoreHealth(float hp);
+    // Update & Process Event Functions
+    void RegisterUpdate();
+    virtual void ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) override;
 
-    void Update(const float deltaTime);
-    void LateUpdate(const float deltaTime);
+    void Update();
+    void LateUpdate();
 
-    void OnCollision(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
+    void OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
     void OnCollisionTerrain(const float height);
 
-    void DispatchGameEvent(GameEvent* event);
+    void DoInteraction(std::shared_ptr<GameObject>& obj);
 
-    void ClearComponents();
+    void DispatchGameEvent(std::shared_ptr<GameEvent> event);
+
     void Attack();
+    void Attack(const SimpleMath::Vector3& dir);
 
-    template <typename ColliderType, typename... Args>
-        requires std::derived_from<ColliderType, Collider> and std::is_constructible_v<ColliderType, Args...>
-    void CreateCollider(Args&&... args) {
-        if (nullptr != mCollider) {
-            mCollider.reset();
-        }
+    template <typename BoundingObjType, typename... Args>
+        requires std::derived_from<BoundingObjType, BoundingObject>
+    void CreateBoundingObject(Args&&... args);
 
-        mCollider = std::make_shared<ColliderType>(args...);
-        mCollider->SetTransform(mTransform);
-    }
+    template <typename ScriptType, typename... Args>
+        requires std::derived_from<ScriptType, Script>
+    void CreateScript(Args&&... args);
 
-    template <typename ComponentType, typename... Args>
-        requires std::derived_from<ComponentType, GameObjectComponent>
-    void CreateComponent(Args&&... args) {
-        mComponents.emplace_back(std::make_shared<ComponentType>(args...));
-    }
-
-    template <typename ComponentType> requires std::derived_from<ComponentType, GameObjectComponent>
-    std::shared_ptr<ComponentType> GetComponent() {
-        for (auto& componenet : mComponents) {
-            auto ptr = std::dynamic_pointer_cast<ComponentType>(componenet);
-            if (nullptr != ptr) {
-                return ptr;
-            }
-        }
-
-        return nullptr;
-    }
-
-private:
-    void OnCollisionEnter(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
-    void OnCollisionStay(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
-    void OnCollisionExit(std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
+    template <typename ScriptType> requires std::derived_from<ScriptType, Script>
+    std::shared_ptr<ScriptType> GetScript();
 
 public:
+    ObjectSpec mSpec{ };
     AnimationStateMachine mAnimationStateMachine{ };
-
-private:
-    bool mActive{ true };
-    bool mInteractable{ false };
-    EntityType mEntityType{ EntityType::ENV };
-    ObjectTag mTag{ ObjectTag::NONE };
-
-    float mHP{ };
-
-    NetworkObjectIdType mId{ INVALID_OBJ_ID };                      // network id
-
-    std::shared_ptr<Transform> mTransform{ };                           // Transform
-    std::shared_ptr<class Physics> mPhysics{ };                         // Physics
-    std::shared_ptr<Collider> mCollider{ nullptr };                     // 
-    std::vector<std::shared_ptr<GameObjectComponent>> mComponents{ };   // Components
-
     WeaponSystem mWeaponSystem{ INVALID_OBJ_ID };
 
-    std::shared_ptr<IServerGameScene> mGameScene{ };
+private:
+    ObjectTag mTag{ ObjectTag::NONE };
+    float mDeltaTime{ };
+
+    std::unique_ptr<SimpleTimer> mTimer{ };                             // own timer
+    std::unique_ptr<OverlappedUpdate> mOverlapped{ };                   // for update
+    std::shared_ptr<Transform> mTransform{ };                           // Transform
+    std::shared_ptr<class Physics> mPhysics{ };                         // Physics
+    std::shared_ptr<Script> mEntityScript{ };                           // script
+    std::shared_ptr<BoundingObject> mBoundingObject{ };                 // boundingObject
+
+    Concurrency::concurrent_queue<std::shared_ptr<GameEvent>> mGameEvents{ };
 };
+
+// Definition of template functions
+template <typename BoundingObjType, typename... Args>
+    requires std::derived_from<BoundingObjType, BoundingObject>
+void GameObject::CreateBoundingObject(Args&&... args) {
+    mBoundingObject = std::make_shared<BoundingObjType>(args...);
+}
+
+template<typename ScriptType, typename ...Args>
+    requires std::derived_from<ScriptType, Script>
+void GameObject::CreateScript(Args&&... args) {
+    mEntityScript = std::make_shared<ScriptType>(args...);
+}
+
+template<typename ScriptType> requires std::derived_from<ScriptType, Script>
+inline std::shared_ptr<ScriptType> GameObject::GetScript() {
+    return std::dynamic_pointer_cast<ScriptType>(mEntityScript);
+}

@@ -34,7 +34,7 @@ Texture::Texture(ComPtr<ID3D12Device> device, DXGI_FORMAT format, UINT64 width, 
 	else if (resourceFlag & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL) {
 		D3D12_CLEAR_VALUE clearValue{};
 		clearValue.Format = format;
-		clearValue.DepthStencil.Depth = 1.0f;
+		clearValue.DepthStencil.Depth = 0.0f;
 		clearValue.DepthStencil.Stencil = 0;
 
 		CheckHR(device->CreateCommittedResource(

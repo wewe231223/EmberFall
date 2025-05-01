@@ -10,6 +10,9 @@
 #define MONO_TYPE_MESH
 
 #ifdef MONO_TYPE_MESH 
+
+
+
 class GameObject {
 public:
 	GameObject() = default;

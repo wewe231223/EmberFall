@@ -215,9 +215,9 @@ struct ObjectMoveSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ObjectMoveSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_OBJECTID = 4,
-    VT_YAW = 6,
-    VT_POS = 8,
-    VT_DIR = 10,
+    VT_POS = 6,
+    VT_DIR = 8,
+    VT_YAW = 10,
     VT_SPEED = 12
   };
   uint16_t objectId() const {
@@ -232,6 +232,9 @@ struct ObjectMoveSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const Packets::Vec3 *dir() const {
     return GetStruct<const Packets::Vec3 *>(VT_DIR);
   }
+  float yaw() const {
+    return GetField<float>(VT_YAW, 0.0f);
+  }
   float speed() const {
     return GetField<float>(VT_SPEED, 0.0f);
   }
@@ -241,6 +244,7 @@ struct ObjectMoveSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<float>(verifier, VT_YAW, 4) &&
            VerifyField<Packets::Vec3>(verifier, VT_POS, 4) &&
            VerifyField<Packets::Vec3>(verifier, VT_DIR, 4) &&
+           VerifyField<float>(verifier, VT_YAW, 4) &&
            VerifyField<float>(verifier, VT_SPEED, 4) &&
            verifier.EndTable();
   }
@@ -262,6 +266,9 @@ struct ObjectMoveSCBuilder {
   void add_dir(const Packets::Vec3 *dir) {
     fbb_.AddStruct(ObjectMoveSC::VT_DIR, dir);
   }
+  void add_yaw(float yaw) {
+    fbb_.AddElement<float>(ObjectMoveSC::VT_YAW, yaw, 0.0f);
+  }
   void add_speed(float speed) {
     fbb_.AddElement<float>(ObjectMoveSC::VT_SPEED, speed, 0.0f);
   }
@@ -282,9 +289,11 @@ inline ::flatbuffers::Offset<ObjectMoveSC> CreateObjectMoveSC(
     float yaw = 0.0f,
     const Packets::Vec3 *pos = nullptr,
     const Packets::Vec3 *dir = nullptr,
+    float yaw = 0.0f,
     float speed = 0.0f) {
   ObjectMoveSCBuilder builder_(_fbb);
   builder_.add_speed(speed);
+  builder_.add_yaw(yaw);
   builder_.add_dir(dir);
   builder_.add_pos(pos);
   builder_.add_yaw(yaw);

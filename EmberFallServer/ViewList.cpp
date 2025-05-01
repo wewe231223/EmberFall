@@ -1,114 +1,44 @@
 #include "pch.h"
 #include "ViewList.h"
-#include "ServerGameScene.h"
 #include "GameObject.h"
-#include "GameTimer.h"
 
-ViewList::ViewList(SessionIdType ownerId) 
-    : mOwnerId{ ownerId } { }
+ViewList::ViewList() { }
 
 ViewList::~ViewList() { }
 
+ViewList::ViewList(const ViewList& other) 
+    : mViewRange{ other.mViewRange } {
+    //std::copy(other.mViewList.begin(), other.mViewList.end(), mViewList.begin());
+    mViewList = other.mViewList;
+}
+
+ViewList::ViewList(ViewList&& other) noexcept
+    : mViewRange{ other.mViewRange } {
+    mViewList = std::move(other.mViewList);
+}
+
 ViewList& ViewList::operator=(const ViewList& other) {
+    mViewRange = other.mViewRange;
+    //std::copy(other.mViewList.begin(), other.mViewList.end(), mViewList.begin());
+    mViewList = other.mViewList;
     return *this;
 }
 
 ViewList& ViewList::operator=(ViewList&& other) noexcept {
+    mViewRange = other.mViewRange;
+    mViewList = std::move(other.mViewList);
     return *this;
 }
 
-void ViewList::Update() {
-    if (nullptr == mCurrentScene) {
-        return;
-    }
-
-    auto& playerList = mCurrentScene->GetPlayers();
-    for (const auto& player : playerList) {
-        auto playerPos = player->GetPosition();
-
-        if (MathUtil::IsInRange(mPosition, mViewRange, playerPos) and player->IsActive()) {
-            AddInRange(player);
-        }
-        else {
-            EraseFromRange(player);
-        }
-    }
-
-    auto& objectList = mCurrentScene->GetObjects();
-    for (const auto& object : objectList) {
-        auto tag = object->GetTag();
-        if (ObjectTag::NONE == tag or ObjectTag::TRIGGER == tag or ObjectTag::ENV == tag) {
-            return;
-        }
-
-        auto objectPos = object->GetPosition();
-
-        if (MathUtil::IsInRange(mPosition, mViewRange, objectPos) and object->IsActive()) {
-            AddInRange(object);
-        }
-        else {
-            EraseFromRange(object);
-        }
-    }
+bool ViewList::IsInList(NetworkObjectIdType id) const {
+    return mViewList.contains(id);
 }
 
-void ViewList::Send() {
-    mSendTimeCounter += StaticTimer::GetDeltaTime();
-    if (mSendTimeCounter < mSendTimeInterval) {
-        return;
-    }
-
-    auto packet = GetPacket<PacketSC::PacketObject>(mOwnerId);
-
-    for (const auto& object : mObjectInRange) {
-        //auto packet = FbsPacketFactory::ObjectMoveSC(
-        //    object->GetId(),
-        //    object->GetPosition(),
-        //    object->GetMoveDir(),
-        //    object->GetSpeed()
-        //);
-        packet.objId = object->GetId();
-        packet.position = object->GetPosition();
-        packet.rotationYaw = object->GetEulerRotation().y;
-        gServerCore->Send(mOwnerId, &packet);
-
-        gServerCore->Send(mOwnerId, &packet);
-    }
-
-    mSendTimeCounter = 0.0f;
+bool ViewList::TryInsert(NetworkObjectIdType id) {
+    auto ret = mViewList.insert(id);
+    return ret.second;
 }
 
-void ViewList::AddInRange(std::shared_ptr<GameObject> obj) {
-    auto ret = mObjectInRange.insert(obj);
-    if (false == ret.second) {
-        return;
-    }
-
-    auto packet = GetPacket<PacketSC::PacketObjectAppeared>(
-        mOwnerId,
-        obj->GetId(),
-        obj->GetEntityType(),
-        obj->GetEulerRotation().y
-    );
-    gServerCore->Send(mOwnerId, &packet);
-}
-
-bool ViewList::EraseFromRange(std::shared_ptr<GameObject> obj) {
-    if (false == mObjectInRange.contains(obj)) {
-        return false;
-    }
-   
-    auto packet = GetPacket<PacketSC::PacketObjectDisappeared>(
-        mOwnerId,
-        obj->GetId()
-    );
-    gServerCore->Send(mOwnerId, &packet);   
-
-    mObjectInRange.erase(obj);
-
-    return true;
-}
-
-std::set<std::shared_ptr<class GameObject>>& ViewList::GetInRangeObjects() {
-    return mObjectInRange;
+std::unordered_set<NetworkObjectIdType> ViewList::GetCurrViewList() const {
+    return mViewList;
 }

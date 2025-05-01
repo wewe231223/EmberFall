@@ -20,7 +20,7 @@ public:
     }
 
     template <typename DurationType>
-    inline double Elapsed() const {
+    inline decltype(auto) Elapsed() const {
         return std::chrono::duration_cast<DurationType>(endTime - startTime).count();
     }
 

@@ -31,6 +31,7 @@ table ObjectMoveSC {
 	yaw: float;
 	pos: Vec3;
 	dir: Vec3;
+	yaw: float;
 	speed: float;
 }
 

@@ -179,3 +179,45 @@ void DefaultBuffer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList, Defaul
 	commandList->ResourceBarrier(1, &barrier);
 }
 
+void DefaultBuffer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_RESOURCE_STATES currentState) {
+	D3D12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), currentState, D3D12_RESOURCE_STATE_COPY_DEST) };
+	commandList->ResourceBarrier(1, &barrier);
+
+	D3D12_SUBRESOURCE_DATA subresourceData{};
+	subresourceData.pData = mData.get();
+	subresourceData.RowPitch = mSize;
+	subresourceData.SlicePitch = mSize;
+
+	::UpdateSubresources(commandList.Get(), mBuffer.Get(), mUploadBuffer.Get(), 0, 0, 1, &subresourceData);
+
+	barrier = CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, currentState);
+	commandList->ResourceBarrier(1, &barrier);
+}
+
+void DefaultBuffer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_RESOURCE_STATES currentState, DefaultBufferCPUIterator begin, DefaultBufferCPUIterator end, size_t dstBegin) {
+	D3D12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), currentState, D3D12_RESOURCE_STATE_COPY_DEST) };
+	commandList->ResourceBarrier(1, &barrier);
+
+	auto size = end - begin;
+	auto offset = begin - CPUBegin();
+
+	BYTE* data{ nullptr };
+	CheckHR(mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&data)));
+	std::memcpy(data, *begin, size);
+	mUploadBuffer->Unmap(0, nullptr);
+
+	commandList->CopyBufferRegion(mBuffer.Get(), dstBegin, mUploadBuffer.Get(), offset, size);
+
+	barrier = CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, currentState);
+	commandList->ResourceBarrier(1, &barrier);
+}
+
+ID3D12Resource* DefaultBuffer::Get() {
+	return mBuffer.Get();
+}
+
+void DefaultBuffer::TransitionState(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {
+	D3D12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), before, after) };
+	commandList->ResourceBarrier(1, &barrier);
+}
+

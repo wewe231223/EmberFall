@@ -34,10 +34,12 @@ public:
 	SimpleMath::Matrix& GetWorldMatrix();
 	
 	Transform& GetChild(int index);
-
 public:
 	void Translate(const SimpleMath::Vector3&);
 	void SetPosition(const SimpleMath::Vector3&);
+
+	void SetSpeed(float speed);
+	void SetDirection(const SimpleMath::Vector3&);
 
 	void Scaling(const SimpleMath::Vector3&);
 	void Scaling(float x = 1.f, float y = 1.f, float z = 1.f);
@@ -51,6 +53,7 @@ public:
 
 	void SetLocalTransform(const SimpleMath::Matrix& localMatrix);
 
+	void Update(float deltaTime); 
 	void UpdateWorldMatrix();
 	void UpdateWorldMatrix(SimpleMath::Matrix& parent);
 private:
@@ -63,4 +66,7 @@ private:
 
 	Transform* mParent{ nullptr };
 	std::vector<Transform*> mChildren{};
+
+	float mSpeed{ 0.f };
+	SimpleMath::Vector3 mDirection{ DirectX::SimpleMath::Vector3::Zero };
 };

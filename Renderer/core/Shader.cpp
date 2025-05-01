@@ -13,6 +13,7 @@
 #include "../Utility/Exceptions.h"
 #include "../Utility/Crash.h"
 #include "../EditorInterface/Console/Console.h"
+#include "../Utility/Defines.h"
 
 #undef max 
 
@@ -308,6 +309,10 @@ DXGI_FORMAT GraphicsShaderBase::CreateDSVFormat() {
 	return DXGI_FORMAT_D24_UNORM_S8_UINT;
 }
 
+GraphicsShaderBase::StreamOutputState GraphicsShaderBase::CreateStreamOutputState() {
+	return StreamOutputState();
+}
+
 D3D12_SHADER_BYTECODE GraphicsShaderBase::CreateVertexShader() {
 	return D3D12_SHADER_BYTECODE();
 }
@@ -331,14 +336,17 @@ D3D12_SHADER_BYTECODE GraphicsShaderBase::CreateDomainShader() {
 void GraphicsShaderBase::CreateShader(ComPtr<ID3D12Device> device) {
 	static std::array<CD3DX12_STATIC_SAMPLER_DESC, 7> staticSamplers{};
 
-	staticSamplers[0] = { 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP };
-	staticSamplers[1] = { 1, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP };
-	staticSamplers[2] = { 2, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP };
-	staticSamplers[3] = { 3, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP };
-	staticSamplers[4] = { 4, D3D12_FILTER_ANISOTROPIC, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, 0.0f, 16 };
-	staticSamplers[5] = { 5, D3D12_FILTER_ANISOTROPIC, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, 0.0f, 16 };
-	staticSamplers[6] = { 6, D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0.0f, 16 };
+	staticSamplers[0] = { 0, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_COMPARISON_FUNC_GREATER_EQUAL };
+	staticSamplers[1] = { 1, D3D12_FILTER_MIN_MAG_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_COMPARISON_FUNC_GREATER_EQUAL };
+	staticSamplers[2] = { 2, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_COMPARISON_FUNC_GREATER_EQUAL };
+	staticSamplers[3] = { 3, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_COMPARISON_FUNC_GREATER_EQUAL };
+	staticSamplers[4] = { 4, D3D12_FILTER_ANISOTROPIC, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, 0.0f, 16, D3D12_COMPARISON_FUNC_GREATER_EQUAL };
+	staticSamplers[5] = { 5, D3D12_FILTER_ANISOTROPIC, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, 0.0f, 16, D3D12_COMPARISON_FUNC_GREATER_EQUAL };
+	staticSamplers[6] = { 6, D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0.0f, 16, D3D12_COMPARISON_FUNC_GREATER_EQUAL };
 	
+	
+	staticSamplers[2].ComparisonFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+
 	D3D12_ROOT_SIGNATURE_DESC rootsignatureDesc{};
 	auto rootParameters = CreateRootParameters();
 
@@ -384,13 +392,22 @@ void GraphicsShaderBase::CreateShader(ComPtr<ID3D12Device> device) {
 	psoDesc.SampleDesc.Quality = 0;
 	psoDesc.DSVFormat = CreateDSVFormat();
 	psoDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+	
+	auto soState = CreateStreamOutputState();
+	psoDesc.StreamOutput = { soState.SODeclaration.data(), soState.SODeclarationCount, soState.BufferStrides.data(), soState.BufferCount, soState.RasterizedStream };
 
 	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPipelineState)));
 
-	psoDesc.PS = { nullptr, 0 };
-	psoDesc.NumRenderTargets = 0;
+	psoDesc.NumRenderTargets = 3;
 	std::memset(psoDesc.RTVFormats, DXGI_FORMAT_UNKNOWN, sizeof(DXGI_FORMAT) * 8);
+	psoDesc.RTVFormats[0] = DXGI_FORMAT_R32_FLOAT;
+	psoDesc.RTVFormats[1] = DXGI_FORMAT_R32_FLOAT;
+	psoDesc.RTVFormats[2] = DXGI_FORMAT_R32_FLOAT;
 	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	//psoDesc.RasterizerState.DepthBias = 10000;
+	//psoDesc.RasterizerState.DepthBiasClamp = 0.0f;
+	//psoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;
 
 	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mShadowPipelineState)));
 }
@@ -822,7 +839,7 @@ GraphicsShaderBase::RootParameters DefferedShader::CreateRootParameters() {
 	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	params.Ranges[0].NumDescriptors = Config::GBUFFER_COUNT<UINT> + 1 ; // Shadow Map
+	params.Ranges[0].NumDescriptors = Config::GBUFFER_COUNT<UINT> + Config::SHADOWMAP_COUNT<UINT>; // Shadow Map
 	params.Ranges[0].BaseShaderRegister = 0;
 	params.Ranges[0].RegisterSpace = 0;
 	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
@@ -832,7 +849,17 @@ GraphicsShaderBase::RootParameters DefferedShader::CreateRootParameters() {
 	params.Parameters[1].DescriptorTable.pDescriptorRanges = params.Ranges.data();
 	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.ParameterCount = 2;
+	params.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[2].Descriptor.ShaderRegister = 1;
+	params.Parameters[2].Descriptor.RegisterSpace = 1;
+	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	params.Parameters[3].Descriptor.ShaderRegister = 1;
+	params.Parameters[3].Descriptor.RegisterSpace = 0;
+	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.ParameterCount = 4;
 
 	return params;
 }
@@ -1011,3 +1038,564 @@ D3D12_PRIMITIVE_TOPOLOGY_TYPE StandardBBShader::CreatePrimitiveTopologyType() {
 	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
 }
 
+ParticleSOShader::ParticleSOShader() {
+}
+
+void ParticleSOShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+}
+
+GraphicsShaderBase::InputLayout ParticleSOShader::CreateInputLayout() {
+	InputLayout result{}; 
+
+	result.InputElements[0] = { "POSITION",			0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[1] = { "WIDTH",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[2] = { "HEIGHT",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[3] = { "MATERIAL",			0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.InputElements[4] = { "SPRITABLE",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[5] = { "SPRITEFRAMEINROW", 0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[6] = { "SPRITEFRAMEINCOL", 0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[7] = { "SPRITEDURATION",	0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.InputElements[8] = { "DIRECTION",		0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[9] = { "VELOCITY",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[10] = { "TOTALLIFETIME",	0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[11] = { "LIFETIME",		0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.InputElements[12] = { "PARTICLETYPE",	0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[13] = { "EMITTYPE",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[14] = { "REMAINEMIT",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[15] = { "EMITINDEX",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.ElementCount = 16;
+
+	return result;
+}
+
+GraphicsShaderBase::RootParameters ParticleSOShader::CreateRootParameters() {
+	RootParameters result{};
+
+	result.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	result.Parameters[0].Constants.Num32BitValues = 2;
+	result.Parameters[0].Constants.ShaderRegister = 0;
+	result.Parameters[0].Constants.RegisterSpace = 0;
+	result.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	// TerrainHeader 
+	result.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	result.Parameters[1].Descriptor.ShaderRegister = 1;
+	result.Parameters[1].Descriptor.RegisterSpace = 0;
+	result.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	// RandomBuffer 
+	result.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	result.Parameters[2].Descriptor.ShaderRegister = 0;
+	result.Parameters[2].Descriptor.RegisterSpace = 0;
+	result.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	
+	// Emit Buffer 
+	result.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	result.Parameters[3].Descriptor.ShaderRegister = 1;
+	result.Parameters[3].Descriptor.RegisterSpace = 0;
+	result.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	// Terrain Buffer 
+	result.Parameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	result.Parameters[4].Descriptor.ShaderRegister = 2;
+	result.Parameters[4].Descriptor.RegisterSpace = 0;
+	result.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	result.ParameterCount = 5; 
+
+	return result;
+}
+
+D3D12_RASTERIZER_DESC ParticleSOShader::CreateRasterizerState() {
+	D3D12_RASTERIZER_DESC result{};
+
+	result.FillMode = D3D12_FILL_MODE_SOLID;
+	result.CullMode = D3D12_CULL_MODE_NONE;
+	result.FrontCounterClockwise = FALSE;
+	result.DepthBias = 0;
+	result.DepthBiasClamp = 0.0f;
+	result.SlopeScaledDepthBias = 0.0f;
+	result.DepthClipEnable = TRUE;
+	result.MultisampleEnable = FALSE;
+	result.AntialiasedLineEnable = FALSE;
+	result.ForcedSampleCount = 0;
+	result.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	return result;
+}
+
+D3D12_BLEND_DESC ParticleSOShader::CreateBlendState() {
+	D3D12_BLEND_DESC result{}; 
+
+	// Deffered! 
+
+	return result;
+}
+
+D3D12_DEPTH_STENCIL_DESC ParticleSOShader::CreateDepthStencilState() {
+	D3D12_DEPTH_STENCIL_DESC result{};
+
+	result.DepthEnable = FALSE;
+	result.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	result.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+	result.StencilEnable = FALSE;
+	result.StencilReadMask = 0x00;
+	result.StencilWriteMask = 0x00;
+	result.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	result.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	result.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	result.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+	result.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	result.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	result.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	result.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+
+	return result;
+}
+
+D3D12_PRIMITIVE_TOPOLOGY_TYPE ParticleSOShader::CreatePrimitiveTopologyType() {
+	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+}
+
+GraphicsShaderBase::StreamOutputState ParticleSOShader::CreateStreamOutputState() {
+	StreamOutputState result{};
+
+	result.SODeclaration[0]		= { 0, "POSITION",			0, 0, 3, 0 };
+	result.SODeclaration[1]		= { 0, "WIDTH",				0, 0, 1, 0 };
+	result.SODeclaration[2]		= { 0, "HEIGHT",			0, 0, 1, 0 };
+	result.SODeclaration[3]		= { 0, "MATERIAL",			0, 0, 1, 0 };
+
+	result.SODeclaration[4]		= { 0, "SPRITABLE",			0, 0, 1, 0 };
+	result.SODeclaration[5]		= { 0, "SPRITEFRAMEINROW",	0, 0, 1, 0 };
+	result.SODeclaration[6]		= { 0, "SPRITEFRAMEINCOL",	0, 0, 1, 0 };
+	result.SODeclaration[7]		= { 0, "SPRITEDURATION",	0, 0, 1, 0 };
+
+	result.SODeclaration[8]		= { 0, "DIRECTION",			0, 0, 3, 0 };
+	result.SODeclaration[9]		= { 0, "VELOCITY",			0, 0, 1, 0 };
+	result.SODeclaration[10]	= { 0, "TOTALLIFETIME",		0, 0, 1, 0 };
+	result.SODeclaration[11]	= { 0, "LIFETIME",			0, 0, 1, 0 };
+
+	result.SODeclaration[12]	= { 0, "PARTICLETYPE",		0, 0, 1, 0 };
+	result.SODeclaration[13]	= { 0, "EMITTYPE",			0, 0, 1, 0 };
+	result.SODeclaration[14]	= { 0, "REMAINEMIT",		0, 0, 1, 0 };
+	result.SODeclaration[15]	= { 0, "EMITINDEX",			0, 0, 1, 0 };
+
+	result.SODeclarationCount = 16;
+
+	result.BufferStrides[0] = sizeof(ParticleVertex);
+
+	result.BufferCount = 1; 
+
+	result.RasterizedStream = D3D12_SO_NO_RASTERIZED_STREAM; 
+
+	return result; 
+}
+
+D3D12_SHADER_BYTECODE ParticleSOShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("ParticleSO", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE ParticleSOShader::CreateGeometryShader() {
+	auto& blob = gShaderManager.GetShaderBlob("ParticleSO", ShaderType::GeometryShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+UINT ParticleSOShader::CreateNumOfRenderTarget() {
+	return 0;
+}
+
+void ParticleSOShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& targets) {
+	targets[0] = DXGI_FORMAT_UNKNOWN;
+}
+
+D3D12_ROOT_SIGNATURE_FLAGS ParticleSOShader::CreateRootSignatureFlag() {
+	return D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | D3D12_ROOT_SIGNATURE_FLAG_ALLOW_STREAM_OUTPUT;
+}
+
+
+
+ParticleGSShader::ParticleGSShader() {
+}
+
+void ParticleGSShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+}
+
+GraphicsShaderBase::InputLayout ParticleGSShader::CreateInputLayout() {
+	InputLayout result{};
+
+	result.InputElements[0] = { "POSITION",			0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[1] = { "WIDTH",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[2] = { "HEIGHT",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[3] = { "MATERIAL",			0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.InputElements[4] = { "SPRITABLE",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[5] = { "SPRITEFRAMEINROW", 0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[6] = { "SPRITEFRAMEINCOL", 0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[7] = { "SPRITEDURATION",	0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.InputElements[8] = { "DIRECTION",		0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[9] = { "VELOCITY",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[10] = { "TOTALLIFETIME",	0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[11] = { "LIFETIME",		0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.InputElements[12] = { "PARTICLETYPE",	0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[13] = { "EMITTYPE",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[14] = { "REMAINEMIT",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[15] = { "EMITINDEX",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.ElementCount = 16;
+
+	return result;
+}
+
+GraphicsShaderBase::RootParameters ParticleGSShader::CreateRootParameters() {
+	RootParameters result{};
+
+	result.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	result.Parameters[0].Descriptor.ShaderRegister = 0;
+	result.Parameters[0].Descriptor.RegisterSpace = 0;
+	result.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	result.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	result.Parameters[1].Constants.Num32BitValues = 1;
+	result.Parameters[1].Constants.ShaderRegister = 1;
+	result.Parameters[1].Constants.RegisterSpace = 0;
+	result.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	result.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	result.Parameters[2].Descriptor.ShaderRegister = 0;
+	result.Parameters[2].Descriptor.RegisterSpace = 0;
+	result.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	result.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	result.Ranges[0].NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
+	result.Ranges[0].BaseShaderRegister = 1;
+	result.Ranges[0].RegisterSpace = 0;
+	result.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	
+	result.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	result.Parameters[3].DescriptorTable.NumDescriptorRanges = 1;
+	result.Parameters[3].DescriptorTable.pDescriptorRanges = result.Ranges.data();
+	result.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	result.ParameterCount = 4; 
+
+	return result;
+}
+
+D3D12_PRIMITIVE_TOPOLOGY_TYPE ParticleGSShader::CreatePrimitiveTopologyType() {
+	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+}
+
+D3D12_SHADER_BYTECODE ParticleGSShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("ParticleGS", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE ParticleGSShader::CreateGeometryShader() {
+	auto& blob = gShaderManager.GetShaderBlob("ParticleGS", ShaderType::GeometryShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE ParticleGSShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("ParticleGS", ShaderType::PixelShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+UINT ParticleGSShader::CreateNumOfRenderTarget() {
+	return 3;
+}
+
+void ParticleGSShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& targets) {
+	targets[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	targets[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	targets[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+}
+
+
+
+
+TreeShader::TreeShader() {
+}
+
+void TreeShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+	mAttribute.set(0);
+	mAttribute.set(1);
+	mAttribute.set(2);
+}
+
+GraphicsShaderBase::InputLayout TreeShader::CreateInputLayout() {
+	GraphicsShaderBase::InputLayout inputLayout{};
+
+	inputLayout.ElementCount = 3;
+
+	inputLayout.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[1] = { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[2] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	return inputLayout;
+}
+
+GraphicsShaderBase::RootParameters TreeShader::CreateRootParameters() {
+	GraphicsShaderBase::RootParameters params{};
+
+	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	params.Parameters[0].Descriptor.ShaderRegister = 0;
+	params.Parameters[0].Descriptor.RegisterSpace = 0;
+	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[1].Descriptor.ShaderRegister = 0;
+	params.Parameters[1].Descriptor.RegisterSpace = 0;
+	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[2].Descriptor.ShaderRegister = 1;
+	params.Parameters[2].Descriptor.RegisterSpace = 0;
+	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	params.Ranges[0].NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
+	params.Ranges[0].BaseShaderRegister = 2;
+	params.Ranges[0].RegisterSpace = 0;
+	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[3].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
+	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.ParameterCount = 4;
+
+	return params;
+}
+
+UINT TreeShader::CreateNumOfRenderTarget() {
+	return Config::GBUFFER_COUNT<UINT>;
+}
+
+void TreeShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
+	formats[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+}
+
+D3D12_SHADER_BYTECODE TreeShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("Standard", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE TreeShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("Standard", ShaderType::PixelShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_RASTERIZER_DESC TreeShader::CreateRasterizerState() {
+	D3D12_RASTERIZER_DESC rasterizerDesc;
+	::ZeroMemory(&rasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
+
+	//	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+	rasterizerDesc.FrontCounterClockwise = FALSE;
+	rasterizerDesc.DepthBias = 0;
+	rasterizerDesc.DepthBiasClamp = 0.0f;
+	rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+	rasterizerDesc.DepthClipEnable = TRUE;
+	rasterizerDesc.MultisampleEnable = FALSE;
+	rasterizerDesc.AntialiasedLineEnable = FALSE;
+	rasterizerDesc.ForcedSampleCount = 0;
+	rasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	return rasterizerDesc;
+}
+
+
+
+SkyFogShader::SkyFogShader() {
+}
+
+void SkyFogShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+	mAttribute.set(0);
+}
+
+GraphicsShaderBase::InputLayout SkyFogShader::CreateInputLayout() {
+	GraphicsShaderBase::InputLayout inputLayout{};
+
+	inputLayout.ElementCount = 1;
+
+	inputLayout.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	return inputLayout;
+}
+
+GraphicsShaderBase::RootParameters SkyFogShader::CreateRootParameters() {
+	GraphicsShaderBase::RootParameters params{};
+
+	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	params.Parameters[0].Descriptor.ShaderRegister = 0;
+	params.Parameters[0].Descriptor.RegisterSpace = 0;
+	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[1].Descriptor.ShaderRegister = 0;
+	params.Parameters[1].Descriptor.RegisterSpace = 0;
+	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[2].Descriptor.ShaderRegister = 1;
+	params.Parameters[2].Descriptor.RegisterSpace = 0;
+	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	params.Ranges[0].NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
+	params.Ranges[0].BaseShaderRegister = 2;
+	params.Ranges[0].RegisterSpace = 0;
+	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[3].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
+	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.ParameterCount = 4;
+
+	return params;
+}
+
+D3D12_DEPTH_STENCIL_DESC SkyFogShader::CreateDepthStencilState() {
+	D3D12_DEPTH_STENCIL_DESC depthStencilState;
+	::ZeroMemory(&depthStencilState, sizeof(D3D12_DEPTH_STENCIL_DESC));
+
+	depthStencilState.DepthEnable = FALSE;
+	depthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	depthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_NEVER;
+	depthStencilState.StencilEnable = FALSE;
+	depthStencilState.StencilReadMask = 0x00;
+	depthStencilState.StencilWriteMask = 0x00;
+	depthStencilState.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+	depthStencilState.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+
+	return depthStencilState;
+}
+
+UINT SkyFogShader::CreateNumOfRenderTarget() {
+	return Config::GBUFFER_COUNT<UINT>;
+}
+
+void SkyFogShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
+	formats[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+}
+
+D3D12_SHADER_BYTECODE SkyFogShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("SkyFog", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE SkyFogShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("SkyFog", ShaderType::PixelShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+UIShader::UIShader() {
+
+}
+
+void UIShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+}
+
+GraphicsShaderBase::InputLayout UIShader::CreateInputLayout() {
+	InputLayout result{};
+
+	result.ElementCount = 1;
+	result.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	return result;
+}
+
+GraphicsShaderBase::RootParameters UIShader::CreateRootParameters() {
+	GraphicsShaderBase::RootParameters params{};
+
+	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[0].Descriptor.ShaderRegister = 0;
+	params.Parameters[0].Descriptor.RegisterSpace = 0;
+	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+
+	params.Ranges[0].BaseShaderRegister = 1;
+	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	params.Ranges[0].NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
+	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+	params.Ranges[0].RegisterSpace = 0;
+
+	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[1].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[1].DescriptorTable.pDescriptorRanges = params.Ranges.data();
+	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.ParameterCount = 2;
+	return params;
+}
+
+D3D12_BLEND_DESC UIShader::CreateBlendState() {
+	D3D12_BLEND_DESC blendDesc{};
+
+	blendDesc.AlphaToCoverageEnable = false;
+	blendDesc.IndependentBlendEnable = false;
+	blendDesc.RenderTarget[0].BlendEnable = true;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	return blendDesc;
+}
+
+D3D12_DEPTH_STENCIL_DESC UIShader::CreateDepthStencilState() {
+
+	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{ CD3DX12_DEPTH_STENCIL_DESC{ D3D12_DEFAULT } };
+
+	depthStencilDesc.DepthEnable = false;
+	depthStencilDesc.StencilEnable = false;
+
+	return depthStencilDesc;
+}
+
+UINT UIShader::CreateNumOfRenderTarget() {
+	return 1;
+}
+
+void UIShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
+	formats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+}
+
+D3D12_SHADER_BYTECODE UIShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("UI", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE UIShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("UI", ShaderType::PixelShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };;
+}

@@ -2,264 +2,111 @@
 #include "Collider.h"
 #include "Transform.h"
 
-Collider::Collider(ColliderType type) 
+BoundingObject::BoundingObject(ColliderType type)
     : mType{ type } { }
 
-Collider::~Collider() { }
+BoundingObject::~BoundingObject() { }
 
-Collider::Collider(Collider&& other) noexcept 
-    : mStates{ std::move(other.mStates) } { }
-
-Collider& Collider::operator=(Collider&& other) noexcept {
-    mStates = std::move(other.mStates);
-    return *this;
-}
-
-void Collider::Disable() {
-    mEnable = false;
-}
-
-void Collider::Enable() {
-    mEnable = true;
-}
-
-ColliderType Collider::GetType() const {
+ColliderType BoundingObject::GetType() const {
     return mType;
 }
 
-bool Collider::IsEnable() const {
-    return mEnable;
-}
+OBBCollider::OBBCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& ext)
+    : BoundingObject{ ColliderType::ORIENTED_BOX }, mLocalBox{ center, ext, SimpleMath::Quaternion::Identity } { }
 
-bool Collider::IsColliding() const {
-    return not mStates.empty();
-}
+OBBCollider::OBBCollider(const DirectX::BoundingOrientedBox& box) 
+    : BoundingObject{ ColliderType::ORIENTED_BOX }, mLocalBox{ box } { }
 
-void Collider::SetTransform(const std::shared_ptr<Transform>& transform) {
-    mTransform = transform;
-}
+OBBCollider::OBBCollider(const OBBCollider& orientedBox) 
+    : BoundingObject{ ColliderType::ORIENTED_BOX }, mLocalBox{ orientedBox.mLocalBox } { }
 
-CollisionState Collider::GetState(NetworkObjectIdType id) const {
-    if (mStates.contains(id)) {
-        return mStates.at(id);
-    }
+OBBCollider::~OBBCollider() { }
 
-    return CollisionState::NONE;
-}
-
-void Collider::UpdateState(bool collisionResult, NetworkObjectIdType objId) {
-    if (true == collisionResult) {
-        if (not mStates.contains(objId)) {
-            mStates[objId] = CollisionState::NONE;
-        }
-
-        decltype(auto) state = mStates[objId];
-        switch (state) {
-        case CollisionState::NONE:
-        case CollisionState::EXIT:
-            state = CollisionState::ENTER;
-            break;
-
-        case CollisionState::ENTER:
-            state = CollisionState::STAY;
-            break;
-
-        default:        // STAY인 경우 처리 X
-            break;
-        }
-    }
-    else {
-        if (not mStates.contains(objId)) {
-            return;
-        }
-
-        decltype(auto) state = mStates[objId];
-        switch (state) {
-        case CollisionState::ENTER:
-        case CollisionState::STAY:
-            state = CollisionState::EXIT;
-            break;
-
-        case CollisionState::EXIT:
-            state = CollisionState::NONE;
-            break;
-
-        default:        // NONE인 경우 Map에서 삭제
-            mStates.erase(objId);
-            break;
-        }
-    }
-}
-
-BoxCollider::BoxCollider() 
-    : Collider{ ColliderType::BOX } { }
-
-BoxCollider::BoxCollider(const DirectX::BoundingBox& box) 
-    : Collider{ ColliderType::BOX }, mLocalBox{ box } { }
-
-BoxCollider::BoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents)
-    : Collider{ ColliderType::BOX }, mLocalBox{ center, extents }, mBoundingBox{ } { }
-
-BoxCollider::~BoxCollider() { }
-
-DirectX::BoundingBox& BoxCollider::GetBoundingBox() {
+DirectX::BoundingOrientedBox OBBCollider::GetBoundingBox() const {
     return mBoundingBox;
 }
 
-float BoxCollider::GetForwardExtents() {
-    return mBoundingBox.Extents.z;
+float OBBCollider::GetForwardExtents() const {
+    return mLocalBox.Extents.z;
 }
 
-void BoxCollider::Update() {
-    if (mTransform.expired()) {
-        return;
-    }
-
-    mLocalBox.Transform(mBoundingBox, mTransform.lock()->GetWorld());
+float OBBCollider::GetRadiusCircumplex() const {
+    return SimpleMath::Vector3{ mLocalBox.Extents }.Length();
 }
 
-void BoxCollider::LateUpdate() { }
+float OBBCollider::GetRadiusCircumplexSq() const {
+    return SimpleMath::Vector3{ mLocalBox.Extents }.LengthSquared();
+}
 
-bool BoxCollider::CheckCollision(const std::shared_ptr<Collider>& other) {
-    if (false == mEnable or false == other->IsEnable()) {
-        return false;
-    }
-    
+CollisionResult OBBCollider::IsColliding(const std::shared_ptr<BoundingObject>& other) const {
+    CollisionResult result{ };
+
     switch (other->GetType()) {
-    case ColliderType::BOX:
-        {
-            auto collider = std::static_pointer_cast<BoxCollider>(other);
-            return mBoundingBox.Intersects(collider->GetBoundingBox());
+    case ColliderType::ORIENTED_BOX:
+    {
+        auto box = std::static_pointer_cast<OBBCollider>(other)->GetBoundingBox();
+        auto myBox = mBoundingBox;
+        result.intersects = box.Intersects(myBox);
+        if (false == result.intersects) {
+            return CollisionResult{ false, SimpleMath::Vector3::Zero };
         }
+
+        result.penetration = Collision::GetMinTransVec(myBox, box);
+        return result;
+    }
 
     case ColliderType::SPHERE:
-        {
-            auto collider = std::static_pointer_cast<SphereCollider>(other);
-            return mBoundingBox.Intersects(collider->GetBoundingSphere());
-        }
-
-    case ColliderType::ORIENTED_BOX:
-        {
-            auto collider = std::static_pointer_cast<OrientedBoxCollider>(other);
-            return mBoundingBox.Intersects(collider->GetBoundingBox());
-        }
+    {
+        break;
+    }
 
     default:
-        return false;
+        break;
     }
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Invalid Collider Type");
+    return { };
 }
 
-SphereCollider::SphereCollider()
-    : Collider{ ColliderType::SPHERE } { }
+std::shared_ptr<BoundingObject> OBBCollider::Clone() const {
+    return nullptr;
+}
 
-SphereCollider::SphereCollider(const SimpleMath::Vector3& center, const float radius)
-    : Collider{ ColliderType::SPHERE }, mLocalSphere{ center, radius }, mBoundingSphere{ } {}
+void OBBCollider::Update(const SimpleMath::Matrix& mat) {
+    mLocalBox.Transform(mBoundingBox, mat);
+}
+
+SphereCollider::SphereCollider(float radius)
+    : BoundingObject{ ColliderType::SPHERE }, mLocalSphere{ SimpleMath::Vector3::Zero, radius } { }
+
+SphereCollider::SphereCollider(const SimpleMath::Vector3& center, float radius)
+    : BoundingObject{ ColliderType::SPHERE }, mLocalSphere{ center, radius } { }
+
+SphereCollider::SphereCollider(const SphereCollider& sphere) 
+    : BoundingObject{ ColliderType::SPHERE }, mLocalSphere{ sphere.mLocalSphere } { }
 
 SphereCollider::~SphereCollider() { }
 
-DirectX::BoundingSphere& SphereCollider::GetBoundingSphere() {
-    return mBoundingSphere;
+float SphereCollider::GetForwardExtents() const {
+    return mLocalSphere.Radius;
 }
 
-float SphereCollider::GetForwardExtents() {
-    return mBoundingSphere.Radius;
+float SphereCollider::GetRadiusCircumplex() const {
+    return mLocalSphere.Radius;
 }
 
-void SphereCollider::Update() { 
-    if (mTransform.expired()) {
-        return;
-    }
-
-    mLocalSphere.Transform(mBoundingSphere, mTransform.lock()->GetWorld());
+float SphereCollider::GetRadiusCircumplexSq() const {
+    return MathUtil::Square(mLocalSphere.Radius);
 }
 
-void SphereCollider::LateUpdate() { }
-
-bool SphereCollider::CheckCollision(const std::shared_ptr<Collider>& other) {
-    if (false == mEnable or false == other->IsEnable()) {
-        return false;
-    }
-
-    switch (other->GetType()) {
-    case ColliderType::BOX:
-        {
-            auto collider = std::static_pointer_cast<BoxCollider>(other);
-            return mBoundingSphere.Intersects(collider->GetBoundingBox());
-        }
-
-    case ColliderType::SPHERE:
-        {
-            auto collider = std::static_pointer_cast<SphereCollider>(other);
-            return mBoundingSphere.Intersects(collider->GetBoundingSphere());
-        }
-
-    case ColliderType::ORIENTED_BOX:
-        {
-            auto collider = std::static_pointer_cast<OrientedBoxCollider>(other);
-            return mBoundingSphere.Intersects(collider->GetBoundingBox());
-        }
-
-    default:
-        return false;
-    }
+CollisionResult SphereCollider::IsColliding(const std::shared_ptr<BoundingObject>& other) const {
+    return {};
 }
 
-OrientedBoxCollider::OrientedBoxCollider()
-    : Collider{ ColliderType::ORIENTED_BOX } { }
-
-OrientedBoxCollider::OrientedBoxCollider(const DirectX::BoundingBox& box)
-    : Collider{ ColliderType::ORIENTED_BOX } { 
-    DirectX::BoundingOrientedBox::CreateFromBoundingBox(mLocalBox, box);
+std::shared_ptr<BoundingObject> SphereCollider::Clone() const {
+    return nullptr;
 }
 
-OrientedBoxCollider::OrientedBoxCollider(const SimpleMath::Vector3& center, const SimpleMath::Vector3& extents, const SimpleMath::Quaternion& quat)
-    : Collider{ ColliderType::ORIENTED_BOX }, mLocalBox{ center, extents, quat }, mBoundingBox{ } { }
-
-OrientedBoxCollider::~OrientedBoxCollider() { }
-
-DirectX::BoundingOrientedBox& OrientedBoxCollider::GetBoundingBox() {
-    return mBoundingBox;
-}
-
-float OrientedBoxCollider::GetForwardExtents() {
-    return mBoundingBox.Extents.z;
-}
-
-void OrientedBoxCollider::Update() {
-    if (mTransform.expired()) {
-        return;
-    }
-
-    mLocalBox.Transform(mBoundingBox, mTransform.lock()->GetWorld());
-}
-
-void OrientedBoxCollider::LateUpdate() { }
-
-bool OrientedBoxCollider::CheckCollision(const std::shared_ptr<Collider>& other) {
-    if (false == mEnable or false == other->IsEnable()) {
-        return false;
-    }
-
-    switch (other->GetType()) {
-    case ColliderType::BOX:
-        {
-            auto collider = std::static_pointer_cast<BoxCollider>(other);
-            return mBoundingBox.Intersects(collider->GetBoundingBox());
-        }
-
-    case ColliderType::SPHERE:
-        {
-            auto collider = std::static_pointer_cast<SphereCollider>(other);
-            return mBoundingBox.Intersects(collider->GetBoundingSphere());
-        }
-
-    case ColliderType::ORIENTED_BOX:
-        {
-            auto collider = std::static_pointer_cast<OrientedBoxCollider>(other);
-            return mBoundingBox.Intersects(collider->GetBoundingBox());
-        }
-
-    default:
-        return false;
-    }
+void SphereCollider::Update(const SimpleMath::Matrix& mat) {
+    mLocalSphere.Transform(mBoundingSphere, mat);
 }

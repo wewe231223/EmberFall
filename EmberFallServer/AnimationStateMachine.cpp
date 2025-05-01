@@ -6,64 +6,66 @@ AnimationStateMachine::AnimationStateMachine() { }
 
 AnimationStateMachine::~AnimationStateMachine() { }
 
+void AnimationStateMachine::Init(const std::string& entityKey) {
+    mAnimInfo = ResourceManager::GetAnimInfo(entityKey);
+
+    mDefaultState = Packets::AnimationState_IDLE;
+    mDefaultAnimInfo = mAnimInfo->states[static_cast<size_t>(mDefaultState)];
+}
+
 bool AnimationStateMachine::IsChangable() const {
-    return mAnimationChangable;
+    return mIsLoopAnimation;
 }
 
-AnimationState AnimationStateMachine::GetCurrState() const {
-    return mCurrState.state;
+Packets::AnimationState AnimationStateMachine::GetCurrState() const {
+    return mCurrState;
 }
 
-float AnimationStateMachine::GetDuration(AnimationState state) const {
-    return mAnimationInfo[static_cast<size_t>(state)].duration;
+float AnimationStateMachine::GetDuration(Packets::AnimationState state) const {
+    return mAnimInfo->states[state].duration;
 }
 
 float AnimationStateMachine::GetRemainDuration() const {
-    return mCurrState.duration - mAnimationCounter;
+    return mCurrAnimInfo.duration - mAnimationCounter;
 }
 
 void AnimationStateMachine::SetOwner(std::shared_ptr<class GameObject> owner) {
     mOwner = owner;
 }
 
-void AnimationStateMachine::SetDefaultState(AnimationState state) {
-    mDefaultState = mAnimationInfo[static_cast<size_t>(state)];
+void AnimationStateMachine::SetDefaultState(Packets::AnimationState state) {
+    mDefaultState = state;
+    mDefaultAnimInfo = mAnimInfo->states[static_cast<size_t>(state)];
 }
 
-void AnimationStateMachine::ChangeState(AnimationState nextState, bool force) {
-    if (false == force and mCurrState.state == nextState) {
+void AnimationStateMachine::ChangeState(Packets::AnimationState nextState, bool force) {
+    if (false == force and mCurrState == nextState) {
         return;
     }
 
-    auto packet = GetPacket<PacketSC::PacketAnimationState>(
-        INVALID_SESSION_ID,
-        mOwner->GetId(),
-        mCurrState.state
-    );
-    if (force) {
-        packet.animState = AnimationState::IDLE;
-        gServerCore->SendAll(&packet);
-    }
+    auto ownerId = mOwner->GetId();
+    mCurrState = nextState;
+    mCurrAnimInfo = mAnimInfo->states[static_cast<size_t>(nextState)];
 
-    mCurrState = mAnimationInfo[static_cast<size_t>(nextState)];
-
-    mAnimationChangable = mCurrState.loop;
+    mIsLoopAnimation = mCurrAnimInfo.loop;
     mAnimationCounter = 0.0f;
-    packet.animState = mCurrState.state;
+    mAnimationChanged = true;
 
-    gServerCore->SendAll(&packet);
+    auto packetAnim = FbsPacketFactory::ObjectAnimationChangedSC(ownerId, mCurrState);
+    mOwner->StorePacket(packetAnim);
 }
 
 void AnimationStateMachine::Update(const float deltaTime) {
-    if (true == mCurrState.loop) {
+    if (true == mCurrAnimInfo.loop) {
         return;
     }
 
     mAnimationCounter += deltaTime;
-    if (mAnimationCounter > mCurrState.duration) {
-        if (mAnimationChangable) {
-            ChangeState(mDefaultState.state);
-        }
-        mAnimationChangable = true;
+    if (mAnimationCounter < mCurrAnimInfo.duration) {
+        return;
+    }
+
+    if (not mIsLoopAnimation and mCurrState != Packets::AnimationState_DEAD) {
+        ChangeState(mDefaultState);
     }
 }

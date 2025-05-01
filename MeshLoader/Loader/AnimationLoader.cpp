@@ -217,6 +217,10 @@ AnimationClip AnimationLoader::LoadClip(UINT animIndex) {
     return clip;
 }
 
+void AnimationLoader::AddClip(const AnimationClip& clip) {
+	mClips.emplace_back(clip);
+}
+
 void AnimationLoader::Load(const std::filesystem::path& path) {
     if (AnimationLoader::CheckBinary(path)) {
 		AnimationDeserializer deserializer{ std::filesystem::path(BINARY_PATH) / (path.filename().stem().string() + ".bin") };

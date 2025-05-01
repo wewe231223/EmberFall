@@ -8,5 +8,3 @@
 #else 
 #pragma comment(lib, "out/release/ServerLib.lib")
 #endif 
-
-extern std::shared_ptr<ClientCore> gClientCore;

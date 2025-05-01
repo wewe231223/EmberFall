@@ -70,7 +70,8 @@ void IOCPCore::IOWorker() {
             if (NetworkType::SERVER == mCoreService->GetType()) {
                 auto serverCore = std::static_pointer_cast<ServerCore>(mCoreService);
                 if (IOType::SEND == overlappedEx->type) {
-                    serverCore->GetSendBufferFactory()->ReleaseOverlapped(reinterpret_cast<OverlappedSend*>(overlappedEx));
+                    FbsPacketFactory::ReleasePacketBuf(reinterpret_cast<OverlappedSend*>(overlappedEx));
+
                     gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Client[{}] Error Send", static_cast<INT32>(clientId));
                 }
 
@@ -80,7 +81,7 @@ void IOCPCore::IOWorker() {
             else {
                 auto clientCore = std::static_pointer_cast<ClientCore>(mCoreService);
                 if (IOType::SEND == overlappedEx->type) {
-                    clientCore->GetSendBufferFactory()->ReleaseOverlapped(reinterpret_cast<OverlappedSend*>(overlappedEx));
+                    FbsPacketFactory::ReleasePacketBuf(reinterpret_cast<OverlappedSend*>(overlappedEx));
                     gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Error Send");
                 }
 
@@ -91,6 +92,14 @@ void IOCPCore::IOWorker() {
 
         if (IOType::DISCONNECT == overlappedEx->type) {
             break;
+        }
+
+        if (nullptr == overlappedEx->owner) {
+            auto header = FbsPacketFactory::GetHeaderPtrSC(reinterpret_cast<const uint8_t* const>(overlappedEx->wsaBuf.buf));
+            gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "OverlappedEx's owner is Null");
+            gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Error Overlapped Info: ID: {}", clientId);
+            gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Error PacketType: {}", Packets::EnumNamePacketTypes(static_cast<Packets::PacketTypes>(header->type)));
+            Crash("");
         }
 
         overlappedEx->owner->ProcessOverlapped(overlappedEx, receivedByte);

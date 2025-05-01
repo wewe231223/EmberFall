@@ -38,11 +38,14 @@ public:
 	void Load(const std::filesystem::path& path);
 	
 	AnimationClip* GetClip(UINT index);
+	void AddClip(const AnimationClip& clip);
+	
 	UINT GetBoneIndex(const std::string& name);
 private:
 	bool CheckBinary(const std::filesystem::path& path);
 
 	AnimationClip LoadClip(UINT animIndex = 0);
+
 	std::shared_ptr<BoneNode> BuildNode(const aiNode* node, const std::unordered_map<std::string, UINT>& boneMap);
 private:
 	std::vector<AnimationClip> mClips{};
@@ -130,4 +133,46 @@ inline void AnimationDeserializer::ReadVector(std::vector<T>& value) {
 	
 	value.resize(size);
 	mFile.read(reinterpret_cast<char*>(value.data()), size * sizeof(T));
+}
+
+
+template <typename T>
+inline void OffsetKeyTimes(std::vector<std::pair<double, T>>& keys, double offset) 
+{
+	for (auto& key : keys) {
+		key.first += offset;
+	}
+}
+
+inline AnimationClip AppendAnimationClips(const AnimationClip* clipA, const AnimationClip* clipB) 
+{
+	AnimationClip merged;
+
+	merged.duration = clipA->duration + clipB->duration;
+	merged.ticksPerSecond = clipA->ticksPerSecond;
+	merged.globalInverseTransform = clipA->globalInverseTransform;
+	merged.boneOffsetMatrices = clipA->boneOffsetMatrices;
+	merged.root = clipA->root;
+	merged.boneAnimations = clipA->boneAnimations;
+
+	for (const auto& pair : clipB->boneAnimations) {
+		unsigned int boneIndex = pair.first;
+		BoneAnimation animB = pair.second;  
+
+		OffsetKeyTimes(animB.positionKey, clipA->duration);
+		OffsetKeyTimes(animB.rotationKey, clipA->duration);
+		OffsetKeyTimes(animB.scalingKey, clipA->duration);
+
+		auto it = merged.boneAnimations.find(boneIndex);
+		if (it != merged.boneAnimations.end()) {
+			it->second.positionKey.insert(it->second.positionKey.end(), animB.positionKey.begin(), animB.positionKey.end());
+			it->second.rotationKey.insert(it->second.rotationKey.end(), animB.rotationKey.begin(), animB.rotationKey.end());
+			it->second.scalingKey.insert(it->second.scalingKey.end(), animB.scalingKey.begin(), animB.scalingKey.end());
+		}
+		else {
+			merged.boneAnimations[boneIndex] = animB;
+		}
+	}
+
+	return merged;
 }

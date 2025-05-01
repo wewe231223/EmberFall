@@ -88,3 +88,12 @@ struct OverlappedSend : public OverlappedEx {
     OverlappedSend& operator=(const OverlappedSend&) = delete;
     OverlappedSend& operator=(OverlappedSend&&) noexcept = delete;
 };
+
+struct OverlappedUpdate : public OverlappedEx {
+    OverlappedUpdate();
+
+    OverlappedUpdate(const OverlappedUpdate&) = delete;
+    OverlappedUpdate(OverlappedUpdate&&) noexcept = delete;
+    OverlappedUpdate& operator=(const OverlappedUpdate&) = delete;
+    OverlappedUpdate& operator=(OverlappedUpdate&&) noexcept = delete;
+};
