@@ -89,10 +89,9 @@ void PlayerScript::UpdateViewList(const std::vector<NetworkObjectIdType>& inView
 }
 
 void PlayerScript::Init() { 
-    auto owner = GetOwner();
-    if (nullptr == owner) {
-        return;
-    }
+    auto triggerBoxExt = SimpleMath::Vector3{ 1.0f, 1.0f, 5.0f };
+    mInteractionTrigger = gObjectSpawner->SpawnTrigger(std::numeric_limits<float>::max(), GetOwner()->GetPosition(), triggerBoxExt);
+}
 
     owner->mAnimationStateMachine.Init(ANIM_KEY_LONGSWORD_MAN);
 
@@ -110,8 +109,10 @@ void PlayerScript::Update(const float deltaTime) {
     }
 
     mInteractionTrigger->GetTransform()->SetPosition(owner->GetPosition());
-    mInteractionTrigger->GetTransform()->SetLook(owner->GetTransform()->Forward());
-    mInteractionTrigger->Update();
+    mInteractionTrigger->GetTransform()->Rotation(owner->GetRotation());
+    mViewList.mPosition = owner->GetPosition();
+    mViewList.Update();
+    mViewList.Send();
 
     // Interact
     if (mInput->IsActiveKey('F')) {

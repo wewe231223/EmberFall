@@ -27,6 +27,9 @@ struct NotifyIdSCBuilder;
 struct PlayerExitSC;
 struct PlayerExitSCBuilder;
 
+struct PlayerInput;
+struct PlayerInputBuilder;
+
 struct PlayerExitCS;
 struct PlayerExitCSBuilder;
 
@@ -188,6 +191,57 @@ inline ::flatbuffers::Offset<PlayerExitSC> CreatePlayerExitSC(
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+struct PlayerInput FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PlayerInputBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_KEY = 4,
+    VT_DOWN = 6
+  };
+  uint8_t key() const {
+    return GetField<uint8_t>(VT_KEY, 0);
+  }
+  bool down() const {
+    return GetField<uint8_t>(VT_DOWN, 0) != 0;
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_KEY, 1) &&
+           VerifyField<uint8_t>(verifier, VT_DOWN, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct PlayerInputBuilder {
+  typedef PlayerInput Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_key(uint8_t key) {
+    fbb_.AddElement<uint8_t>(PlayerInput::VT_KEY, key, 0);
+  }
+  void add_down(bool down) {
+    fbb_.AddElement<uint8_t>(PlayerInput::VT_DOWN, static_cast<uint8_t>(down), 0);
+  }
+  explicit PlayerInputBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<PlayerInput> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<PlayerInput>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<PlayerInput> CreatePlayerInput(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint8_t key = 0,
+    bool down = false) {
+  PlayerInputBuilder builder_(_fbb);
+  builder_.add_down(down);
+  builder_.add_key(key);
+  return builder_.Finish();
+}
+
 struct PlayerExitCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PlayerExitCSBuilder Builder;
   bool Verify(::flatbuffers::Verifier &verifier) const {

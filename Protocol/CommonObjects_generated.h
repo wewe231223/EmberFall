@@ -215,13 +215,16 @@ struct ObjectMoveSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ObjectMoveSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_OBJECTID = 4,
-    VT_POS = 6,
-    VT_DIR = 8,
-    VT_YAW = 10,
+    VT_YAW = 6,
+    VT_POS = 8,
+    VT_DIR = 10,
     VT_SPEED = 12
   };
   uint16_t objectId() const {
     return GetField<uint16_t>(VT_OBJECTID, 0);
+  }
+  float yaw() const {
+    return GetField<float>(VT_YAW, 0.0f);
   }
   const Packets::Vec3 *pos() const {
     return GetStruct<const Packets::Vec3 *>(VT_POS);
@@ -238,6 +241,7 @@ struct ObjectMoveSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint16_t>(verifier, VT_OBJECTID, 2) &&
+           VerifyField<float>(verifier, VT_YAW, 4) &&
            VerifyField<Packets::Vec3>(verifier, VT_POS, 4) &&
            VerifyField<Packets::Vec3>(verifier, VT_DIR, 4) &&
            VerifyField<float>(verifier, VT_YAW, 4) &&
@@ -252,6 +256,9 @@ struct ObjectMoveSCBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_objectId(uint16_t objectId) {
     fbb_.AddElement<uint16_t>(ObjectMoveSC::VT_OBJECTID, objectId, 0);
+  }
+  void add_yaw(float yaw) {
+    fbb_.AddElement<float>(ObjectMoveSC::VT_YAW, yaw, 0.0f);
   }
   void add_pos(const Packets::Vec3 *pos) {
     fbb_.AddStruct(ObjectMoveSC::VT_POS, pos);
@@ -279,6 +286,7 @@ struct ObjectMoveSCBuilder {
 inline ::flatbuffers::Offset<ObjectMoveSC> CreateObjectMoveSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint16_t objectId = 0,
+    float yaw = 0.0f,
     const Packets::Vec3 *pos = nullptr,
     const Packets::Vec3 *dir = nullptr,
     float yaw = 0.0f,
@@ -288,6 +296,7 @@ inline ::flatbuffers::Offset<ObjectMoveSC> CreateObjectMoveSC(
   builder_.add_yaw(yaw);
   builder_.add_dir(dir);
   builder_.add_pos(pos);
+  builder_.add_yaw(yaw);
   builder_.add_objectId(objectId);
   return builder_.Finish();
 }

@@ -27,6 +27,11 @@ table PlayerExitSC {
 //		Basic communication packets
 //////////////////////////////////////////////////////////////
 
+table PlayerInput { 
+	key: ubyte;
+	down: bool;
+}
+
 table PlayerExitCS { }
 
 table PlayerEnterInGame { }

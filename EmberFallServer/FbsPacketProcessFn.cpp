@@ -58,9 +58,10 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
     }
 
     case Packets::PacketTypes_PT_PLAYER_SELECT_ROLE_CS:
+    case Packets::PacketTypes::PacketTypes_PT_PLAYER_SELECT_ROLE_CS:
     {
         decltype(auto) packetRoll = FbsPacketFactory::GetDataPtrCS<Packets::PlayerSelectRoleCS>(buffer);
-        ProcessPlayerSelectRoleCS(session, packetRoll);
+        ProcessPlayerSelectRoleCS(packetRoll, sender);
         break;
     }
 
@@ -140,7 +141,8 @@ void ProcessPlayerLookCS(std::shared_ptr<GameSession>& session, const Packets::P
 void ProcessPlayerSelectWeaponCS(std::shared_ptr<GameSession>& session, const Packets::PlayerSelectWeaponCS* const weapon) {
 }
 
-void ProcessPlayerSelectRoleCS(std::shared_ptr<GameSession>& session, const Packets::PlayerSelectRoleCS* const roll) {
+inline void ProcessPlayerSelectRoleCS(const Packets::PlayerSelectRoleCS* const roll, std::shared_ptr<GameObject>& player) {
+    // TODO
 }
 
 void ProcessLatencyCS(std::shared_ptr<GameSession>& session, const Packets::PacketLatencyCS* const latency) {
