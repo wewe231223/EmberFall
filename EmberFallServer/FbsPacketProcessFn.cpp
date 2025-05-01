@@ -22,7 +22,7 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
     }
 
     Packets::PacketTypes enumType = static_cast<Packets::PacketTypes>(header->type);
-    //gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Process: {}", Packets::EnumNamePacketTypes(enumType));
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Process: {}", Packets::EnumNamePacketTypes(enumType));
     switch (header->type) {
     case Packets::PacketTypes_PT_PLAYER_INPUT_CS:
     {
@@ -54,6 +54,8 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
 
     case Packets::PacketTypes_PT_PLAYER_EXIT_CS:
     {
+        decltype(auto) packetExit = FbsPacketFactory::GetDataPtrCS<Packets::PlayerExitCS>(buffer);
+        ProcessPlayerExitCS(session, packetExit);
         break;
     }
 
@@ -115,7 +117,7 @@ void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, cons
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player [{}] Enter In Lobby!", session->GetId());
     session->EnterLobby();
 
-    auto sessionId = session->GetId();
+    auto sessionId = static_cast<SessionIdType>(session->GetId());
     auto packetEnter = FbsPacketFactory::PlayerEnterInLobbySC(sessionId);
 
     decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
@@ -124,6 +126,10 @@ void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, cons
     {
         Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
         for (auto& [id, oldSession] : sessionMap) {
+            if (sessionId == id) {
+                continue;
+            }
+
             auto gameSession = std::static_pointer_cast<GameSession>(oldSession);
             if (false == gameSession->IsConnected() or SESSION_INLOBBY != gameSession->GetSessionState()) {
                 continue;
@@ -144,9 +150,42 @@ void ProcessPlayerReadyInLobby(std::shared_ptr<class GameSession>& session, cons
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[{}] Ready!", session->GetId());
     session->Ready(ready->role());
 
-    auto sessionId = session->GetId();
+    auto sessionId = static_cast<SessionIdType>(session->GetId());
     auto sessionRole = session->GetPlayerRole();
     auto packetReady = FbsPacketFactory::PlayerReadyInLobbySC(sessionId, sessionRole);
+
+    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
+    decltype(auto) sessionMap = gServerCore->GetSessionManager()->GetSessionMap();
+
+    {
+        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
+        for (auto& [id, session] : sessionMap) {
+            if (sessionId == id) {
+                continue;
+            }
+
+            auto gameSession = std::static_pointer_cast<GameSession>(session);
+            if (SESSION_INLOBBY != gameSession->GetSessionState()) {
+                continue;
+            }
+
+            auto clonedPacket = FbsPacketFactory::ClonePacket(packetReady);
+            session->RegisterSend(clonedPacket);
+        }
+    }
+
+    FbsPacketFactory::ReleasePacketBuf(packetReady);
+}
+
+void ProcessPlayerExitCS(std::shared_ptr<class GameSession>& session, const Packets::PlayerExitCS* const exit) {
+    auto state = session->GetSessionState();
+    if (SESSION_INLOBBY != state) {
+        return;
+    }
+
+    auto sessionId = static_cast<SessionIdType>(session->GetId());
+    auto packetExit = FbsPacketFactory::PlayerExitSC(sessionId);
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Exit In Game!", sessionId);
 
     decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
     decltype(auto) sessionMap = gServerCore->GetSessionManager()->GetSessionMap();
@@ -159,12 +198,14 @@ void ProcessPlayerReadyInLobby(std::shared_ptr<class GameSession>& session, cons
                 continue;
             }
 
-            auto clonedPacket = FbsPacketFactory::ClonePacket(packetReady);
+            auto clonedPacket = FbsPacketFactory::ClonePacket(packetExit);
             session->RegisterSend(clonedPacket);
         }
     }
 
-    FbsPacketFactory::ReleasePacketBuf(packetReady);
+    gServerCore->GetSessionManager()->CloseSession(sessionId);
+
+    FbsPacketFactory::ReleasePacketBuf(packetExit);
 }
 
 void ProcessPlayerEnterInGame(std::shared_ptr<class GameSession>& session, const Packets::PlayerEnterInGame* const enter) {

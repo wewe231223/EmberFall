@@ -12,8 +12,10 @@ GameSession::GameSession()
     : Session{ NetworkType::SERVER }, mSessionState{ SESSION_CONNECT } { }
 
 GameSession::~GameSession() { 
-    gSectorSystem->RemoveInSector(GetId(), mUserObject->GetPosition());
-    mUserObject->Reset();
+    if (nullptr != mUserObject) {
+        gSectorSystem->RemoveInSector(GetId(), mUserObject->GetPosition());
+        mUserObject->Reset();
+    }
 
     mSessionState = SESSION_CLOSE;
 
