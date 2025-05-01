@@ -353,7 +353,7 @@ TerrainScene::TerrainScene(std::shared_ptr<RenderManager> renderMgr, DefaultBuff
 }
 
 TerrainScene::~TerrainScene() {
-	gClientCore->End(); 
+
 }
 
 void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
