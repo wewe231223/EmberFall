@@ -88,6 +88,9 @@
     <Filter Include="MultiThreadLoopTest\Events">
       <UniqueIdentifier>{74abd418-50dc-437c-b5e2-b0062e0901c8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MultiThreadLoopTest\Script\Buff">
+      <UniqueIdentifier>{4465a545-16a2-4eec-91fe-17e93b49cec2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TerrainCollider.cpp">
@@ -158,12 +161,6 @@
     </ClCompile>
     <ClCompile Include="ViewList.cpp">
       <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
-    </ClCompile>
-    <ClCompile Include="GameEventManager.cpp">
-      <Filter>Regacy</Filter>
-    </ClCompile>
-    <ClCompile Include="GraphBase.cpp">
-      <Filter>Regacy</Filter>
     </ClCompile>
     <ClCompile Include="PathFinder.cpp">
       <Filter>MaybeReuse\Map</Filter>
@@ -246,6 +243,13 @@
     <ClCompile Include="Item.cpp">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClCompile>
+    <ClCompile Include="GraphBase.cpp">
+      <Filter>MaybeReuse\Graph\GraphBase</Filter>
+    </ClCompile>
+    <ClCompile Include="Stage.cpp" />
+    <ClCompile Include="BuffHealScript.cpp">
+      <Filter>MultiThreadLoopTest\Script\Buff</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BehaviorTreeBase.h">
@@ -274,9 +278,6 @@
     </ClInclude>
     <ClInclude Include="WeaponSystem.h">
       <Filter>Regacy\Attack\Weapon</Filter>
-    </ClInclude>
-    <ClInclude Include="GameEventManager.h">
-      <Filter>MaybeReuse\Graph\GraphBase</Filter>
     </ClInclude>
     <ClInclude Include="AnimationStateMachine.h">
       <Filter>Regacy\Animation</Filter>
@@ -400,6 +401,10 @@
     </ClInclude>
     <ClInclude Include="ItemScript.h">
       <Filter>MultiThreadLoopTest\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="Stage.h" />
+    <ClInclude Include="BuffHealScript.h">
+      <Filter>MultiThreadLoopTest\Script\Buff</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

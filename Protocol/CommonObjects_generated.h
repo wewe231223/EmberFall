@@ -215,9 +215,9 @@ struct ObjectMoveSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ObjectMoveSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_OBJECTID = 4,
-    VT_YAW = 6,
-    VT_POS = 8,
-    VT_DIR = 10,
+    VT_POS = 6,
+    VT_DIR = 8,
+    VT_YAW = 10,
     VT_SPEED = 12
   };
   uint16_t objectId() const {

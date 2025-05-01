@@ -24,8 +24,8 @@
 struct ObjectSpec {
     bool active;                    // 활성화 여부
     bool interactable;              // 상호작용 가능 여부
-    bool attackable;                // 공격 가능 여부
     Packets::EntityType entity;     // 외형 정보
+    GameStage stage;                // 스테이지 정보
 
     float defence;                  // 방어력
     float damage;                   // 공격력

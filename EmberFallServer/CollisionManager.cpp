@@ -38,17 +38,24 @@ void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj) {
     }
 
     const auto pos = obj->GetPosition();
+    const auto bb = obj->GetBoundingObject();
+    if (nullptr == bb) {
+        return;
+    }
 
-    decltype(auto) sectors = gSectorSystem->GetMustCheckSectors(pos, 10.0f);
+    auto bbExtents = bb->GetRadiusCircumplex();
+    decltype(auto) sectors = gSectorSystem->GetMustCheckSectors(pos, bbExtents);
     const auto myId = obj->GetId();
     for (const auto sector : sectors) {
-        decltype(auto) collisionCheckPlayers = std::move(gSectorSystem->GetSector(sector).GetPlayersInRange(pos, 10.0f));
-        decltype(auto) collisionCheckMonsters = gSectorSystem->GetSector(sector).GetMonstersInRange(pos, 10.0f);
-        decltype(auto) collisionCheckEnvs = gSectorSystem->GetSector(sector).GetEnvInRange(pos, 10.0f);
+        decltype(auto) collisionCheckPlayers = std::move(gSectorSystem->GetSector(sector).GetPlayersInRange(pos, bbExtents));
+        decltype(auto) collisionCheckMonsters = std::move(gSectorSystem->GetSector(sector).GetNPCsInRange(pos, bbExtents));
+        decltype(auto) collisionCheckEnvs = std::move(gSectorSystem->GetSector(sector).GetEnvInRange(pos, bbExtents));
+        decltype(auto) collisionCheckTriggers = std::move(gSectorSystem->GetSector(sector).GetTriggersInTange(pos, bbExtents));
 
         UpdateCollisionMonster(obj, myId, collisionCheckMonsters);
         UpdateCollisionPlayer(obj, myId, collisionCheckPlayers);
         UpdateCollisionEnv(obj, myId, collisionCheckEnvs);
+        UpdateCollisionTrigger(obj, myId, collisionCheckTriggers);
     }
 }
 
@@ -139,5 +146,35 @@ void CollisionManager::UpdateCollisionEnv(const std::shared_ptr<GameObject>& obj
         }
 
         PopCollisionPair(envId, objId);
+    }
+}
+
+void CollisionManager::UpdateCollisionTrigger(const std::shared_ptr<GameObject>& obj, NetworkObjectIdType objId, const std::vector<NetworkObjectIdType>& collisionCheckTriggers) {
+    for (const auto triggerId : collisionCheckTriggers) {
+        if (objId == triggerId) {
+            continue;
+        }
+
+        auto result = PushCollisionPair(triggerId, objId);
+        if (false == result) {
+            continue;
+        }
+
+        // Todo Collision Check And Resolve
+        auto trigger = gObjectManager->GetTrigger(triggerId);
+        if (nullptr == trigger or false == trigger->mSpec.active) {
+            PopCollisionPair(triggerId, objId);
+            continue;
+        }
+
+        const auto boundingObj1 = trigger->GetBoundingObject();
+        const auto boundingObj2 = obj->GetBoundingObject();
+
+        auto [intersects, penetration] = boundingObj2->IsColliding(boundingObj1);
+        if (intersects) {
+            obj->OnCollision(trigger, penetration);
+        }
+
+        PopCollisionPair(triggerId, objId);
     }
 }

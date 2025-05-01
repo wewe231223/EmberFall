@@ -286,7 +286,7 @@ namespace Collision {
             auto range1 = GetProjectionRange(b1Points, axis);
             auto range2 = GetProjectionRange(b2Points, axis);
 
-            auto overlap = ::fabs(range1.max - range2.min);
+            float overlap = std::min(range1.max, range2.max) - std::max(range1.min, range2.min);
             if (overlap < minRange and false == MathUtil::IsZero(overlap)) {
                 shortestAxis = axis;
                 minRange = overlap;
@@ -297,7 +297,7 @@ namespace Collision {
             auto range1 = GetProjectionRange(b1Points, axis);
             auto range2 = GetProjectionRange(b2Points, axis);
 
-            auto overlap = ::fabs(range1.max - range2.min);
+            float overlap = std::min(range1.max, range2.max) - std::max(range1.min, range2.min);
             if (overlap < minRange and false == MathUtil::IsZero(overlap)) {
                 shortestAxis = axis;
                 minRange = overlap;
@@ -312,7 +312,7 @@ namespace Collision {
                 auto range1 = GetProjectionRange(b1Points, axis);
                 auto range2 = GetProjectionRange(b2Points, axis);
 
-                auto overlap = ::fabs(range1.max - range2.min);
+                float overlap = std::min(range1.max, range2.max) - std::max(range1.min, range2.min);
                 if (overlap < minRange and false == MathUtil::IsZero(overlap)) {
                     shortestAxis = axis;
                     minRange = overlap;

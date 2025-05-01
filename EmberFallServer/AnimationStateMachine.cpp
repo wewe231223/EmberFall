@@ -50,6 +50,9 @@ void AnimationStateMachine::ChangeState(Packets::AnimationState nextState, bool 
     mIsLoopAnimation = mCurrAnimInfo.loop;
     mAnimationCounter = 0.0f;
     mAnimationChanged = true;
+
+    auto packetAnim = FbsPacketFactory::ObjectAnimationChangedSC(ownerId, mCurrState);
+    mOwner->StorePacket(packetAnim);
 }
 
 void AnimationStateMachine::Update(const float deltaTime) {

@@ -32,7 +32,12 @@ Lock::SRWLock& Sector::GetLock() {
 }
 
 void Sector::TryInsert(NetworkObjectIdType id) {
-    auto tag = gObjectManager->GetObjectFromId(id)->GetTag();
+    auto obj = gObjectManager->GetObjectFromId(id);
+    if (nullptr == obj) {
+        return;
+    }
+
+    auto tag = obj->GetTag();
 
     switch (tag) {
     case ObjectTag::PLAYER:
@@ -43,6 +48,7 @@ void Sector::TryInsert(NetworkObjectIdType id) {
     }
 
     case ObjectTag::MONSTER:
+    case ObjectTag::CORRUPTED_GEM:
     {
         mNPCs.insert(id);
         break;
@@ -51,6 +57,12 @@ void Sector::TryInsert(NetworkObjectIdType id) {
     case ObjectTag::ENV:
     {
         mEnvs.insert(id);
+        break;
+    }
+
+    case ObjectTag::TRIGGER:
+    {
+        mTriggers.insert(id);
         break;
     }
 
@@ -84,22 +96,65 @@ void Sector::RemoveObject(NetworkObjectIdType id) {
         break;
     }
 
+    case ObjectTag::ENV: 
+    {
+        if (false == mEnvs.contains(id)) {
+            return;
+        }
+
+        mEnvs.erase(id);
+        break;
+    }
+
+    case ObjectTag::TRIGGER:
+    {
+        if (false == mTriggers.contains(id)) {
+            return;
+        }
+
+        mTriggers.erase(id);
+        break;
+    }
+
     default:
         break;
     }
 }
 
-std::vector<NetworkObjectIdType> Sector::GetMonstersInRange(SimpleMath::Vector3 pos, const float range) {
+std::vector<NetworkObjectIdType> Sector::GetTriggersInTange(SimpleMath::Vector3 pos, const float range) {
     Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
-    std::vector<NetworkObjectIdType> inRangeMonsters{ };
-    for (const auto monsterId : mNPCs) {
-        decltype(auto) monsterPos = gObjectManager->GetObjectFromId(monsterId)->GetPosition();
+    std::vector<NetworkObjectIdType> inRangeTriggers{ };
+    for (const auto triggerId : mTriggers) {
+        auto trigger = gObjectManager->GetTrigger(triggerId);
+        if (nullptr == trigger) {
+            continue;
+        }
 
-        auto dist = SimpleMath::Vector3::DistanceSquared(pos, monsterPos);
-        inRangeMonsters.emplace_back(monsterId);
+        decltype(auto) triggerPos = trigger->GetPosition();
+
+        auto dist = SimpleMath::Vector3::DistanceSquared(pos, triggerPos);
+        inRangeTriggers.emplace_back(triggerId);
     }
 
-    return inRangeMonsters;
+    return inRangeTriggers;
+}
+
+std::vector<NetworkObjectIdType> Sector::GetNPCsInRange(SimpleMath::Vector3 pos, const float range) {
+    Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
+    std::vector<NetworkObjectIdType> inRangeNPCs{ };
+    for (const auto npcId : mNPCs) {
+        auto npc = gObjectManager->GetNPC(npcId);
+        if (nullptr == npc) {
+            continue;
+        }
+
+        decltype(auto) npcPos = npc->GetPosition();
+
+        auto dist = SimpleMath::Vector3::DistanceSquared(pos, npcPos);
+        inRangeNPCs.emplace_back(npcId);
+    }
+
+    return inRangeNPCs;
 }
 
 std::vector<NetworkObjectIdType> Sector::GetPlayersInRange(SimpleMath::Vector3 pos, const float range) {
@@ -326,7 +381,7 @@ void SectorSystem::UpdatePlayerViewList(const std::shared_ptr<GameObject>& playe
     for (const auto idx : checkSectors) {
         decltype(auto) sector = GetSector(idx);
 
-        const std::vector<NetworkObjectIdType> monsters = std::move(sector.GetMonstersInRange(pos, range));
+        const std::vector<NetworkObjectIdType> monsters = std::move(sector.GetNPCsInRange(pos, range));
         const std::vector<NetworkObjectIdType> players = std::move(sector.GetPlayersInRange(pos, range));
 
         inViewRangeMonsters.insert(inViewRangeMonsters.end(), monsters.begin(), monsters.end());
@@ -348,31 +403,56 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
 
     const float range = 100.0f;
     const std::vector<NetworkObjectIdType> nearbyPlayers = std::move(GetNearbyPlayers(currPos, range));
-    for (const auto playerId : nearbyPlayers) {
-        auto playerObj = gObjectManager->GetObjectFromId(playerId);
-        auto viewRange = playerObj->GetScript<PlayerScript>()->GetViewList().mViewRange.Count();
-        if (false == gObjectManager->InViewRange(playerId, id, viewRange)) {
-            continue;
+    OverlappedSend* sendPacket{ nullptr };
+    if (nearbyPlayers.empty()) {
+        while (true == object->GetSendBuf().try_pop(sendPacket)); // clear
+        return;
+    }
+
+    while (true == object->GetSendBuf().try_pop(sendPacket)) {
+        if (nullptr == sendPacket) {
+            break;
         }
 
-        auto session = gServerCore->GetSessionManager()->GetSession(playerId);
-        if (nullptr == session or SESSION_INGAME != std::static_pointer_cast<GameSession>(session)->GetSessionState()) {
-            continue;
+        for (const auto playerId : nearbyPlayers) {
+            auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(static_cast<SessionIdType>(playerId)));
+            if (nullptr == session or SESSION_INGAME != session->GetSessionState()) {
+                continue;
+            }
+
+            auto playerObj = session->GetUserObject();
+            if (nullptr == playerObj) {
+                continue;
+            }
+
+            auto playerScript = playerObj->GetScript<PlayerScript>();
+            if (nullptr == playerScript) {
+                continue;
+            }
+
+            auto viewRange = playerScript->GetViewList().mViewRange.Count();
+            if (false == gObjectManager->InViewRange(playerId, id, viewRange)) {
+                continue;
+            }
+
+            auto packet = FbsPacketFactory::ClonePacket(sendPacket);
+            session->RegisterSend(packet);
+            //if (false == object->mSpec.active) {
+            //    auto packetRemove = FbsPacketFactory::ObjectRemoveSC(id);
+            //    gServerCore->Send(static_cast<SessionIdType>(playerId), packetRemove);
+            //    continue;
+            //}
+
+            //if (object->mAnimationStateMachine.mAnimationChanged) {
+            //    auto packetAnim = FbsPacketFactory::ObjectAnimationChangedSC(id, object->mAnimationStateMachine.GetCurrState());
+            //    gServerCore->Send(static_cast<SessionIdType>(playerId), packetAnim);
+            //}
+
+            //auto packetMove = FbsPacketFactory::ObjectMoveSC(id, yaw, currPos, dir, speed);
+            //gServerCore->Send(static_cast<SessionIdType>(playerId), packetMove);
         }
 
-        if (false == object->mSpec.active) {
-            auto packetRemove = FbsPacketFactory::ObjectRemoveSC(id);
-            gServerCore->Send(static_cast<SessionIdType>(playerId), packetRemove);
-            continue;
-        }
-
-        if (object->mAnimationStateMachine.mAnimationChanged) {
-            auto packetAnim = FbsPacketFactory::ObjectAnimationChangedSC(id, object->mAnimationStateMachine.GetCurrState());
-            gServerCore->Send(static_cast<SessionIdType>(playerId), packetAnim);
-        }
-
-        auto packetMove = FbsPacketFactory::ObjectMoveSC(id, yaw, currPos, dir, speed);
-        gServerCore->Send(static_cast<SessionIdType>(playerId), packetMove);
+        FbsPacketFactory::ReleasePacketBuf(sendPacket);
     }
 
     object->mAnimationStateMachine.mAnimationChanged = false;

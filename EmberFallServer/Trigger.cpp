@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "Trigger.h"
 #include "Collider.h"
-#include "GameEventManager.h"
 #include "GameTimer.h"
 #include "GameEventFactory.h"
 #include "GameObject.h"
@@ -33,9 +32,15 @@ void Trigger::Init() {
 
 void Trigger::Update(const float deltaTime) { }
 
-void Trigger::LateUpdate(const float deltaTime) { }
+void Trigger::LateUpdate(const float deltaTime) { 
+    mInTriggerObjects.clear();
+}
 
 void Trigger::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+    if (ObjectTag::TRIGGER == opponent->GetTag()) {
+        return;
+    }
+
     mInTriggerObjects.insert(opponent->GetId());
 }
 

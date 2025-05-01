@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "WeaponSystem.h"
 #include "BoundingBoxImporter.h"
+#include "Resources.h"
 
 WeaponSystem::WeaponSystem(NetworkObjectIdType ownerId) 
     : mOwnerId{ ownerId } {
@@ -11,6 +12,10 @@ WeaponSystem::~WeaponSystem() { }
 
 Packets::Weapon WeaponSystem::GetWeaponType() const {
     return mWeapon->GetWeaponType();
+}
+
+SimpleMath::Vector3 WeaponSystem::GetHitBoxSize() const {
+    return mWeapon->GetHitBoxSize();
 }
 
 void WeaponSystem::Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) { 
@@ -26,7 +31,7 @@ void WeaponSystem::SetWeapon(Packets::Weapon weapon) {
 
     switch (weapon) {
     case Packets::Weapon_SWORD:
-        mWeapon = std::make_shared<Weapons::Sword>(SimpleMath::Vector3{ 1.0f, 1.0f, 5.0f });
+        mWeapon = std::make_shared<Weapons::Sword>(SimpleMath::Vector3{ 0.5f, 0.5f, 1.5f });
         break;
 
     case Packets::Weapon_SPEAR:

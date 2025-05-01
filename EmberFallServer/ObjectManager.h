@@ -23,6 +23,8 @@ public:
     ~ObjectManager();
 
 public:
+    uint8_t GetGemCount() const;
+
     void Init();
 
     void LoadEnvFromFile(const std::filesystem::path& path);
@@ -42,9 +44,9 @@ public:
 
     void ReleaseObject(NetworkObjectIdType id);
 
-public:
-
 private:
+    std::atomic_uint8_t mCorruptedGemCount{ 0 };
+
     std::array<std::shared_ptr<GameObject>, MAX_USER> mPlayers{ };
 
     std::array<std::shared_ptr<GameObject>, MAX_NPC> mNPCs{ };

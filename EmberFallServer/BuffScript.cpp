@@ -1,19 +1,18 @@
 #include "pch.h"
 #include "BuffScript.h"
 
-BuffScript::BuffScript(std::shared_ptr<GameObject> owner) 
-    : Script{ owner, ObjectTag::NONE, ScriptType::SKILL } { }
+BuffScript::BuffScript(std::shared_ptr<GameObject> owner, float duration) 
+    : Script{ owner, ObjectTag::NONE, ScriptType::SKILL }, mDuration{ duration } { }
 
 BuffScript::~BuffScript() { }
 
-void BuffScript::Init() { }
+Buff BuffScript::GetBuffType() const {
+    return mBuff;
+}
 
-void BuffScript::Update(const float deltaTime) { }
-
-void BuffScript::LateUpdate(const float deltaTime) { }
-
-void BuffScript::OnAttacked(const float damage, const SimpleMath::Vector3& knockbackForce){}
-
-void BuffScript::OnCollisionTerrain(const float height) { }
-
-void BuffScript::DispatchGameEvent(GameEvent* event) { }
+void BuffScript::LateUpdate(const float deltaTime) {
+    mDurationCounter += deltaTime;
+    if (mDurationCounter >= mDuration) {
+        mActive = false;
+    }
+}

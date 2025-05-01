@@ -58,10 +58,15 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
     }
 
     case Packets::PacketTypes_PT_PLAYER_SELECT_ROLE_CS:
-    case Packets::PacketTypes::PacketTypes_PT_PLAYER_SELECT_ROLE_CS:
     {
         decltype(auto) packetRoll = FbsPacketFactory::GetDataPtrCS<Packets::PlayerSelectRoleCS>(buffer);
-        ProcessPlayerSelectRoleCS(packetRoll, sender);
+        ProcessPlayerSelectRoleCS(session, packetRoll);
+=========
+    case Packets::PacketTypes_PT_PLAYER_SELECT_ROLE_CS:
+    {
+        decltype(auto) packetRoll = FbsPacketFactory::GetDataPtrCS<Packets::PlayerSelectRoleCS>(buffer);
+        ProcessPlayerSelectRoleCS(session, packetRoll);
+>>>>>>>>> Temporary merge branch 2
         break;
     }
 
@@ -135,14 +140,13 @@ void ProcessPlayerLookCS(std::shared_ptr<GameSession>& session, const Packets::P
     auto lookVec = FbsPacketFactory::GetVector3(look->look());
     userObject->GetTransform()->SetLook(lookVec);
     userObject->Update();
-    userObject->LateUpdate();
-}
-
-void ProcessPlayerSelectWeaponCS(std::shared_ptr<GameSession>& session, const Packets::PlayerSelectWeaponCS* const weapon) {
-}
-
+void ProcessPlayerSelectRoleCS(std::shared_ptr<GameSession>& session, const Packets::PlayerSelectRoleCS* const roll) {
+<<<<<<<<< Temporary merge branch 1
 inline void ProcessPlayerSelectRoleCS(const Packets::PlayerSelectRoleCS* const roll, std::shared_ptr<GameObject>& player) {
     // TODO
+=========
+void ProcessPlayerSelectRoleCS(std::shared_ptr<GameSession>& session, const Packets::PlayerSelectRoleCS* const roll) {
+>>>>>>>>> Temporary merge branch 2
 }
 
 void ProcessLatencyCS(std::shared_ptr<GameSession>& session, const Packets::PacketLatencyCS* const latency) {

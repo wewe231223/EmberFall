@@ -91,7 +91,8 @@ void Session::RegisterSend(OverlappedSend* const overlappedSend) {
         return;
     }
 
-    overlappedSend->owner = shared_from_this();
+    auto sharedThis = shared_from_this();
+    overlappedSend->owner = sharedThis;
     if (nullptr == overlappedSend->owner) {
         gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Overlapped Send's owner is Null");
         Crash("Overlapped Send's owner is Null");

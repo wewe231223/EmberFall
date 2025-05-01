@@ -1,22 +1,13 @@
 #pragma once
 
-#include "../Protocol/PacketProtocol_generated.h"
-#include "GameObject.h"
-
-inline void ProcessPackets(std::shared_ptr<IServerGameScene>& gameScene, const uint8_t* buffer, size_t bufSize);
-
-inline const uint8_t* ProcessPacket(std::shared_ptr<IServerGameScene>& gameScene, const uint8_t* buffer);
-
-inline void ProcessPlayerLookCS(const Packets::PlayerLookCS* const look, std::shared_ptr<GameObject>& player);
-
-inline void ProcessPlayerSelectWeaponCS(const Packets::PlayerSelectWeaponCS* const weapon, std::shared_ptr<GameObject>& player);
-
-inline void ProcessPlayerSelectRoleCS(const Packets::PlayerSelectRoleCS* const roll, std::shared_ptr<GameObject>& player);
-
-inline void ProcessLatencyCS(const Packets::PacketLatencyCS* const latency);
-
-inline void ProcessRequestAttackCS(const Packets::RequestAttackCS* const attack, std::shared_ptr<GameObject>& player);
-
-inline void ProcessRequestUseItemCS(const Packets::RequestUseItemCS* const useItem, std::shared_ptr<GameObject>& player);
-
-inline void ProcessRequestFireProjectileCS(const Packets::RequestFireCS* const fire, std::shared_ptr<GameObject>& player);
+void ProcessPackets(std::shared_ptr<class GameSession>& session, const uint8_t* const buffer, size_t bufSize);
+const uint8_t* ProcessPacket(std::shared_ptr<class GameSession>& session, const uint8_t* buffer);
+void ProcessPlayerEnterInGame(std::shared_ptr<class GameSession>& session, const Packets::PlayerEnterInGame* const enter);
+void ProcessPlayerInputCS(std::shared_ptr<class GameSession>& session, const Packets::PlayerInputCS* const input);
+void ProcessPlayerLookCS(std::shared_ptr<class GameSession>& session, const Packets::PlayerLookCS* const look);
+void ProcessPlayerSelectWeaponCS(std::shared_ptr<class GameSession>& session, const Packets::PlayerSelectWeaponCS* const weapon);
+void ProcessPlayerSelectRoleCS(std::shared_ptr<class GameSession>& session, const Packets::PlayerSelectRoleCS* const roll);
+void ProcessLatencyCS(std::shared_ptr<class GameSession>& session, const Packets::PacketLatencyCS* const latency);
+void ProcessRequestAttackCS(std::shared_ptr<class GameSession>& session, const Packets::RequestAttackCS* const attack);
+void ProcessRequestUseItemCS(std::shared_ptr<class GameSession>& session, const Packets::RequestUseItemCS* const useItem);
+void ProcessRequestFireProjectileCS(std::shared_ptr<class GameSession>& session, const Packets::RequestFireCS* const fire);

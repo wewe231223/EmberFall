@@ -14,7 +14,7 @@
 #ifdef KSB 
 #define FHD
 #elif defined(KSJ) 
-#define HD
+#define FHD
 #elif defined(JYK) 
 #define HD
 #endif 

@@ -11,6 +11,9 @@
 #include "Script.h"
 
 class CorruptedGemScript : public Script {
+private:
+    inline static constexpr float DESTROYING_TIME{ 3.0f };
+
 public:
     CorruptedGemScript(std::shared_ptr<GameObject> owner);
     virtual ~CorruptedGemScript();
@@ -27,9 +30,10 @@ public:
     virtual void DispatchGameEvent(struct GameEvent* event) override;
 
 private:
-    void OnDestroy(struct GemDestroyStart* event);
+    void OnDestroy(struct DestroyingGemEvent* event);
+    void CancelDestroying();
 
 private:
-    float mDesytoyingTime{ 3.0f };
+    float mDestroyingTime{ 0.0f };
 };
 

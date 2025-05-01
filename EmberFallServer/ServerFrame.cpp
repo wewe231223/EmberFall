@@ -2,7 +2,6 @@
 #include "ServerFrame.h"
 #include "GameTimer.h"
 #include "GameObject.h"
-#include "GameEventManager.h"
 #include "BoundingBoxImporter.h"
 #include "Input.h"
 
@@ -44,17 +43,13 @@ void ServerFrame::Run() {
     
     gObjectManager->LoadEnvFromFile("../Resources/Binarys/Collider/env1.bin");
 
-    for (int32_t test = 0; test < 1; ++test) {
-        if (test == 0) {
-            decltype(auto) corruptedGem = gObjectManager->SpawnObject(Packets::EntityType_MONSTER);
-            corruptedGem->GetTransform()->SetPosition(SimpleMath::Vector3::Zero);
+    for (int32_t test = 0; test < 100; ++test) {
+        if (test < 8) {
+            decltype(auto) corruptedGem = gObjectManager->SpawnObject(Packets::EntityType_CORRUPTED_GEM);
         }
-
 
         decltype(auto) monster = gObjectManager->SpawnObject(Packets::EntityType_MONSTER);
         std::this_thread::sleep_for(1ms);
-        monster->GetTransform()->SetY(0.0f);
-        monster->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -100.0f, 0.0f, -100.0f }, SimpleMath::Vector3{ 100.0f, 0.0f, 100.0f }));
     }
 
     while (not mDone);

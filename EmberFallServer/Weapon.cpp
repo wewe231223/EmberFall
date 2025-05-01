@@ -13,6 +13,10 @@ Packets::Weapon IWeapon::GetWeaponType() const {
     return mWeaponType;
 }
 
+SimpleMath::Vector3 Weapons::IWeapon::GetHitBoxSize() const {
+    return mHitBox;
+}
+
 Fist::Fist(const SimpleMath::Vector3& hitBoxSize)
     : IWeapon{ Packets::Weapon_SWORD } {
     mHitBox = hitBoxSize;
@@ -68,7 +72,7 @@ void Sword::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
     event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
     event->knockBackForce = dir * 5000.0f;
 
-    auto attackPos = pos + dir * mHitBox.Length();
+    auto attackPos = pos + dir * mHitBox.z * 0.5f;
     gObjectManager->SpawnEventTrigger(attackPos, mHitBox, dir, 0.5f, event, 0.5f, 1);
 }
 

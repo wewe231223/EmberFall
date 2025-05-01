@@ -90,18 +90,21 @@ void GameObject::DisablePhysics() {
 }
 
 void GameObject::Reset() {
-    // Reset Base Component
-    mTransform->Reset();
-    mPhysics->Reset();
-
     // Reset My Spec
     mSpec.entity = Packets::EntityType_ENV;
     mSpec.interactable = false;
     mSpec.hp = 0.0f;
 
-    mEntityScript.reset();
-
+    gSectorSystem->RemoveInSector(GetId(), GetPosition());
     gObjectManager->ReleaseObject(GetId());
+
+    mTag = ObjectTag::ENV;
+
+    // Reset Base Components
+    mTransform->Reset();
+    mPhysics->Reset();
+
+    mEntityScript.reset();
 }
 
 void GameObject::Init() {
@@ -152,10 +155,18 @@ void GameObject::Update() {
     mPhysics->Update(mDeltaTime);
     mTransform->Update();
     mTransform->SetY(0.0f); // test
+
+    auto movePacket = FbsPacketFactory::ObjectMoveSC(
+        GetId(),
+        GetTransform()->GetEulerRotation().y,
+        GetPosition(), mTransform->Forward(),
+        mPhysics->GetSpeed()
+    );
+    StorePacket(movePacket);
+
     if (nullptr == mBoundingObject) {
         return;
     }
-
     mBoundingObject->Update(mTransform->GetWorld());
 
     decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
@@ -191,9 +202,6 @@ void GameObject::OnCollision(const std::shared_ptr<GameObject>& opponent, const 
     }
 
     mEntityScript->OnCollision(opponent, impulse);
-    if (ObjectTag::TRIGGER == opponent->GetTag()) {
-        opponent->OnCollision(std::static_pointer_cast<GameObject>(shared_from_this()), impulse);
-    }
 }
 
 void GameObject::OnCollisionTerrain(const float height) {

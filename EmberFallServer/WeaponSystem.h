@@ -17,6 +17,7 @@ public:
 
 public:
     Packets::Weapon GetWeaponType() const;
+    SimpleMath::Vector3 GetHitBoxSize() const;
 
     void SetOwnerId(NetworkObjectIdType id);
     void SetWeapon(Packets::Weapon weapon);

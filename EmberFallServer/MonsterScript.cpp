@@ -24,16 +24,14 @@ void MonsterScript::Init() {
     owner->mAnimationStateMachine.Init(ANIM_KEY_MONSTER);
     auto& spec = owner->mSpec;
     spec.active = true;
-    spec.attackable = true;
     spec.hp = 10.0f;
+
     mMonsterBT.Build(std::static_pointer_cast<MonsterScript>(shared_from_this()));
     owner->GetPhysics()->mFactor.maxMoveSpeed = 1.5mps;
 }
 
 void MonsterScript::Update(const float deltaTime) {
     mMonsterBT.Update(deltaTime);
-
-    //gSectorSystem->UpdateEntityMove(GetOwner());
 }
 
 void MonsterScript::LateUpdate(const float deltaTime) { 
@@ -52,14 +50,21 @@ void MonsterScript::LateUpdate(const float deltaTime) {
     }
 
     if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster Remove");
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Monster");
         gServerFrame->AddTimerEvent(owner->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
         owner->mSpec.active = false;
+
+        auto packetRemove = FbsPacketFactory::ObjectRemoveSC(owner->GetId());
+        owner->StorePacket(packetRemove);
         return;
     }
 }
 
 void MonsterScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+    if (ObjectTag::TRIGGER == opponent->GetTag()) {
+        return;
+    }
+
     auto owner = GetOwner();
     if (nullptr == owner) {
         return;
