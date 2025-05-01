@@ -104,12 +104,21 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
     return buffer + header->size;
 }
 
+void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, const Packets::PlayerEnterInLobbyCS* const enter) {
+    session->EnterLobby();
+}
+
 void ProcessPlayerEnterInGame(std::shared_ptr<class GameSession>& session, const Packets::PlayerEnterInGame* const enter) {
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player [{}] Enter In Game!", session->GetId());
-    session->InitUserObject();
+    session->EnterInGame();
 }
 
 void ProcessPlayerInputCS(std::shared_ptr<GameSession>& session, const Packets::PlayerInputCS* const input) {
+    auto sessionState = session->GetSessionState();
+    if (SESSION_INGAME != sessionState) {
+        return;
+    }
+
     const auto userObject = session->GetUserObject();
     if (nullptr == userObject) {
         return;
@@ -126,6 +135,11 @@ void ProcessPlayerInputCS(std::shared_ptr<GameSession>& session, const Packets::
 }
 
 void ProcessPlayerLookCS(std::shared_ptr<GameSession>& session, const Packets::PlayerLookCS* const look) {
+    auto sessionState = session->GetSessionState();
+    if (SESSION_INGAME != sessionState) {
+        return;
+    }
+
     const auto userObject = session->GetUserObject();
     if (nullptr == userObject) {
         return;

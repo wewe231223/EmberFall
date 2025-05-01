@@ -52,8 +52,6 @@ table PlayerReadyInLobbyCS {
 
 table PlayerEnterInLobbyCS { }
 
-table PlayerEnterInTerrainCS { }
-
 table PlayerInputCS {
 	key: ubyte;
 	down: bool;

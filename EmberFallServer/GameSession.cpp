@@ -55,8 +55,6 @@ void GameSession::ProcessRecv(INT32 numOfBytes) {
 }
 
 void GameSession::InitUserObject() {
-    mSessionState = SESSION_INGAME;
-
     static auto TestPos = SimpleMath::Vector3::Zero;
     const static auto PosInc = SimpleMath::Vector3::Left * 2.0f;
 
@@ -94,6 +92,15 @@ void GameSession::InitUserObject() {
 
     gSectorSystem->AddInSector(GetId(), pos);
     gSectorSystem->UpdatePlayerViewList(mUserObject, pos, range);
+}
+
+void GameSession::EnterLobby() {
+    mSessionState = SESSION_INLOBBY;
+}
+
+void GameSession::EnterInGame() {
+    mSessionState = SESSION_INGAME;
+    InitUserObject();
 }
 
 std::shared_ptr<GameObject> GameSession::GetUserObject() const {

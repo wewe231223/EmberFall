@@ -239,6 +239,19 @@ OverlappedSend* FbsPacketFactory::FireProjectileSC(NetworkObjectIdType id, const
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 
+OverlappedSend* FbsPacketFactory::PlayerEnterInLobbyCS(SessionIdType id) {
+    flatbuffers::FlatBufferBuilder builder{ };
+
+    auto offset = Packets::CreatePlayerEnterInGame(builder);
+    builder.Finish(offset);
+
+    const uint8_t* payload = builder.GetBufferPointer();
+    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
+
+    PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_CS, id };
+    return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
+}
+
 OverlappedSend* FbsPacketFactory::PlayerEnterInGame(SessionIdType id) {
     flatbuffers::FlatBufferBuilder builder{ };
 

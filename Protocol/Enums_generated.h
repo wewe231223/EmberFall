@@ -17,15 +17,16 @@ namespace Packets {
 
 enum PacketTypes : uint8_t {
   PacketTypes_PT_PLAYER_EXIT_CS = 0,
-  PacketTypes_PT_PLAYER_ENTER_INGAME = 1,
-  PacketTypes_PT_PLAYER_INPUT_CS = 2,
-  PacketTypes_PT_PLAYER_LOOK_CS = 3,
-  PacketTypes_PT_PLAYER_SELECT_WEAPON_CS = 4,
-  PacketTypes_PT_PLAYER_SELECT_ROLE_CS = 5,
-  PacketTypes_PT_LATENCY_CS = 6,
-  PacketTypes_PT_REQUEST_USE_ITEM_CS = 7,
-  PacketTypes_PT_REQUEST_ATTACK_CS = 8,
-  PacketTypes_PT_REQUEST_FIRE_CS = 9,
+  PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_CS = 1,
+  PacketTypes_PT_PLAYER_ENTER_INGAME = 2,
+  PacketTypes_PT_PLAYER_INPUT_CS = 3,
+  PacketTypes_PT_PLAYER_LOOK_CS = 4,
+  PacketTypes_PT_PLAYER_SELECT_WEAPON_CS = 5,
+  PacketTypes_PT_PLAYER_SELECT_ROLE_CS = 6,
+  PacketTypes_PT_LATENCY_CS = 7,
+  PacketTypes_PT_REQUEST_USE_ITEM_CS = 8,
+  PacketTypes_PT_REQUEST_ATTACK_CS = 9,
+  PacketTypes_PT_REQUEST_FIRE_CS = 10,
   PacketTypes_PT_PROTOCOL_VERSION_SC = 128,
   PacketTypes_PT_NOTIFY_ID_SC = 129,
   PacketTypes_PT_PLAYER_EXIT_SC = 130,
@@ -47,9 +48,10 @@ enum PacketTypes : uint8_t {
   PacketTypes_MAX = PacketTypes_PT_PROJECTILE_MOVE_SC
 };
 
-inline const PacketTypes (&EnumValuesPacketTypes())[27] {
+inline const PacketTypes (&EnumValuesPacketTypes())[28] {
   static const PacketTypes values[] = {
     PacketTypes_PT_PLAYER_EXIT_CS,
+    PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_CS,
     PacketTypes_PT_PLAYER_ENTER_INGAME,
     PacketTypes_PT_PLAYER_INPUT_CS,
     PacketTypes_PT_PLAYER_LOOK_CS,
@@ -83,6 +85,7 @@ inline const PacketTypes (&EnumValuesPacketTypes())[27] {
 inline const char *EnumNamePacketTypes(PacketTypes e) {
   switch (e) {
     case PacketTypes_PT_PLAYER_EXIT_CS: return "PT_PLAYER_EXIT_CS";
+    case PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_CS: return "PT_PLAYER_ENTER_IN_LOBBY_CS";
     case PacketTypes_PT_PLAYER_ENTER_INGAME: return "PT_PLAYER_ENTER_INGAME";
     case PacketTypes_PT_PLAYER_INPUT_CS: return "PT_PLAYER_INPUT_CS";
     case PacketTypes_PT_PLAYER_LOOK_CS: return "PT_PLAYER_LOOK_CS";

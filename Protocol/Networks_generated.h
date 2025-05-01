@@ -48,9 +48,6 @@ struct PlayerReadyInLobbyCSBuilder;
 struct PlayerEnterInLobbyCS;
 struct PlayerEnterInLobbyCSBuilder;
 
-struct PlayerEnterInTerrainCS;
-struct PlayerEnterInTerrainCSBuilder;
-
 struct PlayerInputCS;
 struct PlayerInputCSBuilder;
 
@@ -452,35 +449,6 @@ struct PlayerEnterInLobbyCSBuilder {
 inline ::flatbuffers::Offset<PlayerEnterInLobbyCS> CreatePlayerEnterInLobbyCS(
     ::flatbuffers::FlatBufferBuilder &_fbb) {
   PlayerEnterInLobbyCSBuilder builder_(_fbb);
-  return builder_.Finish();
-}
-
-struct PlayerEnterInTerrainCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef PlayerEnterInTerrainCSBuilder Builder;
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           verifier.EndTable();
-  }
-};
-
-struct PlayerEnterInTerrainCSBuilder {
-  typedef PlayerEnterInTerrainCS Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  explicit PlayerEnterInTerrainCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<PlayerEnterInTerrainCS> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<PlayerEnterInTerrainCS>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<PlayerEnterInTerrainCS> CreatePlayerEnterInTerrainCS(
-    ::flatbuffers::FlatBufferBuilder &_fbb) {
-  PlayerEnterInTerrainCSBuilder builder_(_fbb);
   return builder_.Finish();
 }
 
