@@ -15,6 +15,7 @@
 #include "../Resource/Texture.h"
 #include "../Renderer/core/Shader.h"
 #include "../Renderer/Core/DefferedRenderer.h"
+#include "../Renderer/core/BlurComputeProcessor.h"
 #include "../Manager/MeshRenderManager.h"
 #include "../Manager/TextureManager.h"
 #include "../Resource/Mesh.h"
@@ -89,6 +90,7 @@ private:
 
 	void InitCoreResources(); 
 	void InitDefferedRenderer();
+	void InitBlurComputeProcesser();
 
 	void TransitionGBuffers(D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState);
 
@@ -131,10 +133,11 @@ private:
 	2. normal
 	3. position 
 	*/
-	std::array<Texture, 3> mGBuffers{};
+	std::array<Texture, Config::GBUFFER_COUNT<UINT>> mGBuffers{};
 	ComPtr<ID3D12DescriptorHeap> mGBufferHeap{ nullptr };
 
 	DefferedRenderer mDefferedRenderer{};
+	BlurComputeProcessor mBlurComputeProcessor{};
 
 	ComPtr<ID3D12DescriptorHeap> mDSHeap{ nullptr };
 	Texture mDepthStencilBuffer{};

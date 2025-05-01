@@ -54,7 +54,7 @@ struct Config {
 	constexpr static T MAX_TEXTURE_COUNT{ static_cast<T>(1024) };
 
 	template<typename T = size_t> 
-	constexpr static T GBUFFER_COUNT{ static_cast<T>(3) };
+	constexpr static T GBUFFER_COUNT{ static_cast<T>(4) };
 
 	template<typename T = size_t>
 	constexpr static T SHADOWMAP_COUNT{ static_cast<T>(2) };

@@ -19,7 +19,7 @@ struct Light
     
 };
 
-Texture2D GBuffers[5] : register(t0, space0);
+Texture2D GBuffers[6] : register(t0, space0);
 StructuredBuffer<Light> gLight : register(t1, space1);
 
 cbuffer Camera : register(b0)
@@ -170,13 +170,14 @@ float ComputeShadowFactor(float4 shadowPosH, float bias, float depth)
 
 float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 {
-    //return float4(GBuffers[3].Sample(linearWrapSampler, input.texcoord).xxx, 1.0f);
+    //return float4(GBuffers[3].Sample(linearWrapSampler, input.texcoord).rgb, 1.0f);
     float4 diffuse = GBuffers[0].Sample(linearWrapSampler, input.texcoord);
     float3 normal = normalize(GBuffers[1].Sample(linearWrapSampler, input.texcoord).xyz);
     float4 worldPos = GBuffers[2].Sample(linearWrapSampler, input.texcoord);
     float3 toCamera = normalize(cameraPosition - worldPos.xyz);
-  
-   
+    float4 emissive = GBuffers[3].Sample(linearWrapSampler, input.texcoord);
+    
+    
     float4 LightingColor = Lighting(normal, toCamera, worldPos.xyz, input.texcoord);
     
     for (int i = 0; i < step(4.0f, GBuffers[1].Sample(linearWrapSampler, input.texcoord).w); ++i)
@@ -214,7 +215,7 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     
     
   
-    depth = GBuffers[3 + shadowIndex].Sample(linearWrapSampler, texPos.xy).r;
+    depth = GBuffers[4 + shadowIndex].Sample(linearWrapSampler, texPos.xy).r;
     
     
 
@@ -233,5 +234,5 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 
     float finalFactor = lerp(1.0f, shadowFactor, shadowApply);
 
-    return diffuse * LightingColor * finalFactor;
+    return diffuse * LightingColor * finalFactor + emissive;
 }

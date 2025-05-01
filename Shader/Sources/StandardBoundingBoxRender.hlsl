@@ -41,6 +41,7 @@ struct Deffered_POUT
     float4 diffuse : SV_TARGET0;
     float4 normal : SV_TARGET1;
     float4 position : SV_TARGET2;
+    float4 emissive : SV_TARGET3;
 };
 
 
