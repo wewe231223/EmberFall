@@ -121,7 +121,7 @@ OverlappedSend* FbsPacketFactory::ObjectMoveSC(NetworkObjectIdType id, float yaw
 
     Packets::Vec3 fbsPos = GetVec3(pos);
     Packets::Vec3 fbsDir = GetVec3(dir);
-    auto offset = Packets::CreateObjectMoveSC(builder, id, &fbsPos, &fbsDir, yaw, speed);
+    auto offset = Packets::CreateObjectMoveSC(builder, id, yaw, &fbsPos, &fbsDir, speed);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();
