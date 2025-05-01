@@ -569,7 +569,7 @@ void Renderer::InitTerrainBuffer() {
 }
 
 void Renderer::InitCoreResources() {
-	mRenderManager = std::make_shared<RenderManager>(mDevice, mCommandList, mMainCameraBuffer.CPUBegin()); 
+	mRenderManager = std::make_shared<RenderManager>(mDevice, mCommandList, mRendererWindow, mMainCameraBuffer.CPUBegin()); 
 }
 
 void Renderer::InitDefferedRenderer() {

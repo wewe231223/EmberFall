@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "RenderManager.h"
 
-RenderManager::RenderManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator mainCameraBufferLocation) {
+RenderManager::RenderManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, HWND hWnd, DefaultBufferCPUIterator mainCameraBufferLocation) {
 	mLightingManager = LightingManager(device, commandList);
 	mTextureManager = TextureManager(device, commandList);
 	mMaterialManager = MaterialManager(device);
@@ -9,6 +9,7 @@ RenderManager::RenderManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 	mParticleManager = ParticleManager(device, commandList);
 	mShadowRenderer = ShadowRenderer(device, mainCameraBufferLocation);
 	mCanvas = Canvas(device, commandList);
+	mHwnd = hWnd;
 }
 
 LightingManager& RenderManager::GetLightingManager() {
@@ -37,4 +38,8 @@ ShadowRenderer& RenderManager::GetShadowRenderer() {
 
 Canvas& RenderManager::GetCanvas() {
 	return mCanvas; 
+}
+
+HWND RenderManager::GetWindowHandle() {
+	return mHwnd; 
 }

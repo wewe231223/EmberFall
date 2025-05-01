@@ -77,7 +77,6 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 
 	mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[0];
 	mPlayerIndexmap[gClientCore->GetSessionId()]->SetActiveState(true);
-
 }
 
 void LobbyScene::ProcessNetwork() {

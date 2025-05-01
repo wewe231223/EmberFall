@@ -203,3 +203,8 @@ enum class StringColor : DWORD {
 enum class StringFontType : WORD {
 	NotoSans, END 
 };
+
+
+#pragma region MY_WINDOW_MSG
+#define WM_ADVANCESCENE (WM_USER + 1)
+#pragma endregion MY_WINDOW_MSG

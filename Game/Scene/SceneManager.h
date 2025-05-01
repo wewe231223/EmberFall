@@ -1,8 +1,7 @@
 #pragma once 
 #include "../Utility/Defines.h"
-#include "../Scene/LoadingScene.h"
-#include "../Scene/TerrainScene.h"
-#include "../Scene/LobbyScene.h"
+#include "../Renderer/Resource/DefaultBuffer.h"
+#include "../Renderer/Manager/RenderManager.h"
 
 // 어느 한 Scene 을 로딩하면, 다음 씬 로드, 
 // 현재 Scene 이 다음 Scene 으로 전환 되어야 할 때, 
@@ -23,11 +22,13 @@ enum class SceneType : BYTE {
 
 class SceneManager {
 public:
-	SceneManager(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCameraBufferLocation, ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList, std::function<void()> initLoadFunc);
+	SceneManager();
 	~SceneManager();
 
 public:
 	SceneFeatureType GetCurrentSceneFeatureType();
+
+	void Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCameraBufferLocation, ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList, std::function<void()> initLoadFunc); 
 
 	bool CheckLoaded(); 
 	void Update(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList);

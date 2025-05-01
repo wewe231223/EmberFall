@@ -1,8 +1,27 @@
+#include "SceneManager.h"
 #include "pch.h"
 #include "SceneManager.h"
+#include "../Scene/LoadingScene.h"
+#include "../Scene/TerrainScene.h"
+#include "../Scene/LobbyScene.h"
 
-SceneManager::SceneManager(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCameraBufferLocation, ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList, std::function<void()> initLoadFunc) {
+SceneManager::SceneManager() {
 
+	
+	 
+}
+
+SceneManager::~SceneManager() {
+	if (mLoadingThread.joinable()) {
+		mLoadingThread.join(); 
+	}
+}
+
+SceneFeatureType SceneManager::GetCurrentSceneFeatureType() {
+	return *mCurrentSceneFeatureType; 
+}
+
+void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCameraBufferLocation, ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList, std::function<void()> initLoadFunc) {
 	mScenes[static_cast<size_t>(SceneType::TERRAIN)] = std::make_unique<TerrainScene>(renderMgr, mainCameraBufferLocation);
 	mScenes[static_cast<size_t>(SceneType::LOADING)] = std::make_unique<LoadingScene>(renderMgr);
 	mScenes[static_cast<size_t>(SceneType::LOBBY)] = std::make_unique<LobbyScene>(renderMgr, mainCameraBufferLocation);
@@ -16,12 +35,12 @@ SceneManager::SceneManager(std::shared_ptr<RenderManager> renderMgr, DefaultBuff
 	mSceneGraph[1] = std::make_pair(mScenes[static_cast<size_t>(SceneType::LOBBY)].get(), mScenes[static_cast<size_t>(SceneType::TERRAIN)].get());
 	mSceneGraph[2] = std::make_pair(mScenes[static_cast<size_t>(SceneType::TERRAIN)].get(), mScenes[static_cast<size_t>(SceneType::LOADING)].get());
 
-	mCurrentSceneNode = mSceneGraph.begin(); 
+	mCurrentSceneNode = mSceneGraph.begin();
 	mCurrentSceneFeatureType = mSceneFeatureType.begin();
 
 
 	gClientCore->Init();
-	auto res = gClientCore->Start("192.168.66.231", 7777);
+	auto res = gClientCore->Start("127.0.0.1", 7777);
 	if (false == res) {
 		DebugBreak();
 		Crash(false);
@@ -33,17 +52,6 @@ SceneManager::SceneManager(std::shared_ptr<RenderManager> renderMgr, DefaultBuff
 		mLoaded.store(true);
 		});
 
-	 
-}
-
-SceneManager::~SceneManager() {
-	if (mLoadingThread.joinable()) {
-		mLoadingThread.join(); 
-	}
-}
-
-SceneFeatureType SceneManager::GetCurrentSceneFeatureType() {
-	return *mCurrentSceneFeatureType; 
 }
 
 bool SceneManager::CheckLoaded() {

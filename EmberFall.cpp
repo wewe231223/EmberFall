@@ -48,6 +48,8 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 
+SceneManager sceneManager{};
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -79,21 +81,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     Input.Initialize(hWnd);
 
-    SceneManager sceneManager{
+	sceneManager.Init(
         renderer.GetRenderManager(),
-        renderer.GetMainCameraBuffer(),
-        renderer.GetDevice(),
+		renderer.GetMainCameraBuffer(), 
+        renderer.GetDevice(), 
         renderer.GetLoadCommandList(),
-        [&renderer]() { renderer.LoadTextures();  }
-    };
+		[&renderer]() { renderer.LoadTextures(); });
 
     int n = NonReplacementSampler::GetInstance().Sample();
     Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::Escape, n, []() {
         PostQuitMessage(0);
         });
     Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F2, n, []() {Input.ToggleVirtualMouse(); });
-
-    Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F3, n, [&sceneManager]() { sceneManager.AdvanceScene(); });
 
     Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F5, n, [&renderer]() { renderer.ToggleFullScreen(); });
     size_t frameCount = 0;
@@ -175,6 +174,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     constexpr UINT keyPressedAtTime = 0x20000000;
 
     switch (message) {
+    case WM_ADVANCESCENE:
+    {
+        sceneManager.AdvanceScene(); 
+    }
+    break;
         /**
         *	**아래의 WM_SYSKEYDOWN 메세지에 등장하는 KeyPressedBitMask, KeyPressedAtTime 값에 대한 설명입니다**
         *

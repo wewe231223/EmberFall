@@ -10,7 +10,7 @@
 class RenderManager {
 public:
 	RenderManager() = default;
-	RenderManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator mainCameraBufferLocation);
+	RenderManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, HWND hWnd, DefaultBufferCPUIterator mainCameraBufferLocation);
 
 	~RenderManager() = default;
 
@@ -27,7 +27,9 @@ public:
 	MeshRenderManager&		GetMeshRenderManager();
 	ShadowRenderer&			GetShadowRenderer();
 	Canvas&					GetCanvas(); 
+	HWND					GetWindowHandle(); 
 private:
+	HWND mHwnd{ nullptr };
 	LightingManager mLightingManager{};
 	TextureManager mTextureManager{};
 	MaterialManager mMaterialManager{};
