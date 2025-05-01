@@ -24,6 +24,9 @@ struct ProtocolVersionSCBuilder;
 struct NotifyIdSC;
 struct NotifyIdSCBuilder;
 
+struct PlayerEnterInLobbySC;
+struct PlayerEnterInLobbySCBuilder;
+
 struct PlayerReadyInLobbySC;
 struct PlayerReadyInLobbySCBuilder;
 
@@ -156,6 +159,47 @@ inline ::flatbuffers::Offset<NotifyIdSC> CreateNotifyIdSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint8_t playerId = 0) {
   NotifyIdSCBuilder builder_(_fbb);
+  builder_.add_playerId(playerId);
+  return builder_.Finish();
+}
+
+struct PlayerEnterInLobbySC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PlayerEnterInLobbySCBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_PLAYERID = 4
+  };
+  uint8_t playerId() const {
+    return GetField<uint8_t>(VT_PLAYERID, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct PlayerEnterInLobbySCBuilder {
+  typedef PlayerEnterInLobbySC Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_playerId(uint8_t playerId) {
+    fbb_.AddElement<uint8_t>(PlayerEnterInLobbySC::VT_PLAYERID, playerId, 0);
+  }
+  explicit PlayerEnterInLobbySCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<PlayerEnterInLobbySC> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<PlayerEnterInLobbySC>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<PlayerEnterInLobbySC> CreatePlayerEnterInLobbySC(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint8_t playerId = 0) {
+  PlayerEnterInLobbySCBuilder builder_(_fbb);
   builder_.add_playerId(playerId);
   return builder_.Finish();
 }

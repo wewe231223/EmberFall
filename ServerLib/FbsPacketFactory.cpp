@@ -74,7 +74,20 @@ OverlappedSend* FbsPacketFactory::PacketLatencySC(uint64_t time) {
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::PlayerReadInLobbySC(SessionIdType id, Packets::PlayerRole role) {
+OverlappedSend* FbsPacketFactory::PlayerEnterInLobbySC(SessionIdType id) {
+    flatbuffers::FlatBufferBuilder builder{ };
+
+    auto offset = Packets::CreatePlayerEnterInLobbySC(builder, id);
+    builder.Finish(offset);
+
+    const uint8_t* payload = builder.GetBufferPointer();
+    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
+
+    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_SC };
+    return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
+}
+
+OverlappedSend* FbsPacketFactory::PlayerReadyInLobbySC(SessionIdType id, Packets::PlayerRole role) {
     flatbuffers::FlatBufferBuilder builder{ };
 
     auto offset = Packets::CreatePlayerReadyInLobbySC(builder, id, role);

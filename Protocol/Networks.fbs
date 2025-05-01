@@ -20,6 +20,10 @@ table NotifyIdSC {
 	playerId: ubyte;
 }
 
+table PlayerEnterInLobbySC {
+	playerId: ubyte;
+}
+
 table PlayerReadyInLobbySC {
 	playerId: ubyte;
 	role: PlayerRole;

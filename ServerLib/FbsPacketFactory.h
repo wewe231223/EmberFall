@@ -38,7 +38,8 @@ public:
     static OverlappedSend* PacketLatencySC(uint64_t time);
 
     // In Lobby
-    static OverlappedSend* PlayerReadInLobbySC(SessionIdType id, Packets::PlayerRole role);
+    static OverlappedSend* PlayerEnterInLobbySC(SessionIdType id);
+    static OverlappedSend* PlayerReadyInLobbySC(SessionIdType id, Packets::PlayerRole role);
     static OverlappedSend* ChangeToNextSceneSC();
     static OverlappedSend* GameEndSC(Packets::PlayerRole winner);
 

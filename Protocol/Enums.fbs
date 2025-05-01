@@ -28,6 +28,7 @@ enum PacketTypes : ubyte {
     PT_LATENCT_SC,
 
     //      InLobby
+    PT_PLAYER_ENTER_IN_LOBBY_SC,
     PT_PLAYER_READY_IN_LOBBY_SC,
     PT_CHANGE_TO_NEXT_SCENE_SC,
     PT_GAME_END_SC,
