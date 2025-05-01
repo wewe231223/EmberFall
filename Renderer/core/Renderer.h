@@ -19,6 +19,7 @@
 #include "../Resource/Mesh.h"
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Renderer/Render/GrassRenderer.h"
+#include "../Renderer/Core/BlurComputeProcessor.h"
 
 enum class RenderFeature : BYTE {
 	PARTICLE, 
