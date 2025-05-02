@@ -62,6 +62,7 @@ private:
 	std::unordered_map<std::string, std::unique_ptr<Mesh>> mMeshMap{};
 	std::unordered_map<std::string, std::unique_ptr<GraphicsShaderBase>> mShaderMap{};
 	std::unordered_map<std::string, AnimationLoader> mAnimationMap{};
+	
 	std::unordered_map<std::string, Player> mPlayerPreFabs{}; 
 
 	AnimatorGraph::AnimationGraphController mBaseManAnimationController{};

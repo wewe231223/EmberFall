@@ -38,6 +38,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 	{
 		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerReadyInLobbySC>(buffer);
 
+		
 
 		// 누군가 로비 씬에서 Ready 한 경우 
 		break;
@@ -61,6 +62,8 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 
 		mPlayerIndexmap[packet->playerId()] = &(*nextLoc);
 		mPlayerIndexmap[packet->playerId()]->first.SetActiveState(true);
+
+		
 
 		break;
 	}
@@ -126,8 +129,6 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 	mPlayers[3].first.SetActiveState(false);
 	mPlayers[4].first.SetActiveState(false);
 
-
-
 	mCamera.GetTransform().Look({ 0.f,2.f, 1.f });
 
 	mRenderManager->GetLightingManager().ClearLight(commandList);
@@ -144,6 +145,7 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 
 	mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[0];
 	mPlayerIndexmap[gClientCore->GetSessionId()]->first.SetActiveState(true);
+	mPlayerIndexmap[gClientCore->GetSessionId()]->second->SetActiveState(true);
 }
 
 void LobbyScene::ProcessNetwork() {
@@ -157,47 +159,59 @@ void LobbyScene::Update() {
 
 	PlayerRole prevRole = mPlayerRole;
 
-	if (Input.GetKeyboardTracker().pressed.Left) {
-		if (mPlayerRole == PlayerRole_None) mPlayerRole = PlayerRole_Demon;
-		else mPlayerRole = static_cast<PlayerRole>(PlayerRole_SwordMan + ((mPlayerRole - PlayerRole_SwordMan + (PlayerRole_END - PlayerRole_SwordMan) - 1) % (PlayerRole_END - PlayerRole_SwordMan)));
-	}
+	if (not mIsReady) {
+		if (Input.GetKeyboardTracker().pressed.Left) {
+			if (mPlayerRole == PlayerRole_None) mPlayerRole = PlayerRole_Demon;
+			else mPlayerRole = static_cast<PlayerRole>(PlayerRole_SwordMan + ((mPlayerRole - PlayerRole_SwordMan + (PlayerRole_END - PlayerRole_SwordMan) - 1) % (PlayerRole_END - PlayerRole_SwordMan)));
+		}
 
-	if (Input.GetKeyboardTracker().pressed.Right) {
-		if (mPlayerRole == PlayerRole_None) mPlayerRole = PlayerRole_SwordMan;
-		else mPlayerRole = static_cast<PlayerRole>(PlayerRole_SwordMan + ((mPlayerRole - PlayerRole_SwordMan + 1) % (PlayerRole_END - PlayerRole_SwordMan)));
-	}
+		if (Input.GetKeyboardTracker().pressed.Right) {
+			if (mPlayerRole == PlayerRole_None) mPlayerRole = PlayerRole_SwordMan;
+			else mPlayerRole = static_cast<PlayerRole>(PlayerRole_SwordMan + ((mPlayerRole - PlayerRole_SwordMan + 1) % (PlayerRole_END - PlayerRole_SwordMan)));
+		}
 
-	if (prevRole != mPlayerRole) {
-		
-		constexpr float Interval = 2.f;
-		switch (mPlayerRole) {
-		case PlayerRole_SwordMan:
-			mPlayers[0].first = mPlayerPreFabs["SwordMan"].Clone();
-			mPlayers[0].first.GetTransform().SetPosition({ -1.f * Interval * 1.5f , 0.f, 5.f });
+		if (prevRole != mPlayerRole) {
+			switch (mPlayerRole) {
+			case PlayerRole_SwordMan:
+			{
+				auto transform = mPlayers[0].first.GetTransform();
+				mPlayers[0].first = mPlayerPreFabs["SwordMan"].Clone();
+				mPlayers[0].first.GetTransform() = transform;
+			}
 			break;
-		case PlayerRole_Archer:
-			mPlayers[0].first = mPlayerPreFabs["Archer"].Clone();
-			mPlayers[0].first.GetTransform().SetPosition({ -1.f * Interval * 1.5f , 0.f, 5.f });
+			case PlayerRole_Archer:
+			{
+				auto transform = mPlayers[0].first.GetTransform();
+				mPlayers[0].first = mPlayerPreFabs["Archer"].Clone();
+				mPlayers[0].first.GetTransform() = transform;
+			}
 			break;
-		case PlayerRole_Mage:
-			mPlayers[0].first = mPlayerPreFabs["Mage"].Clone();
-			mPlayers[0].first.GetTransform().SetPosition({ -1.f * Interval * 1.5f , 0.f, 5.f });
+			case PlayerRole_Mage:
+			{
+				auto transform = mPlayers[0].first.GetTransform();
+				mPlayers[0].first = mPlayerPreFabs["Mage"].Clone();
+				mPlayers[0].first.GetTransform() = transform;
+			}
 			break;
-		case PlayerRole_ShieldMan:
-			mPlayers[0].first = mPlayerPreFabs["ShieldMan"].Clone();
-			mPlayers[0].first.GetTransform().SetPosition({ -1.f * Interval * 1.5f , 0.f, 5.f });
+			case PlayerRole_ShieldMan:
+			{
+				auto transform = mPlayers[0].first.GetTransform();
+				mPlayers[0].first = mPlayerPreFabs["ShieldMan"].Clone();
+				mPlayers[0].first.GetTransform() = transform;
+			}
 			break;
-		case PlayerRole_Demon:
-			mPlayers[0].first = mPlayerPreFabs["Demon"].Clone();
-			mPlayers[0].first.GetTransform().SetPosition({ -1.f * Interval * 1.5f , 0.f, 5.f });
+			case PlayerRole_Demon:
+			{
+				auto transform = mPlayers[0].first.GetTransform();
+				mPlayers[0].first = mPlayerPreFabs["Demon"].Clone();
+				mPlayers[0].first.GetTransform() = transform;
+			}
 			break;
-		default:
-			break;
+			default:
+				break;
+			}
 		}
 	}
-
-
-
 
 
 	if (Input.GetKeyboardTracker().pressed.Tab) {
@@ -215,6 +229,34 @@ void LobbyScene::Update() {
 				mCameraRotating = true;
 			}
 		}
+	}
+
+	if (Input.GetKeyboardTracker().pressed.Enter and not mIsReady) {
+		Packets::PlayerRole role = Packets::PlayerRole::PlayerRole_HUMAN;
+
+		switch (mPlayerRole) {
+		case PlayerRole_SwordMan:
+			role = Packets::PlayerRole::PlayerRole_HUMAN_LONGSWORD;
+			break;
+		case PlayerRole_Archer:
+			role = Packets::PlayerRole::PlayerRole_HUMAN_ARCHER;
+			break;
+		case PlayerRole_Mage:
+			role = Packets::PlayerRole::PlayerRole_HUMAN_MAGICIAN;
+			break;
+		case PlayerRole_ShieldMan:
+			role = Packets::PlayerRole::PlayerRole_HUMAN_SWORD;
+			break;
+		case PlayerRole_Demon:
+			role = Packets::PlayerRole::PlayerRole_BOSS;
+			break;
+		default:
+			break;
+		}
+
+		mIsReady = true; 
+		decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId(), role);
+		gClientCore->Send(packet);
 	}
 
 	if (mCameraRotating) {
