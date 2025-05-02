@@ -127,8 +127,6 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		mPlayerIndexmap[packet->playerId()] = &(*nextLoc);
 		std::get<0>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
 		
-
-		DebugBreak(); 
 		break;
 	}
 	case Packets::PacketTypes_PT_PLAYER_EXIT_SC:
