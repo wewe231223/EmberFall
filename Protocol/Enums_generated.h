@@ -311,24 +311,36 @@ inline const char *EnumNameAnimationState(AnimationState e) {
 enum PlayerRole : uint8_t {
   PlayerRole_NONE = 0,
   PlayerRole_HUMAN = 1,
-  PlayerRole_BOSS = 2,
+  PlayerRole_HUMAN_LONGSWORD = 2,
+  PlayerRole_HUMAN_SWORD = 3,
+  PlayerRole_HUMAN_MAGICIAN = 4,
+  PlayerRole_HUMAN_ARCHER = 5,
+  PlayerRole_BOSS = 6,
   PlayerRole_MIN = PlayerRole_NONE,
   PlayerRole_MAX = PlayerRole_BOSS
 };
 
-inline const PlayerRole (&EnumValuesPlayerRole())[3] {
+inline const PlayerRole (&EnumValuesPlayerRole())[7] {
   static const PlayerRole values[] = {
     PlayerRole_NONE,
     PlayerRole_HUMAN,
+    PlayerRole_HUMAN_LONGSWORD,
+    PlayerRole_HUMAN_SWORD,
+    PlayerRole_HUMAN_MAGICIAN,
+    PlayerRole_HUMAN_ARCHER,
     PlayerRole_BOSS
   };
   return values;
 }
 
 inline const char * const *EnumNamesPlayerRole() {
-  static const char * const names[4] = {
+  static const char * const names[8] = {
     "NONE",
     "HUMAN",
+    "HUMAN_LONGSWORD",
+    "HUMAN_SWORD",
+    "HUMAN_MAGICIAN",
+    "HUMAN_ARCHER",
     "BOSS",
     nullptr
   };

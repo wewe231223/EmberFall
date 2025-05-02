@@ -30,6 +30,7 @@ enum PacketTypes : ubyte {
     //      InLobby
     PT_PLAYER_ENTER_IN_LOBBY_SC,
     PT_PLAYER_READY_IN_LOBBY_SC,
+    PT_REJECT_PLAYERS_READY_SC,
     PT_CHANGE_TO_NEXT_SCENE_SC,
     PT_GAME_END_SC,
 
@@ -71,6 +72,10 @@ enum AnimationState : ubyte {
 enum PlayerRole : ubyte {
     NONE = 0,
     HUMAN,
+    HUMAN_LONGSWORD,
+    HUMAN_SWORD,
+    HUMAN_MAGICIAN,
+    HUMAN_ARCHER,
     BOSS
 }
 

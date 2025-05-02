@@ -5,9 +5,9 @@
 #include "SendBuffers.h"
 
 inline constexpr size_t FBS_PACKET_CS_START = Packets::PacketTypes_MIN;
-inline constexpr size_t FBS_PACKET_CS_END = Packets::PacketTypes::PacketTypes_PT_REQUEST_FIRE_CS;
+inline constexpr size_t FBS_PACKET_CS_END = Packets::PacketTypes_PT_REQUEST_FIRE_CS;
 inline constexpr size_t FBS_PACKET_SC_START = Packets::PacketTypes_PT_PROTOCOL_VERSION_SC;
-inline constexpr size_t FBS_PACKET_SC_END = Packets::PacketTypes::PacketTypes_MAX;
+inline constexpr size_t FBS_PACKET_SC_END = Packets::PacketTypes_MAX;
 
 class FbsPacketFactory {
 public:
