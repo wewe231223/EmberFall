@@ -30,8 +30,17 @@ struct PlayerEnterInLobbySCBuilder;
 struct PlayerReadyInLobbySC;
 struct PlayerReadyInLobbySCBuilder;
 
-struct RejectPlayersReadySC;
-struct RejectPlayersReadySCBuilder;
+struct CancelPlayerReadySC;
+struct CancelPlayerReadySCBuilder;
+
+struct RejectSelectionRoleSC;
+struct RejectSelectionRoleSCBuilder;
+
+struct ConfirmSelectionRoleSC;
+struct ConfirmSelectionRoleSCBuilder;
+
+struct PlayerChangeRoleSC;
+struct PlayerChangeRoleSCBuilder;
 
 struct ChangeToNextSceneSC;
 struct ChangeToNextSceneSCBuilder;
@@ -258,32 +267,153 @@ inline ::flatbuffers::Offset<PlayerReadyInLobbySC> CreatePlayerReadyInLobbySC(
   return builder_.Finish();
 }
 
-struct RejectPlayersReadySC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef RejectPlayersReadySCBuilder Builder;
+struct CancelPlayerReadySC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CancelPlayerReadySCBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_PLAYERID = 4
+  };
+  uint8_t playerId() const {
+    return GetField<uint8_t>(VT_PLAYERID, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct CancelPlayerReadySCBuilder {
+  typedef CancelPlayerReadySC Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_playerId(uint8_t playerId) {
+    fbb_.AddElement<uint8_t>(CancelPlayerReadySC::VT_PLAYERID, playerId, 0);
+  }
+  explicit CancelPlayerReadySCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CancelPlayerReadySC> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CancelPlayerReadySC>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CancelPlayerReadySC> CreateCancelPlayerReadySC(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint8_t playerId = 0) {
+  CancelPlayerReadySCBuilder builder_(_fbb);
+  builder_.add_playerId(playerId);
+  return builder_.Finish();
+}
+
+struct RejectSelectionRoleSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef RejectSelectionRoleSCBuilder Builder;
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            verifier.EndTable();
   }
 };
 
-struct RejectPlayersReadySCBuilder {
-  typedef RejectPlayersReadySC Table;
+struct RejectSelectionRoleSCBuilder {
+  typedef RejectSelectionRoleSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  explicit RejectPlayersReadySCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+  explicit RejectSelectionRoleSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ::flatbuffers::Offset<RejectPlayersReadySC> Finish() {
+  ::flatbuffers::Offset<RejectSelectionRoleSC> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<RejectPlayersReadySC>(end);
+    auto o = ::flatbuffers::Offset<RejectSelectionRoleSC>(end);
     return o;
   }
 };
 
-inline ::flatbuffers::Offset<RejectPlayersReadySC> CreateRejectPlayersReadySC(
+inline ::flatbuffers::Offset<RejectSelectionRoleSC> CreateRejectSelectionRoleSC(
     ::flatbuffers::FlatBufferBuilder &_fbb) {
-  RejectPlayersReadySCBuilder builder_(_fbb);
+  RejectSelectionRoleSCBuilder builder_(_fbb);
+  return builder_.Finish();
+}
+
+struct ConfirmSelectionRoleSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ConfirmSelectionRoleSCBuilder Builder;
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           verifier.EndTable();
+  }
+};
+
+struct ConfirmSelectionRoleSCBuilder {
+  typedef ConfirmSelectionRoleSC Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  explicit ConfirmSelectionRoleSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ConfirmSelectionRoleSC> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ConfirmSelectionRoleSC>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ConfirmSelectionRoleSC> CreateConfirmSelectionRoleSC(
+    ::flatbuffers::FlatBufferBuilder &_fbb) {
+  ConfirmSelectionRoleSCBuilder builder_(_fbb);
+  return builder_.Finish();
+}
+
+struct PlayerChangeRoleSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PlayerChangeRoleSCBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_PLAYERID = 4,
+    VT_ROLE = 6
+  };
+  uint8_t playerId() const {
+    return GetField<uint8_t>(VT_PLAYERID, 0);
+  }
+  Packets::PlayerRole role() const {
+    return static_cast<Packets::PlayerRole>(GetField<uint8_t>(VT_ROLE, 0));
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
+           VerifyField<uint8_t>(verifier, VT_ROLE, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct PlayerChangeRoleSCBuilder {
+  typedef PlayerChangeRoleSC Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_playerId(uint8_t playerId) {
+    fbb_.AddElement<uint8_t>(PlayerChangeRoleSC::VT_PLAYERID, playerId, 0);
+  }
+  void add_role(Packets::PlayerRole role) {
+    fbb_.AddElement<uint8_t>(PlayerChangeRoleSC::VT_ROLE, static_cast<uint8_t>(role), 0);
+  }
+  explicit PlayerChangeRoleSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<PlayerChangeRoleSC> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<PlayerChangeRoleSC>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<PlayerChangeRoleSC> CreatePlayerChangeRoleSC(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint8_t playerId = 0,
+    Packets::PlayerRole role = Packets::PlayerRole_NONE) {
+  PlayerChangeRoleSCBuilder builder_(_fbb);
+  builder_.add_role(role);
+  builder_.add_playerId(playerId);
   return builder_.Finish();
 }
 

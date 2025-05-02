@@ -57,6 +57,7 @@ uint8_t GameRoom::RemovePlayer(SessionIdType id) {
     }
 
     mSessionsInRoom.erase(id);
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session [{}] erased in GameRoom [{}]", id, mRoomIdx);
 
     return GameRoomError::SUCCESS_REMOVE_SESSION_IN_ROOM;
 }
@@ -80,13 +81,13 @@ bool GameRoom::ReadyPlayer(SessionIdType id, Packets::PlayerRole role) {
         mBossPlayerCount.compare_exchange_strong(expectedBossPlayerCount, 0);
 
         mReadyPlayerCount.fetch_add(1);
-        session->Ready(role);
+        session->Ready();
         return true;
     }
 
     if (role != Packets::PlayerRole_BOSS) {
         mReadyPlayerCount.fetch_add(1);
-        session->Ready(role);
+        session->Ready();
         return true;
     }
 
@@ -96,7 +97,7 @@ bool GameRoom::ReadyPlayer(SessionIdType id, Packets::PlayerRole role) {
     }
 
     mReadyPlayerCount.fetch_add(1);
-    session->Ready(role);
+    session->Ready();
     return true;
 }
 
@@ -147,12 +148,40 @@ uint16_t GameRoomManager::TryInsertGameRoom(SessionIdType sessionId) {
 uint8_t GameRoomManager::TryRemoveGameRoom(size_t roomIdx, SessionIdType sessionId) {
     auto& room = mGameRooms[roomIdx];
     auto errorCode = room->RemovePlayer(sessionId);
-    if (GameRoomError::SUCCESS_REMOVE_SESSION_IN_ROOM == errorCode) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session[{}] Remove From GameRoom[{}]!", sessionId, roomIdx);
-    }
-    else {
+    if (GameRoomError::SUCCESS_REMOVE_SESSION_IN_ROOM != errorCode) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In TryRemoveGameRoom - ErrorCode: {}", errorCode);
+        return errorCode;
     }
+
+    std::vector<std::shared_ptr<Session>> otherSessions{ };
+    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
+    {
+        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
+        for (auto& otherSessionId : GetRoom(roomIdx)->GetSessions()) {
+            if (sessionId == otherSessionId) {
+                continue;
+            }
+
+            auto otherSession = gServerCore->GetSessionManager()->GetSession(otherSessionId);
+            if (nullptr == otherSession or false == otherSession->IsConnected()) {
+                continue;
+            }
+
+            otherSessions.push_back(otherSession);
+        }
+    }
+
+    auto packetExit = FbsPacketFactory::PlayerExitSC(sessionId);
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "ExitPacket Send Count: {}", otherSessions.size());
+    for (auto& otherSession : otherSessions) {
+        auto clonedPacket = FbsPacketFactory::ClonePacket(packetExit);
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "To Session[{}] Send ExitPacket!", otherSession->GetId());
+        otherSession->RegisterSend(clonedPacket);
+    }
+
+    FbsPacketFactory::ReleasePacketBuf(packetExit);
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session[{}] Remove From GameRoom[{}]!", sessionId, roomIdx);
 
     return errorCode;
 }

@@ -197,7 +197,7 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 	mRenderManager->GetLightingManager().ClearLight(commandList);
 	auto& light = mRenderManager->GetLightingManager().GetLight(0);
 	light.mType = LightType::Directional;
-	light.Direction = { -1.f, 3.f, 1.f };
+	light.Direction = { 1.f, 3.f, 1.f };
 	light.Diffuse = { 1.f, 1.f, 1.f, 1.f };
 	light.Specular = { 1.f, 1.f, 1.f, 1.f };
 	light.Ambient = { 0.2f, 0.2f, 0.2f, 1.f };

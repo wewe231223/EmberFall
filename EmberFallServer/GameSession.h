@@ -26,7 +26,9 @@ public:
     void InitUserObject();
     void EnterLobby();
     void EnterInGame();
-    void Ready(Packets::PlayerRole role);
+    void Ready();
+    void CancelReady();
+    void ChangeRole(Packets::PlayerRole role);
 
     virtual void OnConnect() override;
     virtual void ProcessRecv(INT32 numOfBytes) override;
@@ -34,5 +36,6 @@ public:
 private:
     std::atomic<Packets::PlayerRole> mPlayerRole{ Packets::PlayerRole::PlayerRole_NONE };
     std::atomic_uint8_t mSessionState{ SESSION_STATE_NONE };
+    bool mReady{ false };
     std::shared_ptr<GameObject> mUserObject{ nullptr };
 };

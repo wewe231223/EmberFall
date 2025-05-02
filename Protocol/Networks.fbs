@@ -29,7 +29,18 @@ table PlayerReadyInLobbySC {
 	role: PlayerRole;
 }
 
-table RejectPlayersReadySC { }
+table CancelPlayerReadySC { 
+	playerId: ubyte;
+}
+
+table RejectSelectionRoleSC { }
+
+table ConfirmSelectionRoleSC { }
+
+table PlayerChangeRoleSC { 
+	playerId: ubyte;
+	role: PlayerRole;
+}
 
 table ChangeToNextSceneSC { }
 

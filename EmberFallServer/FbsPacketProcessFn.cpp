@@ -152,6 +152,7 @@ void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, cons
         auto otherSessionId = static_cast<SessionIdType>(otherSession->GetId());
 
         auto clonedPacket = FbsPacketFactory::ClonePacket(packetEnter);
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "PlayerEnter Packet - To Session [{}]", otherSession->GetId());
         otherSession->RegisterSend(clonedPacket);
 
         auto oldUserEnter = FbsPacketFactory::PlayerEnterInLobbySC(otherSessionId);
@@ -166,16 +167,10 @@ void ProcessPlayerReadyInLobby(std::shared_ptr<class GameSession>& session, cons
 
     auto sessionId = static_cast<SessionIdType>(session->GetId());
     auto sessionRole = session->GetPlayerRole();
-    auto packetReady = FbsPacketFactory::PlayerReadyInLobbySC(sessionId, sessionRole);
+    auto packetReady = FbsPacketFactory::PlayerReadyInLobbySC(sessionId);
 
     auto sessionGameRoom = session->GetMyRoomIdx();
     auto success = gGameRoomManager->ReadyPlayer(sessionGameRoom, sessionId, ready->role());
-    if (false == success) {
-        // TODO - Send -> Reject Ready Packet
-        auto packetRejectReady = FbsPacketFactory::RejectPlayersReadySC();
-        session->RegisterSend(packetRejectReady);
-        return;
-    }
 
     decltype(auto) sessionsInGameRoom = gGameRoomManager->GetSessionsInRoom(sessionGameRoom);
 
@@ -208,40 +203,9 @@ void ProcessPlayerExitCS(std::shared_ptr<class GameSession>& session, const Pack
     }
 
     auto sessionId = static_cast<SessionIdType>(session->GetId());
-    auto packetExit = FbsPacketFactory::PlayerExitSC(sessionId);
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Exit In Game!", sessionId);
 
-    auto sessionGameRoom = session->GetMyRoomIdx();
-    decltype(auto) sessionsInGameRoom = gGameRoomManager->GetSessionsInRoom(sessionGameRoom);
-
-    std::vector<std::shared_ptr<GameSession>> otherSessionList{ };
-    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
-    {
-        // Get Sessions In My GameRoom
-        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
-        for (auto& otherSessionId : sessionsInGameRoom) {
-            if (otherSessionId == sessionId) {
-                continue;
-            }
-
-            auto otherSession = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(otherSessionId));
-            if (nullptr == otherSession or SESSION_INLOBBY != otherSession->GetSessionState()) {
-                continue;
-            }
-
-            otherSessionList.push_back(otherSession);
-        }
-    }
-
-    // Broad Casting
-    for (auto& otherSession : otherSessionList) {
-        auto clonedPacket = FbsPacketFactory::ClonePacket(packetExit);
-        otherSession->RegisterSend(clonedPacket);
-    }
-
     gServerCore->GetSessionManager()->CloseSession(sessionId);
-
-    FbsPacketFactory::ReleasePacketBuf(packetExit);
 }
 
 void ProcessPlayerEnterInGame(std::shared_ptr<class GameSession>& session, const Packets::PlayerEnterInGame* const enter) {
@@ -290,8 +254,45 @@ void ProcessPlayerLookCS(std::shared_ptr<GameSession>& session, const Packets::P
 void ProcessPlayerSelectWeaponCS(std::shared_ptr<class GameSession>& session, const Packets::PlayerSelectWeaponCS* const weapon) {
 }
 
-void ProcessPlayerSelectRoleCS(std::shared_ptr<GameSession>& session, const Packets::PlayerSelectRoleCS* const roll) {
-    
+void ProcessPlayerSelectRoleCS(std::shared_ptr<GameSession>& session, const Packets::PlayerSelectRoleCS* const role) {
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player [{}] Enter In Lobby!", session->GetId());
+
+    auto sessionId = static_cast<SessionIdType>(session->GetId());
+    auto packetEnter = FbsPacketFactory::PlayerEnterInLobbySC(sessionId);
+
+    auto sessionGameRoom = session->GetMyRoomIdx();
+    decltype(auto) sessionsInGameRoom = gGameRoomManager->GetSessionsInRoom(sessionGameRoom);
+
+    std::vector<std::shared_ptr<GameSession>> otherSessionList{ };
+    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
+    {
+        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
+        for (auto& otherSessionId : sessionsInGameRoom) {
+            if (otherSessionId == sessionId) {
+                continue;
+            }
+
+            auto otherSession = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(otherSessionId));
+            if (nullptr == otherSession or SESSION_INLOBBY != otherSession->GetSessionState()) {
+                continue;
+            }
+
+            otherSessionList.push_back(otherSession);
+        }
+    }
+
+    for (auto& otherSession : otherSessionList) {
+        auto otherSessionId = static_cast<SessionIdType>(otherSession->GetId());
+
+        auto clonedPacket = FbsPacketFactory::ClonePacket(packetEnter);
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "PlayerEnter Packet - To Session [{}]", otherSession->GetId());
+        otherSession->RegisterSend(clonedPacket);
+
+        auto oldUserEnter = FbsPacketFactory::PlayerEnterInLobbySC(otherSessionId);
+        session->RegisterSend(oldUserEnter);
+    }
+
+    FbsPacketFactory::ReleasePacketBuf(packetEnter);
 }
 
 void ProcessLatencyCS(std::shared_ptr<GameSession>& session, const Packets::PacketLatencyCS* const latency) {

@@ -22,7 +22,8 @@ GameSession::~GameSession() {
     }
 
     // TODO - Remove In GameRoom
-    gGameRoomManager->TryRemoveGameRoom(myRoom, myId);
+    auto result = gGameRoomManager->TryRemoveGameRoom(myRoom, myId);
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameSession Destructor: Session Erase From Room Error: {}", result);
 
     mSessionState = SESSION_CLOSE;
 
@@ -125,7 +126,15 @@ void GameSession::EnterInGame() {
     InitUserObject();
 }
 
-void GameSession::Ready(Packets::PlayerRole role) {
+void GameSession::Ready() {
+    mReady = true;
+}
+
+void GameSession::CancelReady() {
+    mReady = false;
+}
+
+void GameSession::ChangeRole(Packets::PlayerRole role) {
     mPlayerRole = role;
 }
 
