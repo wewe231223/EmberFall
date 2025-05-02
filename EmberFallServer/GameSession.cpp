@@ -5,6 +5,7 @@
 #include "ObjectManager.h"
 #include "Input.h"
 #include "Resources.h"
+#include "GameRoom.h"
 
 #include "Sector.h"
 
@@ -17,6 +18,10 @@ GameSession::~GameSession() {
         mUserObject->Reset();
     }
 
+    // TODO - Remove In GameRoom
+    auto myId = static_cast<SessionIdType>(GetId());
+    gGameRoomManager->TryRemoveGameRoom(mGameRoomIdx, myId);
+
     mSessionState = SESSION_CLOSE;
 
     Session::Close();
@@ -24,6 +29,17 @@ GameSession::~GameSession() {
 
 void GameSession::OnConnect() {
     Session::OnConnect();
+
+    auto myId = static_cast<SessionIdType>(GetId());
+    auto gameRoomIdx = gGameRoomManager->TryInsertGameRoom(myId);
+    if (INSERT_GAME_ROOM_ERROR == gameRoomIdx) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session Insert Failure Error Core: [{}]", GameRoomManager::GetLastErrorCode());
+        Session::Close();
+        return;
+    }
+    
+    mGameRoomIdx = gameRoomIdx;
+    EnterLobby();
 }
 
 void GameSession::ProcessRecv(INT32 numOfBytes) {
@@ -115,6 +131,10 @@ std::shared_ptr<GameObject> GameSession::GetUserObject() const {
 
 uint8_t GameSession::GetSessionState() const {
     return mSessionState.load();
+}
+
+uint16_t GameSession::GetMyGameRoom() const {
+    return mGameRoomIdx;
 }
 
 Packets::PlayerRole GameSession::GetPlayerRole() const {

@@ -55,9 +55,6 @@
     <Filter Include="Regacy\Collision">
       <UniqueIdentifier>{8d52854a-4d78-44c9-bd56-5e9f29d605bb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Regacy\Collision\CollisionCheck">
-      <UniqueIdentifier>{c4b819e4-01ff-406c-8624-db4874c2c8b7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Regacy\Collision\Collider">
       <UniqueIdentifier>{cef0a9ff-4a48-455b-bdae-f0e889a147b7}</UniqueIdentifier>
     </Filter>
@@ -90,6 +87,9 @@
     </Filter>
     <Filter Include="MultiThreadLoopTest\Script\Buff">
       <UniqueIdentifier>{4465a545-16a2-4eec-91fe-17e93b49cec2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Regacy\Collision\CollisionCheck">
+      <UniqueIdentifier>{c4b819e4-01ff-406c-8624-db4874c2c8b7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -250,6 +250,9 @@
     <ClCompile Include="BuffHealScript.cpp">
       <Filter>MultiThreadLoopTest\Script\Buff</Filter>
     </ClCompile>
+    <ClCompile Include="GameRoom.cpp">
+      <Filter>MultiThreadLoopTest\Session</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BehaviorTreeBase.h">
@@ -405,6 +408,9 @@
     <ClInclude Include="Stage.h" />
     <ClInclude Include="BuffHealScript.h">
       <Filter>MultiThreadLoopTest\Script\Buff</Filter>
+    </ClInclude>
+    <ClInclude Include="GameRoom.h">
+      <Filter>MultiThreadLoopTest\Session</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
