@@ -2,6 +2,10 @@
 #include "LobbyScene.h"
 #include "../MeshLoader/Loader/MeshLoader.h"
 
+// 역할군 전환 버튼 ( 키 ) 를 통해 역할군을 전환 가능 
+// 순서는 : 대검 -> 방해 -> 활 -> 마법사 순서로 전환
+// 내 캐릭터는 인간 진영에서 0번 슬롯으로 함. ( 모든 클라이언트에서 ) 
+// 다른 플레이어는 로비 씬에 입장한 순서대로 1,2,3,4 번 ( 인간 ) 슬롯에 들어감. 
 
 LobbyScene::LobbyScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCamLocation) {
 	mRenderManager = renderMgr;
@@ -16,11 +20,76 @@ LobbyScene::~LobbyScene() {
 
 }
 
+const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
+
+	decltype(auto) header = FbsPacketFactory::GetHeaderPtrSC(buffer);
+
+	auto FindNextPlayerLoc = [this]() {
+		for (auto iter = mPlayers.begin(); iter != mPlayers.end(); ++iter) {
+			if (not iter->first.GetActiveState()) {
+				return iter;
+			}
+		}
+		return mPlayers.end();
+		};
+
+	switch (header->type) {
+	case Packets::PacketTypes_PT_PLAYER_READY_IN_LOBBY_SC:
+	{
+		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerReadyInLobbySC>(buffer);
+
+
+		// 누군가 로비 씬에서 Ready 한 경우 
+		break;
+	}
+	case Packets::PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_SC:
+	{
+		// 누군가 로비 씬에 들어온 경우 
+		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerEnterInLobbySC>(buffer);
+
+		auto nextLoc = FindNextPlayerLoc();
+
+		if (mPlayerIndexmap[packet->playerId()] != nullptr) {
+			if (mPlayerIndexmap[packet->playerId()]->first.GetActiveState()) {
+				break;
+			}
+		}
+
+		if (nextLoc == mPlayers.end()) {
+			Crash("There is no more space for Other Player!!");
+		}
+
+		mPlayerIndexmap[packet->playerId()] = &(*nextLoc);
+		mPlayerIndexmap[packet->playerId()]->first.SetActiveState(true);
+
+		break;
+	}
+	case Packets::PacketTypes_PT_PLAYER_EXIT_SC:
+	{
+		// 누군가 로비 씬에서 나간 경우 
+		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerExitSC>(buffer);
+
+		if (mPlayerIndexmap.contains(packet->playerId())) {
+			mPlayerIndexmap[packet->playerId()]->first.SetActiveState(false);
+		}
+
+		break;
+	}
+	// 씬 전환 패킷 처리.. 
+	default:
+		break;
+	}
+
+	return buffer + header->size;
+}
+
+
 void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	LobbyScene::BuildShader(device);
 	LobbyScene::BuildMesh(device, commandList);
 	LobbyScene::BuildMaterial();
 	LobbyScene::BuildLobbyObject(); 
+	LobbyScene::BuildBaseMan(); 
 	LobbyScene::BuildSwordMan();
 	LobbyScene::BuildArcher();
 	LobbyScene::BuildMage();
@@ -36,28 +105,26 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 
 	mRenderManager->GetLightingManager().ClearLight(commandList);
 
-	mPlayers[0] = mPlayerPreFabs["SwordMan"].Clone();
-	mPlayers[1] = mPlayerPreFabs["ShieldMan"].Clone();
-	mPlayers[2] = mPlayerPreFabs["Archer"].Clone();
-	mPlayers[3] = mPlayerPreFabs["Mage"].Clone();
+	mPlayers[0].first = mPlayerPreFabs["BaseMan"].Clone();
+	mPlayers[1].first = mPlayerPreFabs["BaseMan"].Clone();
+	mPlayers[2].first = mPlayerPreFabs["BaseMan"].Clone();
+	mPlayers[3].first = mPlayerPreFabs["BaseMan"].Clone();
 
 	constexpr float Interval = 2.f; 
-	mPlayers[0].GetTransform().SetPosition({ -1.f * Interval * 1.5f , 0.f, 5.f });
-	mPlayers[1].GetTransform().SetPosition({ -1.f * Interval * 0.5f , 0.f, 5.f });
-	mPlayers[2].GetTransform().SetPosition({  1.f * Interval * 0.5f , 0.f, 5.f });
-	mPlayers[3].GetTransform().SetPosition({  1.f * Interval * 1.5f , 0.f, 5.f });
+	mPlayers[0].first.GetTransform().SetPosition({ -1.f * Interval * 1.5f , 0.f, 5.f });
+	mPlayers[1].first.GetTransform().SetPosition({ -1.f * Interval * 0.5f , 0.f, 5.f });
+	mPlayers[2].first.GetTransform().SetPosition({  1.f * Interval * 0.5f , 0.f, 5.f });
+	mPlayers[3].first.GetTransform().SetPosition({  1.f * Interval * 1.5f , 0.f, 5.f });
 
+	mPlayers[4].first = mPlayerPreFabs["Demon"].Clone();
+	mPlayers[4].first.GetTransform().SetPosition({ 0.f, 0.f, -10.f });
+	mPlayers[4].first.GetTransform().Rotate(0.f, 110.f, 0.f);
 
-	mPlayers[4] = mPlayerPreFabs["Demon"].Clone();
-	mPlayers[4].GetTransform().SetPosition({ 0.f, 0.f, -10.f });
-	mPlayers[4].GetTransform().Rotate(0.f, 110.f, 0.f);
-
-
-	mPlayers[0].SetActiveState(false);
-	mPlayers[1].SetActiveState(false);
-	mPlayers[2].SetActiveState(false);
-	mPlayers[3].SetActiveState(false);
-	mPlayers[4].SetActiveState(false);
+	mPlayers[0].first.SetActiveState(false);
+	mPlayers[1].first.SetActiveState(false);
+	mPlayers[2].first.SetActiveState(false);
+	mPlayers[3].first.SetActiveState(false);
+	mPlayers[4].first.SetActiveState(false);
 
 
 
@@ -76,7 +143,7 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 
 
 	mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[0];
-	mPlayerIndexmap[gClientCore->GetSessionId()]->SetActiveState(true);
+	mPlayerIndexmap[gClientCore->GetSessionId()]->first.SetActiveState(true);
 }
 
 void LobbyScene::ProcessNetwork() {
@@ -87,17 +154,63 @@ void LobbyScene::ProcessNetwork() {
 }
 
 void LobbyScene::Update() {
+
+	PlayerRole prevRole = mPlayerRole;
+
+	if (Input.GetKeyboardTracker().pressed.Left) {
+		if (mPlayerRole == PlayerRole_None) mPlayerRole = PlayerRole_Demon;
+		else mPlayerRole = static_cast<PlayerRole>(PlayerRole_SwordMan + ((mPlayerRole - PlayerRole_SwordMan + (PlayerRole_END - PlayerRole_SwordMan) - 1) % (PlayerRole_END - PlayerRole_SwordMan)));
+	}
+
+	if (Input.GetKeyboardTracker().pressed.Right) {
+		if (mPlayerRole == PlayerRole_None) mPlayerRole = PlayerRole_SwordMan;
+		else mPlayerRole = static_cast<PlayerRole>(PlayerRole_SwordMan + ((mPlayerRole - PlayerRole_SwordMan + 1) % (PlayerRole_END - PlayerRole_SwordMan)));
+	}
+
+	if (prevRole != mPlayerRole) {
+		
+		constexpr float Interval = 2.f;
+		switch (mPlayerRole) {
+		case PlayerRole_SwordMan:
+			mPlayers[0].first = mPlayerPreFabs["SwordMan"].Clone();
+			mPlayers[0].first.GetTransform().SetPosition({ -1.f * Interval * 1.5f , 0.f, 5.f });
+			break;
+		case PlayerRole_Archer:
+			mPlayers[0].first = mPlayerPreFabs["Archer"].Clone();
+			mPlayers[0].first.GetTransform().SetPosition({ -1.f * Interval * 1.5f , 0.f, 5.f });
+			break;
+		case PlayerRole_Mage:
+			mPlayers[0].first = mPlayerPreFabs["Mage"].Clone();
+			mPlayers[0].first.GetTransform().SetPosition({ -1.f * Interval * 1.5f , 0.f, 5.f });
+			break;
+		case PlayerRole_ShieldMan:
+			mPlayers[0].first = mPlayerPreFabs["ShieldMan"].Clone();
+			mPlayers[0].first.GetTransform().SetPosition({ -1.f * Interval * 1.5f , 0.f, 5.f });
+			break;
+		case PlayerRole_Demon:
+			mPlayers[0].first = mPlayerPreFabs["Demon"].Clone();
+			mPlayers[0].first.GetTransform().SetPosition({ -1.f * Interval * 1.5f , 0.f, 5.f });
+			break;
+		default:
+			break;
+		}
+	}
+
+
+
+
+
 	if (Input.GetKeyboardTracker().pressed.Tab) {
 		if (not mCameraRotating) {
 			if (mPlayerSelected == 4) { // 인간 진영 선택 
 				mPlayerSelected = 0;
-				mPlayerNameTextBlock[4]->SetActiveState(false);
+				mPlayers[4].second->SetActiveState(false);
 				mCameraRotating = true; 
 			}
 			else { // 악마 진영 선택 
 				mPlayerSelected = 4;
 				for (auto i = 0; i < mPlayers.size() - 1; ++i) {
-					mPlayerNameTextBlock[i]->SetActiveState(false);
+					mPlayers[i].second->SetActiveState(false);
 				}
 				mCameraRotating = true;
 			}
@@ -116,8 +229,8 @@ void LobbyScene::Update() {
 			mCameraRotating = false;
 
 			for (auto i = 0; i < mPlayers.size() - 1; ++i) {
-				if (mPlayers[i].GetActiveState()) {
-					mPlayerNameTextBlock[i]->SetActiveState(true);
+				if (mPlayers[i].first.GetActiveState()) {
+					mPlayers[i].second->SetActiveState(true);
 				}
 			}
 
@@ -127,8 +240,8 @@ void LobbyScene::Update() {
 			mCamera.GetTransform().SetRotation(DirectX::SimpleMath::Quaternion::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(180.f), 0.f, 0.f));
 			mCameraRotating = false;
 
-			if (mPlayers[4].GetActiveState()) {
-				mPlayerNameTextBlock[4]->SetActiveState(true);
+			if (mPlayers[4].first.GetActiveState()) {
+				mPlayers[4].second->SetActiveState(true);
 			}
 		}
 
@@ -144,10 +257,10 @@ void LobbyScene::Update() {
 	}
 
 	for (auto& player : mPlayers) {
-		if (player.GetActiveState() == false) {
+		if (player.first.GetActiveState() == false) {
 			continue;
 		}
-		player.Update(mRenderManager->GetMeshRenderManager());
+		player.first.Update(mRenderManager->GetMeshRenderManager());
 	}
 
 	mSkyBox.GetTransform().GetPosition() = mCamera.GetTransform().GetPosition(); 
@@ -166,8 +279,8 @@ void LobbyScene::SendNetwork() {
 }
 
 void LobbyScene::Exit() {
-	for (auto& block : mPlayerNameTextBlock) {
-		block->SetActiveState(false);
+	for (auto& p : mPlayers) {
+		p.second->SetActiveState(false);
 	}
 }
 
@@ -182,9 +295,11 @@ void LobbyScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCom
 	data = Loader.Load("Resources/Assets/Knight/LongSword/SwordMan.glb");
 	mMeshMap["SwordMan"] = std::make_unique<Mesh>(device, commandList, data);
 
+	data = Loader.Load("Resources/Assets/Knight/BaseAnim/BaseAnim.gltf");
+	mMeshMap["HumanBase"] = std::make_unique<Mesh>(device, commandList, data);
+
 	data = Loader.Load("Resources/Assets/Demon/Demon.glb");
 	mMeshMap["Demon"] = std::make_unique<Mesh>(device, commandList, data);
-
 
 	data = Loader.Load("Resources/Assets/Weapon/sword/LongSword.glb");
 	mMeshMap["Sword"] = std::make_unique<Mesh>(device, commandList, data);
@@ -274,6 +389,19 @@ void LobbyScene::BuildLobbyObject() {
 
 		object.SetActiveState(true);
 	}
+}
+
+void LobbyScene::BuildBaseMan() {
+	mAnimationMap["BaseAnim"].Load("Resources/Assets/Knight/BaseAnim/BaseAnim.gltf");
+	auto& loader = mAnimationMap["BaseAnim"];
+
+	AnimatorGraph::AnimationState idle{};
+
+	idle.clip = loader.GetClip(0);
+	idle.loop = true;
+	idle.name = "Idle";
+
+	mBaseManAnimationController = AnimatorGraph::AnimationGraphController({ idle });
 }
 
 void LobbyScene::BuildSwordMan() {
@@ -408,6 +536,8 @@ void LobbyScene::BuildEquipmentObject() {
 }
 
 void LobbyScene::BuildPlayerPrefab() {
+	mPlayerPreFabs["BaseMan"] = Player{ mMeshMap["HumanBase"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("HumanMaterial"), mBaseManAnimationController };
+
 	mPlayerPreFabs["SwordMan"] = Player{ mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("HumanMaterial"), mSwordManAnimationController };
 	mPlayerPreFabs["SwordMan"].AddEquipment(mEquipments["GreatSword"]);
 	
@@ -433,16 +563,16 @@ void LobbyScene::BuildPlayerNameTextBlock() {
 	const float y = 570.f;
 
 	for (auto i = 0; i < mPlayers.size() - 1; ++i) {
-		auto& block = mPlayerNameTextBlock[i];
-		block = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ xPadding + xInterval * i , y, xPadding + xInterval * i + 100.f, y + 100.f }, StringColor::White, "NotoSansKR");
-		block->GetText() = L"Player" + std::to_wstring(i);
-		block->SetActiveState(false);
+		auto& player = mPlayers[i];
+		player.second = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ xPadding + xInterval * i , y, xPadding + xInterval * i + 100.f, y + 100.f }, StringColor::White, "NotoSansKR");
+		player.second->GetText() = L"Player" + std::to_wstring(i);
+		player.second->SetActiveState(false);
 	}
 
-	auto& block = mPlayerNameTextBlock[4];
-	block = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 760.f, 750.f, 760.f + xInterval, 850.f }, StringColor::White, "NotoSansKR");
-	block->GetText() = L"Player" + std::to_wstring(4);
-	block->SetActiveState(false);
+	auto& player = mPlayers[4];
+	player.second = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 760.f, 750.f, 760.f + xInterval, 850.f }, StringColor::White, "NotoSansKR");
+	player.second->GetText() = L"Player" + std::to_wstring(4);
+	player.second->SetActiveState(false);
 }
 
 void LobbyScene::ProcessPackets(const uint8_t* buffer, size_t size) {
@@ -453,64 +583,3 @@ void LobbyScene::ProcessPackets(const uint8_t* buffer, size_t size) {
 	}
 }
 
-const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
-
-	decltype(auto) header = FbsPacketFactory::GetHeaderPtrSC(buffer);
-
-	auto FindNextPlayerLoc = [this]() {
-		for (auto iter = mPlayers.begin(); iter != mPlayers.end(); ++iter) {
-			if (not iter->GetActiveState()) {
-				return iter;
-			}
-		}
-		return mPlayers.end();
-		};
-
-	switch (header->type) {
-	case Packets::PacketTypes_PT_PLAYER_READY_IN_LOBBY_SC:
-	{
-		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerReadyInLobbySC>(buffer);
-
-		
-		// 누군가 로비 씬에서 Ready 한 경우 
-		break;
-	}
-	case Packets::PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_SC:
-	{
-		// 누군가 로비 씬에 들어온 경우 
-		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerEnterInLobbySC>(buffer);
-
-		auto nextLoc = FindNextPlayerLoc(); 
-
-		if (mPlayerIndexmap[packet->playerId()] != nullptr) {
-			if (mPlayerIndexmap[packet->playerId()]->GetActiveState()) {
-				break; 
-			}
-		}
-
-		if (nextLoc == mPlayers.end()) {
-			Crash("There is no more space for Other Player!!");
-		}
-
-		mPlayerIndexmap[packet->playerId()] = &(*nextLoc);
-		mPlayerIndexmap[packet->playerId()]->SetActiveState(true); 
-		
-		break;
-	}
-	case Packets::PacketTypes_PT_PLAYER_EXIT_SC:
-	{
-		// 누군가 로비 씬에서 나간 경우 
-		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerExitSC>(buffer);
-
-		if (mPlayerIndexmap.contains(packet->playerId())) {
-			mPlayerIndexmap[packet->playerId()]->SetActiveState(false);
-		}
-
-		break;
-	}
-	default:
-		break;
-	}
-
-	return buffer + header->size; 
-}

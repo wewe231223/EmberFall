@@ -112,6 +112,17 @@ enum : UINT {
 	ParticleType_ember = 3,
 };
 
+
+enum PlayerRole : BYTE {
+	PlayerRole_None = 0,
+    PlayerRole_SwordMan, 
+	PlayerRole_Archer,
+	PlayerRole_Mage,
+	PlayerRole_ShieldMan,
+	PlayerRole_Demon,
+    PlayerRole_END,
+};
+
 // 계층 구조를 따르는 Emit 파티클의 경우, 부모의 정보가 필요하다. 
 // 이미 만들어져 있는 월드 행렬에는 위치, 로컬 축 3개가 포함되어 있다. 이정도면 충분. 
 // 만약 계층 구조를 이루는 파티클을 만들고 싶은 경우, Transform* 를 받아와서, 부모의 위치를 업데이트 하여 사용한다.

@@ -26,6 +26,7 @@ private:
 
 	void BuildLobbyObject(); 
 
+	void BuildBaseMan();
 	void BuildSwordMan();
 	void BuildArcher();
 	void BuildMage();
@@ -49,11 +50,12 @@ private:
 
 	std::vector<GameObject> mLobbyProps{}; 
 
-	std::unordered_map<NetworkObjectIdType, Player*> mPlayerIndexmap{};
-	std::array<Player, 5> mPlayers{ Player{}, };
-	std::array<TextBlock*, 5> mPlayerNameTextBlock{};
+	std::unordered_map<NetworkObjectIdType, std::pair<Player, TextBlock*>*> mPlayerIndexmap{};
+	std::array<std::pair<Player,TextBlock*>, 5> mPlayers{};
+	
+	UINT mPlayerSelected{ 0 };
+	PlayerRole mPlayerRole{ PlayerRole_None };
 
-	UINT mPlayerSelected{ 0 }; 
 	bool mCameraRotating{ false };
 
 	std::unordered_map<std::string, EquipmentObject> mEquipments{};
@@ -62,6 +64,7 @@ private:
 	std::unordered_map<std::string, AnimationLoader> mAnimationMap{};
 	std::unordered_map<std::string, Player> mPlayerPreFabs{}; 
 
+	AnimatorGraph::AnimationGraphController mBaseManAnimationController{};
 	AnimatorGraph::AnimationGraphController mSwordManAnimationController{};
 	AnimatorGraph::AnimationGraphController mArcherAnimationController{};
 	AnimatorGraph::AnimationGraphController mMageAnimationController{};
