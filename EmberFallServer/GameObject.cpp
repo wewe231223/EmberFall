@@ -127,6 +127,12 @@ void GameObject::Init() {
 }
 
 void GameObject::RegisterUpdate() {
+    auto myRoom = GetMyRoomIdx();
+    auto roomStageState = gGameRoomManager->GetRoom(myRoom)->GetStage().GetActiveState();
+    if (false == roomStageState) {
+        return;
+    }
+
     mOverlapped->owner = shared_from_this();
     gServerCore->PQCS(0, GetId(), mOverlapped.get());
 }
@@ -144,7 +150,7 @@ void GameObject::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
     Update();
     LateUpdate();
     
-    gServerFrame->AddTimerEvent(GetId(), GetMyRoomIdx(), SysClock::now() + 150ms, TimerEventType::UPDATE_NPC);
+    gServerFrame->AddTimerEvent(GetMyRoomIdx(), GetId(), SysClock::now() + 150ms, TimerEventType::UPDATE_NPC);
 }
 
 void GameObject::Update() {

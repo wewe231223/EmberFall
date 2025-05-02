@@ -46,6 +46,13 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
         break;
     }
 
+    case Packets::PacketTypes_PT_PLAYER_READY_IN_LOBBY_CS:
+    {
+        decltype(auto) packetReady = FbsPacketFactory::GetDataPtrCS<Packets::PlayerReadyInLobbyCS>(buffer);
+        ProcessPlayerReadyInLobby(session, packetReady);
+        break;
+    }
+
     case Packets::PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_CS:
     {
         decltype(auto) packetEnter = FbsPacketFactory::GetDataPtrCS<Packets::PlayerEnterInLobbyCS>(buffer);
@@ -165,6 +172,8 @@ void ProcessPlayerReadyInLobby(std::shared_ptr<class GameSession>& session, cons
     auto success = gGameRoomManager->ReadyPlayer(sessionGameRoom, sessionId, ready->role());
     if (false == success) {
         // TODO - Send -> Reject Ready Packet
+        auto packetRejectReady = FbsPacketFactory::RejectPlayersReadySC();
+        session->RegisterSend(packetRejectReady);
         return;
     }
 
@@ -175,10 +184,6 @@ void ProcessPlayerReadyInLobby(std::shared_ptr<class GameSession>& session, cons
     {
         Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
         for (auto& otherSessionId : sessionsInGameRoom) {
-            if (otherSessionId == sessionId) {
-                continue;
-            }
-
             auto otherSession = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(otherSessionId));
             if (nullptr == otherSession or SESSION_INLOBBY != otherSession->GetSessionState()) {
                 continue;
@@ -190,7 +195,7 @@ void ProcessPlayerReadyInLobby(std::shared_ptr<class GameSession>& session, cons
 
     for (auto& otherSession : otherSessionList) {
         auto clonedPacket = FbsPacketFactory::ClonePacket(packetReady);
-        session->RegisterSend(clonedPacket);
+        otherSession->RegisterSend(clonedPacket);
     }
 
     FbsPacketFactory::ReleasePacketBuf(packetReady);

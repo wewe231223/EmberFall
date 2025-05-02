@@ -27,7 +27,6 @@ void ServerFrame::Run() {
     ResourceManager::LoadAnimationFromFile("../Resources/Binarys/Collider/AnimationInfo.bin");
 
     gServerCore->Init();
-    gGameRoomManager->InitGameRooms();
 
     mInputManager = std::make_shared<InputManager>();
 
@@ -41,18 +40,8 @@ void ServerFrame::Run() {
     gServerCore->Start("", SERVER_PORT);
 
     mTimerThread = std::thread{ [this]() { TimerThread(); } };
-    
-    //gObjectManager->Init();
-    //gObjectManager->LoadEnvFromFile("../Resources/Binarys/Collider/env1.bin");
-
-    //for (int32_t test = 0; test < 100; ++test) {
-    //    if (test < 8) {
-    //        decltype(auto) corruptedGem = gObjectManager->SpawnObject(Packets::EntityType_CORRUPTED_GEM);
-    //    }
-
-    //    decltype(auto) monster = gObjectManager->SpawnObject(Packets::EntityType_MONSTER);
-    //    std::this_thread::sleep_for(1ms);
-    //}
+ 
+    gGameRoomManager->InitGameRooms();
 
     while (not mDone);
 }

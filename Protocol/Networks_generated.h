@@ -30,6 +30,9 @@ struct PlayerEnterInLobbySCBuilder;
 struct PlayerReadyInLobbySC;
 struct PlayerReadyInLobbySCBuilder;
 
+struct RejectPlayersReadySC;
+struct RejectPlayersReadySCBuilder;
+
 struct ChangeToNextSceneSC;
 struct ChangeToNextSceneSCBuilder;
 
@@ -252,6 +255,35 @@ inline ::flatbuffers::Offset<PlayerReadyInLobbySC> CreatePlayerReadyInLobbySC(
   PlayerReadyInLobbySCBuilder builder_(_fbb);
   builder_.add_role(role);
   builder_.add_playerId(playerId);
+  return builder_.Finish();
+}
+
+struct RejectPlayersReadySC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef RejectPlayersReadySCBuilder Builder;
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           verifier.EndTable();
+  }
+};
+
+struct RejectPlayersReadySCBuilder {
+  typedef RejectPlayersReadySC Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  explicit RejectPlayersReadySCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<RejectPlayersReadySC> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<RejectPlayersReadySC>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<RejectPlayersReadySC> CreateRejectPlayersReadySC(
+    ::flatbuffers::FlatBufferBuilder &_fbb) {
+  RejectPlayersReadySCBuilder builder_(_fbb);
   return builder_.Finish();
 }
 

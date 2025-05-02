@@ -10,6 +10,10 @@ Stage::Stage(GameStage stageIdx, uint16_t roomIdx)
 
 Stage::~Stage() { }
 
+bool Stage::GetActiveState() const {
+    return mActive;
+}
+
 GameStage Stage::GetStageIdx() const {
     return mStage;
 }
@@ -45,6 +49,10 @@ bool Stage::InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2, const 
 void Stage::InitObjectManager(const std::filesystem::path& path) {
     mObjectManager->Init(mGameRoomIdx);
     mObjectManager->LoadEnvFromFile(path);
+
+    //for (int i = 0; i < 10; ++i) {
+    //    mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+    //}
 }
 
 std::vector<NetworkObjectIdType> Stage::GetNearbyPlayers(const SimpleMath::Vector3& currPos, const float range) {
@@ -73,6 +81,14 @@ std::shared_ptr<GameObject> Stage::GetTrigger(NetworkObjectIdType id) {
 
 std::shared_ptr<GameObject> Stage::GetEnv(NetworkObjectIdType id) {
     return mObjectManager->GetEnv(id);
+}
+
+void Stage::StartStage() {
+    mActive.exchange(true);
+}
+
+void Stage::EndStage() {
+    mActive.exchange(false);
 }
 
 std::shared_ptr<GameObject> Stage::SpawnObject(Packets::EntityType entity) {

@@ -34,26 +34,27 @@ enum PacketTypes : uint8_t {
   PacketTypes_PT_LATENCT_SC = 131,
   PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_SC = 132,
   PacketTypes_PT_PLAYER_READY_IN_LOBBY_SC = 133,
-  PacketTypes_PT_CHANGE_TO_NEXT_SCENE_SC = 134,
-  PacketTypes_PT_GAME_END_SC = 135,
-  PacketTypes_PT_OBJECT_APPEARED_SC = 136,
-  PacketTypes_PT_OBJECT_DISAPPEARED_SC = 137,
-  PacketTypes_PT_OBJECT_REMOVED_SC = 138,
-  PacketTypes_PT_OBJECT_MOVE_SC = 139,
-  PacketTypes_PT_OBJECT_ATTACKED_SC = 140,
-  PacketTypes_PT_OBJECT_ANIMATION_CHANGED_SC = 141,
-  PacketTypes_PT_GEM_INTERACT_SC = 142,
-  PacketTypes_PT_GEM_CANCEL_INTERACTOIN_SC = 143,
-  PacketTypes_PT_GEM_DESTROYED_SC = 144,
-  PacketTypes_PT_USE_ITEM_SC = 145,
-  PacketTypes_PT_ACQUIRED_ITEM_SC = 146,
-  PacketTypes_PT_FIRE_PROJECTILE_SC = 147,
-  PacketTypes_PT_PROJECTILE_MOVE_SC = 148,
+  PacketTypes_PT_REJECT_PLAYERS_READY_SC = 134,
+  PacketTypes_PT_CHANGE_TO_NEXT_SCENE_SC = 135,
+  PacketTypes_PT_GAME_END_SC = 136,
+  PacketTypes_PT_OBJECT_APPEARED_SC = 137,
+  PacketTypes_PT_OBJECT_DISAPPEARED_SC = 138,
+  PacketTypes_PT_OBJECT_REMOVED_SC = 139,
+  PacketTypes_PT_OBJECT_MOVE_SC = 140,
+  PacketTypes_PT_OBJECT_ATTACKED_SC = 141,
+  PacketTypes_PT_OBJECT_ANIMATION_CHANGED_SC = 142,
+  PacketTypes_PT_GEM_INTERACT_SC = 143,
+  PacketTypes_PT_GEM_CANCEL_INTERACTOIN_SC = 144,
+  PacketTypes_PT_GEM_DESTROYED_SC = 145,
+  PacketTypes_PT_USE_ITEM_SC = 146,
+  PacketTypes_PT_ACQUIRED_ITEM_SC = 147,
+  PacketTypes_PT_FIRE_PROJECTILE_SC = 148,
+  PacketTypes_PT_PROJECTILE_MOVE_SC = 149,
   PacketTypes_MIN = PacketTypes_PT_PLAYER_EXIT_CS,
   PacketTypes_MAX = PacketTypes_PT_PROJECTILE_MOVE_SC
 };
 
-inline const PacketTypes (&EnumValuesPacketTypes())[33] {
+inline const PacketTypes (&EnumValuesPacketTypes())[34] {
   static const PacketTypes values[] = {
     PacketTypes_PT_PLAYER_EXIT_CS,
     PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_CS,
@@ -73,6 +74,7 @@ inline const PacketTypes (&EnumValuesPacketTypes())[33] {
     PacketTypes_PT_LATENCT_SC,
     PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_SC,
     PacketTypes_PT_PLAYER_READY_IN_LOBBY_SC,
+    PacketTypes_PT_REJECT_PLAYERS_READY_SC,
     PacketTypes_PT_CHANGE_TO_NEXT_SCENE_SC,
     PacketTypes_PT_GAME_END_SC,
     PacketTypes_PT_OBJECT_APPEARED_SC,
@@ -93,7 +95,7 @@ inline const PacketTypes (&EnumValuesPacketTypes())[33] {
 }
 
 inline const char * const *EnumNamesPacketTypes() {
-  static const char * const names[150] = {
+  static const char * const names[151] = {
     "PT_PLAYER_EXIT_CS",
     "PT_PLAYER_ENTER_IN_LOBBY_CS",
     "PT_PLAYER_READY_IN_LOBBY_CS",
@@ -228,6 +230,7 @@ inline const char * const *EnumNamesPacketTypes() {
     "PT_LATENCT_SC",
     "PT_PLAYER_ENTER_IN_LOBBY_SC",
     "PT_PLAYER_READY_IN_LOBBY_SC",
+    "PT_REJECT_PLAYERS_READY_SC",
     "PT_CHANGE_TO_NEXT_SCENE_SC",
     "PT_GAME_END_SC",
     "PT_OBJECT_APPEARED_SC",

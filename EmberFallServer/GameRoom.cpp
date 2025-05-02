@@ -126,6 +126,7 @@ void GameRoomManager::InitGameRooms() {
 uint16_t GameRoomManager::TryInsertGameRoom(SessionIdType sessionId) {
     for (uint16_t roomIdx{ 0 }; auto& room : mGameRooms) {
         if (room->IsMaxSession()) {
+            ++roomIdx;
             continue;
         }
 
@@ -135,6 +136,8 @@ uint16_t GameRoomManager::TryInsertGameRoom(SessionIdType sessionId) {
             LAST_ERROR_CODE = errorCode;
             return roomIdx;
         }
+
+        ++roomIdx;
     }
 
     LAST_ERROR_CODE = GameRoomError::ERROR_ALL_ROOM_IS_FULL;

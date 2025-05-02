@@ -35,7 +35,7 @@ void CorruptedGemScript::LateUpdate(const float deltaTime) {
         auto packetRemove = FbsPacketFactory::ObjectRemoveSC(owner->GetId());
         owner->StorePacket(packetRemove);
 
-        gServerFrame->AddTimerEvent(owner->GetId(), owner->GetMyRoomIdx(), SysClock::now(), TimerEventType::REMOVE_NPC);
+        gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), owner->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
     }
 }
 

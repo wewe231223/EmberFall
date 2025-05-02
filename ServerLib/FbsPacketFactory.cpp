@@ -100,6 +100,19 @@ OverlappedSend* FbsPacketFactory::PlayerReadyInLobbySC(SessionIdType id, Packets
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 
+OverlappedSend* FbsPacketFactory::RejectPlayersReadySC() {
+    flatbuffers::FlatBufferBuilder builder{ };
+
+    auto offset = Packets::CreateRejectPlayersReadySC(builder);
+    builder.Finish(offset);
+
+    const uint8_t* payload = builder.GetBufferPointer();
+    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
+
+    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes_PT_REJECT_PLAYERS_READY_SC };
+    return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
+}
+
 OverlappedSend* FbsPacketFactory::ChangeToNextSceneSC() {
     flatbuffers::FlatBufferBuilder builder{ };
 

@@ -115,8 +115,6 @@ void ObjectManager::LoadEnvFromFile(const std::filesystem::path& path) {
 
         sector->AddInSector(obj->GetId(), obj->GetPosition());
     }
-
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Load Environments Success");
 }
 
 std::shared_ptr<GameObject> ObjectManager::GetObjectFromId(NetworkObjectIdType id) const {
@@ -325,6 +323,14 @@ std::shared_ptr<GameObject> ObjectManager::SpawnEventTrigger(const SimpleMath::V
     obj->RegisterUpdate();
 
     return obj;
+}
+
+void ObjectManager::StartUpdateNPCs() {
+    for (auto& npc : mNPCs) {
+        if (npc->mSpec.active) {
+            npc->RegisterUpdate();
+        }
+    }
 }
 
 void ObjectManager::ReleaseObject(NetworkObjectIdType id) {

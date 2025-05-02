@@ -45,6 +45,8 @@ public:
     std::shared_ptr<GameObject> SpawnEventTrigger(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& ext, const SimpleMath::Vector3& dir,
         float lifeTime, std::shared_ptr<GameEvent> event, float delay, int32_t count);
 
+    void StartUpdateNPCs();
+
     void ReleaseObject(NetworkObjectIdType id);
 
 private:

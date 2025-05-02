@@ -10,7 +10,9 @@ public:
     ~Stage();
 
 public:
+    bool GetActiveState() const;
     GameStage GetStageIdx() const;
+
     std::shared_ptr<SectorSystem> GetSectorSystem() const;
     std::shared_ptr<ObjectManager> GetObjectManager() const;
     std::shared_ptr<CollisionManager> GetCollisionManager() const;
@@ -21,6 +23,9 @@ public:
     std::shared_ptr<GameObject> GetTrigger(NetworkObjectIdType id);
     //std::shared_ptr<GameObject> GetProjectile(NetworkObjectIdType id);
     std::shared_ptr<GameObject> GetEnv(NetworkObjectIdType id);
+
+    void StartStage();
+    void EndStage();
 
     bool InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2, const float range);
 
@@ -44,6 +49,7 @@ public:
     void Clear();
 
 private:
+    std::atomic_bool mActive{ false };
     GameStage mStage{ };
     uint16_t mGameRoomIdx{ };
 

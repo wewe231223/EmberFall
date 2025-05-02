@@ -40,6 +40,7 @@ public:
     // In Lobby
     static OverlappedSend* PlayerEnterInLobbySC(SessionIdType id);
     static OverlappedSend* PlayerReadyInLobbySC(SessionIdType id, Packets::PlayerRole role);
+    static OverlappedSend* RejectPlayersReadySC();
     static OverlappedSend* ChangeToNextSceneSC();
     static OverlappedSend* GameEndSC(Packets::PlayerRole winner);
 
