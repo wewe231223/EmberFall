@@ -34,10 +34,33 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		};
 
 	switch (header->type) {
+	case Packets::PacketTypes_PT_NOTIFY_ID_SC:
+	{
+		decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::NotifyIdSC>(buffer);
+		gClientCore->InitSessionId(data->playerId());
+
+		mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[0];
+		std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).SetActiveState(true);
+		std::get<1>(*(mPlayerIndexmap[gClientCore->GetSessionId()]))->SetActiveState(true);
+
+		break;
+	}
+	case Packets::PacketTypes_PT_PROTOCOL_VERSION_SC: 
+	{
+		decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ProtocolVersionSC>(buffer);
+		if (PROTOCOL_VERSION_MAJOR != data->major() or
+			PROTOCOL_VERSION_MINOR != data->minor()) {
+			gClientCore->CloseSession();
+			MessageBox(nullptr, L"ERROR!!!!!\nProtocolVersion Mismatching", L"", MB_OK | MB_ICONERROR);
+			::exit(0);
+		}
+		break;
+	}
 	case Packets::PacketTypes_PT_PLAYER_READY_IN_LOBBY_SC:
 	{
 		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerReadyInLobbySC>(buffer);
 
+		auto id = packet->playerId(); 
 		std::get<2>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
 
 		switch (packet->role()) {
@@ -105,6 +128,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		std::get<0>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
 		
 
+		DebugBreak(); 
 		break;
 	}
 	case Packets::PacketTypes_PT_PLAYER_EXIT_SC:
@@ -184,10 +208,7 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 	gClientCore->Send(packet); 
 
 
-	mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[0];
-	
-	std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).SetActiveState(true);
-	std::get<1>(*(mPlayerIndexmap[gClientCore->GetSessionId()]))->SetActiveState(true);
+
 }
 
 void LobbyScene::ProcessNetwork() {

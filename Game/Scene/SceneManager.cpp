@@ -40,7 +40,7 @@ void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferC
 
 
 	gClientCore->Init();
-	auto res = gClientCore->Start("127.0.0.1", 7777);
+	auto res = gClientCore->Start("192.168.156.38", 7777);
 	if (false == res) {
 		DebugBreak();
 		Crash(false);
