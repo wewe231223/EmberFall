@@ -26,7 +26,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 
 	auto FindNextPlayerLoc = [this]() {
 		for (auto iter = mPlayers.begin(); iter != mPlayers.end(); ++iter) {
-			if (not iter->first.GetActiveState()) {
+			if (not std::get<0>(*iter).GetActiveState()) {
 				return iter;
 			}
 		}
@@ -38,7 +38,48 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 	{
 		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerReadyInLobbySC>(buffer);
 
-		
+		std::get<2>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
+
+		switch (packet->role()) {
+		case Packets::PlayerRole::PlayerRole_HUMAN_LONGSWORD:
+		{
+			auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["SwordMan"].Clone();
+			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
+		}
+		break;
+		case Packets::PlayerRole::PlayerRole_HUMAN_ARCHER:
+		{
+			auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["Archer"].Clone();
+			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
+		}
+		break;
+		case Packets::PlayerRole::PlayerRole_HUMAN_MAGICIAN:
+		{
+			auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["Mage"].Clone();
+			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
+		}
+		break;
+		case Packets::PlayerRole::PlayerRole_HUMAN_SWORD:
+		{
+			auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["ShieldMan"].Clone();
+			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
+		}
+		break;
+		case Packets::PlayerRole::PlayerRole_BOSS:
+		{
+			auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["Demon"].Clone();
+			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
+		}
+		break;
+		default:
+			break;
+		}
+
 
 		// 누군가 로비 씬에서 Ready 한 경우 
 		break;
@@ -51,7 +92,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		auto nextLoc = FindNextPlayerLoc();
 
 		if (mPlayerIndexmap[packet->playerId()] != nullptr) {
-			if (mPlayerIndexmap[packet->playerId()]->first.GetActiveState()) {
+			if (std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetActiveState()) {
 				break;
 			}
 		}
@@ -61,8 +102,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		}
 
 		mPlayerIndexmap[packet->playerId()] = &(*nextLoc);
-		mPlayerIndexmap[packet->playerId()]->first.SetActiveState(true);
-
+		std::get<0>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
 		
 
 		break;
@@ -73,7 +113,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerExitSC>(buffer);
 
 		if (mPlayerIndexmap.contains(packet->playerId())) {
-			mPlayerIndexmap[packet->playerId()]->first.SetActiveState(false);
+			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
 		}
 
 		break;
@@ -101,6 +141,7 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 	LobbyScene::BuildEquipmentObject();
 	LobbyScene::BuildPlayerPrefab();
 	LobbyScene::BuildPlayerNameTextBlock(); 
+	LobbyScene::BuildPlayerReadyImage();
 
 	mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
@@ -108,26 +149,26 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 
 	mRenderManager->GetLightingManager().ClearLight(commandList);
 
-	mPlayers[0].first = mPlayerPreFabs["BaseMan"].Clone();
-	mPlayers[1].first = mPlayerPreFabs["BaseMan"].Clone();
-	mPlayers[2].first = mPlayerPreFabs["BaseMan"].Clone();
-	mPlayers[3].first = mPlayerPreFabs["BaseMan"].Clone();
+	std::get<0>(mPlayers[0]) = mPlayerPreFabs["BaseMan"].Clone();
+	std::get<0>(mPlayers[1]) = mPlayerPreFabs["BaseMan"].Clone();
+	std::get<0>(mPlayers[2]) = mPlayerPreFabs["BaseMan"].Clone();
+	std::get<0>(mPlayers[3]) = mPlayerPreFabs["BaseMan"].Clone();
 
 	constexpr float Interval = 2.f; 
-	mPlayers[0].first.GetTransform().SetPosition({ -1.f * Interval * 1.5f , 0.f, 5.f });
-	mPlayers[1].first.GetTransform().SetPosition({ -1.f * Interval * 0.5f , 0.f, 5.f });
-	mPlayers[2].first.GetTransform().SetPosition({  1.f * Interval * 0.5f , 0.f, 5.f });
-	mPlayers[3].first.GetTransform().SetPosition({  1.f * Interval * 1.5f , 0.f, 5.f });
+	std::get<0>(mPlayers[0]).GetTransform().SetPosition({ -1.f * Interval * 1.5f , 0.f, 5.f });
+	std::get<0>(mPlayers[1]).GetTransform().SetPosition({ -1.f * Interval * 0.5f , 0.f, 5.f });
+	std::get<0>(mPlayers[2]).GetTransform().SetPosition({  1.f * Interval * 0.5f , 0.f, 5.f });
+	std::get<0>(mPlayers[3]).GetTransform().SetPosition({  1.f * Interval * 1.5f , 0.f, 5.f });
 
-	mPlayers[4].first = mPlayerPreFabs["Demon"].Clone();
-	mPlayers[4].first.GetTransform().SetPosition({ 0.f, 0.f, -10.f });
-	mPlayers[4].first.GetTransform().Rotate(0.f, 110.f, 0.f);
+	std::get<0>(mPlayers[4]) = mPlayerPreFabs["Demon"].Clone();
+	std::get<0>(mPlayers[4]).GetTransform().SetPosition({ 0.f, 0.f, -10.f });
+	std::get<0>(mPlayers[4]).GetTransform().Rotate(0.f, 110.f, 0.f);
 
-	mPlayers[0].first.SetActiveState(false);
-	mPlayers[1].first.SetActiveState(false);
-	mPlayers[2].first.SetActiveState(false);
-	mPlayers[3].first.SetActiveState(false);
-	mPlayers[4].first.SetActiveState(false);
+	std::get<0>(mPlayers[0]).SetActiveState(false);
+	std::get<0>(mPlayers[1]).SetActiveState(false);
+	std::get<0>(mPlayers[2]).SetActiveState(false);
+	std::get<0>(mPlayers[3]).SetActiveState(false);
+	std::get<0>(mPlayers[4]).SetActiveState(false);
 
 	mCamera.GetTransform().Look({ 0.f,2.f, 1.f });
 
@@ -144,8 +185,9 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 
 
 	mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[0];
-	mPlayerIndexmap[gClientCore->GetSessionId()]->first.SetActiveState(true);
-	mPlayerIndexmap[gClientCore->GetSessionId()]->second->SetActiveState(true);
+	
+	std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).SetActiveState(true);
+	std::get<1>(*(mPlayerIndexmap[gClientCore->GetSessionId()]))->SetActiveState(true);
 }
 
 void LobbyScene::ProcessNetwork() {
@@ -174,37 +216,37 @@ void LobbyScene::Update() {
 			switch (mPlayerRole) {
 			case PlayerRole_SwordMan:
 			{
-				auto transform = mPlayers[0].first.GetTransform();
-				mPlayers[0].first = mPlayerPreFabs["SwordMan"].Clone();
-				mPlayers[0].first.GetTransform() = transform;
+				auto transform = std::get<0>(mPlayers[0]).GetTransform();
+				std::get<0>(mPlayers[0]) = mPlayerPreFabs["SwordMan"].Clone();
+				std::get<0>(mPlayers[0]).GetTransform() = transform;
 			}
 			break;
 			case PlayerRole_Archer:
 			{
-				auto transform = mPlayers[0].first.GetTransform();
-				mPlayers[0].first = mPlayerPreFabs["Archer"].Clone();
-				mPlayers[0].first.GetTransform() = transform;
+				auto transform = std::get<0>(mPlayers[0]).GetTransform();
+				std::get<0>(mPlayers[0]) = mPlayerPreFabs["Archer"].Clone();
+				std::get<0>(mPlayers[0]).GetTransform() = transform;
 			}
 			break;
 			case PlayerRole_Mage:
 			{
-				auto transform = mPlayers[0].first.GetTransform();
-				mPlayers[0].first = mPlayerPreFabs["Mage"].Clone();
-				mPlayers[0].first.GetTransform() = transform;
+				auto transform = std::get<0>(mPlayers[0]).GetTransform();
+				std::get<0>(mPlayers[0]) = mPlayerPreFabs["Mage"].Clone();
+				std::get<0>(mPlayers[0]).GetTransform() = transform;
 			}
 			break;
 			case PlayerRole_ShieldMan:
 			{
-				auto transform = mPlayers[0].first.GetTransform();
-				mPlayers[0].first = mPlayerPreFabs["ShieldMan"].Clone();
-				mPlayers[0].first.GetTransform() = transform;
+				auto transform = std::get<0>(mPlayers[0]).GetTransform();
+				std::get<0>(mPlayers[0]) = mPlayerPreFabs["ShieldMan"].Clone();
+				std::get<0>(mPlayers[0]).GetTransform() = transform;
 			}
 			break;
 			case PlayerRole_Demon:
 			{
-				auto transform = mPlayers[0].first.GetTransform();
-				mPlayers[0].first = mPlayerPreFabs["Demon"].Clone();
-				mPlayers[0].first.GetTransform() = transform;
+				auto transform = std::get<0>(mPlayers[0]).GetTransform();
+				std::get<0>(mPlayers[0]) = mPlayerPreFabs["Demon"].Clone();
+				std::get<0>(mPlayers[0]).GetTransform() = transform;
 			}
 			break;
 			default:
@@ -218,13 +260,13 @@ void LobbyScene::Update() {
 		if (not mCameraRotating) {
 			if (mPlayerSelected == 4) { // 인간 진영 선택 
 				mPlayerSelected = 0;
-				mPlayers[4].second->SetActiveState(false);
+				std::get<1>(mPlayers[4])->SetActiveState(false);
 				mCameraRotating = true; 
 			}
 			else { // 악마 진영 선택 
 				mPlayerSelected = 4;
 				for (auto i = 0; i < mPlayers.size() - 1; ++i) {
-					mPlayers[i].second->SetActiveState(false);
+					std::get<1>(mPlayers[i])->SetActiveState(false);
 				}
 				mCameraRotating = true;
 			}
@@ -254,6 +296,8 @@ void LobbyScene::Update() {
 			break;
 		}
 
+		std::get<2>(mPlayers[0]).SetActiveState(true); 
+
 		mIsReady = true; 
 		decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId(), role);
 		gClientCore->Send(packet);
@@ -271,8 +315,8 @@ void LobbyScene::Update() {
 			mCameraRotating = false;
 
 			for (auto i = 0; i < mPlayers.size() - 1; ++i) {
-				if (mPlayers[i].first.GetActiveState()) {
-					mPlayers[i].second->SetActiveState(true);
+				if (std::get<0>(mPlayers[i]).GetActiveState()) {
+					std::get<1>(mPlayers[i])->SetActiveState(true);
 				}
 			}
 
@@ -282,8 +326,8 @@ void LobbyScene::Update() {
 			mCamera.GetTransform().SetRotation(DirectX::SimpleMath::Quaternion::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(180.f), 0.f, 0.f));
 			mCameraRotating = false;
 
-			if (mPlayers[4].first.GetActiveState()) {
-				mPlayers[4].second->SetActiveState(true);
+			if (std::get<0>(mPlayers[4]).GetActiveState()) {
+				std::get<1>(mPlayers[4])->SetActiveState(true);
 			}
 		}
 
@@ -299,10 +343,11 @@ void LobbyScene::Update() {
 	}
 
 	for (auto& player : mPlayers) {
-		if (player.first.GetActiveState() == false) {
+		if (std::get<0>(player).GetActiveState() == false) {
 			continue;
 		}
-		player.first.Update(mRenderManager->GetMeshRenderManager());
+		std::get<0>(player).Update(mRenderManager->GetMeshRenderManager());
+		std::get<2>(player).Update(); 
 	}
 
 	mSkyBox.GetTransform().GetPosition() = mCamera.GetTransform().GetPosition(); 
@@ -322,7 +367,7 @@ void LobbyScene::SendNetwork() {
 
 void LobbyScene::Exit() {
 	for (auto& p : mPlayers) {
-		p.second->SetActiveState(false);
+		std::get<1>(p)->SetActiveState(false);
 	}
 }
 
@@ -600,21 +645,60 @@ void LobbyScene::BuildPlayerPrefab() {
 
 void LobbyScene::BuildPlayerNameTextBlock() {
 	const float xInterval = 380.f;
-	const float xPadding = 320.f; 
+	const float xPadding = 340.f; 
 
-	const float y = 570.f;
+	const float y = 550.f;
 
 	for (auto i = 0; i < mPlayers.size() - 1; ++i) {
 		auto& player = mPlayers[i];
-		player.second = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ xPadding + xInterval * i , y, xPadding + xInterval * i + 100.f, y + 100.f }, StringColor::White, "NotoSansKR");
-		player.second->GetText() = L"Player" + std::to_wstring(i);
-		player.second->SetActiveState(false);
+		std::get<1>(player) = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{xPadding + xInterval * i , y, xPadding + xInterval * i + 100.f, y + 100.f}, StringColor::White, "NotoSansKR");
+		std::get<1>(player)->GetText() = L"Player" + std::to_wstring(i);
+		std::get<1>(player)->SetActiveState(false);
 	}
 
 	auto& player = mPlayers[4];
-	player.second = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 760.f, 750.f, 760.f + xInterval, 850.f }, StringColor::White, "NotoSansKR");
-	player.second->GetText() = L"Player" + std::to_wstring(4);
-	player.second->SetActiveState(false);
+	std::get<1>(player) = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 760.f, 750.f, 760.f + xInterval, 850.f }, StringColor::White, "NotoSansKR");
+	std::get<1>(player)->GetText() = L"Player" + std::to_wstring(4);
+	std::get<1>(player)->SetActiveState(false);
+}
+
+void LobbyScene::BuildPlayerReadyImage() {
+	std::array<CanvasRect, 5> namePlateRects;
+
+	const float namePlateWidth = 80.f;
+	const float namePlateHeight = 100.f;
+	const float xOffsetFromText = 10.f; 
+
+	const float xInterval = 380.f;
+	const float xPadding = 340.f;
+
+	for (int i = 0; i < 4; ++i) {
+		float textLeft = xPadding + xInterval * i;
+		float textTop = 550.f;
+
+		namePlateRects[i].LTx = textLeft + 100.f + xOffsetFromText;
+		namePlateRects[i].LTy = textTop;
+		namePlateRects[i].width = namePlateWidth;
+		namePlateRects[i].height = namePlateHeight;
+	}
+
+	{
+		float textLeft = 760.f;
+		float textTop = 750.f;
+
+		namePlateRects[4].LTx = textLeft + xInterval + xOffsetFromText;
+		namePlateRects[4].LTy = textTop;
+		namePlateRects[4].width = namePlateWidth;
+		namePlateRects[4].height = namePlateHeight;
+	}
+
+	for (int i = 0; i < 5; ++i) {
+		auto& player = mPlayers[i];
+		std::get<2>(player) = Image{};
+		std::get<2>(player).Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("check")); 
+		std::get<2>(player).GetRect() = namePlateRects[i];
+		std::get<2>(player).SetActiveState(false); 
+	}
 }
 
 void LobbyScene::ProcessPackets(const uint8_t* buffer, size_t size) {

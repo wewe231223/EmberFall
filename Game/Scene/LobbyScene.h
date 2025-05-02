@@ -7,6 +7,7 @@
 #include "../Game/GameObject/EquipmentObject.h"
 #include "../Game/Scene/Player.h"
 #include "../MeshLoader/Loader/AnimationLoader.h"
+#include "../Game/UI/Image.h"
 #include "../ServerLib/PacketHandler.h"
 
 class LobbyScene : public IScene {
@@ -38,6 +39,7 @@ private:
 	void BuildPlayerPrefab();
 
 	void BuildPlayerNameTextBlock();
+	void BuildPlayerReadyImage(); 
 
 	void ProcessPackets(const uint8_t* buffer, size_t size);
 	const uint8_t* ProcessPacket(const uint8_t* buffer);
@@ -50,8 +52,8 @@ private:
 
 	std::vector<GameObject> mLobbyProps{}; 
 
-	std::unordered_map<NetworkObjectIdType, std::pair<Player, TextBlock*>*> mPlayerIndexmap{};
-	std::array<std::pair<Player,TextBlock*>, 5> mPlayers{};
+	std::unordered_map<NetworkObjectIdType, std::tuple<Player, TextBlock*, Image>*> mPlayerIndexmap{};
+	std::array<std::tuple<Player,TextBlock*, Image>, 5> mPlayers{};
 	
 	UINT mPlayerSelected{ 0 };
 	PlayerRole mPlayerRole{ PlayerRole_None };

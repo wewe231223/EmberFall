@@ -16,3 +16,7 @@ CanvasRect& Image::GetRect() {
 void Image::Update() {
 	mObject.Update();
 }
+
+void Image::SetActiveState(bool state) {
+	mObject.SetActive(state);
+}

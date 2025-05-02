@@ -11,6 +11,8 @@ public:
 	CanvasRect& GetRect();
 
 	void Update();
+
+	void SetActiveState(bool state);
 private:
 	CanvasObject mObject{};
 };
