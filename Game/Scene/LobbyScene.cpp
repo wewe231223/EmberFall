@@ -69,6 +69,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 			auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
 			std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["SwordMan"].Clone();
 			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
+			std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
 		}
 		break;
 		case Packets::PlayerRole::PlayerRole_HUMAN_ARCHER:
@@ -76,6 +77,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 			auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
 			std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["Archer"].Clone();
 			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
+			std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
 		}
 		break;
 		case Packets::PlayerRole::PlayerRole_HUMAN_MAGICIAN:
@@ -83,6 +85,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 			auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
 			std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["Mage"].Clone();
 			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
+			std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
 		}
 		break;
 		case Packets::PlayerRole::PlayerRole_HUMAN_SWORD:
@@ -90,6 +93,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 			auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
 			std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["ShieldMan"].Clone();
 			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
+			std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
 		}
 		break;
 		case Packets::PlayerRole::PlayerRole_BOSS:
@@ -97,6 +101,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 			auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
 			std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["Demon"].Clone();
 			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
+			std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
 		}
 		break;
 		default:
@@ -280,12 +285,14 @@ void LobbyScene::Update() {
 			if (mPlayerSelected == 4) { // 인간 진영 선택 
 				mPlayerSelected = 0;
 				std::get<1>(mPlayers[4])->SetActiveState(false);
+				std::get<2>(mPlayers[4]).SetActiveState(false); 
 				mCameraRotating = true; 
 			}
 			else { // 악마 진영 선택 
 				mPlayerSelected = 4;
 				for (auto i = 0; i < mPlayers.size() - 1; ++i) {
 					std::get<1>(mPlayers[i])->SetActiveState(false);
+					std::get<2>(mPlayers[i]).SetActiveState(false);
 				}
 				mCameraRotating = true;
 			}
@@ -336,6 +343,7 @@ void LobbyScene::Update() {
 			for (auto i = 0; i < mPlayers.size() - 1; ++i) {
 				if (std::get<0>(mPlayers[i]).GetActiveState()) {
 					std::get<1>(mPlayers[i])->SetActiveState(true);
+					std::get<2>(mPlayers[i]).SetActiveState(true);
 				}
 			}
 
@@ -347,6 +355,7 @@ void LobbyScene::Update() {
 
 			if (std::get<0>(mPlayers[4]).GetActiveState()) {
 				std::get<1>(mPlayers[4])->SetActiveState(true);
+				std::get<2>(mPlayers[4]).SetActiveState(true);
 			}
 		}
 
