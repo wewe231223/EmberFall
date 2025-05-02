@@ -135,7 +135,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerExitSC>(buffer);
 
 		if (mPlayerIndexmap.contains(packet->playerId())) {
-			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
+			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(false);
 		}
 
 		break;
