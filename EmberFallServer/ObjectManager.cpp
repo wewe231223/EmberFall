@@ -20,9 +20,13 @@ uint8_t ObjectManager::GetGemCount() const {
     return mCorruptedGemCount.load();
 }
 
-void ObjectManager::Init() {
+void ObjectManager::SetSector(std::shared_ptr<SectorSystem> sector) {
+    mSector = sector;
+}
+
+void ObjectManager::Init(uint16_t roomIdx) {
     for (NetworkObjectIdType id{ USER_ID_START }; auto & user : mPlayers) {
-        user = std::make_shared<GameObject>();
+        user = std::make_shared<GameObject>(roomIdx);
         user->InitId(id);
         user->Reset();
         user->mSpec.active = false;
@@ -31,7 +35,7 @@ void ObjectManager::Init() {
     }
 
     for (NetworkObjectIdType id{ MONSTER_ID_START }; auto& monster : mNPCs) {
-        monster = std::make_shared<GameObject>();
+        monster = std::make_shared<GameObject>(roomIdx);
         monster->InitId(id);
         monster->Reset();
         monster->mSpec.active = false;
@@ -40,7 +44,7 @@ void ObjectManager::Init() {
     }
 
     for (NetworkObjectIdType id{ PROJECTILE_ID_START }; auto & projectile : mProjectiles) {
-        projectile = std::make_shared<GameObject>();
+        projectile = std::make_shared<GameObject>(roomIdx);
         projectile->InitId(id);
         projectile->Reset();
         projectile->mSpec.active = false;
@@ -49,7 +53,7 @@ void ObjectManager::Init() {
     }
 
     for (NetworkObjectIdType id{ TRIGGER_ID_START }; auto & trigger : mTriggers) {
-        trigger = std::make_shared<GameObject>();
+        trigger = std::make_shared<GameObject>(roomIdx);
         trigger->InitId(id);
         trigger->Reset();
         trigger->mSpec.active = false;
@@ -58,7 +62,7 @@ void ObjectManager::Init() {
     }
 
     for (NetworkObjectIdType id{ ENV_ID_START }; auto & env : mEnvironments) {
-        env = std::make_shared<GameObject>();
+        env = std::make_shared<GameObject>(roomIdx);
         env->InitId(id);
         env->Reset();
         env->mSpec.active = false;
@@ -77,10 +81,15 @@ void ObjectManager::LoadEnvFromFile(const std::filesystem::path& path) {
     uint32_t numOfEnvs{ };
     envs.read(reinterpret_cast<char*>(&numOfEnvs), sizeof(numOfEnvs));
     struct FileFormat {
-        GameProtocol::EnvironmentType type;
-        SimpleMath::Vector3 pos;
-        float yaw;
+        GameProtocol::EnvironmentType type{ };
+        SimpleMath::Vector3 pos{ };
+        float yaw{ };
     };
+
+    auto sector = mSector.lock();
+    if (nullptr == sector) {
+        return;
+    }
 
     std::vector<FileFormat> envInfos(numOfEnvs);
     envs.read(reinterpret_cast<char*>(envInfos.data()), sizeof(FileFormat) * envInfos.size());
@@ -104,7 +113,7 @@ void ObjectManager::LoadEnvFromFile(const std::filesystem::path& path) {
         objTransform->Update();
         obj->GetBoundingObject()->Update(objTransform->GetWorld());
 
-        gSectorSystem->AddInSector(obj->GetId(), obj->GetPosition());
+        sector->AddInSector(obj->GetId(), obj->GetPosition());
     }
 
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Load Environments Success");
@@ -180,6 +189,11 @@ bool ObjectManager::InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2
 }
 
 std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entity) {
+    auto sector = mSector.lock();
+    if (nullptr == sector) {
+        return nullptr;
+    }
+
     NetworkObjectIdType validId{ };
     switch (entity) {
     case Packets::EntityType_HUMAN:
@@ -203,7 +217,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->GetTransform()->SetY(0.0f);
         obj->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -200.0f, 0.0f, -200.0f }, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
         
-        gSectorSystem->AddInSector(validId, obj->GetPosition());
+        sector->AddInSector(validId, obj->GetPosition());
         obj->RegisterUpdate();
 
         return obj;
@@ -232,7 +246,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->GetTransform()->SetY(0.0f);
         obj->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f }, SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f }));
 
-        gSectorSystem->AddInSector(validId, obj->GetPosition());
+        sector->AddInSector(validId, obj->GetPosition());
         obj->RegisterUpdate();
 
         return obj;
@@ -262,6 +276,11 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
 }
 
 std::shared_ptr<GameObject> ObjectManager::SpawnTrigger(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& ext, const SimpleMath::Vector3& dir, float lifeTime) {
+    auto sector = mSector.lock();
+    if (nullptr == sector) {
+        return nullptr;
+    }
+
     NetworkObjectIdType validId{ };
     if (false == mTriggerIndices.try_pop(validId)) {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max Trigger");
@@ -276,13 +295,18 @@ std::shared_ptr<GameObject> ObjectManager::SpawnTrigger(const SimpleMath::Vector
     obj->CreateBoundingObject<OBBCollider>(SimpleMath::Vector3::Zero, ext);
     obj->Init();
 
-    gSectorSystem->AddInSector(validId, obj->GetPosition());
+    sector->AddInSector(validId, obj->GetPosition());
 
     return obj;
 }
 
 std::shared_ptr<GameObject> ObjectManager::SpawnEventTrigger(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& ext, const SimpleMath::Vector3& dir, 
     float lifeTime, std::shared_ptr<GameEvent> event, float delay, int32_t count) {
+    auto sector = mSector.lock();
+    if (nullptr == sector) {
+        return nullptr;
+    }
+
     NetworkObjectIdType validId{ };
     if (false == mTriggerIndices.try_pop(validId)) {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max Event Trigger");
@@ -297,7 +321,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnEventTrigger(const SimpleMath::V
     obj->CreateBoundingObject<OBBCollider>(SimpleMath::Vector3::Zero, ext);
     obj->Init();
 
-    gSectorSystem->AddInSector(validId, obj->GetPosition());
+    sector->AddInSector(validId, obj->GetPosition());
     obj->RegisterUpdate();
 
     return obj;

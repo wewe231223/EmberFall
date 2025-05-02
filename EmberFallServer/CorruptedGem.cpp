@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "ServerFrame.h"
 
+#include "GameRoom.h"
 #include "ObjectManager.h"
 
 CorruptedGemScript::CorruptedGemScript(std::shared_ptr<GameObject> owner) 
@@ -34,7 +35,7 @@ void CorruptedGemScript::LateUpdate(const float deltaTime) {
         auto packetRemove = FbsPacketFactory::ObjectRemoveSC(owner->GetId());
         owner->StorePacket(packetRemove);
 
-        gServerFrame->AddTimerEvent(owner->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
+        gServerFrame->AddTimerEvent(owner->GetId(), owner->GetMyRoomIdx(), SysClock::now(), TimerEventType::REMOVE_NPC);
     }
 }
 
@@ -65,8 +66,9 @@ void CorruptedGemScript::OnDestroy(DestroyingGemEvent* event) {
 
     mDestroyingTime += event->elapsedTime;
     if (mDestroyingTime > DESTROYING_TIME) {
+        auto ownerRoom = owner->GetMyRoomIdx();
         auto eventDestroyed = GameEventFactory::GetEvent<GemDestroyed>(owner->GetId(), event->sender);
-        auto obj = gObjectManager->GetObjectFromId(event->sender);
+        auto obj = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(event->sender);
         if (nullptr != obj) {
             obj->DispatchGameEvent(eventDestroyed);
         }

@@ -13,14 +13,16 @@ GameSession::GameSession()
     : Session{ NetworkType::SERVER }, mSessionState{ SESSION_CONNECT } { }
 
 GameSession::~GameSession() { 
+    auto myId = static_cast<SessionIdType>(GetId());
+    auto myRoom = GetMyRoomIdx();
+
     if (nullptr != mUserObject) {
-        gSectorSystem->RemoveInSector(GetId(), mUserObject->GetPosition());
+        gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->RemoveInSector(GetId(), mUserObject->GetPosition());
         mUserObject->Reset();
     }
 
     // TODO - Remove In GameRoom
-    auto myId = static_cast<SessionIdType>(GetId());
-    gGameRoomManager->TryRemoveGameRoom(mGameRoomIdx, myId);
+    gGameRoomManager->TryRemoveGameRoom(myRoom, myId);
 
     mSessionState = SESSION_CLOSE;
 
@@ -38,7 +40,7 @@ void GameSession::OnConnect() {
         return;
     }
     
-    mGameRoomIdx = gameRoomIdx;
+    SetRoomIdx(gameRoomIdx);
     EnterLobby();
 }
 
@@ -76,7 +78,9 @@ void GameSession::InitUserObject() {
     static auto TestPos = SimpleMath::Vector3::Zero;
     const static auto PosInc = SimpleMath::Vector3::Left * 2.0f;
 
-    mUserObject = gObjectManager->GetObjectFromId(GetId());
+    auto myRoom = GetMyRoomIdx();
+
+    mUserObject = gGameRoomManager->GetRoom(myRoom)->GetStage().GetObjectManager()->GetObjectFromId(GetId());
     mUserObject->mSpec.active = true;
     mUserObject->CreateScript<PlayerScript>(mUserObject, std::make_shared<Input>());
     mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
@@ -108,8 +112,8 @@ void GameSession::InitUserObject() {
 
     const auto range = mUserObject->GetScript<PlayerScript>()->GetViewList().mViewRange.Count();
 
-    gSectorSystem->AddInSector(GetId(), pos);
-    gSectorSystem->UpdatePlayerViewList(mUserObject, pos, range);
+    gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->AddInSector(GetId(), pos);
+    gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->UpdatePlayerViewList(mUserObject, pos, range);
 }
 
 void GameSession::EnterLobby() {
@@ -131,10 +135,6 @@ std::shared_ptr<GameObject> GameSession::GetUserObject() const {
 
 uint8_t GameSession::GetSessionState() const {
     return mSessionState.load();
-}
-
-uint16_t GameSession::GetMyGameRoom() const {
-    return mGameRoomIdx;
 }
 
 Packets::PlayerRole GameSession::GetPlayerRole() const {

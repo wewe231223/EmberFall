@@ -6,6 +6,7 @@
 #include "BehaviorTreeBase.h"
 #include "ObjectManager.h"
 #include "ServerFrame.h"
+#include "GameRoom.h"
 #include "Sector.h"
 
 MonsterScript::MonsterScript(std::shared_ptr<class GameObject> owner)
@@ -51,7 +52,7 @@ void MonsterScript::LateUpdate(const float deltaTime) {
 
     if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Monster");
-        gServerFrame->AddTimerEvent(owner->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
+        gServerFrame->AddTimerEvent(owner->GetId(), owner->GetMyRoomIdx(), SysClock::now(), TimerEventType::REMOVE_NPC);
         owner->mSpec.active = false;
 
         auto packetRemove = FbsPacketFactory::ObjectRemoveSC(owner->GetId());
@@ -81,7 +82,8 @@ void MonsterScript::DispatchGameEvent(GameEvent* event) {
         return;
     }
     
-    auto senderTag = gObjectManager->GetObjectFromId(event->sender)->GetTag();
+    auto ownerRoom = owner->GetMyRoomIdx();
+    auto senderTag = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(event->sender)->GetTag();
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
     {
@@ -114,7 +116,12 @@ bool MonsterScript::IsPlayerInAttackRange() const {
     }
 
     auto owner = GetOwner();
-    auto chaseTarget = gObjectManager->GetPlayer(mChaseTarget);
+    if (nullptr == owner) {
+        return false;
+    }
+
+    auto ownerRoom = owner->GetMyRoomIdx();
+    auto chaseTarget = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetPlayer(mChaseTarget);
     if (nullptr == chaseTarget or false == chaseTarget->mSpec.active) {
         return false;
     }
@@ -178,9 +185,10 @@ BT::NodeStatus MonsterScript::DetectPlayerInRange(const float deltaTime) {
         return BT::NodeStatus::FAIL;
     }
 
-    std::vector<NetworkObjectIdType> players = gSectorSystem->GetNearbyPlayers(owner->GetPosition(), 10.0f);
+    auto ownerRoom = owner->GetMyRoomIdx();
+    std::vector<NetworkObjectIdType> players = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetNearbyPlayers(owner->GetPosition(), 10.0f);
     for (const auto& playerId : players) {
-        auto playerObj = gObjectManager->GetPlayer(playerId);
+        auto playerObj = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetPlayer(playerId);
         if (nullptr == playerObj or false == playerObj->mSpec.active) {
             continue;
         }
@@ -201,7 +209,8 @@ BT::NodeStatus MonsterScript::ChaseDetectedPlayer(const float deltaTime) {
         return BT::NodeStatus::FAIL;
     }
 
-    auto chaseTarget = gObjectManager->GetPlayer(mChaseTarget);
+    auto ownerRoom = owner->GetMyRoomIdx();
+    auto chaseTarget = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetPlayer(mChaseTarget);
     if (nullptr == chaseTarget or false == chaseTarget->mSpec.active) {
         BT::NodeStatus::FAIL;
     }
@@ -243,12 +252,17 @@ BT::NodeStatus MonsterScript::CheckPlayerInAttackRange(const float deltaTime) {
 }
 
 BT::NodeStatus MonsterScript::Attack(const float deltaTime) {
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return BT::NodeStatus::FAIL;
+    }
+
     if (INVALID_OBJ_ID == mChaseTarget) {
         return BT::NodeStatus::FAIL;
     }
 
-    auto owner = GetOwner();
-    auto chaseTarget = gObjectManager->GetPlayer(mChaseTarget);
+    auto ownerRoom = owner->GetMyRoomIdx();
+    auto chaseTarget = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetPlayer(mChaseTarget);
     if (nullptr == chaseTarget or false == chaseTarget->mSpec.active) {
         return BT::NodeStatus::FAIL;
     }

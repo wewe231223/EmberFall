@@ -10,6 +10,7 @@
 #include "Sector.h"
 
 #include "Trigger.h"
+#include "GameRoom.h"
 
 PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input) 
     : Script{ owner, ObjectTag::PLAYER, ScriptType::PLAYER }, mSession{ }, mInput { input }, mViewList{ } {
@@ -56,9 +57,10 @@ void PlayerScript::UpdateViewList(const std::vector<NetworkObjectIdType>& inView
         auto success = newViewList.TryInsert(id);
     }
 
+    auto ownerRoom = session->GetMyRoomIdx();
     for (const auto id : newViewList.GetCurrViewList()) {
         if (not oldViewList.IsInList(id)) {
-            decltype(auto) newObj = gObjectManager->GetObjectFromId(id);
+            decltype(auto) newObj = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(id);
             if (nullptr == newObj or false == newObj->mSpec.active) {
                 gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "In UpdateViewListPlayer: INVALID Object");
                 continue;
@@ -98,7 +100,9 @@ void PlayerScript::Init() {
 
     const auto pos = owner->GetPosition();
     const auto look = owner->GetTransform()->Forward();
-    mInteractionTrigger = gObjectManager->SpawnTrigger(pos, SimpleMath::Vector3{ 1.0f, 3.0f, 1.0f }, look, std::numeric_limits<float>::max());
+    auto ownerRoom = owner->GetMyRoomIdx();
+    mInteractionTrigger = gGameRoomManager->GetRoom(ownerRoom)->GetStage().SpawnTrigger(
+        pos, SimpleMath::Vector3{ 1.0f, 3.0f, 1.0f }, look, std::numeric_limits<float>::max());
 }
 
 void PlayerScript::Update(const float deltaTime) {
@@ -138,7 +142,8 @@ void PlayerScript::Update(const float deltaTime) {
         owner->Attack();
     }
 
-    gSectorSystem->UpdatePlayerViewList(owner, owner->GetPosition(), mViewList.mViewRange.Count());
+    auto ownerRoom = owner->GetMyRoomIdx();
+    gGameRoomManager->GetRoom(ownerRoom)->GetStage().UpdatePlayerViewList(owner, owner->GetPosition(), mViewList.mViewRange.Count());
 }
 
 void PlayerScript::LateUpdate(const float deltaTime) {
@@ -160,7 +165,7 @@ void PlayerScript::LateUpdate(const float deltaTime) {
 
     if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster Remove");
-        gServerFrame->AddTimerEvent(owner->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
+        gServerFrame->AddTimerEvent(owner->GetId(), owner->GetMyRoomIdx(), SysClock::now(), TimerEventType::REMOVE_NPC);
         owner->mSpec.active = false;
         return;
     }
@@ -196,7 +201,8 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
         return;
     }
 
-    auto senderTag = gObjectManager->GetObjectFromId(event->sender)->GetTag();
+    auto ownerRoom = owner->GetMyRoomIdx();
+    auto senderTag = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(event->sender)->GetTag();
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
     {
@@ -225,8 +231,14 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
 }
 
 std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return nullptr;
+    }
+
+    auto ownerRoom = owner->GetMyRoomIdx();
     if (true == mInteraction) {
-        return gObjectManager->GetObjectFromId(mInteractionObj);
+        return gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(mInteractionObj);
     }
 
     decltype(auto) objects = mInteractionTrigger->GetScript<Trigger>()->GetObjects();
@@ -234,11 +246,10 @@ std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
         return nullptr;
     }
 
-    auto owner = GetOwner();
     auto ownerPos = owner->GetPosition();
     auto ownerId = owner->GetId();
-    decltype(auto) filterObjects = std::views::filter(objects, [this](NetworkObjectIdType id) {
-        decltype(auto) obj = gObjectManager->GetObjectFromId(id);
+    decltype(auto) filterObjects = std::views::filter(objects, [this, ownerRoom](NetworkObjectIdType id) {
+        decltype(auto) obj = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(id);
         if (nullptr == obj or false == obj->mSpec.interactable or false == obj->mSpec.active) {
             return false;
         }
@@ -252,22 +263,22 @@ std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
     }
 
     if (std::ranges::distance(filterObjects) == 1) {
-        return gObjectManager->GetObjectFromId(*filterObjects.begin());
+        return gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(*filterObjects.begin());
     }
 
-    auto result = *std::ranges::min_element(filterObjects, [&owner, ownerId, ownerPos, this](NetworkObjectIdType id1, NetworkObjectIdType id2) {
+    auto result = *std::ranges::min_element(filterObjects, [&owner, ownerId, ownerPos, ownerRoom, this](NetworkObjectIdType id1, NetworkObjectIdType id2) {
         if (ownerId == id1 or ownerId == id2) {
             return false;
         }
 
-        decltype(auto) obj1 = gObjectManager->GetObjectFromId(id1);
-        decltype(auto) obj2 = gObjectManager->GetObjectFromId(id2);
+        decltype(auto) obj1 = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(id1);
+        decltype(auto) obj2 = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(id2);
 
         return SimpleMath::Vector3::DistanceSquared(ownerPos, obj1->GetPosition()) < SimpleMath::Vector3::DistanceSquared(ownerPos, obj2->GetPosition());
         }
     );
 
-    decltype(auto) resultObject = gObjectManager->GetObjectFromId(result);
+    decltype(auto) resultObject = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(result);
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Get Nearest Obj: {}", result);
     return resultObject;
 }
@@ -383,8 +394,8 @@ void PlayerScript::CancelInteraction() {
     }
 
     auto ownerId = owner->GetId();
-
-    auto obj = gObjectManager->GetObjectFromId(mInteractionObj);
+    auto ownerRoom = owner->GetMyRoomIdx();
+    auto obj = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(mInteractionObj);
     if (nullptr == obj) {
         mInteractionObj = INVALID_OBJ_ID;
         mInteraction = false;

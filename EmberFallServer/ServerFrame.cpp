@@ -9,6 +9,7 @@
 #include "GameSession.h"
 #include "ObjectManager.h"
 #include "Resources.h"
+#include "GameRoom.h"
 
 ServerFrame::ServerFrame() {}
 
@@ -24,9 +25,9 @@ void ServerFrame::Run() {
     ResourceManager::LoadEnvFromFile("../Resources/Binarys/Collider/EnvBB.bin");
     ResourceManager::LoadEntityFromFile("../Resources/Binarys/Collider/Entitybb.bin");
     ResourceManager::LoadAnimationFromFile("../Resources/Binarys/Collider/AnimationInfo.bin");
-    gObjectManager->Init();
 
     gServerCore->Init();
+    gGameRoomManager->InitGameRooms();
 
     mInputManager = std::make_shared<InputManager>();
 
@@ -41,16 +42,17 @@ void ServerFrame::Run() {
 
     mTimerThread = std::thread{ [this]() { TimerThread(); } };
     
-    gObjectManager->LoadEnvFromFile("../Resources/Binarys/Collider/env1.bin");
+    //gObjectManager->Init();
+    //gObjectManager->LoadEnvFromFile("../Resources/Binarys/Collider/env1.bin");
 
-    for (int32_t test = 0; test < 100; ++test) {
-        if (test < 8) {
-            decltype(auto) corruptedGem = gObjectManager->SpawnObject(Packets::EntityType_CORRUPTED_GEM);
-        }
+    //for (int32_t test = 0; test < 100; ++test) {
+    //    if (test < 8) {
+    //        decltype(auto) corruptedGem = gObjectManager->SpawnObject(Packets::EntityType_CORRUPTED_GEM);
+    //    }
 
-        decltype(auto) monster = gObjectManager->SpawnObject(Packets::EntityType_MONSTER);
-        std::this_thread::sleep_for(1ms);
-    }
+    //    decltype(auto) monster = gObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+    //    std::this_thread::sleep_for(1ms);
+    //}
 
     while (not mDone);
 }
@@ -66,8 +68,8 @@ void ServerFrame::PQCS(int32_t transfferedBytes, ULONG_PTR completionKey, Overla
     gServerCore->PQCS(transfferedBytes, completionKey, overlapped);
 }
 
-void ServerFrame::AddTimerEvent(NetworkObjectIdType id, SysClock::time_point executeTime, TimerEventType eventType) {
-    mTimerEvents.push(TimerEvent{ id, executeTime, eventType });
+void ServerFrame::AddTimerEvent(uint16_t roomIdx, NetworkObjectIdType id, SysClock::time_point executeTime, TimerEventType eventType) {
+    mTimerEvents.push(TimerEvent{ roomIdx, id, executeTime, eventType });
 }
 
 void ServerFrame::TimerThread() {
@@ -86,7 +88,7 @@ void ServerFrame::TimerThread() {
             continue;
         }
 
-        auto obj = gObjectManager->GetObjectFromId(event.id);
+        auto obj = gGameRoomManager->GetRoom(event.roomIdx)->GetStage().GetObjectFromId(event.id);
 
         if (nullptr == obj) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Object Is Dead");

@@ -67,9 +67,6 @@
     <Filter Include="Regacy\Attack\Weapon">
       <UniqueIdentifier>{5bdb23f0-7f45-49b4-bdd9-2dd54094a7ae}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Regacy\Attack\AttackSystem">
-      <UniqueIdentifier>{95a3be85-1cf0-41f1-82ae-8c70dfcccaed}</UniqueIdentifier>
-    </Filter>
     <Filter Include="MultiThreadLoopTest\BehaviorTree">
       <UniqueIdentifier>{95ed22be-e650-4d9c-81d8-f9f77195b696}</UniqueIdentifier>
     </Filter>
@@ -246,12 +243,14 @@
     <ClCompile Include="GraphBase.cpp">
       <Filter>MaybeReuse\Graph\GraphBase</Filter>
     </ClCompile>
-    <ClCompile Include="Stage.cpp" />
     <ClCompile Include="BuffHealScript.cpp">
       <Filter>MultiThreadLoopTest\Script\Buff</Filter>
     </ClCompile>
     <ClCompile Include="GameRoom.cpp">
       <Filter>MultiThreadLoopTest\Session</Filter>
+    </ClCompile>
+    <ClCompile Include="Stage.cpp">
+      <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -405,12 +404,14 @@
     <ClInclude Include="ItemScript.h">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClInclude>
-    <ClInclude Include="Stage.h" />
     <ClInclude Include="BuffHealScript.h">
       <Filter>MultiThreadLoopTest\Script\Buff</Filter>
     </ClInclude>
     <ClInclude Include="GameRoom.h">
       <Filter>MultiThreadLoopTest\Session</Filter>
+    </ClInclude>
+    <ClInclude Include="Stage.h">
+      <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

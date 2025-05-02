@@ -5,6 +5,9 @@
 
 INetworkObject::INetworkObject() { }
 
+INetworkObject::INetworkObject(uint16_t gameRoomIdx) 
+    : mGameRoomIdx{ gameRoomIdx } { }
+
 INetworkObject::~INetworkObject() { }
 
 void INetworkObject::InitId(NetworkObjectIdType id) {
@@ -13,6 +16,14 @@ void INetworkObject::InitId(NetworkObjectIdType id) {
 
 NetworkObjectIdType INetworkObject::GetId() const {
     return mId;
+}
+
+uint16_t INetworkObject::GetMyRoomIdx() const {
+    return mGameRoomIdx;
+}
+
+void INetworkObject::SetRoomIdx(uint16_t roomIdx) {
+    mGameRoomIdx = roomIdx;
 }
 
 void INetworkObject::StorePacket(OverlappedSend* sendBuf) {

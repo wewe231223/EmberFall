@@ -19,8 +19,8 @@ namespace Graphs {
 
     template <typename IndexT> requires std::is_arithmetic_v<IndexT>
     struct GraphEdge {
-        IndexT from;
-        IndexT to;
+        IndexT from{ };
+        IndexT to{ };
         
         GraphEdge() { }
         GraphEdge(IndexT from, IndexT to) : from{ from }, to{ to } { }

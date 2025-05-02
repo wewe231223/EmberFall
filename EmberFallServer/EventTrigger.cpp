@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "GameTimer.h"
 #include "ObjectManager.h"
+#include "GameRoom.h"
 
 EventTrigger::EventTrigger(std::shared_ptr<GameObject> owner, std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount)
     : Trigger{ owner, lifeTime }, mEvent{ event }, mProduceEventDelay{ eventDelay }, mProduceEventCount{ eventCount } {
@@ -30,8 +31,14 @@ void EventTrigger::OnCollision(const std::shared_ptr<GameObject>& opponent, cons
         return;
     }
 
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    auto ownerRoom = owner->GetMyRoomIdx();
     auto opponentId = opponent->GetId();
-    auto opponentTag = gObjectManager->GetObjectFromId(opponentId)->GetTag();
+    auto opponentTag = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectManager()->GetObjectFromId(opponentId)->GetTag();
     if (ObjectTag::TRIGGER == opponentTag or ObjectTag::ENV == opponentTag or ObjectTag::NONE == opponentTag) {
         return;
     }

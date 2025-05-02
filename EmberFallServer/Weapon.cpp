@@ -47,7 +47,7 @@ void Spear::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
     event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
 
     auto attackPos = pos + dir * mHitBox.Length();
-    gObjectManager->SpawnEventTrigger(attackPos, mHitBox, dir, 0.5f, event, 0.5f, 1);
+    //gObjectManager->SpawnEventTrigger(attackPos, mHitBox, dir, 0.5f, event, 0.5f, 1);
 }
 
 Bow::Bow(const SimpleMath::Vector3& hitBoxSize)
@@ -73,7 +73,7 @@ void Sword::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
     event->knockBackForce = dir * 5000.0f;
 
     auto attackPos = pos + dir * mHitBox.z * 0.5f;
-    gObjectManager->SpawnEventTrigger(attackPos, mHitBox, dir, 0.5f, event, 0.5f, 1);
+    //gObjectManager->SpawnEventTrigger(attackPos, mHitBox, dir, 0.5f, event, 0.5f, 1);
 }
 
 Staff::Staff(const SimpleMath::Vector3& hitBoxSize)

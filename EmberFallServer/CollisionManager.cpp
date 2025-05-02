@@ -31,7 +31,7 @@ void CollisionManager::PopCollisionPair(NetworkObjectIdType id1, NetworkObjectId
     mCollisionPairs.erase(collisionPair);
 }
 
-void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj) {
+void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj, const std::shared_ptr<SectorSystem>& sectorSystem, const std::shared_ptr<ObjectManager>& objManager) {
     if (nullptr == obj) {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Error In CollisionManager: target Object is Null");
         return;
@@ -44,22 +44,23 @@ void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj) {
     }
 
     auto bbExtents = bb->GetRadiusCircumplex();
-    decltype(auto) sectors = gSectorSystem->GetMustCheckSectors(pos, bbExtents);
+    decltype(auto) sectors = sectorSystem->GetMustCheckSectors(pos, bbExtents);
     const auto myId = obj->GetId();
     for (const auto sector : sectors) {
-        decltype(auto) collisionCheckPlayers = std::move(gSectorSystem->GetSector(sector).GetPlayersInRange(pos, bbExtents));
-        decltype(auto) collisionCheckMonsters = std::move(gSectorSystem->GetSector(sector).GetNPCsInRange(pos, bbExtents));
-        decltype(auto) collisionCheckEnvs = std::move(gSectorSystem->GetSector(sector).GetEnvInRange(pos, bbExtents));
-        decltype(auto) collisionCheckTriggers = std::move(gSectorSystem->GetSector(sector).GetTriggersInTange(pos, bbExtents));
+        decltype(auto) collisionCheckPlayers = std::move(sectorSystem->GetSector(sector).GetPlayersInRange(pos, bbExtents, objManager));
+        decltype(auto) collisionCheckMonsters = std::move(sectorSystem->GetSector(sector).GetNPCsInRange(pos, bbExtents, objManager));
+        decltype(auto) collisionCheckEnvs = std::move(sectorSystem->GetSector(sector).GetEnvInRange(pos, bbExtents, objManager));
+        decltype(auto) collisionCheckTriggers = std::move(sectorSystem->GetSector(sector).GetTriggersInTange(pos, bbExtents, objManager));
 
-        UpdateCollisionMonster(obj, myId, collisionCheckMonsters);
-        UpdateCollisionPlayer(obj, myId, collisionCheckPlayers);
-        UpdateCollisionEnv(obj, myId, collisionCheckEnvs);
-        UpdateCollisionTrigger(obj, myId, collisionCheckTriggers);
+        UpdateCollisionMonster(obj, objManager, collisionCheckMonsters);
+        UpdateCollisionPlayer(obj, objManager, collisionCheckPlayers);
+        UpdateCollisionEnv(obj, objManager, collisionCheckEnvs);
+        UpdateCollisionTrigger(obj, objManager,  collisionCheckTriggers);
     }
 }
 
-void CollisionManager::UpdateCollisionMonster(const std::shared_ptr<GameObject>& obj, NetworkObjectIdType objId, const std::vector<NetworkObjectIdType>& collisionCheckMonsters) {
+void CollisionManager::UpdateCollisionMonster(const std::shared_ptr<GameObject>& obj, const std::shared_ptr<ObjectManager>& objManager, const std::vector<NetworkObjectIdType>& collisionCheckMonsters) {
+    auto objId = obj->GetId();
     for (const auto monsterId : collisionCheckMonsters) {
         if (objId == monsterId) {
             continue;
@@ -71,7 +72,7 @@ void CollisionManager::UpdateCollisionMonster(const std::shared_ptr<GameObject>&
         }
 
         // Todo Collision Check And Resolve
-        auto monster = gObjectManager->GetNPC(monsterId);
+        auto monster = objManager->GetNPC(monsterId);
         if (nullptr == monster or false == monster->mSpec.active) {
             PopCollisionPair(monsterId, objId);
             continue;
@@ -89,7 +90,8 @@ void CollisionManager::UpdateCollisionMonster(const std::shared_ptr<GameObject>&
     }
 }
 
-void CollisionManager::UpdateCollisionPlayer(const std::shared_ptr<GameObject>& obj, NetworkObjectIdType objId, const std::vector<NetworkObjectIdType>& collisionCheckPlayers) {
+void CollisionManager::UpdateCollisionPlayer(const std::shared_ptr<GameObject>& obj, const std::shared_ptr<ObjectManager>& objManager, const std::vector<NetworkObjectIdType>& collisionCheckPlayers) {
+    auto objId = obj->GetId();
     for (const auto playerId : collisionCheckPlayers) {
         if (objId == playerId) {
             continue;
@@ -101,7 +103,7 @@ void CollisionManager::UpdateCollisionPlayer(const std::shared_ptr<GameObject>& 
         }
 
         // Todo Collision Check And Resolve
-        auto player = gObjectManager->GetPlayer(playerId);
+        auto player = objManager->GetPlayer(playerId);
         if (nullptr == player or false == player->mSpec.active) {
             PopCollisionPair(playerId, objId);
             continue;
@@ -119,7 +121,8 @@ void CollisionManager::UpdateCollisionPlayer(const std::shared_ptr<GameObject>& 
     }
 }
 
-void CollisionManager::UpdateCollisionEnv(const std::shared_ptr<GameObject>& obj, NetworkObjectIdType objId, const std::vector<NetworkObjectIdType>& collisionCheckEnvs) {
+void CollisionManager::UpdateCollisionEnv(const std::shared_ptr<GameObject>& obj, const std::shared_ptr<ObjectManager>& objManager, const std::vector<NetworkObjectIdType>& collisionCheckEnvs) {
+    auto objId = obj->GetId();
     for (const auto envId : collisionCheckEnvs) {
         if (objId == envId) {
             continue;
@@ -131,7 +134,7 @@ void CollisionManager::UpdateCollisionEnv(const std::shared_ptr<GameObject>& obj
         }
 
         // Todo Collision Check And Resolve
-        auto env = gObjectManager->GetEnv(envId);
+        auto env = objManager->GetEnv(envId);
         if (nullptr == env or false == env->mSpec.active) {
             PopCollisionPair(envId, objId);
             continue;
@@ -149,7 +152,8 @@ void CollisionManager::UpdateCollisionEnv(const std::shared_ptr<GameObject>& obj
     }
 }
 
-void CollisionManager::UpdateCollisionTrigger(const std::shared_ptr<GameObject>& obj, NetworkObjectIdType objId, const std::vector<NetworkObjectIdType>& collisionCheckTriggers) {
+void CollisionManager::UpdateCollisionTrigger(const std::shared_ptr<GameObject>& obj, const std::shared_ptr<ObjectManager>& objManager, const std::vector<NetworkObjectIdType>& collisionCheckTriggers) {
+    auto objId = obj->GetId();
     for (const auto triggerId : collisionCheckTriggers) {
         if (objId == triggerId) {
             continue;
@@ -161,7 +165,7 @@ void CollisionManager::UpdateCollisionTrigger(const std::shared_ptr<GameObject>&
         }
 
         // Todo Collision Check And Resolve
-        auto trigger = gObjectManager->GetTrigger(triggerId);
+        auto trigger = objManager->GetTrigger(triggerId);
         if (nullptr == trigger or false == trigger->mSpec.active) {
             PopCollisionPair(triggerId, objId);
             continue;

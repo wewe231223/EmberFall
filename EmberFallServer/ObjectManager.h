@@ -2,6 +2,8 @@
 
 #include "GameObject.h"
 
+class SectorSystem;
+
 class ObjectManager {
 public:
     static constexpr size_t MAX_USER = INVALID_SESSION_ID;
@@ -25,7 +27,8 @@ public:
 public:
     uint8_t GetGemCount() const;
 
-    void Init();
+    void SetSector(std::shared_ptr<SectorSystem> sector);
+    void Init(uint16_t roomIdx);
 
     void LoadEnvFromFile(const std::filesystem::path& path);
     std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) const;
@@ -60,4 +63,6 @@ private:
 
     std::array<std::shared_ptr<GameObject>, MAX_ENV> mEnvironments{ };
     Concurrency::concurrent_queue<NetworkObjectIdType> mEnvironmentsIndices{ };
+
+    std::weak_ptr<SectorSystem> mSector{ };
 };

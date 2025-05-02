@@ -27,7 +27,7 @@ void Trigger::Init() {
 
     auto id = owner->GetId();
     auto excuteTime = mLifeTime;
-    gServerFrame->AddTimerEvent(id, SysClock::now() + std::chrono::milliseconds{ static_cast<long long>(excuteTime * 1000.0f) }, TimerEventType::REMOVE_TRIGGER);
+    gServerFrame->AddTimerEvent(id, owner->GetMyRoomIdx(), SysClock::now() + std::chrono::milliseconds{ static_cast<long long>(excuteTime * 1000.0f) }, TimerEventType::REMOVE_TRIGGER);
 }
 
 void Trigger::Update(const float deltaTime) { }

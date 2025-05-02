@@ -1,7 +1,8 @@
 #include "pch.h"
 #include "GameRoom.h"
 
-GameRoom::GameRoom() : mGameRoomState{ GAME_ROOM_STATE_LOBBY } { }
+GameRoom::GameRoom(uint16_t roomIdx)
+    : mRoomIdx{ roomIdx }, mGameRoomState{ GAME_ROOM_STATE_LOBBY }, mStage{ GameStage::STAGE1, roomIdx } { }
 
 GameRoom::~GameRoom() { }
 
@@ -16,6 +17,10 @@ bool GameRoom::IsMaxSession() const {
 
 uint8_t GameRoom::GetGameRoomState() const {
     return mGameRoomState;
+}
+
+Stage& GameRoom::GetStage() {
+    return mStage;
 }
 
 Lock::SRWLock& GameRoom::GetSessionLock() {
@@ -95,7 +100,12 @@ bool GameRoom::ReadyPlayer(SessionIdType id, Packets::PlayerRole role) {
     return true;
 }
 
-GameRoomManager::GameRoomManager() { }
+GameRoomManager::GameRoomManager() {
+    for (uint16_t roomIdx{ 0 }; auto& room : mGameRooms) {
+        room = std::make_unique<GameRoom>(roomIdx);
+        ++roomIdx;
+    }
+}
 
 GameRoomManager::~GameRoomManager() { }
 
@@ -103,13 +113,23 @@ uint8_t GameRoomManager::GetLastErrorCode() {
     return LAST_ERROR_CODE;
 }
 
+std::unique_ptr<GameRoom>& GameRoomManager::GetRoom(uint16_t roomIdx) {
+    return mGameRooms.at(roomIdx);
+}
+
+void GameRoomManager::InitGameRooms() {
+    for (auto& room : mGameRooms) {
+        room->GetStage().InitObjectManager("../Resources/Binarys/Collider/env1.bin");
+    }
+}
+
 uint16_t GameRoomManager::TryInsertGameRoom(SessionIdType sessionId) {
     for (uint16_t roomIdx{ 0 }; auto& room : mGameRooms) {
-        if (room.IsMaxSession()) {
+        if (room->IsMaxSession()) {
             continue;
         }
 
-        auto errorCode = room.TryInsertInRoom(sessionId);
+        auto errorCode = room->TryInsertInRoom(sessionId);
         if (GameRoomError::SUCCESS_INSERT_SESSION_IN_ROOM == errorCode) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session[{}] Insert In GameRoom[{}]!", sessionId, roomIdx);
             LAST_ERROR_CODE = errorCode;
@@ -123,7 +143,7 @@ uint16_t GameRoomManager::TryInsertGameRoom(SessionIdType sessionId) {
 
 uint8_t GameRoomManager::TryRemoveGameRoom(size_t roomIdx, SessionIdType sessionId) {
     auto& room = mGameRooms[roomIdx];
-    auto errorCode = room.RemovePlayer(sessionId);
+    auto errorCode = room->RemovePlayer(sessionId);
     if (GameRoomError::SUCCESS_REMOVE_SESSION_IN_ROOM == errorCode) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session[{}] Remove From GameRoom[{}]!", sessionId, roomIdx);
     }
@@ -135,13 +155,13 @@ uint8_t GameRoomManager::TryRemoveGameRoom(size_t roomIdx, SessionIdType session
 }
 
 Lock::SRWLock& GameRoomManager::GetSessionLock(uint16_t roomIdx) {
-    return mGameRooms.at(roomIdx).GetSessionLock();
+    return mGameRooms.at(roomIdx)->GetSessionLock();
 }
 
 SessionListInRoom& GameRoomManager::GetSessionsInRoom(uint16_t roomIdx) {
-    return mGameRooms.at(roomIdx).GetSessions();
+    return mGameRooms.at(roomIdx)->GetSessions();
 }
 
 bool GameRoomManager::ReadyPlayer(uint16_t roomIdx, SessionIdType id, Packets::PlayerRole role) {
-    return mGameRooms.at(roomIdx).ReadyPlayer(id, role);
+    return mGameRooms.at(roomIdx)->ReadyPlayer(id, role);
 }

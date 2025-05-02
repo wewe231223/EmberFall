@@ -36,6 +36,7 @@ struct ObjectSpec {
 class GameObject : public INetworkObject {
 public:
     GameObject();
+    GameObject(uint16_t roomIdx);
     ~GameObject();
 
 public:

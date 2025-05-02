@@ -7,9 +7,17 @@
 #include "ObjectManager.h"
 #include "Sector.h"
 #include "ServerFrame.h"
+#include "GameRoom.h"
 
 GameObject::GameObject()
     : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mTimer{ std::make_unique<SimpleTimer>() } {
+    mWeaponSystem.SetWeapon(Packets::Weapon_SWORD);
+    mPhysics->SetTransform(mTransform);
+    mOverlapped = std::make_unique<OverlappedUpdate>();
+}
+
+GameObject::GameObject(uint16_t roomIdx) 
+    : INetworkObject{ roomIdx }, mTransform { std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mTimer{ std::make_unique<SimpleTimer>() } {
     mWeaponSystem.SetWeapon(Packets::Weapon_SWORD);
     mPhysics->SetTransform(mTransform);
     mOverlapped = std::make_unique<OverlappedUpdate>();
@@ -95,8 +103,9 @@ void GameObject::Reset() {
     mSpec.interactable = false;
     mSpec.hp = 0.0f;
 
-    gSectorSystem->RemoveInSector(GetId(), GetPosition());
-    gObjectManager->ReleaseObject(GetId());
+    auto myRoom = GetMyRoomIdx();
+    gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->RemoveInSector(GetId(), GetPosition());
+    gGameRoomManager->GetRoom(myRoom)->GetStage().GetObjectManager()->ReleaseObject(GetId());
 
     mTag = ObjectTag::ENV;
 
@@ -135,7 +144,7 @@ void GameObject::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
     Update();
     LateUpdate();
     
-    gServerFrame->AddTimerEvent(GetId(), SysClock::now() + 150ms, TimerEventType::UPDATE_NPC);
+    gServerFrame->AddTimerEvent(GetId(), GetMyRoomIdx(), SysClock::now() + 150ms, TimerEventType::UPDATE_NPC);
 }
 
 void GameObject::Update() {
@@ -174,8 +183,9 @@ void GameObject::Update() {
     }
     mBoundingObject->Update(mTransform->GetWorld());
 
+    auto myRoom = GetMyRoomIdx();
     decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
-    gCollisionManager->UpdateCollision(sharedThis);
+    gGameRoomManager->GetRoom(myRoom)->GetStage().UpdateCollision(sharedThis);
 }
 
 void GameObject::LateUpdate() {
@@ -197,8 +207,9 @@ void GameObject::LateUpdate() {
         mEntityScript->LateUpdate(mDeltaTime);
     }
 
+    auto myRoom = GetMyRoomIdx();
     decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
-    gSectorSystem->UpdateEntityMove(sharedThis);
+    gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->UpdateEntityMove(sharedThis);
 }
 
 void GameObject::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {

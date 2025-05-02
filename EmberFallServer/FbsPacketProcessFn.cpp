@@ -120,7 +120,7 @@ void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, cons
     auto sessionId = static_cast<SessionIdType>(session->GetId());
     auto packetEnter = FbsPacketFactory::PlayerEnterInLobbySC(sessionId);
 
-    auto sessionGameRoom = session->GetMyGameRoom();
+    auto sessionGameRoom = session->GetMyRoomIdx();
     decltype(auto) sessionsInGameRoom = gGameRoomManager->GetSessionsInRoom(sessionGameRoom);
 
     std::vector<std::shared_ptr<GameSession>> otherSessionList{ };
@@ -161,7 +161,7 @@ void ProcessPlayerReadyInLobby(std::shared_ptr<class GameSession>& session, cons
     auto sessionRole = session->GetPlayerRole();
     auto packetReady = FbsPacketFactory::PlayerReadyInLobbySC(sessionId, sessionRole);
 
-    auto sessionGameRoom = session->GetMyGameRoom();
+    auto sessionGameRoom = session->GetMyRoomIdx();
     auto success = gGameRoomManager->ReadyPlayer(sessionGameRoom, sessionId, ready->role());
     if (false == success) {
         // TODO - Send -> Reject Ready Packet
@@ -206,7 +206,7 @@ void ProcessPlayerExitCS(std::shared_ptr<class GameSession>& session, const Pack
     auto packetExit = FbsPacketFactory::PlayerExitSC(sessionId);
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Exit In Game!", sessionId);
 
-    auto sessionGameRoom = session->GetMyGameRoom();
+    auto sessionGameRoom = session->GetMyRoomIdx();
     decltype(auto) sessionsInGameRoom = gGameRoomManager->GetSessionsInRoom(sessionGameRoom);
 
     std::vector<std::shared_ptr<GameSession>> otherSessionList{ };

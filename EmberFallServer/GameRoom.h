@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameSession.h"
-
+#include "Stage.h"
 
 inline constexpr uint8_t GAME_ROOM_STATE_LOBBY = 0;
 inline constexpr uint8_t GAME_ROOM_STATE_INGAME = 1;
@@ -27,12 +27,13 @@ public:
     using SessionListInRoom = std::unordered_set<SessionIdType>;
 
 public:
-    GameRoom();
+    GameRoom(uint16_t mRoomIdx);
     ~GameRoom();
 
 public:
     bool IsMaxSession() const;
     uint8_t GetGameRoomState() const;
+    Stage& GetStage();
     Lock::SRWLock& GetSessionLock();
     SessionListInRoom& GetSessions();
 
@@ -43,11 +44,16 @@ public:
 
 private:
     mutable Lock::SRWLock mSessionLock{ };
-    std::recursive_mutex mrSessionLock{};
+
+    std::atomic_uint8_t mGameRoomState{ };
     std::atomic_uint8_t mReadyPlayerCount{ };
     std::atomic_uint8_t mBossPlayerCount{ };
-    std::atomic_uint8_t mGameRoomState{ };
+    
+    uint16_t mRoomIdx{ };
+
     SessionListInRoom mSessionsInRoom{ };
+   
+    Stage mStage;
 };
 
 using SessionListInRoom = GameRoom::SessionListInRoom;
@@ -63,6 +69,9 @@ public:
 
 public:
     static uint8_t GetLastErrorCode();
+    std::unique_ptr<GameRoom>& GetRoom(uint16_t roomIdx);
+
+    void InitGameRooms();
 
     uint16_t TryInsertGameRoom(SessionIdType session);
     uint8_t TryRemoveGameRoom(size_t roomIdx, SessionIdType sessionId);
@@ -74,5 +83,5 @@ public:
 
 private:
     Lock::SRWLock mGameRoomLock{ };
-    std::array<GameRoom, MAX_GAME_ROOM> mGameRooms{ };
+    std::array<std::unique_ptr<GameRoom>, MAX_GAME_ROOM> mGameRooms;
 };

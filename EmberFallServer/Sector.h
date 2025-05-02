@@ -2,6 +2,8 @@
 
 #include "GameObject.h"
 
+class ObjectManager;
+
 class Sector {
 public:
     static constexpr float DEFAULT_SECTOR_WIDTH = 200.0f;
@@ -20,12 +22,12 @@ public:
     Short2 GetIndex() const;
     Lock::SRWLock& GetLock();
 
-    void TryInsert(NetworkObjectIdType id);
-    void RemoveObject(NetworkObjectIdType id);
-    std::vector<NetworkObjectIdType> GetTriggersInTange(SimpleMath::Vector3 pos, const float range);
-    std::vector<NetworkObjectIdType> GetNPCsInRange(SimpleMath::Vector3 pos, const float range);
-    std::vector<NetworkObjectIdType> GetPlayersInRange(SimpleMath::Vector3 pos, const float range);
-    std::vector<NetworkObjectIdType> GetEnvInRange(SimpleMath::Vector3 pos, const float range);
+    void TryInsert(NetworkObjectIdType id, const std::shared_ptr<ObjectManager>& objManager);
+    void RemoveObject(NetworkObjectIdType id, const std::shared_ptr<ObjectManager>& objManager);
+    std::vector<NetworkObjectIdType> GetTriggersInTange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
+    std::vector<NetworkObjectIdType> GetNPCsInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
+    std::vector<NetworkObjectIdType> GetPlayersInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
+    std::vector<NetworkObjectIdType> GetEnvInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
 
 private:
     Short2 mIndex{ };
@@ -39,7 +41,7 @@ private:
 
 class SectorSystem {
 public:
-    SectorSystem();
+    SectorSystem(std::shared_ptr<ObjectManager> objManager);
     ~SectorSystem();
 
 public:
@@ -66,5 +68,6 @@ public:
 private:
     uint8_t mSectorWidth{ };
     uint8_t mSectorHeight{ };
+    std::weak_ptr<ObjectManager> mObjManager{ };
     std::vector<Sector> mSectors;
 };

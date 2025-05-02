@@ -20,9 +20,10 @@ enum class TimerEventType : uint8_t {
 };
 
 struct TimerEvent {
-    NetworkObjectIdType id;
-    SysClock::time_point executeTime;
-    TimerEventType eventType;
+    uint16_t roomIdx{ };
+    NetworkObjectIdType id{ };
+    SysClock::time_point executeTime{ };
+    TimerEventType eventType{ };
 
     constexpr bool operator<(const TimerEvent& other) const {
         return executeTime > other.executeTime;

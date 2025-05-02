@@ -21,7 +21,6 @@ public:
 public:
     std::shared_ptr<GameObject> GetUserObject() const;
     uint8_t GetSessionState() const;
-    uint16_t GetMyGameRoom() const;
     Packets::PlayerRole GetPlayerRole() const;
 
     void InitUserObject();
@@ -33,7 +32,6 @@ public:
     virtual void ProcessRecv(INT32 numOfBytes) override;
 
 private:
-    int16_t mGameRoomIdx{ -1 };
     std::atomic<Packets::PlayerRole> mPlayerRole{ Packets::PlayerRole::PlayerRole_NONE };
     std::atomic_uint8_t mSessionState{ SESSION_STATE_NONE };
     std::shared_ptr<GameObject> mUserObject{ nullptr };

@@ -32,9 +32,6 @@
 extern std::unique_ptr<class ServerFrame> gServerFrame;
 
 extern std::unique_ptr<class GameRoomManager> gGameRoomManager;
-extern std::unique_ptr<class SectorSystem> gSectorSystem;
-extern std::unique_ptr<class ObjectManager> gObjectManager;
-extern std::unique_ptr<class CollisionManager> gCollisionManager;
 
 enum class GameStage : uint8_t {
     LOBBY,
