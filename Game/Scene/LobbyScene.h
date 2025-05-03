@@ -53,10 +53,12 @@ private:
 	std::vector<GameObject> mLobbyProps{}; 
 
 	std::unordered_map<NetworkObjectIdType, std::tuple<Player, TextBlock*, Image, bool>*> mPlayerIndexmap{};
+	std::unordered_map<NetworkObjectIdType, UINT> mPlayerSlotMap{};
 	std::array<std::tuple<Player,TextBlock*, Image, bool>, 6> mPlayers{};
 	
-	UINT mPlayerSelected{ 0 };
+	bool mLookingDemon{ 0 };
 	PlayerRole mPlayerRole{ PlayerRole_None };
+	UINT mMySlot{ 0 }; 
 
 	bool mCameraRotating{ false };
 

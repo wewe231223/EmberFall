@@ -67,7 +67,7 @@ uint8_t GameRoom::TryInsertInRoom(SessionIdType sessionId) {
 
     ++mPlayerCount;
     session->SetSlotIndex(slotIndex);
-    session->SetName(std::format("Player {}", slotIndex));
+    session->SetName(std::format("PID {}", slotIndex));
     mSessionsInRoom.insert(sessionId);
 
     return GameRoomError::SUCCESS_INSERT_SESSION_IN_ROOM;

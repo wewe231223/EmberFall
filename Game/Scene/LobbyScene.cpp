@@ -61,17 +61,17 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		switch (mPlayerRole) {
 		case PlayerRole_SwordMan:
 		{
-			if (mPlayerSelected == 5) {
-				mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[0];
+			if (mLookingDemon) {
+				mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[mMySlot];
 
-				std::get<1>(mPlayers[0])->GetText() = std::get<1>(mPlayers[5])->GetText();
+				std::get<1>(mPlayers[mMySlot])->GetText() = std::get<1>(mPlayers[5])->GetText();
 
 				std::get<0>(mPlayers[5]).SetActiveState(false);
 				std::get<1>(mPlayers[5])->SetActiveState(false);
 
-				std::get<0>(mPlayers[0]).SetActiveState(true);
+				std::get<0>(mPlayers[mMySlot]).SetActiveState(true);
 
-				mPlayerSelected = 0;
+				mLookingDemon = false;
 				mCameraRotating = true;
 			}
 
@@ -96,17 +96,17 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 			break;
 		case PlayerRole_ShieldMan:
 		{
-			if (mPlayerSelected == 5) {
-				mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[0];
+			if (mLookingDemon) {
+				mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[mMySlot];
 
-				std::get<1>(mPlayers[0])->GetText() = std::get<1>(mPlayers[5])->GetText();
+				std::get<1>(mPlayers[mMySlot])->GetText() = std::get<1>(mPlayers[5])->GetText();
 
 				std::get<0>(mPlayers[5]).SetActiveState(false);
 				std::get<1>(mPlayers[5])->SetActiveState(false);
 
-				std::get<0>(mPlayers[0]).SetActiveState(true);
+				std::get<0>(mPlayers[mMySlot]).SetActiveState(true);
 
-				mPlayerSelected = 0;
+				mLookingDemon = false;
 				mCameraRotating = true;
 			}
 
@@ -118,15 +118,17 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		case PlayerRole_Demon:
 		{
 			mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[5];
-			
-			std::get<1>(mPlayers[5])->GetText() = std::get<1>(mPlayers[0])->GetText();
-			
-			std::get<0>(mPlayers[0]).SetActiveState(false); 
-			std::get<1>(mPlayers[0])->SetActiveState(false);
+			std::get<1>(mPlayers[5])->GetText() = std::get<1>(mPlayers[mMySlot])->GetText();
 
+			std::get<0>(mPlayers[mMySlot]).SetActiveState(false);
 			std::get<0>(mPlayers[5]).SetActiveState(true);
 
-			mPlayerSelected = 5; 
+			for (auto i = 0; i < mPlayers.size() - 1; ++i) {
+				std::get<1>(mPlayers[i])->SetActiveState(false);
+				std::get<2>(mPlayers[i]).SetActiveState(false);
+			}
+
+			mLookingDemon = true;
 			mCameraRotating = true;
 		}
 			break;
@@ -140,6 +142,21 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		switch (data->role()) {
 		case Packets::PlayerRole::PlayerRole_HUMAN_LONGSWORD:
 		{
+			if (mPlayerIndexmap[data->playerId()] == &mPlayers[5]) {
+
+				auto slot = mPlayerSlotMap[data->playerId()];
+				mPlayerIndexmap[data->playerId()] = &mPlayers[slot];
+				std::get<1>(mPlayers[slot])->GetText() = std::get<1>(mPlayers[5])->GetText();
+
+				std::get<0>(mPlayers[5]).SetActiveState(false);
+				std::get<1>(mPlayers[5])->SetActiveState(false);
+
+				
+				std::get<0>(mPlayers[slot]).SetActiveState(true);
+				std::get<1>(mPlayers[slot])->SetActiveState(true);
+			}
+
+
 			auto transform = std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform();
 			std::get<0>(*(mPlayerIndexmap[data->playerId()])) = mPlayerPreFabs["SwordMan"].Clone();
 			std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform() = transform;
@@ -161,9 +178,24 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		break;
 		case Packets::PlayerRole::PlayerRole_HUMAN_SWORD:
 		{
+			if (mPlayerIndexmap[data->playerId()] == &mPlayers[5]) {
+
+				auto slot = mPlayerSlotMap[data->playerId()];
+				mPlayerIndexmap[data->playerId()] = &mPlayers[slot];
+				std::get<1>(mPlayers[slot])->GetText() = std::get<1>(mPlayers[5])->GetText();
+
+				std::get<0>(mPlayers[5]).SetActiveState(false);
+				std::get<1>(mPlayers[5])->SetActiveState(false);
+
+
+				std::get<0>(mPlayers[slot]).SetActiveState(true);
+				std::get<1>(mPlayers[slot])->SetActiveState(true);
+			}
+
 			auto transform = std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform();
 			std::get<0>(*(mPlayerIndexmap[data->playerId()])) = mPlayerPreFabs["ShieldMan"].Clone();
 			std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform() = transform;
+
 		}
 		break;
 		case Packets::PlayerRole::PlayerRole_BOSS:
@@ -197,40 +229,41 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 	{
 		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerEnterInLobbySC>(buffer);
 
-		auto nextLoc = FindNextPlayerLoc();
-
-		if (mPlayerIndexmap[packet->playerId()] != nullptr) {
-			if (std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetActiveState()) {
-				break;
-			}
+		if (gClientCore->GetSessionId() == packet->playerId()) {
+			mMySlot = packet->playerSlot();
 		}
 
-		if (nextLoc == mPlayers.end()) {
-			Crash("There is no more space for Other Player!!");
-		}
-
-		mPlayerIndexmap[packet->playerId()] = &(*nextLoc);
+		mPlayerIndexmap[packet->playerId()] = &(mPlayers[packet->playerSlot()]);
 		std::get<0>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
 		std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
 		
 		std::string name{ flatbuffers::GetCstring(packet->name()) };
-		::OutputDebugStringA(std::string{ "--------------------------- " + name }.c_str());
 		std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->GetText() = std::wstring( ConvertUtf8ToWstring(name.c_str()) );
+
+		mPlayerSlotMap[packet->playerId()] = packet->playerSlot();
 
 		break;
 	}
 	case Packets::PacketTypes_PT_PLAYER_EXIT_SC:
 	{
-		// 누군가 로비 씬에서 나간 경우 
 		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerExitSC>(buffer);
 
 		if (mPlayerIndexmap.contains(packet->playerId())) {
 			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(false);
+			std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(false);
+			std::get<2>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(false);
 		}
 
 		break;
 	}
-	// 씬 전환 패킷 처리.. 
+	// 씬 전환 패킷 처리..
+	case Packets::PacketTypes_PT_CHANGE_TO_NEXT_SCENE_SC: 
+	{
+		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::ChangeToNextSceneSC>(buffer);
+		
+		PostMessage(mRenderManager->GetWindowHandle(), WM_ADVANCESCENE, 0, 0); 
+	}
+	break; 
 	default:
 		break;
 	}
@@ -314,7 +347,7 @@ void LobbyScene::Update() {
 	PlayerRole prevRole = mPlayerRole;
 
 
-	if (not mIsReady) {
+	if (not mIsReady and not mCameraRotating) {
 		if (Input.GetKeyboardTracker().pressed.Left) {
 			if (mPlayerRole == PlayerRole_None) mPlayerRole = PlayerRole_Demon;
 			else mPlayerRole = static_cast<PlayerRole>(PlayerRole_SwordMan + ((mPlayerRole - PlayerRole_SwordMan + (PlayerRole_END - PlayerRole_SwordMan) - 1) % (PlayerRole_END - PlayerRole_SwordMan)));
@@ -355,14 +388,14 @@ void LobbyScene::Update() {
 
 	if (Input.GetKeyboardTracker().pressed.Tab) {
 		if (not mCameraRotating) {
-			if (mPlayerSelected == 5) { // 인간 진영 선택 
-				mPlayerSelected = 0;
+			if (mLookingDemon) { // 인간 진영 선택 
+				mLookingDemon = false;
 				std::get<1>(mPlayers[5])->SetActiveState(false);
 				std::get<2>(mPlayers[5]).SetActiveState(false); 
 				mCameraRotating = true; 
 			}
 			else { // 악마 진영 선택 
-				mPlayerSelected = 5;
+				mLookingDemon = true;
 				for (auto i = 0; i < mPlayers.size() - 1; ++i) {
 					std::get<1>(mPlayers[i])->SetActiveState(false);
 					std::get<2>(mPlayers[i]).SetActiveState(false);
@@ -388,7 +421,7 @@ void LobbyScene::Update() {
 
 		auto euler = rot.ToEuler();
 
-		if (mPlayerSelected == 0 and std::fabs(euler.y) - 0.01f <= 0.f) {
+		if (not mLookingDemon and std::fabs(euler.y) - 0.01f <= 0.f) {
 			mCamera.GetTransform().SetRotation(DirectX::SimpleMath::Quaternion::CreateFromYawPitchRoll(0.f, 0.f, 0.f));
 			mCameraRotating = false;
 
@@ -403,7 +436,7 @@ void LobbyScene::Update() {
 
 		}
 
-		if (mPlayerSelected == 5 and std::fabs(std::fabs(euler.y) - DirectX::XM_PI) <= 0.05f) {
+		if (mLookingDemon and std::fabs(std::fabs(euler.y) - DirectX::XM_PI) <= 0.05f) {
 			mCamera.GetTransform().SetRotation(DirectX::SimpleMath::Quaternion::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(180.f), 0.f, 0.f));
 			mCameraRotating = false;
 

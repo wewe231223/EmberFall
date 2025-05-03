@@ -158,6 +158,7 @@
     </ClCompile>
     <ClCompile Include="Scene\Camera.cpp" />
     <ClCompile Include="Scene\LoadingScene.cpp" />
+    <ClCompile Include="Scene\LobbyPlayer.cpp" />
     <ClCompile Include="Scene\LobbyScene.cpp" />
     <ClCompile Include="Scene\Player.cpp" />
     <ClCompile Include="Scene\SceneManager.cpp" />
@@ -180,6 +181,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Scene\Camera.h" />
     <ClInclude Include="Scene\LoadingScene.h" />
+    <ClInclude Include="Scene\LobbyPlayer.h" />
     <ClInclude Include="Scene\LobbyScene.h" />
     <ClInclude Include="Scene\Player.h" />
     <ClInclude Include="Scene\SceneManager.h" />

@@ -96,6 +96,9 @@
     <ClCompile Include="UI\Button.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\LobbyPlayer.cpp">
+      <Filter>LoadingScene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -157,6 +160,9 @@
     </ClInclude>
     <ClInclude Include="UI\Button.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\LobbyPlayer.h">
+      <Filter>LoadingScene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
