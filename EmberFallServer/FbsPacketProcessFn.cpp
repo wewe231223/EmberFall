@@ -124,6 +124,7 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
 void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, const Packets::PlayerEnterInLobbyCS* const enter) {
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player [{}] Enter In Lobby!", session->GetId());
 
+    auto sessionId = static_cast<SessionIdType>(session->GetId());
     auto sessionGameRoom = session->GetMyRoomIdx();
     decltype(auto) sessionsInGameRoom = gGameRoomManager->GetSessionsInRoom(sessionGameRoom);
 
@@ -132,6 +133,10 @@ void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, cons
     {
         Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
         for (auto& otherSessionId : sessionsInGameRoom) {
+            if (sessionId == otherSessionId) {
+                continue;
+            }
+
             auto otherSession = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(otherSessionId));
             if (nullptr == otherSession or SESSION_INLOBBY != otherSession->GetSessionState()) {
                 continue;
@@ -141,22 +146,23 @@ void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, cons
         }
     }
 
-    auto sessionId = static_cast<SessionIdType>(session->GetId());
-    auto packetEnter = FbsPacketFactory::PlayerEnterInLobbySC(sessionId, session->GetSlotIndex(), session->GetName());
+    auto packetEnter = FbsPacketFactory::PlayerEnterInLobbySC(sessionId, session->GetSlotIndex(), session->GetNameView());
     for (auto& otherSession : otherSessionList) {
         auto otherSessionId = static_cast<SessionIdType>(otherSession->GetId());
 
         auto clonedPacket = FbsPacketFactory::ClonePacket(packetEnter);
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "PlayerEnter Packet - To Session [{}], name: {}, slot: {}",
-            otherSession->GetId(), otherSession->GetNameView(), otherSession->GetSlotIndex());
 
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "PlayerEnter Packet - To Other Sessions name: {}, slot: {}",
+            session->GetNameView(), session->GetSlotIndex());
         otherSession->RegisterSend(clonedPacket);
 
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "PlayerEnter Packet - To Session [{}], name: {}, slot: {}",
+            otherSession->GetId(), otherSession->GetNameView(), otherSession->GetSlotIndex());
         auto oldUserEnter = FbsPacketFactory::PlayerEnterInLobbySC(otherSessionId, otherSession->GetSlotIndex(), otherSession->GetNameView());
         session->RegisterSend(oldUserEnter);
     }
 
-    FbsPacketFactory::ReleasePacketBuf(packetEnter);
+    session->RegisterSend(packetEnter);
 }
 
 void ProcessPlayerReadyInLobby(std::shared_ptr<class GameSession>& session, const Packets::PlayerReadyInLobbyCS* const ready) {
