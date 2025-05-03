@@ -118,7 +118,7 @@ void ObjectManager::LoadEnvFromFile(const std::filesystem::path& path) {
 }
 
 std::shared_ptr<GameObject> ObjectManager::GetObjectFromId(NetworkObjectIdType id) const {
-    if (id > VALID_ID_MAX) {
+    if (id > VALID_ID_MAX or INVALID_SESSION_ID == id) {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Bad Object Array Access - Access Id: [{}]", id);
         return nullptr;
     }
