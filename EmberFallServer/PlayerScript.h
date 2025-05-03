@@ -34,8 +34,6 @@ public:
 
     void SetOwnerSession(std::shared_ptr<class GameSession> session);
 
-    //void UpdateViewListNPC(const std::vector<NetworkObjectIdType>& inViewRangeObjects);
-    //void UpdateViewListPlayer(const std::vector<NetworkObjectIdType>& inViewRangeObjects);
     void UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeNPC, const std::vector<NetworkObjectIdType>& inViewRangePlayer);
 
     virtual void Init() override;

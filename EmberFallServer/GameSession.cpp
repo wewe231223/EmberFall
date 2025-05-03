@@ -67,6 +67,9 @@ void GameSession::ProcessRecv(INT32 numOfBytes) {
 
     decltype(auto) dataPtr = reinterpret_cast<const uint8_t* const>(mOverlappedRecv.buffer.data());
     ProcessPackets(sharedThis, dataPtr, dataSize);
+    if (false == IsConnected()) {
+        return;
+    }
 
     if (0 < mPrevRemainSize) {
         std::copy(remainBegin, dataEnd, dataBeg);

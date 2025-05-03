@@ -213,9 +213,9 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		std::get<0>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
 		std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
 		
-		auto name = packet->name()->c_str() ;
-
-		std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->GetText() = std::wstring( ConvertUtf8ToWstring(packet->name()->c_str()) );
+		std::string name{ flatbuffers::GetCstring(packet->name()) };
+		::OutputDebugStringA(std::string{ "--------------------------- " + name }.c_str());
+		std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->GetText() = std::wstring( ConvertUtf8ToWstring(name.c_str()) );
 
 		break;
 	}

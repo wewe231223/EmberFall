@@ -78,7 +78,7 @@ OverlappedSend* FbsPacketFactory::PlayerEnterInLobbySC(SessionIdType id, uint8_t
     flatbuffers::FlatBufferBuilder builder{ };
 
     auto nameOffset = builder.CreateString(name.data());
-    auto offset = Packets::CreatePlayerEnterInLobbySC(builder, id, slotIndex);
+    auto offset = Packets::CreatePlayerEnterInLobbySC(builder, id, slotIndex, nameOffset);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();

@@ -264,6 +264,7 @@ void Session::OnConnect() {
 }
 
 void Session::Disconnect() {
+    mConnected.exchange(false);
 }
 
 void Session::HandleSocketError(INT32 errorCore) {
