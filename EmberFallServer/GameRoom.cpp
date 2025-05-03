@@ -87,7 +87,7 @@ uint8_t GameRoom::RemovePlayer(SessionIdType id, bool lastReadyState, uint8_t la
 
     mSessionsInRoom.erase(id);
     mSessionSlotIndices.push(lastSlotIndex);
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session [{}] erased in GameRoom [{}], last slot: [{}]", id, mRoomIdx);
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session [{}] erased in GameRoom [{}], last slot: [{}]", id, mRoomIdx, lastSlotIndex);
 
     return GameRoomError::SUCCESS_REMOVE_SESSION_IN_ROOM;
 }

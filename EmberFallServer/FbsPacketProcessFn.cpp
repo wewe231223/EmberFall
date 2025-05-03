@@ -155,7 +155,7 @@ void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, cons
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "PlayerEnter Packet - To Session [{}]", otherSession->GetId());
         otherSession->RegisterSend(clonedPacket);
 
-        auto oldUserEnter = FbsPacketFactory::PlayerEnterInLobbySC(otherSessionId);
+        auto oldUserEnter = FbsPacketFactory::PlayerEnterInLobbySC(otherSessionId, otherSession->GetSlotIndex(), otherSession->GetName());
         session->RegisterSend(oldUserEnter);
     }
 
