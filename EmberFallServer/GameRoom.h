@@ -22,6 +22,8 @@ namespace GameRoomError {
 class GameRoom {
 private:
     static constexpr size_t MAX_PLAYER_IN_GAME_ROOM = 5;
+    static constexpr float SCENE_TRANSITION_COUNT = 5.0f; // second
+    static constexpr std::chrono::milliseconds SCENE_TRANSITION_EVENT_DELAY = 500ms;
 
 public:
     using SessionListInRoom = std::unordered_set<SessionIdType>;
@@ -31,6 +33,7 @@ public:
     ~GameRoom();
 
 public:
+    bool IsEveryPlayerReady() const;
     bool IsMaxSession() const;
     uint8_t GetGameRoomState() const;
     Stage& GetStage();
@@ -41,19 +44,28 @@ public:
     uint8_t RemovePlayer(SessionIdType id);
 
     bool ChangeRolePlayer(SessionIdType id, Packets::PlayerRole role);
+    bool ReadyPlayer(SessionIdType id);
+    bool CancelPlayerReady(SessionIdType id);
     bool CheckAndStartGame();
 
+    void BroadCastInGameRoom(SessionIdType sender, OverlappedSend* packet);
+    void BroadCastInGameRoom(OverlappedSend* packet);
+
+    void OnSceneCountdownTick();
+
 private:
+    uint16_t mRoomIdx{ };
+
     mutable Lock::SRWLock mSessionLock{ };
 
     std::atomic_uint8_t mGameRoomState{ };
-    std::atomic_uint8_t mReadyPlayerCount{ };
     std::atomic_uint8_t mBossPlayerCount{ };
-    
-    uint16_t mRoomIdx{ };
+    uint8_t mPlayerCount{ };
+    uint8_t mReadyPlayerCount{ };
 
-    SessionListInRoom mSessionsInRoom{ };
-   
+    SysClock::time_point mSceneTransitionCounter{ };
+
+    SessionListInRoom mSessionsInRoom{ };   
     Stage mStage;
 };
 
@@ -81,6 +93,8 @@ public:
     SessionListInRoom& GetSessionsInRoom(uint16_t roomIdx);
 
     bool ChangeRolePlayer(uint16_t roomIdx, SessionIdType id, Packets::PlayerRole role);
+    bool ReadyPlayer(uint16_t roomIdx, SessionIdType id);
+    bool CancelPlayerReady(uint16_t roomIdx, SessionIdType id);
 
 private:
     Lock::SRWLock mGameRoomLock{ };

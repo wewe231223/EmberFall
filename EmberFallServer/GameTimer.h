@@ -16,7 +16,8 @@ using EventCallBack = std::function<void()>;
 enum class TimerEventType : uint8_t {
     REMOVE_NPC,
     UPDATE_NPC,
-    REMOVE_TRIGGER
+    REMOVE_TRIGGER,
+    SCENE_TRANSITION_COUNTDOWN
 };
 
 struct TimerEvent {

@@ -165,77 +165,31 @@ void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, cons
 void ProcessPlayerReadyInLobby(std::shared_ptr<class GameSession>& session, const Packets::PlayerReadyInLobbyCS* const ready) {
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[{}] Ready!", session->GetId());
 
-    auto success = session->Ready();
+    auto sessionId = static_cast<SessionIdType>(session->GetId());
+    auto sessionGameRoom = session->GetMyRoomIdx();
+    auto success = gGameRoomManager->ReadyPlayer(sessionGameRoom, sessionId);
     if (not success) {
         return;
     }
 
-    auto sessionId = static_cast<SessionIdType>(session->GetId());
     auto packetReady = FbsPacketFactory::PlayerReadyInLobbySC(sessionId);
+    gGameRoomManager->GetRoom(sessionGameRoom)->BroadCastInGameRoom(packetReady);
 
-    auto sessionGameRoom = session->GetMyRoomIdx();
-    decltype(auto) sessionsInGameRoom = gGameRoomManager->GetSessionsInRoom(sessionGameRoom);
-
-    std::vector<std::shared_ptr<GameSession>> otherSessionList{ };
-    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
-    {
-        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
-        for (auto& otherSessionId : sessionsInGameRoom) {
-            auto otherSession = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(otherSessionId));
-            if (nullptr == otherSession or SESSION_INLOBBY != otherSession->GetSessionState()) {
-                continue;
-            }
-
-            otherSessionList.push_back(otherSession);
-        }
-    }
-
-    for (auto& otherSession : otherSessionList) {
-        auto clonedPacket = FbsPacketFactory::ClonePacket(packetReady);
-        otherSession->RegisterSend(clonedPacket);
-    }
-
-    FbsPacketFactory::ReleasePacketBuf(packetReady);
-
-    if (true == gGameRoomManager->GetRoom(sessionGameRoom)->CheckAndStartGame()) {
-        // TODO - Send Game Start Packet and Counting to Start
-    }
+    gGameRoomManager->GetRoom(sessionGameRoom)->CheckAndStartGame();
 }
 
 void ProcessPlayerCancelReady(std::shared_ptr<class GameSession>& session, const Packets::PlayerCancelReadyCS* const cencelReady) {
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[{}] Ready!", session->GetId());
 
-    auto success = session->Ready();
+    auto sessionId = static_cast<SessionIdType>(session->GetId());
+    auto sessionGameRoom = session->GetMyRoomIdx();
+    auto success = gGameRoomManager->CancelPlayerReady(sessionGameRoom, sessionId);
     if (not success) {
         return;
     }
 
-    auto sessionId = static_cast<SessionIdType>(session->GetId());
     auto packetReady = FbsPacketFactory::PlayerCancelReadySC(sessionId);
-
-    auto sessionGameRoom = session->GetMyRoomIdx();
-    decltype(auto) sessionsInGameRoom = gGameRoomManager->GetSessionsInRoom(sessionGameRoom);
-
-    std::vector<std::shared_ptr<GameSession>> otherSessionList{ };
-    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
-    {
-        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
-        for (auto& otherSessionId : sessionsInGameRoom) {
-            auto otherSession = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(otherSessionId));
-            if (nullptr == otherSession or SESSION_INLOBBY != otherSession->GetSessionState()) {
-                continue;
-            }
-
-            otherSessionList.push_back(otherSession);
-        }
-    }
-
-    for (auto& otherSession : otherSessionList) {
-        auto clonedPacket = FbsPacketFactory::ClonePacket(packetReady);
-        otherSession->RegisterSend(clonedPacket);
-    }
-
-    FbsPacketFactory::ReleasePacketBuf(packetReady);
+    gGameRoomManager->GetRoom(sessionGameRoom)->BroadCastInGameRoom(packetReady);
 }
 
 void ProcessPlayerExitCS(std::shared_ptr<class GameSession>& session, const Packets::PlayerExitCS* const exit) {
@@ -297,38 +251,20 @@ void ProcessPlayerSelectRoleCS(std::shared_ptr<GameSession>& session, const Pack
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player [{}] Change Role: {}!", session->GetId(), Packets::EnumNamePlayerRole(role->role()));
 
     auto sessionId = static_cast<SessionIdType>(session->GetId());
-    auto packetEnter = FbsPacketFactory::PlayerChangeRoleSC(sessionId, role->role());
-
     auto sessionGameRoom = session->GetMyRoomIdx();
-    decltype(auto) sessionsInGameRoom = gGameRoomManager->GetSessionsInRoom(sessionGameRoom);
-
-    std::vector<std::shared_ptr<GameSession>> otherSessionList{ };
-    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
-    {
-        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
-        for (auto& otherSessionId : sessionsInGameRoom) {
-            if (otherSessionId == sessionId) {
-                continue;
-            }
-
-            auto otherSession = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(otherSessionId));
-            if (nullptr == otherSession or SESSION_INLOBBY != otherSession->GetSessionState()) {
-                continue;
-            }
-
-            otherSessionList.push_back(otherSession);
-        }
+    auto success = gGameRoomManager->GetRoom(sessionGameRoom)->ChangeRolePlayer(sessionId, role->role());
+    if (not success) {
+        auto packetRejectSelection = FbsPacketFactory::RejectSelectionRoleSC();
+        session->RegisterSend(packetRejectSelection);
+        return;
     }
 
-    for (auto& otherSession : otherSessionList) {
-        auto otherSessionId = static_cast<SessionIdType>(otherSession->GetId());
+    auto packetConfirmSelection = FbsPacketFactory::ConfirmSelectoinRoleSC();
+    session->RegisterSend(packetConfirmSelection);
 
-        auto clonedPacket = FbsPacketFactory::ClonePacket(packetEnter);
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "PlayerEnter Packet - To Session [{}]", otherSession->GetId());
-        otherSession->RegisterSend(clonedPacket);
-    }
+    auto packetChangeRole = FbsPacketFactory::PlayerChangeRoleSC(sessionId, role->role());
 
-    FbsPacketFactory::ReleasePacketBuf(packetEnter);
+    gGameRoomManager->GetRoom(sessionGameRoom)->BroadCastInGameRoom(sessionId, packetChangeRole);
 }
 
 void ProcessLatencyCS(std::shared_ptr<GameSession>& session, const Packets::PacketLatencyCS* const latency) {
@@ -341,7 +277,9 @@ void ProcessRequestAttackCS(std::shared_ptr<GameSession>& session, const Packets
 }
 
 void ProcessRequestUseItemCS(std::shared_ptr<GameSession>& session, const Packets::RequestUseItemCS* const useItem) {
+
 }
 
 void ProcessRequestFireProjectileCS(std::shared_ptr<GameSession>& session, const Packets::RequestFireCS* const fire) {
+
 }
