@@ -56,6 +56,51 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		}
 		break;
 	}
+	case Packets::PacketTypes_PT_PLAYER_CHANGE_ROLE_SC:
+	{
+		decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::PlayerChangeRoleSC>(buffer);
+
+		switch (data->role()) {
+		case Packets::PlayerRole::PlayerRole_HUMAN_LONGSWORD:
+		{
+			auto transform = std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[data->playerId()])) = mPlayerPreFabs["SwordMan"].Clone();
+			std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform() = transform;
+		}
+		break;
+		case Packets::PlayerRole::PlayerRole_HUMAN_ARCHER:
+		{
+			auto transform = std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[data->playerId()])) = mPlayerPreFabs["Archer"].Clone();
+			std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform() = transform;
+		}
+		break;
+		case Packets::PlayerRole::PlayerRole_HUMAN_MAGICIAN:
+		{
+			auto transform = std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[data->playerId()])) = mPlayerPreFabs["Mage"].Clone();
+			std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform() = transform;
+		}
+		break;
+		case Packets::PlayerRole::PlayerRole_HUMAN_SWORD:
+		{
+			auto transform = std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[data->playerId()])) = mPlayerPreFabs["ShieldMan"].Clone();
+			std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform() = transform;
+		}
+		break;
+		case Packets::PlayerRole::PlayerRole_BOSS:
+		{
+			auto transform = std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[data->playerId()])) = mPlayerPreFabs["Demon"].Clone();
+			std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform() = transform;
+		}
+		break;
+		default:
+			break;
+		}
+	}
+	break; 
 	case Packets::PacketTypes_PT_PLAYER_READY_IN_LOBBY_SC:
 	{
 		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerReadyInLobbySC>(buffer);
@@ -63,53 +108,8 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		auto id = packet->playerId(); 
 		std::get<2>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
 
-		//switch (packet->role()) {
-		//case Packets::PlayerRole::PlayerRole_HUMAN_LONGSWORD:
-		//{
-		//	auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
-		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["SwordMan"].Clone();
-		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
-		//	std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
-		//}
-		//break;
-		//case Packets::PlayerRole::PlayerRole_HUMAN_ARCHER:
-		//{
-		//	auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
-		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["Archer"].Clone();
-		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
-		//	std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
-		//}
-		//break;
-		//case Packets::PlayerRole::PlayerRole_HUMAN_MAGICIAN:
-		//{
-		//	auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
-		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["Mage"].Clone();
-		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
-		//	std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
-		//}
-		//break;
-		//case Packets::PlayerRole::PlayerRole_HUMAN_SWORD:
-		//{
-		//	auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
-		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["ShieldMan"].Clone();
-		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
-		//	std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
-		//}
-		//break;
-		//case Packets::PlayerRole::PlayerRole_BOSS:
-		//{
-		//	auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
-		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["Demon"].Clone();
-		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
-		//	std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
-		//}
-		//break;
-		//default:
-		//	break;
-		//}
+		packet->role();
 
-
-		// 누군가 로비 씬에서 Ready 한 경우 
 		break;
 	}
 	case Packets::PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_SC:
@@ -180,22 +180,25 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 	std::get<0>(mPlayers[1]) = mPlayerPreFabs["BaseMan"].Clone();
 	std::get<0>(mPlayers[2]) = mPlayerPreFabs["BaseMan"].Clone();
 	std::get<0>(mPlayers[3]) = mPlayerPreFabs["BaseMan"].Clone();
+	std::get<0>(mPlayers[4]) = mPlayerPreFabs["BaseMan"].Clone();
 
-	constexpr float Interval = 2.f; 
-	std::get<0>(mPlayers[0]).GetTransform().SetPosition({ -1.f * Interval * 1.5f , 0.f, 5.f });
-	std::get<0>(mPlayers[1]).GetTransform().SetPosition({ -1.f * Interval * 0.5f , 0.f, 5.f });
-	std::get<0>(mPlayers[2]).GetTransform().SetPosition({  1.f * Interval * 0.5f , 0.f, 5.f });
-	std::get<0>(mPlayers[3]).GetTransform().SetPosition({  1.f * Interval * 1.5f , 0.f, 5.f });
+	constexpr float Interval = 2.f;
+	std::get<0>(mPlayers[0]).GetTransform().SetPosition({ -2.f * Interval, 0.f, 5.f });
+	std::get<0>(mPlayers[1]).GetTransform().SetPosition({ -1.f * Interval, 0.f, 5.f });
+	std::get<0>(mPlayers[2]).GetTransform().SetPosition({ 0.f * Interval, 0.f, 5.f });
+	std::get<0>(mPlayers[3]).GetTransform().SetPosition({ 1.f * Interval, 0.f, 5.f });
+	std::get<0>(mPlayers[4]).GetTransform().SetPosition({ 2.f * Interval, 0.f, 5.f });
 
-	std::get<0>(mPlayers[4]) = mPlayerPreFabs["Demon"].Clone();
-	std::get<0>(mPlayers[4]).GetTransform().SetPosition({ 0.f, 0.f, -10.f });
-	std::get<0>(mPlayers[4]).GetTransform().Rotate(0.f, 110.f, 0.f);
+	std::get<0>(mPlayers[5]) = mPlayerPreFabs["Demon"].Clone();
+	std::get<0>(mPlayers[5]).GetTransform().SetPosition({ 0.f, 0.f, -10.f });
+	std::get<0>(mPlayers[5]).GetTransform().Rotate(0.f, 110.f, 0.f);
 
 	std::get<0>(mPlayers[0]).SetActiveState(false);
 	std::get<0>(mPlayers[1]).SetActiveState(false);
 	std::get<0>(mPlayers[2]).SetActiveState(false);
 	std::get<0>(mPlayers[3]).SetActiveState(false);
 	std::get<0>(mPlayers[4]).SetActiveState(false);
+	std::get<0>(mPlayers[5]).SetActiveState(false);
 
 	mCamera.GetTransform().Look({ 0.f,2.f, 1.f });
 
@@ -225,6 +228,7 @@ void LobbyScene::Update() {
 
 	PlayerRole prevRole = mPlayerRole;
 
+
 	if (not mIsReady) {
 		if (Input.GetKeyboardTracker().pressed.Left) {
 			if (mPlayerRole == PlayerRole_None) mPlayerRole = PlayerRole_Demon;
@@ -236,60 +240,106 @@ void LobbyScene::Update() {
 			else mPlayerRole = static_cast<PlayerRole>(PlayerRole_SwordMan + ((mPlayerRole - PlayerRole_SwordMan + 1) % (PlayerRole_END - PlayerRole_SwordMan)));
 		}
 
+
 		if (prevRole != mPlayerRole) {
+			Packets::PlayerRole role = Packets::PlayerRole::PlayerRole_NONE;
 			switch (mPlayerRole) {
 			case PlayerRole_SwordMan:
-			{
-				auto transform = std::get<0>(mPlayers[0]).GetTransform();
-				std::get<0>(mPlayers[0]) = mPlayerPreFabs["SwordMan"].Clone();
-				std::get<0>(mPlayers[0]).GetTransform() = transform;
-			}
-			break;
+				role = Packets::PlayerRole::PlayerRole_HUMAN_LONGSWORD;
+				break;
 			case PlayerRole_Archer:
-			{
-				auto transform = std::get<0>(mPlayers[0]).GetTransform();
-				std::get<0>(mPlayers[0]) = mPlayerPreFabs["Archer"].Clone();
-				std::get<0>(mPlayers[0]).GetTransform() = transform;
-			}
-			break;
+				role = Packets::PlayerRole::PlayerRole_HUMAN_ARCHER;
+				break;
 			case PlayerRole_Mage:
-			{
-				auto transform = std::get<0>(mPlayers[0]).GetTransform();
-				std::get<0>(mPlayers[0]) = mPlayerPreFabs["Mage"].Clone();
-				std::get<0>(mPlayers[0]).GetTransform() = transform;
-			}
-			break;
+				role = Packets::PlayerRole::PlayerRole_HUMAN_MAGICIAN;
+				break;
 			case PlayerRole_ShieldMan:
-			{
-				auto transform = std::get<0>(mPlayers[0]).GetTransform();
-				std::get<0>(mPlayers[0]) = mPlayerPreFabs["ShieldMan"].Clone();
-				std::get<0>(mPlayers[0]).GetTransform() = transform;
-			}
-			break;
+				role = Packets::PlayerRole::PlayerRole_HUMAN_SWORD;
+				break;
 			case PlayerRole_Demon:
-			{
-				auto transform = std::get<0>(mPlayers[0]).GetTransform();
-				std::get<0>(mPlayers[0]) = mPlayerPreFabs["Demon"].Clone();
-				std::get<0>(mPlayers[0]).GetTransform() = transform;
-			}
-			break;
+				role = Packets::PlayerRole::PlayerRole_BOSS;
+				break;
 			default:
 				break;
 			}
+			decltype(auto) packet = FbsPacketFactory::PlayerSelectRole(gClientCore->GetSessionId(), role);
+			gClientCore->Send(packet); 
 		}
+
+		//if (prevRole != mPlayerRole) {
+		//	switch (mPlayerRole) {
+		//	case PlayerRole_SwordMan:
+		//	{
+		//		auto transform = std::get<0>(mPlayers[0]).GetTransform();
+		//		std::get<0>(mPlayers[0]) = mPlayerPreFabs["SwordMan"].Clone();
+		//		std::get<0>(mPlayers[0]).GetTransform() = transform;
+		//	}
+		//	break;
+		//	case PlayerRole_Archer:
+		//	{
+		//		auto transform = std::get<0>(mPlayers[0]).GetTransform();
+		//		std::get<0>(mPlayers[0]) = mPlayerPreFabs["Archer"].Clone();
+		//		std::get<0>(mPlayers[0]).GetTransform() = transform;
+		//	}
+		//	break;
+		//	case PlayerRole_Mage:
+		//	{
+		//		auto transform = std::get<0>(mPlayers[0]).GetTransform();
+		//		std::get<0>(mPlayers[0]) = mPlayerPreFabs["Mage"].Clone();
+		//		std::get<0>(mPlayers[0]).GetTransform() = transform;
+		//	}
+		//	break;
+		//	case PlayerRole_ShieldMan:
+		//	{
+		//		auto transform = std::get<0>(mPlayers[0]).GetTransform();
+		//		std::get<0>(mPlayers[0]) = mPlayerPreFabs["ShieldMan"].Clone();
+		//		std::get<0>(mPlayers[0]).GetTransform() = transform;
+		//	}
+		//	break;
+		//	case PlayerRole_Demon:
+		//	{
+		//		std::get<0>(mPlayers[0]).SetActiveState(false); 
+		//		std::get<0>(mPlayers[5]).SetActiveState(true);
+		//	}
+		//	break;
+		//	default:
+		//		break;
+		//	}
+
+
+
+		//	if (mPlayerRole == PlayerRole_Demon && mPlayerSelected != 5 && !mCameraRotating) {
+		//		mPlayerSelected = 5;
+		//		for (auto i = 0; i < mPlayers.size() - 1; ++i) {
+		//			std::get<1>(mPlayers[i])->SetActiveState(false);
+		//			std::get<2>(mPlayers[i]).SetActiveState(false);
+		//		}
+
+		//		// 내가 보스를 택한 경
+		//		std::get<1>(mPlayers[5])->GetText() = std::get<1>(mPlayers[0])->GetText();
+
+		//		mCameraRotating = true;
+		//	}
+		//	else if (mPlayerRole != PlayerRole_Demon && mPlayerSelected != 0 && !mCameraRotating) {
+		//		mPlayerSelected = 0;
+		//		std::get<1>(mPlayers[5])->SetActiveState(false);
+		//		std::get<2>(mPlayers[5]).SetActiveState(false);
+		//		mCameraRotating = true;
+		//	}
+		//}
 	}
 
 
 	if (Input.GetKeyboardTracker().pressed.Tab) {
 		if (not mCameraRotating) {
-			if (mPlayerSelected == 4) { // 인간 진영 선택 
+			if (mPlayerSelected == 5) { // 인간 진영 선택 
 				mPlayerSelected = 0;
-				std::get<1>(mPlayers[4])->SetActiveState(false);
-				std::get<2>(mPlayers[4]).SetActiveState(false); 
+				std::get<1>(mPlayers[5])->SetActiveState(false);
+				std::get<2>(mPlayers[5]).SetActiveState(false); 
 				mCameraRotating = true; 
 			}
 			else { // 악마 진영 선택 
-				mPlayerSelected = 4;
+				mPlayerSelected = 5;
 				for (auto i = 0; i < mPlayers.size() - 1; ++i) {
 					std::get<1>(mPlayers[i])->SetActiveState(false);
 					std::get<2>(mPlayers[i]).SetActiveState(false);
@@ -300,28 +350,6 @@ void LobbyScene::Update() {
 	}
 
 	if (Input.GetKeyboardTracker().pressed.Enter and not mIsReady) {
-		Packets::PlayerRole role = Packets::PlayerRole::PlayerRole_HUMAN;
-
-		switch (mPlayerRole) {
-		case PlayerRole_SwordMan:
-			role = Packets::PlayerRole::PlayerRole_HUMAN_LONGSWORD;
-			break;
-		case PlayerRole_Archer:
-			role = Packets::PlayerRole::PlayerRole_HUMAN_ARCHER;
-			break;
-		case PlayerRole_Mage:
-			role = Packets::PlayerRole::PlayerRole_HUMAN_MAGICIAN;
-			break;
-		case PlayerRole_ShieldMan:
-			role = Packets::PlayerRole::PlayerRole_HUMAN_SWORD;
-			break;
-		case PlayerRole_Demon:
-			role = Packets::PlayerRole::PlayerRole_BOSS;
-			break;
-		default:
-			break;
-		}
-
 		std::get<2>(mPlayers[0]).SetActiveState(true); 
 
 		mIsReady = true; 
@@ -343,19 +371,17 @@ void LobbyScene::Update() {
 			for (auto i = 0; i < mPlayers.size() - 1; ++i) {
 				if (std::get<0>(mPlayers[i]).GetActiveState()) {
 					std::get<1>(mPlayers[i])->SetActiveState(true);
-					std::get<2>(mPlayers[i]).SetActiveState(true);
 				}
 			}
 
 		}
 
-		if (mPlayerSelected == 4 and std::fabs(std::fabs(euler.y) - DirectX::XM_PI) <= 0.05f) {
+		if (mPlayerSelected == 5 and std::fabs(std::fabs(euler.y) - DirectX::XM_PI) <= 0.05f) {
 			mCamera.GetTransform().SetRotation(DirectX::SimpleMath::Quaternion::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(180.f), 0.f, 0.f));
 			mCameraRotating = false;
 
-			if (std::get<0>(mPlayers[4]).GetActiveState()) {
-				std::get<1>(mPlayers[4])->SetActiveState(true);
-				std::get<2>(mPlayers[4]).SetActiveState(true);
+			if (std::get<0>(mPlayers[5]).GetActiveState()) {
+				std::get<1>(mPlayers[5])->SetActiveState(true);
 			}
 		}
 
@@ -673,7 +699,7 @@ void LobbyScene::BuildPlayerPrefab() {
 
 void LobbyScene::BuildPlayerNameTextBlock() {
 	const float xInterval = 380.f;
-	const float xPadding = 340.f; 
+	const float xPadding = 150.f; 
 
 	const float y = 550.f;
 
@@ -684,23 +710,23 @@ void LobbyScene::BuildPlayerNameTextBlock() {
 		std::get<1>(player)->SetActiveState(false);
 	}
 
-	auto& player = mPlayers[4];
+	auto& player = mPlayers[5];
 	std::get<1>(player) = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 760.f, 750.f, 760.f + xInterval, 850.f }, StringColor::White, "NotoSansKR");
 	std::get<1>(player)->GetText() = L"Player" + std::to_wstring(4);
 	std::get<1>(player)->SetActiveState(false);
 }
 
 void LobbyScene::BuildPlayerReadyImage() {
-	std::array<CanvasRect, 5> namePlateRects;
+	std::array<CanvasRect, 6> namePlateRects;
 
 	const float namePlateWidth = 80.f;
 	const float namePlateHeight = 100.f;
 	const float xOffsetFromText = 10.f; 
 
 	const float xInterval = 380.f;
-	const float xPadding = 340.f;
+	const float xPadding = 150.f;
 
-	for (int i = 0; i < 4; ++i) {
+	for (int i = 0; i < 5; ++i) {
 		float textLeft = xPadding + xInterval * i;
 		float textTop = 550.f;
 
@@ -714,13 +740,13 @@ void LobbyScene::BuildPlayerReadyImage() {
 		float textLeft = 760.f;
 		float textTop = 750.f;
 
-		namePlateRects[4].LTx = textLeft + xInterval + xOffsetFromText;
-		namePlateRects[4].LTy = textTop;
-		namePlateRects[4].width = namePlateWidth;
-		namePlateRects[4].height = namePlateHeight;
+		namePlateRects[5].LTx = textLeft + xInterval + xOffsetFromText;
+		namePlateRects[5].LTy = textTop;
+		namePlateRects[5].width = namePlateWidth;
+		namePlateRects[5].height = namePlateHeight;
 	}
 
-	for (int i = 0; i < 5; ++i) {
+	for (int i = 0; i < 6; ++i) {
 		auto& player = mPlayers[i];
 		std::get<2>(player) = Image{};
 		std::get<2>(player).Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("check")); 

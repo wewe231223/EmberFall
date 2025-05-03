@@ -53,7 +53,7 @@ private:
 	std::vector<GameObject> mLobbyProps{}; 
 
 	std::unordered_map<NetworkObjectIdType, std::tuple<Player, TextBlock*, Image>*> mPlayerIndexmap{};
-	std::array<std::tuple<Player,TextBlock*, Image>, 5> mPlayers{};
+	std::array<std::tuple<Player,TextBlock*, Image>, 6> mPlayers{};
 	
 	UINT mPlayerSelected{ 0 };
 	PlayerRole mPlayerRole{ PlayerRole_None };
