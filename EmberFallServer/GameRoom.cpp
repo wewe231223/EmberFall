@@ -1,10 +1,15 @@
 #include "pch.h"
 #include "GameRoom.h"
+#include "ServerFrame.h"
 
 GameRoom::GameRoom(uint16_t roomIdx)
     : mRoomIdx{ roomIdx }, mGameRoomState{ GAME_ROOM_STATE_LOBBY }, mStage{ GameStage::STAGE1, roomIdx } { }
 
 GameRoom::~GameRoom() { }
+
+bool GameRoom::IsEveryPlayerReady() const {
+    return mPlayerCount == mReadyPlayerCount;
+}
 
 bool GameRoom::IsMaxSession() const {
     Lock::SRWLockGuard sessionGaurd{ Lock::SRWLockMode::SRW_SHARED, mSessionLock };
@@ -45,6 +50,7 @@ uint8_t GameRoom::TryInsertInRoom(SessionIdType sessionId) {
         return GameRoomError::ERROR_MAX_SESSION_IN_ONE_ROOM;
     }
 
+    ++mPlayerCount;
     mSessionsInRoom.insert(sessionId);
 
     return GameRoomError::SUCCESS_INSERT_SESSION_IN_ROOM;
@@ -56,6 +62,7 @@ uint8_t GameRoom::RemovePlayer(SessionIdType id) {
         return GameRoomError::ERROR_SESSION_NOT_EXISTS_IN_THIS_ROOM;
     }
 
+    --mPlayerCount;
     mSessionsInRoom.erase(id);
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session [{}] erased in GameRoom [{}]", id, mRoomIdx);
 
@@ -97,9 +104,123 @@ bool GameRoom::ChangeRolePlayer(SessionIdType id, Packets::PlayerRole role) {
     return true;
 }
 
+bool GameRoom::ReadyPlayer(SessionIdType id) {
+    mSessionLock.ReadLock();
+    if (not mSessionsInRoom.contains(id)) {
+        return false;
+    }
+    mSessionLock.ReadUnlock();
+
+    auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(id));
+    if (nullptr == session) {
+        return false;
+    }
+    
+    ++mReadyPlayerCount;
+    return session->Ready();
+}
+
+bool GameRoom::CancelPlayerReady(SessionIdType id) {
+    mSessionLock.ReadLock();
+    if (not mSessionsInRoom.contains(id)) {
+        return false;
+    }
+    mSessionLock.ReadUnlock();
+
+    auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(id));
+    if (nullptr == session) {
+        return false;
+    }
+
+    --mReadyPlayerCount;
+    return session->CancelReady();
+}
+
 bool GameRoom::CheckAndStartGame() {
-    // TODO - Check if all players are in the READY state and send ChangeToNextSceneSC packet to clients
-    return false;
+    if (not IsEveryPlayerReady()) {
+        return false;
+    }
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Register Start Game!!!");
+
+    auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
+    gServerFrame->AddTimerEvent(mRoomIdx, INVALID_SESSION_ID, excutionTime, TimerEventType::SCENE_TRANSITION_COUNTDOWN);
+    mSceneTransitionCounter = SysClock::now();
+    return true;
+}
+
+void GameRoom::BroadCastInGameRoom(SessionIdType sender, OverlappedSend* packet) {
+    decltype(auto) sessionsInGameRoom = GetSessions();
+    std::vector<std::shared_ptr<GameSession>> sessionList{ };
+    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
+    {
+        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
+        for (auto& sessionId : sessionsInGameRoom) {
+            if (sender == sessionId) {
+                continue;
+            }
+
+            auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+            if (nullptr == session or SESSION_INLOBBY != session->GetSessionState()) {
+                continue;
+            }
+
+            sessionList.push_back(session);
+        }
+    }
+
+    for (auto& session : sessionList) {
+        auto clonedPacket = FbsPacketFactory::ClonePacket(packet);
+        session->RegisterSend(clonedPacket);
+    }
+
+    FbsPacketFactory::ReleasePacketBuf(packet);
+}
+
+void GameRoom::BroadCastInGameRoom(OverlappedSend* packet) {
+    decltype(auto) sessionsInGameRoom = GetSessions();
+    std::vector<std::shared_ptr<GameSession>> sessionList{ };
+    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
+    {
+        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
+        for (auto& sessionId : sessionsInGameRoom) {
+            auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+            if (nullptr == session or SESSION_INLOBBY != session->GetSessionState()) {
+                continue;
+            }
+
+            sessionList.push_back(session);
+        }
+    }
+
+    for (auto& session : sessionList) {
+        auto clonedPacket = FbsPacketFactory::ClonePacket(packet);
+        session->RegisterSend(clonedPacket);
+    }
+
+    FbsPacketFactory::ReleasePacketBuf(packet);
+}
+
+void GameRoom::OnSceneCountdownTick() {
+    if (not IsEveryPlayerReady()) {
+        mSceneTransitionCounter = SysClock::now();
+        return;
+    }
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "OnSceneCountdownTick");
+
+    auto sceneTransitionTime = std::chrono::duration_cast<std::chrono::milliseconds>(SysClock::now() - mSceneTransitionCounter).count();
+    if (SCENE_TRANSITION_COUNT <= sceneTransitionTime / 1000.0f) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Start Game!!!");
+        mStage.StartStage();
+
+        auto packetSceneTransition = FbsPacketFactory::ChangeToNextSceneSC();
+        BroadCastInGameRoom(packetSceneTransition);
+        return;
+    }
+
+    auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
+    gServerFrame->AddTimerEvent(mRoomIdx, INVALID_SESSION_ID, excutionTime, TimerEventType::SCENE_TRANSITION_COUNTDOWN);
 }
 
 GameRoomManager::GameRoomManager() {
@@ -197,4 +318,12 @@ SessionListInRoom& GameRoomManager::GetSessionsInRoom(uint16_t roomIdx) {
 
 bool GameRoomManager::ChangeRolePlayer(uint16_t roomIdx, SessionIdType id, Packets::PlayerRole role) {
     return mGameRooms.at(roomIdx)->ChangeRolePlayer(id, role);
+}
+
+bool GameRoomManager::ReadyPlayer(uint16_t roomIdx, SessionIdType id) {
+    return mGameRooms.at(roomIdx)->ReadyPlayer(id);
+}
+
+bool GameRoomManager::CancelPlayerReady(uint16_t roomIdx, SessionIdType id) {
+    return mGameRooms.at(roomIdx)->CancelPlayerReady(id);
 }

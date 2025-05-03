@@ -225,9 +225,6 @@
     <ClCompile Include="ArrowScript.cpp">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClCompile>
-    <ClCompile Include="BuffScript.cpp">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClCompile>
     <ClCompile Include="CorruptedGem.cpp">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClCompile>
@@ -251,6 +248,9 @@
     </ClCompile>
     <ClCompile Include="Stage.cpp">
       <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
+    </ClCompile>
+    <ClCompile Include="BuffScript.cpp">
+      <Filter>MultiThreadLoopTest\Script\Buff</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -392,9 +392,6 @@
     <ClInclude Include="ArrowScript.h">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClInclude>
-    <ClInclude Include="BuffScript.h">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClInclude>
     <ClInclude Include="Inventory.h">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClInclude>
@@ -412,6 +409,9 @@
     </ClInclude>
     <ClInclude Include="Stage.h">
       <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
+    </ClInclude>
+    <ClInclude Include="BuffScript.h">
+      <Filter>MultiThreadLoopTest\Script\Buff</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

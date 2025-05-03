@@ -77,8 +77,9 @@ void ServerFrame::TimerThread() {
             continue;
         }
 
-        auto obj = gGameRoomManager->GetRoom(event.roomIdx)->GetStage().GetObjectFromId(event.id);
+        decltype(auto) gameRoom = gGameRoomManager->GetRoom(event.roomIdx);
 
+        auto obj = gameRoom->GetStage().GetObjectFromId(event.id);
         if (nullptr == obj) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Object Is Dead");
             continue;
@@ -104,6 +105,12 @@ void ServerFrame::TimerThread() {
         case TimerEventType::REMOVE_TRIGGER:
         {
             obj->Reset();
+            break;
+        }
+
+        case TimerEventType::SCENE_TRANSITION_COUNTDOWN:
+        {
+            gameRoom->OnSceneCountdownTick();
             break;
         }
 
