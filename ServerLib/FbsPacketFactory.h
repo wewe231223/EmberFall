@@ -38,7 +38,7 @@ public:
     static OverlappedSend* PacketLatencySC(uint64_t time);
 
     // In Lobby
-    static OverlappedSend* PlayerEnterInLobbySC(SessionIdType id);
+    static OverlappedSend* PlayerEnterInLobbySC(SessionIdType id, uint8_t slotIndex, std::string_view name);
     static OverlappedSend* PlayerReadyInLobbySC(SessionIdType id);
     static OverlappedSend* PlayerCancelReadySC(SessionIdType id);
     static OverlappedSend* RejectSelectionRoleSC();

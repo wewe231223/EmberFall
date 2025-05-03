@@ -19,24 +19,34 @@ public:
     ~GameSession();
 
 public:
-    std::shared_ptr<GameObject> GetUserObject() const;
-    uint8_t GetSessionState() const;
-    Packets::PlayerRole GetPlayerRole() const;
     bool GetReadyState() const;
+    uint8_t GetSessionState() const;
+    uint8_t GetSlotIndex() const;
+    Packets::PlayerRole GetPlayerRole() const;
+    std::string GetName() const;
+    std::string_view GetNameView() const;
+    std::shared_ptr<GameObject> GetUserObject() const;
 
-    void InitUserObject();
-    void EnterLobby();
-    void EnterInGame();
+    void SetSlotIndex(uint8_t slotIndex);
+    void SetName(const std::string& str);
+
+    void ChangeRole(Packets::PlayerRole role);
     bool Ready();
     bool CancelReady();
-    void ChangeRole(Packets::PlayerRole role);
+    void EnterLobby();
+    void EnterInGame();
+    void InitUserObject();
 
     virtual void OnConnect() override;
     virtual void ProcessRecv(INT32 numOfBytes) override;
 
 private:
+    // for lobby
+    bool mReady{ false };
+    uint8_t mSlotIndexInLobby{ };
     std::atomic<Packets::PlayerRole> mPlayerRole{ Packets::PlayerRole::PlayerRole_NONE };
     std::atomic_uint8_t mSessionState{ SESSION_STATE_NONE };
-    bool mReady{ false };
+
+    std::string mName{ };
     std::shared_ptr<GameObject> mUserObject{ nullptr };
 };

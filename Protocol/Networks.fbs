@@ -22,6 +22,8 @@ table NotifyIdSC {
 
 table PlayerEnterInLobbySC {
 	playerId: ubyte;
+	playerSlot: ubyte;
+	name: string;
 }
 
 table PlayerReadyInLobbySC {

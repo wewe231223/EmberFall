@@ -125,7 +125,7 @@ void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, cons
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player [{}] Enter In Lobby!", session->GetId());
 
     auto sessionId = static_cast<SessionIdType>(session->GetId());
-    auto packetEnter = FbsPacketFactory::PlayerEnterInLobbySC(sessionId);
+    auto packetEnter = FbsPacketFactory::PlayerEnterInLobbySC(sessionId, session->GetSlotIndex(), session->GetName());
 
     auto sessionGameRoom = session->GetMyRoomIdx();
     decltype(auto) sessionsInGameRoom = gGameRoomManager->GetSessionsInRoom(sessionGameRoom);

@@ -22,7 +22,7 @@ GameSession::~GameSession() {
     }
 
     // TODO - Remove In GameRoom
-    auto result = gGameRoomManager->TryRemoveGameRoom(myRoom, myId);
+    auto result = gGameRoomManager->TryRemoveGameRoom(myRoom, myId, mReady, mSlotIndexInLobby);
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameSession Destructor: Session Erase From Room Error: {}", result);
 
     mSessionState = SESSION_CLOSE;
@@ -152,12 +152,32 @@ std::shared_ptr<GameObject> GameSession::GetUserObject() const {
     return mUserObject;
 }
 
+void GameSession::SetSlotIndex(uint8_t slotIndex) {
+    mSlotIndexInLobby = slotIndex;
+}
+
+void GameSession::SetName(const std::string& str) {
+    mName = str;
+}
+
 uint8_t GameSession::GetSessionState() const {
     return mSessionState.load();
 }
 
+uint8_t GameSession::GetSlotIndex() const {
+    return mSlotIndexInLobby;
+}
+
 Packets::PlayerRole GameSession::GetPlayerRole() const {
     return mPlayerRole;
+}
+
+std::string GameSession::GetName() const {
+    return mName;
+}
+
+std::string_view GameSession::GetNameView() const {
+    return mName;
 }
 
 bool GameSession::GetReadyState() const {

@@ -41,7 +41,7 @@ public:
     SessionListInRoom& GetSessions();
 
     uint8_t TryInsertInRoom(SessionIdType session);
-    uint8_t RemovePlayer(SessionIdType id);
+    uint8_t RemovePlayer(SessionIdType id, bool lastReadyState, uint8_t lastSlotIndex);
 
     bool ChangeRolePlayer(SessionIdType id, Packets::PlayerRole role);
     bool ReadyPlayer(SessionIdType id);
@@ -66,6 +66,8 @@ private:
     SysClock::time_point mSceneTransitionCounter{ };
 
     SessionListInRoom mSessionsInRoom{ };   
+    Concurrency::concurrent_queue<uint8_t> mSessionSlotIndices{ };
+
     Stage mStage;
 };
 
@@ -87,7 +89,7 @@ public:
     void InitGameRooms();
 
     uint16_t TryInsertGameRoom(SessionIdType session);
-    uint8_t TryRemoveGameRoom(uint16_t roomIdx, SessionIdType sessionId);
+    uint8_t TryRemoveGameRoom(uint16_t roomIdx, SessionIdType sessionId, bool lastReadyState, uint8_t lastSlotIndex);
 
     Lock::SRWLock& GetSessionLock(uint16_t roomIdx);
     SessionListInRoom& GetSessionsInRoom(uint16_t roomIdx);

@@ -3,7 +3,11 @@
 #include "ServerFrame.h"
 
 GameRoom::GameRoom(uint16_t roomIdx)
-    : mRoomIdx{ roomIdx }, mGameRoomState{ GAME_ROOM_STATE_LOBBY }, mStage{ GameStage::STAGE1, roomIdx } { }
+    : mRoomIdx{ roomIdx }, mGameRoomState{ GAME_ROOM_STATE_LOBBY }, mStage{ GameStage::STAGE1, roomIdx } { 
+    for (uint8_t i = 0; i < MAX_PLAYER_IN_GAME_ROOM; ++i) {
+        mSessionSlotIndices.push(i);
+    }
+}
 
 GameRoom::~GameRoom() { }
 
@@ -50,21 +54,40 @@ uint8_t GameRoom::TryInsertInRoom(SessionIdType sessionId) {
         return GameRoomError::ERROR_MAX_SESSION_IN_ONE_ROOM;
     }
 
+    uint8_t slotIndex;
+    if (false == mSessionSlotIndices.try_pop(slotIndex)) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Slot Index is exhausted!!");
+        ::exit(-1);
+    }
+
+    auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+    if (nullptr == session) {
+        return GameRoomError::ERROR_SESSION_EXISTS_IN_THIS_ROOM;
+    }
+
     ++mPlayerCount;
+    session->SetSlotIndex(slotIndex);
+    session->SetName(std::format("Player {}", slotIndex));
     mSessionsInRoom.insert(sessionId);
 
     return GameRoomError::SUCCESS_INSERT_SESSION_IN_ROOM;
 }
 
-uint8_t GameRoom::RemovePlayer(SessionIdType id) {
+uint8_t GameRoom::RemovePlayer(SessionIdType id, bool lastReadyState, uint8_t lastSlotIndex) {
     Lock::SRWLockGuard sessionGaurd{ Lock::SRWLockMode::SRW_EXCLUSIVE, mSessionLock };
     if (not mSessionsInRoom.contains(id)) {
         return GameRoomError::ERROR_SESSION_NOT_EXISTS_IN_THIS_ROOM;
     }
 
+    if (true == lastReadyState) {
+        --mReadyPlayerCount;
+    }
+
     --mPlayerCount;
+
     mSessionsInRoom.erase(id);
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session [{}] erased in GameRoom [{}]", id, mRoomIdx);
+    mSessionSlotIndices.push(lastSlotIndex);
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session [{}] erased in GameRoom [{}], last slot: [{}]", id, mRoomIdx);
 
     return GameRoomError::SUCCESS_REMOVE_SESSION_IN_ROOM;
 }
@@ -267,9 +290,9 @@ uint16_t GameRoomManager::TryInsertGameRoom(SessionIdType sessionId) {
     return INSERT_GAME_ROOM_ERROR;
 }
 
-uint8_t GameRoomManager::TryRemoveGameRoom(uint16_t roomIdx, SessionIdType sessionId) {
+uint8_t GameRoomManager::TryRemoveGameRoom(uint16_t roomIdx, SessionIdType sessionId, bool lastReadyState, uint8_t lastSlotIndex) {
     auto& room = mGameRooms[roomIdx];
-    auto errorCode = room->RemovePlayer(sessionId);
+    auto errorCode = room->RemovePlayer(sessionId, lastReadyState, lastSlotIndex);
     if (GameRoomError::SUCCESS_REMOVE_SESSION_IN_ROOM != errorCode) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In TryRemoveGameRoom - ErrorCode: {}", errorCode);
         return errorCode;

@@ -74,10 +74,11 @@ OverlappedSend* FbsPacketFactory::PacketLatencySC(uint64_t time) {
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::PlayerEnterInLobbySC(SessionIdType id) {
+OverlappedSend* FbsPacketFactory::PlayerEnterInLobbySC(SessionIdType id, uint8_t slotIndex, std::string_view name) {
     flatbuffers::FlatBufferBuilder builder{ };
 
-    auto offset = Packets::CreatePlayerEnterInLobbySC(builder, id);
+    auto nameOffset = builder.CreateString(name.data());
+    auto offset = Packets::CreatePlayerEnterInLobbySC(builder, id, slotIndex);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();
