@@ -219,19 +219,14 @@ inline ::flatbuffers::Offset<PlayerEnterInLobbySC> CreatePlayerEnterInLobbySC(
 struct PlayerReadyInLobbySC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PlayerReadyInLobbySCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_PLAYERID = 4,
-    VT_ROLE = 6
+    VT_PLAYERID = 4
   };
   uint8_t playerId() const {
     return GetField<uint8_t>(VT_PLAYERID, 0);
   }
-  Packets::PlayerRole role() const {
-    return static_cast<Packets::PlayerRole>(GetField<uint8_t>(VT_ROLE, 0));
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
-           VerifyField<uint8_t>(verifier, VT_ROLE, 1) &&
            verifier.EndTable();
   }
 };
@@ -242,9 +237,6 @@ struct PlayerReadyInLobbySCBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_playerId(uint8_t playerId) {
     fbb_.AddElement<uint8_t>(PlayerReadyInLobbySC::VT_PLAYERID, playerId, 0);
-  }
-  void add_role(Packets::PlayerRole role) {
-    fbb_.AddElement<uint8_t>(PlayerReadyInLobbySC::VT_ROLE, static_cast<uint8_t>(role), 0);
   }
   explicit PlayerReadyInLobbySCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -259,10 +251,8 @@ struct PlayerReadyInLobbySCBuilder {
 
 inline ::flatbuffers::Offset<PlayerReadyInLobbySC> CreatePlayerReadyInLobbySC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint8_t playerId = 0,
-    Packets::PlayerRole role = Packets::PlayerRole_NONE) {
+    uint8_t playerId = 0) {
   PlayerReadyInLobbySCBuilder builder_(_fbb);
-  builder_.add_role(role);
   builder_.add_playerId(playerId);
   return builder_.Finish();
 }

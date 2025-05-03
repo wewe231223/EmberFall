@@ -63,50 +63,50 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		auto id = packet->playerId(); 
 		std::get<2>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
 
-		switch (packet->role()) {
-		case Packets::PlayerRole::PlayerRole_HUMAN_LONGSWORD:
-		{
-			auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
-			std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["SwordMan"].Clone();
-			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
-			std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
-		}
-		break;
-		case Packets::PlayerRole::PlayerRole_HUMAN_ARCHER:
-		{
-			auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
-			std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["Archer"].Clone();
-			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
-			std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
-		}
-		break;
-		case Packets::PlayerRole::PlayerRole_HUMAN_MAGICIAN:
-		{
-			auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
-			std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["Mage"].Clone();
-			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
-			std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
-		}
-		break;
-		case Packets::PlayerRole::PlayerRole_HUMAN_SWORD:
-		{
-			auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
-			std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["ShieldMan"].Clone();
-			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
-			std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
-		}
-		break;
-		case Packets::PlayerRole::PlayerRole_BOSS:
-		{
-			auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
-			std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["Demon"].Clone();
-			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
-			std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
-		}
-		break;
-		default:
-			break;
-		}
+		//switch (packet->role()) {
+		//case Packets::PlayerRole::PlayerRole_HUMAN_LONGSWORD:
+		//{
+		//	auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
+		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["SwordMan"].Clone();
+		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
+		//	std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
+		//}
+		//break;
+		//case Packets::PlayerRole::PlayerRole_HUMAN_ARCHER:
+		//{
+		//	auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
+		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["Archer"].Clone();
+		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
+		//	std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
+		//}
+		//break;
+		//case Packets::PlayerRole::PlayerRole_HUMAN_MAGICIAN:
+		//{
+		//	auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
+		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["Mage"].Clone();
+		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
+		//	std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
+		//}
+		//break;
+		//case Packets::PlayerRole::PlayerRole_HUMAN_SWORD:
+		//{
+		//	auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
+		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["ShieldMan"].Clone();
+		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
+		//	std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
+		//}
+		//break;
+		//case Packets::PlayerRole::PlayerRole_BOSS:
+		//{
+		//	auto transform = std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform();
+		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])) = mPlayerPreFabs["Demon"].Clone();
+		//	std::get<0>(*(mPlayerIndexmap[packet->playerId()])).GetTransform() = transform;
+		//	std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
+		//}
+		//break;
+		//default:
+		//	break;
+		//}
 
 
 		// 누군가 로비 씬에서 Ready 한 경우 
