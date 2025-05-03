@@ -56,6 +56,47 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		}
 		break;
 	}
+	case Packets::PacketTypes_PT_CONFIRM_SELECTION_ROLE_SC:
+	{
+		switch (mPlayerRole) {
+		case PlayerRole_SwordMan:
+		{
+			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])) = mPlayerPreFabs["SwordMan"].Clone();
+			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform() = transform;
+		}
+			break;
+		case PlayerRole_Archer:
+		{
+			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])) = mPlayerPreFabs["Archer"].Clone();
+			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform() = transform;
+		}
+			break;
+		case PlayerRole_Mage:
+		{
+			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])) = mPlayerPreFabs["Mage"].Clone();
+			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform() = transform;
+		}
+			break;
+		case PlayerRole_ShieldMan:
+		{
+			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])) = mPlayerPreFabs["ShieldMan"].Clone();
+			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform() = transform;
+		}
+			break;
+		case PlayerRole_Demon:
+		{
+			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])) = mPlayerPreFabs["Demon"].Clone();
+			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform() = transform;
+		}
+			break;
+		}
+	}
+		break;
 	case Packets::PacketTypes_PT_PLAYER_CHANGE_ROLE_SC:
 	{
 		decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::PlayerChangeRoleSC>(buffer);
@@ -108,7 +149,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		auto id = packet->playerId(); 
 		std::get<2>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
 
-		packet->role();
+		
 
 		break;
 	}
@@ -265,48 +306,6 @@ void LobbyScene::Update() {
 			decltype(auto) packet = FbsPacketFactory::PlayerSelectRole(gClientCore->GetSessionId(), role);
 			gClientCore->Send(packet); 
 		}
-
-		//if (prevRole != mPlayerRole) {
-		//	switch (mPlayerRole) {
-		//	case PlayerRole_SwordMan:
-		//	{
-		//		auto transform = std::get<0>(mPlayers[0]).GetTransform();
-		//		std::get<0>(mPlayers[0]) = mPlayerPreFabs["SwordMan"].Clone();
-		//		std::get<0>(mPlayers[0]).GetTransform() = transform;
-		//	}
-		//	break;
-		//	case PlayerRole_Archer:
-		//	{
-		//		auto transform = std::get<0>(mPlayers[0]).GetTransform();
-		//		std::get<0>(mPlayers[0]) = mPlayerPreFabs["Archer"].Clone();
-		//		std::get<0>(mPlayers[0]).GetTransform() = transform;
-		//	}
-		//	break;
-		//	case PlayerRole_Mage:
-		//	{
-		//		auto transform = std::get<0>(mPlayers[0]).GetTransform();
-		//		std::get<0>(mPlayers[0]) = mPlayerPreFabs["Mage"].Clone();
-		//		std::get<0>(mPlayers[0]).GetTransform() = transform;
-		//	}
-		//	break;
-		//	case PlayerRole_ShieldMan:
-		//	{
-		//		auto transform = std::get<0>(mPlayers[0]).GetTransform();
-		//		std::get<0>(mPlayers[0]) = mPlayerPreFabs["ShieldMan"].Clone();
-		//		std::get<0>(mPlayers[0]).GetTransform() = transform;
-		//	}
-		//	break;
-		//	case PlayerRole_Demon:
-		//	{
-		//		std::get<0>(mPlayers[0]).SetActiveState(false); 
-		//		std::get<0>(mPlayers[5]).SetActiveState(true);
-		//	}
-		//	break;
-		//	default:
-		//		break;
-		//	}
-
-
 
 		//	if (mPlayerRole == PlayerRole_Demon && mPlayerSelected != 5 && !mCameraRotating) {
 		//		mPlayerSelected = 5;
