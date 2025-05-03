@@ -61,6 +61,20 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		switch (mPlayerRole) {
 		case PlayerRole_SwordMan:
 		{
+			if (mPlayerSelected == 5) {
+				mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[0];
+
+				std::get<1>(mPlayers[0])->GetText() = std::get<1>(mPlayers[5])->GetText();
+
+				std::get<0>(mPlayers[5]).SetActiveState(false);
+				std::get<1>(mPlayers[5])->SetActiveState(false);
+
+				std::get<0>(mPlayers[0]).SetActiveState(true);
+
+				mPlayerSelected = 0;
+				mCameraRotating = true;
+			}
+
 			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform();
 			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])) = mPlayerPreFabs["SwordMan"].Clone();
 			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform() = transform;
@@ -82,6 +96,20 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 			break;
 		case PlayerRole_ShieldMan:
 		{
+			if (mPlayerSelected == 5) {
+				mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[0];
+
+				std::get<1>(mPlayers[0])->GetText() = std::get<1>(mPlayers[5])->GetText();
+
+				std::get<0>(mPlayers[5]).SetActiveState(false);
+				std::get<1>(mPlayers[5])->SetActiveState(false);
+
+				std::get<0>(mPlayers[0]).SetActiveState(true);
+
+				mPlayerSelected = 0;
+				mCameraRotating = true;
+			}
+
 			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform();
 			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])) = mPlayerPreFabs["ShieldMan"].Clone();
 			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform() = transform;
@@ -89,9 +117,17 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 			break;
 		case PlayerRole_Demon:
 		{
-			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform();
-			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])) = mPlayerPreFabs["Demon"].Clone();
-			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform() = transform;
+			mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[5];
+			
+			std::get<1>(mPlayers[5])->GetText() = std::get<1>(mPlayers[0])->GetText();
+			
+			std::get<0>(mPlayers[0]).SetActiveState(false); 
+			std::get<1>(mPlayers[0])->SetActiveState(false);
+
+			std::get<0>(mPlayers[5]).SetActiveState(true);
+
+			mPlayerSelected = 5; 
+			mCameraRotating = true;
 		}
 			break;
 		}
@@ -132,9 +168,13 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		break;
 		case Packets::PlayerRole::PlayerRole_BOSS:
 		{
-			auto transform = std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform();
-			std::get<0>(*(mPlayerIndexmap[data->playerId()])) = mPlayerPreFabs["Demon"].Clone();
-			std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform() = transform;
+			std::get<0>(*mPlayerIndexmap[data->playerId()]).SetActiveState(false);
+			std::get<1>(*mPlayerIndexmap[data->playerId()])->SetActiveState(false);
+			std::get<1>(mPlayers[5])->GetText() = std::get<1>(*mPlayerIndexmap[data->playerId()])->GetText();
+
+			mPlayerIndexmap[data->playerId()] = &mPlayers[5];
+
+			std::get<0>(*mPlayerIndexmap[data->playerId()]).SetActiveState(true);
 		}
 		break;
 		default:
@@ -148,14 +188,13 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 
 		auto id = packet->playerId(); 
 		std::get<2>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
-
+		std::get<3>(*(mPlayerIndexmap[packet->playerId()])) = true; 
 		
 
 		break;
 	}
 	case Packets::PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_SC:
 	{
-		// 누군가 로비 씬에 들어온 경우 
 		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerEnterInLobbySC>(buffer);
 
 		auto nextLoc = FindNextPlayerLoc();
@@ -172,7 +211,12 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 
 		mPlayerIndexmap[packet->playerId()] = &(*nextLoc);
 		std::get<0>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
+		std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
 		
+		auto name = packet->name()->c_str() ;
+
+		std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->GetText() = std::wstring( ConvertUtf8ToWstring(packet->name()->c_str()) );
+
 		break;
 	}
 	case Packets::PacketTypes_PT_PLAYER_EXIT_SC:
@@ -306,26 +350,6 @@ void LobbyScene::Update() {
 			decltype(auto) packet = FbsPacketFactory::PlayerSelectRole(gClientCore->GetSessionId(), role);
 			gClientCore->Send(packet); 
 		}
-
-		//	if (mPlayerRole == PlayerRole_Demon && mPlayerSelected != 5 && !mCameraRotating) {
-		//		mPlayerSelected = 5;
-		//		for (auto i = 0; i < mPlayers.size() - 1; ++i) {
-		//			std::get<1>(mPlayers[i])->SetActiveState(false);
-		//			std::get<2>(mPlayers[i]).SetActiveState(false);
-		//		}
-
-		//		// 내가 보스를 택한 경
-		//		std::get<1>(mPlayers[5])->GetText() = std::get<1>(mPlayers[0])->GetText();
-
-		//		mCameraRotating = true;
-		//	}
-		//	else if (mPlayerRole != PlayerRole_Demon && mPlayerSelected != 0 && !mCameraRotating) {
-		//		mPlayerSelected = 0;
-		//		std::get<1>(mPlayers[5])->SetActiveState(false);
-		//		std::get<2>(mPlayers[5]).SetActiveState(false);
-		//		mCameraRotating = true;
-		//	}
-		//}
 	}
 
 
@@ -350,8 +374,9 @@ void LobbyScene::Update() {
 
 	if (Input.GetKeyboardTracker().pressed.Enter and not mIsReady) {
 		std::get<2>(mPlayers[0]).SetActiveState(true); 
-
+		std::get<3>(mPlayers[0]) = true; 
 		mIsReady = true; 
+
 		decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId());
 		gClientCore->Send(packet);
 	}
@@ -370,6 +395,9 @@ void LobbyScene::Update() {
 			for (auto i = 0; i < mPlayers.size() - 1; ++i) {
 				if (std::get<0>(mPlayers[i]).GetActiveState()) {
 					std::get<1>(mPlayers[i])->SetActiveState(true);
+					if (std::get<3>(mPlayers[i])) {
+						std::get<2>(mPlayers[i]).SetActiveState(true);
+					}
 				}
 			}
 
@@ -381,6 +409,9 @@ void LobbyScene::Update() {
 
 			if (std::get<0>(mPlayers[5]).GetActiveState()) {
 				std::get<1>(mPlayers[5])->SetActiveState(true);
+				if (std::get<3>(mPlayers[5])) {
+					std::get<2>(mPlayers[5]).SetActiveState(true);
+				}
 			}
 		}
 

@@ -219,3 +219,14 @@ enum class StringFontType : WORD {
 #pragma region MY_WINDOW_MSG
 #define WM_ADVANCESCENE (WM_USER + 1)
 #pragma endregion MY_WINDOW_MSG
+
+
+inline std::wstring ConvertUtf8ToWstring(const char* utf8Str) {
+    int len = MultiByteToWideChar(CP_UTF8, 0, utf8Str, -1, nullptr, 0);
+
+    std::wstring result(len, 0);
+    MultiByteToWideChar(CP_UTF8, 0, utf8Str, -1, &result[0], len);
+
+    result.resize(wcslen(result.c_str()));
+    return result;
+}
