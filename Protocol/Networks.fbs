@@ -26,7 +26,6 @@ table PlayerEnterInLobbySC {
 
 table PlayerReadyInLobbySC {
 	playerId: ubyte;
-	role: PlayerRole;
 }
 
 table PlayerCancelReadySC { 
