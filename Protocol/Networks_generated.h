@@ -30,8 +30,8 @@ struct PlayerEnterInLobbySCBuilder;
 struct PlayerReadyInLobbySC;
 struct PlayerReadyInLobbySCBuilder;
 
-struct CancelPlayerReadySC;
-struct CancelPlayerReadySCBuilder;
+struct PlayerCancelReadySC;
+struct PlayerCancelReadySCBuilder;
 
 struct RejectSelectionRoleSC;
 struct RejectSelectionRoleSCBuilder;
@@ -60,6 +60,9 @@ struct PlayerEnterInGameBuilder;
 struct PlayerReadyInLobbyCS;
 struct PlayerReadyInLobbyCSBuilder;
 
+struct PlayerCancelReadyCS;
+struct PlayerCancelReadyCSBuilder;
+
 struct PlayerEnterInLobbyCS;
 struct PlayerEnterInLobbyCSBuilder;
 
@@ -68,9 +71,6 @@ struct PlayerInputCSBuilder;
 
 struct PlayerLookCS;
 struct PlayerLookCSBuilder;
-
-struct PlayerSelectWeaponCS;
-struct PlayerSelectWeaponCSBuilder;
 
 struct PlayerSelectRoleCS;
 struct PlayerSelectRoleCSBuilder;
@@ -267,8 +267,8 @@ inline ::flatbuffers::Offset<PlayerReadyInLobbySC> CreatePlayerReadyInLobbySC(
   return builder_.Finish();
 }
 
-struct CancelPlayerReadySC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef CancelPlayerReadySCBuilder Builder;
+struct PlayerCancelReadySC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PlayerCancelReadySCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_PLAYERID = 4
   };
@@ -282,28 +282,28 @@ struct CancelPlayerReadySC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tabl
   }
 };
 
-struct CancelPlayerReadySCBuilder {
-  typedef CancelPlayerReadySC Table;
+struct PlayerCancelReadySCBuilder {
+  typedef PlayerCancelReadySC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
   void add_playerId(uint8_t playerId) {
-    fbb_.AddElement<uint8_t>(CancelPlayerReadySC::VT_PLAYERID, playerId, 0);
+    fbb_.AddElement<uint8_t>(PlayerCancelReadySC::VT_PLAYERID, playerId, 0);
   }
-  explicit CancelPlayerReadySCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+  explicit PlayerCancelReadySCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ::flatbuffers::Offset<CancelPlayerReadySC> Finish() {
+  ::flatbuffers::Offset<PlayerCancelReadySC> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<CancelPlayerReadySC>(end);
+    auto o = ::flatbuffers::Offset<PlayerCancelReadySC>(end);
     return o;
   }
 };
 
-inline ::flatbuffers::Offset<CancelPlayerReadySC> CreateCancelPlayerReadySC(
+inline ::flatbuffers::Offset<PlayerCancelReadySC> CreatePlayerCancelReadySC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint8_t playerId = 0) {
-  CancelPlayerReadySCBuilder builder_(_fbb);
+  PlayerCancelReadySCBuilder builder_(_fbb);
   builder_.add_playerId(playerId);
   return builder_.Finish();
 }
@@ -590,15 +590,8 @@ inline ::flatbuffers::Offset<PlayerEnterInGame> CreatePlayerEnterInGame(
 
 struct PlayerReadyInLobbyCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PlayerReadyInLobbyCSBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ROLE = 4
-  };
-  Packets::PlayerRole role() const {
-    return static_cast<Packets::PlayerRole>(GetField<uint8_t>(VT_ROLE, 0));
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_ROLE, 1) &&
            verifier.EndTable();
   }
 };
@@ -607,9 +600,6 @@ struct PlayerReadyInLobbyCSBuilder {
   typedef PlayerReadyInLobbyCS Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_role(Packets::PlayerRole role) {
-    fbb_.AddElement<uint8_t>(PlayerReadyInLobbyCS::VT_ROLE, static_cast<uint8_t>(role), 0);
-  }
   explicit PlayerReadyInLobbyCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -622,10 +612,37 @@ struct PlayerReadyInLobbyCSBuilder {
 };
 
 inline ::flatbuffers::Offset<PlayerReadyInLobbyCS> CreatePlayerReadyInLobbyCS(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    Packets::PlayerRole role = Packets::PlayerRole_NONE) {
+    ::flatbuffers::FlatBufferBuilder &_fbb) {
   PlayerReadyInLobbyCSBuilder builder_(_fbb);
-  builder_.add_role(role);
+  return builder_.Finish();
+}
+
+struct PlayerCancelReadyCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PlayerCancelReadyCSBuilder Builder;
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           verifier.EndTable();
+  }
+};
+
+struct PlayerCancelReadyCSBuilder {
+  typedef PlayerCancelReadyCS Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  explicit PlayerCancelReadyCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<PlayerCancelReadyCS> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<PlayerCancelReadyCS>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<PlayerCancelReadyCS> CreatePlayerCancelReadyCS(
+    ::flatbuffers::FlatBufferBuilder &_fbb) {
+  PlayerCancelReadyCSBuilder builder_(_fbb);
   return builder_.Finish();
 }
 
@@ -747,47 +764,6 @@ inline ::flatbuffers::Offset<PlayerLookCS> CreatePlayerLookCS(
     const Packets::Vec3 *look = nullptr) {
   PlayerLookCSBuilder builder_(_fbb);
   builder_.add_look(look);
-  return builder_.Finish();
-}
-
-struct PlayerSelectWeaponCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef PlayerSelectWeaponCSBuilder Builder;
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_WEAPON = 4
-  };
-  Packets::Weapon weapon() const {
-    return static_cast<Packets::Weapon>(GetField<uint8_t>(VT_WEAPON, 0));
-  }
-  bool Verify(::flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_WEAPON, 1) &&
-           verifier.EndTable();
-  }
-};
-
-struct PlayerSelectWeaponCSBuilder {
-  typedef PlayerSelectWeaponCS Table;
-  ::flatbuffers::FlatBufferBuilder &fbb_;
-  ::flatbuffers::uoffset_t start_;
-  void add_weapon(Packets::Weapon weapon) {
-    fbb_.AddElement<uint8_t>(PlayerSelectWeaponCS::VT_WEAPON, static_cast<uint8_t>(weapon), 0);
-  }
-  explicit PlayerSelectWeaponCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  ::flatbuffers::Offset<PlayerSelectWeaponCS> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<PlayerSelectWeaponCS>(end);
-    return o;
-  }
-};
-
-inline ::flatbuffers::Offset<PlayerSelectWeaponCS> CreatePlayerSelectWeaponCS(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    Packets::Weapon weapon = Packets::Weapon_SWORD) {
-  PlayerSelectWeaponCSBuilder builder_(_fbb);
-  builder_.add_weapon(weapon);
   return builder_.Finish();
 }
 

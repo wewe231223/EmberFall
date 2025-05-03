@@ -62,13 +62,12 @@ uint8_t GameRoom::RemovePlayer(SessionIdType id) {
     return GameRoomError::SUCCESS_REMOVE_SESSION_IN_ROOM;
 }
 
-bool GameRoom::ReadyPlayer(SessionIdType id, Packets::PlayerRole role) {
-    {
-        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionLock };
-        if (not mSessionsInRoom.contains(id)) {
-            return false;
-        }
+bool GameRoom::ChangeRolePlayer(SessionIdType id, Packets::PlayerRole role) {
+    mSessionLock.ReadLock();
+    if (not mSessionsInRoom.contains(id)) {
+        return false;
     }
+    mSessionLock.ReadUnlock();
 
     auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(id));
     if (nullptr == session) {
@@ -80,14 +79,12 @@ bool GameRoom::ReadyPlayer(SessionIdType id, Packets::PlayerRole role) {
         uint8_t expectedBossPlayerCount = 1;
         mBossPlayerCount.compare_exchange_strong(expectedBossPlayerCount, 0);
 
-        mReadyPlayerCount.fetch_add(1);
-        session->Ready();
+        session->ChangeRole(role);
         return true;
     }
 
     if (role != Packets::PlayerRole_BOSS) {
-        mReadyPlayerCount.fetch_add(1);
-        session->Ready();
+        session->ChangeRole(role);
         return true;
     }
 
@@ -96,9 +93,13 @@ bool GameRoom::ReadyPlayer(SessionIdType id, Packets::PlayerRole role) {
         return false;
     }
 
-    mReadyPlayerCount.fetch_add(1);
-    session->Ready();
+    session->ChangeRole(role);
     return true;
+}
+
+bool GameRoom::CheckAndStartGame() {
+    // TODO - Check if all players are in the READY state and send ChangeToNextSceneSC packet to clients
+    return false;
 }
 
 GameRoomManager::GameRoomManager() {
@@ -145,7 +146,7 @@ uint16_t GameRoomManager::TryInsertGameRoom(SessionIdType sessionId) {
     return INSERT_GAME_ROOM_ERROR;
 }
 
-uint8_t GameRoomManager::TryRemoveGameRoom(size_t roomIdx, SessionIdType sessionId) {
+uint8_t GameRoomManager::TryRemoveGameRoom(uint16_t roomIdx, SessionIdType sessionId) {
     auto& room = mGameRooms[roomIdx];
     auto errorCode = room->RemovePlayer(sessionId);
     if (GameRoomError::SUCCESS_REMOVE_SESSION_IN_ROOM != errorCode) {
@@ -194,6 +195,6 @@ SessionListInRoom& GameRoomManager::GetSessionsInRoom(uint16_t roomIdx) {
     return mGameRooms.at(roomIdx)->GetSessions();
 }
 
-bool GameRoomManager::ReadyPlayer(uint16_t roomIdx, SessionIdType id, Packets::PlayerRole role) {
-    return mGameRooms.at(roomIdx)->ReadyPlayer(id, role);
+bool GameRoomManager::ChangeRolePlayer(uint16_t roomIdx, SessionIdType id, Packets::PlayerRole role) {
+    return mGameRooms.at(roomIdx)->ChangeRolePlayer(id, role);
 }

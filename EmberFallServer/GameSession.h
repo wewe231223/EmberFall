@@ -22,12 +22,13 @@ public:
     std::shared_ptr<GameObject> GetUserObject() const;
     uint8_t GetSessionState() const;
     Packets::PlayerRole GetPlayerRole() const;
+    bool GetReadyState() const;
 
     void InitUserObject();
     void EnterLobby();
     void EnterInGame();
-    void Ready();
-    void CancelReady();
+    bool Ready();
+    bool CancelReady();
     void ChangeRole(Packets::PlayerRole role);
 
     virtual void OnConnect() override;

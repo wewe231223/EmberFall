@@ -29,7 +29,7 @@ table PlayerReadyInLobbySC {
 	role: PlayerRole;
 }
 
-table CancelPlayerReadySC { 
+table PlayerCancelReadySC { 
 	playerId: ubyte;
 }
 
@@ -63,9 +63,9 @@ table PlayerExitCS { }
 
 table PlayerEnterInGame { }
 
-table PlayerReadyInLobbyCS { 
-	role: PlayerRole;
-}
+table PlayerReadyInLobbyCS { }
+
+table PlayerCancelReadyCS { }
 
 table PlayerEnterInLobbyCS { }
 
@@ -76,11 +76,6 @@ table PlayerInputCS {
 
 table PlayerLookCS {
 	look: Vec3;
-}
-
-// In Lobby
-table PlayerSelectWeaponCS {
-    weapon: Weapon;
 }
 
 table PlayerSelectRoleCS { 

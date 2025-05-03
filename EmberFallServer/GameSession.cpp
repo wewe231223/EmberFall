@@ -126,12 +126,22 @@ void GameSession::EnterInGame() {
     InitUserObject();
 }
 
-void GameSession::Ready() {
+bool GameSession::Ready() {
+    if (true == mReady) {
+        return false;
+    }
+
     mReady = true;
+    return true;
 }
 
-void GameSession::CancelReady() {
+bool GameSession::CancelReady() {
+    if (false == mReady) {
+        return false;
+    }
+
     mReady = false;
+    return true;
 }
 
 void GameSession::ChangeRole(Packets::PlayerRole role) {
@@ -148,4 +158,8 @@ uint8_t GameSession::GetSessionState() const {
 
 Packets::PlayerRole GameSession::GetPlayerRole() const {
     return mPlayerRole;
+}
+
+bool GameSession::GetReadyState() const {
+    return mReady;
 }

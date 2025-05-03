@@ -22,11 +22,11 @@ Packets::AnimationState AnimationStateMachine::GetCurrState() const {
 }
 
 float AnimationStateMachine::GetDuration(Packets::AnimationState state) const {
-    return mAnimInfo->states[state].duration;
+    return static_cast<float>(mAnimInfo->states[state].duration);
 }
 
 float AnimationStateMachine::GetRemainDuration() const {
-    return mCurrAnimInfo.duration - mAnimationCounter;
+    return static_cast<float>(mCurrAnimInfo.duration) - mAnimationCounter;
 }
 
 void AnimationStateMachine::SetOwner(std::shared_ptr<class GameObject> owner) {

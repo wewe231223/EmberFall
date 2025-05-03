@@ -100,16 +100,16 @@ OverlappedSend* FbsPacketFactory::PlayerReadyInLobbySC(SessionIdType id) {
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::CancelPlayerReadySC(SessionIdType id) {
+OverlappedSend* FbsPacketFactory::PlayerCancelReadySC(SessionIdType id) {
     flatbuffers::FlatBufferBuilder builder{ };
 
-    auto offset = Packets::CreateCancelPlayerReadySC(builder, id);
+    auto offset = Packets::CreatePlayerCancelReadySC(builder, id);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();
     const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
 
-    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes_PT_CANCEL_PLAYER_READY_SC };
+    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes_PT_PLAYER_CANCEL_READY_SC };
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 
@@ -356,16 +356,27 @@ OverlappedSend* FbsPacketFactory::PlayerEnterInLobbyCS(SessionIdType id) {
     return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::PlayerReadyInLobbyCS(SessionIdType id, Packets::PlayerRole role) {
+OverlappedSend* FbsPacketFactory::PlayerReadyInLobbyCS(SessionIdType id) {
     flatbuffers::FlatBufferBuilder builder{ };
 
-    auto offset = Packets::CreatePlayerReadyInLobbyCS(builder, role);
+    auto offset = Packets::CreatePlayerReadyInLobbyCS(builder);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();
     const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
 
     PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes_PT_PLAYER_READY_IN_LOBBY_CS, id };
+    return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
+}
+
+OverlappedSend* FbsPacketFactory::PlayerCancelReadyCS(SessionIdType id) {
+    flatbuffers::FlatBufferBuilder builder{};
+    auto offset = Packets::CreatePlayerCancelReadyCS(builder);
+
+    const uint8_t* payload = builder.GetBufferPointer();
+    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
+
+    PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes_PT_PLAYER_CANCEL_READY_CS, id };
     return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
 }
 
@@ -419,19 +430,6 @@ OverlappedSend* FbsPacketFactory::PlayerLookCS(SessionIdType id, const SimpleMat
     const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
 
     PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes_PT_PLAYER_LOOK_CS, id };
-    return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
-}
-
-OverlappedSend* FbsPacketFactory::PlayerSelectWeapon(SessionIdType id, Packets::Weapon weapon) {
-    flatbuffers::FlatBufferBuilder builder{ };
-
-    auto offset = Packets::CreatePlayerSelectWeaponCS(builder, weapon);
-    builder.Finish(offset);
-
-    const uint8_t* payload = builder.GetBufferPointer();
-    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
-
-    PacketHeaderCS headerCS{ sizeof(PacketHeaderCS) + payloadSize, Packets::PacketTypes_PT_PLAYER_SELECT_WEAPON_CS, id };
     return mSendPacketBuffers->GetOverlapped(&headerCS, payload, payloadSize);
 }
 

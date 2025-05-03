@@ -325,7 +325,7 @@ void LobbyScene::Update() {
 		std::get<2>(mPlayers[0]).SetActiveState(true); 
 
 		mIsReady = true; 
-		decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId(), role);
+		decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId());
 		gClientCore->Send(packet);
 	}
 
@@ -388,7 +388,7 @@ void LobbyScene::Update() {
 
 void LobbyScene::SendNetwork() {
 	if (Input.GetKeyboardTracker().pressed.Enter and not mIsReady) {
-		decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId(), Packets::PlayerRole::PlayerRole_HUMAN);
+		decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId());
 		gClientCore->Send(packet);
 	}
 }

@@ -40,7 +40,7 @@ public:
     // In Lobby
     static OverlappedSend* PlayerEnterInLobbySC(SessionIdType id);
     static OverlappedSend* PlayerReadyInLobbySC(SessionIdType id);
-    static OverlappedSend* CancelPlayerReadySC(SessionIdType id);
+    static OverlappedSend* PlayerCancelReadySC(SessionIdType id);
     static OverlappedSend* RejectSelectionRoleSC();
     static OverlappedSend* ConfirmSelectoinRoleSC();
     static OverlappedSend* PlayerChangeRoleSC(SessionIdType id, Packets::PlayerRole role);
@@ -68,14 +68,14 @@ public:
     // Client to Server
     // In Lobby
     static OverlappedSend* PlayerEnterInLobbyCS(SessionIdType id);
-    static OverlappedSend* PlayerReadyInLobbyCS(SessionIdType id, Packets::PlayerRole role);
+    static OverlappedSend* PlayerReadyInLobbyCS(SessionIdType id);
+    static OverlappedSend* PlayerCancelReadyCS(SessionIdType id);
 
     // InGame
     static OverlappedSend* PlayerEnterInGame(SessionIdType id);
     static OverlappedSend* PlayerExitCS(SessionIdType id);
     static OverlappedSend* PlayerInputCS(SessionIdType id, uint8_t key, bool down);
     static OverlappedSend* PlayerLookCS(SessionIdType id, const SimpleMath::Vector3& look);
-    static OverlappedSend* PlayerSelectWeapon(SessionIdType id, Packets::Weapon weapon);
     static OverlappedSend* PlayerSelectRole(SessionIdType id, Packets::PlayerRole role);
     static OverlappedSend* LatencyCS(SessionIdType id, uint64_t time);
            

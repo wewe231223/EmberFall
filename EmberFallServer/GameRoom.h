@@ -40,7 +40,8 @@ public:
     uint8_t TryInsertInRoom(SessionIdType session);
     uint8_t RemovePlayer(SessionIdType id);
 
-    bool ReadyPlayer(SessionIdType id, Packets::PlayerRole role);
+    bool ChangeRolePlayer(SessionIdType id, Packets::PlayerRole role);
+    bool CheckAndStartGame();
 
 private:
     mutable Lock::SRWLock mSessionLock{ };
@@ -74,12 +75,12 @@ public:
     void InitGameRooms();
 
     uint16_t TryInsertGameRoom(SessionIdType session);
-    uint8_t TryRemoveGameRoom(size_t roomIdx, SessionIdType sessionId);
+    uint8_t TryRemoveGameRoom(uint16_t roomIdx, SessionIdType sessionId);
 
     Lock::SRWLock& GetSessionLock(uint16_t roomIdx);
     SessionListInRoom& GetSessionsInRoom(uint16_t roomIdx);
 
-    bool ReadyPlayer(uint16_t roomIdx, SessionIdType id, Packets::PlayerRole role);
+    bool ChangeRolePlayer(uint16_t roomIdx, SessionIdType id, Packets::PlayerRole role);
 
 private:
     Lock::SRWLock mGameRoomLock{ };
