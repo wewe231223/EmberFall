@@ -275,33 +275,8 @@ uint8_t GameRoomManager::TryRemoveGameRoom(uint16_t roomIdx, SessionIdType sessi
         return errorCode;
     }
 
-    std::vector<std::shared_ptr<Session>> otherSessions{ };
-    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
-    {
-        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
-        for (auto& otherSessionId : GetRoom(roomIdx)->GetSessions()) {
-            if (sessionId == otherSessionId) {
-                continue;
-            }
-
-            auto otherSession = gServerCore->GetSessionManager()->GetSession(otherSessionId);
-            if (nullptr == otherSession or false == otherSession->IsConnected()) {
-                continue;
-            }
-
-            otherSessions.push_back(otherSession);
-        }
-    }
-
     auto packetExit = FbsPacketFactory::PlayerExitSC(sessionId);
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "ExitPacket Send Count: {}", otherSessions.size());
-    for (auto& otherSession : otherSessions) {
-        auto clonedPacket = FbsPacketFactory::ClonePacket(packetExit);
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "To Session[{}] Send ExitPacket!", otherSession->GetId());
-        otherSession->RegisterSend(clonedPacket);
-    }
-
-    FbsPacketFactory::ReleasePacketBuf(packetExit);
+    room->BroadCastInGameRoom(sessionId, packetExit);
 
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session[{}] Remove From GameRoom[{}]!", sessionId, roomIdx);
 
