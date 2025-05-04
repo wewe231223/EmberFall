@@ -79,11 +79,12 @@ uint8_t GameRoom::RemovePlayer(SessionIdType id, Packets::PlayerRole lastRole, b
         return GameRoomError::ERROR_SESSION_NOT_EXISTS_IN_THIS_ROOM;
     }
 
+    if (Packets::PlayerRole_BOSS == lastRole) {
+        uint8_t expectedBossCount = 1;
+        mBossPlayerCount.compare_exchange_strong(expectedBossCount, 0);
+    }
+
     if (true == lastReadyState) {
-        if (Packets::PlayerRole_BOSS == lastRole) {
-            uint8_t expectedBossCount = 1;
-            mBossPlayerCount.compare_exchange_strong(expectedBossCount, 0);
-        }
 
         --mReadyPlayerCount;
     }
