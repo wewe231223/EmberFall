@@ -180,13 +180,17 @@ struct PlayerEnterInLobbySC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tab
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_PLAYERID = 4,
     VT_PLAYERSLOT = 6,
-    VT_NAME = 8
+    VT_ROLE = 8,
+    VT_NAME = 10
   };
   uint8_t playerId() const {
     return GetField<uint8_t>(VT_PLAYERID, 0);
   }
   uint8_t playerSlot() const {
     return GetField<uint8_t>(VT_PLAYERSLOT, 0);
+  }
+  Packets::PlayerRole role() const {
+    return static_cast<Packets::PlayerRole>(GetField<uint8_t>(VT_ROLE, 0));
   }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
@@ -195,6 +199,7 @@ struct PlayerEnterInLobbySC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Tab
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
            VerifyField<uint8_t>(verifier, VT_PLAYERSLOT, 1) &&
+           VerifyField<uint8_t>(verifier, VT_ROLE, 1) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
            verifier.EndTable();
@@ -210,6 +215,9 @@ struct PlayerEnterInLobbySCBuilder {
   }
   void add_playerSlot(uint8_t playerSlot) {
     fbb_.AddElement<uint8_t>(PlayerEnterInLobbySC::VT_PLAYERSLOT, playerSlot, 0);
+  }
+  void add_role(Packets::PlayerRole role) {
+    fbb_.AddElement<uint8_t>(PlayerEnterInLobbySC::VT_ROLE, static_cast<uint8_t>(role), 0);
   }
   void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(PlayerEnterInLobbySC::VT_NAME, name);
@@ -229,9 +237,11 @@ inline ::flatbuffers::Offset<PlayerEnterInLobbySC> CreatePlayerEnterInLobbySC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint8_t playerId = 0,
     uint8_t playerSlot = 0,
+    Packets::PlayerRole role = Packets::PlayerRole_NONE,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0) {
   PlayerEnterInLobbySCBuilder builder_(_fbb);
   builder_.add_name(name);
+  builder_.add_role(role);
   builder_.add_playerSlot(playerSlot);
   builder_.add_playerId(playerId);
   return builder_.Finish();
@@ -241,12 +251,14 @@ inline ::flatbuffers::Offset<PlayerEnterInLobbySC> CreatePlayerEnterInLobbySCDir
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint8_t playerId = 0,
     uint8_t playerSlot = 0,
+    Packets::PlayerRole role = Packets::PlayerRole_NONE,
     const char *name = nullptr) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return Packets::CreatePlayerEnterInLobbySC(
       _fbb,
       playerId,
       playerSlot,
+      role,
       name__);
 }
 

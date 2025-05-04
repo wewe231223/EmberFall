@@ -10,7 +10,7 @@ Session::Session(NetworkType networkType)
 
 Session::~Session() {
     auto myId = GetId();
-    gServerCore->GetSessionManager()->ReleaseSessionId(myId);
+    gServerCore->GetSessionManager()->ReleaseSessionId(static_cast<SessionIdType>(myId));
     Close();
 }
 
