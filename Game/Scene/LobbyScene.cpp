@@ -39,10 +39,6 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::NotifyIdSC>(buffer);
 		gClientCore->InitSessionId(data->playerId());
 
-		mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[0];
-		std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).SetActiveState(true);
-		std::get<1>(*(mPlayerIndexmap[gClientCore->GetSessionId()]))->SetActiveState(true);
-
 		break;
 	}
 	case Packets::PacketTypes_PT_PROTOCOL_VERSION_SC: 
