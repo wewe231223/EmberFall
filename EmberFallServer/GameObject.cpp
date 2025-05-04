@@ -172,17 +172,14 @@ void GameObject::Update() {
     mTransform->SetY(0.0f); // test
 
     auto currPos = mTransform->GetPosition();
-    auto prevPos = mTransform->GetPrevPosition();
-    if (not MathUtil::IsEqualVectorXZ(currPos, prevPos)) {
-        auto movePacket = FbsPacketFactory::ObjectMoveSC(
-            GetId(),
-            GetTransform()->GetEulerRotation().y,
-            currPos,
-            mTransform->Forward(),
-            mPhysics->GetSpeed()
-        );
-        StorePacket(movePacket);
-    }
+    auto movePacket = FbsPacketFactory::ObjectMoveSC(
+        GetId(),
+        GetTransform()->GetEulerRotation().y,
+        currPos,
+        mTransform->Forward(),
+        mPhysics->GetSpeed()
+    );
+    StorePacket(movePacket);
 
     if (nullptr == mBoundingObject) {
         return;

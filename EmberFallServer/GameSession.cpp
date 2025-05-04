@@ -98,6 +98,7 @@ void GameSession::InitUserObject() {
     mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
     mUserObject->GetTransform()->SetY(0.0f);
 
+    mUserObject->mSpec.entity = static_cast<Packets::EntityType>(mPlayerRole.load());
     mUserObject->mSpec.hp = 100.0f;
     mUserObject->mSpec.damage = 10.0f;
 
