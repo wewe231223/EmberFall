@@ -450,8 +450,6 @@ void LobbyScene::Update() {
 	}
 
 	if (Input.GetKeyboardTracker().pressed.Enter and not mIsReady) {
-		std::get<2>(mPlayers[0]).SetActiveState(true); 
-		std::get<3>(mPlayers[0]) = true; 
 		mIsReady = true; 
 
 		decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId());
