@@ -9,6 +9,10 @@ Session::Session(NetworkType networkType)
 }
 
 Session::~Session() {
+    if (IsClosed()) {
+        return;
+    }
+
     auto myId = GetId();
     gServerCore->GetSessionManager()->ReleaseSessionId(static_cast<SessionIdType>(myId));
     Close();
@@ -42,9 +46,7 @@ void Session::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
 }
 
 void Session::Close() {
-    if (false == mConnected.exchange(false)) { // 원래 값이 false였다면 이미 다른 쓰레드가 이 함수에 접근한 것
-        return; // 이경우 해당 쓰레드에서 별다른 작업을 할 필요는 없다.
-    }
+    mConnected.exchange(false);
 
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Close Session Success");
     ::closesocket(mSocket);
@@ -120,7 +122,7 @@ void Session::RegisterSend(OverlappedSend* const overlappedSend) {
 void Session::ProcessRecv(INT32 numOfBytes) {
     mOverlappedRecv.owner.reset();
     if (0 >= numOfBytes) {
-        Disconnect();
+        gServerCore->GetSessionManager()->CloseSession(static_cast<SessionIdType>(GetId()));
         return;
     }
 
@@ -144,7 +146,7 @@ void Session::ProcessRecv(INT32 numOfBytes) {
 
 void Session::ProcessSend(INT32 numOfBytes, OverlappedSend* overlappedSend) {
     if (0 >= numOfBytes) {
-        Disconnect();
+        gServerCore->GetSessionManager()->CloseSession(static_cast<SessionIdType>(GetId()));
         return;
     }
 
@@ -263,15 +265,11 @@ void Session::OnConnect() {
     RegisterSend(packetProtocolVersion);
 }
 
-void Session::Disconnect() {
-    mConnected.exchange(false);
-}
-
 void Session::HandleSocketError(INT32 errorCore) {
     switch (errorCore) {
     case WSAECONNRESET: // 소프트웨어로 인해 연결 중단.
     case WSAECONNABORTED: // 피어별 연결 다시 설정. (원격 호스트에서 강제 중단.)
-        Disconnect();
+        gServerCore->GetSessionManager()->CloseSession(static_cast<SessionIdType>(GetId()));
         break;
 
     default:

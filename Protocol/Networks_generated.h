@@ -42,6 +42,12 @@ struct ConfirmSelectionRoleSCBuilder;
 struct PlayerChangeRoleSC;
 struct PlayerChangeRoleSCBuilder;
 
+struct StartSceneTransitionSC;
+struct StartSceneTransitionSCBuilder;
+
+struct CancelSceneTransitionSC;
+struct CancelSceneTransitionSCBuilder;
+
 struct ChangeToNextSceneSC;
 struct ChangeToNextSceneSCBuilder;
 
@@ -450,6 +456,76 @@ inline ::flatbuffers::Offset<PlayerChangeRoleSC> CreatePlayerChangeRoleSC(
   PlayerChangeRoleSCBuilder builder_(_fbb);
   builder_.add_role(role);
   builder_.add_playerId(playerId);
+  return builder_.Finish();
+}
+
+struct StartSceneTransitionSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef StartSceneTransitionSCBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_TRANSITIONDELAY = 4
+  };
+  float transitionDelay() const {
+    return GetField<float>(VT_TRANSITIONDELAY, 0.0f);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<float>(verifier, VT_TRANSITIONDELAY, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct StartSceneTransitionSCBuilder {
+  typedef StartSceneTransitionSC Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_transitionDelay(float transitionDelay) {
+    fbb_.AddElement<float>(StartSceneTransitionSC::VT_TRANSITIONDELAY, transitionDelay, 0.0f);
+  }
+  explicit StartSceneTransitionSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<StartSceneTransitionSC> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<StartSceneTransitionSC>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<StartSceneTransitionSC> CreateStartSceneTransitionSC(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    float transitionDelay = 0.0f) {
+  StartSceneTransitionSCBuilder builder_(_fbb);
+  builder_.add_transitionDelay(transitionDelay);
+  return builder_.Finish();
+}
+
+struct CancelSceneTransitionSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CancelSceneTransitionSCBuilder Builder;
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           verifier.EndTable();
+  }
+};
+
+struct CancelSceneTransitionSCBuilder {
+  typedef CancelSceneTransitionSC Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  explicit CancelSceneTransitionSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<CancelSceneTransitionSC> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<CancelSceneTransitionSC>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<CancelSceneTransitionSC> CreateCancelSceneTransitionSC(
+    ::flatbuffers::FlatBufferBuilder &_fbb) {
+  CancelSceneTransitionSCBuilder builder_(_fbb);
   return builder_.Finish();
 }
 

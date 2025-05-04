@@ -3,12 +3,14 @@
 #include "GameSession.h"
 #include "Stage.h"
 
-inline constexpr uint8_t GAME_ROOM_STATE_LOBBY = 0;
-inline constexpr uint8_t GAME_ROOM_STATE_INGAME = 1;
-
-inline constexpr uint16_t INSERT_GAME_ROOM_ERROR = 0xFFFF;
+namespace GameRoomState {
+    inline constexpr uint8_t GAME_ROOM_STATE_LOBBY = 0;
+    inline constexpr uint8_t GAME_ROOM_STATE_INGAME = 1;
+    inline constexpr uint8_t GAME_ROOM_STATE_TRANSITION = 2;
+}
 
 namespace GameRoomError {
+    inline constexpr uint16_t INSERT_GAME_ROOM_ERROR = 0xFFFF;
     inline constexpr uint8_t SUCCESS_INSERT_SESSION_IN_ROOM = 0;
     inline constexpr uint8_t SUCCESS_REMOVE_SESSION_IN_ROOM = 1;
     inline constexpr uint8_t ERROR_MAX_SESSION_IN_ONE_ROOM = 2;
@@ -58,6 +60,7 @@ private:
 
     mutable Lock::SRWLock mSessionLock{ };
 
+    std::atomic_bool mTransitionInterruptFlag{ false };
     std::atomic_uint8_t mGameRoomState{ };
     std::atomic_uint8_t mBossPlayerCount{ };
     uint8_t mPlayerCount{ };

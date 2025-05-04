@@ -3,7 +3,7 @@
 #include "ServerFrame.h"
 
 GameRoom::GameRoom(uint16_t roomIdx)
-    : mRoomIdx{ roomIdx }, mGameRoomState{ GAME_ROOM_STATE_LOBBY }, mStage{ GameStage::STAGE1, roomIdx } { 
+    : mRoomIdx{ roomIdx }, mGameRoomState{ GameRoomState::GAME_ROOM_STATE_LOBBY }, mStage{ GameStage::STAGE1, roomIdx } { 
     for (uint8_t i = 0; i < MAX_PLAYER_IN_GAME_ROOM; ++i) {
         mSessionSlotIndices.push(i);
     }
@@ -41,11 +41,11 @@ SessionListInRoom& GameRoom::GetSessions() {
 }
 
 uint8_t GameRoom::TryInsertInRoom(SessionIdType sessionId) {
-    Lock::SRWLockGuard sessionGaurd{ Lock::SRWLockMode::SRW_EXCLUSIVE, mSessionLock };
-    if (GAME_ROOM_STATE_INGAME == mGameRoomState) {
+    if (GameRoomState::GAME_ROOM_STATE_LOBBY != mGameRoomState) {
         return GameRoomError::ERROR_ROOM_STATE_IS_INGAME;
     }
 
+    Lock::SRWLockGuard sessionGaurd{ Lock::SRWLockMode::SRW_EXCLUSIVE, mSessionLock };
     if (mSessionsInRoom.contains(sessionId)) {
         return GameRoomError::ERROR_ROOM_STATE_IS_INGAME;
     }
@@ -79,21 +79,55 @@ uint8_t GameRoom::RemovePlayer(SessionIdType id, Packets::PlayerRole lastRole, b
         return GameRoomError::ERROR_SESSION_NOT_EXISTS_IN_THIS_ROOM;
     }
 
+    if (mGameRoomState == GameRoomState::GAME_ROOM_STATE_TRANSITION) {
+        mTransitionInterruptFlag = true;
+    }
+
     if (Packets::PlayerRole_BOSS == lastRole) {
         uint8_t expectedBossCount = 1;
         mBossPlayerCount.compare_exchange_strong(expectedBossCount, 0);
     }
 
     if (true == lastReadyState) {
-
         --mReadyPlayerCount;
     }
 
     --mPlayerCount;
 
+    if (GameRoomState::GAME_ROOM_STATE_LOBBY != mGameRoomState and 0 == mPlayerCount) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Boss Player Count zero or Player Count is zero");
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Now GameRoom [{}] state is GAME_ROOM_STATE_LOBBBY", mRoomIdx);
+        //mStage.Reset();
+        mStage.EndStage();
+        mGameRoomState = GameRoomState::GAME_ROOM_STATE_LOBBY;
+    }
+
     mSessionsInRoom.erase(id);
     mSessionSlotIndices.push(lastSlotIndex);
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session [{}] erased in GameRoom [{}], last slot: [{}]", id, mRoomIdx, lastSlotIndex);
+
+    // 이전에 Locking을 하고 있는 와중이므로 (Sesssion Destructor 호출 전 SessionManager::CloseSession 함수) Lock을 걸지 않는다.
+    std::vector<std::shared_ptr<GameSession>> sessionList{ };
+    for (auto& sessionId : mSessionsInRoom) {
+        if (id == sessionId) {
+            continue;
+        }
+
+        auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+        if (nullptr == session or SESSION_INLOBBY != session->GetSessionState()) {
+            continue;
+        }
+
+        sessionList.push_back(session);
+    }
+
+    auto packetExit = FbsPacketFactory::PlayerExitSC(id);
+    for (auto& session : sessionList) {
+        auto clonedPacket = FbsPacketFactory::ClonePacket(packetExit);
+        session->RegisterSend(clonedPacket);
+    }
+
+    FbsPacketFactory::ReleasePacketBuf(packetExit);
 
     return GameRoomError::SUCCESS_REMOVE_SESSION_IN_ROOM;
 }
@@ -156,6 +190,10 @@ bool GameRoom::CancelPlayerReady(SessionIdType id) {
     }
     mSessionLock.ReadUnlock();
 
+    if (mGameRoomState == GameRoomState::GAME_ROOM_STATE_TRANSITION) {
+        mTransitionInterruptFlag = true;
+    }
+
     auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(id));
     if (nullptr == session) {
         return false;
@@ -166,15 +204,21 @@ bool GameRoom::CancelPlayerReady(SessionIdType id) {
 }
 
 bool GameRoom::CheckAndStartGame() {
-    if (not IsEveryPlayerReady()) {
+    if (not IsEveryPlayerReady() or 0 == mPlayerCount) {
         return false;
     }
+
+    mGameRoomState = GameRoomState::GAME_ROOM_STATE_TRANSITION;
 
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Register Start Game!!!");
 
     auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
     gServerFrame->AddTimerEvent(mRoomIdx, INVALID_SESSION_ID, excutionTime, TimerEventType::SCENE_TRANSITION_COUNTDOWN);
     mSceneTransitionCounter = SysClock::now();
+
+    auto packetStartTransition = FbsPacketFactory::StartSceneTransition(SCENE_TRANSITION_COUNT);
+    BroadCastInGameRoom(packetStartTransition);
+
     return true;
 }
 
@@ -233,13 +277,25 @@ void GameRoom::BroadCastInGameRoom(OverlappedSend* packet) {
 void GameRoom::OnSceneCountdownTick() {
     if (not IsEveryPlayerReady()) {
         mSceneTransitionCounter = SysClock::now();
+        auto pakcetCancelTransition = FbsPacketFactory::CancelSceneTransition();
+        BroadCastInGameRoom(pakcetCancelTransition);
         return;
     }
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "OnSceneCountdownTick");
+    if (true == mTransitionInterruptFlag) {
+        mTransitionInterruptFlag = false;
+        CheckAndStartGame();
 
-    auto sceneTransitionTime = std::chrono::duration_cast<std::chrono::milliseconds>(SysClock::now() - mSceneTransitionCounter).count();
-    if (SCENE_TRANSITION_COUNT <= sceneTransitionTime / 1000.0f) {
+        mSceneTransitionCounter = SysClock::now();
+        auto pakcetCancelTransition = FbsPacketFactory::CancelSceneTransition();
+        BroadCastInGameRoom(pakcetCancelTransition);
+        return;
+    }
+
+    auto sceneTransitionTime = std::chrono::duration_cast<std::chrono::milliseconds>(SysClock::now() - mSceneTransitionCounter).count() / 1000.0f;
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "OnSceneCountdownTick - Remain Time: {}s", std::max(0.0f, SCENE_TRANSITION_COUNT - sceneTransitionTime));
+    if (SCENE_TRANSITION_COUNT <= sceneTransitionTime) {
+        mGameRoomState = GameRoomState::GAME_ROOM_STATE_INGAME;
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Start Game!!!");
         mStage.StartStage();
 
@@ -293,7 +349,7 @@ uint16_t GameRoomManager::TryInsertGameRoom(SessionIdType sessionId) {
     }
 
     LAST_ERROR_CODE = GameRoomError::ERROR_ALL_ROOM_IS_FULL;
-    return INSERT_GAME_ROOM_ERROR;
+    return GameRoomError::INSERT_GAME_ROOM_ERROR;
 }
 
 uint8_t GameRoomManager::TryRemoveGameRoom(uint16_t roomIdx, SessionIdType sessionId, Packets::PlayerRole lastRole, bool lastReadyState, uint8_t lastSlotIndex) {
@@ -303,9 +359,6 @@ uint8_t GameRoomManager::TryRemoveGameRoom(uint16_t roomIdx, SessionIdType sessi
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In TryRemoveGameRoom - ErrorCode: {}", errorCode);
         return errorCode;
     }
-
-    auto packetExit = FbsPacketFactory::PlayerExitSC(sessionId);
-    room->BroadCastInGameRoom(sessionId, packetExit);
 
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session[{}] Remove From GameRoom[{}]!", sessionId, roomIdx);
 

@@ -60,7 +60,6 @@ public:
     virtual void OnConnect();
 
     // 에러 발생으로 인한 연결 종료 처리
-    void Disconnect();
     void HandleSocketError(INT32 errorCore);
 
     // For Client

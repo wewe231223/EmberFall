@@ -43,6 +43,8 @@ public:
     static OverlappedSend* PlayerCancelReadySC(SessionIdType id);
     static OverlappedSend* RejectSelectionRoleSC();
     static OverlappedSend* ConfirmSelectoinRoleSC();
+    static OverlappedSend* StartSceneTransition(float delay);
+    static OverlappedSend* CancelSceneTransition();
     static OverlappedSend* PlayerChangeRoleSC(SessionIdType id, Packets::PlayerRole role);
     static OverlappedSend* ChangeToNextSceneSC();
     static OverlappedSend* GameEndSC(Packets::PlayerRole winner);

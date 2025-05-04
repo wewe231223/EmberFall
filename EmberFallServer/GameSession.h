@@ -37,6 +37,7 @@ public:
     void EnterInGame();
     void InitUserObject();
 
+    virtual void Close() override;
     virtual void OnConnect() override;
     virtual void ProcessRecv(INT32 numOfBytes) override;
 

@@ -23,7 +23,7 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
     }
 
     Packets::PacketTypes enumType = static_cast<Packets::PacketTypes>(header->type);
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Process: {}", Packets::EnumNamePacketTypes(enumType));
+    //gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Process: {}", Packets::EnumNamePacketTypes(enumType));
     switch (header->type) {
     case Packets::PacketTypes_PT_PLAYER_INPUT_CS:
     {

@@ -140,6 +140,32 @@ OverlappedSend* FbsPacketFactory::ConfirmSelectoinRoleSC() {
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 
+OverlappedSend* FbsPacketFactory::StartSceneTransition(float delay) {
+    flatbuffers::FlatBufferBuilder builder{ };
+
+    auto offset = Packets::CreateStartSceneTransitionSC(builder, delay);
+    builder.Finish(offset);
+
+    const uint8_t* payload = builder.GetBufferPointer();
+    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
+
+    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes_PT_START_SCENE_TRANSITION_SC };
+    return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
+}
+
+OverlappedSend* FbsPacketFactory::CancelSceneTransition() {
+    flatbuffers::FlatBufferBuilder builder{ };
+
+    auto offset = Packets::CreateCancelSceneTransitionSC(builder);
+    builder.Finish(offset);
+
+    const uint8_t* payload = builder.GetBufferPointer();
+    const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
+
+    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes_PT_CANCEL_SCENE_TRANSITION_SC };
+    return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
+}
+
 OverlappedSend* FbsPacketFactory::PlayerChangeRoleSC(SessionIdType id, Packets::PlayerRole role) {
     flatbuffers::FlatBufferBuilder builder{ };
 

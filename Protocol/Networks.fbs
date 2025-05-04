@@ -44,6 +44,12 @@ table PlayerChangeRoleSC {
 	role: PlayerRole;
 }
 
+table StartSceneTransitionSC { 
+	transitionDelay: float;
+}
+
+table CancelSceneTransitionSC { }
+
 table ChangeToNextSceneSC { }
 
 table GameEndSC {

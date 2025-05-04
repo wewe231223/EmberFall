@@ -304,7 +304,6 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 	case Packets::PacketTypes_PT_CHANGE_TO_NEXT_SCENE_SC: 
 	{
 		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::ChangeToNextSceneSC>(buffer);
-		
 		PostMessage(mRenderManager->GetWindowHandle(), WM_ADVANCESCENE, 0, 0); 
 	}
 	break; 

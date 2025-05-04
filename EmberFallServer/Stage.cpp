@@ -50,9 +50,9 @@ void Stage::InitObjectManager(const std::filesystem::path& path) {
     mObjectManager->Init(mGameRoomIdx);
     mObjectManager->LoadEnvFromFile(path);
 
-    //for (int i = 0; i < 10; ++i) {
-    //    mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
-    //}
+    for (int i = 0; i < 10; ++i) {
+        mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+    }
 }
 
 std::vector<NetworkObjectIdType> Stage::GetNearbyPlayers(const SimpleMath::Vector3& currPos, const float range) {

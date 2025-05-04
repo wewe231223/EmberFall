@@ -13,6 +13,14 @@ GameSession::GameSession()
     : Session{ NetworkType::SERVER }, mSessionState{ SESSION_CONNECT } { }
 
 GameSession::~GameSession() { 
+    if (IsClosed()) {
+        return;
+    }
+
+    Close();
+}
+
+void GameSession::Close() {
     auto myId = static_cast<SessionIdType>(GetId());
     auto myRoom = GetMyRoomIdx();
 
@@ -35,7 +43,7 @@ void GameSession::OnConnect() {
 
     auto myId = static_cast<SessionIdType>(GetId());
     auto gameRoomIdx = gGameRoomManager->TryInsertGameRoom(myId);
-    if (INSERT_GAME_ROOM_ERROR == gameRoomIdx) {
+    if (GameRoomError::INSERT_GAME_ROOM_ERROR == gameRoomIdx) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session Insert Failure Error Core: [{}]", GameRoomManager::GetLastErrorCode());
         Session::Close();
         return;
@@ -48,7 +56,7 @@ void GameSession::OnConnect() {
 void GameSession::ProcessRecv(INT32 numOfBytes) {
     mOverlappedRecv.owner.reset();
     if (0 >= numOfBytes) {
-        Disconnect();
+        gServerCore->GetSessionManager()->CloseSession(static_cast<SessionIdType>(GetId()));
         return;
     }
 

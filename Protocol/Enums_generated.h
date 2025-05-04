@@ -37,27 +37,29 @@ enum PacketTypes : uint8_t {
   PacketTypes_PT_PLAYER_CANCEL_READY_SC = 134,
   PacketTypes_PT_REJECT_SELECTION_ROLE_SC = 135,
   PacketTypes_PT_CONFIRM_SELECTION_ROLE_SC = 136,
-  PacketTypes_PT_PLAYER_CHANGE_ROLE_SC = 137,
-  PacketTypes_PT_CHANGE_TO_NEXT_SCENE_SC = 138,
-  PacketTypes_PT_GAME_END_SC = 139,
-  PacketTypes_PT_OBJECT_APPEARED_SC = 140,
-  PacketTypes_PT_OBJECT_DISAPPEARED_SC = 141,
-  PacketTypes_PT_OBJECT_REMOVED_SC = 142,
-  PacketTypes_PT_OBJECT_MOVE_SC = 143,
-  PacketTypes_PT_OBJECT_ATTACKED_SC = 144,
-  PacketTypes_PT_OBJECT_ANIMATION_CHANGED_SC = 145,
-  PacketTypes_PT_GEM_INTERACT_SC = 146,
-  PacketTypes_PT_GEM_CANCEL_INTERACTOIN_SC = 147,
-  PacketTypes_PT_GEM_DESTROYED_SC = 148,
-  PacketTypes_PT_USE_ITEM_SC = 149,
-  PacketTypes_PT_ACQUIRED_ITEM_SC = 150,
-  PacketTypes_PT_FIRE_PROJECTILE_SC = 151,
-  PacketTypes_PT_PROJECTILE_MOVE_SC = 152,
+  PacketTypes_PT_START_SCENE_TRANSITION_SC = 137,
+  PacketTypes_PT_CANCEL_SCENE_TRANSITION_SC = 138,
+  PacketTypes_PT_PLAYER_CHANGE_ROLE_SC = 139,
+  PacketTypes_PT_CHANGE_TO_NEXT_SCENE_SC = 140,
+  PacketTypes_PT_GAME_END_SC = 141,
+  PacketTypes_PT_OBJECT_APPEARED_SC = 142,
+  PacketTypes_PT_OBJECT_DISAPPEARED_SC = 143,
+  PacketTypes_PT_OBJECT_REMOVED_SC = 144,
+  PacketTypes_PT_OBJECT_MOVE_SC = 145,
+  PacketTypes_PT_OBJECT_ATTACKED_SC = 146,
+  PacketTypes_PT_OBJECT_ANIMATION_CHANGED_SC = 147,
+  PacketTypes_PT_GEM_INTERACT_SC = 148,
+  PacketTypes_PT_GEM_CANCEL_INTERACTOIN_SC = 149,
+  PacketTypes_PT_GEM_DESTROYED_SC = 150,
+  PacketTypes_PT_USE_ITEM_SC = 151,
+  PacketTypes_PT_ACQUIRED_ITEM_SC = 152,
+  PacketTypes_PT_FIRE_PROJECTILE_SC = 153,
+  PacketTypes_PT_PROJECTILE_MOVE_SC = 154,
   PacketTypes_MIN = PacketTypes_PT_PLAYER_EXIT_CS,
   PacketTypes_MAX = PacketTypes_PT_PROJECTILE_MOVE_SC
 };
 
-inline const PacketTypes (&EnumValuesPacketTypes())[37] {
+inline const PacketTypes (&EnumValuesPacketTypes())[39] {
   static const PacketTypes values[] = {
     PacketTypes_PT_PLAYER_EXIT_CS,
     PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_CS,
@@ -80,6 +82,8 @@ inline const PacketTypes (&EnumValuesPacketTypes())[37] {
     PacketTypes_PT_PLAYER_CANCEL_READY_SC,
     PacketTypes_PT_REJECT_SELECTION_ROLE_SC,
     PacketTypes_PT_CONFIRM_SELECTION_ROLE_SC,
+    PacketTypes_PT_START_SCENE_TRANSITION_SC,
+    PacketTypes_PT_CANCEL_SCENE_TRANSITION_SC,
     PacketTypes_PT_PLAYER_CHANGE_ROLE_SC,
     PacketTypes_PT_CHANGE_TO_NEXT_SCENE_SC,
     PacketTypes_PT_GAME_END_SC,
@@ -101,7 +105,7 @@ inline const PacketTypes (&EnumValuesPacketTypes())[37] {
 }
 
 inline const char * const *EnumNamesPacketTypes() {
-  static const char * const names[154] = {
+  static const char * const names[156] = {
     "PT_PLAYER_EXIT_CS",
     "PT_PLAYER_ENTER_IN_LOBBY_CS",
     "PT_PLAYER_READY_IN_LOBBY_CS",
@@ -239,6 +243,8 @@ inline const char * const *EnumNamesPacketTypes() {
     "PT_PLAYER_CANCEL_READY_SC",
     "PT_REJECT_SELECTION_ROLE_SC",
     "PT_CONFIRM_SELECTION_ROLE_SC",
+    "PT_START_SCENE_TRANSITION_SC",
+    "PT_CANCEL_SCENE_TRANSITION_SC",
     "PT_PLAYER_CHANGE_ROLE_SC",
     "PT_CHANGE_TO_NEXT_SCENE_SC",
     "PT_GAME_END_SC",
@@ -368,18 +374,26 @@ inline const char *EnumNamePlayerRole(PlayerRole e) {
 enum EntityType : uint8_t {
   EntityType_ENV = 0,
   EntityType_HUMAN = 1,
-  EntityType_BOSS = 2,
-  EntityType_MONSTER = 3,
-  EntityType_CORRUPTED_GEM = 4,
-  EntityType_PROJECTILE = 5,
+  EntityType_HUMAN_LONGSWORD = 2,
+  EntityType_HUMAN_SWORD = 3,
+  EntityType_HUMAN_MAGICIAN = 4,
+  EntityType_HUMAN_ARCHER = 5,
+  EntityType_BOSS = 6,
+  EntityType_MONSTER = 7,
+  EntityType_CORRUPTED_GEM = 8,
+  EntityType_PROJECTILE = 9,
   EntityType_MIN = EntityType_ENV,
   EntityType_MAX = EntityType_PROJECTILE
 };
 
-inline const EntityType (&EnumValuesEntityType())[6] {
+inline const EntityType (&EnumValuesEntityType())[10] {
   static const EntityType values[] = {
     EntityType_ENV,
     EntityType_HUMAN,
+    EntityType_HUMAN_LONGSWORD,
+    EntityType_HUMAN_SWORD,
+    EntityType_HUMAN_MAGICIAN,
+    EntityType_HUMAN_ARCHER,
     EntityType_BOSS,
     EntityType_MONSTER,
     EntityType_CORRUPTED_GEM,
@@ -389,9 +403,13 @@ inline const EntityType (&EnumValuesEntityType())[6] {
 }
 
 inline const char * const *EnumNamesEntityType() {
-  static const char * const names[7] = {
+  static const char * const names[11] = {
     "ENV",
     "HUMAN",
+    "HUMAN_LONGSWORD",
+    "HUMAN_SWORD",
+    "HUMAN_MAGICIAN",
+    "HUMAN_ARCHER",
     "BOSS",
     "MONSTER",
     "CORRUPTED_GEM",
