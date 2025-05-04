@@ -22,7 +22,7 @@ GameSession::~GameSession() {
     }
 
     // TODO - Remove In GameRoom
-    auto result = gGameRoomManager->TryRemoveGameRoom(myRoom, myId, mReady, mSlotIndexInLobby);
+    auto result = gGameRoomManager->TryRemoveGameRoom(myRoom, myId, mPlayerRole, mReady, mSlotIndexInLobby);
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameSession Destructor: Session Erase From Room Error: {}", result);
 
     mSessionState = SESSION_CLOSE;

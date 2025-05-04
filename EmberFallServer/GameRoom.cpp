@@ -73,13 +73,18 @@ uint8_t GameRoom::TryInsertInRoom(SessionIdType sessionId) {
     return GameRoomError::SUCCESS_INSERT_SESSION_IN_ROOM;
 }
 
-uint8_t GameRoom::RemovePlayer(SessionIdType id, bool lastReadyState, uint8_t lastSlotIndex) {
+uint8_t GameRoom::RemovePlayer(SessionIdType id, Packets::PlayerRole lastRole, bool lastReadyState, uint8_t lastSlotIndex) {
     Lock::SRWLockGuard sessionGaurd{ Lock::SRWLockMode::SRW_EXCLUSIVE, mSessionLock };
     if (not mSessionsInRoom.contains(id)) {
         return GameRoomError::ERROR_SESSION_NOT_EXISTS_IN_THIS_ROOM;
     }
 
     if (true == lastReadyState) {
+        if (Packets::PlayerRole_BOSS == lastRole) {
+            uint8_t expectedBossCount = 1;
+            mBossPlayerCount.compare_exchange_strong(expectedBossCount, 0);
+        }
+
         --mReadyPlayerCount;
     }
 
@@ -290,9 +295,9 @@ uint16_t GameRoomManager::TryInsertGameRoom(SessionIdType sessionId) {
     return INSERT_GAME_ROOM_ERROR;
 }
 
-uint8_t GameRoomManager::TryRemoveGameRoom(uint16_t roomIdx, SessionIdType sessionId, bool lastReadyState, uint8_t lastSlotIndex) {
+uint8_t GameRoomManager::TryRemoveGameRoom(uint16_t roomIdx, SessionIdType sessionId, Packets::PlayerRole lastRole, bool lastReadyState, uint8_t lastSlotIndex) {
     auto& room = mGameRooms[roomIdx];
-    auto errorCode = room->RemovePlayer(sessionId, lastReadyState, lastSlotIndex);
+    auto errorCode = room->RemovePlayer(sessionId, lastRole, lastReadyState, lastSlotIndex);
     if (GameRoomError::SUCCESS_REMOVE_SESSION_IN_ROOM != errorCode) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In TryRemoveGameRoom - ErrorCode: {}", errorCode);
         return errorCode;
