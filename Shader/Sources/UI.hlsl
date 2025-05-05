@@ -46,5 +46,6 @@ UI_VOUT UI_VS(UI_VIN input) {
 float4 UI_PS(UI_VOUT input) : SV_TARGET 
 {
     float4 color = textures[input.imageIndex].Sample(pointWrapSampler, input.tex);
+    clip(color.a - 0.1f); 
     return float4(color.rgb * input.greyScale, color.a); 
 }

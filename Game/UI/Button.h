@@ -2,7 +2,7 @@
 #include "../Renderer/Render/Canvas.h"
 #include <functional>
 class Button {
-	static constexpr float IDLE_GREYSCALE = 0.6f; 
+	static constexpr float IDLE_GREYSCALE = 0.8f; 
 	static constexpr float HOVER_GREYSCALE = 1.0f;
 	static constexpr float CLICK_GREYSCALE = 0.3f;
 public:

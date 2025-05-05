@@ -74,27 +74,49 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				if (nextLoc == mPlayers.end()) {
 					Crash("There is no more space for My Player!!");
 				}
-				
-				//*nextLoc = Player(mMeshMap["Demon"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial"), mDemonAnimationController);
-				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mMageAnimationController);
-				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mShieldManController);
-				//*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mArcherAnimationController);
 
+				SimpleMath::Vector3 cameraOffset{ 0.f, 1.75f, 3.f };
 
+				switch (data->entity()) {
+				case Packets::EntityType_HUMAN_LONGSWORD:
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mSwordManAnimationController);
+					nextLoc->AddEquipment(mEquipments["GreatSword"].Clone());
+					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("GreatSword"));
+
+					break;
+				case Packets::EntityType_HUMAN_SWORD:
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mShieldManController);
+					nextLoc->AddEquipment(mEquipments["Sword"].Clone());
+					nextLoc->AddEquipment(mEquipments["Shield"].Clone());
+					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("ShieldMan"));
+
+					break;
+				case Packets::EntityType_HUMAN_ARCHER:
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mArcherAnimationController);
+					nextLoc->AddEquipment(mEquipments["Bow"].Clone());
+					nextLoc->AddEquipment(mEquipments["Quiver"].Clone());
+					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Archer"));
+
+					break;
+				case Packets::EntityType_HUMAN_MAGICIAN:
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mMageAnimationController);
+					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Magician"));
+
+					break;
+				case Packets::EntityType_BOSS:
+					*nextLoc = Player(mMeshMap["Demon"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial"), mDemonAnimationController);
+					nextLoc->AddEquipment(mEquipments["DemonWeapon"].Clone());
+					nextLoc->AddEquipment(mEquipments["DemonCloth"].Clone());
+					cameraOffset *= 2.f; 
+					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Devil"));
+
+					break;
+				default:
+					break;
+				}
 
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
-		
-				//mMyPlayer->AddEquipment(mEquipments["GreatSword"].Clone());
-
-				mMyPlayer->AddEquipment(mEquipments["Sword"].Clone());
-				mMyPlayer->AddEquipment(mEquipments["Shield"].Clone());
-
-				//mMyPlayer->AddEquipment(mEquipments["Bow"].Clone());
-				//mMyPlayer->AddEquipment(mEquipments["Quiver"].Clone());
-
-				//mMyPlayer->AddEquipment(mEquipments["DemonCloth"].Clone());
-				//mMyPlayer->AddEquipment(mEquipments["DemonWeapon"].Clone());
 
 				mMyPlayer->SetMyPlayer();
 				
@@ -104,9 +126,6 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 					
 				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
-
-
-				const SimpleMath::Vector3 cameraOffset{ 0.f, 1.75f, 3.f };
 
 				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
 				mCameraMode->Enter();
@@ -269,6 +288,9 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 void TerrainScene::ProcessObjectAttacked(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAttackedSC>(buffer);
 	// HP 깍기 
+	if (data->objectId() == gClientCore->GetSessionId()) {
+		mHealthBarUI.SetHealth(data->hp());
+	}
 }
 
 void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
@@ -526,11 +548,9 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 	mInventoryUI.SetItem(ItemType::HolyWater, 1, true);
 	mInventoryUI.SetItem(ItemType::Cross, 2, true);
 
-	mHealthBarUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("health_frame"), mRenderManager->GetTextureManager().GetTexture("health_bar"));
-	mHealthBarUI.SetHealth(50.f);
+	mHealthBarUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("health_frame"), mRenderManager->GetTextureManager().GetTexture("health_bar")); 
 
 
-	mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Devil"));
 
 
 	mRenderManager->GetLightingManager().ClearLight(commandList);
