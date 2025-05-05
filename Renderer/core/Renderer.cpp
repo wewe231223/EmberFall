@@ -196,13 +196,7 @@ void Renderer::Render() {
 		mRenderManager->GetParticleManager().RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
 
-	// Blurring Pass
-	mGBuffers[3].Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
-	mBlurComputeProcessor.DispatchHorzBlur(mDevice, mCommandList, mGBuffers[3].GetResource());
-
-	mGBuffers[3].Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
-	mBlurComputeProcessor.DispatchVertBlur(mDevice, mCommandList, mGBuffers[3].GetResource());
-	mGBuffers[3].Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	
 
 	// Deffered Rendering Pass 
 	mRenderManager->GetLightingManager().UpdateLight(mCommandList);
@@ -216,6 +210,15 @@ void Renderer::Render() {
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
 	mDefferedRenderer.Render(mCommandList, mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0), mRenderManager->GetLightingManager().GetLightingBuffer());
+
+	// Blurring Pass
+	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
+	mBlurComputeProcessor.DispatchHorzBlur(mDevice, mCommandList, currentBackBuffer.GetResource());
+
+	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+	mBlurComputeProcessor.DispatchVertBlur(mDevice, mCommandList, currentBackBuffer.GetResource());
+	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
 
 	mRenderManager->GetTextureManager().Bind(mCommandList);
 
