@@ -59,7 +59,7 @@ struct ModelContext2D {
     };
 
     UINT ImageIndex{ 0 };
-    UINT GreyScale{ 0 };
+    float GreyScale{ 1.f };
 };
 
 

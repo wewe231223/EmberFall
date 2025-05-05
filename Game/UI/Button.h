@@ -2,6 +2,9 @@
 #include "../Renderer/Render/Canvas.h"
 #include <functional>
 class Button {
+	static constexpr float IDLE_GREYSCALE = 0.6f; 
+	static constexpr float HOVER_GREYSCALE = 1.0f;
+	static constexpr float CLICK_GREYSCALE = 0.3f;
 public:
 	enum InvokeCondition : BYTE {
 		LeftClick,
@@ -12,19 +15,23 @@ public:
 	~Button() = default;
 
 public:
-	void Init(Canvas& canvas, UINT idle, UINT pressed);
+	void Init(Canvas& canvas, InvokeCondition condition, UINT image);
 	
 	void Update(); 
 	void SetCallBack(std::function<void()> callback, InvokeCondition condition);
 
 	void SetRect(float LTx, float LTy, float width, float height); 
 
+	void ChangeImage(UINT image); 
+	
+	void SetActiveState(bool state); 
+private:
+	bool Inside(int min, int max, int value); 
 private:
 	CanvasObject mButton{}; 
 
 	InvokeCondition mCondition{ InvokeCondition::RightClick };
 	std::function<void()> mCallback{ nullptr };
-
 
 	bool mPressedRight{ false };
 	bool mPressedLeft{ false };

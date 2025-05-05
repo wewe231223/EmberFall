@@ -129,6 +129,10 @@ CanvasRect& CanvasObject::GetRect() {
 	return mRect;
 }
 
+void CanvasObject::SetGreyScale(float scale) {
+	mContext.GreyScale = scale;
+}
+
 DirectX::XMFLOAT3X3 CanvasObject::Multifly(const DirectX::XMFLOAT3X3& lhs, const DirectX::XMFLOAT3X3& rhs) const {
 	// XMFLOAT3X3를 XMMATRIX로 변환
 	DirectX::XMMATRIX matrix1 = DirectX::XMLoadFloat3x3(&lhs);

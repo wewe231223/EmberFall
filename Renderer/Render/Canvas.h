@@ -34,6 +34,8 @@ public:
 	bool GetActive() const;
 
 	CanvasRect& GetRect();
+
+	void SetGreyScale(float scale); 
 private:
 	DirectX::XMFLOAT3X3 Multifly(const DirectX::XMFLOAT3X3& lhs, const DirectX::XMFLOAT3X3& rhs) const;
 	DirectX::XMFLOAT3X3 Transpose(const DirectX::XMFLOAT3X3& mat) const;

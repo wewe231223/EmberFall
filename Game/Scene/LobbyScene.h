@@ -8,6 +8,7 @@
 #include "../Game/Scene/Player.h"
 #include "../MeshLoader/Loader/AnimationLoader.h"
 #include "../Game/UI/Image.h"
+#include "../Game/UI/Button.h"
 #include "../ServerLib/PacketHandler.h"
 
 class LobbyScene : public IScene {
@@ -78,4 +79,6 @@ private:
 	AnimatorGraph::AnimationGraphController mDemonAnimationController{};
 
 	bool mIsReady{ false }; 
+
+	Button mReadyButton{};
 };

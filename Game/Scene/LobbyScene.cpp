@@ -375,6 +375,10 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 	gClientCore->Send(packet); 
 
 
+	mReadyButton = Button{};
+	mReadyButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("Paladin_diffuse"));
+	mReadyButton.SetRect(0.f, 0.f, 100.f, 100.f);
+
 
 }
 
@@ -386,6 +390,8 @@ void LobbyScene::ProcessNetwork() {
 }
 
 void LobbyScene::Update() {
+
+	mReadyButton.Update(); 
 
 	PlayerRole prevRole = mPlayerRole;
 
