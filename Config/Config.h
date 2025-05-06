@@ -16,7 +16,7 @@
 #elif defined(KSJ) 
 #define FHD
 #elif defined(JYK) 
-#define HD
+#define FHD
 #endif 
 
 
