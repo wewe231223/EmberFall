@@ -947,6 +947,8 @@ void LobbyScene::SettingButton(UINT playerIndex) {
 	if (playerIndex == 5) {
 		buttonVerticalOffset = -100.f;
 		buttonHorizontalOffset = 200.f;
+
+		readyButtonVerticalOffset = 100.f;
 	}
 
 	auto& namePlate = std::get<1>(mPlayers[playerIndex]);
