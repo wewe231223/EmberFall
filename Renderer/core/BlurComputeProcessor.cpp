@@ -34,7 +34,7 @@ void BlurComputeProcessor::DispatchHorzBlur(ComPtr<ID3D12Device> device, ComPtr<
 	commandList->SetComputeRootDescriptorTable(1, gpuHandle);
 	
 
-	UINT numGroupsX = (UINT)ceilf(Config::WINDOW_WIDTH<UINT> / 256.0f);
+	UINT numGroupsX = static_cast<UINT>(std::ceilf(Config::WINDOW_WIDTH<UINT> / 256.0f));
 
 	commandList->Dispatch(numGroupsX, Config::WINDOW_HEIGHT<UINT>, 1);
 
@@ -57,21 +57,14 @@ void BlurComputeProcessor::DispatchVertBlur(ComPtr<ID3D12Device> device, ComPtr<
 	commandList->SetComputeRootDescriptorTable(1, gpuHandle);
 	
 
-	UINT numGroupsY = (UINT)ceilf(Config::WINDOW_HEIGHT<UINT> / 256.0f);
+	UINT numGroupsY = static_cast<UINT>(ceilf(Config::WINDOW_HEIGHT<UINT> / 256.0f));
 
 	commandList->Dispatch(Config::WINDOW_WIDTH<UINT>, numGroupsY, 1);
-
-
-	
-
-
 
 	mVertBlurMap.Transition(commandList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COPY_SOURCE);
 	commandList->CopyResource(output.Get(), mVertBlurMap.GetResource().Get());
 	mVertBlurMap.Transition(commandList, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COMMON);
 	mHorzBlurMap.Transition(commandList, D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COMMON);
-
-
 
 }
 
@@ -87,8 +80,8 @@ Texture& BlurComputeProcessor::GetVertBlurMap() {
 
 void BlurComputeProcessor::CreateResource(ComPtr<ID3D12Device> device) {
 	
-	mHorzBlurMap = Texture(device, DXGI_FORMAT_R8G8B8A8_UNORM, 1920, 1057, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-	mVertBlurMap = Texture(device, DXGI_FORMAT_R8G8B8A8_UNORM, 1920, 1057, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	mHorzBlurMap = Texture(device, DXGI_FORMAT_R8G8B8A8_UNORM, Config::WINDOW_WIDTH<int>, Config::WINDOW_HEIGHT<int>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	mVertBlurMap = Texture(device, DXGI_FORMAT_R8G8B8A8_UNORM, Config::WINDOW_WIDTH<int>, Config::WINDOW_HEIGHT<int>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 	  
 }
 
@@ -167,8 +160,6 @@ void BlurComputeProcessor::CompileShader() {
 }
 
 void BlurComputeProcessor::CreateRootSignature(ComPtr<ID3D12Device> device) {
-	
-
 	CD3DX12_DESCRIPTOR_RANGE srvTable;
 	srvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 

@@ -36,6 +36,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitParticleManager();
 	Renderer::InitGrassRenderer();
 
+
 }
 
 Renderer::~Renderer() {
