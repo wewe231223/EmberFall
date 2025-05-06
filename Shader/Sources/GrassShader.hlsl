@@ -164,8 +164,13 @@ void mainMS(
     basePos.y += halfSize * 0.9f;
 
     const float3 up = float3(0.0f, 1.0f, 0.0f);
-    float3 right = float3(1.0f, 0.0f, 0.0f);
-    float3 forward = float3(0.0f, 0.0f, 1.0f);
+    
+    float randRotation = hash(grassIndex) * 6.2831f;
+    float cosTheta = cos(randRotation);
+    float sinTheta = sin(randRotation);
+
+    float3 right = float3(cosTheta, 0.0f, -sinTheta);
+    float3 forward = float3(sinTheta, 0.0f, cosTheta);
 
     float3 verts[8];
 
@@ -181,8 +186,13 @@ void mainMS(
     verts[6] = basePos + (forward - up) * halfSize;
     verts[7] = basePos + (-forward - up) * halfSize;
 
-    float3 normal1 = normalize(cross(right, up));
-    float3 normal2 = normalize(cross(forward, up));
+    float3 edge1_r = verts[1] - verts[0];
+    float3 edge2_r = verts[2] - verts[0];
+    float3 normal1 = normalize(cross(edge1_r, edge2_r));
+
+    float3 edge1_f = verts[5] - verts[4];
+    float3 edge2_f = verts[6] - verts[4];
+    float3 normal2 = normalize(cross(edge1_f, edge2_f));
 
     uint vtxBase = localId * 8;
     uint idxBase = localId * 4;
