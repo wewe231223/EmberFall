@@ -99,6 +99,9 @@
     <ClCompile Include="Scene\LobbyPlayer.cpp">
       <Filter>LoadingScene</Filter>
     </ClCompile>
+    <ClCompile Include="UI\NamePlate.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -163,6 +166,9 @@
     </ClInclude>
     <ClInclude Include="Scene\LobbyPlayer.h">
       <Filter>LoadingScene</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\NamePlate.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

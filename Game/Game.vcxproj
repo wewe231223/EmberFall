@@ -169,6 +169,7 @@
     <ClCompile Include="UI\HealthBar.cpp" />
     <ClCompile Include="UI\Image.cpp" />
     <ClCompile Include="UI\Inventory.cpp" />
+    <ClCompile Include="UI\NamePlate.cpp" />
     <ClCompile Include="UI\SpriteImage.cpp" />
     <ClCompile Include="UI\Profile.cpp" />
   </ItemGroup>
@@ -192,6 +193,7 @@
     <ClInclude Include="UI\HealthBar.h" />
     <ClInclude Include="UI\Image.h" />
     <ClInclude Include="UI\Inventory.h" />
+    <ClInclude Include="UI\NamePlate.h" />
     <ClInclude Include="UI\SpriteImage.h" />
     <ClInclude Include="UI\Profile.h" />
   </ItemGroup>

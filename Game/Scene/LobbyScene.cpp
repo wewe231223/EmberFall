@@ -57,18 +57,20 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		switch (mPlayerRole) {
 		case PlayerRole_SwordMan:
 		{
-			if (mLookingDemon) {
+			if (mPlayerIndexmap[gClientCore->GetSessionId()] == &mPlayers[5]) {
 				mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[mMySlot];
 
-				std::get<1>(mPlayers[mMySlot])->GetText() = std::get<1>(mPlayers[5])->GetText();
+				std::get<1>(mPlayers[mMySlot]).GetName() = std::get<1>(mPlayers[5]).GetName();
 
 				std::get<0>(mPlayers[5]).SetActiveState(false);
-				std::get<1>(mPlayers[5])->SetActiveState(false);
+				std::get<1>(mPlayers[5]).SetActiveState(false);
 
 				std::get<0>(mPlayers[mMySlot]).SetActiveState(true);
 
-				mLookingDemon = false;
-				mCameraRotating = true;
+				if (mLookingDemon) {
+					mLookingDemon = false;
+					mCameraRotating = true;
+				}
 			}
 
 			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform();
@@ -92,18 +94,20 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 			break;
 		case PlayerRole_ShieldMan:
 		{
-			if (mLookingDemon) {
+			if (mPlayerIndexmap[gClientCore->GetSessionId()] == &mPlayers[5]) {
 				mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[mMySlot];
 
-				std::get<1>(mPlayers[mMySlot])->GetText() = std::get<1>(mPlayers[5])->GetText();
+				std::get<1>(mPlayers[mMySlot]).GetName() = std::get<1>(mPlayers[5]).GetName();
 
 				std::get<0>(mPlayers[5]).SetActiveState(false);
-				std::get<1>(mPlayers[5])->SetActiveState(false);
+				std::get<1>(mPlayers[5]).SetActiveState(false);
 
 				std::get<0>(mPlayers[mMySlot]).SetActiveState(true);
 
-				mLookingDemon = false;
-				mCameraRotating = true;
+				if (mLookingDemon) {
+					mLookingDemon = false;
+					mCameraRotating = true;
+				}
 			}
 
 			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform();
@@ -114,13 +118,13 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		case PlayerRole_Demon:
 		{
 			mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[5];
-			std::get<1>(mPlayers[5])->GetText() = std::get<1>(mPlayers[mMySlot])->GetText();
+			std::get<1>(mPlayers[5]).GetName() = std::get<1>(mPlayers[mMySlot]).GetName();
 
 			std::get<0>(mPlayers[mMySlot]).SetActiveState(false);
 			std::get<0>(mPlayers[5]).SetActiveState(true);
 
 			for (auto i = 0; i < mPlayers.size() - 1; ++i) {
-				std::get<1>(mPlayers[i])->SetActiveState(false);
+				std::get<1>(mPlayers[i]).SetActiveState(false);
 				std::get<2>(mPlayers[i]).SetActiveState(false);
 			}
 
@@ -142,14 +146,14 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 
 				auto slot = mPlayerSlotMap[data->playerId()];
 				mPlayerIndexmap[data->playerId()] = &mPlayers[slot];
-				std::get<1>(mPlayers[slot])->GetText() = std::get<1>(mPlayers[5])->GetText();
+				std::get<1>(mPlayers[slot]).GetName() = std::get<1>(mPlayers[5]).GetName();
 
 				std::get<0>(mPlayers[5]).SetActiveState(false);
-				std::get<1>(mPlayers[5])->SetActiveState(false);
+				std::get<1>(mPlayers[5]).SetActiveState(false);
 
 				
 				std::get<0>(mPlayers[slot]).SetActiveState(true);
-				std::get<1>(mPlayers[slot])->SetActiveState(true);
+				std::get<1>(mPlayers[slot]).SetActiveState(true);
 			}
 
 
@@ -178,14 +182,14 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 
 				auto slot = mPlayerSlotMap[data->playerId()];
 				mPlayerIndexmap[data->playerId()] = &mPlayers[slot];
-				std::get<1>(mPlayers[slot])->GetText() = std::get<1>(mPlayers[5])->GetText();
+				std::get<1>(mPlayers[slot]).GetName() = std::get<1>(mPlayers[5]).GetName();
 
 				std::get<0>(mPlayers[5]).SetActiveState(false);
-				std::get<1>(mPlayers[5])->SetActiveState(false);
+				std::get<1>(mPlayers[5]).SetActiveState(false);
 
 
 				std::get<0>(mPlayers[slot]).SetActiveState(true);
-				std::get<1>(mPlayers[slot])->SetActiveState(true);
+				std::get<1>(mPlayers[slot]).SetActiveState(true);
 			}
 
 			auto transform = std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform();
@@ -197,8 +201,8 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		case Packets::PlayerRole::PlayerRole_BOSS:
 		{
 			std::get<0>(*mPlayerIndexmap[data->playerId()]).SetActiveState(false);
-			std::get<1>(*mPlayerIndexmap[data->playerId()])->SetActiveState(false);
-			std::get<1>(mPlayers[5])->GetText() = std::get<1>(*mPlayerIndexmap[data->playerId()])->GetText();
+			std::get<1>(*mPlayerIndexmap[data->playerId()]).SetActiveState(false);
+			std::get<1>(mPlayers[5]).GetName() = std::get<1>(*mPlayerIndexmap[data->playerId()]).GetName();
 
 			mPlayerIndexmap[data->playerId()] = &mPlayers[5];
 
@@ -228,11 +232,11 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		mPlayerIndexmap[packet->playerId()] = &(mPlayers[packet->playerSlot()]);
 		std::get<0>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
 		if (not mLookingDemon) {
-			std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(true);
+			std::get<1>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
 		}
 
 		std::string name{ flatbuffers::GetCstring(packet->name()) };
-		std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->GetText() = std::wstring( ConvertUtf8ToWstring(name.c_str()) );
+		std::get<1>(*(mPlayerIndexmap[packet->playerId()])).GetName() = std::wstring( ConvertUtf8ToWstring(name.c_str()) );
 
 		mPlayerSlotMap[packet->playerId()] = packet->playerSlot();
 
@@ -274,8 +278,8 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		case Packets::PlayerRole::PlayerRole_BOSS:
 		{
 			std::get<0>(*mPlayerIndexmap[packet->playerId()]).SetActiveState(false);
-			std::get<1>(*mPlayerIndexmap[packet->playerId()])->SetActiveState(false);
-			std::get<1>(mPlayers[5])->GetText() = std::get<1>(*mPlayerIndexmap[packet->playerId()])->GetText();
+			std::get<1>(*mPlayerIndexmap[packet->playerId()]).SetActiveState(false);
+			std::get<1>(mPlayers[5]).GetName() = std::get<1>(*mPlayerIndexmap[packet->playerId()]).GetName();
 
 			mPlayerIndexmap[packet->playerId()] = &mPlayers[5];
 
@@ -294,7 +298,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 
 		if (mPlayerIndexmap.contains(packet->playerId())) {
 			std::get<0>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(false);
-			std::get<1>(*(mPlayerIndexmap[packet->playerId()]))->SetActiveState(false);
+			std::get<1>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(false);
 			std::get<2>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(false);
 		}
 
@@ -439,14 +443,14 @@ void LobbyScene::Update() {
 		if (not mCameraRotating) {
 			if (mLookingDemon) { // 인간 진영 선택 
 				mLookingDemon = false;
-				std::get<1>(mPlayers[5])->SetActiveState(false);
+				std::get<1>(mPlayers[5]).SetActiveState(false);
 				std::get<2>(mPlayers[5]).SetActiveState(false); 
 				mCameraRotating = true; 
 			}
 			else { // 악마 진영 선택 
 				mLookingDemon = true;
 				for (auto i = 0; i < mPlayers.size() - 1; ++i) {
-					std::get<1>(mPlayers[i])->SetActiveState(false);
+					std::get<1>(mPlayers[i]).SetActiveState(false);
 					std::get<2>(mPlayers[i]).SetActiveState(false);
 				}
 				mCameraRotating = true;
@@ -474,7 +478,7 @@ void LobbyScene::Update() {
 
 			for (auto i = 0; i < mPlayers.size() - 1; ++i) {
 				if (std::get<0>(mPlayers[i]).GetActiveState()) {
-					std::get<1>(mPlayers[i])->SetActiveState(true);
+					std::get<1>(mPlayers[i]).SetActiveState(true);
 					if (std::get<3>(mPlayers[i])) {
 						std::get<2>(mPlayers[i]).SetActiveState(true);
 					}
@@ -488,7 +492,7 @@ void LobbyScene::Update() {
 			mCameraRotating = false;
 
 			if (std::get<0>(mPlayers[5]).GetActiveState()) {
-				std::get<1>(mPlayers[5])->SetActiveState(true);
+				std::get<1>(mPlayers[5]).SetActiveState(true);
 				if (std::get<3>(mPlayers[5])) {
 					std::get<2>(mPlayers[5]).SetActiveState(true);
 				}
@@ -511,6 +515,7 @@ void LobbyScene::Update() {
 			continue;
 		}
 		std::get<0>(player).Update(mRenderManager->GetMeshRenderManager());
+		std::get<1>(player).Update();
 		std::get<2>(player).Update(); 
 	}
 
@@ -531,7 +536,7 @@ void LobbyScene::SendNetwork() {
 
 void LobbyScene::Exit() {
 	for (auto& p : mPlayers) {
-		std::get<1>(p)->SetActiveState(false);
+		std::get<1>(p).SetActiveState(false);
 	}
 }
 
@@ -809,61 +814,84 @@ void LobbyScene::BuildPlayerPrefab() {
 
 void LobbyScene::BuildPlayerNameTextBlock() {
 	const float xInterval = 380.f;
-	const float xPadding = 150.f; 
-
+	const float xPadding = 150.f;
+	const float namePlateWidth = 240.f; // 최대 너비 확보
+	const float namePlateHeight = 30.f;
+	const float originalWidth = 100.f;
 	const float y = 550.f;
 
 	for (auto i = 0; i < mPlayers.size() - 1; ++i) {
 		auto& player = mPlayers[i];
-		std::get<1>(player) = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{xPadding + xInterval * i , y, xPadding + xInterval * i + 100.f, y + 100.f}, StringColor::White, "NotoSansKR");
-		std::get<1>(player)->GetText() = L"Player" + std::to_wstring(i);
-		std::get<1>(player)->SetActiveState(false);
+		float centerX = xPadding + xInterval * i + originalWidth / 2.f;
+		std::get<1>(player) = NamePlate();
+		std::get<1>(player).Init(
+			mRenderManager->GetCanvas(),
+			mRenderManager->GetTextureManager().GetTexture("mid_dark_bar"),
+			centerX - namePlateWidth / 2.f, y,
+			namePlateWidth, namePlateHeight);
+		std::get<1>(player).GetName() = L"Player" + std::to_wstring(i);
+		std::get<1>(player).SetActiveState(false);
 	}
 
 	auto& player = mPlayers[5];
-	std::get<1>(player) = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 760.f, 750.f, 760.f + xInterval, 850.f }, StringColor::White, "NotoSansKR");
-	std::get<1>(player)->GetText() = L"Player" + std::to_wstring(4);
-	std::get<1>(player)->SetActiveState(false);
+	float centerX = 900.f + originalWidth / 2.f;
+	std::get<1>(player) = NamePlate();
+	std::get<1>(player).Init(
+		mRenderManager->GetCanvas(),
+		mRenderManager->GetTextureManager().GetTexture("mid_dark_bar"),
+		centerX - namePlateWidth / 2.f, 750.f,
+		namePlateWidth, namePlateHeight);
+	std::get<1>(player).GetName() = L"Player" + std::to_wstring(4);
+	std::get<1>(player).SetActiveState(false);
 }
+
 
 void LobbyScene::BuildPlayerReadyImage() {
 	std::array<CanvasRect, 6> namePlateRects;
 
-	const float namePlateWidth = 80.f;
-	const float namePlateHeight = 100.f;
-	const float xOffsetFromText = 10.f; 
+	const float namePlateWidth = 240.f; // 이름표와 일치
+	const float readyImageWidth = 30.f;
+	const float readyImageHeight = 30.f;
+	const float namePlateHeight = 30.f;
+	const float xOffsetFromText = 10.f;
 
 	const float xInterval = 380.f;
 	const float xPadding = 150.f;
+	const float originalWidth = 100.f;
 
 	for (int i = 0; i < 5; ++i) {
-		float textLeft = xPadding + xInterval * i;
+		float centerX = xPadding + xInterval * i + originalWidth / 2.f;
+		float textLeft = centerX - namePlateWidth / 2.f;
 		float textTop = 550.f;
 
-		namePlateRects[i].LTx = textLeft + 100.f + xOffsetFromText;
+		namePlateRects[i].LTx = textLeft + namePlateWidth + xOffsetFromText;
 		namePlateRects[i].LTy = textTop;
-		namePlateRects[i].width = namePlateWidth;
-		namePlateRects[i].height = namePlateHeight;
+		namePlateRects[i].width = readyImageWidth;
+		namePlateRects[i].height = readyImageHeight;
 	}
 
 	{
-		float textLeft = 760.f;
+		float centerX = 900.f + originalWidth / 2.f;
+		float textLeft = centerX - namePlateWidth / 2.f;
 		float textTop = 750.f;
 
-		namePlateRects[5].LTx = textLeft + xInterval + xOffsetFromText;
+		namePlateRects[5].LTx = textLeft + namePlateWidth + xOffsetFromText;
 		namePlateRects[5].LTy = textTop;
-		namePlateRects[5].width = namePlateWidth;
-		namePlateRects[5].height = namePlateHeight;
+		namePlateRects[5].width = readyImageWidth;
+		namePlateRects[5].height = readyImageHeight;
 	}
 
 	for (int i = 0; i < 6; ++i) {
 		auto& player = mPlayers[i];
 		std::get<2>(player) = Image{};
-		std::get<2>(player).Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("check")); 
+		std::get<2>(player).Init(
+			mRenderManager->GetCanvas(),
+			mRenderManager->GetTextureManager().GetTexture("check"));
 		std::get<2>(player).GetRect() = namePlateRects[i];
-		std::get<2>(player).SetActiveState(false); 
+		std::get<2>(player).SetActiveState(false);
 	}
 }
+
 
 void LobbyScene::ProcessPackets(const uint8_t* buffer, size_t size) {
 	const uint8_t* iter = buffer; 
