@@ -458,7 +458,7 @@ void LobbyScene::Update() {
 		}
 	}
 
-	if (Input.GetKeyboardTracker().pressed.Enter and not mIsReady) {
+	if (Input.GetKeyboardTracker().pressed.Enter and not mIsReady and mPlayerRole != PlayerRole_None) {
 		mIsReady = true; 
 
 		decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId());
