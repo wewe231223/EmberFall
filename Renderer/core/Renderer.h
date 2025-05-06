@@ -24,6 +24,7 @@
 enum class RenderFeature : BYTE {
 	PARTICLE, 
 	GRASS,
+	BLOOM,
 	END,
 };
 
@@ -140,7 +141,7 @@ private:
 
 	std::shared_ptr<RenderManager> mRenderManager{ nullptr };
 
-	SceneFeatureType mFeatureEnabled{ false, false };
+	SceneFeatureType mFeatureEnabled{ false, false, false };
 	GrassRenderer mGrassRenderer{};
 
 	DefaultBuffer mTerrainHeaderBuffer{}; 
