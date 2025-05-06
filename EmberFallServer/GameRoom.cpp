@@ -97,9 +97,7 @@ uint8_t GameRoom::RemovePlayer(SessionIdType id, Packets::PlayerRole lastRole, b
     if (GameRoomState::GAME_ROOM_STATE_LOBBY != mGameRoomState and 0 == mPlayerCount) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Boss Player Count zero or Player Count is zero");
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Now GameRoom [{}] state is GAME_ROOM_STATE_LOBBBY", mRoomIdx);
-        //mStage.Reset();
-        mStage.EndStage();
-        mGameRoomState = GameRoomState::GAME_ROOM_STATE_LOBBY;
+        ChangeToLobby();
     }
 
     mSessionsInRoom.erase(id);
@@ -190,7 +188,7 @@ bool GameRoom::CancelPlayerReady(SessionIdType id) {
     }
     mSessionLock.ReadUnlock();
 
-    if (mGameRoomState == GameRoomState::GAME_ROOM_STATE_TRANSITION) {
+    if (GameRoomState::GAME_ROOM_STATE_TRANSITION == mGameRoomState) {
         mTransitionInterruptFlag = true;
     }
 
@@ -201,6 +199,21 @@ bool GameRoom::CancelPlayerReady(SessionIdType id) {
 
     --mReadyPlayerCount;
     return session->CancelReady();
+}
+
+void GameRoom::EndGameLoop() {
+    mGameRoomState = GameRoomState::GAME_ROOM_STATE_TRANSITION;
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom[{}]: Register End Game!!!", mRoomIdx);
+
+    auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
+    gServerFrame->AddTimerEvent(mRoomIdx, INVALID_SESSION_ID, excutionTime, TimerEventType::SCENE_TRANSITION_COUNTDOWN);
+    mSceneTransitionCounter = SysClock::now();
+
+    mStageTransitionTarget = GameStage::LOBBY;
+
+    auto packetStartTransition = FbsPacketFactory::StartSceneTransition(SCENE_TRANSITION_COUNT);
+    BroadCastInGameRoom(packetStartTransition);
 }
 
 bool GameRoom::CheckAndStartGame() {
@@ -216,10 +229,45 @@ bool GameRoom::CheckAndStartGame() {
     gServerFrame->AddTimerEvent(mRoomIdx, INVALID_SESSION_ID, excutionTime, TimerEventType::SCENE_TRANSITION_COUNTDOWN);
     mSceneTransitionCounter = SysClock::now();
 
+    mStageTransitionTarget = GameStage::STAGE1;
+
     auto packetStartTransition = FbsPacketFactory::StartSceneTransition(SCENE_TRANSITION_COUNT);
     BroadCastInGameRoom(packetStartTransition);
 
     return true;
+}
+
+void GameRoom::ChangeToLobby() {
+    mStage.EndStage();
+    mGameRoomState = GameRoomState::GAME_ROOM_STATE_LOBBY;
+    
+    decltype(auto) sessionsInGameRoom = GetSessions();
+    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
+    {
+        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
+        for (auto& sessionId : sessionsInGameRoom) {
+            auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+            if (nullptr == session) {
+                continue;
+            }
+
+            session->EnterLobby();
+        }
+    }
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Change To Lobby!!!", mRoomIdx);
+}
+
+void GameRoom::ChangeToStage1() {
+    mReadyPlayerCount = 0;
+    mGameRoomState = GameRoomState::GAME_ROOM_STATE_INGAME;
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Start Game!!!", mRoomIdx);
+    mStage.StartStage(mPlayerCount - mBossPlayerCount, mBossPlayerCount);
+
+    auto packetSceneTransition = FbsPacketFactory::ChangeToNextSceneSC();
+    BroadCastInGameRoom(packetSceneTransition);
+    return;
 }
 
 void GameRoom::BroadCastInGameRoom(SessionIdType sender, OverlappedSend* packet) {
@@ -275,14 +323,15 @@ void GameRoom::BroadCastInGameRoom(OverlappedSend* packet) {
 }
 
 void GameRoom::OnSceneCountdownTick() {
-    if (not IsEveryPlayerReady()) {
+    if (GameRoomState::GAME_ROOM_STATE_LOBBY == mGameRoomState and not IsEveryPlayerReady()) {
         mSceneTransitionCounter = SysClock::now();
         auto pakcetCancelTransition = FbsPacketFactory::CancelSceneTransition();
         BroadCastInGameRoom(pakcetCancelTransition);
         return;
     }
 
-    if (true == mTransitionInterruptFlag) {
+    if (true == mTransitionInterruptFlag and GameStage::LOBBY == mStageTransitionTarget) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Interrupt GameScene Transition - cancel transition", mRoomIdx);
         mTransitionInterruptFlag = false;
         CheckAndStartGame();
 
@@ -294,18 +343,21 @@ void GameRoom::OnSceneCountdownTick() {
 
     auto sceneTransitionTime = std::chrono::duration_cast<std::chrono::milliseconds>(SysClock::now() - mSceneTransitionCounter).count() / 1000.0f;
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "OnSceneCountdownTick - Remain Time: {}s", std::max(0.0f, SCENE_TRANSITION_COUNT - sceneTransitionTime));
-    if (SCENE_TRANSITION_COUNT <= sceneTransitionTime) {
-        mGameRoomState = GameRoomState::GAME_ROOM_STATE_INGAME;
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Start Game!!!");
-        mStage.StartStage();
-
-        auto packetSceneTransition = FbsPacketFactory::ChangeToNextSceneSC();
-        BroadCastInGameRoom(packetSceneTransition);
+    if (SCENE_TRANSITION_COUNT > sceneTransitionTime) {
+        auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
+        gServerFrame->AddTimerEvent(mRoomIdx, INVALID_SESSION_ID, excutionTime, TimerEventType::SCENE_TRANSITION_COUNTDOWN);
         return;
     }
 
-    auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
-    gServerFrame->AddTimerEvent(mRoomIdx, INVALID_SESSION_ID, excutionTime, TimerEventType::SCENE_TRANSITION_COUNTDOWN);
+    switch (mStageTransitionTarget) {
+    case GameStage::LOBBY:
+        ChangeToLobby();
+        break;
+
+    case GameStage::STAGE1:
+        ChangeToStage1();
+        break;
+    }
 }
 
 GameRoomManager::GameRoomManager() {

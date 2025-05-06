@@ -10,6 +10,12 @@ using CollisionPairCont = std::unordered_set<CollisionPair>;
 
 class CollisionManager {
 public:
+    CollisionManager(uint16_t roomIdx);
+    ~CollisionManager();
+
+public:
+    void Reset();
+
     bool ContainsPair(NetworkObjectIdType id1, NetworkObjectIdType id2);
     bool PushCollisionPair(NetworkObjectIdType id1, NetworkObjectIdType id2);
     void PopCollisionPair(NetworkObjectIdType id1, NetworkObjectIdType id2);
@@ -21,6 +27,7 @@ public:
     void UpdateCollisionTrigger(const std::shared_ptr<GameObject>& obj, const std::shared_ptr<ObjectManager>& objManager, const std::vector<NetworkObjectIdType>& collisionCheckTriggers);
 
 public:
+    uint16_t mRoomIdx{ };
     Lock::SRWLock mCollisionPairLock{ };
     CollisionPairCont mCollisionPairs{ };
 };

@@ -98,6 +98,8 @@ void PlayerScript::Init() {
     owner->mAnimationStateMachine.Init(ANIM_KEY_LONGSWORD_MAN);
     owner->mSpec.hp = 1000.0f;
 
+    owner->GetPhysics()->mFactor.maxMoveSpeed = 5.5mps;
+
     const auto pos = owner->GetPosition();
     const auto look = owner->GetTransform()->Forward();
     auto ownerRoom = owner->GetMyRoomIdx();
@@ -279,7 +281,6 @@ std::shared_ptr<GameObject> PlayerScript::GetNearestObject() {
     );
 
     decltype(auto) resultObject = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(result);
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Get Nearest Obj: {}", result);
     return resultObject;
 }
 
@@ -409,8 +410,6 @@ void PlayerScript::CancelInteraction() {
     owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE, true);
     mInteractionObj = INVALID_OBJ_ID;
     mInteraction = false;
-
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Cancel");
 }
 
 void PlayerScript::DestroyingGem(const float deltaTime, const std::shared_ptr<GameObject>& gem) {
@@ -437,8 +436,6 @@ void PlayerScript::SuccessInteraction() {
     owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE, true);
     mInteractionObj = INVALID_OBJ_ID;
     mInteraction = false;
-
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Interaction Success");
 }
 
 void PlayerScript::AcquireItem(const float deltaTime, const std::shared_ptr<GameObject>& item) {

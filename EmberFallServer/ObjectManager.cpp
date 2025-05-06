@@ -12,12 +12,19 @@
 
 #include "Resources.h"
 
-ObjectManager::ObjectManager() { }
+#include "GameRoom.h"
+
+ObjectManager::ObjectManager(uint16_t roomIdx) 
+    : mRoomIdx{ roomIdx } { }
 
 ObjectManager::~ObjectManager() { }
 
 uint8_t ObjectManager::GetGemCount() const {
     return mCorruptedGemCount.load();
+}
+
+uint8_t ObjectManager::GetAliveHumanCount() const {
+    return mAlivePlayerCount;
 }
 
 void ObjectManager::SetSector(std::shared_ptr<SectorSystem> sector) {
@@ -34,7 +41,7 @@ void ObjectManager::Init(uint16_t roomIdx) {
         ++id;
     }
 
-    for (NetworkObjectIdType id{ MONSTER_ID_START }; auto& monster : mNPCs) {
+    for (NetworkObjectIdType id{ MONSTER_ID_START }; auto & monster : mNPCs) {
         monster = std::make_shared<GameObject>(roomIdx);
         monster->InitId(id);
         monster->Reset();
@@ -68,6 +75,33 @@ void ObjectManager::Init(uint16_t roomIdx) {
         env->mSpec.active = false;
 
         ++id;
+    }
+
+}
+
+void ObjectManager::Start(uint8_t humanCount, uint8_t bossCount, uint8_t corruptedGemCount) {
+    mAlivePlayerCount = humanCount;
+    for (uint8_t i = 0; i < corruptedGemCount; ++i) {
+        auto gem = SpawnObject(Packets::EntityType_CORRUPTED_GEM);
+        gem->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -100.0f, 0.0f, -100.0f }, SimpleMath::Vector3{ 100.0f, 0.0f, 100.0f }));
+    }
+}
+
+void ObjectManager::Reset() {
+    for (auto& npc : mNPCs) {
+        if (false == npc->mSpec.active) {
+            continue;
+        }
+
+        npc->Reset();
+    }
+
+    for (auto& trigger : mTriggers) {
+        if (false == trigger->mSpec.active) {
+            continue;
+        }
+
+        trigger->Reset();
     }
 }
 
@@ -252,6 +286,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
 
     case Packets::EntityType_BOSS:
     {
+
         break;
     }
 
@@ -339,6 +374,30 @@ void ObjectManager::ReleaseObject(NetworkObjectIdType id) {
         return;
     }
 
+    auto releasedObjTag = GetObjectFromId(id)->GetTag();
+
+    // Gem Count
+    if (ObjectTag::CORRUPTED_GEM == releasedObjTag) {
+        mCorruptedGemCount.fetch_sub(1);
+
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Corrupted Gem, Gem Count : {}", GetGemCount());
+        if (mCorruptedGemCount <= 0) {
+            auto packetGameEnd = FbsPacketFactory::GameEndSC(Packets::PlayerRole_HUMAN);
+            gGameRoomManager->GetRoom(mRoomIdx)->BroadCastInGameRoom(packetGameEnd);
+            gGameRoomManager->GetRoom(mRoomIdx)->EndGameLoop();
+        }
+    }
+    else if (ObjectTag::PLAYER == releasedObjTag) {
+        mAlivePlayerCount.fetch_sub(1);
+
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Human Player, Alive Player Count: {}", mAlivePlayerCount.load());
+        if (mAlivePlayerCount <= 0) {
+            auto packetGameEnd = FbsPacketFactory::GameEndSC(Packets::PlayerRole_BOSS);
+            gGameRoomManager->GetRoom(mRoomIdx)->BroadCastInGameRoom(packetGameEnd);
+            gGameRoomManager->GetRoom(mRoomIdx)->EndGameLoop();
+        }
+    }
+
     if (id < MONSTER_ID_START) {
 #if defined(DEBUG) || defined(_DEBUG)
         //gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Release Player Object");
@@ -347,12 +406,6 @@ void ObjectManager::ReleaseObject(NetworkObjectIdType id) {
     }
     else if (id < PROJECTILE_ID_START) {
         mNPCIndices.push(id);
-
-        if (ObjectTag::CORRUPTED_GEM == GetObjectFromId(id)->GetTag()) {
-            mCorruptedGemCount.fetch_sub(1);
-
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Corrupted Gem, Gem Count : {}", GetGemCount());
-        }
         return;
     }
     else if (id < TRIGGER_ID_START) {

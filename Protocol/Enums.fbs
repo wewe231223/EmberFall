@@ -84,6 +84,11 @@ enum PlayerRole : ubyte {
     BOSS
 }
 
+// enum GameStages : ubyte {
+//    LOBBY,
+//    TERRAIN
+// }
+
 enum EntityType : ubyte {
     ENV = 0,
     HUMAN,

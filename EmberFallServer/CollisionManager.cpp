@@ -4,6 +4,16 @@
 #include "ObjectManager.h"
 #include "Collider.h"
 
+CollisionManager::CollisionManager(uint16_t roomIdx)
+    : mRoomIdx{ roomIdx } { }
+
+CollisionManager::~CollisionManager() { }
+
+void CollisionManager::Reset() {
+    Lock::SRWLockGuard pairGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mCollisionPairLock, Lock::SRWLockTry::SRW_TRY };
+    mCollisionPairs.clear();
+}
+
 bool CollisionManager::ContainsPair(NetworkObjectIdType id1, NetworkObjectIdType id2) {
     const auto collisionPair = std::minmax(id1, id2);
 
@@ -73,7 +83,7 @@ void CollisionManager::UpdateCollisionMonster(const std::shared_ptr<GameObject>&
 
         // Todo Collision Check And Resolve
         auto monster = objManager->GetNPC(monsterId);
-        if (nullptr == monster or false == monster->mSpec.active) {
+        if (nullptr == monster or false == monster->mSpec.active or monster->IsDead()) {
             PopCollisionPair(monsterId, objId);
             continue;
         }
@@ -104,7 +114,7 @@ void CollisionManager::UpdateCollisionPlayer(const std::shared_ptr<GameObject>& 
 
         // Todo Collision Check And Resolve
         auto player = objManager->GetPlayer(playerId);
-        if (nullptr == player or false == player->mSpec.active) {
+        if (nullptr == player or false == player->mSpec.active or player->IsDead()) {
             PopCollisionPair(playerId, objId);
             continue;
         }
@@ -135,7 +145,7 @@ void CollisionManager::UpdateCollisionEnv(const std::shared_ptr<GameObject>& obj
 
         // Todo Collision Check And Resolve
         auto env = objManager->GetEnv(envId);
-        if (nullptr == env or false == env->mSpec.active) {
+        if (nullptr == env or false == env->mSpec.active or env->IsDead()) {
             PopCollisionPair(envId, objId);
             continue;
         }
@@ -166,7 +176,7 @@ void CollisionManager::UpdateCollisionTrigger(const std::shared_ptr<GameObject>&
 
         // Todo Collision Check And Resolve
         auto trigger = objManager->GetTrigger(triggerId);
-        if (nullptr == trigger or false == trigger->mSpec.active) {
+        if (nullptr == trigger or false == trigger->mSpec.active or trigger->IsDead()) {
             PopCollisionPair(triggerId, objId);
             continue;
         }

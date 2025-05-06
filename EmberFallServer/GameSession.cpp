@@ -131,6 +131,11 @@ void GameSession::InitUserObject() {
 
 void GameSession::EnterLobby() {
     mSessionState = SESSION_INLOBBY;
+
+    if (nullptr != mUserObject) {
+        mUserObject->Reset();
+        mUserObject = nullptr;
+    }
 }
 
 void GameSession::EnterInGame() {

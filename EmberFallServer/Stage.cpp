@@ -3,7 +3,7 @@
 
 Stage::Stage(GameStage stageIdx, uint16_t roomIdx) 
     : mStage{ stageIdx }, mGameRoomIdx{ roomIdx },
-    mObjectManager{ std::make_shared<ObjectManager>() }, mCollisionManager{ std::make_shared<CollisionManager>() } { 
+    mObjectManager{ std::make_shared<ObjectManager>(mGameRoomIdx) }, mCollisionManager{ std::make_shared<CollisionManager>(mGameRoomIdx) } {
     mSectorSystem = std::make_shared<SectorSystem>(mObjectManager);
     mObjectManager->SetSector(mSectorSystem);
 }
@@ -49,10 +49,6 @@ bool Stage::InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2, const 
 void Stage::InitObjectManager(const std::filesystem::path& path) {
     mObjectManager->Init(mGameRoomIdx);
     mObjectManager->LoadEnvFromFile(path);
-
-    for (int i = 0; i < 10; ++i) {
-        mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
-    }
 }
 
 std::vector<NetworkObjectIdType> Stage::GetNearbyPlayers(const SimpleMath::Vector3& currPos, const float range) {
@@ -83,12 +79,25 @@ std::shared_ptr<GameObject> Stage::GetEnv(NetworkObjectIdType id) {
     return mObjectManager->GetEnv(id);
 }
 
-void Stage::StartStage() {
+void Stage::StartStage(uint8_t humanCount, uint8_t bossCount) {
     mActive.exchange(true);
+    mObjectManager->Start(humanCount, bossCount, 1);
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}] INGAME <HumanPlayer: {}>, <BossPlayer: {}>", mGameRoomIdx, humanCount, bossCount);
+
+    //for (int i = 0; i < 10; ++i) {
+    //    auto randVec = Random::GetRandomVec3(SimpleMath::Vector3{ -100.0f, 0.0f, -100.0f }, SimpleMath::Vector3{ 100.0f, 0.0f, 100.0f });
+    //    auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+    //    monster->GetTransform()->Translate(randVec);
+    //}
 }
 
 void Stage::EndStage() {
     mActive.exchange(false);
+
+    mObjectManager->Reset();
+    mCollisionManager->Reset();
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: End GameLoop", mGameRoomIdx);
 }
 
 std::shared_ptr<GameObject> Stage::SpawnObject(Packets::EntityType entity) {

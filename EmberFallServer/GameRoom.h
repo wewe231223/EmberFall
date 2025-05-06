@@ -48,7 +48,12 @@ public:
     bool ChangeRolePlayer(SessionIdType id, Packets::PlayerRole role);
     bool ReadyPlayer(SessionIdType id);
     bool CancelPlayerReady(SessionIdType id);
+
+    void EndGameLoop();
     bool CheckAndStartGame();
+
+    void ChangeToLobby();
+    void ChangeToStage1();
 
     void BroadCastInGameRoom(SessionIdType sender, OverlappedSend* packet);
     void BroadCastInGameRoom(OverlappedSend* packet);
@@ -58,16 +63,17 @@ public:
 private:
     uint16_t mRoomIdx{ };
 
-    mutable Lock::SRWLock mSessionLock{ };
-
     std::atomic_bool mTransitionInterruptFlag{ false };
     std::atomic_uint8_t mGameRoomState{ };
     std::atomic_uint8_t mBossPlayerCount{ };
     uint8_t mPlayerCount{ };
     uint8_t mReadyPlayerCount{ };
 
+    GameStage mStageTransitionTarget{ GameStage::LOBBY };
+
     SysClock::time_point mSceneTransitionCounter{ };
 
+    mutable Lock::SRWLock mSessionLock{ };
     SessionListInRoom mSessionsInRoom{ };   
     Concurrency::concurrent_queue<uint8_t> mSessionSlotIndices{ };
 
