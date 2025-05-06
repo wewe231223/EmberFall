@@ -2,12 +2,12 @@
 
 namespace GameProtocol {
     namespace Unit {
+        inline decltype(auto) MONSTER_WALK_SPEED = 1.5mps;
         inline decltype(auto) PLAYER_WALK_SPEED = 3.3mps;
-        inline decltype(auto) PLAYER_RUN_SPEED = 5.5mps;
-
         inline decltype(auto) BOSS_PLAYER_WALK_SPEED = 5.5mps;
 
         inline decltype(auto) DEFAULT_PROJECTILE_SPEED = 33.3mps;
+        inline decltype(auto) ARROW_SPEED = 30.0mps;
     }
 
     namespace Logic {

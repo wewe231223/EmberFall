@@ -255,7 +255,7 @@ void GameRoom::ChangeToLobby() {
         }
     }
 
-    auto packetToLobby = FbsPacketFactory::ChangeSceneSC(Packets::GameStage_TERRAIN);
+    auto packetToLobby = FbsPacketFactory::ChangeSceneSC(Packets::GameStage_LOBBY);
     BroadCastInGameRoom(packetToLobby);
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Change To Lobby!!!", mRoomIdx);
 }
