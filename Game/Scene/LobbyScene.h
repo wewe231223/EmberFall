@@ -45,6 +45,10 @@ private:
 
 	void SettingButton(UINT playerIndex); 
 
+	void ReadyPlayer();
+	void CancelReadyPlayer(); 
+
+
 	void ProcessPackets(const uint8_t* buffer, size_t size);
 	const uint8_t* ProcessPacket(const uint8_t* buffer);
 private:

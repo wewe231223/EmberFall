@@ -227,8 +227,17 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		std::get<3>(*(mPlayerIndexmap[packet->playerId()])) = true; 
 		
 
-		break;
 	}
+	break;
+	case Packets::PacketTypes_PT_PLAYER_CANCEL_READY_SC:
+	{
+		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerCancelReadySC>(buffer);
+
+		auto id = packet->playerId();
+		std::get<2>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(false);
+		std::get<3>(*(mPlayerIndexmap[packet->playerId()])) = false;
+	}
+	break; 
 	case Packets::PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_SC:
 	{
 		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::PlayerEnterInLobbySC>(buffer);
@@ -251,6 +260,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 
 			mLeftArrowButton.SetActiveState(true);
 			mRightArrowButton.SetActiveState(true);
+			mReadyButton.SetActiveState(true);
 
 			mLeftArrowButton.SetCallBack([&]() {
 				if (mPlayerRole == PlayerRole_None) mPlayerRole = PlayerRole_Demon;
@@ -266,6 +276,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 				Button::InvokeCondition::LeftClick
 			);
 
+			mReadyButton.SetCallBack([&]() { LobbyScene::ReadyPlayer(); }, Button::InvokeCondition::LeftClick);
 			break; 
 		}
 
@@ -411,13 +422,14 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 	mRightArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("Right"));
 	mRightArrowButton.SetRect(100.f, 0.f, 100.f, 100.f);
 
-	mLeftArrowButton.SetActiveState(false); 
-	mRightArrowButton.SetActiveState(false);
-
 	mReadyButton = Button{};
 	mReadyButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("Ready"));
-	mReadyButton.SetRect(200.f, 0.f, 400.f * 2.3f, 400.f);
+	mReadyButton.SetRect(200.f, 0.f, 150.f * 2.3f, 150.f);
 	
+	mLeftArrowButton.SetActiveState(false); 
+	mRightArrowButton.SetActiveState(false);
+	mReadyButton.SetActiveState(false);
+
 }
 
 void LobbyScene::ProcessNetwork() {
@@ -485,17 +497,6 @@ void LobbyScene::Update() {
 		}
 	}
 
-	if (mPlayerRole != PlayerRole_None) {
-		if (Input.GetKeyboardTracker().pressed.Enter and not mIsReady) {
-			mIsReady = true;
-
-			std::get<3>(mPlayers[mMySlot]) = true; 
-
-			decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId());
-			gClientCore->Send(packet);
-		}
-	}
-
 	if (mCameraRotating) {
 		mCamera.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(180.f) * Time.GetDeltaTime<float>(), 0.f); 
 		
@@ -505,6 +506,7 @@ void LobbyScene::Update() {
 
 		mLeftArrowButton.SetActiveState(false);
 		mRightArrowButton.SetActiveState(false);
+		mReadyButton.SetActiveState(false);
 
 		if (not mLookingDemon and std::fabs(euler.y) - 0.01f <= 0.f) {
 			mCamera.GetTransform().SetRotation(DirectX::SimpleMath::Quaternion::CreateFromYawPitchRoll(0.f, 0.f, 0.f));
@@ -522,6 +524,7 @@ void LobbyScene::Update() {
 			if (not mPickingDemon) {
 				mLeftArrowButton.SetActiveState(true);
 				mRightArrowButton.SetActiveState(true);
+				mReadyButton.SetActiveState(true);
 
 				LobbyScene::SettingButton(mMySlot); 
 			}
@@ -542,6 +545,7 @@ void LobbyScene::Update() {
 			if (mPickingDemon) {
 				mLeftArrowButton.SetActiveState(true);
 				mRightArrowButton.SetActiveState(true);
+				mReadyButton.SetActiveState(true);
 
 				LobbyScene::SettingButton(5);
 			}
@@ -932,8 +936,13 @@ void LobbyScene::SettingButton(UINT playerIndex) {
 	const float buttonWidth = 70.f;
 	const float buttonHeight = 70.f;
 
+	const float readyButtonHeight = 100.f;
+	const float readyButtonWidth = readyButtonHeight * 2.3f;
+
 	float buttonHorizontalOffset = 140.f; 
 	float buttonVerticalOffset = 180.f;   
+
+	float readyButtonVerticalOffset = 430.f;
 
 	if (playerIndex == 5) {
 		buttonVerticalOffset = -100.f;
@@ -961,6 +970,36 @@ void LobbyScene::SettingButton(UINT playerIndex) {
 		centerY - buttonHeight / 2.f + buttonVerticalOffset,
 		buttonWidth, buttonHeight
 	);
+
+	mReadyButton.SetRect(
+		centerX - readyButtonWidth / 2.f,
+		centerY - readyButtonHeight / 2.f + readyButtonVerticalOffset,
+		readyButtonWidth, readyButtonHeight
+	);
+}
+
+void LobbyScene::ReadyPlayer() {
+	if (mPlayerRole != PlayerRole_None) {
+		mIsReady = true;
+
+		decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId());
+		gClientCore->Send(packet);
+
+		mReadyButton.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Cancel"));
+		mReadyButton.SetCallBack([&]() { LobbyScene::CancelReadyPlayer(); }, Button::InvokeCondition::LeftClick);
+	}
+}
+
+void LobbyScene::CancelReadyPlayer() {
+	if (mIsReady) {
+		mIsReady = false;
+
+		decltype(auto) packet = FbsPacketFactory::PlayerCancelReadyCS(gClientCore->GetSessionId());
+		gClientCore->Send(packet);
+		
+		mReadyButton.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Ready"));
+		mReadyButton.SetCallBack([&]() { LobbyScene::ReadyPlayer(); }, Button::InvokeCondition::LeftClick);
+	} 
 }
 
 
