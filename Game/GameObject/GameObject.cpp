@@ -56,8 +56,6 @@ void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer)
 		mCollider.UpdateBox(mTransform.GetWorldMatrix());
 	}
 
-
-
 	mModelContext.world = mTransform.GetWorldMatrix();
 
 	if (mGraphController.GetActiveState()) {

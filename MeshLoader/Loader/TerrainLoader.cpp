@@ -45,6 +45,7 @@ MeshData TerrainLoader::Load(const std::filesystem::path& path, bool patch) {
         meshData.indexed = false;
         meshData.unitCount = static_cast<UINT>(meshData.position.size());
         meshData.vertexAttribute.set(0);
+		meshData.vertexAttribute.set(1);
         meshData.vertexAttribute.set(2);
         meshData.vertexAttribute.set(3);
 
@@ -57,6 +58,21 @@ MeshData TerrainLoader::Load(const std::filesystem::path& path, bool patch) {
 }
 
 
+
+SimpleMath::Vector3 TerrainLoader::CalculateNormal(int z, int x) const {
+    const int clampZ = std::clamp(z, 1, mLength - 2);
+    const int clampX = std::clamp(x, 1, mLength - 2);
+
+    float hl = mHeight[clampZ][clampX - 1]; // left
+    float hr = mHeight[clampZ][clampX + 1]; // right
+    float hd = mHeight[clampZ + 1][clampX]; // down
+    float hu = mHeight[clampZ - 1][clampX]; // up
+
+    DirectX::SimpleMath::Vector3 normal{ hl - hr, 2.f, hd - hu };
+    normal.Normalize(); 
+
+    return normal;
+}
 
 void TerrainLoader::CreatePatch(MeshData& data, int zStart, int zEnd, int xStart, int xEnd) {
 
@@ -74,6 +90,7 @@ void TerrainLoader::CreatePatch(MeshData& data, int zStart, int zEnd, int xStart
             float nx = static_cast<float>(x - mLength / 2);
 
             data.position.emplace_back(nx, mHeight[z][x], nz);
+			data.normal.emplace_back(CalculateNormal(z, x));
             data.texCoord1.emplace_back(uv0);
             data.texCoord2.emplace_back(uv1);
         }

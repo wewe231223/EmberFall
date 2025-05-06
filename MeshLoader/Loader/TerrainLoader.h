@@ -18,6 +18,7 @@ public:
 	int GetLength() const;
 	MeshData Load(const std::filesystem::path& path, bool patch);
 private:
+	SimpleMath::Vector3 CalculateNormal(int z, int x) const;
 	void CreatePatch(MeshData& data, int zStart, int zEnd, int xStart, int xEnd);
 private:
 	std::vector<std::vector<float>> mHeight{};

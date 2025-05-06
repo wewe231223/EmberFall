@@ -35,6 +35,7 @@ struct MaterialConstants
 struct Terrain_VIN
 {
     float3 position : POSITION;
+    float3 normal : NORMAL;
     float2 texcoord1 : TEXCOORD0;
     float2 texcoord2 : TEXCOORD1;
     uint instanceID : SV_INSTANCEID;
@@ -43,6 +44,7 @@ struct Terrain_VIN
 struct Terrain_HIN
 {
     float4 position : POSITION;
+    float3 normal : NORMAL;
     float2 texcoord1 : TEXCOORD0;
     float2 texcoord2 : TEXCOORD1;
     uint instanceID : INSTANCEID;
@@ -51,6 +53,7 @@ struct Terrain_HIN
 struct Terrain_DIN
 {
     float4 position : POSITION;
+    float3 normal : NORMAL; 
     float2 texcoord1 : TEXCOORD0;
     float2 texcoord2 : TEXCOORD1;
     uint instanceID : INSTANCEID;
@@ -62,6 +65,7 @@ struct Terrain_PIN
     float4 position : SV_POSITION;
     float3 wPosition : POSITION1;
     float3 vPosition : POSITION2;
+    float3 normal : NORMAL;
     float2 texcoord1 : TEXCOORD0;
     float2 texcoord2 : TEXCOORD1;
     uint material : MATERIALID;
@@ -91,6 +95,7 @@ Terrain_HIN Terrain_VS(Terrain_VIN input)
     Terrain_HIN output;
     
     output.position = float4(input.position, 1.f);
+    output.normal = input.normal;
     output.texcoord1 = input.texcoord1;
     output.texcoord2 = input.texcoord2;
     output.instanceID = input.instanceID;
@@ -160,6 +165,7 @@ Terrain_DIN Terrain_HS(InputPatch<Terrain_HIN, 25> patch, uint pointID : SV_Outp
     Terrain_DIN output;
     
     output.position = patch[pointID].position;
+    output.normal = patch[pointID].normal;
     output.texcoord1 = patch[pointID].texcoord1;
     output.texcoord2 = patch[pointID].texcoord2;
     output.instanceID = patch[pointID].instanceID;
@@ -191,6 +197,20 @@ float3 CubicBezierSum(OutputPatch<Terrain_DIN, 25> patch, float basisU[5], float
     return sum;
 }
 
+float3 CubicBezierSumNormal(OutputPatch<Terrain_DIN, 25> patch, float basisU[5], float basisV[5])
+{
+    float3 sum = float3(0.0f, 0.0f, 0.0f);
+
+    sum = basisV[0] * (basisU[0] * patch[0].normal + basisU[1] * patch[1].normal + basisU[2] * patch[2].normal + basisU[3] * patch[3].normal + basisU[4] * patch[4].normal);
+    sum += basisV[1] * (basisU[0] * patch[5].normal + basisU[1] * patch[6].normal + basisU[2] * patch[7].normal + basisU[3] * patch[8].normal + basisU[4] * patch[9].normal);
+    sum += basisV[2] * (basisU[0] * patch[10].normal + basisU[1] * patch[11].normal + basisU[2] * patch[12].normal + basisU[3] * patch[13].normal + basisU[4] * patch[14].normal);
+    sum += basisV[3] * (basisU[0] * patch[15].normal + basisU[1] * patch[16].normal + basisU[2] * patch[17].normal + basisU[3] * patch[18].normal + basisU[4] * patch[19].normal);
+    sum += basisV[4] * (basisU[0] * patch[20].normal + basisU[1] * patch[21].normal + basisU[2] * patch[22].normal + basisU[3] * patch[23].normal + basisU[4] * patch[24].normal);
+
+    return sum;
+}
+
+
 [domain("quad")]
 Terrain_PIN Terrain_DS(PatchTessFactor patchTess, float2 uv : SV_DomainLocation, const OutputPatch<Terrain_DIN, 25> patch)
 {
@@ -211,6 +231,10 @@ Terrain_PIN Terrain_DS(PatchTessFactor patchTess, float2 uv : SV_DomainLocation,
     output.vPosition = mul(output.position, view).xyz;
     output.position = mul(output.position, viewProjection);
     output.material = material;
+    
+    float3 norm = CubicBezierSumNormal(patch, basisU, basisV);
+    
+    output.normal = normalize(mul((float3x3) world, norm));
     
     output.texcoord1 = lerp(
     lerp(patch[0].texcoord1, patch[4].texcoord1, uv.x),
@@ -254,7 +278,7 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
     Color = saturate(BaseColor * 0.4f + DetailColor * 0.6f);
     
     output.diffuse = Color;
-    output.normal = float4(0.f, 0.f, 0.f, 5.f); 
+    output.normal = float4(input.normal, 5.f);
     output.position = float4(input.wPosition, 1.f);    
     
     return output;

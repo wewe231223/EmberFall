@@ -299,18 +299,6 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
-
-
-			//if (data->animation() == Packets::AnimationState_ATTACK) {
-			//	mIntervalTimer.Start(); 
-			//}
-			//
-			//if (mMyPlayer->GetBoneMaskController().GetCurrentStateIndex() == 7 and data->animation() == Packets::AnimationState_IDLE) {
-			//	mIntervalTimer.End(); 
-			//	auto time = mIntervalTimer.Elapsed<std::chrono::milliseconds>();
-			//	DebugBreak();
-			//}
-
 			mPlayerIndexmap[data->objectId()]->SetAnimation(data->animation());
 		}
 	}
@@ -556,9 +544,6 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 
 	mHealthBarUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("health_frame"), mRenderManager->GetTextureManager().GetTexture("health_bar")); 
 
-
-
-
 	mRenderManager->GetLightingManager().ClearLight(commandList);
 	
 	auto& light = mRenderManager->GetLightingManager().GetLight(0);
@@ -694,8 +679,6 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 
 
 void TerrainScene::Update() {
-
-
 	for (auto& player : mPlayers) {
 		if (false == player.GetActiveState()) {
 			continue; 
@@ -737,16 +720,23 @@ void TerrainScene::Update() {
 	mRenderManager->GetShadowRenderer().Update();
 
 	static BoneTransformBuffer boneTransformBuffer{};
-	static BoneTransformBuffer shadowBoneTransformBuffer{};
 
 	for (auto& gameObject : mGameObjects) {
 		if (gameObject) {
 			if (gameObject.mAnimated) {
 				gameObject.UpdateShaderVariables(boneTransformBuffer); 
 				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
-				mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
 
+				if (mCamera.FrustumCulling(gameObject.mCollider)) {
+					mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
+				}
 				
+				// TODO :: 아예 의미가 없는 코드이다. 정석적인 CasCade 구현에서 벗어남. 
+				//for (int i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
+				//	if (mRenderManager->GetShadowRenderer().ShadowMapCulling(i, gameObject.mCollider)) {
+				//		mRenderManager->GetMeshRenderManager().AppendShadowBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer, i);
+				//	}
+				//}
 			}
 			else {
 				gameObject.UpdateShaderVariables();
@@ -761,31 +751,20 @@ void TerrainScene::Update() {
 
 
 	for (auto& object : mEnvironmentObjects) {
-		
 		if (object.mCollider.GetActiveState()) {
-			for(int i = 0 ; i< Config::SHADOWMAP_COUNT<int> ; ++i)
-			if (mRenderManager->GetShadowRenderer().ShadowMapCulling(i, object.mCollider)) {
-				auto [mesh, shader, modelContext] = object.GetRenderData();
-				mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, i);
+			for (int i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
+				if (mRenderManager->GetShadowRenderer().ShadowMapCulling(i, object.mCollider)) {
+					auto [mesh, shader, modelContext] = object.GetRenderData();
+					mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, i);
+				}
 			}
-
 
 			if (mCamera.FrustumCulling(object.mCollider)) {
 				auto [mesh, shader, modelContext] = object.GetRenderData();
-
 				mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
 			}
+				
 		}
-		else {
-
-			//auto [mesh, shader, modelContext] = object.GetRenderData();
-			//mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
-			//mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
-			//mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
-
-		}
-		
-
 	}
 
 
@@ -1032,7 +1011,6 @@ void TerrainScene::BuildMaterial() {
 	mRenderManager->GetMaterialManager().CreateMaterial("SwordMaterial", mat);
 	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
-
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("sword_base");
 	mRenderManager->GetMaterialManager().CreateMaterial("GreatSwordMaterial", mat);
 
@@ -1081,8 +1059,6 @@ void TerrainScene::BuildMaterial() {
 	mRenderManager->GetMaterialManager().CreateMaterial("Rock_3_Material", mat);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 4 Moss RFS_DefaultMaterial_AlbedoTransparency");
 	mRenderManager->GetMaterialManager().CreateMaterial("Rock_4_Material", mat);
-
-
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Large Rock 1 RFS_DefaultMaterial_AlbedoTransparency");
 	mRenderManager->GetMaterialManager().CreateMaterial("LargeRock1_Material", mat);

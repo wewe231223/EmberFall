@@ -44,9 +44,7 @@ void MeshRenderManager::AppendShadowPlaneMeshContext(GraphicsShaderBase* shader,
 	mShadowPlainMeshContexts[index][shader][mesh].emplace_back(world);
 	if (index == 0) {
 		mShadowMeshCounter[index + 1] += 1;
-		
 	}
-	
 	
 }
 
