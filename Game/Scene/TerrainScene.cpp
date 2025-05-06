@@ -747,9 +747,8 @@ void TerrainScene::Update() {
 		}
 		else {
 
-			auto [mesh, shader, modelContext] = object.GetRenderData();
+			//auto [mesh, shader, modelContext] = object.GetRenderData();
 			//mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
-
 			//mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
 			//mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
 

@@ -2,6 +2,8 @@
 Texture2D<float4> gInput : register(t0);
 RWTexture2D<float4> gRWOutput : register(u0);
 
+#define WEIGHTS float3(0.2126, 0.7152, 0.0722)
+
 //static const float gGaussianBlurMask1D[11] = { 0.05f, 0.05f, 0.1f, 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.05f, 0.05f};
 //static const int maskWidth = 5;
 
@@ -14,18 +16,18 @@ static const int maskWidth = 9;
 
 static const int threadGroupSize = 256;
 
+
 groupshared float4 gGroupSharedCache[threadGroupSize + 2 * maskWidth];
 
 [numthreads(threadGroupSize, 1, 1)]
 void HorzBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : SV_DispatchThreadID)
 {
-    float3 weights = float3(0.2126, 0.7152, 0.0722);
     int2 uv = dispatchThreadID.xy;
     
     
    
     float3 emissive = gInput[uv].rgb;
-    float brightness = dot(emissive, weights);
+    float brightness = dot(emissive, WEIGHTS);
  
     
  
