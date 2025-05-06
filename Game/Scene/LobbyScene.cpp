@@ -69,6 +69,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 
 				if (mLookingDemon) {
 					mLookingDemon = false;
+					mPickingDemon = false; 
 					mCameraRotating = true;
 				}
 			}
@@ -106,6 +107,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 
 				if (mLookingDemon) {
 					mLookingDemon = false;
+					mPickingDemon = false;
 					mCameraRotating = true;
 				}
 			}
@@ -129,6 +131,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 			}
 
 			mLookingDemon = true;
+			mPickingDemon = true; 
 			mCameraRotating = true;
 		}
 			break;
@@ -190,6 +193,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 
 				std::get<0>(mPlayers[slot]).SetActiveState(true);
 				std::get<1>(mPlayers[slot]).SetActiveState(true);
+
 			}
 
 			auto transform = std::get<0>(*(mPlayerIndexmap[data->playerId()])).GetTransform();
@@ -460,7 +464,9 @@ void LobbyScene::Update() {
 				mLookingDemon = false;
 				std::get<1>(mPlayers[5]).SetActiveState(false);
 				std::get<2>(mPlayers[5]).SetActiveState(false); 
-				mCameraRotating = true; 
+				mCameraRotating = true;
+
+
 			}
 			else { // 악마 진영 선택 
 				mLookingDemon = true;
@@ -468,6 +474,7 @@ void LobbyScene::Update() {
 					std::get<1>(mPlayers[i]).SetActiveState(false);
 					std::get<2>(mPlayers[i]).SetActiveState(false);
 				}
+
 				mCameraRotating = true;
 			}
 		}
@@ -491,6 +498,9 @@ void LobbyScene::Update() {
 
 		auto euler = rot.ToEuler();
 
+		mLeftArrowButton.SetActiveState(false);
+		mRightArrowButton.SetActiveState(false);
+
 		if (not mLookingDemon and std::fabs(euler.y) - 0.01f <= 0.f) {
 			mCamera.GetTransform().SetRotation(DirectX::SimpleMath::Quaternion::CreateFromYawPitchRoll(0.f, 0.f, 0.f));
 			mCameraRotating = false;
@@ -502,6 +512,13 @@ void LobbyScene::Update() {
 						std::get<2>(mPlayers[i]).SetActiveState(true);
 					}
 				}
+			}
+
+			if (not mPickingDemon) {
+				mLeftArrowButton.SetActiveState(true);
+				mRightArrowButton.SetActiveState(true);
+
+				LobbyScene::SettingButton(mMySlot); 
 			}
 
 		}
@@ -516,6 +533,14 @@ void LobbyScene::Update() {
 					std::get<2>(mPlayers[5]).SetActiveState(true);
 				}
 			}
+
+			if (mPickingDemon) {
+				mLeftArrowButton.SetActiveState(true);
+				mRightArrowButton.SetActiveState(true);
+
+				LobbyScene::SettingButton(5);
+			}
+
 		}
 
 	}
@@ -899,11 +924,16 @@ void LobbyScene::BuildPlayerReadyImage() {
 }
 
 void LobbyScene::SettingButton(UINT playerIndex) {
-	const float ButtonWidth = 70.f;
-	const float ButtonHeight = 70.f;
+	const float buttonWidth = 70.f;
+	const float buttonHeight = 70.f;
 
-	const float ButtonHorizontalOffset = 140.f; 
-	const float ButtonVerticalOffset = 180.f;     
+	float buttonHorizontalOffset = 140.f; 
+	float buttonVerticalOffset = 180.f;   
+
+	if (playerIndex == 5) {
+		buttonVerticalOffset = -100.f;
+		buttonHorizontalOffset = 200.f;
+	}
 
 	auto& namePlate = std::get<1>(mPlayers[playerIndex]);
 
@@ -916,15 +946,15 @@ void LobbyScene::SettingButton(UINT playerIndex) {
 	float centerY = nameplateY + nameplateHeight / 2.f;
 
 	mLeftArrowButton.SetRect(
-		centerX - ButtonHorizontalOffset - ButtonWidth / 2.f,
-		centerY - ButtonHeight / 2.f + ButtonVerticalOffset,
-		ButtonWidth, ButtonHeight
+		centerX - buttonHorizontalOffset - buttonWidth / 2.f,
+		centerY - buttonHeight / 2.f + buttonVerticalOffset,
+		buttonWidth, buttonHeight
 	);
 
 	mRightArrowButton.SetRect(
-		centerX + ButtonHorizontalOffset - ButtonWidth / 2.f,
-		centerY - ButtonHeight / 2.f + ButtonVerticalOffset,
-		ButtonWidth, ButtonHeight
+		centerX + buttonHorizontalOffset - buttonWidth / 2.f,
+		centerY - buttonHeight / 2.f + buttonVerticalOffset,
+		buttonWidth, buttonHeight
 	);
 }
 

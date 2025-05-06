@@ -60,7 +60,9 @@ private:
 	std::unordered_map<NetworkObjectIdType, UINT> mPlayerSlotMap{};
 	std::array<std::tuple<Player, NamePlate, Image, bool>, 6> mPlayers{};
 	
-	bool mLookingDemon{ 0 };
+	bool mPickingDemon{ false };
+	bool mLookingDemon{ false };
+
 	PlayerRole mPlayerRole{ PlayerRole_None };
 	UINT mMySlot{ 0 }; 
 
@@ -82,7 +84,6 @@ private:
 	AnimatorGraph::AnimationGraphController mDemonAnimationController{};
 
 	bool mIsReady{ false }; 
-
 
 	Button mLeftArrowButton{}; 
 	Button mRightArrowButton{};
