@@ -778,11 +778,10 @@ void TerrainScene::Update() {
 		}
 		else {
 
-			auto [mesh, shader, modelContext] = object.GetRenderData();
-			mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
-
-			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
-			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
+			//auto [mesh, shader, modelContext] = object.GetRenderData();
+			//mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
+			//mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
+			//mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
 
 		}
 		
@@ -1028,8 +1027,11 @@ void TerrainScene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("rock_base_color");
 	mRenderManager->GetMaterialManager().CreateMaterial("Mountain1Material", mat);
 
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 10.0f, 19.0f, 1.0f);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("SwordA_v004_Default_AlbedoTransparency");
 	mRenderManager->GetMaterialManager().CreateMaterial("SwordMaterial", mat);
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
+
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("sword_base");
 	mRenderManager->GetMaterialManager().CreateMaterial("GreatSwordMaterial", mat);
@@ -1040,14 +1042,18 @@ void TerrainScene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Quiver_baseColor");
 	mRenderManager->GetMaterialManager().CreateMaterial("QuiverMaterial", mat);
 
+	mat.mEmissiveColor = SimpleMath::Color(19.0f, 4.0f, 0.0f, 1.0f);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_Demon_Imp_Monster_Bloody_Albedo_Skin_4");
 	mRenderManager->GetMaterialManager().CreateMaterial("MonsterType1Material", mat);
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("CorrupedGem_BaseColor");
 	mRenderManager->GetMaterialManager().CreateMaterial("CorruptedGemMaterial", mat);
-
+	
+	mat.mEmissiveColor = SimpleMath::Color(19.0f, 19.0f, 19.0f, 1.0f);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Albedo_Skin_3");
 	mRenderManager->GetMaterialManager().CreateMaterial("DemonMaterial", mat);
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Axe_Albedo_Skin_1");
 	mRenderManager->GetMaterialManager().CreateMaterial("DemonWeaponMaterial", mat);
@@ -1075,6 +1081,8 @@ void TerrainScene::BuildMaterial() {
 	mRenderManager->GetMaterialManager().CreateMaterial("Rock_3_Material", mat);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 4 Moss RFS_DefaultMaterial_AlbedoTransparency");
 	mRenderManager->GetMaterialManager().CreateMaterial("Rock_4_Material", mat);
+
+
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Large Rock 1 RFS_DefaultMaterial_AlbedoTransparency");
 	mRenderManager->GetMaterialManager().CreateMaterial("LargeRock1_Material", mat);

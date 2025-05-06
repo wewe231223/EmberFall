@@ -50,6 +50,7 @@ void BlurComputeProcessor::DispatchVertBlur(ComPtr<ID3D12Device> device, ComPtr<
 	commandList->SetComputeRootSignature(mBlurRootSignature.Get());
 	commandList->SetPipelineState(mVertBlurPSO.Get());
 
+
 	CD3DX12_GPU_DESCRIPTOR_HANDLE gpuHandle(mBlurHeap->GetGPUDescriptorHandleForHeapStart());
 	commandList->SetComputeRootDescriptorTable(0, gpuHandle);
 	gpuHandle.Offset(3, device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
@@ -86,9 +87,9 @@ Texture& BlurComputeProcessor::GetVertBlurMap() {
 
 void BlurComputeProcessor::CreateResource(ComPtr<ID3D12Device> device) {
 	
-	mHorzBlurMap = Texture(device, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-	mVertBlurMap = Texture(device, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-
+	mHorzBlurMap = Texture(device, DXGI_FORMAT_R8G8B8A8_UNORM, 1920, 1057, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	mVertBlurMap = Texture(device, DXGI_FORMAT_R8G8B8A8_UNORM, 1920, 1057, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	  
 }
 
 void BlurComputeProcessor::CreateBlurHeap(ComPtr<ID3D12Device> device) {
@@ -104,7 +105,7 @@ void BlurComputeProcessor::CreateBlurHeap(ComPtr<ID3D12Device> device) {
 void BlurComputeProcessor::CreateBlurView(ComPtr<ID3D12Device> device) {
 	
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.Texture2D.MipLevels = 1;
@@ -117,7 +118,7 @@ void BlurComputeProcessor::CreateBlurView(ComPtr<ID3D12Device> device) {
 
 	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
 	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-	uavDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	uavDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	uavDesc.Texture2D.MipSlice = 0;
 
 	device->CreateUnorderedAccessView(mHorzBlurMap.GetResource().Get(), nullptr, &uavDesc, blurHandle);
@@ -166,6 +167,8 @@ void BlurComputeProcessor::CompileShader() {
 }
 
 void BlurComputeProcessor::CreateRootSignature(ComPtr<ID3D12Device> device) {
+	
+
 	CD3DX12_DESCRIPTOR_RANGE srvTable;
 	srvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 

@@ -21,9 +21,9 @@ void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferC
 	mScenes[static_cast<size_t>(SceneType::LOADING)] = std::make_unique<LoadingScene>(renderMgr);
 	mScenes[static_cast<size_t>(SceneType::LOBBY)] = std::make_unique<LobbyScene>(renderMgr, mainCameraBufferLocation);
 
-	mSceneFeatureType[static_cast<size_t>(SceneType::LOADING)] = std::make_tuple(false, false);
-	mSceneFeatureType[static_cast<size_t>(SceneType::LOBBY)] = std::make_tuple(false, false);
-	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)] = std::make_tuple(true, true);
+	mSceneFeatureType[static_cast<size_t>(SceneType::LOADING)] = std::make_tuple(false, false, false);
+	mSceneFeatureType[static_cast<size_t>(SceneType::LOBBY)] = std::make_tuple(false, false, true);
+	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)] = std::make_tuple(true, true, true);
 
 	mCurrentSceneType = SceneType::LOADING;
 	mCurrentScene = mScenes[static_cast<size_t>(SceneType::LOADING)].get();

@@ -140,11 +140,11 @@
     <ClInclude Include="Manager\LightingManager.h">
       <Filter>Manager</Filter>
     </ClInclude>
-    <ClInclude Include="core\BlurComputeProcessor.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="Manager\RenderManager.h">
       <Filter>Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="core\BlurComputeProcessor.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
