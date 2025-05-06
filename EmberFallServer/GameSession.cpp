@@ -87,6 +87,10 @@ void GameSession::ProcessRecv(INT32 numOfBytes) {
 }
 
 void GameSession::InitUserObject() {
+    if (nullptr != mUserObject) {
+        return;
+    }
+
     static auto TestPos = SimpleMath::Vector3::Zero;
     const static auto PosInc = SimpleMath::Vector3::Left * 2.0f;
 

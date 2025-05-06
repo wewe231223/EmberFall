@@ -57,6 +57,8 @@ public:
 
     void BroadCastInGameRoom(SessionIdType sender, OverlappedSend* packet);
     void BroadCastInGameRoom(OverlappedSend* packet);
+    void BroadCastInGameRoomWithoutLock(SessionIdType sender, OverlappedSend* packet);
+    void BroadCastInGameRoomWithoutLock(OverlappedSend* packet);
 
     void OnSceneCountdownTick();
 

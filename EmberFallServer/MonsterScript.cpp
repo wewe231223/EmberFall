@@ -51,7 +51,7 @@ void MonsterScript::LateUpdate(const float deltaTime) {
     }
 
     if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Monster");
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Remove Monster {}", owner->GetMyRoomIdx(), owner->GetId());
         gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), owner->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
         owner->mSpec.active = false;
 
@@ -91,7 +91,7 @@ void MonsterScript::DispatchGameEvent(GameEvent* event) {
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
             owner->mSpec.hp -= attackEvent->damage;
 
-            owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED);
+            owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED, true);
 
             auto packetAttacked = FbsPacketFactory::ObjectAttackedSC(owner->GetId(), owner->mSpec.hp);
             owner->StorePacket(packetAttacked);
@@ -105,8 +105,6 @@ void MonsterScript::DispatchGameEvent(GameEvent* event) {
     default:
         break;
     }
-
-    //mMonsterBT.DispatchGameEvent(event);
 }
 
 NetworkObjectIdType MonsterScript::GetChaseTarget() const {

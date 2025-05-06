@@ -48,7 +48,6 @@ public:
     Sector& GetSector(Short2 idx);
     Sector& GetSectorFromPos(const SimpleMath::Vector3& pos);
     Short2 GetSectorIdxFromPos(const SimpleMath::Vector3& pos) const;
-    bool GetPosInSector(Short2 idx, const SimpleMath::Vector3& pos) const;
 
     std::vector<Short2> GetMustCheckSectors(const SimpleMath::Vector3& pos, const float range) const;
 

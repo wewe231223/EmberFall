@@ -252,6 +252,7 @@ void GameRoom::ChangeToLobby() {
             }
 
             session->EnterLobby();
+            session->CancelReady();
         }
     }
 
@@ -262,6 +263,20 @@ void GameRoom::ChangeToLobby() {
 
 void GameRoom::ChangeToStage1() {
     mReadyPlayerCount = 0;
+    decltype(auto) sessionsInGameRoom = GetSessions();
+    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
+    {
+        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
+        for (auto& sessionId : sessionsInGameRoom) {
+            auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+            if (nullptr == session) {
+                continue;
+            }
+
+            session->CancelReady();
+        }
+    }
+
     mGameRoomState = GameRoomState::GAME_ROOM_STATE_INGAME;
 
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Start Game!!!", mRoomIdx);
@@ -314,6 +329,52 @@ void GameRoom::BroadCastInGameRoom(OverlappedSend* packet) {
 
             sessionList.push_back(session);
         }
+    }
+
+    for (auto& session : sessionList) {
+        auto clonedPacket = FbsPacketFactory::ClonePacket(packet);
+        session->RegisterSend(clonedPacket);
+    }
+
+    FbsPacketFactory::ReleasePacketBuf(packet);
+}
+
+void GameRoom::BroadCastInGameRoomWithoutLock(SessionIdType sender, OverlappedSend* packet) {
+    decltype(auto) sessionsInGameRoom = GetSessions();
+    std::vector<std::shared_ptr<GameSession>> sessionList{ };
+
+    for (auto& sessionId : sessionsInGameRoom) {
+        if (sender == sessionId) {
+            continue;
+        }
+
+        auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+        if (nullptr == session or SESSION_INLOBBY != session->GetSessionState()) {
+            continue;
+        }
+
+        sessionList.push_back(session);
+    }
+
+    for (auto& session : sessionList) {
+        auto clonedPacket = FbsPacketFactory::ClonePacket(packet);
+        session->RegisterSend(clonedPacket);
+    }
+
+    FbsPacketFactory::ReleasePacketBuf(packet);
+}
+
+void GameRoom::BroadCastInGameRoomWithoutLock(OverlappedSend* packet) {
+    decltype(auto) sessionsInGameRoom = GetSessions();
+    std::vector<std::shared_ptr<GameSession>> sessionList{ };
+
+    for (auto& sessionId : sessionsInGameRoom) {
+        auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+        if (nullptr == session or SESSION_INLOBBY != session->GetSessionState()) {
+            continue;
+        }
+
+        sessionList.push_back(session);
     }
 
     for (auto& session : sessionList) {

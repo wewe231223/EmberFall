@@ -34,9 +34,9 @@ void PlayerScript::SetOwnerSession(std::shared_ptr<class GameSession> session) {
 }
 
 void PlayerScript::UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeNPC, const std::vector<NetworkObjectIdType>& inViewRangePlayer) {
-    mViewListLock.ReadLock();
+    mViewListLock.WriteLock();
     auto oldViewList = mViewList;
-    mViewListLock.ReadUnlock();
+    mViewListLock.WriteUnlock();
 
     auto session = mSession.lock();
     if (nullptr == session) {
@@ -202,7 +202,12 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
     }
 
     auto ownerRoom = owner->GetMyRoomIdx();
-    auto senderTag = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(event->sender)->GetTag();
+    auto sender = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(event->sender);
+    if (nullptr == sender) {
+        return;
+    }
+
+    auto senderTag = sender->GetTag();
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
     {
@@ -217,7 +222,11 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
             auto packetAttacked = FbsPacketFactory::ObjectAttackedSC(owner->GetId(), owner->mSpec.hp);
             owner->StorePacket(packetAttacked);
 
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!", owner->GetId());
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!, Attacked by Monster: {}", owner->GetId(), event->sender);
+
+            // test
+            auto sPos = sender->GetPosition();
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Attacked: sender Room: {}, sender pos: {}, {}, {}", sender->GetMyRoomIdx(), sPos.x, sPos.y, sPos.z);
         }
         break;
     }

@@ -168,8 +168,8 @@ void GameObject::Update() {
     }
 
     mPhysics->Update(mDeltaTime);
+    mTransform->SetY(0.0f);
     mTransform->Update();
-    mTransform->SetY(0.0f); // test
 
     auto currPos = mTransform->GetPosition();
     auto movePacket = FbsPacketFactory::ObjectMoveSC(

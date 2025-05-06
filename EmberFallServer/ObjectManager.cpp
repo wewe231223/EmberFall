@@ -88,6 +88,14 @@ void ObjectManager::Start(uint8_t humanCount, uint8_t bossCount, uint8_t corrupt
 }
 
 void ObjectManager::Reset() {
+    for (auto& player : mPlayers) {
+        if (false == player->mSpec.active) {
+            continue;
+        }
+
+        player->Reset();
+    }
+
     for (auto& npc : mNPCs) {
         if (false == npc->mSpec.active) {
             continue;
@@ -103,6 +111,9 @@ void ObjectManager::Reset() {
 
         trigger->Reset();
     }
+
+    mAlivePlayerCount = 0;
+    mCorruptedGemCount = 0;
 }
 
 void ObjectManager::LoadEnvFromFile(const std::filesystem::path& path) {
@@ -385,6 +396,7 @@ void ObjectManager::ReleaseObject(NetworkObjectIdType id) {
             auto packetGameEnd = FbsPacketFactory::GameEndSC(Packets::PlayerRole_HUMAN);
             gGameRoomManager->GetRoom(mRoomIdx)->BroadCastInGameRoom(packetGameEnd);
             gGameRoomManager->GetRoom(mRoomIdx)->EndGameLoop();
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}] End Game Loop", mRoomIdx);
         }
     }
     else if (ObjectTag::PLAYER == releasedObjTag) {
@@ -393,7 +405,16 @@ void ObjectManager::ReleaseObject(NetworkObjectIdType id) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Human Player, Alive Player Count: {}", mAlivePlayerCount.load());
         if (mAlivePlayerCount <= 0) {
             auto packetGameEnd = FbsPacketFactory::GameEndSC(Packets::PlayerRole_BOSS);
-            gGameRoomManager->GetRoom(mRoomIdx)->BroadCastInGameRoom(packetGameEnd);
+            gGameRoomManager->GetRoom(mRoomIdx)->BroadCastInGameRoomWithoutLock(packetGameEnd);
+            gGameRoomManager->GetRoom(mRoomIdx)->EndGameLoop();
+        }
+    }
+    else if (ObjectTag::BOSSPLAYER == releasedObjTag) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Human Player, Alive Player Count: {}", mAlivePlayerCount.load());
+        if (mAlivePlayerCount <= 0) {
+            // DeadLock
+            auto packetGameEnd = FbsPacketFactory::GameEndSC(Packets::PlayerRole_HUMAN);
+            gGameRoomManager->GetRoom(mRoomIdx)->BroadCastInGameRoomWithoutLock(packetGameEnd);
             gGameRoomManager->GetRoom(mRoomIdx)->EndGameLoop();
         }
     }

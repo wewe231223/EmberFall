@@ -10,7 +10,7 @@ CollisionManager::CollisionManager(uint16_t roomIdx)
 CollisionManager::~CollisionManager() { }
 
 void CollisionManager::Reset() {
-    Lock::SRWLockGuard pairGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mCollisionPairLock, Lock::SRWLockTry::SRW_TRY };
+    Lock::SRWLockGuard pairGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mCollisionPairLock };
     mCollisionPairs.clear();
 }
 

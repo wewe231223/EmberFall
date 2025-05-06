@@ -88,6 +88,21 @@
     <Filter Include="Regacy\Collision\CollisionCheck">
       <UniqueIdentifier>{c4b819e4-01ff-406c-8624-db4874c2c8b7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MultiThreadLoopTest\Script\Item">
+      <UniqueIdentifier>{6651bf0b-113c-4390-bb15-ef809c95147a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MultiThreadLoopTest\Script\Trigger">
+      <UniqueIdentifier>{3e1b750b-4771-4561-95b7-e00499ad1b05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MultiThreadLoopTest\Script\Projectile">
+      <UniqueIdentifier>{84028ba2-6811-48b8-bd63-2ac5b7abc7bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MultiThreadLoopTest\Script\Monster">
+      <UniqueIdentifier>{29d2fbf1-ad8e-40f5-a3c8-83982d7815eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MultiThreadLoopTest\Script\Player">
+      <UniqueIdentifier>{d00d6482-b8b7-4a4c-97ac-6d62750da66c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TerrainCollider.cpp">
@@ -189,12 +204,6 @@
     <ClCompile Include="BoundingBoxImporter.cpp">
       <Filter>MultiThreadLoopTest\Resource</Filter>
     </ClCompile>
-    <ClCompile Include="MonsterScript.cpp">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerScript.cpp">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClCompile>
     <ClCompile Include="Resources.cpp">
       <Filter>MultiThreadLoopTest\Resource</Filter>
     </ClCompile>
@@ -210,31 +219,10 @@
     <ClCompile Include="pch.cpp">
       <Filter>MultiThreadLoopTest\Pch</Filter>
     </ClCompile>
-    <ClCompile Include="EventTrigger.cpp">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="Trigger.cpp">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClCompile>
     <ClCompile Include="Script.cpp">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClCompile>
-    <ClCompile Include="BossPlayerScript.cpp">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="ArrowScript.cpp">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClCompile>
     <ClCompile Include="CorruptedGem.cpp">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="Inventory.cpp">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="ItemScript.cpp">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClCompile>
-    <ClCompile Include="Item.cpp">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClCompile>
     <ClCompile Include="GraphBase.cpp">
@@ -251,6 +239,33 @@
     </ClCompile>
     <ClCompile Include="BuffScript.cpp">
       <Filter>MultiThreadLoopTest\Script\Buff</Filter>
+    </ClCompile>
+    <ClCompile Include="Inventory.cpp">
+      <Filter>MultiThreadLoopTest\Script\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="Item.cpp">
+      <Filter>MultiThreadLoopTest\Script\Item</Filter>
+    </ClCompile>
+    <ClCompile Include="EventTrigger.cpp">
+      <Filter>MultiThreadLoopTest\Script\Trigger</Filter>
+    </ClCompile>
+    <ClCompile Include="Trigger.cpp">
+      <Filter>MultiThreadLoopTest\Script\Trigger</Filter>
+    </ClCompile>
+    <ClCompile Include="ArrowScript.cpp">
+      <Filter>MultiThreadLoopTest\Script\Projectile</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterScript.cpp">
+      <Filter>MultiThreadLoopTest\Script\Monster</Filter>
+    </ClCompile>
+    <ClCompile Include="BossPlayerScript.cpp">
+      <Filter>MultiThreadLoopTest\Script\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerScript.cpp">
+      <Filter>MultiThreadLoopTest\Script\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="ItemScript.cpp">
+      <Filter>MultiThreadLoopTest\Script\Item</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -353,12 +368,6 @@
     <ClInclude Include="BoundingBoxImporter.h">
       <Filter>MultiThreadLoopTest\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="MonsterScript.h">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="PlayerScript.h">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClInclude>
     <ClInclude Include="Resources.h">
       <Filter>MultiThreadLoopTest\Resource</Filter>
     </ClInclude>
@@ -374,28 +383,10 @@
     <ClInclude Include="pch.h">
       <Filter>MultiThreadLoopTest\Pch</Filter>
     </ClInclude>
-    <ClInclude Include="EventTrigger.h">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="Trigger.h">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClInclude>
     <ClInclude Include="Script.h">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClInclude>
-    <ClInclude Include="BossPlayerScript.h">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClInclude>
     <ClInclude Include="CorruptedGem.h">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="ArrowScript.h">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="Inventory.h">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClInclude>
-    <ClInclude Include="Item.h">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClInclude>
     <ClInclude Include="ItemScript.h">
@@ -412,6 +403,30 @@
     </ClInclude>
     <ClInclude Include="BuffScript.h">
       <Filter>MultiThreadLoopTest\Script\Buff</Filter>
+    </ClInclude>
+    <ClInclude Include="Item.h">
+      <Filter>MultiThreadLoopTest\Script\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="Inventory.h">
+      <Filter>MultiThreadLoopTest\Script\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="EventTrigger.h">
+      <Filter>MultiThreadLoopTest\Script\Trigger</Filter>
+    </ClInclude>
+    <ClInclude Include="Trigger.h">
+      <Filter>MultiThreadLoopTest\Script\Trigger</Filter>
+    </ClInclude>
+    <ClInclude Include="ArrowScript.h">
+      <Filter>MultiThreadLoopTest\Script\Projectile</Filter>
+    </ClInclude>
+    <ClInclude Include="MonsterScript.h">
+      <Filter>MultiThreadLoopTest\Script\Monster</Filter>
+    </ClInclude>
+    <ClInclude Include="BossPlayerScript.h">
+      <Filter>MultiThreadLoopTest\Script\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerScript.h">
+      <Filter>MultiThreadLoopTest\Script\Player</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

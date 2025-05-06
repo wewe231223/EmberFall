@@ -185,8 +185,8 @@ std::vector<NetworkObjectIdType> Sector::GetEnvInRange(SimpleMath::Vector3 pos, 
 
 SectorSystem::SectorSystem(std::shared_ptr<class ObjectManager> objManager) 
     : mObjManager{ objManager } {
-    auto mapHeight = 1000.0f;
-    auto mapWidth = 1000.0f;
+    auto mapHeight = 2000.0f;
+    auto mapWidth = 2000.0f;
 
     const auto rows = static_cast<uint8_t>(mapHeight / Sector::DEFAULT_SECTOR_HEIGHT);
     const auto cols = static_cast<uint8_t>(mapWidth / Sector::DEFAULT_SECTOR_WIDTH);
@@ -215,28 +215,24 @@ Sector& SectorSystem::GetSector(Short2 idx) {
 
 Sector& SectorSystem::GetSectorFromPos(const SimpleMath::Vector3& pos) {
     const Short2 idx = { 
-        static_cast<int16_t>((pos.x + 500.0f) / Sector::DEFAULT_SECTOR_WIDTH),
-        static_cast<int16_t>((pos.z + 500.0f) / Sector::DEFAULT_SECTOR_HEIGHT)
+        static_cast<int16_t>((pos.x + 1000.0f) / Sector::DEFAULT_SECTOR_WIDTH),
+        static_cast<int16_t>((pos.z + 1000.0f) / Sector::DEFAULT_SECTOR_HEIGHT)
     };
     return GetSector(idx);
 }
 
 Short2 SectorSystem::GetSectorIdxFromPos(const SimpleMath::Vector3& pos) const {
     const Short2 idx = { 
-        static_cast<int16_t>((pos.x + 500.0f) / Sector::DEFAULT_SECTOR_WIDTH),
-        static_cast<int16_t>((pos.z + 500.0f) / Sector::DEFAULT_SECTOR_HEIGHT)
+        static_cast<int16_t>((pos.x + 1000.0f) / Sector::DEFAULT_SECTOR_WIDTH),
+        static_cast<int16_t>((pos.z + 1000.0f) / Sector::DEFAULT_SECTOR_HEIGHT)
     };
     if (idx.x < 0 or idx.y < 0 or
         idx.x >= mSectorWidth or idx.y >= mSectorHeight) {
+        Crash("Bad Memory Access");
         return Short2{ -1, -1 };
     }
 
     return idx;
-}
-
-bool SectorSystem::GetPosInSector(Short2 idx, const SimpleMath::Vector3& pos) const {
-
-    return false;
 }
 
 std::vector<Short2> SectorSystem::GetMustCheckSectors(const SimpleMath::Vector3& pos, const float range) const {
