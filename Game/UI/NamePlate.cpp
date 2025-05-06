@@ -27,3 +27,7 @@ void NamePlate::Update() {
 std::wstring& NamePlate::GetName() {
 	return mName->GetText(); 
 }
+
+CanvasRect& NamePlate::GetRect() {
+	return mFrame.GetRect(); 
+}

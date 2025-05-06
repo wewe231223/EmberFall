@@ -242,6 +242,26 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 
 		if (gClientCore->GetSessionId() == packet->playerId()) {
 			mMySlot = packet->playerSlot();
+
+			LobbyScene::SettingButton(mMySlot); 
+
+			mLeftArrowButton.SetActiveState(true);
+			mRightArrowButton.SetActiveState(true);
+
+			mLeftArrowButton.SetCallBack([&]() {
+				if (mPlayerRole == PlayerRole_None) mPlayerRole = PlayerRole_Demon;
+				else mPlayerRole = static_cast<PlayerRole>(PlayerRole_SwordMan + ((mPlayerRole - PlayerRole_SwordMan + (PlayerRole_END - PlayerRole_SwordMan) - 1) % (PlayerRole_END - PlayerRole_SwordMan)));
+				}, 
+				Button::InvokeCondition::RightClick
+			);
+
+			mRightArrowButton.SetCallBack([&]() {
+				if (mPlayerRole == PlayerRole_None) mPlayerRole = PlayerRole_SwordMan;
+				else mPlayerRole = static_cast<PlayerRole>(PlayerRole_SwordMan + ((mPlayerRole - PlayerRole_SwordMan + 1) % (PlayerRole_END - PlayerRole_SwordMan)));
+				}, 
+				Button::InvokeCondition::RightClick
+			);
+
 			break; 
 		}
 
@@ -308,7 +328,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 	case Packets::PacketTypes_PT_CHANGE_SCENE_SC: 
 	{
 		decltype(auto) packet = FbsPacketFactory::GetDataPtrSC<Packets::ChangeSceneSC>(buffer);
-		PostMessage(mRenderManager->GetWindowHandle(), WM_ADVANCESCENE, 0, 0); 
+		PostMessage(mRenderManager->GetWindowHandle(), WM_ADVANCESCENE, packet->stage(), 0);
 	}
 	break; 
 	default:
@@ -379,11 +399,16 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 	gClientCore->Send(packet); 
 
 
-	mReadyButton = Button{};
-	mReadyButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("Left"));
-	mReadyButton.SetRect(0.f, 0.f, 100.f, 100.f);
+	mLeftArrowButton = Button{};
+	mLeftArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::RightClick, mRenderManager->GetTextureManager().GetTexture("Left"));
+	mLeftArrowButton.SetRect(0.f, 0.f, 100.f, 100.f);
 
+	mRightArrowButton = Button{};
+	mRightArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::RightClick, mRenderManager->GetTextureManager().GetTexture("Right"));
+	mRightArrowButton.SetRect(100.f, 0.f, 100.f, 100.f);
 
+	mLeftArrowButton.SetActiveState(false); 
+	mRightArrowButton.SetActiveState(false);
 }
 
 void LobbyScene::ProcessNetwork() {
@@ -395,23 +420,13 @@ void LobbyScene::ProcessNetwork() {
 
 void LobbyScene::Update() {
 
-	mReadyButton.Update(); 
 
 	PlayerRole prevRole = mPlayerRole;
 
+	mLeftArrowButton.Update(); 
+	mRightArrowButton.Update(); 
 
 	if (not mIsReady and not mCameraRotating) {
-		if (Input.GetKeyboardTracker().pressed.Left) {
-			if (mPlayerRole == PlayerRole_None) mPlayerRole = PlayerRole_Demon;
-			else mPlayerRole = static_cast<PlayerRole>(PlayerRole_SwordMan + ((mPlayerRole - PlayerRole_SwordMan + (PlayerRole_END - PlayerRole_SwordMan) - 1) % (PlayerRole_END - PlayerRole_SwordMan)));
-		}
-
-		if (Input.GetKeyboardTracker().pressed.Right) {
-			if (mPlayerRole == PlayerRole_None) mPlayerRole = PlayerRole_SwordMan;
-			else mPlayerRole = static_cast<PlayerRole>(PlayerRole_SwordMan + ((mPlayerRole - PlayerRole_SwordMan + 1) % (PlayerRole_END - PlayerRole_SwordMan)));
-		}
-
-
 		if (prevRole != mPlayerRole) {
 			Packets::PlayerRole role = Packets::PlayerRole::PlayerRole_NONE;
 			switch (mPlayerRole) {
@@ -825,11 +840,7 @@ void LobbyScene::BuildPlayerNameTextBlock() {
 		auto& player = mPlayers[i];
 		float centerX = xPadding + xInterval * i + originalWidth / 2.f;
 		std::get<1>(player) = NamePlate();
-		std::get<1>(player).Init(
-			mRenderManager->GetCanvas(),
-			mRenderManager->GetTextureManager().GetTexture("mid_dark_bar"),
-			centerX - namePlateWidth / 2.f, y,
-			namePlateWidth, namePlateHeight);
+		std::get<1>(player).Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("mid_dark_bar"), centerX - namePlateWidth / 2.f, y, namePlateWidth, namePlateHeight);
 		std::get<1>(player).GetName() = L"Player" + std::to_wstring(i);
 		std::get<1>(player).SetActiveState(false);
 	}
@@ -837,11 +848,7 @@ void LobbyScene::BuildPlayerNameTextBlock() {
 	auto& player = mPlayers[5];
 	float centerX = 900.f + originalWidth / 2.f;
 	std::get<1>(player) = NamePlate();
-	std::get<1>(player).Init(
-		mRenderManager->GetCanvas(),
-		mRenderManager->GetTextureManager().GetTexture("mid_dark_bar"),
-		centerX - namePlateWidth / 2.f, 750.f,
-		namePlateWidth, namePlateHeight);
+	std::get<1>(player).Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("mid_dark_bar"), centerX - namePlateWidth / 2.f, 750.f, namePlateWidth, namePlateHeight);
 	std::get<1>(player).GetName() = L"Player" + std::to_wstring(4);
 	std::get<1>(player).SetActiveState(false);
 }
@@ -885,13 +892,42 @@ void LobbyScene::BuildPlayerReadyImage() {
 	for (int i = 0; i < 6; ++i) {
 		auto& player = mPlayers[i];
 		std::get<2>(player) = Image{};
-		std::get<2>(player).Init(
-			mRenderManager->GetCanvas(),
-			mRenderManager->GetTextureManager().GetTexture("check"));
+		std::get<2>(player).Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("check"));
 		std::get<2>(player).GetRect() = namePlateRects[i];
 		std::get<2>(player).SetActiveState(false);
 	}
 }
+
+void LobbyScene::SettingButton(UINT playerIndex) {
+	const float ButtonWidth = 70.f;
+	const float ButtonHeight = 70.f;
+
+	const float ButtonHorizontalOffset = 140.f; 
+	const float ButtonVerticalOffset = 180.f;     
+
+	auto& namePlate = std::get<1>(mPlayers[playerIndex]);
+
+	float nameplateX = namePlate.GetRect().LTx;
+	float nameplateWidth = namePlate.GetRect().width;
+	float nameplateY = namePlate.GetRect().LTy;
+	float nameplateHeight = namePlate.GetRect().height;
+
+	float centerX = nameplateX + nameplateWidth / 2.f;
+	float centerY = nameplateY + nameplateHeight / 2.f;
+
+	mLeftArrowButton.SetRect(
+		centerX - ButtonHorizontalOffset - ButtonWidth / 2.f,
+		centerY - ButtonHeight / 2.f + ButtonVerticalOffset,
+		ButtonWidth, ButtonHeight
+	);
+
+	mRightArrowButton.SetRect(
+		centerX + ButtonHorizontalOffset - ButtonWidth / 2.f,
+		centerY - ButtonHeight / 2.f + ButtonVerticalOffset,
+		ButtonWidth, ButtonHeight
+	);
+}
+
 
 
 void LobbyScene::ProcessPackets(const uint8_t* buffer, size_t size) {

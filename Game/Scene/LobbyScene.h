@@ -43,6 +43,8 @@ private:
 	void BuildPlayerNameTextBlock();
 	void BuildPlayerReadyImage(); 
 
+	void SettingButton(UINT playerIndex); 
+
 	void ProcessPackets(const uint8_t* buffer, size_t size);
 	const uint8_t* ProcessPacket(const uint8_t* buffer);
 private:
@@ -81,5 +83,8 @@ private:
 
 	bool mIsReady{ false }; 
 
+
+	Button mLeftArrowButton{}; 
+	Button mRightArrowButton{};
 	Button mReadyButton{};
 };

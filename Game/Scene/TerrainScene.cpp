@@ -112,6 +112,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 					break;
 				default:
+					Crash("Something went wrong!!"); 
 					break;
 				}
 
@@ -355,6 +356,11 @@ void TerrainScene::ProcessFireProjectile(const uint8_t* buffer) {
 
 void TerrainScene::ProcessProjectileMove(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ProjectileMoveSC>(buffer);
+}
+
+void TerrainScene::ProcessChangeScene(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ChangeSceneSC>(buffer);
+	PostMessage(mRenderManager->GetWindowHandle(), WM_ADVANCESCENE, data->stage(), 0);
 }
 
 
@@ -671,6 +677,11 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 	case Packets::PacketTypes_PT_PROJECTILE_MOVE_SC:
 	{
 		TerrainScene::ProcessProjectileMove(buffer);
+	}
+	break;
+	case Packets::PacketTypes_PT_CHANGE_SCENE_SC:
+	{
+		TerrainScene::ProcessChangeScene(buffer);
 	}
 	break;
 	default:

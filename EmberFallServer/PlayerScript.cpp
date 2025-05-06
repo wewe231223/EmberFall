@@ -96,7 +96,7 @@ void PlayerScript::Init() {
     }
 
     owner->mAnimationStateMachine.Init(ANIM_KEY_LONGSWORD_MAN);
-    owner->mSpec.hp = 100.0f;
+    owner->mSpec.hp = 10.0f;
 
     const auto pos = owner->GetPosition();
     const auto look = owner->GetTransform()->Forward();

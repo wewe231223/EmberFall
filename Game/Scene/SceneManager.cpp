@@ -1,24 +1,19 @@
-#include "SceneManager.h"
 #include "pch.h"
 #include "SceneManager.h"
 #include "../Scene/LoadingScene.h"
 #include "../Scene/TerrainScene.h"
 #include "../Scene/LobbyScene.h"
 
-SceneManager::SceneManager() {
-
-	
-	 
-}
+SceneManager::SceneManager() {}
 
 SceneManager::~SceneManager() {
 	if (mLoadingThread.joinable()) {
-		mLoadingThread.join(); 
+		mLoadingThread.join();
 	}
 }
 
 SceneFeatureType SceneManager::GetCurrentSceneFeatureType() {
-	return *mCurrentSceneFeatureType; 
+	return mSceneFeatureType[static_cast<size_t>(mCurrentSceneType)];
 }
 
 void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCameraBufferLocation, ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList, std::function<void()> initLoadFunc) {
@@ -30,71 +25,88 @@ void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferC
 	mSceneFeatureType[static_cast<size_t>(SceneType::LOBBY)] = std::make_tuple(false, false);
 	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)] = std::make_tuple(true, true);
 
-
-	mSceneGraph[0] = std::make_pair(mScenes[static_cast<size_t>(SceneType::LOADING)].get(), mScenes[static_cast<size_t>(SceneType::LOBBY)].get());
-	mSceneGraph[1] = std::make_pair(mScenes[static_cast<size_t>(SceneType::LOBBY)].get(), mScenes[static_cast<size_t>(SceneType::TERRAIN)].get());
-	mSceneGraph[2] = std::make_pair(mScenes[static_cast<size_t>(SceneType::TERRAIN)].get(), mScenes[static_cast<size_t>(SceneType::LOADING)].get());
-
-	mCurrentSceneNode = mSceneGraph.begin();
-	mCurrentSceneFeatureType = mSceneFeatureType.begin();
-
+	mCurrentSceneType = SceneType::LOADING;
+	mCurrentScene = mScenes[static_cast<size_t>(SceneType::LOADING)].get();
 
 	gClientCore->Init();
-	auto res = gClientCore->Start("127.0.0.1", 7777);
-	if (false == res) {
+	if (!gClientCore->Start("127.0.0.1", 7777)) {
 		DebugBreak();
 		Crash(false);
 	}
 
+	mNextSceneType = SceneType::LOBBY;
+	mNextScene = mScenes[static_cast<size_t>(SceneType::LOBBY)].get();
+
+	mRenderManager = renderMgr;
+	mMainCameraBufferLocation = mainCameraBufferLocation;
+
 	mLoadingThread = std::thread([this, device, loadCommandList, initLoadFunc]() {
-		initLoadFunc();
-		mCurrentSceneNode->second->Init(device, loadCommandList);
+		initLoadFunc(); 
+		mNextScene->Init(device, loadCommandList); 
 		mLoaded.store(true);
 		});
+}
 
+void SceneManager::ChangeSceneTo(SceneType nextScene) {
+	mAdvance = true;
+	mNextSceneType = nextScene;
+	mNextScene = mScenes[static_cast<size_t>(nextScene)].get();
 }
 
 bool SceneManager::CheckLoaded() {
 	auto loaded = mLoaded.load();
 
 	if (loaded) {
-		mLoadingThread.join();
-
-		mCurrentSceneFeatureType++;
-		mCurrentSceneNode++;
-
+		if (mLoadingThread.joinable()) {
+			mLoadingThread.join();
+		}
+		mCurrentSceneType = mNextSceneType;
+		mCurrentScene = mNextScene;
 		mLoaded.store(false);
 	}
-
-	return loaded;
+	return loaded; 
 }
 
 void SceneManager::Update(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList) {
+	if (mAdvance && !mLoadingThread.joinable()) {
+		if (mCurrentScene) mCurrentScene->Exit();
 
-	if (mAdvance and not mLoadingThread.joinable()) {
-		mCurrentSceneNode->first->Exit();
+		switch (mNextSceneType)
+		{
+		case SceneType::TITLE:
+			break;
+		case SceneType::LOBBY:
+			mScenes[static_cast<size_t>(SceneType::LOBBY)] = std::make_unique<LobbyScene>(mRenderManager, mMainCameraBufferLocation);
+			break;
+		case SceneType::TERRAIN:
+			mScenes[static_cast<size_t>(SceneType::TERRAIN)] = std::make_unique<TerrainScene>(mRenderManager, mMainCameraBufferLocation);
+			break;
+		case SceneType::FINAL:
+			break;
+		case SceneType::FINISH:
+			break;
+		case SceneType::LOADING:
+			mScenes[static_cast<size_t>(SceneType::LOADING)] = std::make_unique<LoadingScene>(mRenderManager);
+			break;
+		default:
+			break;
+		}
+
+		mNextScene = mScenes[static_cast<size_t>(mNextSceneType)].get();
+
 		mLoadingThread = std::thread([this, device, loadCommandList]() {
-			mCurrentSceneNode->second->Init(device, loadCommandList);
+			mNextScene->Init(device, loadCommandList);
 			mLoaded.store(true);
 			});
+
+		mCurrentScene = mScenes[static_cast<size_t>(SceneType::LOADING)].get(); 
+		mCurrentSceneType = SceneType::LOADING;
 		mAdvance = false;
 	}
 
-	if (mLoadingThread.joinable()) {
-		auto& loadingScene = mScenes[static_cast<size_t>(SceneType::LOADING)];
-		loadingScene->ProcessNetwork();
-		loadingScene->Update();
-		loadingScene->SendNetwork(); 
-		return;
+	if (mCurrentScene) {
+		mCurrentScene->ProcessNetwork();
+		mCurrentScene->Update();
+		mCurrentScene->SendNetwork();
 	}
-
-	if (mCurrentSceneNode->first != nullptr) {
-		mCurrentSceneNode->first->ProcessNetwork();
-		mCurrentSceneNode->first->Update();
-		mCurrentSceneNode->first->SendNetwork(); 
-	}
-}
-
-void SceneManager::AdvanceScene() {
-	mAdvance = true;
 }

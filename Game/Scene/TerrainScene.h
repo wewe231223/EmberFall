@@ -67,6 +67,7 @@ private:
 	void ProcessAcquiredItem(const uint8_t* buffer);
 	void ProcessFireProjectile(const uint8_t* buffer);
 	void ProcessProjectileMove(const uint8_t* buffer);
+	void ProcessChangeScene(const uint8_t* buffer);
 private:
 	std::shared_ptr<RenderManager> mRenderManager{};
 
@@ -119,4 +120,6 @@ private:
 	Inventory mInventoryUI{};
 	HealthBar mHealthBarUI{};
 	Profile mProfileUI{};
+
+	bool mInitialized{ false }; 
 };

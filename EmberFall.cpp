@@ -176,7 +176,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message) {
     case WM_ADVANCESCENE:
     {
-        sceneManager.AdvanceScene(); 
+        switch (wParam) {
+        case Packets::GameStage::GameStage_LOBBY:
+			sceneManager.ChangeSceneTo(SceneType::LOBBY);
+			break;
+		case Packets::GameStage::GameStage_TERRAIN:
+			sceneManager.ChangeSceneTo(SceneType::TERRAIN);
+			break;
+        default:
+            break;
+        }
     }
     break;
         /**

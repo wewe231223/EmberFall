@@ -16,6 +16,7 @@ public:
 	void Update(); 
 
 	std::wstring& GetName(); 
+	CanvasRect& GetRect();
 private:
 	CanvasObject mFrame{}; 
 	TextBlock* mName{}; 
