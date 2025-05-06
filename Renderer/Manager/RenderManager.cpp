@@ -8,7 +8,7 @@ RenderManager::RenderManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 	mMeshRenderManager = MeshRenderManager(device);
 	mParticleManager = ParticleManager(device, commandList);
 	mShadowRenderer = ShadowRenderer(device, mainCameraBufferLocation);
-	mCanvas = Canvas(device, commandList);
+	mCanvas = Canvas(device, commandList, hWnd);
 	mHwnd = hWnd;
 }
 

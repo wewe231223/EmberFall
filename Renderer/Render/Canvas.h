@@ -70,7 +70,7 @@ class Canvas {
 	static constexpr T UI_ELEMENT_COUNT = static_cast<T>(100); 
 public:
 	Canvas() = default;
-	Canvas(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
+	Canvas(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, HWND renderWindow);
 
 	Canvas(const Canvas&) = default;
 	Canvas& operator=(const Canvas&) = default;
@@ -84,6 +84,7 @@ public:
 	void AppendContext(const ModelContext2D& context);
 	void Render(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex); 
 
+	RECT GetClientRect(); 
 private:
 	DefaultBuffer mVertexBuffer{};
 	D3D12_VERTEX_BUFFER_VIEW mVertexBufferView{};
@@ -95,4 +96,6 @@ private:
 	DefaultBufferCPUIterator mContextPos{};
 
 	std::unique_ptr<GraphicsShaderBase> mShader{ nullptr };
+
+	HWND mRenderWindowHandle{ nullptr }; 
 };

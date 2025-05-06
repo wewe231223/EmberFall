@@ -26,8 +26,9 @@ public:
 	
 	void SetActiveState(bool state); 
 private:
-	bool Inside(int min, int max, int value); 
+	bool Inside(float min, float max, float value); 
 private:
+	Canvas* mCanvas{ nullptr }; // 화면 보정을 위해서만 사용 할 것. 
 	CanvasObject mButton{}; 
 
 	InvokeCondition mCondition{ InvokeCondition::RightClick };
