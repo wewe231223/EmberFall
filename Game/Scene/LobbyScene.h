@@ -8,6 +8,8 @@
 #include "../Game/Scene/Player.h"
 #include "../MeshLoader/Loader/AnimationLoader.h"
 #include "../Game/UI/Image.h"
+#include "../Game/UI/Button.h"
+#include "../Game/UI/NamePlate.h"
 #include "../ServerLib/PacketHandler.h"
 
 class LobbyScene : public IScene {
@@ -52,9 +54,9 @@ private:
 
 	std::vector<GameObject> mLobbyProps{}; 
 
-	std::unordered_map<NetworkObjectIdType, std::tuple<Player, TextBlock*, Image, bool>*> mPlayerIndexmap{};
+	std::unordered_map<NetworkObjectIdType, std::tuple<Player, NamePlate, Image, bool>*> mPlayerIndexmap{};
 	std::unordered_map<NetworkObjectIdType, UINT> mPlayerSlotMap{};
-	std::array<std::tuple<Player,TextBlock*, Image, bool>, 6> mPlayers{};
+	std::array<std::tuple<Player, NamePlate, Image, bool>, 6> mPlayers{};
 	
 	bool mLookingDemon{ 0 };
 	PlayerRole mPlayerRole{ PlayerRole_None };
@@ -78,4 +80,6 @@ private:
 	AnimatorGraph::AnimationGraphController mDemonAnimationController{};
 
 	bool mIsReady{ false }; 
+
+	Button mReadyButton{};
 };

@@ -3,7 +3,7 @@ struct ModelContext2D
     float3x3 transform;
     float3x3 uvTransform; 
     uint imageIndex; 
-    uint greyScale;
+    float greyScale;
 };
 
 StructuredBuffer<ModelContext2D> modelContexts2D : register(t0);
@@ -26,6 +26,7 @@ struct UI_VOUT
 {
     float4 position : SV_POSITION;
     uint imageIndex : IMAGEINDEX;
+    float greyScale : GREYSCALE;
     float2 tex : TEXCOORD;
 };
 
@@ -37,11 +38,14 @@ UI_VOUT UI_VS(UI_VIN input) {
     Out.position = float4(pos.xy, 1.f, 1.f);
     Out.imageIndex = modelContexts2D[input.instanceID].imageIndex;
     Out.tex = mul(float3(input.position, 1.f), modelContexts2D[input.instanceID].uvTransform).xy;
+    Out.greyScale = modelContexts2D[input.instanceID].greyScale;
     
     return Out;
 }
 
 float4 UI_PS(UI_VOUT input) : SV_TARGET 
 {
-    return textures[input.imageIndex].Sample(pointWrapSampler, input.tex);
+    float4 color = textures[input.imageIndex].Sample(pointWrapSampler, input.tex);
+    clip(color.a - 0.1f); 
+    return float4(color.rgb * input.greyScale, color.a); 
 }
