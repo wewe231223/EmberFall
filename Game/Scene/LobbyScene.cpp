@@ -458,11 +458,15 @@ void LobbyScene::Update() {
 		}
 	}
 
-	if (Input.GetKeyboardTracker().pressed.Enter and not mIsReady and mPlayerRole != PlayerRole_None) {
-		mIsReady = true; 
+	if (mPlayerRole != PlayerRole_None) {
+		if (Input.GetKeyboardTracker().pressed.Enter and not mIsReady) {
+			mIsReady = true;
 
-		decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId());
-		gClientCore->Send(packet);
+			std::get<3>(mPlayers[mMySlot]) = true; 
+
+			decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId());
+			gClientCore->Send(packet);
+		}
 	}
 
 	if (mCameraRotating) {
@@ -528,10 +532,7 @@ void LobbyScene::Update() {
 }
 
 void LobbyScene::SendNetwork() {
-	if (Input.GetKeyboardTracker().pressed.Enter and not mIsReady) {
-		decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId());
-		gClientCore->Send(packet);
-	}
+
 }
 
 void LobbyScene::Exit() {
