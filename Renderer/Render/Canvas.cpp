@@ -2,7 +2,7 @@
 #include "Canvas.h"
 #include "../Game/System/Timer.h"
 
-Canvas::Canvas(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+Canvas::Canvas(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, HWND renderWindow) {
 	std::vector<DirectX::XMFLOAT2> vertices{
 		{0.0f, 0.0f},  // Bottom-left
 		{1.0f, 0.0f},  // Bottom-right
@@ -32,6 +32,8 @@ Canvas::Canvas(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> co
 	mShader->CreateShader(device); 
 
 	mContextPos = mContextBuffer.CPUBegin();
+
+	mRenderWindowHandle = renderWindow; 
 }
 
 CanvasObject Canvas::CreateCanvasObject() {
@@ -59,6 +61,13 @@ void Canvas::Render(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DES
 	commandList->DrawIndexedInstanced(6, instanceCount, 0, 0, 0);
 
 	mContextPos = mContextBuffer.CPUBegin();
+}
+
+RECT Canvas::GetClientRect() {
+	RECT result;
+	::GetClientRect(mRenderWindowHandle, &result);
+
+	return result; 
 }
 
 CanvasObject::CanvasObject(Canvas* canvas) {

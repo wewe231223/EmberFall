@@ -11,6 +11,8 @@ void Button::Init(Canvas& canvas, InvokeCondition condition, UINT image) {
 	mButton.SetActive(true);
 
 	mCallback = []() {};
+
+	mCanvas = &canvas;
 }
 
 void Button::Update() {
@@ -18,12 +20,22 @@ void Button::Update() {
 		return;
 	}
 
-	auto& rect = mButton.GetRect(); 
+	RECT clientRect{ mCanvas->GetClientRect() };
+	const float clientWidth = static_cast<float>(clientRect.right - clientRect.left);
+	const float clientHeight = static_cast<float>(clientRect.bottom - clientRect.top);
 
-	if (Button::Inside(static_cast<int>(rect.LTx), static_cast<int>(rect.LTx + rect.width), Input.GetMouseState().x) and
-		Button::Inside(static_cast<int>(rect.LTy), static_cast<int>(rect.LTy + rect.height), Input.GetMouseState().y)) {
+	constexpr float renderWidth{ Config::WINDOW_WIDTH<float> };
+	constexpr float renderHeight{ Config::WINDOW_HEIGHT<float> };
+
+	const float mouseX = Input.GetMouseState().x * renderWidth / clientWidth;
+	const float mouseY = Input.GetMouseState().y * renderHeight / clientHeight;
+
+	auto& rect = mButton.GetRect();
+
+	if (Button::Inside(rect.LTx, rect.LTx + rect.width, mouseX) && Button::Inside(rect.LTy, rect.LTy + rect.height, mouseY)) {
+
 		if (mCondition == LeftClick) {
-			if (Input.GetMouseTracker().leftButton == DirectX::Mouse::ButtonStateTracker::ButtonState::RELEASED and mPressedLeft and mCondition == LeftClick) {
+			if (Input.GetMouseTracker().leftButton == DirectX::Mouse::ButtonStateTracker::ButtonState::RELEASED && mPressedLeft) {
 				mPressedLeft = false;
 				std::invoke(mCallback);
 				mButton.SetGreyScale(IDLE_GREYSCALE);
@@ -32,12 +44,12 @@ void Button::Update() {
 				mPressedLeft = true;
 				mButton.SetGreyScale(CLICK_GREYSCALE);
 			}
-			else if (not mPressedLeft) {
+			else if (!mPressedLeft) {
 				mButton.SetGreyScale(HOVER_GREYSCALE);
 			}
 		}
-		else if (mCondition== RightClick) {
-			if (Input.GetMouseTracker().rightButton == DirectX::Mouse::ButtonStateTracker::ButtonState::RELEASED and mPressedRight and mCondition == RightClick) {
+		else if (mCondition == RightClick) {
+			if (Input.GetMouseTracker().rightButton == DirectX::Mouse::ButtonStateTracker::ButtonState::RELEASED && mPressedRight) {
 				mPressedRight = false;
 				std::invoke(mCallback);
 				mButton.SetGreyScale(IDLE_GREYSCALE);
@@ -46,21 +58,18 @@ void Button::Update() {
 				mPressedRight = true;
 				mButton.SetGreyScale(CLICK_GREYSCALE);
 			}
-			else if (not mPressedRight) {
+			else if (!mPressedRight) {
 				mButton.SetGreyScale(HOVER_GREYSCALE);
 			}
 		}
 
 	}
 	else {
-		if (mPressedLeft or mPressedRight) {
-			mPressedLeft = false;
-			mPressedRight = false;
-		}
+		mPressedLeft = mPressedRight = false;
 		mButton.SetGreyScale(IDLE_GREYSCALE);
 	}
 
-	mButton.Update(); 
+	mButton.Update();
 }
 
 void Button::SetCallBack(std::function<void()> callback, InvokeCondition condition) {
@@ -81,6 +90,6 @@ void Button::SetActiveState(bool state) {
 	mButton.SetActive(state);
 }
 
-bool Button::Inside(int min, int max, int value) {
+bool Button::Inside(float min, float max, float value) {
 	return ((value > min) and (value < max));
 }
