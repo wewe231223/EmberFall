@@ -87,5 +87,6 @@ private:
 
 	Button mLeftArrowButton{}; 
 	Button mRightArrowButton{};
+
 	Button mReadyButton{};
 };

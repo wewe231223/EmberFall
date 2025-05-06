@@ -256,14 +256,14 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 				if (mPlayerRole == PlayerRole_None) mPlayerRole = PlayerRole_Demon;
 				else mPlayerRole = static_cast<PlayerRole>(PlayerRole_SwordMan + ((mPlayerRole - PlayerRole_SwordMan + (PlayerRole_END - PlayerRole_SwordMan) - 1) % (PlayerRole_END - PlayerRole_SwordMan)));
 				}, 
-				Button::InvokeCondition::RightClick
+				Button::InvokeCondition::LeftClick
 			);
 
 			mRightArrowButton.SetCallBack([&]() {
 				if (mPlayerRole == PlayerRole_None) mPlayerRole = PlayerRole_SwordMan;
 				else mPlayerRole = static_cast<PlayerRole>(PlayerRole_SwordMan + ((mPlayerRole - PlayerRole_SwordMan + 1) % (PlayerRole_END - PlayerRole_SwordMan)));
 				}, 
-				Button::InvokeCondition::RightClick
+				Button::InvokeCondition::LeftClick
 			);
 
 			break; 
@@ -404,15 +404,20 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 
 
 	mLeftArrowButton = Button{};
-	mLeftArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::RightClick, mRenderManager->GetTextureManager().GetTexture("Left"));
+	mLeftArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("Left"));
 	mLeftArrowButton.SetRect(0.f, 0.f, 100.f, 100.f);
 
 	mRightArrowButton = Button{};
-	mRightArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::RightClick, mRenderManager->GetTextureManager().GetTexture("Right"));
+	mRightArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("Right"));
 	mRightArrowButton.SetRect(100.f, 0.f, 100.f, 100.f);
 
 	mLeftArrowButton.SetActiveState(false); 
 	mRightArrowButton.SetActiveState(false);
+
+	mReadyButton = Button{};
+	mReadyButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("Ready"));
+	mReadyButton.SetRect(200.f, 0.f, 400.f * 2.3f, 400.f);
+	
 }
 
 void LobbyScene::ProcessNetwork() {
@@ -423,12 +428,12 @@ void LobbyScene::ProcessNetwork() {
 }
 
 void LobbyScene::Update() {
-
-
 	PlayerRole prevRole = mPlayerRole;
 
 	mLeftArrowButton.Update(); 
-	mRightArrowButton.Update(); 
+	mRightArrowButton.Update();
+
+	mReadyButton.Update(); 
 
 	if (not mIsReady and not mCameraRotating) {
 		if (prevRole != mPlayerRole) {
