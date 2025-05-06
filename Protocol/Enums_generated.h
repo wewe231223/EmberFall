@@ -40,7 +40,7 @@ enum PacketTypes : uint8_t {
   PacketTypes_PT_START_SCENE_TRANSITION_SC = 137,
   PacketTypes_PT_CANCEL_SCENE_TRANSITION_SC = 138,
   PacketTypes_PT_PLAYER_CHANGE_ROLE_SC = 139,
-  PacketTypes_PT_CHANGE_TO_NEXT_SCENE_SC = 140,
+  PacketTypes_PT_CHANGE_SCENE_SC = 140,
   PacketTypes_PT_GAME_END_SC = 141,
   PacketTypes_PT_OBJECT_APPEARED_SC = 142,
   PacketTypes_PT_OBJECT_DISAPPEARED_SC = 143,
@@ -85,7 +85,7 @@ inline const PacketTypes (&EnumValuesPacketTypes())[39] {
     PacketTypes_PT_START_SCENE_TRANSITION_SC,
     PacketTypes_PT_CANCEL_SCENE_TRANSITION_SC,
     PacketTypes_PT_PLAYER_CHANGE_ROLE_SC,
-    PacketTypes_PT_CHANGE_TO_NEXT_SCENE_SC,
+    PacketTypes_PT_CHANGE_SCENE_SC,
     PacketTypes_PT_GAME_END_SC,
     PacketTypes_PT_OBJECT_APPEARED_SC,
     PacketTypes_PT_OBJECT_DISAPPEARED_SC,
@@ -246,7 +246,7 @@ inline const char * const *EnumNamesPacketTypes() {
     "PT_START_SCENE_TRANSITION_SC",
     "PT_CANCEL_SCENE_TRANSITION_SC",
     "PT_PLAYER_CHANGE_ROLE_SC",
-    "PT_CHANGE_TO_NEXT_SCENE_SC",
+    "PT_CHANGE_SCENE_SC",
     "PT_GAME_END_SC",
     "PT_OBJECT_APPEARED_SC",
     "PT_OBJECT_DISAPPEARED_SC",
@@ -369,6 +369,39 @@ inline const char *EnumNamePlayerRole(PlayerRole e) {
   if (::flatbuffers::IsOutRange(e, PlayerRole_NONE, PlayerRole_BOSS)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPlayerRole()[index];
+}
+
+enum GameStage : uint8_t {
+  GameStage_NONE = 0,
+  GameStage_LOBBY = 1,
+  GameStage_TERRAIN = 2,
+  GameStage_MIN = GameStage_NONE,
+  GameStage_MAX = GameStage_TERRAIN
+};
+
+inline const GameStage (&EnumValuesGameStage())[3] {
+  static const GameStage values[] = {
+    GameStage_NONE,
+    GameStage_LOBBY,
+    GameStage_TERRAIN
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesGameStage() {
+  static const char * const names[4] = {
+    "NONE",
+    "LOBBY",
+    "TERRAIN",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameGameStage(GameStage e) {
+  if (::flatbuffers::IsOutRange(e, GameStage_NONE, GameStage_TERRAIN)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesGameStage()[index];
 }
 
 enum EntityType : uint8_t {
@@ -496,27 +529,30 @@ inline const char *EnumNameItemType(ItemType e) {
 
 enum ProjectileTypes : uint8_t {
   ProjectileTypes_ARROW = 0,
+  ProjectileTypes_MAGIC_ARROW = 1,
   ProjectileTypes_MIN = ProjectileTypes_ARROW,
-  ProjectileTypes_MAX = ProjectileTypes_ARROW
+  ProjectileTypes_MAX = ProjectileTypes_MAGIC_ARROW
 };
 
-inline const ProjectileTypes (&EnumValuesProjectileTypes())[1] {
+inline const ProjectileTypes (&EnumValuesProjectileTypes())[2] {
   static const ProjectileTypes values[] = {
-    ProjectileTypes_ARROW
+    ProjectileTypes_ARROW,
+    ProjectileTypes_MAGIC_ARROW
   };
   return values;
 }
 
 inline const char * const *EnumNamesProjectileTypes() {
-  static const char * const names[2] = {
+  static const char * const names[3] = {
     "ARROW",
+    "MAGIC_ARROW",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameProjectileTypes(ProjectileTypes e) {
-  if (::flatbuffers::IsOutRange(e, ProjectileTypes_ARROW, ProjectileTypes_ARROW)) return "";
+  if (::flatbuffers::IsOutRange(e, ProjectileTypes_ARROW, ProjectileTypes_MAGIC_ARROW)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesProjectileTypes()[index];
 }

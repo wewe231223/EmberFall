@@ -69,7 +69,7 @@ private:
     uint8_t mPlayerCount{ };
     uint8_t mReadyPlayerCount{ };
 
-    GameStage mStageTransitionTarget{ GameStage::LOBBY };
+    Packets::GameStage mStageTransitionTarget{ Packets::GameStage_LOBBY };
 
     SysClock::time_point mSceneTransitionCounter{ };
 

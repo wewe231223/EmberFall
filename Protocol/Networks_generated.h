@@ -48,8 +48,8 @@ struct StartSceneTransitionSCBuilder;
 struct CancelSceneTransitionSC;
 struct CancelSceneTransitionSCBuilder;
 
-struct ChangeToNextSceneSC;
-struct ChangeToNextSceneSCBuilder;
+struct ChangeSceneSC;
+struct ChangeSceneSCBuilder;
 
 struct GameEndSC;
 struct GameEndSCBuilder;
@@ -529,32 +529,44 @@ inline ::flatbuffers::Offset<CancelSceneTransitionSC> CreateCancelSceneTransitio
   return builder_.Finish();
 }
 
-struct ChangeToNextSceneSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef ChangeToNextSceneSCBuilder Builder;
+struct ChangeSceneSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ChangeSceneSCBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_STAGE = 4
+  };
+  Packets::GameStage stage() const {
+    return static_cast<Packets::GameStage>(GetField<uint8_t>(VT_STAGE, 0));
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_STAGE, 1) &&
            verifier.EndTable();
   }
 };
 
-struct ChangeToNextSceneSCBuilder {
-  typedef ChangeToNextSceneSC Table;
+struct ChangeSceneSCBuilder {
+  typedef ChangeSceneSC Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  explicit ChangeToNextSceneSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+  void add_stage(Packets::GameStage stage) {
+    fbb_.AddElement<uint8_t>(ChangeSceneSC::VT_STAGE, static_cast<uint8_t>(stage), 0);
+  }
+  explicit ChangeSceneSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ::flatbuffers::Offset<ChangeToNextSceneSC> Finish() {
+  ::flatbuffers::Offset<ChangeSceneSC> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<ChangeToNextSceneSC>(end);
+    auto o = ::flatbuffers::Offset<ChangeSceneSC>(end);
     return o;
   }
 };
 
-inline ::flatbuffers::Offset<ChangeToNextSceneSC> CreateChangeToNextSceneSC(
-    ::flatbuffers::FlatBufferBuilder &_fbb) {
-  ChangeToNextSceneSCBuilder builder_(_fbb);
+inline ::flatbuffers::Offset<ChangeSceneSC> CreateChangeSceneSC(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    Packets::GameStage stage = Packets::GameStage_NONE) {
+  ChangeSceneSCBuilder builder_(_fbb);
+  builder_.add_stage(stage);
   return builder_.Finish();
 }
 

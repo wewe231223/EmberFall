@@ -210,7 +210,7 @@ void GameRoom::EndGameLoop() {
     gServerFrame->AddTimerEvent(mRoomIdx, INVALID_SESSION_ID, excutionTime, TimerEventType::SCENE_TRANSITION_COUNTDOWN);
     mSceneTransitionCounter = SysClock::now();
 
-    mStageTransitionTarget = GameStage::LOBBY;
+    mStageTransitionTarget = Packets::GameStage_LOBBY;
 
     auto packetStartTransition = FbsPacketFactory::StartSceneTransition(SCENE_TRANSITION_COUNT);
     BroadCastInGameRoom(packetStartTransition);
@@ -229,7 +229,7 @@ bool GameRoom::CheckAndStartGame() {
     gServerFrame->AddTimerEvent(mRoomIdx, INVALID_SESSION_ID, excutionTime, TimerEventType::SCENE_TRANSITION_COUNTDOWN);
     mSceneTransitionCounter = SysClock::now();
 
-    mStageTransitionTarget = GameStage::STAGE1;
+    mStageTransitionTarget = Packets::GameStage_TERRAIN;
 
     auto packetStartTransition = FbsPacketFactory::StartSceneTransition(SCENE_TRANSITION_COUNT);
     BroadCastInGameRoom(packetStartTransition);
@@ -255,6 +255,8 @@ void GameRoom::ChangeToLobby() {
         }
     }
 
+    auto packetToLobby = FbsPacketFactory::ChangeSceneSC(Packets::GameStage_TERRAIN);
+    BroadCastInGameRoom(packetToLobby);
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Change To Lobby!!!", mRoomIdx);
 }
 
@@ -265,7 +267,7 @@ void GameRoom::ChangeToStage1() {
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Start Game!!!", mRoomIdx);
     mStage.StartStage(mPlayerCount - mBossPlayerCount, mBossPlayerCount);
 
-    auto packetSceneTransition = FbsPacketFactory::ChangeToNextSceneSC();
+    auto packetSceneTransition = FbsPacketFactory::ChangeSceneSC(mStageTransitionTarget);
     BroadCastInGameRoom(packetSceneTransition);
     return;
 }
@@ -330,7 +332,7 @@ void GameRoom::OnSceneCountdownTick() {
         return;
     }
 
-    if (true == mTransitionInterruptFlag and GameStage::LOBBY != mStageTransitionTarget) {
+    if (true == mTransitionInterruptFlag and Packets::GameStage_LOBBY != mStageTransitionTarget) {
         gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Interrupt GameScene Transition - cancel transition", mRoomIdx);
         mTransitionInterruptFlag = false;
         CheckAndStartGame();
@@ -350,11 +352,11 @@ void GameRoom::OnSceneCountdownTick() {
     }
 
     switch (mStageTransitionTarget) {
-    case GameStage::LOBBY:
+    case Packets::GameStage_LOBBY:
         ChangeToLobby();
         break;
 
-    case GameStage::STAGE1:
+    case Packets::GameStage_TERRAIN:
         ChangeToStage1();
         break;
     }

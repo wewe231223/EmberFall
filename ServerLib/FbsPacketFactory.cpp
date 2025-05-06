@@ -179,16 +179,16 @@ OverlappedSend* FbsPacketFactory::PlayerChangeRoleSC(SessionIdType id, Packets::
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::ChangeToNextSceneSC() {
+OverlappedSend* FbsPacketFactory::ChangeSceneSC(Packets::GameStage stage) {
     flatbuffers::FlatBufferBuilder builder{ };
 
-    auto offset = Packets::CreateChangeToNextSceneSC(builder);
+    auto offset = Packets::CreateChangeSceneSC(builder, stage);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();
     const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
 
-    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes_PT_CHANGE_TO_NEXT_SCENE_SC };
+    PacketHeaderSC headerSC{ sizeof(PacketHeaderSC) + payloadSize, Packets::PacketTypes_PT_CHANGE_SCENE_SC };
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 

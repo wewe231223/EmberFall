@@ -50,7 +50,9 @@ table StartSceneTransitionSC {
 
 table CancelSceneTransitionSC { }
 
-table ChangeToNextSceneSC { }
+table ChangeSceneSC {
+	stage: GameStage;
+}
 
 table GameEndSC {
 	winner: PlayerRole;

@@ -36,7 +36,7 @@ enum PacketTypes : ubyte {
     PT_START_SCENE_TRANSITION_SC,
     PT_CANCEL_SCENE_TRANSITION_SC,
     PT_PLAYER_CHANGE_ROLE_SC,
-    PT_CHANGE_TO_NEXT_SCENE_SC,
+    PT_CHANGE_SCENE_SC,
     PT_GAME_END_SC,
 
     //      Common Object Packet (CommentObjects.fbs)
@@ -84,10 +84,11 @@ enum PlayerRole : ubyte {
     BOSS
 }
 
-// enum GameStages : ubyte {
-//    LOBBY,
-//    TERRAIN
-// }
+enum GameStage : ubyte {
+   NONE = 0, 
+   LOBBY,
+   TERRAIN
+}
 
 enum EntityType : ubyte {
     ENV = 0,
@@ -116,5 +117,6 @@ enum ItemType : ubyte {
 }
 
 enum ProjectileTypes : ubyte {
-    ARROW = 0
+    ARROW = 0,
+    MAGIC_ARROW
 }
