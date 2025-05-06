@@ -19,12 +19,13 @@ public:
     Packets::Weapon GetWeaponType() const;
     SimpleMath::Vector3 GetHitBoxSize() const;
 
-    void SetOwnerId(NetworkObjectIdType id);
+    void SetOwnerId(uint16_t roomIdx, NetworkObjectIdType id);
     void SetWeapon(Packets::Weapon weapon);
 
     void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir);
 
 private:
+    uint16_t mRoomIdx{ };
     NetworkObjectIdType mOwnerId{ };
     std::shared_ptr<Weapons::IWeapon> mWeapon{ };
 };

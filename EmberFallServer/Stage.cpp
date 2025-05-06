@@ -84,11 +84,11 @@ void Stage::StartStage(uint8_t humanCount, uint8_t bossCount) {
     mObjectManager->Start(humanCount, bossCount, 1);
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}] INGAME <HumanPlayer: {}>, <BossPlayer: {}>", mGameRoomIdx, humanCount, bossCount);
 
-    //for (int i = 0; i < 10; ++i) {
-    //    auto randVec = Random::GetRandomVec3(SimpleMath::Vector3{ -100.0f, 0.0f, -100.0f }, SimpleMath::Vector3{ 100.0f, 0.0f, 100.0f });
-    //    auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
-    //    monster->GetTransform()->Translate(randVec);
-    //}
+    for (int i = 0; i < 100; ++i) {
+        auto randVec = Random::GetRandomVec3(SimpleMath::Vector3{ -100.0f, 0.0f, -100.0f }, SimpleMath::Vector3{ 100.0f, 0.0f, 100.0f });
+        auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+        monster->GetTransform()->Translate(randVec);
+    }
 }
 
 void Stage::EndStage() {

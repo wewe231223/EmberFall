@@ -22,7 +22,8 @@ void WeaponSystem::Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vect
     mWeapon->Attack(mOwnerId, pos, dir);
 }
 
-void WeaponSystem::SetOwnerId(NetworkObjectIdType id) {
+void WeaponSystem::SetOwnerId(uint16_t roomIdx, NetworkObjectIdType id) {
+    mRoomIdx = roomIdx;
     mOwnerId = id;
 }
 
@@ -31,19 +32,19 @@ void WeaponSystem::SetWeapon(Packets::Weapon weapon) {
 
     switch (weapon) {
     case Packets::Weapon_SWORD:
-        mWeapon = std::make_shared<Weapons::Sword>(SimpleMath::Vector3{ 0.5f, 0.5f, 1.5f });
+        mWeapon = std::make_shared<Weapons::Sword>(mRoomIdx, SimpleMath::Vector3{ 0.5f, 0.5f, 1.5f });
         break;
 
     case Packets::Weapon_SPEAR:
-        mWeapon = std::make_shared<Weapons::Spear>(SimpleMath::Vector3{ 0.5f });
+        mWeapon = std::make_shared<Weapons::Spear>(mRoomIdx, SimpleMath::Vector3{ 0.5f });
         break;
 
     case Packets::Weapon_BOW:
-        mWeapon = std::make_shared<Weapons::Bow>(SimpleMath::Vector3{ 0.5f });
+        mWeapon = std::make_shared<Weapons::Bow>(mRoomIdx, SimpleMath::Vector3{ 0.5f });
         break;
 
     case Packets::Weapon_STAFF:
-        mWeapon = std::make_shared<Weapons::Staff>(SimpleMath::Vector3{ 0.5f });
+        mWeapon = std::make_shared<Weapons::Staff>(mRoomIdx, SimpleMath::Vector3{ 0.5f });
         break;
 
     default:

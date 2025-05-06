@@ -87,11 +87,14 @@ void MonsterScript::DispatchGameEvent(GameEvent* event) {
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
     {
-        if (event->sender != event->receiver and ObjectTag::MONSTER != senderTag) {
+        if (event->sender != event->receiver and ObjectTag::MONSTER != senderTag and ObjectTag::BOSSPLAYER != senderTag) {
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
             owner->mSpec.hp -= attackEvent->damage;
 
             owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED);
+
+            auto packetAttacked = FbsPacketFactory::ObjectAttackedSC(owner->GetId(), owner->mSpec.hp);
+            owner->StorePacket(packetAttacked);
 
             mMonsterBT.Interrupt();
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster [{}] Attacked!!, HP: {}", owner->GetId(), owner->mSpec.hp);

@@ -96,9 +96,7 @@ void PlayerScript::Init() {
     }
 
     owner->mAnimationStateMachine.Init(ANIM_KEY_LONGSWORD_MAN);
-    owner->mSpec.hp = 1000.0f;
-
-    owner->GetPhysics()->mFactor.maxMoveSpeed = 5.5mps;
+    owner->mSpec.hp = 100.0f;
 
     const auto pos = owner->GetPosition();
     const auto look = owner->GetTransform()->Forward();
@@ -216,6 +214,9 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
 
             CancelInteraction();
 
+            auto packetAttacked = FbsPacketFactory::ObjectAttackedSC(owner->GetId(), owner->mSpec.hp);
+            owner->StorePacket(packetAttacked);
+
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!", owner->GetId());
         }
         break;
@@ -316,17 +317,17 @@ void PlayerScript::CheckAndMove(const float deltaTime) {
 
     Packets::AnimationState changeState{ Packets::AnimationState_IDLE };
     if (not MathUtil::IsZero(moveDir.x)) {
-        physics->mFactor.maxMoveSpeed = 1.5mps;
+        physics->mFactor.maxMoveSpeed = 2.3mps;
         changeState = moveDir.x > 0.0f ? Packets::AnimationState_MOVE_LEFT : Packets::AnimationState_MOVE_RIGHT;
     }
 
     if (not MathUtil::IsZero(moveDir.z)) {
         if (moveDir.z > 0.0f) {
-            physics->mFactor.maxMoveSpeed = 1.5mps;
+            physics->mFactor.maxMoveSpeed = 2.3mps;
             changeState = Packets::AnimationState_MOVE_BACKWARD;
         }
         else {
-            physics->mFactor.maxMoveSpeed = 3.3mps;
+            physics->mFactor.maxMoveSpeed = 4.3mps;
             changeState = Packets::AnimationState_MOVE_FORWARD;
         }
     }

@@ -13,10 +13,11 @@
 namespace Weapons {
     class IWeapon abstract {
     public:
-        IWeapon(Packets::Weapon type);
+        IWeapon(uint16_t roomIdx, Packets::Weapon type);
         virtual ~IWeapon();
 
     public:
+        uint16_t GetRoomIdx() const;
         Packets::Weapon GetWeaponType() const;
         SimpleMath::Vector3 GetHitBoxSize() const;
 
@@ -27,6 +28,7 @@ namespace Weapons {
 
     protected:
         bool mAttackable{ true };
+        uint16_t mRoomIdx{ };
         float mDamage{ };
         SimpleMath::Vector3 mHitBox;
 
@@ -36,7 +38,7 @@ namespace Weapons {
 
     class Fist : public IWeapon {
     public:
-        Fist(const SimpleMath::Vector3& hitBoxSize);
+        Fist(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize);
         virtual ~Fist();
 
     public:
@@ -45,7 +47,7 @@ namespace Weapons {
 
     class Spear : public IWeapon {
     public:
-        Spear(const SimpleMath::Vector3& hitBoxSize);
+        Spear(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize);
         virtual ~Spear();
 
     public:
@@ -54,7 +56,7 @@ namespace Weapons {
 
     class Bow : public IWeapon {
     public:
-        Bow(const SimpleMath::Vector3& hitBoxSize);
+        Bow(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize);
         virtual ~Bow();
     
     public:
@@ -66,7 +68,7 @@ namespace Weapons {
 
     class Sword : public IWeapon {
     public:
-        Sword(const SimpleMath::Vector3& hitBoxSize);
+        Sword(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize);
         virtual ~Sword();
     
     public:
@@ -75,7 +77,7 @@ namespace Weapons {
 
     class Staff : public IWeapon {
     public:
-        Staff(const SimpleMath::Vector3& hitBoxSize);
+        Staff(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize);
         virtual ~Staff();
 
     public:

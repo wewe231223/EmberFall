@@ -330,7 +330,7 @@ void GameRoom::OnSceneCountdownTick() {
         return;
     }
 
-    if (true == mTransitionInterruptFlag and GameStage::LOBBY == mStageTransitionTarget) {
+    if (true == mTransitionInterruptFlag and GameStage::LOBBY != mStageTransitionTarget) {
         gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Interrupt GameScene Transition - cancel transition", mRoomIdx);
         mTransitionInterruptFlag = false;
         CheckAndStartGame();

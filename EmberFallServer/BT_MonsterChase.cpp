@@ -6,7 +6,16 @@
 
 float BT::BT_MonsterChase::CalculateDecideValue(const std::shared_ptr<Script>& ownerScript) const {
     auto owner = std::static_pointer_cast<MonsterScript>(ownerScript);
-    if (BT::NodeStatus::SUCCESS == owner->DetectPlayerInRange(1.0f)) {
+    if (nullptr == owner) {
+        return 0.0f;
+    }
+
+    auto ownerObj = owner->GetOwner();
+    if (nullptr == ownerObj) {
+        return 0.0f;
+    }
+
+    if (ownerObj->mAnimationStateMachine.IsChangable() and BT::NodeStatus::SUCCESS == owner->DetectPlayerInRange(1.0f)) {
         return 0.8f;
     }
 

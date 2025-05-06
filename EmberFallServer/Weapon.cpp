@@ -1,13 +1,18 @@
 #include "pch.h"
 #include "Weapon.h"
 #include "ObjectManager.h"
+#include "GameRoom.h"
 
 using namespace Weapons;
 
-IWeapon::IWeapon(Packets::Weapon type)
-    : mWeaponType{ type } { }
+IWeapon::IWeapon(uint16_t roomIdx, Packets::Weapon type)
+    : mWeaponType{ type }, mRoomIdx{ roomIdx } { }
 
 IWeapon::~IWeapon() { }
+
+uint16_t Weapons::IWeapon::GetRoomIdx() const {
+    return mRoomIdx;
+}
 
 Packets::Weapon IWeapon::GetWeaponType() const {
     return mWeaponType;
@@ -17,8 +22,8 @@ SimpleMath::Vector3 Weapons::IWeapon::GetHitBoxSize() const {
     return mHitBox;
 }
 
-Fist::Fist(const SimpleMath::Vector3& hitBoxSize)
-    : IWeapon{ Packets::Weapon_SWORD } {
+Fist::Fist(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize)
+    : IWeapon{ roomIdx, Packets::Weapon_SWORD } {
     mHitBox = hitBoxSize;
 }
 
@@ -30,12 +35,12 @@ void Fist::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, c
     event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
     event->knockBackForce = dir * 5000.0f;
 
-    //auto attackPos = pos + dir * mHitbox->GetForwardExtents();
-    //gObjectSpawner->SpawnEventTrigger(event, 0.5f, 0.5f, 1, attackPos, dir, mHitbox);
+    /*auto attackPos = pos + dir * mHitbox->GetForwardExtents();
+    gGameRoomManager->GetRoom(GetRoomIdx())->GetObjectManager()->SpawnEventTrigger(event, 0.5f, 0.5f, 1, attackPos, dir, mHitbox);*/
 }
 
-Spear::Spear(const SimpleMath::Vector3& hitBoxSize)
-    : IWeapon{ Packets::Weapon_SPEAR } {
+Spear::Spear(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize)
+    : IWeapon{ roomIdx, Packets::Weapon_SPEAR } {
     mHitBox = hitBoxSize;
 }
 
@@ -47,11 +52,11 @@ void Spear::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
     event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
 
     auto attackPos = pos + dir * mHitBox.Length();
-    //gObjectManager->SpawnEventTrigger(attackPos, mHitBox, dir, 0.5f, event, 0.5f, 1);
+    gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 0.5f, event, 0.5f, 1);
 }
 
-Bow::Bow(const SimpleMath::Vector3& hitBoxSize)
-    : IWeapon{ Packets::Weapon_BOW }, mArrowSpeed{ GameProtocol::Unit::DEFAULT_PROJECTILE_SPEED } {
+Bow::Bow(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize)
+    : IWeapon{ roomIdx, Packets::Weapon_BOW }, mArrowSpeed{ GameProtocol::Unit::DEFAULT_PROJECTILE_SPEED } {
 }
 
 Bow::~Bow() { }
@@ -59,8 +64,8 @@ Bow::~Bow() { }
 void Bow::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
 }
 
-Sword::Sword(const SimpleMath::Vector3& hitBoxSize) 
-    : IWeapon{ Packets::Weapon_SWORD } {
+Sword::Sword(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize)
+    : IWeapon{ roomIdx, Packets::Weapon_SWORD } {
     mHitBox = hitBoxSize;
 }
 
@@ -73,11 +78,11 @@ void Sword::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
     event->knockBackForce = dir * 5000.0f;
 
     auto attackPos = pos + dir * mHitBox.z * 0.5f;
-    //gObjectManager->SpawnEventTrigger(attackPos, mHitBox, dir, 0.5f, event, 0.5f, 1);
+    gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 0.5f, event, 0.5f, 1);
 }
 
-Staff::Staff(const SimpleMath::Vector3& hitBoxSize)
-    : IWeapon{ Packets::Weapon_STAFF } {
+Staff::Staff(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize)
+    : IWeapon{ roomIdx, Packets::Weapon_STAFF } {
     mHitBox = hitBoxSize;
 }
 

@@ -10,7 +10,7 @@
 
 #include "Transform.h"
 inline static auto GRAVITY_ACCELERATION = 1.0G;
-inline static auto DEFAULT_ACCELERATION = 20.0mps2;
+inline static auto DEFAULT_ACCELERATION = 40.0mps2;
 inline static auto DEFAULT_MASS = 70.0kg;       // kg
 inline static auto DEFAULT_MAX_MOVE_SPEED = 5.0mps; // m/s
 inline static auto DEFAULT_JUMP_FORCE = 6000.0N; // N = F = Mess * accel = kg * m / s^2

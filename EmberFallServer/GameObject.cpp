@@ -118,7 +118,7 @@ void GameObject::Reset() {
 
 void GameObject::Init() {
     decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
-    mWeaponSystem.SetOwnerId(GetId());
+    mWeaponSystem.SetOwnerId(GetMyRoomIdx(), GetId());
     mAnimationStateMachine.SetOwner(sharedThis);
 
     if (nullptr != mEntityScript) {
@@ -150,7 +150,7 @@ void GameObject::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
     Update();
     LateUpdate();
     
-    gServerFrame->AddTimerEvent(GetMyRoomIdx(), GetId(), SysClock::now() + 150ms, TimerEventType::UPDATE_NPC);
+    gServerFrame->AddTimerEvent(GetMyRoomIdx(), GetId(), SysClock::now() + 100ms, TimerEventType::UPDATE_NPC);
 }
 
 void GameObject::Update() {
