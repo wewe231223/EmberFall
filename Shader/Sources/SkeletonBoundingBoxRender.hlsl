@@ -149,6 +149,7 @@ Deffered_POUT BB_PS(BB_PIN input)
     Deffered_POUT output = (Deffered_POUT) 0;
     
     output.diffuse = input.color;
+    output.normal = float4(0.f, 0.f, 0.f, 5.f);
     
     return output;
 }
