@@ -68,6 +68,7 @@ private:
 	void ProcessFireProjectile(const uint8_t* buffer);
 	void ProcessProjectileMove(const uint8_t* buffer);
 	void ProcessChangeScene(const uint8_t* buffer);
+	void ProcessBuffHeal(const uint8_t* buffer);
 private:
 	std::shared_ptr<RenderManager> mRenderManager{};
 
@@ -81,6 +82,7 @@ private:
 
 	std::unordered_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
 	std::vector<GameObject> mGameObjects{};
+	std::vector<GameObject> mItemObjects{}; 
 
 	std::vector<GameObject> mEnvironmentObjects{};
 

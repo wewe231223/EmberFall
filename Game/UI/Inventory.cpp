@@ -55,6 +55,10 @@ void Inventory::SetItem(ItemType type, UINT slot, bool active) {
 	mItem[slot].second.SetActive(true);
 }
 
+void Inventory::DisactiveItem(UINT slot) {
+	mItem[slot].second.SetActive(false);
+}
+
 void Inventory::Update() {
 	mBaseFrame.Update();
 

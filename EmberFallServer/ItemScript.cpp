@@ -21,6 +21,7 @@ void ItemScript::Init() {
     owner->mSpec.active = true;
     owner->mSpec.interactable = true;
 
+
     gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), owner->GetId(), SysClock::now() + 10s, TimerEventType::REMOVE_NPC);
 }
 
