@@ -32,6 +32,9 @@ public:
 public:
     std::shared_ptr<GameObject> GetOwner() const;
 
+    bool IsActive() const;
+    void SetActive(bool active);
+
     virtual void Init() abstract;
 
     virtual void Update(const float deltaTime) abstract;
@@ -40,11 +43,12 @@ public:
     virtual void OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) abstract;
     virtual void OnCollisionTerrain(const float height) abstract;
 
-    virtual void DoInteraction(const std::shared_ptr<GameObject>& target) { };
+    virtual void DoInteraction(const std::shared_ptr<GameObject>& target) { }
 
     virtual void DispatchGameEvent(struct GameEvent* event) abstract;
     
 private:
+    bool mActive{ true };
     ScriptType mType{ };
     std::weak_ptr<GameObject> mOwner;
 };

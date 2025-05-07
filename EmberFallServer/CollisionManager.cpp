@@ -60,7 +60,7 @@ void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj, c
         decltype(auto) collisionCheckPlayers = std::move(sectorSystem->GetSector(sector).GetPlayersInRange(pos, bbExtents, objManager));
         decltype(auto) collisionCheckMonsters = std::move(sectorSystem->GetSector(sector).GetNPCsInRange(pos, bbExtents, objManager));
         decltype(auto) collisionCheckEnvs = std::move(sectorSystem->GetSector(sector).GetEnvInRange(pos, bbExtents, objManager));
-        decltype(auto) collisionCheckTriggers = std::move(sectorSystem->GetSector(sector).GetTriggersInTange(pos, bbExtents, objManager));
+        decltype(auto) collisionCheckTriggers = std::move(sectorSystem->GetSector(sector).GetTriggersInRange(pos, bbExtents, objManager));
 
         UpdateCollisionMonster(obj, objManager, collisionCheckMonsters);
         UpdateCollisionPlayer(obj, objManager, collisionCheckPlayers);
@@ -176,7 +176,7 @@ void CollisionManager::UpdateCollisionTrigger(const std::shared_ptr<GameObject>&
 
         // Todo Collision Check And Resolve
         auto trigger = objManager->GetTrigger(triggerId);
-        if (nullptr == trigger or false == trigger->mSpec.active or trigger->IsDead()) {
+        if (nullptr == trigger or false == trigger->mSpec.active) {
             PopCollisionPair(triggerId, objId);
             continue;
         }

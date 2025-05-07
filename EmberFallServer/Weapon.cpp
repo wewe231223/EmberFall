@@ -77,7 +77,7 @@ void Sword::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
     event->damage = GameProtocol::Logic::DEFAULT_DAMAGE;
     event->knockBackForce = dir * 5000.0f;
 
-    auto attackPos = pos + dir * mHitBox.z * 0.5f;
+    auto attackPos = pos + dir * mHitBox.z;
     gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 1.5f, event, 1.5f, 1);
 }
 

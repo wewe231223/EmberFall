@@ -17,7 +17,8 @@ enum class TimerEventType : uint8_t {
     REMOVE_NPC,
     UPDATE_NPC,
     REMOVE_TRIGGER,
-    SCENE_TRANSITION_COUNTDOWN
+    SCENE_TRANSITION_COUNTDOWN,
+    CHECK_GAME_CONDITION
 };
 
 struct TimerEvent {

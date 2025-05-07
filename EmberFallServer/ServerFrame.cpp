@@ -82,6 +82,10 @@ void ServerFrame::TimerThread() {
             gameRoom->OnSceneCountdownTick();
             continue;
         }
+        else if (event.eventType == TimerEventType::CHECK_GAME_CONDITION) {
+            gameRoom->CheckGameEnd();
+            continue;
+        }
         
         auto obj = gameRoom->GetStage().GetObjectFromId(event.id);
         if (nullptr == obj) {

@@ -12,3 +12,11 @@ Script::~Script() { }
 std::shared_ptr<GameObject> Script::GetOwner() const {
     return mOwner.lock();
 }
+
+bool Script::IsActive() const {
+    return mActive;
+}
+
+void Script::SetActive(bool active) {
+    mActive = active;
+}

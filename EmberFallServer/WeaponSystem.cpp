@@ -32,7 +32,7 @@ void WeaponSystem::SetWeapon(Packets::Weapon weapon) {
 
     switch (weapon) {
     case Packets::Weapon_SWORD:
-        mWeapon = std::make_shared<Weapons::Sword>(mRoomIdx, SimpleMath::Vector3{ 0.5f, 0.5f, 1.5f });
+        mWeapon = std::make_shared<Weapons::Sword>(mRoomIdx, SimpleMath::Vector3{ 0.7f, 0.7f, 2.0f });
         break;
 
     case Packets::Weapon_SPEAR:

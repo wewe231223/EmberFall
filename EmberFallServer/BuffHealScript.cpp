@@ -8,20 +8,25 @@ BuffHealScript::BuffHealScript(std::shared_ptr<class GameObject> owner, float de
 BuffHealScript::~BuffHealScript() { }
 
 void BuffHealScript::Init() {
+    mDelayCounter = SysClock::now();
 }
 
 void BuffHealScript::Update(const float deltaTime) {
     auto owner = GetOwner();
-    if (nullptr == owner) {
+    if (nullptr == owner or false == IsActive()) {
+        SetActive(false);
         return;
     }
 
     if (owner->IsDead() or false == owner->mSpec.active) {
+        SetActive(false);
         return;
     }
 
-    if (mDelay >= 1.0f) {
+    auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(SysClock::now() - mDelayCounter).count() / 1000.0f;
+    if (mDelay >= elapsedTime) {
         owner->mSpec.hp += 10.0f;
+        mDelayCounter = SysClock::now();
     }
 }
 

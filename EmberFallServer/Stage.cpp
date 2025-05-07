@@ -79,15 +79,12 @@ std::shared_ptr<GameObject> Stage::GetEnv(NetworkObjectIdType id) {
     return mObjectManager->GetEnv(id);
 }
 
-void Stage::StartStage(uint8_t humanCount, uint8_t bossCount) {
+void Stage::StartStage() {
     mActive.exchange(true);
-    mObjectManager->Start(humanCount, bossCount, 1);
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}] INGAME <HumanPlayer: {}>, <BossPlayer: {}>", mGameRoomIdx, humanCount, bossCount);
+    mObjectManager->Start(1);
 
     for (int i = 0; i < 100; ++i) {
-        auto randVec = Random::GetRandomVec3(SimpleMath::Vector3{ -100.0f, 0.0f, -100.0f }, SimpleMath::Vector3{ 100.0f, 0.0f, 100.0f });
         auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
-        monster->GetTransform()->Translate(randVec);
     }
 }
 

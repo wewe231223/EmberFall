@@ -20,6 +20,29 @@ namespace GameRoomError {
     inline constexpr uint8_t ERROR_ALL_ROOM_IS_FULL = 6;
 }
 
+class GameCondition {
+public:
+    GameCondition();
+    ~GameCondition();
+
+public:
+    uint8_t GetAliveHumanCount() const;
+    uint8_t GetBossCount() const;
+    uint8_t GetGemCount() const;
+
+    void FetchSubHumanCount();
+    void FetchSubGemCount();
+    void FetchSubBossCount();
+    void Reset();
+
+    void InitGameCondition(uint8_t humanCount, uint8_t bossCount, uint8_t gemCount);
+    std::pair<bool, Packets::PlayerRole>  CheckGameEnd();
+
+private:
+    std::atomic_uint8_t mAliveHumanCount{ };
+    std::atomic_uint8_t mBossCount{ };
+    std::atomic_uint8_t mGemCount{ };
+};
 
 class GameRoom {
 private:
@@ -52,8 +75,11 @@ public:
     void EndGameLoop();
     bool CheckAndStartGame();
 
+    void CheckGameEnd();
     void ChangeToLobby();
     void ChangeToStage1();
+
+    void NotifyDestructedObject(ObjectTag tag);
 
     void BroadCastInGameRoom(SessionIdType sender, OverlappedSend* packet);
     void BroadCastInGameRoom(OverlappedSend* packet);
@@ -64,17 +90,17 @@ public:
 
 private:
     uint16_t mRoomIdx{ };
-
-    std::atomic_bool mTransitionInterruptFlag{ false };
     std::atomic_uint8_t mGameRoomState{ };
-    std::atomic_uint8_t mBossPlayerCount{ };
-    uint8_t mPlayerCount{ };
-    uint8_t mReadyPlayerCount{ };
-
+    std::atomic_bool mTransitionInterruptFlag{ false };
     Packets::GameStage mStageTransitionTarget{ Packets::GameStage_LOBBY };
 
-    SysClock::time_point mSceneTransitionCounter{ };
+    GameCondition mIngameCondition{ };
 
+    uint8_t mPlayerCount{ };
+    uint8_t mReadyPlayerCount{ };
+    std::atomic_uint8_t mBossPlayerCount{ };
+
+    SysClock::time_point mSceneTransitionCounter{ };
     mutable Lock::SRWLock mSessionLock{ };
     SessionListInRoom mSessionsInRoom{ };   
     Concurrency::concurrent_queue<uint8_t> mSessionSlotIndices{ };

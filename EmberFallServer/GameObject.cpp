@@ -99,13 +99,16 @@ void GameObject::DisablePhysics() {
 
 void GameObject::Reset() {
     // Reset My Spec
+    mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE, true);
     mSpec.entity = Packets::EntityType_ENV;
+    mSpec.active = false;
     mSpec.interactable = false;
     mSpec.hp = 0.0f;
 
     auto myRoom = GetMyRoomIdx();
     gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->RemoveInSector(GetId(), GetPosition());
     gGameRoomManager->GetRoom(myRoom)->GetStage().GetObjectManager()->ReleaseObject(GetId());
+    gGameRoomManager->GetRoom(myRoom)->NotifyDestructedObject(GetTag());
 
     mTag = ObjectTag::ENV;
 

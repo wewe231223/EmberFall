@@ -36,6 +36,7 @@ public:
     void EnterLobby();
     void EnterInGame();
     void InitUserObject();
+    void InitPlayerScript();
 
     virtual void Close() override;
     virtual void OnConnect() override;

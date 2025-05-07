@@ -31,7 +31,6 @@ public:
     virtual void DispatchGameEvent(struct GameEvent* event) abstract;
 
 private:
-    bool mActive{ true };
     float mDuration{ };
     float mDurationCounter{ };
     Buff mBuff{ static_cast<Buff>(BuffType::NONE) };

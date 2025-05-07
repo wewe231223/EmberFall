@@ -24,7 +24,7 @@ public:
 
     void TryInsert(NetworkObjectIdType id, const std::shared_ptr<ObjectManager>& objManager);
     void RemoveObject(NetworkObjectIdType id, const std::shared_ptr<ObjectManager>& objManager);
-    std::vector<NetworkObjectIdType> GetTriggersInTange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
+    std::vector<NetworkObjectIdType> GetTriggersInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
     std::vector<NetworkObjectIdType> GetNPCsInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
     std::vector<NetworkObjectIdType> GetPlayersInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
     std::vector<NetworkObjectIdType> GetEnvInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);

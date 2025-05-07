@@ -6,6 +6,7 @@
 #include "Input.h"
 #include "Resources.h"
 #include "GameRoom.h"
+#include "ServerFrame.h"
 
 #include "Sector.h"
 
@@ -24,14 +25,14 @@ void GameSession::Close() {
     auto myId = static_cast<SessionIdType>(GetId());
     auto myRoom = GetMyRoomIdx();
 
-    if (nullptr != mUserObject) {
-        gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->RemoveInSector(GetId(), mUserObject->GetPosition());
-        mUserObject->Reset();
-    }
-
     // TODO - Remove In GameRoom
     auto result = gGameRoomManager->TryRemoveGameRoom(myRoom, myId, mPlayerRole, mReady, mSlotIndexInLobby);
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameSession Destructor: Session Erase From Room Error: {}", result);
+
+    if (nullptr != mUserObject) {
+        gServerFrame->AddTimerEvent(myRoom, myId, SysClock::now(), TimerEventType::REMOVE_NPC);
+        mUserObject = nullptr;
+    }
 
     mSessionState = SESSION_CLOSE;
 
@@ -87,35 +88,26 @@ void GameSession::ProcessRecv(INT32 numOfBytes) {
 }
 
 void GameSession::InitUserObject() {
+    static auto TestPos = SimpleMath::Vector3::Zero;
+    const static auto PosInc = SimpleMath::Vector3::Left * 2.0f;
+
     if (nullptr != mUserObject) {
         return;
     }
 
-    static auto TestPos = SimpleMath::Vector3::Zero;
-    const static auto PosInc = SimpleMath::Vector3::Left * 2.0f;
-
     auto myRoom = GetMyRoomIdx();
 
-    mUserObject = gGameRoomManager->GetRoom(myRoom)->GetStage().GetObjectManager()->GetObjectFromId(GetId());
-    mUserObject->mSpec.active = true;
-    mUserObject->CreateScript<PlayerScript>(mUserObject, std::make_shared<Input>());
-    mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
-    mUserObject->GetTransform()->SetY(0.0f);
+    mUserObject = gGameRoomManager->GetRoom(myRoom)->GetStage().GetObjectFromId(GetId());
 
+    InitPlayerScript();
+
+    mUserObject->mSpec.active = true;
     mUserObject->mSpec.entity = static_cast<Packets::EntityType>(mPlayerRole.load());
     mUserObject->mSpec.hp = 100.0f;
     mUserObject->mSpec.damage = 10.0f;
 
-    auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
-    auto player = mUserObject->GetScript<PlayerScript>();
-    if (nullptr == player) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
-    }
-
-    player->SetOwnerSession(sharedFromThis);
-
-    player->GetTransform()->Translate(TestPos);
-    TestPos += PosInc;
+    mUserObject->GetTransform()->Translate(TestPos);
+    mUserObject->GetTransform()->SetY(0.0f);
     mUserObject->Init();
 
     const ObjectSpec spec = mUserObject->mSpec;
@@ -131,6 +123,93 @@ void GameSession::InitUserObject() {
 
     gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->AddInSector(GetId(), pos);
     gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->UpdatePlayerViewList(mUserObject, pos, range);
+}
+
+void GameSession::InitPlayerScript() {
+    switch (mPlayerRole) {
+    case Packets::PlayerRole_HUMAN_ARCHER:
+    {
+        mUserObject->CreateScript<PlayerScript>(mUserObject, std::make_shared<Input>());
+        mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
+        mUserObject->mAnimationStateMachine.Init(ANIM_KEY_ARCHER);
+
+        auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
+        auto player = mUserObject->GetScript<PlayerScript>();
+        if (nullptr == player) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
+        }
+
+        player->SetOwnerSession(sharedFromThis);
+        break;
+    }
+
+    case Packets::PlayerRole_HUMAN_SWORD:
+    {
+        mUserObject->CreateScript<PlayerScript>(mUserObject, std::make_shared<Input>());
+        mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
+        mUserObject->mAnimationStateMachine.Init(ANIM_KEY_SHIELD_MAN);
+
+        auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
+        auto player = mUserObject->GetScript<PlayerScript>();
+        if (nullptr == player) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
+        }
+
+        player->SetOwnerSession(sharedFromThis);
+        break;
+    }
+
+    case Packets::PlayerRole_HUMAN_LONGSWORD:
+    {
+        mUserObject->CreateScript<PlayerScript>(mUserObject, std::make_shared<Input>());
+        mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
+        mUserObject->mAnimationStateMachine.Init(ANIM_KEY_LONGSWORD_MAN);
+
+        auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
+        auto player = mUserObject->GetScript<PlayerScript>();
+        if (nullptr == player) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
+        }
+
+        player->SetOwnerSession(sharedFromThis);
+        break;
+    }
+
+    case Packets::PlayerRole_HUMAN_MAGICIAN:
+    {
+        mUserObject->CreateScript<PlayerScript>(mUserObject, std::make_shared<Input>());
+        mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
+        mUserObject->mAnimationStateMachine.Init(ANIM_KEY_MAGICIAN);
+
+        auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
+        auto player = mUserObject->GetScript<PlayerScript>();
+        if (nullptr == player) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
+        }
+
+        player->SetOwnerSession(sharedFromThis);
+        break;
+    }
+
+    case Packets::PlayerRole_BOSS:
+    {
+        mUserObject->CreateScript<PlayerScript>(mUserObject, std::make_shared<Input>());
+        mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_DEMON).bb);
+        mUserObject->mAnimationStateMachine.Init(ANIM_KEY_DEMON);
+
+        auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
+        auto player = mUserObject->GetScript<PlayerScript>();
+        if (nullptr == player) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
+        }
+
+        player->SetOwnerSession(sharedFromThis);
+        break;
+    }
+
+    default:
+        break;
+    }
 }
 
 void GameSession::EnterLobby() {

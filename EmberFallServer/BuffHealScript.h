@@ -20,7 +20,7 @@ public:
 
 private:
     float mDelay{ };
-    float mDelayCounter{ };
     float mHealPoint{ };
+    SysClock::time_point mDelayCounter{ };
 };
 

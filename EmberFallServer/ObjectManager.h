@@ -26,13 +26,9 @@ public:
     ~ObjectManager();
 
 public:
-    uint8_t GetGemCount() const;
-    uint8_t GetAliveHumanCount() const;
-    //uint8_t GetBossCount() const;
-
     void SetSector(std::shared_ptr<SectorSystem> sector);
     void Init(uint16_t roomIdx);
-    void Start(uint8_t humanCount, uint8_t bossCount, uint8_t corruptedGemCount=DEFAULT_CORRUPTED_GEM_COUNT);
+    void Start(uint8_t corruptedGemCount=DEFAULT_CORRUPTED_GEM_COUNT);
     void Reset();
 
     void LoadEnvFromFile(const std::filesystem::path& path);
@@ -56,9 +52,6 @@ public:
 
 private:
     uint16_t mRoomIdx{ };
-
-    std::atomic_uint8_t mAlivePlayerCount{ };
-    std::atomic_uint8_t mCorruptedGemCount{ 0 };
 
     std::array<std::shared_ptr<GameObject>, MAX_USER> mPlayers{ };
 

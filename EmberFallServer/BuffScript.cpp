@@ -13,6 +13,6 @@ Buff BuffScript::GetBuffType() const {
 void BuffScript::LateUpdate(const float deltaTime) {
     mDurationCounter += deltaTime;
     if (mDurationCounter >= mDuration) {
-        mActive = false;
+        SetActive(false);
     }
 }

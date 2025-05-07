@@ -39,7 +39,7 @@ void AnimationStateMachine::SetDefaultState(Packets::AnimationState state) {
 }
 
 void AnimationStateMachine::ChangeState(Packets::AnimationState nextState, bool force) {
-    if (false == force and mCurrState == nextState) {
+    if (nullptr == mOwner or nullptr == mAnimInfo or (false == force and mCurrState == nextState)) {
         return;
     }
 

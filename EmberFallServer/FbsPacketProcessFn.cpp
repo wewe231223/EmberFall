@@ -53,7 +53,7 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
         break;
     }
 
-    case Packets::PacketTypes_PT_PLAYER_CANCEL_READY_SC:
+    case Packets::PacketTypes_PT_PLAYER_CANCEL_READY_CS:
     {
         decltype(auto) packetCencelReady = FbsPacketFactory::GetDataPtrCS<Packets::PlayerCancelReadyCS>(buffer);
         ProcessPlayerCancelReady(session, packetCencelReady);

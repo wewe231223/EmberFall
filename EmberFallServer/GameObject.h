@@ -96,6 +96,10 @@ public:
         requires std::derived_from<ScriptType, Script>
     void CreateScript(Args&&... args);
 
+    template<typename ScriptType, typename ...Args>
+        requires std::derived_from<ScriptType, Script>
+    void AddScript(Args&&... args);
+
     template <typename ScriptType> requires std::derived_from<ScriptType, Script>
     std::shared_ptr<ScriptType> GetScript();
 
@@ -115,6 +119,7 @@ private:
     std::shared_ptr<Script> mEntityScript{ };                           // script
     std::shared_ptr<BoundingObject> mBoundingObject{ };                 // boundingObject
 
+    std::vector<std::shared_ptr<Script>> mScripts{ };
     Concurrency::concurrent_queue<std::shared_ptr<GameEvent>> mGameEvents{ };
 };
 
@@ -129,6 +134,14 @@ template<typename ScriptType, typename ...Args>
     requires std::derived_from<ScriptType, Script>
 void GameObject::CreateScript(Args&&... args) {
     mEntityScript = std::make_shared<ScriptType>(args...);
+}
+
+template<typename ScriptType, typename ...Args>
+    requires std::derived_from<ScriptType, Script>
+void GameObject::AddScript(Args&&... args) {
+    auto script = std::make_shared<ScriptType>(args...);
+    script->Init();
+    mScripts.emplace_back(script);
 }
 
 template<typename ScriptType> requires std::derived_from<ScriptType, Script>

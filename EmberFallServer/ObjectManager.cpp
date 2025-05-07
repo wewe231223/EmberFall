@@ -19,14 +19,6 @@ ObjectManager::ObjectManager(uint16_t roomIdx)
 
 ObjectManager::~ObjectManager() { }
 
-uint8_t ObjectManager::GetGemCount() const {
-    return mCorruptedGemCount.load();
-}
-
-uint8_t ObjectManager::GetAliveHumanCount() const {
-    return mAlivePlayerCount;
-}
-
 void ObjectManager::SetSector(std::shared_ptr<SectorSystem> sector) {
     mSector = sector;
 }
@@ -79,8 +71,7 @@ void ObjectManager::Init(uint16_t roomIdx) {
 
 }
 
-void ObjectManager::Start(uint8_t humanCount, uint8_t bossCount, uint8_t corruptedGemCount) {
-    mAlivePlayerCount = humanCount;
+void ObjectManager::Start(uint8_t corruptedGemCount) {
     for (uint8_t i = 0; i < corruptedGemCount; ++i) {
         auto gem = SpawnObject(Packets::EntityType_CORRUPTED_GEM);
         gem->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -100.0f, 0.0f, -100.0f }, SimpleMath::Vector3{ 100.0f, 0.0f, 100.0f }));
@@ -111,9 +102,6 @@ void ObjectManager::Reset() {
 
         trigger->Reset();
     }
-
-    mAlivePlayerCount = 0;
-    mCorruptedGemCount = 0;
 }
 
 void ObjectManager::LoadEnvFromFile(const std::filesystem::path& path) {
@@ -185,7 +173,7 @@ std::shared_ptr<GameObject> ObjectManager::GetObjectFromId(NetworkObjectIdType i
 }
 
 std::shared_ptr<GameObject> ObjectManager::GetPlayer(NetworkObjectIdType id) const {
-    if (id >= MONSTER_ID_START or id < USER_ID_START) {
+    if (id >= MONSTER_ID_START) {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Bad Player Object Array Access - Access Id: [{}]", id);
         return nullptr;
     }
@@ -239,11 +227,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
 
     NetworkObjectIdType validId{ };
     switch (entity) {
-    case Packets::EntityType_HUMAN:
-    {
-        break;
-    }
-
     case Packets::EntityType_MONSTER:
     {
         if (false == mNPCIndices.try_pop(validId)) {
@@ -254,13 +237,14 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         auto obj = GetObjectFromId(validId);
         obj->mSpec.active = true;
         obj->CreateScript<MonsterScript>(obj);
-        obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
+        obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_IMP).bb);
         obj->Init();
 
         obj->GetTransform()->SetY(0.0f);
         obj->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -200.0f, 0.0f, -200.0f }, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
         
         sector->AddInSector(validId, obj->GetPosition());
+
         obj->RegisterUpdate();
 
         return obj;
@@ -277,8 +261,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
             gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max NPC");
             break;
         }
-
-        mCorruptedGemCount.fetch_add(1);
         
         auto obj = GetObjectFromId(validId);
         obj->mSpec.active = true;
@@ -336,9 +318,13 @@ std::shared_ptr<GameObject> ObjectManager::SpawnTrigger(const SimpleMath::Vector
     obj->CreateScript<Trigger>(obj, lifeTime);
     obj->GetTransform()->SetPosition(pos);
     obj->GetTransform()->SetLook(dir);
+    obj->GetTransform()->Update();
+
     obj->CreateBoundingObject<OBBCollider>(SimpleMath::Vector3::Zero, ext);
+    
     obj->Init();
 
+    obj->GetBoundingObject()->Update(obj->GetTransform()->GetWorld());
     sector->AddInSector(validId, obj->GetPosition());
 
     return obj;
@@ -362,10 +348,13 @@ std::shared_ptr<GameObject> ObjectManager::SpawnEventTrigger(const SimpleMath::V
     obj->CreateScript<EventTrigger>(obj, event, lifeTime, delay, count);
     obj->GetTransform()->SetPosition(pos);
     obj->GetTransform()->SetLook(dir);
+    obj->GetTransform()->Update();
+
     obj->CreateBoundingObject<OBBCollider>(SimpleMath::Vector3::Zero, ext);
+
     obj->Init();
 
-    sector->AddInSector(validId, obj->GetPosition());
+    obj->GetBoundingObject()->Update(obj->GetTransform()->GetWorld());
     obj->RegisterUpdate();
 
     return obj;
@@ -385,58 +374,21 @@ void ObjectManager::ReleaseObject(NetworkObjectIdType id) {
         return;
     }
 
-    auto releasedObjTag = GetObjectFromId(id)->GetTag();
-
-    // Gem Count
-    if (ObjectTag::CORRUPTED_GEM == releasedObjTag) {
-        mCorruptedGemCount.fetch_sub(1);
-
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Corrupted Gem, Gem Count : {}", GetGemCount());
-        if (mCorruptedGemCount <= 0) {
-            auto packetGameEnd = FbsPacketFactory::GameEndSC(Packets::PlayerRole_HUMAN);
-            gGameRoomManager->GetRoom(mRoomIdx)->BroadCastInGameRoom(packetGameEnd);
-            gGameRoomManager->GetRoom(mRoomIdx)->EndGameLoop();
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}] End Game Loop", mRoomIdx);
-        }
-    }
-    else if (ObjectTag::PLAYER == releasedObjTag) {
-        mAlivePlayerCount.fetch_sub(1);
-
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Human Player, Alive Player Count: {}", mAlivePlayerCount.load());
-        if (mAlivePlayerCount <= 0) {
-            auto packetGameEnd = FbsPacketFactory::GameEndSC(Packets::PlayerRole_BOSS);
-            gGameRoomManager->GetRoom(mRoomIdx)->BroadCastInGameRoomWithoutLock(packetGameEnd);
-            gGameRoomManager->GetRoom(mRoomIdx)->EndGameLoop();
-        }
-    }
-    else if (ObjectTag::BOSSPLAYER == releasedObjTag) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Human Player, Alive Player Count: {}", mAlivePlayerCount.load());
-        if (mAlivePlayerCount <= 0) {
-            // DeadLock
-            auto packetGameEnd = FbsPacketFactory::GameEndSC(Packets::PlayerRole_HUMAN);
-            gGameRoomManager->GetRoom(mRoomIdx)->BroadCastInGameRoomWithoutLock(packetGameEnd);
-            gGameRoomManager->GetRoom(mRoomIdx)->EndGameLoop();
-        }
-    }
-
     if (id < MONSTER_ID_START) {
 #if defined(DEBUG) || defined(_DEBUG)
         //gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Release Player Object");
 #endif
-        return;
     }
     else if (id < PROJECTILE_ID_START) {
         mNPCIndices.push(id);
-        return;
     }
     else if (id < TRIGGER_ID_START) {
         mProjectileIndices.push(id);
-        return;
     }
     else if (id < ENV_ID_START) {
         mTriggerIndices.push(id);
-        return;
     }
-
-    mEnvironmentsIndices.push(id);
+    else {
+        mEnvironmentsIndices.push(id);
+    }
 }

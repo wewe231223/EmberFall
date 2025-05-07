@@ -63,8 +63,6 @@ private:
 private:
     bool mInteraction{ false };
 
-    //Short2 mCurrSectorIdx{ };
-
     Lock::SRWLock mViewListLock{ };
     ViewList mViewList;
     Inventory mInventory{ };

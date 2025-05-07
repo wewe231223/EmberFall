@@ -23,6 +23,7 @@ void MonsterScript::Init() {
     }
 
     owner->mAnimationStateMachine.Init(ANIM_KEY_MONSTER);
+
     auto& spec = owner->mSpec;
     spec.active = true;
     spec.hp = 10.0f;
@@ -52,8 +53,9 @@ void MonsterScript::LateUpdate(const float deltaTime) {
 
     if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Remove Monster {}", owner->GetMyRoomIdx(), owner->GetId());
-        gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), owner->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
+
         owner->mSpec.active = false;
+        gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), owner->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
 
         auto packetRemove = FbsPacketFactory::ObjectRemoveSC(owner->GetId());
         owner->StorePacket(packetRemove);

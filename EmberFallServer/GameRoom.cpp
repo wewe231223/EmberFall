@@ -97,7 +97,9 @@ uint8_t GameRoom::RemovePlayer(SessionIdType id, Packets::PlayerRole lastRole, b
     if (GameRoomState::GAME_ROOM_STATE_LOBBY != mGameRoomState and 0 == mPlayerCount) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Boss Player Count zero or Player Count is zero");
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Now GameRoom [{}] state is GAME_ROOM_STATE_LOBBBY", mRoomIdx);
-        ChangeToLobby();
+
+        mStage.EndStage();
+        mGameRoomState = GameRoomState::GAME_ROOM_STATE_LOBBY;
     }
 
     mSessionsInRoom.erase(id);
@@ -237,6 +239,21 @@ bool GameRoom::CheckAndStartGame() {
     return true;
 }
 
+void GameRoom::CheckGameEnd() {
+    auto [isEnd, winner] = mIngameCondition.CheckGameEnd();
+    if (not isEnd) {
+        if (GameRoomState::GAME_ROOM_STATE_INGAME == mGameRoomState) {
+            gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, SysClock::now() + 1s, TimerEventType::CHECK_GAME_CONDITION);
+        }
+        return;
+    }
+
+    auto packetGameEnd = FbsPacketFactory::GameEndSC(winner);
+    BroadCastInGameRoomWithoutLock(packetGameEnd);
+
+    EndGameLoop();
+}
+
 void GameRoom::ChangeToLobby() {
     mStage.EndStage();
     mGameRoomState = GameRoomState::GAME_ROOM_STATE_LOBBY;
@@ -255,6 +272,8 @@ void GameRoom::ChangeToLobby() {
             session->CancelReady();
         }
     }
+
+    mIngameCondition.Reset();
 
     auto packetToLobby = FbsPacketFactory::ChangeSceneSC(Packets::GameStage_LOBBY);
     BroadCastInGameRoom(packetToLobby);
@@ -279,12 +298,48 @@ void GameRoom::ChangeToStage1() {
 
     mGameRoomState = GameRoomState::GAME_ROOM_STATE_INGAME;
 
+    gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, SysClock::now() + 1s, TimerEventType::CHECK_GAME_CONDITION);
+    mStage.StartStage();
+    mIngameCondition.InitGameCondition(mPlayerCount - mBossPlayerCount, mBossPlayerCount, 1);
+
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Start Game!!!", mRoomIdx);
-    mStage.StartStage(mPlayerCount - mBossPlayerCount, mBossPlayerCount);
 
     auto packetSceneTransition = FbsPacketFactory::ChangeSceneSC(mStageTransitionTarget);
     BroadCastInGameRoom(packetSceneTransition);
     return;
+}
+
+void GameRoom::NotifyDestructedObject(ObjectTag tag) {
+    if (GameRoomState::GAME_ROOM_STATE_INGAME != mGameRoomState) {
+        return;
+    }
+
+    // Gem Count
+    switch (tag) {
+    case ObjectTag::CORRUPTED_GEM:
+    {
+        mIngameCondition.FetchSubGemCount();
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Corrupted Gem, Gem Count : {}", mIngameCondition.GetGemCount());
+        break;
+    }
+
+    case ObjectTag::PLAYER:
+    {
+        mIngameCondition.FetchSubHumanCount();
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Human Player", mIngameCondition.GetAliveHumanCount());
+        break;
+    }
+
+    case ObjectTag::BOSSPLAYER:
+    {
+        mIngameCondition.FetchSubBossCount();
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Boss Player", mIngameCondition.GetBossCount());
+        break;
+    }
+
+    default:
+        break;
+    }
 }
 
 void GameRoom::BroadCastInGameRoom(SessionIdType sender, OverlappedSend* packet) {
@@ -498,4 +553,81 @@ bool GameRoomManager::ReadyPlayer(uint16_t roomIdx, SessionIdType id) {
 
 bool GameRoomManager::CancelPlayerReady(uint16_t roomIdx, SessionIdType id) {
     return mGameRooms.at(roomIdx)->CancelPlayerReady(id);
+}
+
+GameCondition::GameCondition() { }
+
+GameCondition::~GameCondition() { }
+
+uint8_t GameCondition::GetAliveHumanCount() const {
+    return mAliveHumanCount;
+}
+
+uint8_t GameCondition::GetBossCount() const {
+    return mBossCount;
+}
+
+uint8_t GameCondition::GetGemCount() const {
+    return mGemCount;
+}
+
+void GameCondition::FetchSubHumanCount() {
+    if (0 == mAliveHumanCount) {
+        return;
+    }
+
+    mAliveHumanCount.fetch_sub(1);
+}
+
+void GameCondition::FetchSubGemCount() {
+    if (0 == mGemCount) {
+        return;
+    }
+
+    mGemCount.fetch_sub(1);
+}
+
+void GameCondition::FetchSubBossCount() {
+    if (0 == mBossCount) {
+        return;
+    }
+
+    mBossCount.fetch_sub(1);
+}
+
+void GameCondition::Reset() {
+    mAliveHumanCount = 0;
+    mGemCount = 0;
+    mBossCount = 0;
+}
+
+void GameCondition::InitGameCondition(uint8_t humanCount, uint8_t bossCount, uint8_t gemCount) {
+    mAliveHumanCount = humanCount;
+    mBossCount = bossCount;
+    mGemCount = gemCount;
+}
+
+std::pair<bool, Packets::PlayerRole> GameCondition::CheckGameEnd() {
+    if (mAliveHumanCount > 0 and mGemCount > 0) {
+        return std::pair{ false, Packets::PlayerRole_HUMAN };
+    }
+
+    auto pair = std::make_pair(false, Packets::PlayerRole_HUMAN);
+    if (0 == mGemCount) {
+        pair.first = true;
+        return pair;
+    }
+
+    if (0 == mBossCount) {
+        pair.first = true;
+        return pair;
+    }
+
+    if (0 == mAliveHumanCount) {
+        pair.first = true;
+        pair.second = Packets::PlayerRole_BOSS;
+        return pair;
+    }
+
+    return pair;
 }

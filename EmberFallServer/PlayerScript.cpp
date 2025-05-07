@@ -12,6 +12,8 @@
 #include "Trigger.h"
 #include "GameRoom.h"
 
+#include "BuffHealScript.h"
+
 PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input) 
     : Script{ owner, ObjectTag::PLAYER, ScriptType::PLAYER }, mSession{ }, mInput { input }, mViewList{ } {
     owner->mSpec.entity = Packets::EntityType_HUMAN;
@@ -95,8 +97,7 @@ void PlayerScript::Init() {
         return;
     }
 
-    owner->mAnimationStateMachine.Init(ANIM_KEY_LONGSWORD_MAN);
-    owner->mSpec.hp = 100.0f;
+    owner->mSpec.hp = 10.0f;
 
     const auto pos = owner->GetPosition();
     const auto look = owner->GetTransform()->Forward();
@@ -222,7 +223,7 @@ void PlayerScript::DispatchGameEvent(GameEvent* event) {
             auto packetAttacked = FbsPacketFactory::ObjectAttackedSC(owner->GetId(), owner->mSpec.hp);
             owner->StorePacket(packetAttacked);
 
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!, Attacked by Monster: {}", owner->GetId(), event->sender);
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[{}] Attacked!!, Attacked by Monster: {}", owner->GetId(), event->sender);
 
             // test
             auto sPos = sender->GetPosition();

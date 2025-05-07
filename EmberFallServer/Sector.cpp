@@ -121,7 +121,7 @@ void Sector::RemoveObject(NetworkObjectIdType id, const std::shared_ptr<ObjectMa
     }
 }
 
-std::vector<NetworkObjectIdType> Sector::GetTriggersInTange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager) {
+std::vector<NetworkObjectIdType> Sector::GetTriggersInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager) {
     Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
     std::vector<NetworkObjectIdType> inRangeTriggers{ };
     for (const auto triggerId : mTriggers) {
@@ -145,6 +145,7 @@ std::vector<NetworkObjectIdType> Sector::GetNPCsInRange(SimpleMath::Vector3 pos,
     for (const auto npcId : mNPCs) {
         auto npc = objManager->GetNPC(npcId);
         if (nullptr == npc) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "NPC {} is null", npcId);
             continue;
         }
 
@@ -405,7 +406,7 @@ void SectorSystem::UpdatePlayerViewList(const std::shared_ptr<GameObject>& playe
     const auto id = player->GetId();
     const auto currPos = player->GetPosition();
     const auto prevPos = player->GetPrevPosition();
-    UpdateSectorPos(id, prevPos, currPos);
+    auto currIdx = UpdateSectorPos(id, prevPos, currPos);
 
     std::vector<Short2> checkSectors = std::move(GetMustCheckSectors(pos, range));
     std::vector<NetworkObjectIdType> inViewRangeMonsters{ };
@@ -491,6 +492,4 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
 
         FbsPacketFactory::ReleasePacketBuf(sendPacket);
     }
-
-    object->mAnimationStateMachine.mAnimationChanged = false;
 }

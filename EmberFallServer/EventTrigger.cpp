@@ -31,26 +31,27 @@ void EventTrigger::OnCollision(const std::shared_ptr<GameObject>& opponent, cons
         return;
     }
 
+    auto opponentId = opponent->GetId();
     auto owner = GetOwner();
-    if (nullptr == owner) {
+    if (nullptr == owner or opponentId == mEvent->sender) {
         return;
     }
 
     auto ownerRoom = owner->GetMyRoomIdx();
-    auto opponentId = opponent->GetId();
-    auto opponentTag = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectManager()->GetObjectFromId(opponentId)->GetTag();
+    auto opponentTag = opponent->GetTag();
     if (ObjectTag::TRIGGER == opponentTag or ObjectTag::ENV == opponentTag or ObjectTag::NONE == opponentTag) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Trigger: Opponent Is Trigger or ENV or NONE, Tag Value: {}", static_cast<int>(opponentTag));
         return;
     }
 
-    if (not mProducedEventCounter.contains(opponentId) and opponentId != mEvent->sender) {
+    if (not mProducedEventCounter.contains(opponentId)) {
         mProducedEventCounter.try_emplace(opponentId, 0.0f, 1);
         mEvent->receiver = opponentId;
         opponent->DispatchGameEvent(GameEventFactory::CloneEvent(mEvent));
         return;
     }
 
-    auto& [delay, count] = mProducedEventCounter[opponentId];
+    auto& [delay, count] = mProducedEventCounter.at(opponentId);
     delay += GetOwner()->GetDeltaTime();
     if (delay >= mProduceEventDelay and count < mProduceEventCount) {
         count += 1;
