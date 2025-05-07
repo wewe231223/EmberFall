@@ -151,6 +151,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		else {
 			// 그 플레이어 인스턴스가 없다면  
 			if (not mPlayerIndexmap.contains(data->objectId())) {
+
 				auto nextLoc = FindNextPlayerLoc();
 				if (nextLoc == mPlayers.end()) { 
 					Crash("There is no more space for Other Player!!"); 
@@ -193,6 +194,10 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					Crash("Something went wrong!!");
 					break;
 				}
+				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
+
+				nextLoc->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
+				nextLoc->SetAnimation(data->animation());
 
 			}
 			else {
