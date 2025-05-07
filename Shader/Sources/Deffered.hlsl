@@ -271,6 +271,7 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     float shadowFactor = 0.5f;
    
     float isBackFace = step(0, dot((cameraPosition - worldPos.xyz), normal));
+    isBackFace = GBuffers[1].Sample(linearWrapSampler, input.texcoord).a;
     shadowFactor = 0.5f + 0.5f * isBackFace;
    
     
