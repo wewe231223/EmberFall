@@ -221,7 +221,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial");
 					nextLoc->SetActiveState(true);
 
-					nextLoc->GetTransform().Scaling(0.3f, 0.3f, 0.3f);
+					//nextLoc->GetTransform().Scaling(0.3f, 0.3f, 0.3f);
 					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
 				}
 					break;

@@ -291,7 +291,7 @@ OverlappedSend* FbsPacketFactory::ObjectAnimationChangedSC(NetworkObjectIdType i
 OverlappedSend* FbsPacketFactory::UseItemSC(SessionIdType id, uint8_t itemIdx) {
     flatbuffers::FlatBufferBuilder builder{ };
 
-    auto offset = Packets::CreateUseItemSC(builder, itemIdx);
+    auto offset = Packets::CreateUseItemSC(builder, 0, itemIdx);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();
@@ -373,7 +373,7 @@ OverlappedSend* FbsPacketFactory::FireProjectileSC(NetworkObjectIdType id, const
 OverlappedSend* FbsPacketFactory::BuffHealSC(const float hp) {
     flatbuffers::FlatBufferBuilder builder{ };
 
-    auto offset = Packets::CreateBuffHealSC(builder);
+    auto offset = Packets::CreateBuffHealSC(builder, hp);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();
