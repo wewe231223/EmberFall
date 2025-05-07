@@ -20,7 +20,7 @@ void CorruptedGemScript::Init() {
     owner->mSpec.interactable = true;
     owner->mSpec.entity = Packets::EntityType_CORRUPTED_GEM;
     owner->mSpec.active = true;
-    owner->mSpec.hp = 100.0f;
+    owner->mSpec.hp = 10000.0f;
 }
 
 void CorruptedGemScript::Update(const float deltaTime) { }

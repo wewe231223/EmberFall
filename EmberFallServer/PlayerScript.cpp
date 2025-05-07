@@ -13,6 +13,7 @@
 #include "GameRoom.h"
 
 #include "BuffHealScript.h"
+#include "ItemScript.h"
 
 PlayerScript::PlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input) 
     : Script{ owner, ObjectTag::PLAYER, ScriptType::PLAYER }, mSession{ }, mInput { input }, mViewList{ } {
@@ -99,7 +100,6 @@ void PlayerScript::Init() {
 
     //owner->mSpec.hp = GameProtocol::Logic::MAX_HP;
     owner->mSpec.hp = 50.0f;
-    owner->GetBuffSystem()->AddBuff<BuffHealScript>();
 
     const auto pos = owner->GetPosition();
     const auto look = owner->GetTransform()->Forward();
@@ -109,8 +109,6 @@ void PlayerScript::Init() {
 }
 
 void PlayerScript::Update(const float deltaTime) {
-    mInput->Update();
-
     auto owner = GetOwner();
     if (nullptr == owner) {
         return;
@@ -119,6 +117,11 @@ void PlayerScript::Update(const float deltaTime) {
     mInteractionTrigger->GetTransform()->SetPosition(owner->GetPosition());
     mInteractionTrigger->GetTransform()->SetLook(owner->GetTransform()->Forward());
     mInteractionTrigger->Update();
+
+    // Item
+    if (mInput->IsDown('U')) {
+        UseItem();
+    }
 
     // Interact
     if (mInput->IsActiveKey('F')) {
@@ -132,11 +135,6 @@ void PlayerScript::Update(const float deltaTime) {
         return;
     }
 
-    // Item
-    if (mInput->IsUp('U')) {
-        UseItem();
-    }
-
     CheckAndJump(deltaTime);
     CheckAndMove(deltaTime);
 
@@ -144,6 +142,8 @@ void PlayerScript::Update(const float deltaTime) {
     if (mInput->IsActiveKey(VK_SPACE)) {
         owner->Attack();
     }
+
+    mInput->Update();
 
     auto ownerRoom = owner->GetMyRoomIdx();
     gGameRoomManager->GetRoom(ownerRoom)->GetStage().UpdatePlayerViewList(owner, owner->GetPosition(), mViewList.mViewRange.Count());
@@ -441,8 +441,33 @@ void PlayerScript::SuccessInteraction() {
 }
 
 void PlayerScript::AcquireItem(const float deltaTime, const std::shared_ptr<GameObject>& item) {
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    auto itemScript = item->GetScript<ItemScript>();
+    if (nullptr == itemScript) {
+        return;
+    }
+
+    auto itemTag = itemScript->GetItemTag();
+    mInventory.AcquireItem(itemTag);
+
+    auto packetAcquire = FbsPacketFactory::AcquireItemSC(static_cast<SessionIdType>(owner->GetId()), ItemTagToItemType(itemTag));
+    owner->StorePacket(packetAcquire);
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Acquire Item {}", owner->GetId(), Packets::EnumNameItemType(ItemTagToItemType(itemTag)));
+    gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), item->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
+
+    SuccessInteraction();
 }
 
 void PlayerScript::UseItem() {
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
 
+    mInventory.UseItem(owner);
 }

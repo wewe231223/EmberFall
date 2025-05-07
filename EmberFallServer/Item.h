@@ -17,6 +17,9 @@ enum class ItemTag : uint8_t {
     ITEM_TAG_COUNT
 };
 
+Packets::EntityType ItemTagToEntityType(ItemTag tag);
+Packets::ItemType ItemTagToItemType(ItemTag tag);
+
 using ItemEffectFn = std::function<void(const std::shared_ptr<class GameObject>&)>;
 
 class Item abstract {

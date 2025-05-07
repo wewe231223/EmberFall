@@ -30,7 +30,7 @@ void BuffHealScript::Update(const float deltaTime) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Heal!! Owner CurrHP: {}", owner->mSpec.hp);
         mDelayCounter = SysClock::now();
         
-        auto packetHeal = FbsPacketFactory::BuffHealSC(owner->mSpec.hp);
+        //auto packetHeal = FbsPacketFactory::BuffHealSC(owner->mSpec.hp);
     }
 }
 

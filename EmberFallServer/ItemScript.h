@@ -16,7 +16,9 @@ public:
     ItemScript(std::shared_ptr<GameObject> owner, ItemTag item);
     virtual ~ItemScript();
 
-private:
+public:
+    ItemTag GetItemTag() const;
+
     virtual void Init() override;
 
     virtual void Update(const float deltaTime) override;
@@ -24,6 +26,7 @@ private:
 
     virtual void OnCollisionTerrain(const float height) override;
 
+    virtual void OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) override;
     virtual void DispatchGameEvent(struct GameEvent* event) override;
 
 private:

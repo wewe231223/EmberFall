@@ -74,8 +74,7 @@ void ObjectManager::Init(uint16_t roomIdx) {
 
 void ObjectManager::Start(uint8_t corruptedGemCount) {
     for (uint8_t i = 0; i < corruptedGemCount; ++i) {
-        auto gem = SpawnObject(Packets::EntityType_CORRUPTED_GEM);
-        gem->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -100.0f, 0.0f, -100.0f }, SimpleMath::Vector3{ 100.0f, 0.0f, 100.0f }));
+        SpawnObject(Packets::EntityType_CORRUPTED_GEM);
     }
 }
 
@@ -287,7 +286,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
     case Packets::EntityType_ENV:
     {
         if (false == mEnvironmentsIndices.try_pop(validId)) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max User");
+            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max ENV");
             break;
         }
 
@@ -297,14 +296,35 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
 
     case Packets::EntityType_ITEM_POTION:
     {
-        if (false == mEnvironmentsIndices.try_pop(validId)) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max User");
+        if (false == mNPCIndices.try_pop(validId)) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max NPC");
             break;
         }
 
         auto obj = GetObjectFromId(validId);
         obj->mSpec.active = true;
         obj->CreateScript<ItemScript>(obj, ItemTag::ITEM_POTION);
+        obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
+        obj->Init();
+
+        obj->GetTransform()->SetY(0.0f);
+        obj->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f }, SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f }));
+
+        sector->AddInSector(validId, obj->GetPosition());
+        obj->RegisterUpdate();
+        return obj;
+    }
+
+    case Packets::EntityType_ITEM_CROSS:
+    {
+        if (false == mNPCIndices.try_pop(validId)) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max NPC");
+            break;
+        }
+
+        auto obj = GetObjectFromId(validId);
+        obj->mSpec.active = true;
+        obj->CreateScript<ItemScript>(obj, ItemTag::ITEM_CROSS);
         obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         obj->Init();
 

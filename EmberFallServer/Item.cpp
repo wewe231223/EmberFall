@@ -32,3 +32,35 @@ void HolyWater::UseItem(const std::shared_ptr<class GameObject>& obj) {
 void Cross::UseItem(const std::shared_ptr<class GameObject>& obj) {
 
 }
+
+Packets::EntityType ItemTagToEntityType(ItemTag tag) 
+{
+    switch (tag) {
+    case ItemTag::ITEM_POTION:
+        return Packets::EntityType_ITEM_POTION;
+
+    case ItemTag::ITEM_CROSS:
+        return Packets::EntityType_ITEM_CROSS;
+
+    case ItemTag::ITEM_HOLYWATER:
+        return Packets::EntityType_ITEM_HOLYWATER;
+    }
+
+    return Packets::EntityType();
+}
+
+Packets::ItemType ItemTagToItemType(ItemTag tag)
+{
+    switch (tag) {
+    case ItemTag::ITEM_POTION:
+        return Packets::ItemType_POTION;
+
+    case ItemTag::ITEM_CROSS:
+        return Packets::ItemType_CROSS;
+
+    case ItemTag::ITEM_HOLYWATER:
+        return Packets::ItemType_HOLY_WATER;
+    }
+
+    return Packets::ItemType();
+}

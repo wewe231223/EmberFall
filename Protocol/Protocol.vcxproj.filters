@@ -129,5 +129,8 @@
     <ClInclude Include="flatbuffers\verifier.h">
       <Filter>Flatbuffers</Filter>
     </ClInclude>
+    <ClInclude Include="Skill.fbs">
+      <Filter>Fbs</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

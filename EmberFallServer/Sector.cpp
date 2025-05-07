@@ -49,6 +49,7 @@ void Sector::TryInsert(NetworkObjectIdType id, const std::shared_ptr<ObjectManag
 
     case ObjectTag::MONSTER:
     case ObjectTag::CORRUPTED_GEM:
+    case ObjectTag::ITEM:
     {
         mNPCs.insert(id);
         break;
@@ -87,6 +88,8 @@ void Sector::RemoveObject(NetworkObjectIdType id, const std::shared_ptr<ObjectMa
     }
 
     case ObjectTag::MONSTER:
+    case ObjectTag::CORRUPTED_GEM:
+    case ObjectTag::ITEM:
     {
         if (false == mNPCs.contains(id)) {
             return;

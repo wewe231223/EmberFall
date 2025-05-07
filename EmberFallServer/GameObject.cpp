@@ -109,6 +109,18 @@ void GameObject::Reset() {
     mSpec.interactable = false;
     mSpec.hp = 0.0f;
 
+    decltype(auto) sendBuf = GetSendBuf();
+    OverlappedSend* sendPacket{ };
+    while (true == sendBuf.try_pop(sendPacket)) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Object [{}] - Release Packet", GetId());
+        FbsPacketFactory::ReleasePacketBuf(sendPacket);
+    }
+
+    std::shared_ptr<GameEvent> event{ };
+    while (true == mGameEvents.try_pop(event)) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Object [{}] - Release Event", GetId());
+    }
+
     auto myRoom = GetMyRoomIdx();
     gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->RemoveInSector(GetId(), GetPosition());
     gGameRoomManager->GetRoom(myRoom)->GetStage().GetObjectManager()->ReleaseObject(GetId());
@@ -210,6 +222,7 @@ void GameObject::Update() {
 
 void GameObject::LateUpdate() {
     if (not mSpec.active) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Entity: {}, Update Failure", Packets::EnumNameEntityType(mSpec.entity));
         return;
     }
 

@@ -27,8 +27,8 @@ public:
     uint8_t GetItemCount(ItemTag tag) const;
 
     void AcquireItem(ItemTag tag);
-    void UseItem(ItemTag tag);
+    void UseItem(std::shared_ptr<GameObject> obj);
 
 private:
-    std::array<uint8_t, static_cast<size_t>(ItemTag::ITEM_TAG_COUNT)> mItems{ };
+    std::queue<ItemTag> mItems{ };
 };

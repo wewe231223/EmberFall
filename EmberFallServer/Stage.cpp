@@ -85,7 +85,13 @@ void Stage::StartStage() {
 
     for (int i = 0; i < 100; ++i) {
         auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+
+        if (i < 10) {
+            auto item = mObjectManager->SpawnObject(Packets::EntityType_ITEM_POTION);
+        }
     }
+
+    //gServerFrame->AddTimerEvent();
 }
 
 void Stage::EndStage() {
