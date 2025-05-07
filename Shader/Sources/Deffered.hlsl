@@ -219,7 +219,7 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     float4 worldPos = GBuffers[2].Sample(linearWrapSampler, input.texcoord);
     float3 toCamera = normalize(cameraPosition - worldPos.xyz);
     float4 emissive = GBuffers[3].Sample(linearWrapSampler, input.texcoord);
-    float white = 20.0f;
+    float white = 21.0f;
 
     emissive = emissive * (1.0f + emissive / (white * white)) / (emissive + 1.0f);
     

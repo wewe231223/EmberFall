@@ -1025,6 +1025,7 @@ void TerrainScene::BuildMaterial() {
 	mRenderManager->GetMaterialManager().CreateMaterial("SkyBoxMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Paladin_diffuse");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Paladin_normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("CubeMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Default_OBJ_baseColor");
@@ -1033,37 +1034,46 @@ void TerrainScene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("rock_base_color");
 	mRenderManager->GetMaterialManager().CreateMaterial("Mountain1Material", mat);
 
-	mat.mEmissiveColor = SimpleMath::Color(0.0f, 10.0f, 19.0f, 1.0f);
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 20.0f, 20.0f, 1.0f);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("SwordA_v004_Default_AlbedoTransparency");
 	mRenderManager->GetMaterialManager().CreateMaterial("SwordMaterial", mat);
 	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("sword_base");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("sword_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("GreatSwordMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Bow_DIFF");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Bow_NM");
 	mRenderManager->GetMaterialManager().CreateMaterial("BowMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Quiver_baseColor");
 	mRenderManager->GetMaterialManager().CreateMaterial("QuiverMaterial", mat);
 
-	mat.mEmissiveColor = SimpleMath::Color(19.0f, 4.0f, 0.0f, 1.0f);
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 1.0f);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_Demon_Imp_Monster_Bloody_Albedo_Skin_4");
+	mat.mEmissiveTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_Demon_Imp_Monster_Emissive");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_Demon_Imp_Monster_Bloody_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("MonsterType1Material", mat);
 	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
+
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("CorrupedGem_BaseColor");
 	mRenderManager->GetMaterialManager().CreateMaterial("CorruptedGemMaterial", mat);
-	
-	mat.mEmissiveColor = SimpleMath::Color(19.0f, 19.0f, 19.0f, 1.0f);
+
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 1.0f);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Albedo_Skin_3");
+	mat.mEmissiveTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Emissive");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("DemonMaterial", mat);
 	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Axe_Albedo_Skin_1");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Axe_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("DemonWeaponMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Clothes_Albedo_Skin_1");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Clothes_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("DemonClothMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("ferns");
@@ -1079,17 +1089,23 @@ void TerrainScene::BuildMaterial() {
 	mRenderManager->GetMaterialManager().CreateMaterial("Pine3LeavesMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 1 RFS_DefaultMaterial_AlbedoTransparency");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 1 RFS_DefaultMaterial_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("Rock_1_Material", mat);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 2 RFS_DefaultMaterial_AlbedoTransparency");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 2 RFS_DefaultMaterial_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("Rock_2_Material", mat);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 3 RFS_DefaultMaterial_AlbedoTransparency");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 3 RFS_DefaultMaterial_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("Rock_3_Material", mat);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 4 Moss RFS_DefaultMaterial_AlbedoTransparency");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 4 Moss RFS_DefaultMaterial_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("Rock_4_Material", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Large Rock 1 RFS_DefaultMaterial_AlbedoTransparency");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Large Rock 1 RFS_DefaultMaterial_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("LargeRock1_Material", mat);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Large Rock 2 RFS_DefaultMaterial_AlbedoTransparency");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Large Rock 2 RFS_DefaultMaterial_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("LargeRock2_Material", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Timber house_AlbedoTransparency");

@@ -126,6 +126,8 @@ Deffered_POUT StandardAnimation_PS(StandardAnimation_PIN input) {
     for (int i = 0; i < isEmissive; ++i)
     {
         output.emissive = float4(emissiveColor.rgb, 1.0f);
+        output.emissive = textures[materialConstants[input.material].emissiveTexture[0]].Sample(linearWrapSampler, input.texcoord) * 19.0f;
+
     }
     return output;
 }

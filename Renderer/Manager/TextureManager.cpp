@@ -93,6 +93,48 @@ void TextureManager::LoadAllImages(ComPtr<ID3D12Device> device, ComPtr<ID3D12Gra
 
         mTextures[name] = std::move(pair);
     }
+
+    for (const auto& entry : std::filesystem::directory_iterator(NORMAL_MAP_DIRECTORY)) {
+        const auto& path = entry.path();
+        const std::string name = path.stem().string();
+        if (mTextures.find(name) != mTextures.end() || !std::filesystem::is_regular_file(path)) {
+            continue;
+        }
+        auto pair = std::make_pair(++mCount, Texture(device, commandList, path));
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.Format = pair.second.GetResource()->GetDesc().Format;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MipLevels = pair.second.GetResource()->GetDesc().MipLevels;
+        srvDesc.Texture2D.MostDetailedMip = 0;
+
+        CD3DX12_CPU_DESCRIPTOR_HANDLE handle(mTextureHeap->GetCPUDescriptorHandleForHeapStart());
+        handle.Offset(mCount, increment);
+        device->CreateShaderResourceView(pair.second.GetResource().Get(), &srvDesc, handle);
+
+        mTextures[name] = std::move(pair);
+    }
+
+    for (const auto& entry : std::filesystem::directory_iterator(EMISSIVE_MAP_DIRECTORY)) {
+        const auto& path = entry.path();
+        const std::string name = path.stem().string();
+        if (mTextures.find(name) != mTextures.end() || !std::filesystem::is_regular_file(path)) {
+            continue;
+        }
+        auto pair = std::make_pair(++mCount, Texture(device, commandList, path));
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.Format = pair.second.GetResource()->GetDesc().Format;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+        srvDesc.Texture2D.MipLevels = pair.second.GetResource()->GetDesc().MipLevels;
+        srvDesc.Texture2D.MostDetailedMip = 0;
+
+        CD3DX12_CPU_DESCRIPTOR_HANDLE handle(mTextureHeap->GetCPUDescriptorHandleForHeapStart());
+        handle.Offset(mCount, increment);
+        device->CreateShaderResourceView(pair.second.GetResource().Get(), &srvDesc, handle);
+
+        mTextures[name] = std::move(pair);
+    }
 }
 
 

@@ -634,6 +634,7 @@ void LobbyScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCom
 
 void LobbyScene::BuildMaterial() {
 	MaterialConstants mat{};
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("SkyBox_Front_0");
 	mat.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("SkyBox_Back_0");
@@ -647,27 +648,36 @@ void LobbyScene::BuildMaterial() {
 	mRenderManager->GetMaterialManager().CreateMaterial("GroundMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Paladin_diffuse");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Paladin_normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("HumanMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("SwordA_v004_Default_AlbedoTransparency");
 	mRenderManager->GetMaterialManager().CreateMaterial("SwordMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("sword_base");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("sword_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("GreatSwordMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Bow_DIFF");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Bow_NM");
 	mRenderManager->GetMaterialManager().CreateMaterial("BowMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Quiver_baseColor");
 	mRenderManager->GetMaterialManager().CreateMaterial("QuiverMaterial", mat);
 
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 1.0f);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Albedo_Skin_3");
+	mat.mEmissiveTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Emissive");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("DemonMaterial", mat);
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Axe_Albedo_Skin_1");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Axe_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("DemonWeaponMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Clothes_Albedo_Skin_1");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Clothes_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("DemonClothMaterial", mat);
 }
 
