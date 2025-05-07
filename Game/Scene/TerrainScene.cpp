@@ -61,6 +61,15 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		return mGameObjects.end();
 		};
 		
+	auto FindNextItemLoc = [this]() {
+		for (auto iter = mItemObjects.begin(); iter != mItemObjects.end(); ++iter) {
+			if (not *iter) {
+				return iter;
+			}
+		}
+		return mItemObjects.end();
+	};
+
 		
 	// 플레이어 등장 
 	if (data->objectId() < OBJECT_ID_START) {
@@ -125,7 +134,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 				mMyPlayer->SetAnimation(data->animation()); 
 
-					
+				mHealthBarUI.SetHealth(data->hp()); 
 				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 
 				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
@@ -133,11 +142,12 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 			}
 			else {
 				if (mPlayerIndexmap[data->objectId()] != nullptr) {
+					mHealthBarUI.SetHealth(data->hp());
 					mPlayerIndexmap[data->objectId()]->SetActiveState(true);
 				}
 			}
 		}
-		// 다른 플레이어 등장 
+		// 다른 플레이어 등장	
 		else {
 			// 그 플레이어 인스턴스가 없다면  
 			if (not mPlayerIndexmap.contains(data->objectId())) {
@@ -165,9 +175,11 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 	else {
 		if (not mGameObjectMap.contains(data->objectId())) {
 			auto nextLoc = FindNextObjectLoc();
+
 			if (nextLoc == mGameObjects.end()) {
 				Crash("There is no more space for Other Object!!");
 			}
+
 			switch (data->entity()) {
 				case Packets::EntityType_MONSTER:
 				{
@@ -328,11 +340,20 @@ void TerrainScene::ProcessGemDestroyed(const uint8_t* buffer) {
 void TerrainScene::ProcessUseItem(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::UseItemSC>(buffer);
 
+	mInventoryUI.SetItem(ItemType::Health, static_cast<UINT>(data->itemIdx()), false);
+
 }
 
 void TerrainScene::ProcessAcquiredItem(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::AcquiredItemSC>(buffer);
 
+	switch (data->item()) {
+	case Packets::ItemType_POTION:
+		mInventoryUI.SetItem(ItemType::Health, static_cast<UINT>(data->itemIdx()), true); 
+		break; 
+	default:
+		break;
+	}
 
 }
 
@@ -349,6 +370,11 @@ void TerrainScene::ProcessProjectileMove(const uint8_t* buffer) {
 void TerrainScene::ProcessChangeScene(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ChangeSceneSC>(buffer);
 	PostMessage(mRenderManager->GetWindowHandle(), WM_ADVANCESCENE, data->stage(), 0);
+}
+
+void TerrainScene::ProcessBuffHeal(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::BuffHealSC>(buffer);
+	mHealthBarUI.SetHealth(data->hp()); 
 }
 
 
@@ -500,7 +526,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 	}
 
 	mGameObjects.resize(MeshRenderManager::MAX_INSTANCE_COUNT<size_t>, GameObject{});
-
+	mItemObjects.resize(1024, GameObject{});
 
 	ParticleVertex v{};
 
@@ -537,10 +563,6 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 		mRenderManager->GetTextureManager().GetTexture("HolyWater"),
 		mRenderManager->GetTextureManager().GetTexture("Cross")
 	);
-
-	mInventoryUI.SetItem(ItemType::Health, 0, true);
-	mInventoryUI.SetItem(ItemType::HolyWater, 1, true);
-	mInventoryUI.SetItem(ItemType::Cross, 2, true);
 
 	mHealthBarUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("health_frame"), mRenderManager->GetTextureManager().GetTexture("health_bar")); 
 
@@ -669,6 +691,11 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 		TerrainScene::ProcessChangeScene(buffer);
 	}
 	break;
+	case Packets::PacketTypes_PT_BUFF_HEAL_SC: 
+	{
+		TerrainScene::ProcessBuffHeal(buffer);
+	}
+	break; 
 	default:
 		break;
 	}
