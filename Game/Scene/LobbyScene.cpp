@@ -142,6 +142,10 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 	{
 		decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::PlayerChangeRoleSC>(buffer);
 
+		if (mPlayerIndexmap.contains(data->playerId()) == false) {
+			break; 
+		}
+
 		switch (data->role()) {
 		case Packets::PlayerRole::PlayerRole_HUMAN_LONGSWORD:
 		{
