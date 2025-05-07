@@ -112,14 +112,11 @@ void GameObject::Reset() {
     decltype(auto) sendBuf = GetSendBuf();
     OverlappedSend* sendPacket{ };
     while (true == sendBuf.try_pop(sendPacket)) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Object [{}] - Release Packet", GetId());
         FbsPacketFactory::ReleasePacketBuf(sendPacket);
     }
 
     std::shared_ptr<GameEvent> event{ };
-    while (true == mGameEvents.try_pop(event)) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Object [{}] - Release Event", GetId());
-    }
+    while (true == mGameEvents.try_pop(event)) { }
 
     auto myRoom = GetMyRoomIdx();
     gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->RemoveInSector(GetId(), GetPosition());
