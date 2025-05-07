@@ -57,7 +57,7 @@ public:
     static OverlappedSend* ObjectAttackedSC(NetworkObjectIdType id, float hp);
     static OverlappedSend* ObjectAnimationChangedSC(NetworkObjectIdType id, Packets::AnimationState animation);
 
-    static OverlappedSend* UseItemSC(SessionIdType id, Packets::ItemType item);
+    static OverlappedSend* UseItemSC(SessionIdType id, uint8_t itemIdx);
     static OverlappedSend* AcquireItemSC(SessionIdType id, uint8_t idx, Packets::ItemType item);
 
     static OverlappedSend* GemInteractSC(NetworkObjectIdType objId, SessionIdType playerId);

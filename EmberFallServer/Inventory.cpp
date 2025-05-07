@@ -14,11 +14,14 @@ uint8_t Inventory::GetItemCount(ItemTag tag) const {
 
 uint8_t Inventory::AcquireItem(ItemTag tag) {
     uint8_t retIdx{ 0xFF };
-    for (uint8_t idx{ }; auto& item : mItems) {
+    for (uint8_t idx{ 0 }; auto& item : mItems) {
         if (ItemTag::ITEM_NONE == item) {
             item = tag;
+            retIdx = idx;
             break;
         }
+
+        ++idx;
     }
 
     return retIdx;
@@ -30,12 +33,16 @@ void Inventory::UseItem(std::shared_ptr<GameObject> obj) {
         return;
     }
 
+    uint8_t itemIdx{ 0xFF };
     ItemTag item = ItemTag::ITEM_NONE;
-    for (auto& tag : mItems) {
+    for (uint8_t idx{ 0 }; auto & tag : mItems) {
         if (ItemTag::ITEM_NONE != tag) {
             item = tag;
+            itemIdx = idx;
             break;
         }
+
+        ++idx;
     }
 
     switch (item) {
@@ -47,6 +54,10 @@ void Inventory::UseItem(std::shared_ptr<GameObject> obj) {
             return;
         }
         buffSystem->AddBuff<BuffHealScript>();
+
+        auto sessionId = static_cast<SessionIdType>(obj->GetId());
+        auto packetUse = FbsPacketFactory::UseItemSC(sessionId, itemIdx);
+        gServerCore->Send(sessionId, packetUse);
         break;
     }
 

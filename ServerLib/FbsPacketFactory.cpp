@@ -288,10 +288,10 @@ OverlappedSend* FbsPacketFactory::ObjectAnimationChangedSC(NetworkObjectIdType i
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::UseItemSC(SessionIdType id, Packets::ItemType item) {
+OverlappedSend* FbsPacketFactory::UseItemSC(SessionIdType id, uint8_t itemIdx) {
     flatbuffers::FlatBufferBuilder builder{ };
 
-    auto offset = Packets::CreateUseItemSC(builder, item);
+    auto offset = Packets::CreateUseItemSC(builder, itemIdx);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();

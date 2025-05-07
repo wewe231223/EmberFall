@@ -453,9 +453,13 @@ void PlayerScript::AcquireItem(const float deltaTime, const std::shared_ptr<Game
 
     auto itemTag = itemScript->GetItemTag();
     auto idx = mInventory.AcquireItem(itemTag);
+    if (0xFF == idx) {
+        SuccessInteraction();
+        return;
+    }
 
     auto packetAcquire = FbsPacketFactory::AcquireItemSC(static_cast<SessionIdType>(owner->GetId()), idx, ItemTagToItemType(itemTag));
-    owner->StorePacket(packetAcquire);
+    gServerCore->Send(static_cast<SessionIdType>(owner->GetId()), packetAcquire);
 
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Acquire Item {}", owner->GetId(), Packets::EnumNameItemType(ItemTagToItemType(itemTag)));
     gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), item->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);

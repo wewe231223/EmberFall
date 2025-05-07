@@ -21,7 +21,7 @@ table RequestUseItemCS {
 
 table UseItemSC {
 	playerId: ubyte;
-	item: ItemType;
+	itemIdx: ubyte;
 }
 
 table AcquiredItemSC {

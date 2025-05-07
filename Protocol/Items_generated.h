@@ -76,18 +76,18 @@ struct UseItemSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef UseItemSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_PLAYERID = 4,
-    VT_ITEM = 6
+    VT_ITEMIDX = 6
   };
   uint8_t playerId() const {
     return GetField<uint8_t>(VT_PLAYERID, 0);
   }
-  Packets::ItemType item() const {
-    return static_cast<Packets::ItemType>(GetField<uint8_t>(VT_ITEM, 0));
+  uint8_t itemIdx() const {
+    return GetField<uint8_t>(VT_ITEMIDX, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
-           VerifyField<uint8_t>(verifier, VT_ITEM, 1) &&
+           VerifyField<uint8_t>(verifier, VT_ITEMIDX, 1) &&
            verifier.EndTable();
   }
 };
@@ -99,8 +99,8 @@ struct UseItemSCBuilder {
   void add_playerId(uint8_t playerId) {
     fbb_.AddElement<uint8_t>(UseItemSC::VT_PLAYERID, playerId, 0);
   }
-  void add_item(Packets::ItemType item) {
-    fbb_.AddElement<uint8_t>(UseItemSC::VT_ITEM, static_cast<uint8_t>(item), 0);
+  void add_itemIdx(uint8_t itemIdx) {
+    fbb_.AddElement<uint8_t>(UseItemSC::VT_ITEMIDX, itemIdx, 0);
   }
   explicit UseItemSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -116,9 +116,9 @@ struct UseItemSCBuilder {
 inline ::flatbuffers::Offset<UseItemSC> CreateUseItemSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint8_t playerId = 0,
-    Packets::ItemType item = Packets::ItemType_POTION) {
+    uint8_t itemIdx = 0) {
   UseItemSCBuilder builder_(_fbb);
-  builder_.add_item(item);
+  builder_.add_itemIdx(itemIdx);
   builder_.add_playerId(playerId);
   return builder_.Finish();
 }
