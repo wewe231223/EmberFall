@@ -4,3 +4,4 @@ include "CommonObjects.fbs";
 include "Items.fbs";
 include "AttackSystem.fbs";
 include "CorruptedGem.fbs";
+include "Skill.fbs";

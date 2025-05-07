@@ -127,10 +127,14 @@ struct AcquiredItemSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef AcquiredItemSCBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_PLAYERID = 4,
-    VT_ITEM = 6
+    VT_ITEMIDX = 6,
+    VT_ITEM = 8
   };
   uint8_t playerId() const {
     return GetField<uint8_t>(VT_PLAYERID, 0);
+  }
+  uint8_t itemIdx() const {
+    return GetField<uint8_t>(VT_ITEMIDX, 0);
   }
   Packets::ItemType item() const {
     return static_cast<Packets::ItemType>(GetField<uint8_t>(VT_ITEM, 0));
@@ -138,6 +142,7 @@ struct AcquiredItemSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_PLAYERID, 1) &&
+           VerifyField<uint8_t>(verifier, VT_ITEMIDX, 1) &&
            VerifyField<uint8_t>(verifier, VT_ITEM, 1) &&
            verifier.EndTable();
   }
@@ -149,6 +154,9 @@ struct AcquiredItemSCBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_playerId(uint8_t playerId) {
     fbb_.AddElement<uint8_t>(AcquiredItemSC::VT_PLAYERID, playerId, 0);
+  }
+  void add_itemIdx(uint8_t itemIdx) {
+    fbb_.AddElement<uint8_t>(AcquiredItemSC::VT_ITEMIDX, itemIdx, 0);
   }
   void add_item(Packets::ItemType item) {
     fbb_.AddElement<uint8_t>(AcquiredItemSC::VT_ITEM, static_cast<uint8_t>(item), 0);
@@ -167,9 +175,11 @@ struct AcquiredItemSCBuilder {
 inline ::flatbuffers::Offset<AcquiredItemSC> CreateAcquiredItemSC(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint8_t playerId = 0,
+    uint8_t itemIdx = 0,
     Packets::ItemType item = Packets::ItemType_POTION) {
   AcquiredItemSCBuilder builder_(_fbb);
   builder_.add_item(item);
+  builder_.add_itemIdx(itemIdx);
   builder_.add_playerId(playerId);
   return builder_.Finish();
 }

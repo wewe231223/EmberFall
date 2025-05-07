@@ -56,9 +56,12 @@ enum PacketTypes : ubyte {
     PT_USE_ITEM_SC,
     PT_ACQUIRED_ITEM_SC,
     
-   //      Attack Packet (AttackSystem.fbs)
-   PT_FIRE_PROJECTILE_SC,
-   PT_PROJECTILE_MOVE_SC
+    //      Attack Packet (AttackSystem.fbs)
+    PT_FIRE_PROJECTILE_SC,
+    PT_PROJECTILE_MOVE_SC,
+
+    //      SKILL Packet
+    PT_BUFF_HEAL_SC,
 }
 
 enum AnimationState : ubyte {

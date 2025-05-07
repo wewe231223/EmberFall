@@ -58,7 +58,7 @@ public:
     static OverlappedSend* ObjectAnimationChangedSC(NetworkObjectIdType id, Packets::AnimationState animation);
 
     static OverlappedSend* UseItemSC(SessionIdType id, Packets::ItemType item);
-    static OverlappedSend* AcquireItemSC(SessionIdType id, Packets::ItemType item);
+    static OverlappedSend* AcquireItemSC(SessionIdType id, uint8_t idx, Packets::ItemType item);
 
     static OverlappedSend* GemInteractSC(NetworkObjectIdType objId, SessionIdType playerId);
     static OverlappedSend* GemInteractionCancelSC(NetworkObjectIdType objId, SessionIdType playerId);
@@ -66,6 +66,8 @@ public:
 
     static OverlappedSend* FireProjectileSC(NetworkObjectIdType id, const SimpleMath::Vector3& pos,
         const SimpleMath::Vector3& dir, float speed, Packets::ProjectileTypes projectile);
+
+    static OverlappedSend* BuffHealSC(const float hp);
 
     // Client to Server
     // In Lobby

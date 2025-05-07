@@ -55,11 +55,12 @@ enum PacketTypes : uint8_t {
   PacketTypes_PT_ACQUIRED_ITEM_SC = 152,
   PacketTypes_PT_FIRE_PROJECTILE_SC = 153,
   PacketTypes_PT_PROJECTILE_MOVE_SC = 154,
+  PacketTypes_PT_BUFF_HEAL_SC = 155,
   PacketTypes_MIN = PacketTypes_PT_PLAYER_EXIT_CS,
-  PacketTypes_MAX = PacketTypes_PT_PROJECTILE_MOVE_SC
+  PacketTypes_MAX = PacketTypes_PT_BUFF_HEAL_SC
 };
 
-inline const PacketTypes (&EnumValuesPacketTypes())[39] {
+inline const PacketTypes (&EnumValuesPacketTypes())[40] {
   static const PacketTypes values[] = {
     PacketTypes_PT_PLAYER_EXIT_CS,
     PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_CS,
@@ -99,13 +100,14 @@ inline const PacketTypes (&EnumValuesPacketTypes())[39] {
     PacketTypes_PT_USE_ITEM_SC,
     PacketTypes_PT_ACQUIRED_ITEM_SC,
     PacketTypes_PT_FIRE_PROJECTILE_SC,
-    PacketTypes_PT_PROJECTILE_MOVE_SC
+    PacketTypes_PT_PROJECTILE_MOVE_SC,
+    PacketTypes_PT_BUFF_HEAL_SC
   };
   return values;
 }
 
 inline const char * const *EnumNamesPacketTypes() {
-  static const char * const names[156] = {
+  static const char * const names[157] = {
     "PT_PLAYER_EXIT_CS",
     "PT_PLAYER_ENTER_IN_LOBBY_CS",
     "PT_PLAYER_READY_IN_LOBBY_CS",
@@ -261,13 +263,14 @@ inline const char * const *EnumNamesPacketTypes() {
     "PT_ACQUIRED_ITEM_SC",
     "PT_FIRE_PROJECTILE_SC",
     "PT_PROJECTILE_MOVE_SC",
+    "PT_BUFF_HEAL_SC",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNamePacketTypes(PacketTypes e) {
-  if (::flatbuffers::IsOutRange(e, PacketTypes_PT_PLAYER_EXIT_CS, PacketTypes_PT_PROJECTILE_MOVE_SC)) return "";
+  if (::flatbuffers::IsOutRange(e, PacketTypes_PT_PLAYER_EXIT_CS, PacketTypes_PT_BUFF_HEAL_SC)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesPacketTypes()[index];
 }

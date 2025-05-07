@@ -19,5 +19,6 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
 #include "CorruptedGem_generated.h"
 #include "Items_generated.h"
 #include "Networks_generated.h"
+#include "Skill_generated.h"
 
 #endif  // FLATBUFFERS_GENERATED_PACKETPROTOCOL_H_

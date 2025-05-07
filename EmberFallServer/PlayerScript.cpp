@@ -452,9 +452,9 @@ void PlayerScript::AcquireItem(const float deltaTime, const std::shared_ptr<Game
     }
 
     auto itemTag = itemScript->GetItemTag();
-    mInventory.AcquireItem(itemTag);
+    auto idx = mInventory.AcquireItem(itemTag);
 
-    auto packetAcquire = FbsPacketFactory::AcquireItemSC(static_cast<SessionIdType>(owner->GetId()), ItemTagToItemType(itemTag));
+    auto packetAcquire = FbsPacketFactory::AcquireItemSC(static_cast<SessionIdType>(owner->GetId()), idx, ItemTagToItemType(itemTag));
     owner->StorePacket(packetAcquire);
 
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Acquire Item {}", owner->GetId(), Packets::EnumNameItemType(ItemTagToItemType(itemTag)));

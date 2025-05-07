@@ -12,8 +12,16 @@ uint8_t Inventory::GetItemCount(ItemTag tag) const {
     return static_cast<uint8_t>(mItems.size());
 }
 
-void Inventory::AcquireItem(ItemTag tag) {
-    mItems.push(tag);
+uint8_t Inventory::AcquireItem(ItemTag tag) {
+    uint8_t retIdx{ 0xFF };
+    for (uint8_t idx{ }; auto& item : mItems) {
+        if (ItemTag::ITEM_NONE == item) {
+            item = tag;
+            break;
+        }
+    }
+
+    return retIdx;
 }
 
 void Inventory::UseItem(std::shared_ptr<GameObject> obj) {
@@ -22,8 +30,13 @@ void Inventory::UseItem(std::shared_ptr<GameObject> obj) {
         return;
     }
 
-    auto item = mItems.front();
-    mItems.pop();
+    ItemTag item = ItemTag::ITEM_NONE;
+    for (auto& tag : mItems) {
+        if (ItemTag::ITEM_NONE != tag) {
+            item = tag;
+            break;
+        }
+    }
 
     switch (item) {
     case ItemTag::ITEM_POTION:

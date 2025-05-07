@@ -20,15 +20,18 @@
 
 class Inventory {
 public:
+    static constexpr size_t MAX_INVENTORY{ 5 };
+
+public:
     Inventory();
     ~Inventory();
 
 public:
     uint8_t GetItemCount(ItemTag tag) const;
 
-    void AcquireItem(ItemTag tag);
+    uint8_t AcquireItem(ItemTag tag);
     void UseItem(std::shared_ptr<GameObject> obj);
 
 private:
-    std::queue<ItemTag> mItems{ };
+    std::array<ItemTag, MAX_INVENTORY> mItems{ };
 };
