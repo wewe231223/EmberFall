@@ -32,6 +32,6 @@ public:
 
 private:
     float mDuration{ };
-    float mDurationCounter{ };
+    float mDurationCounter{ 0.0f };
     Buff mBuff{ static_cast<Buff>(BuffType::NONE) };
 };

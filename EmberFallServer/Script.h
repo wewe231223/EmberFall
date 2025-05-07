@@ -20,8 +20,8 @@ enum class ScriptType : uint8_t {
     CORRUPTED_GEM,
     TRIGGER,
     EVENT_TRIGGER,
+    ITEM,
     SKILL,
-    ITEM
 };
 
 class Script abstract : public GameObjectComponent {

@@ -157,6 +157,7 @@
     <ClCompile Include="BT_MonsterRandomMove.cpp" />
     <ClCompile Include="BuffHealScript.cpp" />
     <ClCompile Include="BuffScript.cpp" />
+    <ClCompile Include="BuffSystem.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="EventTrigger.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="BT_MonsterRandomMove.h" />
     <ClInclude Include="BuffHealScript.h" />
     <ClInclude Include="BuffScript.h" />
+    <ClInclude Include="BuffSystem.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="EventTrigger.h" />

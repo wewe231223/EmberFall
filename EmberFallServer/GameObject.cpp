@@ -61,6 +61,10 @@ std::shared_ptr<Script> GameObject::GetScript() const {
     return mEntityScript;
 }
 
+std::shared_ptr<BuffSystem> GameObject::GetBuffSystem() const {
+    return mBuffSystem;
+}
+
 SimpleMath::Vector3 GameObject::GetPrevPosition() const {
     return mTransform->GetPrevPosition();
 }
@@ -120,9 +124,15 @@ void GameObject::Reset() {
 }
 
 void GameObject::Init() {
+    mTimer->UpdatePoint();
+
     decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
     mWeaponSystem.SetOwnerId(GetMyRoomIdx(), GetId());
     mAnimationStateMachine.SetOwner(sharedThis);
+
+    if (nullptr == mBuffSystem) {
+        mBuffSystem = std::make_shared<BuffSystem>(sharedThis);
+    }
 
     if (nullptr != mEntityScript) {
         mEntityScript->Init();
@@ -170,6 +180,10 @@ void GameObject::Update() {
         mEntityScript->Update(mDeltaTime);
     }
 
+    if (nullptr != mBuffSystem) {
+        mBuffSystem->Update(mDeltaTime);
+    }
+
     mPhysics->Update(mDeltaTime);
     mTransform->SetY(0.0f);
     mTransform->Update();
@@ -211,6 +225,10 @@ void GameObject::LateUpdate() {
         }
 
         mEntityScript->LateUpdate(mDeltaTime);
+    }
+
+    if (nullptr != mBuffSystem) {
+        mBuffSystem->LateUpdate(mDeltaTime);
     }
 
     auto myRoom = GetMyRoomIdx();

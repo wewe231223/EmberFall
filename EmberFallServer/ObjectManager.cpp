@@ -6,6 +6,7 @@
 #include "CorruptedGem.h"
 #include "Trigger.h"
 #include "EventTrigger.h"
+#include "ItemScript.h"
 
 #include "Input.h"
 #include "Sector.h"
@@ -291,6 +292,27 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         }
 
         auto obj = GetEnv(validId);
+        return obj;
+    }
+
+    case Packets::EntityType_ITEM_POTION:
+    {
+        if (false == mEnvironmentsIndices.try_pop(validId)) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max User");
+            break;
+        }
+
+        auto obj = GetObjectFromId(validId);
+        obj->mSpec.active = true;
+        obj->CreateScript<ItemScript>(obj, ItemTag::ITEM_POTION);
+        obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
+        obj->Init();
+
+        obj->GetTransform()->SetY(0.0f);
+        obj->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f }, SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f }));
+
+        sector->AddInSector(validId, obj->GetPosition());
+        obj->RegisterUpdate();
         return obj;
     }
 

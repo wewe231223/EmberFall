@@ -240,6 +240,7 @@ bool GameRoom::CheckAndStartGame() {
 }
 
 void GameRoom::CheckGameEnd() {
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Check Game End", mRoomIdx);
     auto [isEnd, winner] = mIngameCondition.CheckGameEnd();
     if (not isEnd) {
         if (GameRoomState::GAME_ROOM_STATE_INGAME == mGameRoomState) {
@@ -608,20 +609,16 @@ void GameCondition::InitGameCondition(uint8_t humanCount, uint8_t bossCount, uin
 }
 
 std::pair<bool, Packets::PlayerRole> GameCondition::CheckGameEnd() {
-    if (mAliveHumanCount > 0 and mGemCount > 0) {
-        return std::pair{ false, Packets::PlayerRole_HUMAN };
-    }
-
     auto pair = std::make_pair(false, Packets::PlayerRole_HUMAN);
     if (0 == mGemCount) {
         pair.first = true;
         return pair;
     }
 
-    if (0 == mBossCount) {
-        pair.first = true;
-        return pair;
-    }
+    //if (0 == mBossCount) {
+    //    pair.first = true;
+    //    return pair;
+    //}
 
     if (0 == mAliveHumanCount) {
         pair.first = true;

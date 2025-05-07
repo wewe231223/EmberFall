@@ -24,9 +24,13 @@ void BuffHealScript::Update(const float deltaTime) {
     }
 
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(SysClock::now() - mDelayCounter).count() / 1000.0f;
-    if (mDelay >= elapsedTime) {
-        owner->mSpec.hp += 10.0f;
+    int32_t healTime = static_cast<int32_t>(elapsedTime / mDelay);
+    if (healTime > 0) {
+        owner->mSpec.hp += healTime * mHealPoint;
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Heal!! Owner CurrHP: {}", owner->mSpec.hp);
         mDelayCounter = SysClock::now();
+        
+        auto packetHeal = FbsPacketFactory::BuffHealSC(owner->mSpec.hp);
     }
 }
 

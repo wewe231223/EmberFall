@@ -4,7 +4,7 @@
 
 class BuffHealScript : public BuffScript {
 public:
-    BuffHealScript(std::shared_ptr<class GameObject> owner, float delay=0.5f, float duration=1.0f, float healpoint=5.0f);
+    BuffHealScript(std::shared_ptr<class GameObject> owner, float delay=0.5f, float duration=5.0f, float healpoint=5.0f);
     virtual ~BuffHealScript();
 
 public:

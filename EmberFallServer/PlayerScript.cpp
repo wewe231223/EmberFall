@@ -97,7 +97,9 @@ void PlayerScript::Init() {
         return;
     }
 
-    owner->mSpec.hp = 10.0f;
+    //owner->mSpec.hp = GameProtocol::Logic::MAX_HP;
+    owner->mSpec.hp = 50.0f;
+    owner->GetBuffSystem()->AddBuff<BuffHealScript>();
 
     const auto pos = owner->GetPosition();
     const auto look = owner->GetTransform()->Forward();
@@ -309,37 +311,26 @@ void PlayerScript::CheckAndMove(const float deltaTime) {
     auto physics{ GetPhysics() };
 
     SimpleMath::Vector3 moveDir{ SimpleMath::Vector3::Zero };
-    if (mInput->IsActiveKey('D')) {
-        moveDir.x -= 1.0f;
-    }
-
-    if (mInput->IsActiveKey('W')) {
-        moveDir.z -= 1.0f;
-    }
-
-    if (mInput->IsActiveKey('A')) {
-        moveDir.x += 1.0f;
-    }
-
-    if (mInput->IsActiveKey('S')) {
-        moveDir.z += 1.0f;
+    for (const auto& [key, dir] : GameProtocol::Key::KEY_MOVE_DIR) {
+        if (mInput->IsActiveKey(key)) {
+            moveDir += dir;
+        }
     }
 
     Packets::AnimationState changeState{ Packets::AnimationState_IDLE };
-    if (not MathUtil::IsZero(moveDir.x)) {
-        physics->mFactor.maxMoveSpeed = 2.3mps;
-        changeState = moveDir.x > 0.0f ? Packets::AnimationState_MOVE_LEFT : Packets::AnimationState_MOVE_RIGHT;
-    }
-
     if (not MathUtil::IsZero(moveDir.z)) {
         if (moveDir.z > 0.0f) {
-            physics->mFactor.maxMoveSpeed = 2.3mps;
+            physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_WALK_SPEED;
             changeState = Packets::AnimationState_MOVE_BACKWARD;
         }
         else {
-            physics->mFactor.maxMoveSpeed = 4.3mps;
+            physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_RUN_SPEED;
             changeState = Packets::AnimationState_MOVE_FORWARD;
         }
+    }
+    else if (not MathUtil::IsZero(moveDir.x)) {
+        physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_WALK_SPEED;
+        changeState = moveDir.x > 0.0f ? Packets::AnimationState_MOVE_LEFT : Packets::AnimationState_MOVE_RIGHT;
     }
 
     owner->mAnimationStateMachine.ChangeState(changeState);

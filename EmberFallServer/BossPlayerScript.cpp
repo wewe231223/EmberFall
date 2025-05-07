@@ -16,8 +16,13 @@ BossPlayerScript::BossPlayerScript(std::shared_ptr<GameObject> owner, std::share
 
 BossPlayerScript::~BossPlayerScript() { }
 
-void BossPlayerScript::Init() {
-    //mInteractionTrigger = gObjectSpawner->SpawnTrigger(std::numeric_limits<float>::max(), GetOwner()->GetPosition(), SimpleMath::Vector3{ 15.0f });
+void BossPlayerScript::Init() { 
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    owner->mSpec.hp = GameProtocol::Logic::MAX_HP;
 }
 
 void BossPlayerScript::Update(const float deltaTime) {
@@ -27,7 +32,7 @@ void BossPlayerScript::Update(const float deltaTime) {
     CheckAndMove(deltaTime);
 
     // Attack
-    if (mInput->IsUp('P')) {
+    if (mInput->IsUp(VK_SPACE)) {
         owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACK);
         owner->Attack();
     }
@@ -54,7 +59,7 @@ void BossPlayerScript::DispatchGameEvent(GameEvent* event) {
         if (event->sender != event->receiver) {
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
             owner->mSpec.hp -= attackEvent->damage;
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[] Attacked!!", owner->GetId());
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[{}] Attacked!!", owner->GetId());
         }
         break;
     
@@ -95,17 +100,17 @@ void BossPlayerScript::CheckAndMove(const float deltaTime) {
 
     Packets::AnimationState changeState{ Packets::AnimationState_IDLE };
     if (not MathUtil::IsZero(moveDir.x)) {
-        physics->mFactor.maxMoveSpeed = 1.5mps;
+        physics->mFactor.maxMoveSpeed = GameProtocol::Unit::BOSS_PLAYER_WALK_SPEED;
         changeState = moveDir.x > 0.0f ? Packets::AnimationState_MOVE_LEFT : Packets::AnimationState_MOVE_RIGHT;
     }
 
     if (not MathUtil::IsZero(moveDir.z)) {
         if (moveDir.z > 0.0f) {
-            physics->mFactor.maxMoveSpeed = 1.5mps;
+            physics->mFactor.maxMoveSpeed = GameProtocol::Unit::BOSS_PLAYER_WALK_SPEED;
             changeState = Packets::AnimationState_MOVE_BACKWARD;
         }
         else {
-            physics->mFactor.maxMoveSpeed = 3.3mps;
+            physics->mFactor.maxMoveSpeed = GameProtocol::Unit::BOSS_PLAYER_RUN_SPEED;
             changeState = Packets::AnimationState_MOVE_FORWARD;
         }
     }

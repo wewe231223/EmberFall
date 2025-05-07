@@ -100,6 +100,9 @@ enum EntityType : ubyte {
     BOSS,
     MONSTER,
     CORRUPTED_GEM,
+    ITEM_POTION,
+    ITEM_CROSS,
+    ITEM_HOLYWATER,
     PROJECTILE
 }
 

@@ -1,0 +1,8 @@
+include "BaseStructures.fbs";
+include "Enums.fbs";
+
+namespace Packets;
+
+table BuffHealSC {
+    hp: float;
+}

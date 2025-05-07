@@ -414,12 +414,15 @@ enum EntityType : uint8_t {
   EntityType_BOSS = 6,
   EntityType_MONSTER = 7,
   EntityType_CORRUPTED_GEM = 8,
-  EntityType_PROJECTILE = 9,
+  EntityType_ITEM_POTION = 9,
+  EntityType_ITEM_CROSS = 10,
+  EntityType_ITEM_HOLYWATER = 11,
+  EntityType_PROJECTILE = 12,
   EntityType_MIN = EntityType_ENV,
   EntityType_MAX = EntityType_PROJECTILE
 };
 
-inline const EntityType (&EnumValuesEntityType())[10] {
+inline const EntityType (&EnumValuesEntityType())[13] {
   static const EntityType values[] = {
     EntityType_ENV,
     EntityType_HUMAN,
@@ -430,13 +433,16 @@ inline const EntityType (&EnumValuesEntityType())[10] {
     EntityType_BOSS,
     EntityType_MONSTER,
     EntityType_CORRUPTED_GEM,
+    EntityType_ITEM_POTION,
+    EntityType_ITEM_CROSS,
+    EntityType_ITEM_HOLYWATER,
     EntityType_PROJECTILE
   };
   return values;
 }
 
 inline const char * const *EnumNamesEntityType() {
-  static const char * const names[11] = {
+  static const char * const names[14] = {
     "ENV",
     "HUMAN",
     "HUMAN_LONGSWORD",
@@ -446,6 +452,9 @@ inline const char * const *EnumNamesEntityType() {
     "BOSS",
     "MONSTER",
     "CORRUPTED_GEM",
+    "ITEM_POTION",
+    "ITEM_CROSS",
+    "ITEM_HOLYWATER",
     "PROJECTILE",
     nullptr
   };

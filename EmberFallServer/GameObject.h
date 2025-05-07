@@ -20,6 +20,7 @@
 #include "Script.h"
 #include "WeaponSystem.h"
 #include "AnimationStateMachine.h"
+#include "BuffSystem.h"
 
 struct ObjectSpec {
     bool active;                    // 활성화 여부
@@ -46,6 +47,7 @@ public:
     std::shared_ptr<Physics> GetPhysics() const;
     std::shared_ptr<BoundingObject> GetBoundingObject() const;
     std::shared_ptr<Script> GetScript() const;
+    std::shared_ptr<BuffSystem> GetBuffSystem() const;
 
     SimpleMath::Vector3 GetPrevPosition() const;
     SimpleMath::Vector3 GetPosition() const;
@@ -96,10 +98,6 @@ public:
         requires std::derived_from<ScriptType, Script>
     void CreateScript(Args&&... args);
 
-    template<typename ScriptType, typename ...Args>
-        requires std::derived_from<ScriptType, Script>
-    void AddScript(Args&&... args);
-
     template <typename ScriptType> requires std::derived_from<ScriptType, Script>
     std::shared_ptr<ScriptType> GetScript();
 
@@ -118,8 +116,8 @@ private:
     std::shared_ptr<class Physics> mPhysics{ };                         // Physics
     std::shared_ptr<Script> mEntityScript{ };                           // script
     std::shared_ptr<BoundingObject> mBoundingObject{ };                 // boundingObject
+    std::shared_ptr<BuffSystem> mBuffSystem{ };
 
-    std::vector<std::shared_ptr<Script>> mScripts{ };
     Concurrency::concurrent_queue<std::shared_ptr<GameEvent>> mGameEvents{ };
 };
 
@@ -134,14 +132,6 @@ template<typename ScriptType, typename ...Args>
     requires std::derived_from<ScriptType, Script>
 void GameObject::CreateScript(Args&&... args) {
     mEntityScript = std::make_shared<ScriptType>(args...);
-}
-
-template<typename ScriptType, typename ...Args>
-    requires std::derived_from<ScriptType, Script>
-void GameObject::AddScript(Args&&... args) {
-    auto script = std::make_shared<ScriptType>(args...);
-    script->Init();
-    mScripts.emplace_back(script);
 }
 
 template<typename ScriptType> requires std::derived_from<ScriptType, Script>

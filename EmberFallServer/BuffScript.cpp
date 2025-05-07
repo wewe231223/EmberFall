@@ -13,6 +13,7 @@ Buff BuffScript::GetBuffType() const {
 void BuffScript::LateUpdate(const float deltaTime) {
     mDurationCounter += deltaTime;
     if (mDurationCounter >= mDuration) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "BuffScript Destructed, Cnt: {}, Dur: {}, dt: {}", mDurationCounter, mDuration, deltaTime);
         SetActive(false);
     }
 }

@@ -276,7 +276,20 @@ void ProcessLatencyCS(std::shared_ptr<GameSession>& session, const Packets::Pack
 }
 
 void ProcessRequestAttackCS(std::shared_ptr<GameSession>& session, const Packets::RequestAttackCS* const attack) {
+    auto sessionState = session->GetSessionState();
+    if (SESSION_INGAME != sessionState) {
+        return;
+    }
 
+    const auto userObject = session->GetUserObject();
+    if (nullptr == userObject) {
+        return;
+    }
+
+    auto dir = FbsPacketFactory::GetVector3(attack->dir());
+    userObject->Attack(dir);
+    userObject->Update();
+    userObject->LateUpdate();
 }
 
 void ProcessRequestUseItemCS(std::shared_ptr<GameSession>& session, const Packets::RequestUseItemCS* const useItem) {

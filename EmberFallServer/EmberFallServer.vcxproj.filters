@@ -267,6 +267,7 @@
     <ClCompile Include="ItemScript.cpp">
       <Filter>MultiThreadLoopTest\Script\Item</Filter>
     </ClCompile>
+    <ClCompile Include="BuffSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BehaviorTreeBase.h">
@@ -428,5 +429,6 @@
     <ClInclude Include="Script.h">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClInclude>
+    <ClInclude Include="BuffSystem.h" />
   </ItemGroup>
 </Project>
