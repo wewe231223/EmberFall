@@ -13,6 +13,8 @@
 class TextureManager {
 	static constexpr const char* IMAGE_DIRECTORY = "Resources/Image";
 	static constexpr const char* LOAD_DIRECTORY = "Resources/Image/Load";
+	static constexpr const char* NORMAL_MAP_DIRECTORY = "Resources/Image/NormalMap";
+	static constexpr const char* EMISSIVE_MAP_DIRECTORY = "Resources/Image/EmissiveMap";
 public:
 	TextureManager() = default;
 	TextureManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);

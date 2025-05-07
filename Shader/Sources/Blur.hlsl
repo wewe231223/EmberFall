@@ -2,7 +2,7 @@
 Texture2D<float4> gInput : register(t0);
 RWTexture2D<float4> gRWOutput : register(u0);
 
-#define WEIGHTS float3(0.2126, 0.7152, 0.0722)
+#define WEIGHTS float3(0.3126, 0.7152, 0.0722)
 
 //static const float gGaussianBlurMask1D[11] = { 0.05f, 0.05f, 0.1f, 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.05f, 0.05f};
 //static const int maskWidth = 5;
@@ -123,5 +123,6 @@ void VertBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID :
         
     
     gRWOutput[dispatchThreadID.xy] += color;
+    //gRWOutput[dispatchThreadID.xy] = color;
 
 }
