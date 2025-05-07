@@ -35,10 +35,11 @@ void Inventory::UseItem(std::shared_ptr<GameObject> obj) {
 
     uint8_t itemIdx{ 0xFF };
     ItemTag item = ItemTag::ITEM_NONE;
-    for (uint8_t idx{ 0 }; auto & tag : mItems) {
+    for (uint8_t idx{ 0 }; auto& tag : mItems) {
         if (ItemTag::ITEM_NONE != tag) {
             item = tag;
             itemIdx = idx;
+            tag = ItemTag::ITEM_NONE;
             break;
         }
 

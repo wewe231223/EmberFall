@@ -24,14 +24,15 @@ void BuffHealScript::Update(const float deltaTime) {
     }
 
     auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(SysClock::now() - mDelayCounter).count() / 1000.0f;
-    int32_t healTime = static_cast<int32_t>(elapsedTime / mDelay);
-    if (healTime > 0) {
-        owner->mSpec.hp += healTime * mHealPoint;
+    if (mDelay <= elapsedTime) {
+        owner->mSpec.hp += mHealPoint;
+        std::clamp(owner->mSpec.hp, 0.0f, GameProtocol::Logic::MAX_HP);
+
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Heal!! Owner CurrHP: {}", owner->mSpec.hp);
         mDelayCounter = SysClock::now();
         
         auto packetHeal = FbsPacketFactory::BuffHealSC(owner->mSpec.hp);
-        owner->StorePacket(packetHeal);
+        gServerCore->Send(static_cast<SessionIdType>(owner->GetId()), packetHeal);
     }
 }
 
