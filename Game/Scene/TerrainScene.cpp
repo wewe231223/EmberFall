@@ -135,7 +135,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mMyPlayer->SetAnimation(data->animation()); 
 
 				mHealthBarUI.SetHealth(data->hp()); 
-				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+				/*mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);*/
 
 				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
 				mCameraMode->Enter();
@@ -156,12 +156,43 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					Crash("There is no more space for Other Player!!"); 
 				}
 		
-				*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mSwordManAnimationController);
-				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
-				mPlayerIndexmap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
-				mPlayerIndexmap[data->objectId()]->SetAnimation(data->animation());
+				switch (data->entity()) {
+				case Packets::EntityType_HUMAN_LONGSWORD:
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mSwordManAnimationController);
+					nextLoc->AddEquipment(mEquipments["GreatSword"].Clone());
+					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("GreatSword"));
 
-				mPlayerIndexmap[data->objectId()]->AddEquipment(mEquipments["Sword"].Clone());
+					break;
+				case Packets::EntityType_HUMAN_SWORD:
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mShieldManController);
+					nextLoc->AddEquipment(mEquipments["Sword"].Clone());
+					nextLoc->AddEquipment(mEquipments["Shield"].Clone());
+					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("ShieldMan"));
+
+					break;
+				case Packets::EntityType_HUMAN_ARCHER:
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mArcherAnimationController);
+					nextLoc->AddEquipment(mEquipments["Bow"].Clone());
+					nextLoc->AddEquipment(mEquipments["Quiver"].Clone());
+					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Archer"));
+
+					break;
+				case Packets::EntityType_HUMAN_MAGICIAN:
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mMageAnimationController);
+					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Magician"));
+
+					break;
+				case Packets::EntityType_BOSS:
+					*nextLoc = Player(mMeshMap["Demon"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial"), mDemonAnimationController);
+					nextLoc->AddEquipment(mEquipments["DemonWeapon"].Clone());
+					nextLoc->AddEquipment(mEquipments["DemonCloth"].Clone());
+					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Devil"));
+
+					break;
+				default:
+					Crash("Something went wrong!!");
+					break;
+				}
 
 			}
 			else {
@@ -422,32 +453,6 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 
 		object.GetTransform().GetPosition() = { 0.f, 0.f, 0.f };
 		object.GetTransform().Scaling(1.f, 1.f, 1.f);
-	}
-
-
-
-	{
-		auto& boss = mGameObjects.emplace_back();
-		boss.mShader = mShaderMap["SkinnedShader"].get();
-		boss.mMesh = mMeshMap["Demon"].get();
-		boss.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial");
-		boss.mGraphController = mDemonAnimationController;
-		boss.mAnimated = true;
-		boss.mCollider = mColliderMap["Demon"];
-		boss.SetActiveState(true);
-		boss.GetTransform().GetPosition() = { 3.f, tCollider.GetHeight(3.f, 36.f), 36.f };
-	}
-
-	{
-		auto& imp = mGameObjects.emplace_back();
-		imp.mShader = mShaderMap["SkinnedShader"].get();
-		imp.mMesh = mMeshMap["MonsterType1"].get();
-		imp.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("MonsterType1Material");
-		imp.mGraphController = mMonsterAnimationController;
-		imp.mAnimated = true;
-		imp.mCollider = mColliderMap["MonsterType1"];
-		imp.SetActiveState(true);
-		imp.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 36.f), 36.f };
 	}
 
 	{
@@ -1034,10 +1039,8 @@ void TerrainScene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("rock_base_color");
 	mRenderManager->GetMaterialManager().CreateMaterial("Mountain1Material", mat);
 
-	mat.mEmissiveColor = SimpleMath::Color(0.0f, 20.0f, 20.0f, 1.0f);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("SwordA_v004_Default_AlbedoTransparency");
 	mRenderManager->GetMaterialManager().CreateMaterial("SwordMaterial", mat);
-	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("sword_base");
 	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("sword_Normal");
