@@ -121,7 +121,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 					break;
 				default:
-					Crash("Something went wrong!!"); 
+					MessageBox(nullptr, L"Something went wrong!!", L"", MB_OK | MB_ICONERROR);
 					break;
 				}
 
@@ -161,33 +161,28 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				case Packets::EntityType_HUMAN_LONGSWORD:
 					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mSwordManAnimationController);
 					nextLoc->AddEquipment(mEquipments["GreatSword"].Clone());
-					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("GreatSword"));
 
 					break;
 				case Packets::EntityType_HUMAN_SWORD:
 					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mShieldManController);
 					nextLoc->AddEquipment(mEquipments["Sword"].Clone());
 					nextLoc->AddEquipment(mEquipments["Shield"].Clone());
-					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("ShieldMan"));
 
 					break;
 				case Packets::EntityType_HUMAN_ARCHER:
 					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mArcherAnimationController);
 					nextLoc->AddEquipment(mEquipments["Bow"].Clone());
 					nextLoc->AddEquipment(mEquipments["Quiver"].Clone());
-					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Archer"));
 
 					break;
 				case Packets::EntityType_HUMAN_MAGICIAN:
 					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mMageAnimationController);
-					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Magician"));
 
 					break;
 				case Packets::EntityType_BOSS:
 					*nextLoc = Player(mMeshMap["Demon"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial"), mDemonAnimationController);
 					nextLoc->AddEquipment(mEquipments["DemonWeapon"].Clone());
 					nextLoc->AddEquipment(mEquipments["DemonCloth"].Clone());
-					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Devil"));
 
 					break;
 				default:
