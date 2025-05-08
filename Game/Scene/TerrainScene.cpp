@@ -205,6 +205,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 	// 이외 오브젝트 등장 
 	else {
 		if (not mGameObjectMap.contains(data->objectId())) {
+			auto nextItemLoc = FindNextItemLoc();
 			auto nextLoc = FindNextObjectLoc();
 
 			if (nextLoc == mGameObjects.end()) {
@@ -243,17 +244,38 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
 				}
 					break;
+
+				case Packets::EntityType_ITEM_POTION:
+				{
+					*nextItemLoc = GameObject{};
+
+					mGameObjectMap[data->objectId()] = &(*nextItemLoc);
+					nextItemLoc->mShader = mShaderMap["StandardNormalShader"].get();
+					nextItemLoc->mMesh = mMeshMap["HealthPotion"].get();
+					nextItemLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("HealthPotionMaterial");
+					nextItemLoc->mCollider = mColliderMap["HealthPotion"];
+					nextItemLoc->SetActiveState(true);
+
+					nextItemLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
+				}
+				break;
 				default:
 				{
-					*nextLoc = GameObject{};
-					mGameObjectMap[data->objectId()] = &(*nextLoc);
-					nextLoc->mShader = mShaderMap["StandardShader"].get();
-					nextLoc->mMesh = mMeshMap["Cube"].get();
-					nextLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial");
-					nextLoc->SetActiveState(true);
+					*nextItemLoc = GameObject{};
 
-					//nextLoc->GetTransform().Scaling(0.3f, 0.3f, 0.3f);
-					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
+					mGameObjectMap[data->objectId()] = &(*nextItemLoc);
+
+					nextItemLoc->mShader = mShaderMap["StandardNormalShader"].get();
+					nextItemLoc->mMesh = mMeshMap["HealthPotion"].get();
+					nextItemLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("HealthPotionMaterial");
+					nextItemLoc->mCollider = mColliderMap["HealthPotion"];
+
+					nextItemLoc->SetActiveState(true);
+
+					nextItemLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextItemLoc->GetTransform().GetPosition().x, nextItemLoc->GetTransform().GetPosition().z);
+					nextItemLoc->GetTransform().GetPosition().y += 0.5f;
+
+					nextItemLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
 				}
 					break;
 			}
@@ -324,7 +346,7 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 			mGameObjectMap[data->objectId()]->GetTransform().SetSpeed(data->speed());
 			auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
 			euler.y = data->yaw();
-			mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
+			//mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
 		}
 	}
 }
@@ -751,6 +773,13 @@ void TerrainScene::Update() {
 			object->GetTransform().GetPosition().y = tCollider.GetHeight(object->GetTransform().GetPosition().x, object->GetTransform().GetPosition().z);
 		}
 	}
+	
+	for (auto& item : mItemObjects) {
+		if (item) {
+			item.GetTransform().GetPosition().y += 0.5f;
+			item.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(50.f) * Time.GetDeltaTime<float>(), 0.f);
+		}
+	}
 
 
 		// test.Get()->position = mMyPlayer->GetTransform().GetPosition(); 
@@ -801,6 +830,8 @@ void TerrainScene::Update() {
 			else {
 				gameObject.UpdateShaderVariables();
 				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
+
+
 				mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
 				mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
 				mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
@@ -809,6 +840,19 @@ void TerrainScene::Update() {
 		}
 	}
 
+	for (auto& item : mItemObjects) {
+		if (item) {
+			item.UpdateShaderVariables();
+			auto [mesh, shader, modelContext] = item.GetRenderData();
+
+			if (mCamera.FrustumCulling(item.mCollider)) {
+				mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
+			}
+
+			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
+			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
+		}
+	}
 
 	for (auto& object : mEnvironmentObjects) {
 		if (object.mCollider.GetActiveState()) {
@@ -1032,6 +1076,10 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 	mMeshMap["Well"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["Well"] = Collider{ data.position };
 
+	data = Loader.Load("Resources/Assets/Item/HealthPotion.glb");
+	mMeshMap["HealthPotion"] = std::make_unique<Mesh>(device, commandList, data);
+	mColliderMap["HealthPotion"] = Collider{ data.position };
+
 	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, data);
 
@@ -1164,6 +1212,10 @@ void TerrainScene::BuildMaterial() {
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("well_albedo");
 	mRenderManager->GetMaterialManager().CreateMaterial("WellMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("HealthPotion_Color");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("HealthPotion_Normal");
+	mRenderManager->GetMaterialManager().CreateMaterial("HealthPotionMaterial", mat);
 
 } 
 

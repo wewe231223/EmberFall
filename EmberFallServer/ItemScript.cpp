@@ -22,7 +22,7 @@ void ItemScript::Init() {
     owner->mSpec.interactable = true;
 
 
-    gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), owner->GetId(), SysClock::now() + 10s, TimerEventType::REMOVE_NPC);
+    gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), owner->GetId(), SysClock::now() + 100s, TimerEventType::REMOVE_NPC);
 }
 
 void ItemScript::Update(const float deltaTime) { }
