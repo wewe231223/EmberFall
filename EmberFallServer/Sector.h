@@ -56,6 +56,8 @@ public:
     void AddInSector(NetworkObjectIdType id, Short2 sectorIdx);
     void RemoveInSector(NetworkObjectIdType id, Short2 sectorIdx);
 
+    void ChangeSector(NetworkObjectIdType id, Short2 prevIdx, Short2 currIdx);
+
     std::vector<NetworkObjectIdType> GetNearbyPlayers(const SimpleMath::Vector3& currPos, const float range);
 
     Short2 UpdateSectorPos(NetworkObjectIdType id, const SimpleMath::Vector3& prevPos, const SimpleMath::Vector3& currPos);

@@ -35,6 +35,7 @@ public:
 public:
     void UpdateInput(Key key);
     void UpdateInput(uint8_t key, bool state);
+    void ChangeKeyState(uint8_t key, bool state);
 
     KeyState GetState(uint8_t key) const;
 

@@ -136,7 +136,9 @@ std::vector<NetworkObjectIdType> Sector::GetTriggersInRange(SimpleMath::Vector3 
         decltype(auto) triggerPos = trigger->GetPosition();
 
         auto dist = SimpleMath::Vector3::DistanceSquared(pos, triggerPos);
-        inRangeTriggers.emplace_back(triggerId);
+        if (dist <= MathUtil::Square(range)) {
+            inRangeTriggers.emplace_back(triggerId);
+        }
     }
 
     return inRangeTriggers;
@@ -155,7 +157,9 @@ std::vector<NetworkObjectIdType> Sector::GetNPCsInRange(SimpleMath::Vector3 pos,
         decltype(auto) npcPos = npc->GetPosition();
 
         auto dist = SimpleMath::Vector3::DistanceSquared(pos, npcPos);
-        inRangeNPCs.emplace_back(npcId);
+        if (dist <= MathUtil::Square(range)) {
+            inRangeNPCs.emplace_back(npcId);
+        }
     }
 
     return inRangeNPCs;
@@ -165,10 +169,18 @@ std::vector<NetworkObjectIdType> Sector::GetPlayersInRange(SimpleMath::Vector3 p
     Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
     std::vector<NetworkObjectIdType> inRangePlayer{ };
     for (const auto playerId : mPlayers) {
-        decltype(auto) playerPos = objManager->GetObjectFromId(playerId)->GetPosition();
+        auto player = objManager->GetPlayer(playerId);
+        if (nullptr == player) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player {} is null", playerId);
+            continue;
+        }
+
+        decltype(auto) playerPos = player->GetPosition();
 
         auto dist = SimpleMath::Vector3::DistanceSquared(pos, playerPos);
-        inRangePlayer.emplace_back(playerId);
+        if (dist <= MathUtil::Square(range)) {
+            inRangePlayer.emplace_back(playerId);
+        }
     }
 
     return inRangePlayer;
@@ -178,10 +190,18 @@ std::vector<NetworkObjectIdType> Sector::GetEnvInRange(SimpleMath::Vector3 pos, 
     Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
     std::vector<NetworkObjectIdType> inRangeEnv{ };
     for (const auto envId : mEnvs) {
-        decltype(auto) envPos = objManager->GetObjectFromId(envId)->GetPosition();
+        auto env = objManager->GetEnv(envId);
+        if (nullptr == env) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "ENV {} is null", envId);
+            continue;
+        }
+
+        decltype(auto) envPos = env->GetPosition();
 
         auto dist = SimpleMath::Vector3::DistanceSquared(pos, envPos);
-        inRangeEnv.emplace_back(envId);
+        if (dist <= MathUtil::Square(range)) {
+            inRangeEnv.emplace_back(envId);
+        }
     }
 
     return inRangeEnv;
@@ -232,7 +252,7 @@ Short2 SectorSystem::GetSectorIdxFromPos(const SimpleMath::Vector3& pos) const {
     };
     if (idx.x < 0 or idx.y < 0 or
         idx.x >= mSectorWidth or idx.y >= mSectorHeight) {
-        Crash("Bad Memory Access");
+        Crash("Bad Sector Access");
         return Short2{ -1, -1 };
     }
 
@@ -250,16 +270,15 @@ std::vector<Short2> SectorSystem::GetMustCheckSectors(const SimpleMath::Vector3&
 
     checkSector.emplace_back(checkIdx);
 
-    const auto checkForward = GetSectorIdxFromPos(pos - (SimpleMath::Vector3::Forward * range));
-    const auto checkBackward = GetSectorIdxFromPos(pos - (SimpleMath::Vector3::Backward * range));
-    const auto checkLeft = GetSectorIdxFromPos(pos - (SimpleMath::Vector3::Left * range));
-    const auto checkRight = GetSectorIdxFromPos(pos - (SimpleMath::Vector3::Right * range));
+    const auto checkForward = GetSectorIdxFromPos(pos + (SimpleMath::Vector3::Forward * range));
+    const auto checkBackward = GetSectorIdxFromPos(pos + (SimpleMath::Vector3::Backward * range));
+    const auto checkLeft = GetSectorIdxFromPos(pos + (SimpleMath::Vector3::Left * range));
+    const auto checkRight = GetSectorIdxFromPos(pos + (SimpleMath::Vector3::Right * range));
 
-
-    bool forward{ };
-    bool backward{ };
-    bool left{ };
-    bool right{ };
+    bool forward{ false };
+    bool backward{ false };
+    bool left{ false };
+    bool right{ false };
 
     if (checkForward != invalidIdx and checkForward != checkIdx) {
         forward = true;
@@ -282,19 +301,19 @@ std::vector<Short2> SectorSystem::GetMustCheckSectors(const SimpleMath::Vector3&
     }
 
     if (forward and left) {
-        checkSector.emplace_back(checkIdx.x - 1, checkIdx.y + 1);
-    }
-
-    if (forward and right) {
-        checkSector.emplace_back(checkIdx.x + 1, checkIdx.y + 1);
-    }
-
-    if (backward and left) {
         checkSector.emplace_back(checkIdx.x - 1, checkIdx.y - 1);
     }
 
-    if (backward and right) {
+    if (forward and right) {
         checkSector.emplace_back(checkIdx.x + 1, checkIdx.y - 1);
+    }
+
+    if (backward and left) {
+        checkSector.emplace_back(checkIdx.x - 1, checkIdx.y + 1);
+    }
+
+    if (backward and right) {
+        checkSector.emplace_back(checkIdx.x + 1, checkIdx.y + 1);
     }
     
     return checkSector;
@@ -354,6 +373,36 @@ void SectorSystem::RemoveInSector(NetworkObjectIdType id, Short2 sectorIdx) {
     sector.RemoveObject(id, objManager);
 }
 
+void SectorSystem::ChangeSector(NetworkObjectIdType id, Short2 prevIdx, Short2 currIdx) {
+    auto objManager = mObjManager.lock();
+    if (nullptr == objManager or prevIdx == currIdx) {
+        return;
+    }
+
+    auto object = objManager->GetObjectFromId(id);
+    if (nullptr == object) {
+        return;
+    }
+    auto tag = object->GetTag();
+    if (tag == ObjectTag::PLAYER) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Change Sector From: {}, {}, To: {}, {}", prevIdx.x, prevIdx.y, currIdx.x, currIdx.y);
+    }
+
+    decltype(auto) prevSector = GetSector(prevIdx);
+    decltype(auto) currSector = GetSector(currIdx);
+
+    {
+        // Locking
+        Lock::ScopedSRWLock sectorGuard{
+            prevSector.GetLock(), Lock::SRWLockMode::SRW_EXCLUSIVE,
+            currSector.GetLock(),Lock::SRWLockMode::SRW_EXCLUSIVE
+        };
+
+        prevSector.RemoveObject(id, objManager);
+        currSector.TryInsert(id, objManager);
+    }
+}
+
 std::vector<NetworkObjectIdType> SectorSystem::GetNearbyPlayers(const SimpleMath::Vector3& currPos, const float range) {
     auto objManager = mObjManager.lock();
     if (nullptr == objManager) {
@@ -389,8 +438,7 @@ Short2 SectorSystem::UpdateSectorPos(NetworkObjectIdType id, const SimpleMath::V
         return currIdx;
     }
 
-    RemoveInSector(id, prevIdx);
-    AddInSector(id, currIdx);
+    ChangeSector(obj->GetId(), prevIdx, currIdx);
     return currIdx;
 }
 
@@ -409,7 +457,7 @@ void SectorSystem::UpdatePlayerViewList(const std::shared_ptr<GameObject>& playe
     const auto id = player->GetId();
     const auto currPos = player->GetPosition();
     const auto prevPos = player->GetPrevPosition();
-    auto currIdx = UpdateSectorPos(id, prevPos, currPos);
+    const auto currIdx = UpdateSectorPos(id, prevPos, currPos);
 
     std::vector<Short2> checkSectors = std::move(GetMustCheckSectors(pos, range));
     std::vector<NetworkObjectIdType> inViewRangeMonsters{ };
@@ -437,12 +485,12 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
     const auto prevPos = object->GetPrevPosition();
     const auto speed = object->GetSpeed();
 
-    auto currSector = UpdateSectorPos(id, prevPos, currPos);
+    const auto currSector = UpdateSectorPos(id, prevPos, currPos);
 
     const auto yaw = object->GetEulerRotation().y;
     const auto dir = object->GetMoveDir();
 
-    const float range = 100.0f;
+    const float range = GameProtocol::Logic::PLAYER_VIEW_RANGE;
     const std::vector<NetworkObjectIdType> nearbyPlayers = std::move(GetNearbyPlayers(currPos, range));
     OverlappedSend* sendPacket{ nullptr };
     if (nearbyPlayers.empty()) {
@@ -466,31 +514,8 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
                 continue;
             }
 
-            auto playerScript = playerObj->GetScript<PlayerScript>();
-            if (nullptr == playerScript) {
-                continue;
-            }
-
-            auto viewRange = playerScript->GetViewList().mViewRange.Count();
-            if (false == objManager->InViewRange(playerId, id, viewRange)) {
-                continue;
-            }
-
             auto packet = FbsPacketFactory::ClonePacket(sendPacket);
             session->RegisterSend(packet);
-            //if (false == object->mSpec.active) {
-            //    auto packetRemove = FbsPacketFactory::ObjectRemoveSC(id);
-            //    gServerCore->Send(static_cast<SessionIdType>(playerId), packetRemove);
-            //    continue;
-            //}
-
-            //if (object->mAnimationStateMachine.mAnimationChanged) {
-            //    auto packetAnim = FbsPacketFactory::ObjectAnimationChangedSC(id, object->mAnimationStateMachine.GetCurrState());
-            //    gServerCore->Send(static_cast<SessionIdType>(playerId), packetAnim);
-            //}
-
-            //auto packetMove = FbsPacketFactory::ObjectMoveSC(id, yaw, currPos, dir, speed);
-            //gServerCore->Send(static_cast<SessionIdType>(playerId), packetMove);
         }
 
         FbsPacketFactory::ReleasePacketBuf(sendPacket);

@@ -75,3 +75,45 @@ Lock::SRWLockGuard::~SRWLockGuard() {
         mLock.WriteUnlock();
     }
 }
+
+Lock::ScopedSRWLock::ScopedSRWLock(SRWLock& lock1, SRWLockMode mode1, SRWLock& lock2, SRWLockMode mode2) {
+    auto sort = std::addressof(lock1) > std::addressof(lock2);
+    if (sort) {
+        mLockPairs = std::make_pair(std::make_pair(std::addressof(lock2), mode2), std::make_pair(std::addressof(lock1), mode1));
+    }
+    else {
+        mLockPairs = std::make_pair(std::make_pair(std::addressof(lock1), mode1), std::make_pair(std::addressof(lock2), mode2));
+    }
+
+    // locking
+    if (SRWLockMode::SRW_SHARED == mLockPairs.first.second) {
+        mLockPairs.first.first->ReadLock();
+    }
+    else {
+        mLockPairs.first.first->WriteLock();
+    }
+
+    if (SRWLockMode::SRW_SHARED == mLockPairs.second.second) {
+        mLockPairs.second.first->ReadLock();
+    }
+    else {
+        mLockPairs.second.first->WriteLock();
+    }
+}
+
+Lock::ScopedSRWLock::~ScopedSRWLock() {
+    // unlocking
+    if (SRWLockMode::SRW_SHARED == mLockPairs.second.second) {
+        mLockPairs.second.first->ReadUnlock();
+    }
+    else {
+        mLockPairs.second.first->WriteUnlock();
+    }
+
+    if (SRWLockMode::SRW_SHARED == mLockPairs.first.second) {
+        mLockPairs.first.first->ReadUnlock();
+    }
+    else {
+        mLockPairs.first.first->WriteUnlock();
+    }
+}

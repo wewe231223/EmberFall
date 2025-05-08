@@ -1,12 +1,13 @@
 #include "pch.h"
 #include "GameSession.h"
+#include "ServerFrame.h"
 #include "FbsPacketProcessFn.h"
-#include "PlayerScript.h"
 #include "ObjectManager.h"
 #include "Input.h"
 #include "Resources.h"
 #include "GameRoom.h"
-#include "ServerFrame.h"
+#include "HumanPlayerScript.h"
+#include "BossPlayerScript.h"
 
 #include "Sector.h"
 
@@ -96,8 +97,9 @@ void GameSession::InitUserObject() {
     }
 
     auto myRoom = GetMyRoomIdx();
+    auto myId = GetId();
 
-    mUserObject = gGameRoomManager->GetRoom(myRoom)->GetStage().GetObjectFromId(GetId());
+    mUserObject = gGameRoomManager->GetRoom(myRoom)->GetStage().GetPlayer(GetId());
 
     InitPlayerScript();
 
@@ -114,14 +116,19 @@ void GameSession::InitUserObject() {
     const auto yaw = mUserObject->GetEulerRotation().y;
     const auto pos = mUserObject->GetPosition();
     const auto anim = mUserObject->mAnimationStateMachine.GetCurrState();
-    decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(GetId(), spec.entity, yaw, anim, spec.hp, pos);
 
+    decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(myId, spec.entity, yaw, anim, spec.hp, pos);
     RegisterSend(packetAppeared);
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Send Appeared My Player: {}", GetId());
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Send Appeared My Player: {}", myId);
 
-    const auto range = mUserObject->GetScript<PlayerScript>()->GetViewList().mViewRange.Count();
+    auto script = mUserObject->GetScript<PlayerScript>();
+    if (nullptr == script) {
+        return;
+    }
 
-    gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->AddInSector(GetId(), pos);
+    const float range = script->GetViewList().mViewRange.Count();
+
+    gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->AddInSector(myId, pos);
     gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->UpdatePlayerViewList(mUserObject, pos, range);
 }
 
@@ -129,12 +136,12 @@ void GameSession::InitPlayerScript() {
     switch (mPlayerRole) {
     case Packets::PlayerRole_HUMAN_ARCHER:
     {
-        mUserObject->CreateScript<PlayerScript>(mUserObject, std::make_shared<Input>());
+        mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_ARCHER);
 
         auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
-        auto player = mUserObject->GetScript<PlayerScript>();
+        auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
@@ -145,12 +152,12 @@ void GameSession::InitPlayerScript() {
 
     case Packets::PlayerRole_HUMAN_SWORD:
     {
-        mUserObject->CreateScript<PlayerScript>(mUserObject, std::make_shared<Input>());
+        mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_SHIELD_MAN);
 
         auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
-        auto player = mUserObject->GetScript<PlayerScript>();
+        auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
@@ -161,12 +168,12 @@ void GameSession::InitPlayerScript() {
 
     case Packets::PlayerRole_HUMAN_LONGSWORD:
     {
-        mUserObject->CreateScript<PlayerScript>(mUserObject, std::make_shared<Input>());
+        mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_LONGSWORD_MAN);
 
         auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
-        auto player = mUserObject->GetScript<PlayerScript>();
+        auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
@@ -177,12 +184,12 @@ void GameSession::InitPlayerScript() {
 
     case Packets::PlayerRole_HUMAN_MAGICIAN:
     {
-        mUserObject->CreateScript<PlayerScript>(mUserObject, std::make_shared<Input>());
+        mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_MAGICIAN);
 
         auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
-        auto player = mUserObject->GetScript<PlayerScript>();
+        auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
@@ -193,12 +200,12 @@ void GameSession::InitPlayerScript() {
 
     case Packets::PlayerRole_BOSS:
     {
-        mUserObject->CreateScript<PlayerScript>(mUserObject, std::make_shared<Input>());
+        mUserObject->CreateScript<BossPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_DEMON).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_DEMON);
 
         auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
-        auto player = mUserObject->GetScript<PlayerScript>();
+        auto player = mUserObject->GetScript<BossPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }

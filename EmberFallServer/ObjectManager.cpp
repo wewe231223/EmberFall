@@ -25,7 +25,7 @@ void ObjectManager::SetSector(std::shared_ptr<SectorSystem> sector) {
 }
 
 void ObjectManager::Init(uint16_t roomIdx) {
-    for (NetworkObjectIdType id{ USER_ID_START }; auto & user : mPlayers) {
+    for (NetworkObjectIdType id{ USER_ID_START }; auto& user : mPlayers) {
         user = std::make_shared<GameObject>(roomIdx);
         user->InitId(id);
         user->Reset();
@@ -211,6 +211,9 @@ std::shared_ptr<GameObject> ObjectManager::GetEnv(NetworkObjectIdType id) const 
 bool ObjectManager::InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2, const float range) {
     const auto obj1 = GetObjectFromId(id1);
     const auto obj2 = GetObjectFromId(id2);
+    if (nullptr == obj1 or nullptr == obj2) {
+        return false;
+    }
 
     const auto pos1 = obj1->GetPosition();
     const auto pos2 = obj2->GetPosition();
