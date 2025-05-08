@@ -220,7 +220,7 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     float4 emissive = GBuffers[3].Sample(linearWrapSampler, input.texcoord);
     float white = 21.0f;
 
-    emissive = emissive * (1.0f + emissive / (white * white)) / (emissive + 1.0f);
+    //emissive = emissive * (1.0f + emissive / (white * white)) / (emissive + 1.0f);
     
     
     float4 LightingColor = Lighting(normal, toCamera, worldPos.xyz, input.texcoord);

@@ -1043,15 +1043,18 @@ void TerrainScene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Quiver_baseColor");
 	mRenderManager->GetMaterialManager().CreateMaterial("QuiverMaterial", mat);
 
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 1.0f);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_Demon_Imp_Monster_Bloody_Albedo_Skin_4");
 	mat.mEmissiveTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_Demon_Imp_Monster_Emissive");
 	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_Demon_Imp_Monster_Bloody_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("MonsterType1Material", mat);
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("CorrupedGem_BaseColor");
 	mRenderManager->GetMaterialManager().CreateMaterial("CorruptedGemMaterial", mat);
 
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 1.0f);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Albedo_Skin_3");
 	mat.mEmissiveTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Emissive");
 	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Normal");
@@ -1064,6 +1067,7 @@ void TerrainScene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Clothes_Albedo_Skin_1");
 	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Clothes_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("DemonClothMaterial", mat);
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("ferns");
 	mRenderManager->GetMaterialManager().CreateMaterial("FernMaterial", mat);
