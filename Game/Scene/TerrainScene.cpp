@@ -191,7 +191,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 					break;
 				default:
-					Crash("Something went wrong!!");
+					MessageBox(nullptr, L"Something went wrong!!", L"", MB_OK | MB_ICONERROR);
 					break;
 				}
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
