@@ -103,6 +103,7 @@ Texture::Texture(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> 
 		}
 		else {
 			D3D12_SUBRESOURCE_DATA subresource{};
+
 			CheckHR(DirectX::LoadWICTextureFromFile(device.Get(), filePath.c_str(), mResource.GetAddressOf(), data, subresource));
 
 			auto uploadBufferSize = GetRequiredIntermediateSize(mResource.Get(), 0, 1);

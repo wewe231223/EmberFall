@@ -522,17 +522,21 @@ void TerrainShader::CreateShader(ComPtr<ID3D12Device> device) {
 	mAttribute.set(1);
 	mAttribute.set(2);
 	mAttribute.set(3);
+	mAttribute.set(4);
+	mAttribute.set(5);
 }
 
 GraphicsShaderBase::InputLayout TerrainShader::CreateInputLayout() {
 	GraphicsShaderBase::InputLayout inputLayout{};
 
-	inputLayout.ElementCount = 4;
+	inputLayout.ElementCount = 6;
 
 	inputLayout.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	inputLayout.InputElements[1] = { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	inputLayout.InputElements[2] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	inputLayout.InputElements[3] = { "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 3, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[4] = { "TANGENT", 0, DXGI_FORMAT_R32G32_FLOAT, 4, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[5] = { "BITANGENT", 0, DXGI_FORMAT_R32G32_FLOAT, 5, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
 	return inputLayout;
 }

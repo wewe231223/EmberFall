@@ -48,7 +48,8 @@ MeshData TerrainLoader::Load(const std::filesystem::path& path, bool patch) {
 		meshData.vertexAttribute.set(1);
         meshData.vertexAttribute.set(2);
         meshData.vertexAttribute.set(3);
-
+		meshData.vertexAttribute.set(4);
+		meshData.vertexAttribute.set(5);
     }
     else {
         // 일반 처리 (변경 없음)
@@ -75,27 +76,80 @@ SimpleMath::Vector3 TerrainLoader::CalculateNormal(int z, int x) const {
 }
 
 void TerrainLoader::CreatePatch(MeshData& data, int zStart, int zEnd, int xStart, int xEnd) {
-
     float stepSize = static_cast<float>(zStart - zEnd) / PATCH_LENGTH;
-    
+
+    int patchStride = PATCH_LENGTH + 1;
+    int patchVertexStart = static_cast<int>(data.position.size());
+
+
     for (int i = 0; i <= PATCH_LENGTH; ++i) {
         for (int j = 0; j <= PATCH_LENGTH; ++j) {
             int z = std::clamp(static_cast<int>(zStart - i * stepSize), 0, mLength - 1);
             int x = std::clamp(static_cast<int>(xStart + j * stepSize), 0, mLength - 1);
 
             const DirectX::XMFLOAT2 uv0{ static_cast<float>(x) / (mLength - 1), 1.f - static_cast<float>(z) / (mLength - 1) };
-            const DirectX::XMFLOAT2 uv1{ TILE_SCALE * static_cast<float>(j) / PATCH_LENGTH, TILE_SCALE * static_cast<float>(i) / PATCH_LENGTH};
+            const DirectX::XMFLOAT2 uv1{ TILE_SCALE * static_cast<float>(j) / PATCH_LENGTH, TILE_SCALE * static_cast<float>(i) / PATCH_LENGTH };
 
             float nz = static_cast<float>(z - mLength / 2);
             float nx = static_cast<float>(x - mLength / 2);
 
             data.position.emplace_back(nx, mHeight[z][x], nz);
-			data.normal.emplace_back(CalculateNormal(z, x));
+            data.normal.emplace_back(CalculateNormal(z, x));
             data.texCoord1.emplace_back(uv0);
             data.texCoord2.emplace_back(uv1);
+
+            // tangent/bitangent placeholder
+            data.tangent.emplace_back(0.f, 0.f, 0.f);
+            data.bitangent.emplace_back(0.f, 0.f, 0.f);
+        }
+    }
+    
+    patchVertexStart = static_cast<int>(data.position.size()) - patchStride * patchStride;
+
+    // 편미분 함수 (같이 정의)
+    auto getDhDx = [&](int z, int x) -> float {
+        int cz = std::clamp(z, 1, mLength - 2);
+        int cx = std::clamp(x, 1, mLength - 2);
+        return (mHeight[cz][cx + 1] - mHeight[cz][cx - 1]) * 0.5f;
+        };
+    auto getDhDz = [&](int z, int x) -> float {
+        int cz = std::clamp(z, 1, mLength - 2);
+        int cx = std::clamp(x, 1, mLength - 2);
+        return (mHeight[cz + 1][cx] - mHeight[cz - 1][cx]) * 0.5f;
+        };
+
+    for (int i = 0; i <= PATCH_LENGTH; ++i) {
+        for (int j = 0; j <= PATCH_LENGTH; ++j) {
+            int idx = patchVertexStart + i * patchStride + j;
+
+            // 원래 z,x 복원
+            int z = std::clamp(static_cast<int>(zStart - i * ((zStart - zEnd) / float(PATCH_LENGTH))), 0, mLength - 1);
+            int x = std::clamp(static_cast<int>(xStart + j * ((xEnd - xStart) / float(PATCH_LENGTH))), 0, mLength - 1);
+
+            float dhdx = getDhDx(z, x);
+            float dhdz = getDhDz(z, x);
+
+            // 1) 법선 로드
+            DirectX::XMVECTOR nVec = DirectX::XMLoadFloat3(&data.normal[idx]);
+            // 2) dp/du, dp/dv 벡터 생성
+            DirectX::XMVECTOR dpdu = DirectX::XMVectorSet(1.0f, dhdx, 0.0f, 0.0f);
+            DirectX::XMVECTOR dpdv = DirectX::XMVectorSet(0.0f, dhdz, -1.0f, 0.0f);
+
+            // 3) tangent: dpdu 에서 법선 성분 제거 후 정규화
+            float proj = DirectX::XMVectorGetX(DirectX::XMVector3Dot(nVec, dpdu));
+            DirectX::XMVECTOR tVec = DirectX::XMVectorSubtract(dpdu, DirectX::XMVectorScale(nVec, proj));
+            tVec = DirectX::XMVector3Normalize(tVec);
+
+            // 4) bitangent: 법선 × tangent
+            DirectX::XMVECTOR bVec = DirectX::XMVector3Normalize(DirectX::XMVector3Cross(nVec, tVec));
+
+            // 5) 결과 저장
+            XMStoreFloat3(&data.tangent[idx], tVec);
+            XMStoreFloat3(&data.bitangent[idx], bVec);
         }
     }
 }
+
 
 bool TerrainCollider::LoadFromFile(const std::filesystem::path& filePath) {
     std::ifstream file(filePath, std::ios::binary);

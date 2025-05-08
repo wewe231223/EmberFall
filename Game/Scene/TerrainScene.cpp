@@ -1045,7 +1045,8 @@ void TerrainScene::BuildMaterial() {
 	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Rolling Hills");
-	mat.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("dirt_2");
+	mat.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("ground9_Diffuse");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("ground9_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("TerrainMaterial", mat);
 
 

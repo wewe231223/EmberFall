@@ -7,13 +7,12 @@ cbuffer Camera : register(b0)
 
     float3 cameraPosition;
     int isShadow;
-
 }
 
 struct ModelContext
 {
     matrix world;
-    float3 BBCenter; 
+    float3 BBCenter;
     float3 BBExtents;
     uint material;
 };
@@ -38,6 +37,8 @@ struct Terrain_VIN
     float3 normal : NORMAL;
     float2 texcoord1 : TEXCOORD0;
     float2 texcoord2 : TEXCOORD1;
+    float3 tangent : TANGENT;
+    float3 bitangent : BITANGENT;
     uint instanceID : SV_INSTANCEID;
 };
 
@@ -47,18 +48,21 @@ struct Terrain_HIN
     float3 normal : NORMAL;
     float2 texcoord1 : TEXCOORD0;
     float2 texcoord2 : TEXCOORD1;
+    float3 tangent : TANGENT;
+    float3 bitangent : BINORMAL;
     uint instanceID : INSTANCEID;
 };
 
 struct Terrain_DIN
 {
     float4 position : POSITION;
-    float3 normal : NORMAL; 
+    float3 normal : NORMAL;
     float2 texcoord1 : TEXCOORD0;
     float2 texcoord2 : TEXCOORD1;
+    float3 tangent : TANGENT;
+    float3 bitangent : BINORMAL;
     uint instanceID : INSTANCEID;
 };
-
 
 struct Terrain_PIN
 {
@@ -68,6 +72,8 @@ struct Terrain_PIN
     float3 normal : NORMAL;
     float2 texcoord1 : TEXCOORD0;
     float2 texcoord2 : TEXCOORD1;
+    float3 tangent : TANGENT;
+    float3 bitangent : BINORMAL;
     uint material : MATERIALID;
 };
 
@@ -98,6 +104,8 @@ Terrain_HIN Terrain_VS(Terrain_VIN input)
     output.normal = input.normal;
     output.texcoord1 = input.texcoord1;
     output.texcoord2 = input.texcoord2;
+    output.tangent = input.tangent;
+    output.bitangent = input.bitangent;
     output.instanceID = input.instanceID;
     
     return output;
@@ -168,6 +176,8 @@ Terrain_DIN Terrain_HS(InputPatch<Terrain_HIN, 25> patch, uint pointID : SV_Outp
     output.normal = patch[pointID].normal;
     output.texcoord1 = patch[pointID].texcoord1;
     output.texcoord2 = patch[pointID].texcoord2;
+    output.tangent = patch[pointID].tangent;
+    output.bitangent = patch[pointID].bitangent;
     output.instanceID = patch[pointID].instanceID;
     
     return output;
@@ -184,6 +194,42 @@ void BernsteinBasis(float t, out float basis[5])
     basis[4] = t * t * t * t;
 }
 
+void CubicBernstein(float t, out float B[4], out float dB[4])
+{
+    float it = 1 - t;
+    B[0] = it * it * it;
+    B[1] = 3 * t * it * it;
+    B[2] = 3 * t * t * it;
+    B[3] = t * t * t;
+    
+    dB[0] = -3 * it * it;
+    dB[1] = 3 * it * it - 6 * t * it;
+    dB[2] = 6 * t * it - 3 * t * t;
+    dB[3] = 3 * t * t;
+}
+
+float3 dPatchPositionU(OutputPatch<Terrain_DIN, 25> patch, float Bu[4], float Bv[4], float dBu[4])
+{
+    float3 sum = 0;
+    [unroll]
+    for (int j = 0; j < 4; ++j)
+    [unroll]
+        for (int i = 0; i < 4; ++i)
+            sum += dBu[i] * Bv[j] * patch[i * 5 + j].position;
+    return sum;
+}
+
+float3 dPatchPositionV( OutputPatch<Terrain_DIN, 25> patch, float Bu[4], float Bv[4], float dBv[4])
+{
+    float3 sum = 0;
+    [unroll]
+    for (int j = 0; j < 4; ++j)
+    [unroll]
+        for (int i = 0; i < 4; ++i)
+            sum += Bu[i] * dBv[j] * patch[i * 5 + j].position;
+    return sum;
+}
+
 float3 CubicBezierSum(OutputPatch<Terrain_DIN, 25> patch, float basisU[5], float basisV[5])
 {
     float3 sum = float3(0.0f, 0.0f, 0.0f);
@@ -193,73 +239,77 @@ float3 CubicBezierSum(OutputPatch<Terrain_DIN, 25> patch, float basisU[5], float
     sum += basisV[2] * (basisU[0] * patch[10].position + basisU[1] * patch[11].position + basisU[2] * patch[12].position + basisU[3] * patch[13].position + basisU[4] * patch[14].position);
     sum += basisV[3] * (basisU[0] * patch[15].position + basisU[1] * patch[16].position + basisU[2] * patch[17].position + basisU[3] * patch[18].position + basisU[4] * patch[19].position);
     sum += basisV[4] * (basisU[0] * patch[20].position + basisU[1] * patch[21].position + basisU[2] * patch[22].position + basisU[3] * patch[23].position + basisU[4] * patch[24].position);
-
+    
     return sum;
 }
 
 float3 CubicBezierSumNormal(OutputPatch<Terrain_DIN, 25> patch, float basisU[5], float basisV[5])
 {
     float3 sum = float3(0.0f, 0.0f, 0.0f);
-
+    
     sum = basisV[0] * (basisU[0] * patch[0].normal + basisU[1] * patch[1].normal + basisU[2] * patch[2].normal + basisU[3] * patch[3].normal + basisU[4] * patch[4].normal);
     sum += basisV[1] * (basisU[0] * patch[5].normal + basisU[1] * patch[6].normal + basisU[2] * patch[7].normal + basisU[3] * patch[8].normal + basisU[4] * patch[9].normal);
     sum += basisV[2] * (basisU[0] * patch[10].normal + basisU[1] * patch[11].normal + basisU[2] * patch[12].normal + basisU[3] * patch[13].normal + basisU[4] * patch[14].normal);
     sum += basisV[3] * (basisU[0] * patch[15].normal + basisU[1] * patch[16].normal + basisU[2] * patch[17].normal + basisU[3] * patch[18].normal + basisU[4] * patch[19].normal);
     sum += basisV[4] * (basisU[0] * patch[20].normal + basisU[1] * patch[21].normal + basisU[2] * patch[22].normal + basisU[3] * patch[23].normal + basisU[4] * patch[24].normal);
-
+    
     return sum;
 }
 
-
 [domain("quad")]
-Terrain_PIN Terrain_DS(PatchTessFactor patchTess, float2 uv : SV_DomainLocation, const OutputPatch<Terrain_DIN, 25> patch)
+Terrain_PIN Terrain_DS(PatchTessFactor tess, float2 uv : SV_DomainLocation, const OutputPatch<Terrain_DIN, 25> patch)
 {
-    Terrain_PIN output;
- 
-    float basisU[5];
-    float basisV[5];
-    
+    Terrain_PIN o;
+
+
+    float basisU[5], basisV[5];
     BernsteinBasis(uv.x, basisU);
     BernsteinBasis(uv.y, basisV);
-    
-    matrix world = modelContexts[patch[0].instanceID].world;
-    uint material = modelContexts[patch[0].instanceID].material;
-    
-    output.position = float4(CubicBezierSum(patch, basisU, basisV), 1.f);
-    output.position = mul(output.position, world);
-    output.wPosition = output.position.xyz;
-    output.vPosition = mul(output.position, view).xyz;
-    output.position = mul(output.position, viewProjection);
-    output.material = material;
-    
-    float3 norm = CubicBezierSumNormal(patch, basisU, basisV);
-    
-    output.normal = normalize(mul((float3x3) world, norm));
-    
-    output.texcoord1 = lerp(
-    lerp(patch[0].texcoord1, patch[4].texcoord1, uv.x),
-    lerp(patch[20].texcoord1, patch[24].texcoord1, uv.x),
-    uv.y);
-    
-    output.texcoord2 = lerp(
-    lerp(patch[0].texcoord2, patch[4].texcoord2, uv.x),
-    lerp(patch[20].texcoord2, patch[24].texcoord2, uv.x),
-    uv.y);
-    
-    
-    return output;
+
+    float3 worldPos = CubicBezierSum(patch, basisU, basisV);
+    o.position = mul(float4(worldPos, 1), modelContexts[patch[0].instanceID].world);
+    o.wPosition = o.position.xyz;
+    o.vPosition = mul(o.position, view).xyz;
+    o.position = mul(o.position, viewProjection);
+    o.material = modelContexts[patch[0].instanceID].material;
+
+
+    float Bu4[4], Bv4[4], dBu4[4], dBv4[4];
+    CubicBernstein(uv.x, Bu4, dBu4);
+    CubicBernstein(uv.y, Bv4, dBv4);
+
+    float3 dpdu = dPatchPositionU(patch, Bu4, Bv4, dBu4);
+    float3 dpdv = dPatchPositionV(patch, Bu4, Bv4, dBv4);
+
+
+    float3x3 W = (float3x3) modelContexts[patch[0].instanceID].world;
+    float3 Nw = normalize(mul(W, CubicBezierSumNormal(patch, basisU, basisV)));
+    float3 Tu = mul(W, dpdu);
+    float3 Tn = normalize(Tu - Nw * dot(Nw, Tu));
+    float3 Bn = normalize(cross(Nw, Tn));
+
+    o.normal = Nw;
+    o.tangent = Tn;
+    o.bitangent = Bn;
+
+
+    o.texcoord1 = lerp(
+        lerp(patch[0].texcoord1, patch[4].texcoord1, uv.x),
+        lerp(patch[20].texcoord1, patch[24].texcoord1, uv.x),
+        uv.y);
+    o.texcoord2 = lerp(
+        lerp(patch[0].texcoord2, patch[4].texcoord2, uv.x),
+        lerp(patch[20].texcoord2, patch[24].texcoord2, uv.x),
+        uv.y);
+
+    return o;
 }
 
-float4 Fog(float4 Color, float Distance, float fogStart, float fogEnd)
-{
-    float fogFactor = saturate((fogEnd - Distance) / (fogEnd - fogStart));
-    return lerp(Color, float4(0.5, 0.5, 0.5, 1.0), 1 - fogFactor);
-}
 
-Deffered_POUT Terrain_PS(Terrain_PIN input) 
+Deffered_POUT Terrain_PS(Terrain_PIN input)
 {
-    Deffered_POUT output = (Deffered_POUT)0;
-    
+    Deffered_POUT output = (Deffered_POUT) 0;
+
     [unroll]
     for (int i = 0; i < isShadow; ++i)
     {
@@ -267,22 +317,31 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
         output.diffuse = float4(depth, depth, depth, 1.0f);
         return output;
     }
-    
-    float4 Color = float4(1.f, 1.f, 1.f, 1.f);
-    
-    float4 BaseColor = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord1);
-    float4 DetailColor = textures[materialConstants[input.material].diffuseTexture[1]].Sample(anisotropicWrapSampler, input.texcoord2);
-    
-    // DetailColor = GetBlendedDetail(textures[materialConstants[input.material].diffuseTexture[1]], linearWrapSampler, input.texcoord1, 10.f);
-    
-    Color = saturate(BaseColor * 0.4f + DetailColor * 0.6f);
-    
-    output.diffuse = Color;
-    output.normal = float4(input.normal, 0.f);
-    output.position = float4(input.wPosition, 1.f);    
-    
-    return output;
-    
-    // return float4(1.f, 1.f, 1.f, 1.f);
-}
 
+   
+    const MaterialConstants matConst = materialConstants[input.material];
+
+    float4 baseColor = textures[matConst.diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord1);
+    float4 detailColor = textures[matConst.diffuseTexture[1]].Sample(anisotropicWrapSampler, input.texcoord2);
+    float4 normalSample = textures[matConst.normalTexture[0]].Sample(anisotropicWrapSampler, input.texcoord2);
+
+    float3 normalTS = normalSample.xyz * 2.0f - 1.0f; 
+    
+    normalTS.xy *= 5.f; //  X,Y 성분 확대
+    normalTS = normalize(normalTS);
+    
+
+    float3 T = normalize(input.tangent);
+    float3 B = normalize(input.bitangent);
+    float3 N = normalize(input.normal);
+    float3x3 TBN = float3x3(T, B, N);
+
+    float3 finalNormal = normalize(mul(normalTS, TBN));
+
+    output.diffuse = saturate(baseColor * 0.3f + detailColor * 0.7f);
+    output.normal = float4(finalNormal, 0.0f);
+    output.position = float4(input.wPosition, 1.0f);
+    output.emissive = float4(0, 0, 0, 0);
+
+    return output;
+}
