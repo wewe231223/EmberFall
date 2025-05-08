@@ -454,28 +454,12 @@ void SectorSystem::UpdatePlayerViewList(const std::shared_ptr<GameObject>& playe
         return;
     }
 
-    static SysClock::time_point logT{ SysClock::now() };
-    if (player->GetId() == 0) {
-        if (std::chrono::duration_cast<std::chrono::milliseconds>(SysClock::now() - logT).count() > 1000) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Update View List, Range: {}", range);
-        }
-    }
-
     const auto id = player->GetId();
     const auto currPos = player->GetPosition();
     const auto prevPos = player->GetPrevPosition();
-    auto currIdx = UpdateSectorPos(id, prevPos, currPos);
+    const auto currIdx = UpdateSectorPos(id, prevPos, currPos);
 
     std::vector<Short2> checkSectors = std::move(GetMustCheckSectors(pos, range));
-    //test
-    if (std::chrono::duration_cast<std::chrono::milliseconds>(SysClock::now() - logT).count() > 1000) {
-        for (auto sector : checkSectors) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "MustCheckSector: {}, {}", sector.x, sector.y);
-        }
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "\n\n\n");
-        logT = SysClock::now();
-    }
-
     std::vector<NetworkObjectIdType> inViewRangeMonsters{ };
     std::vector<NetworkObjectIdType> inViewRangePlayers{ };
     for (const auto idx : checkSectors) {
@@ -501,7 +485,7 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
     const auto prevPos = object->GetPrevPosition();
     const auto speed = object->GetSpeed();
 
-    auto currSector = UpdateSectorPos(id, prevPos, currPos);
+    const auto currSector = UpdateSectorPos(id, prevPos, currPos);
 
     const auto yaw = object->GetEulerRotation().y;
     const auto dir = object->GetMoveDir();
@@ -527,11 +511,6 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
 
             auto playerObj = session->GetUserObject();
             if (nullptr == playerObj) {
-                continue;
-            }
-
-            auto playerScript = playerObj->GetScript<PlayerScript>();
-            if (nullptr == playerScript) {
                 continue;
             }
 

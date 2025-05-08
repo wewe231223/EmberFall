@@ -261,7 +261,7 @@
     <ClCompile Include="BossPlayerScript.cpp">
       <Filter>MultiThreadLoopTest\Script\Player</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerScript.cpp">
+    <ClCompile Include="HumanPlayerScript.cpp">
       <Filter>MultiThreadLoopTest\Script\Player</Filter>
     </ClCompile>
     <ClCompile Include="ItemScript.cpp">
@@ -269,6 +269,9 @@
     </ClCompile>
     <ClCompile Include="BuffSystem.cpp">
       <Filter>MultiThreadLoopTest\Script\Buff</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerScript.cpp">
+      <Filter>MultiThreadLoopTest\Script\Player</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -425,7 +428,7 @@
     <ClInclude Include="BossPlayerScript.h">
       <Filter>MultiThreadLoopTest\Script\Player</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerScript.h">
+    <ClInclude Include="HumanPlayerScript.h">
       <Filter>MultiThreadLoopTest\Script\Player</Filter>
     </ClInclude>
     <ClInclude Include="Script.h">
@@ -433,6 +436,9 @@
     </ClInclude>
     <ClInclude Include="BuffSystem.h">
       <Filter>MultiThreadLoopTest\Script\Buff</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerScript.h">
+      <Filter>MultiThreadLoopTest\Script\Player</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

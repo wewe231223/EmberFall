@@ -14,11 +14,22 @@ namespace GameProtocol {
     }
 
     namespace Key {
+        inline constexpr char KEY_MOVE_FORWARD = 'W';
+        inline constexpr char KEY_MOVE_LEFT = 'A';
+        inline constexpr char KEY_MOVE_BACKWARD = 'S';
+        inline constexpr char KEY_MOVE_RIGHT = 'D';
+        inline constexpr char KEY_INTERACTION = 'F';
+        inline constexpr char KEY_USE_ITEM = 'R';
+
+        inline constexpr char KEY_CHANGE_TARGET_ITEM = VK_TAB;
+        inline constexpr char KEY_JUMP = VK_SPACE;
+        inline constexpr char KEY_ATTACK = VK_LBUTTON;
+
         inline std::array<std::pair<char, SimpleMath::Vector3>, 4> KEY_MOVE_DIR{
-            std::pair<char, SimpleMath::Vector3>{ 'W', { SimpleMath::Vector3::Forward } },
-            std::pair<char, SimpleMath::Vector3>{ 'A', { SimpleMath::Vector3::Right } },
-            std::pair<char, SimpleMath::Vector3>{ 'S', { SimpleMath::Vector3::Backward } },
-            std::pair<char, SimpleMath::Vector3>{ 'D', { SimpleMath::Vector3::Left } },
+            std::pair<char, SimpleMath::Vector3>{ KEY_MOVE_FORWARD, { SimpleMath::Vector3::Forward } },
+            std::pair<char, SimpleMath::Vector3>{ KEY_MOVE_LEFT, { SimpleMath::Vector3::Right } },
+            std::pair<char, SimpleMath::Vector3>{ KEY_MOVE_BACKWARD, { SimpleMath::Vector3::Backward } },
+            std::pair<char, SimpleMath::Vector3>{ KEY_MOVE_RIGHT, { SimpleMath::Vector3::Left } },
         };
     }
 

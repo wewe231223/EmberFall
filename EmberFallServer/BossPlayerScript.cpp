@@ -1,10 +1,14 @@
 #include "pch.h"
 #include "BossPlayerScript.h"
+
+#include "ServerFrame.h"
+#include "GameRoom.h"
+#include "GameSession.h"
 #include "Input.h"
 #include "GameObject.h"
 
 BossPlayerScript::BossPlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input)
-    : Script{ owner, ObjectTag::PLAYER, ScriptType::BOSSPLAYER }, mInput{ input }, mViewList{ } {  
+    : PlayerScript{ owner, input, ObjectTag::BOSSPLAYER, ScriptType::BOSSPLAYER } {  
     auto myOwner = GetOwner();
     if (nullptr == myOwner) {
         gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Script Constructor - Owner is Null");
@@ -26,27 +30,73 @@ void BossPlayerScript::Init() {
 }
 
 void BossPlayerScript::Update(const float deltaTime) {
-    decltype(auto) owner = GetOwner();
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
 
     CheckAndJump(deltaTime);
     CheckAndMove(deltaTime);
 
     // Attack
-    if (mInput->IsUp(VK_SPACE)) {
-        owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACK);
+    if (mInput->IsActiveKey(VK_SPACE)) {
         owner->Attack();
     }
+
+    mInput->Update();
+
+    auto ownerRoom = owner->GetMyRoomIdx();
+    gGameRoomManager->GetRoom(ownerRoom)->GetStage().UpdatePlayerViewList(owner, owner->GetPosition(), GetViewList().mViewRange.Count());
 }
 
 void BossPlayerScript::LateUpdate(const float deltaTime) {
-    mInput->Update();
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    if (owner->mSpec.hp > MathUtil::EPSILON) {
+        return;
+    }
+
+    auto isDead = owner->IsDead();
+    if (not isDead) {
+        owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_DEAD);
+    }
+
+    if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Boss Player Remove");
+        gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), owner->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
+        owner->mSpec.active = false;
+        return;
+    }
+}
+
+void BossPlayerScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+    if (ObjectTag::TRIGGER == opponent->GetTag()) {
+        return;
+    }
+
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    owner->GetPhysics()->SolvePenetration(impulse);
 }
 
 void BossPlayerScript::OnCollisionTerrain(const float height) {
-    if (Packets::AnimationState_JUMP == GetOwner()->mAnimationStateMachine.GetCurrState()) {
-        GetOwner()->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE);
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    if (Packets::AnimationState_JUMP == owner->mAnimationStateMachine.GetCurrState()) {
+        owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE);
     }
 }
+
+void BossPlayerScript::DoInteraction(const std::shared_ptr<GameObject>& target) { }
 
 void BossPlayerScript::DispatchGameEvent(GameEvent* event) {
     auto owner = GetOwner();
@@ -54,15 +104,39 @@ void BossPlayerScript::DispatchGameEvent(GameEvent* event) {
         return;
     }
 
+    auto ownerRoom = owner->GetMyRoomIdx();
+    auto sender = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(event->sender);
+    if (nullptr == sender) {
+        return;
+    }
+
+    auto senderTag = sender->GetTag();
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
-        if (event->sender != event->receiver) {
+    {
+        if (event->sender != event->receiver and ObjectTag::PLAYER != senderTag) {
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
             owner->mSpec.hp -= attackEvent->damage;
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[{}] Attacked!!", owner->GetId());
+            owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED, true);
+            owner->GetPhysics()->AddForce(attackEvent->knockBackForce);
+
+            auto packetAttacked = FbsPacketFactory::ObjectAttackedSC(owner->GetId(), owner->mSpec.hp);
+            owner->StorePacket(packetAttacked);
+
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[{}] Attacked!!, Attacked by Monster: {}", owner->GetId(), event->sender);
+
+            // test
+            auto sPos = sender->GetPosition();
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Attacked: sender Room: {}, sender pos: {}, {}, {}", sender->GetMyRoomIdx(), sPos.x, sPos.y, sPos.z);
         }
         break;
-    
+    }
+
+    case GameEventType::DESTROY_GEM_COMPLETE:
+    {
+        break;
+    }
+
     default:
         break;
     }
@@ -82,44 +156,34 @@ void BossPlayerScript::CheckAndMove(const float deltaTime) {
     auto physics{ GetPhysics() };
 
     SimpleMath::Vector3 moveDir{ SimpleMath::Vector3::Zero };
-    if (mInput->IsActiveKey('D')) {
-        moveDir.x -= 1.0f;
-    }
-
-    if (mInput->IsActiveKey('W')) {
-        moveDir.z -= 1.0f;
-    }
-
-    if (mInput->IsActiveKey('A')) {
-        moveDir.x += 1.0f;
-    }
-
-    if (mInput->IsActiveKey('S')) {
-        moveDir.z += 1.0f;
+    for (const auto& [key, dir] : GameProtocol::Key::KEY_MOVE_DIR) {
+        if (mInput->IsActiveKey(key)) {
+            moveDir += dir;
+        }
     }
 
     Packets::AnimationState changeState{ Packets::AnimationState_IDLE };
-    if (not MathUtil::IsZero(moveDir.x)) {
-        physics->mFactor.maxMoveSpeed = GameProtocol::Unit::BOSS_PLAYER_WALK_SPEED;
-        changeState = moveDir.x > 0.0f ? Packets::AnimationState_MOVE_LEFT : Packets::AnimationState_MOVE_RIGHT;
-    }
-
     if (not MathUtil::IsZero(moveDir.z)) {
         if (moveDir.z > 0.0f) {
-            physics->mFactor.maxMoveSpeed = GameProtocol::Unit::BOSS_PLAYER_WALK_SPEED;
+            physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_WALK_SPEED;
             changeState = Packets::AnimationState_MOVE_BACKWARD;
         }
         else {
-            physics->mFactor.maxMoveSpeed = GameProtocol::Unit::BOSS_PLAYER_RUN_SPEED;
+            physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_RUN_SPEED;
             changeState = Packets::AnimationState_MOVE_FORWARD;
         }
+    }
+    else if (not MathUtil::IsZero(moveDir.x)) {
+        physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_WALK_SPEED;
+        changeState = moveDir.x > 0.0f ? Packets::AnimationState_MOVE_LEFT : Packets::AnimationState_MOVE_RIGHT;
     }
 
     owner->mAnimationStateMachine.ChangeState(changeState);
 
     moveDir.Normalize();
-    moveDir = SimpleMath::Vector3::Transform(moveDir,owner->GetTransform()->GetRotation());
+    moveDir = SimpleMath::Vector3::Transform(moveDir, owner->GetTransform()->GetRotation());
     physics->Accelerate(moveDir, owner->GetDeltaTime());
+
 }
 
 void BossPlayerScript::CheckAndJump(const float deltaTime) {
@@ -131,7 +195,7 @@ void BossPlayerScript::CheckAndJump(const float deltaTime) {
     auto physics{ GetPhysics() };
 
     // Jump
-    if (mInput->IsDown(VK_SPACE) and physics->IsOnGround()) {
+    if (mInput->IsActiveKey(GameProtocol::Key::KEY_JUMP) and physics->IsOnGround()) {
         owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_JUMP);
         physics->CheckAndJump(deltaTime);
     }

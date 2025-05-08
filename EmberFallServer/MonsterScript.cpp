@@ -192,7 +192,7 @@ BT::NodeStatus MonsterScript::DetectPlayerInRange(const float deltaTime) {
     std::vector<NetworkObjectIdType> players = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetNearbyPlayers(owner->GetPosition(), 10.0f);
     for (const auto& playerId : players) {
         auto playerObj = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetPlayer(playerId);
-        if (nullptr == playerObj or false == playerObj->mSpec.active) {
+        if (nullptr == playerObj or false == playerObj->mSpec.active or ObjectTag::BOSSPLAYER == playerObj->GetTag()) {
             continue;
         }
 

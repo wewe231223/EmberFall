@@ -44,6 +44,15 @@ void Input::UpdateInput(uint8_t key, bool state) {
     }
 }
 
+void Input::ChangeKeyState(uint8_t key, bool state) {
+    if (false == state) {
+        mKeys[key] = KeyState::UP;
+    }
+    else {
+        mKeys[key] = KeyState::DOWN;
+    }
+}
+
 KeyState Input::GetState(uint8_t key) const {
     return mKeys[key];
 }
