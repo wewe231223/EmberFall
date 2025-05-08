@@ -54,6 +54,12 @@ void RecvBuffer::Read(void* buffer, size_t size) {
 
 void RecvBuffer::Write(void* data, size_t size) {
     auto dest = mWritePos.fetch_add(size);
+
+	if (dest + size > mBuffer.size()) {
+		MessageBox(nullptr, L"RecvBuffer Overflow", L"Error", MB_OK | MB_ICONERROR);
+        return;
+	}
+
     ::memcpy(mBuffer.data() + dest, data, size);
 }
 

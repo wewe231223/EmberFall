@@ -788,8 +788,8 @@ void TerrainScene::Update() {
 				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 
 				if (mCamera.FrustumCulling(gameObject.mCollider)) {
-					mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
 				}
+				mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
 				
 				// TODO :: 아예 의미가 없는 코드이다. 정석적인 CasCade 구현에서 벗어남. 
 				//for (int i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
