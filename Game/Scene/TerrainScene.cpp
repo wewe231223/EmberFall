@@ -460,6 +460,34 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 		object.GetTransform().Scaling(1.f, 1.f, 1.f);
 	}
 
+
+
+
+	{
+		auto& boss = mGameObjects.emplace_back();
+		boss.mShader = mShaderMap["SkinnedNormalShader"].get();
+		boss.mMesh = mMeshMap["Demon"].get();
+		boss.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial");
+		boss.mGraphController = mDemonAnimationController;
+		boss.mAnimated = true;
+		boss.mCollider = mColliderMap["Demon"];
+		boss.SetActiveState(true);
+		boss.GetTransform().GetPosition() = { 3.f, tCollider.GetHeight(3.f, 36.f), 36.f };
+	}
+
+	{
+		auto& imp = mGameObjects.emplace_back();
+		imp.mShader = mShaderMap["SkinnedNormalShader"].get();
+		imp.mMesh = mMeshMap["MonsterType1"].get();
+		imp.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("MonsterType1Material");
+		imp.mGraphController = mMonsterAnimationController;
+		imp.mAnimated = true;
+		imp.mCollider = mColliderMap["MonsterType1"];
+		imp.SetActiveState(true);
+		imp.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 36.f), 36.f };
+	}
+
+
 	{
 		mEquipments["Sword"] = EquipmentObject{};
 		mEquipments["Sword"].mMesh = mMeshMap["Sword"].get();
@@ -1117,15 +1145,19 @@ void TerrainScene::BuildMaterial() {
 	mRenderManager->GetMaterialManager().CreateMaterial("LargeRock2_Material", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Timber house_AlbedoTransparency");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Timber house_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("TimberHouseMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Farmhouse_Albedo");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Farmhouse_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("StoneHouseMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Log_House_AlbedoTransparency");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Log_House_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("LogHouseMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Door_AlbedoTransparency");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Door_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("LogHouseDoorMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("windmill_001_base_COL");
@@ -1293,12 +1325,14 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 	baseMountain2.mCollider = mColliderMap["Mountain3"];
 
 	GameObject baseTimberHouse;
-	baseTimberHouse.mShader = mShaderMap["StandardShader"].get();
+	baseTimberHouse.mShader = mShaderMap["StandardNormalShader"].get();
 	baseTimberHouse.mMesh = mMeshMap["TimberHouse"].get();
 	baseTimberHouse.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("TimberHouseMaterial");
 	baseTimberHouse.mCollider = mColliderMap["TimberHouse"];
 
 	GameObject baseStoneHouse = baseTimberHouse.Clone();
+
+
 	baseStoneHouse.mMesh = mMeshMap["StoneHouse"].get();
 	baseStoneHouse.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("StoneHouseMaterial");
 	baseStoneHouse.mCollider = mColliderMap["StoneHouse"];

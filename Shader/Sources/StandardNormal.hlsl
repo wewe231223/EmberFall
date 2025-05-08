@@ -120,7 +120,7 @@ Deffered_POUT StandardNormal_PS(StandardNormal_VOUT input) {
 
 
     output.diffuse = color; 
-    float3 normal = textures[materialConstants[input.material].normalTexture[0]].Sample(linearWrapSampler, input.texcoord).rgb;
+    float3 normal = textures[materialConstants[input.material].normalTexture[0]].Sample(anisotropicWrapSampler, input.texcoord).rgb;
     normal = 2.0f * normal - 1.0f;
     float3x3 TBN = float3x3(input.tangent, input.bitangent, input.normal);
     output.normal = float4(mul(normal, TBN), 1.0f);

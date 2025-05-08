@@ -125,7 +125,7 @@ Deffered_POUT StandardAnimationNormal_PS(StandardAnimationNormal_PIN input) {
     output.diffuse = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord);
     // color += materialConstants[input.material].diffuse;
     
-    float3 normal = textures[materialConstants[input.material].normalTexture[0]].Sample(linearWrapSampler, input.texcoord).rgb;
+    float3 normal = textures[materialConstants[input.material].normalTexture[0]].Sample(anisotropicWrapSampler, input.texcoord).rgb;
     normal = 2.0f * normal - 1.0f;
     float3x3 TBN = float3x3(input.tangent, input.bitangent, input.normal);
     output.normal = float4(mul(normal, TBN), 1.0f);
