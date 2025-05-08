@@ -1326,8 +1326,6 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 	baseTimberHouse.mCollider = mColliderMap["TimberHouse"];
 
 	GameObject baseStoneHouse = baseTimberHouse.Clone();
-
-
 	baseStoneHouse.mMesh = mMeshMap["StoneHouse"].get();
 	baseStoneHouse.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("StoneHouseMaterial");
 	baseStoneHouse.mCollider = mColliderMap["StoneHouse"];
@@ -1355,8 +1353,9 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 	//baseWindMillBlade.mCollider = mColliderMap["WindMill"];
 
 
-	GameObject baseWell = baseTimberHouse.Clone();
+	GameObject baseWell;
 	baseWell.mMesh = mMeshMap["Well"].get();
+	baseWell.mShader = mShaderMap["StandardShader"].get();
 	baseWell.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("WellMaterial");
 	baseWell.mCollider = mColliderMap["Well"];
 
