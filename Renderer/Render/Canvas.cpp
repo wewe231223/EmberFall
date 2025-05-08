@@ -81,6 +81,10 @@ CanvasObject::CanvasObject(Canvas* canvas) {
 }
 
 void CanvasObject::Update() {
+	if (mCanvas == nullptr) {
+		return; 
+	}
+
 	if (mActive) {
 		mTransform._11 = mRect.width * cosf(mtheta);
 		mTransform._12 = mRect.height * -sinf(mtheta);
