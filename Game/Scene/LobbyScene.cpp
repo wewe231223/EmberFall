@@ -141,7 +141,6 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 	case Packets::PacketTypes_PT_PLAYER_CHANGE_ROLE_SC:
 	{
 		decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::PlayerChangeRoleSC>(buffer);
-
 		if (mPlayerIndexmap.contains(data->playerId()) == false) {
 			break; 
 		}
