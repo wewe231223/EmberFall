@@ -633,6 +633,33 @@ void LobbyScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCom
 
 	data = Loader.Load("Resources/Assets/Demon/DemonCloth.glb");
 	mMeshMap["DemonCloth"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Env/Castle.glb", 4);
+	mMeshMap["FrontBastion"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Env/Castle.glb", 3);
+	mMeshMap["FrontRampart"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Env/Castle.glb", 0);
+	mMeshMap["FrontDoor"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Env/Castle.glb", 1);
+	mMeshMap["FrontDoor1"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Env/Castle.glb", 2);
+	mMeshMap["FrontDoor2"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Env/Castle.glb", 8);
+	mMeshMap["FrontEnv"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Env/Castle.glb", 5);
+	mMeshMap["Rampart"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Env/Castle.glb", 6);
+	mMeshMap["RampartStone"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Env/Castle.glb", 7);
+	mMeshMap["SideBastion"] = std::make_unique<Mesh>(device, commandList, data);
 }
 
 void LobbyScene::BuildMaterial() {
@@ -682,6 +709,34 @@ void LobbyScene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Clothes_Albedo_Skin_1");
 	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Clothes_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("DemonClothMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Front_Rampart_baseColor");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Front_Rampart_normal");
+	mRenderManager->GetMaterialManager().CreateMaterial("FrontRampartMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("FrontBastions_baseColor");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("FrontBastions_normal");
+	mRenderManager->GetMaterialManager().CreateMaterial("FrontBastionMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("MetalDoor_baseColor");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("MetalDoor_normal");
+	mRenderManager->GetMaterialManager().CreateMaterial("FrontDoorMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Rampart_baseColor");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Rampart_normal");
+	mRenderManager->GetMaterialManager().CreateMaterial("RampartMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("RampartStone_baseColor");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("RampartStone_normal");
+	mRenderManager->GetMaterialManager().CreateMaterial("RampartStoneMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("SideBastions_baseColor");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("SideBastions_normal");
+	mRenderManager->GetMaterialManager().CreateMaterial("SideBastionMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Envoirement_02_baseColor");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Envoirement_02_normal");
+	mRenderManager->GetMaterialManager().CreateMaterial("FrontEnvMaterial", mat);
 }
 
 
@@ -716,6 +771,100 @@ void LobbyScene::BuildLobbyObject() {
 
 		object.SetActiveState(true);
 	}
+
+	const SimpleMath::Vector3 castlePosition{ 0.f, 0.f, 45.f }; 
+
+	{
+		auto& object = mLobbyProps.emplace_back();
+		object.mShader = mShaderMap["StandardNormalShader"].get();
+		object.mMesh = mMeshMap["FrontBastion"].get();
+		object.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("FrontBastionMaterial");
+		object.GetTransform().SetPosition(castlePosition);
+
+		object.SetActiveState(true);
+	}
+
+	{
+		auto& object = mLobbyProps.emplace_back();
+		object.mShader = mShaderMap["StandardNormalShader"].get();
+		object.mMesh = mMeshMap["FrontRampart"].get();
+		object.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("FrontRampartMaterial");
+		object.GetTransform().SetPosition(castlePosition);
+
+		object.SetActiveState(true);
+	}
+
+	{
+		auto& object = mLobbyProps.emplace_back();
+		object.mShader = mShaderMap["StandardNormalShader"].get();
+		object.mMesh = mMeshMap["FrontDoor"].get();
+		object.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("FrontDoorMaterial");
+		object.GetTransform().SetPosition(castlePosition);
+
+		object.SetActiveState(true);
+	}
+
+	{
+		auto& object = mLobbyProps.emplace_back();
+		object.mShader = mShaderMap["StandardNormalShader"].get();
+		object.mMesh = mMeshMap["FrontDoor1"].get();
+		object.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("FrontDoorMaterial");
+		object.GetTransform().SetPosition(castlePosition);
+
+		object.SetActiveState(true);
+	}
+
+	{
+		auto& object = mLobbyProps.emplace_back();
+		object.mShader = mShaderMap["StandardNormalShader"].get();
+		object.mMesh = mMeshMap["FrontDoor2"].get();
+		object.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("FrontDoorMaterial");
+		object.GetTransform().SetPosition(castlePosition);
+
+		object.SetActiveState(true);
+	}
+
+	{
+		auto& object = mLobbyProps.emplace_back();
+		object.mShader = mShaderMap["StandardNormalShader"].get();
+		object.mMesh = mMeshMap["FrontEnv"].get();
+		object.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("FrontEnvMaterial");
+		object.GetTransform().SetPosition(castlePosition);
+
+		object.SetActiveState(true);
+	}
+
+	{
+		auto& object = mLobbyProps.emplace_back();
+		object.mShader = mShaderMap["StandardNormalShader"].get();
+		object.mMesh = mMeshMap["Rampart"].get();
+		object.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("RampartMaterial");
+		object.GetTransform().SetPosition(castlePosition);
+
+		object.SetActiveState(true);
+	}
+
+	{
+		auto& object = mLobbyProps.emplace_back();
+		object.mShader = mShaderMap["StandardNormalShader"].get();
+		object.mMesh = mMeshMap["RampartStone"].get();
+		object.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("RampartStoneMaterial");
+		object.GetTransform().SetPosition(castlePosition);
+
+		object.SetActiveState(true);
+	}
+
+	{
+		auto& object = mLobbyProps.emplace_back();
+		object.mShader = mShaderMap["StandardNormalShader"].get();
+		object.mMesh = mMeshMap["SideBastion"].get();
+		object.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("SideBastionMaterial");
+		object.GetTransform().SetPosition(castlePosition);
+
+		object.SetActiveState(true);
+	}
+
+
 }
 
 void LobbyScene::BuildBaseMan() {
