@@ -26,7 +26,7 @@ public:
     std::unordered_set<NetworkObjectIdType> GetCurrViewList() const;
 
 public:
-    GameUnits::GameUnit<GameUnits::Meter> mViewRange{ 100.0m };
+    GameUnits::GameUnit<GameUnits::Meter> mViewRange{ GameProtocol::Logic::PLAYER_VIEW_RANGE };
 
 private:
     std::unordered_set<NetworkObjectIdType> mViewList{ };

@@ -23,6 +23,9 @@ namespace GameProtocol {
     }
 
     namespace Logic {
+        inline constexpr float PLAYER_VIEW_RANGE = 100.0f;
+        inline constexpr float SECTOR_SIZE = 200.0f;
+
         inline constexpr uint8_t MAX_ITEM = 3;
         inline constexpr float MAX_HP = 100.0f;
 

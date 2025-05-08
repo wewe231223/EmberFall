@@ -43,6 +43,9 @@ namespace Lock {
         SRW_TRY
     };
 
+    using LockPair = std::pair<SRWLock*, SRWLockMode>;
+    using Scope = std::pair<LockPair, LockPair>;
+
     class SRWLockGuard {
     public:
         explicit SRWLockGuard(SRWLockMode mode, SRWLock& lock, SRWLockTry tryMode = SRWLockTry::SRW_FORCE);
@@ -55,5 +58,14 @@ namespace Lock {
         SRWLock& mLock;
         bool mLocked{ false };
         SRWLockMode mMode{ };
+    };
+
+    class ScopedSRWLock {
+    public:
+        explicit ScopedSRWLock(SRWLock& lock1, SRWLockMode mode1, SRWLock& lock2, SRWLockMode mode2);
+        ~ScopedSRWLock();
+
+    private:
+        Scope mLockPairs{ };
     };
 }
