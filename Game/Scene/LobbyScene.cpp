@@ -697,6 +697,14 @@ void LobbyScene::BuildShader(ComPtr<ID3D12Device> device) {
 	shader = std::make_unique<SkinnedShader>();
 	shader->CreateShader(device);
 	mShaderMap["SkinnedShader"] = std::move(shader);
+
+	shader = std::make_unique<StandardNormalShader>();
+	shader->CreateShader(device);
+	mShaderMap["StandardNormalShader"] = std::move(shader);
+
+	shader = std::make_unique<SkinnedNormalShader>();
+	shader->CreateShader(device);
+	mShaderMap["SkinnedNormalShader"] = std::move(shader);
 }
 
 void LobbyScene::BuildLobbyObject() {
@@ -778,7 +786,7 @@ void LobbyScene::BuildShieldMan() {
 void LobbyScene::BuildDemon() {
 	mAnimationMap["Demon"].Load("Resources/Assets/Demon/Demon.glb");
 	auto& loader = mAnimationMap["Demon"];
-
+	
 	AnimatorGraph::AnimationState idle{};
 
 	idle.clip = loader.GetClip(0);
@@ -802,7 +810,7 @@ void LobbyScene::BuildEquipmentObject() {
 	{
 		mEquipments["GreatSword"] = EquipmentObject{};
 		mEquipments["GreatSword"].mMesh = mMeshMap["GreatSword"].get();
-		mEquipments["GreatSword"].mShader = mShaderMap["StandardShader"].get();
+		mEquipments["GreatSword"].mShader = mShaderMap["StandardNormalShader"].get();
 		mEquipments["GreatSword"].mMaterial = mRenderManager->GetMaterialManager().GetMaterial("GreatSwordMaterial");
 		mEquipments["GreatSword"].mEquipJointIndex = 36;
 		mEquipments["GreatSword"].SetActiveState(true);
@@ -811,7 +819,7 @@ void LobbyScene::BuildEquipmentObject() {
 	{
 		mEquipments["Bow"] = EquipmentObject{};
 		mEquipments["Bow"].mMesh = mMeshMap["Bow"].get();
-		mEquipments["Bow"].mShader = mShaderMap["StandardShader"].get();
+		mEquipments["Bow"].mShader = mShaderMap["StandardNormalShader"].get();
 		mEquipments["Bow"].mMaterial = mRenderManager->GetMaterialManager().GetMaterial("BowMaterial");
 		mEquipments["Bow"].mEquipJointIndex = 12;
 		mEquipments["Bow"].SetActiveState(true);
@@ -829,7 +837,7 @@ void LobbyScene::BuildEquipmentObject() {
 	{
 		mEquipments["Shield"] = EquipmentObject{};
 		mEquipments["Shield"].mMesh = mMeshMap["Shield"].get();
-		mEquipments["Shield"].mShader = mShaderMap["StandardShader"].get();
+		mEquipments["Shield"].mShader = mShaderMap["StandardNormalShader"].get();
 		mEquipments["Shield"].mMaterial = mRenderManager->GetMaterialManager().GetMaterial("HumanMaterial");
 		mEquipments["Shield"].mEquipJointIndex = 11;
 		mEquipments["Shield"].SetActiveState(true);
@@ -838,7 +846,7 @@ void LobbyScene::BuildEquipmentObject() {
 	{
 		mEquipments["DemonCloth"] = EquipmentObject{};
 		mEquipments["DemonCloth"].mMesh = mMeshMap["DemonCloth"].get();
-		mEquipments["DemonCloth"].mShader = mShaderMap["StandardShader"].get();
+		mEquipments["DemonCloth"].mShader = mShaderMap["StandardNormalShader"].get();
 		mEquipments["DemonCloth"].mMaterial = mRenderManager->GetMaterialManager().GetMaterial("DemonClothMaterial");
 		mEquipments["DemonCloth"].mEquipJointIndex = 0;
 		mEquipments["DemonCloth"].SetActiveState(true);
@@ -847,7 +855,7 @@ void LobbyScene::BuildEquipmentObject() {
 	{
 		mEquipments["DemonWeapon"] = EquipmentObject{};
 		mEquipments["DemonWeapon"].mMesh = mMeshMap["DemonWeapon"].get();
-		mEquipments["DemonWeapon"].mShader = mShaderMap["StandardShader"].get();
+		mEquipments["DemonWeapon"].mShader = mShaderMap["StandardNormalShader"].get();
 		mEquipments["DemonWeapon"].mMaterial = mRenderManager->GetMaterialManager().GetMaterial("DemonWeaponMaterial");
 		mEquipments["DemonWeapon"].mEquipJointIndex = 28;
 		mEquipments["DemonWeapon"].SetActiveState(true);
@@ -855,22 +863,22 @@ void LobbyScene::BuildEquipmentObject() {
 }
 
 void LobbyScene::BuildPlayerPrefab() {
-	mPlayerPreFabs["BaseMan"] = Player{ mMeshMap["HumanBase"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("HumanMaterial"), mBaseManAnimationController };
+	mPlayerPreFabs["BaseMan"] = Player{ mMeshMap["HumanBase"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("HumanMaterial"), mBaseManAnimationController };
 
-	mPlayerPreFabs["SwordMan"] = Player{ mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("HumanMaterial"), mSwordManAnimationController };
+	mPlayerPreFabs["SwordMan"] = Player{ mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("HumanMaterial"), mSwordManAnimationController };
 	mPlayerPreFabs["SwordMan"].AddEquipment(mEquipments["GreatSword"]);
 	
-	mPlayerPreFabs["ShieldMan"] = Player{ mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("HumanMaterial"), mShieldManAnimationController };
+	mPlayerPreFabs["ShieldMan"] = Player{ mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("HumanMaterial"), mShieldManAnimationController };
 	mPlayerPreFabs["ShieldMan"].AddEquipment(mEquipments["Sword"].Clone());
 	mPlayerPreFabs["ShieldMan"].AddEquipment(mEquipments["Shield"].Clone());
 
-	mPlayerPreFabs["Archer"] = Player{ mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("HumanMaterial"), mArcherAnimationController };
+	mPlayerPreFabs["Archer"] = Player{ mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("HumanMaterial"), mArcherAnimationController };
 	mPlayerPreFabs["Archer"].AddEquipment(mEquipments["Bow"].Clone());
 	mPlayerPreFabs["Archer"].AddEquipment(mEquipments["Quiver"].Clone());
 
-	mPlayerPreFabs["Mage"] = Player{ mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("HumanMaterial"), mMageAnimationController };
+	mPlayerPreFabs["Mage"] = Player{ mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("HumanMaterial"), mMageAnimationController };
 
-	mPlayerPreFabs["Demon"] = Player{ mMeshMap["Demon"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial"), mDemonAnimationController };
+	mPlayerPreFabs["Demon"] = Player{ mMeshMap["Demon"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial"), mDemonAnimationController };
 	mPlayerPreFabs["Demon"].AddEquipment(mEquipments["DemonWeapon"].Clone());
 	mPlayerPreFabs["Demon"].AddEquipment(mEquipments["DemonCloth"].Clone());
 }

@@ -34,22 +34,26 @@ struct MaterialConstants
     uint alphaTexture[8];
 };
 
-struct StandardAnimation_VIN
+struct StandardAnimationNormal_VIN
 {
     float3 position : POSITION;
     float3 normal : NORMAL;
     float2 texcoord : TEXCOORD;
+    float3 tangent : TANGENT;
+    float3 bitangent : BITANGENT;
     int4 boneID : BONEID;
     float4 boneWeight : BONEWEIGHT;
     uint instanceID : SV_INSTANCEID;
 };
 
-struct StandardAnimation_PIN
+struct StandardAnimationNormal_PIN
 {
     float4 position : SV_POSITION;
     float3 wPosition : POSITION;
     float3 normal : NORMAL;
     float2 texcoord : TEXCOORD;
+    float3 tangent : TANGENT;
+    float3 bitangent : BITANGENT;
     uint material : MATERIALID;
 };
 
@@ -75,10 +79,10 @@ SamplerState linearClampSampler : register(s3);
 SamplerState anisotropicWrapSampler : register(s4);
 SamplerState anisotropicClampSampler : register(s5);
 
-StandardAnimation_PIN StandardAnimation_VS(StandardAnimation_VIN input) {
+StandardAnimationNormal_PIN StandardAnimationNormal_VS(StandardAnimationNormal_VIN input) {
     ModelContext modelContext = modelContexts[input.instanceID];
 
-    StandardAnimation_PIN output;
+    StandardAnimationNormal_PIN output;
     
     float4x4 boneTransform = (float4x4)0;
     
@@ -97,13 +101,16 @@ StandardAnimation_PIN StandardAnimation_VS(StandardAnimation_VIN input) {
     float3x3 boneWorldTransform = mul((float3x3) boneTransform, (float3x3) modelContext.world);
     
     output.normal = normalize(mul(input.normal, boneWorldTransform));
+    output.tangent = normalize(mul(input.tangent, boneWorldTransform));
+    output.bitangent = normalize(mul(input.bitangent, boneWorldTransform));
+
     output.texcoord = input.texcoord;
     output.material = modelContext.material;
     
     return output;
 }
 
-Deffered_POUT StandardAnimation_PS(StandardAnimation_PIN input) {
+Deffered_POUT StandardAnimationNormal_PS(StandardAnimationNormal_PIN input) {
     
     Deffered_POUT output = (Deffered_POUT)0;
     
@@ -117,7 +124,12 @@ Deffered_POUT StandardAnimation_PS(StandardAnimation_PIN input) {
     
     output.diffuse = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord);
     // color += materialConstants[input.material].diffuse;
-    output.normal = float4(input.normal, 1.0f);
+    
+    float3 normal = textures[materialConstants[input.material].normalTexture[0]].Sample(linearWrapSampler, input.texcoord).rgb;
+    normal = 2.0f * normal - 1.0f;
+    float3x3 TBN = float3x3(input.tangent, input.bitangent, input.normal);
+    output.normal = float4(mul(normal, TBN), 1.0f);
+    
     output.position = float4(input.wPosition, 1.0f);
     float4 emissiveColor = materialConstants[input.material].emissive;
     
