@@ -32,6 +32,8 @@
 
 #include "INetworkObject.h"
 
+inline constexpr int32_t MAX_SESSION_HEART_BEAT_CNT = 5;
+
 using RecvBuf = NetworkBuf<BUF_NETWORK_RECV_SIZE>;
 
 class Session : public INetworkObject {
@@ -67,7 +69,10 @@ public:
     void ProcessConnect(INT32 numOfBytes, OverlappedConnect* overlapped);
     void WaitTilSessionConn();
     void NotifyingSessionConn();
-       
+    
+public:
+    std::atomic_int32_t mHeartBeat{ };
+
 private:
     std::string mIP{ };
     UINT16 mPort{ };
@@ -75,7 +80,6 @@ private:
 
     std::atomic_bool mConnected{ false }; // 01-14 클라이언트 연결여부를 atomic_bool로 수정
     SOCKET mSocket{ INVALID_SOCKET };
-
 
 protected:
     size_t mPrevRemainSize{ };

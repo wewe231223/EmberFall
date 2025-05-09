@@ -56,6 +56,8 @@ public:
 
     void Send(SessionIdType to, OverlappedSend* const overlappedSend);
 
+    void CheckSessionsHeartBeat();
+
 private:
     std::function<std::shared_ptr<Session>()> mCreateSessionFn{ };
 

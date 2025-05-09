@@ -38,6 +38,7 @@ public:
     static OverlappedSend* NotifyIdSC(SessionIdType id);
     static OverlappedSend* PlayerExitSC(SessionIdType id);
     static OverlappedSend* PacketLatencySC(uint64_t time);
+    static OverlappedSend* HeartBeatSC();
 
     // In Lobby
     static OverlappedSend* PlayerEnterInLobbySC(SessionIdType id, uint8_t slotIndex, Packets::PlayerRole role, std::string_view name);
@@ -84,6 +85,7 @@ public:
     static OverlappedSend* PlayerLookCS(SessionIdType id, const SimpleMath::Vector3& look);
     static OverlappedSend* PlayerSelectRole(SessionIdType id, Packets::PlayerRole role);
     static OverlappedSend* LatencyCS(SessionIdType id, uint64_t time);
+    static OverlappedSend* HeartBeatCS(SessionIdType id);
            
     static OverlappedSend* RequestUseItemCS(SessionIdType id, Packets::ItemType item);
            

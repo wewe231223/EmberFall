@@ -93,3 +93,28 @@ void SessionManager::Send(SessionIdType to, OverlappedSend* const overlappedSend
 
     session->RegisterSend(overlappedSend);
 }
+
+void SessionManager::CheckSessionsHeartBeat() {
+    std::vector<SessionIdType> timeOutSessions{ };
+
+    auto packetHeartBeat = FbsPacketFactory::HeartBeatSC();
+    mSessionsLock.ReadLock();
+    for (auto& [id, session] : mSessions) {
+        if (nullptr == session) {
+            continue;
+        }
+
+        if (session->mHeartBeat >= MAX_SESSION_HEART_BEAT_CNT) {
+            timeOutSessions.push_back(id);
+        }
+
+        session->mHeartBeat.fetch_add(1);
+        session->RegisterSend(packetHeartBeat);
+    }
+    mSessionsLock.ReadUnlock();
+    FbsPacketFactory::ReleasePacketBuf(packetHeartBeat);
+
+    for (auto id : timeOutSessions) {
+        CloseSession(id);
+    }
+}

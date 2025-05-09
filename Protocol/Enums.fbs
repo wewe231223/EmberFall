@@ -4,6 +4,7 @@ enum PacketTypes : ubyte {
     // Client To Server
     //      Networks Packet (Networks.fbs)
     PT_PLAYER_EXIT_CS = 0x00,
+    PT_HEART_BEAT_CS,
     PT_PLAYER_ENTER_IN_LOBBY_CS,
     PT_PLAYER_READY_IN_LOBBY_CS,
     PT_PLAYER_CANCEL_READY_CS,
@@ -26,6 +27,7 @@ enum PacketTypes : ubyte {
     PT_NOTIFY_ID_SC,
     PT_PLAYER_EXIT_SC,
     PT_LATENCT_SC,
+    PT_HEART_BEAT_SC,
 
     //      InLobby
     PT_PLAYER_ENTER_IN_LOBBY_SC,

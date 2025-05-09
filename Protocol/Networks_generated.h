@@ -81,6 +81,12 @@ struct PlayerLookCSBuilder;
 struct PlayerSelectRoleCS;
 struct PlayerSelectRoleCSBuilder;
 
+struct HeartBeatSC;
+struct HeartBeatSCBuilder;
+
+struct HeartBeatCS;
+struct HeartBeatCSBuilder;
+
 struct PacketLatencyCS;
 struct PacketLatencyCSBuilder;
 
@@ -934,6 +940,76 @@ inline ::flatbuffers::Offset<PlayerSelectRoleCS> CreatePlayerSelectRoleCS(
 
 //////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////
+struct HeartBeatSC FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef HeartBeatSCBuilder Builder;
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           verifier.EndTable();
+  }
+};
+
+struct HeartBeatSCBuilder {
+  typedef HeartBeatSC Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  explicit HeartBeatSCBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<HeartBeatSC> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<HeartBeatSC>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<HeartBeatSC> CreateHeartBeatSC(
+    ::flatbuffers::FlatBufferBuilder &_fbb) {
+  HeartBeatSCBuilder builder_(_fbb);
+  return builder_.Finish();
+}
+
+struct HeartBeatCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef HeartBeatCSBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_SESSIONID = 4
+  };
+  uint8_t sessionId() const {
+    return GetField<uint8_t>(VT_SESSIONID, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_SESSIONID, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct HeartBeatCSBuilder {
+  typedef HeartBeatCS Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_sessionId(uint8_t sessionId) {
+    fbb_.AddElement<uint8_t>(HeartBeatCS::VT_SESSIONID, sessionId, 0);
+  }
+  explicit HeartBeatCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<HeartBeatCS> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<HeartBeatCS>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<HeartBeatCS> CreateHeartBeatCS(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint8_t sessionId = 0) {
+  HeartBeatCSBuilder builder_(_fbb);
+  builder_.add_sessionId(sessionId);
+  return builder_.Finish();
+}
+
 struct PacketLatencyCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PacketLatencyCSBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {

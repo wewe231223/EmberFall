@@ -96,6 +96,11 @@ table PlayerSelectRoleCS {
 // Latency Packet 
 //////////////////////////////////////////////////////////////
 
+table HeartBeatSC { } // 클라이언트 생존 확인
+table HeartBeatCS { // 현재 접속 중임을 서버에게 알림
+	sessionId: ubyte;
+} 
+
 table PacketLatencyCS {
 	latency: ulong;
 }
