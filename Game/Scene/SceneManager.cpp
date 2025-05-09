@@ -30,8 +30,8 @@ void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferC
 
 	gClientCore->Init();
 	if (!gClientCore->Start("127.0.0.1", 7777)) {
-		DebugBreak();
-		Crash(false);
+		CheckHR(E_ABORT);
+		Crash(false); 
 	}
 
 	mNextSceneType = SceneType::LOBBY;
