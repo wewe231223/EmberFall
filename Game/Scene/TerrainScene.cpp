@@ -418,6 +418,12 @@ void TerrainScene::ProcessBuffHeal(const uint8_t* buffer) {
 	mHealthBarUI.SetHealth(data->hp()); 
 }
 
+void TerrainScene::ProcessHeartBeat(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::HeartBeatSC>(buffer);
+	decltype(auto) packet = FbsPacketFactory::HeartBeatCS(gClientCore->GetSessionId()); 
+	gClientCore->Send(packet);
+}
+
 
 #pragma endregion 
 
@@ -739,6 +745,11 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 		TerrainScene::ProcessBuffHeal(buffer);
 	}
 	break; 
+	case Packets::PacketTypes_PT_HEART_BEAT_SC:
+	{
+		TerrainScene::ProcessHeartBeat(buffer);
+	}
+	break;
 	default:
 		break;
 	}

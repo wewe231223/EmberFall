@@ -52,6 +52,15 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		}
 		break;
 	}
+	case Packets::PacketTypes_PT_HEART_BEAT_SC:
+	{
+		decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::HeartBeatSC>(buffer);
+
+		decltype(auto) packet = FbsPacketFactory::HeartBeatCS(gClientCore->GetSessionId());
+		gClientCore->Send(packet); 
+
+		break;
+	}
 	case Packets::PacketTypes_PT_CONFIRM_SELECTION_ROLE_SC:
 	{
 		switch (mPlayerRole) {
