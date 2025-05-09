@@ -117,6 +117,8 @@ uint8_t GameRoom::RemovePlayer(SessionIdType id, Packets::PlayerRole lastRole, b
     auto packetExit = FbsPacketFactory::PlayerExitSC(id);
     BroadCast(packetExit);
 
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "BroadCast End!"); 
+
     return GameRoomError::SUCCESS_REMOVE_SESSION_IN_ROOM;
 }
 

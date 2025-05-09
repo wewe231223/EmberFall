@@ -81,6 +81,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				auto nextLoc = FindNextPlayerLoc();
 		
 				if (nextLoc == mPlayers.end()) {
+					MessageBox(nullptr, L"ERROR!!!!!\nThere is no more space for My Player!!", L"", MB_OK | MB_ICONERROR);
 					Crash("There is no more space for My Player!!");
 				}
 
@@ -154,6 +155,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 				auto nextLoc = FindNextPlayerLoc();
 				if (nextLoc == mPlayers.end()) { 
+					MessageBox(nullptr, L"ERROR!!!!!\nThere is no more space for Other Player!!", L"", MB_OK | MB_ICONERROR);
 					Crash("There is no more space for Other Player!!"); 
 				}
 		
@@ -209,6 +211,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 			auto nextLoc = FindNextObjectLoc();
 
 			if (nextLoc == mGameObjects.end()) {
+				MessageBox(nullptr, L"ERROR!!!!!\nThere is no more space for Other Object!!", L"", MB_OK | MB_ICONERROR);
 				Crash("There is no more space for Other Object!!");
 			}
 
@@ -287,7 +290,7 @@ void TerrainScene::ProcessObjectDisappeared(const uint8_t* buffer) {
 	}
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
-			mGameObjectMap[data->objectId()]->SetActiveState(false);
+			//mGameObjectMap[data->objectId()]->SetActiveState(false);
 		}
 	}
 }
@@ -302,7 +305,7 @@ void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
 	}
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
-			mGameObjectMap[data->objectId()]->SetActiveState(false);
+			//mGameObjectMap[data->objectId()]->SetActiveState(false);
 		}
 	}
 }
