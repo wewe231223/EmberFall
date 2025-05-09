@@ -21,22 +21,23 @@ public:
 public:
     Short2 GetIndex() const;
     Lock::SRWLock& GetLock();
+    bool IsPlayerInRange(const SimpleMath::Vector3& pos, const float range, const std::shared_ptr<ObjectManager>& objManager) const;
 
     void TryInsert(NetworkObjectIdType id, const std::shared_ptr<ObjectManager>& objManager);
     void RemoveObject(NetworkObjectIdType id, const std::shared_ptr<ObjectManager>& objManager);
-    std::vector<NetworkObjectIdType> GetTriggersInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
-    std::vector<NetworkObjectIdType> GetNPCsInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
-    std::vector<NetworkObjectIdType> GetPlayersInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
-    std::vector<NetworkObjectIdType> GetEnvInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
+    std::vector<NetworkObjectIdType> GetTriggersInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager) const;
+    std::vector<NetworkObjectIdType> GetNPCsInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager) const;
+    std::vector<NetworkObjectIdType> GetPlayersInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager) const;
+    std::vector<NetworkObjectIdType> GetEnvInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager) const;
 
-    std::vector<NetworkObjectIdType> GetTriggersInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
-    std::vector<NetworkObjectIdType> GetNPCsInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
-    std::vector<NetworkObjectIdType> GetPlayersInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
-    std::vector<NetworkObjectIdType> GetEnvInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager);
+    std::vector<NetworkObjectIdType> GetTriggers(SimpleMath::Vector3 pos, const std::shared_ptr<ObjectManager>& objManager) const;
+    std::vector<NetworkObjectIdType> GetNPCs(SimpleMath::Vector3 pos, const std::shared_ptr<ObjectManager>& objManager) const;
+    std::vector<NetworkObjectIdType> GetPlayers(SimpleMath::Vector3 pos, const std::shared_ptr<ObjectManager>& objManager) const;
+    std::vector<NetworkObjectIdType> GetEnv(SimpleMath::Vector3 pos, const std::shared_ptr<ObjectManager>& objManager) const;
 
 private:
     Short2 mIndex{ };
-    Lock::SRWLock mSectorLock;
+    mutable Lock::SRWLock mSectorLock;
     std::unordered_set<NetworkObjectIdType> mPlayers{ };
     std::unordered_set<NetworkObjectIdType> mNPCs{ };
     std::unordered_set<NetworkObjectIdType> mEnvs{ };
@@ -53,6 +54,7 @@ public:
     Sector& GetSector(Short2 idx);
     Sector& GetSectorFromPos(const SimpleMath::Vector3& pos);
     Short2 GetSectorIdxFromPos(const SimpleMath::Vector3& pos) const;
+    bool IsPlayerCanSeeMe(const SimpleMath::Vector3& pos, const float range);
 
     std::vector<Short2> GetMustCheckSectors(const SimpleMath::Vector3& pos, const float range) const;
 

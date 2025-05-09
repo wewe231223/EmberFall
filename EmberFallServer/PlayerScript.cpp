@@ -30,9 +30,9 @@ void PlayerScript::SetOwnerSession(std::shared_ptr<class GameSession> session) {
 }
 
 void PlayerScript::UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeNPC, const std::vector<NetworkObjectIdType>& inViewRangePlayer) {
-    mViewListLock.WriteLock();
+    mViewListLock.ReadLock();
     std::unordered_set<NetworkObjectIdType> oldViewList = mViewList.GetCurrViewList();
-    mViewListLock.WriteUnlock();
+    mViewListLock.ReadUnlock();
 
     auto session = mSession.lock();
     if (nullptr == session) {
@@ -43,14 +43,22 @@ void PlayerScript::UpdateViewList(const std::vector<NetworkObjectIdType>& inView
     if (SESSION_INGAME != std::static_pointer_cast<GameSession>(session)->GetSessionState()) {
         return;
     }
+    
+    decltype(auto) myRoomStage = gGameRoomManager->GetRoom(session->GetMyRoomIdx())->GetStage();
 
     ViewList newViewList{ };
     for (const auto id : inViewRangePlayer) {
         auto success = newViewList.TryInsert(id);
+        if (not success) {
+            continue;
+        }
     }
 
     for (const auto id : inViewRangeNPC) {
         auto success = newViewList.TryInsert(id);
+        if (not success) {
+            continue;
+        }
     }
 
     auto ownerRoom = session->GetMyRoomIdx();

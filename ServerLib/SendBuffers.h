@@ -26,7 +26,7 @@ inline constexpr size_t MEM_BLOCK_SIZE_CNT = sizeof(MEM_BLOCK_SIZES) / sizeof(si
 
 class SendBuffers {
 public:
-    inline static constexpr size_t BUFFER_COUNT = 1'000'000;
+    inline static constexpr size_t BUFFER_COUNT = 100'000;
 
 public:
     SendBuffers();
@@ -51,6 +51,7 @@ private:
 
 class SendBufferFactory {
 public:
+    inline static std::atomic_ullong mSendBuffDebugger{ };
     SendBufferFactory();
     ~SendBufferFactory();
 

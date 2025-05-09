@@ -29,7 +29,7 @@ public:
     void RegisterSocket(SOCKET socket, ULONG_PTR registerKey);
     void RegisterSocket(const std::shared_ptr<INetworkObject>& networkObject);
 
-    void IOWorker();
+    void IOWorker(int32_t threadId);
 
 private:
     HANDLE mIocpHandle{ INVALID_HANDLE_VALUE };

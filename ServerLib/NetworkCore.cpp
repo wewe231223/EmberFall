@@ -63,14 +63,15 @@ bool ServerCore::Start(const std::string& ip, const UINT16 port) {
     GetIOCPCore()->RegisterSocket(mListener);
     mListener->RegisterAccept();
 
-    for (size_t i = 0; i < mWorkerThreadNum; ++i) {
+    for (size_t threadId = 0; threadId < mWorkerThreadNum; ++threadId) {
         mWorkerThreads.emplace_back(
             [=]() {
-                GetIOCPCore()->IOWorker();
+                GetIOCPCore()->IOWorker(threadId);
             }
         );
     }
 
+    gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "InitThreadSEndBuffer Call: {} ", FbsPacketFactory::mSendBufferInitCallCnt.load());
     return true;
 }
 
@@ -109,7 +110,7 @@ bool ClientCore::Start(const std::string& ip, const UINT16 port) {
         return false;
     }
 
-    mWorkerThread = std::thread{ [=]() { GetIOCPCore()->IOWorker(); } };
+    mWorkerThread = std::thread{ [=]() { GetIOCPCore()->IOWorker(0); } };
 
     return true;
 }

@@ -36,7 +36,7 @@ void IOCPCore::RegisterSocket(const std::shared_ptr<INetworkObject>& networkObje
     }
 }
 
-void IOCPCore::IOWorker() {
+void IOCPCore::IOWorker(int32_t threadId) {
     static SessionIdType lastErrorClient{ INVALID_SESSION_ID };
     DWORD receivedByte{ };
     ULONG_PTR completionKey{ };

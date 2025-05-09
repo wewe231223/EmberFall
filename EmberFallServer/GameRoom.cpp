@@ -153,6 +153,7 @@ bool GameRoom::ChangeRolePlayer(SessionIdType id, Packets::PlayerRole role) {
         return true;
     }
 
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "allocated buffers: {}", SendBufferFactory::mSendBuffDebugger.load());
     if (role != Packets::PlayerRole_BOSS) {
         session->ChangeRole(role);
         return true;
@@ -206,6 +207,7 @@ bool GameRoom::CancelPlayerReady(SessionIdType id) {
 void GameRoom::EndGameLoop() {
     mGameRoomState = GameRoomState::GAME_ROOM_STATE_TRANSITION;
 
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "allocated buffers: {}", SendBufferFactory::mSendBuffDebugger.load());
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom[{}]: Register End Game!!!", mRoomIdx);
 
     auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
@@ -241,6 +243,7 @@ bool GameRoom::CheckAndStartGame() {
 
 void GameRoom::CheckGameEnd() {
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Check Game End", mRoomIdx);
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "allocated buffers: {}", SendBufferFactory::mSendBuffDebugger.load());
     auto [isEnd, winner] = mIngameCondition.CheckGameEnd();
     if (not isEnd) {
         if (GameRoomState::GAME_ROOM_STATE_INGAME == mGameRoomState) {
@@ -279,6 +282,7 @@ void GameRoom::ChangeToLobby() {
     auto packetToLobby = FbsPacketFactory::ChangeSceneSC(Packets::GameStage_LOBBY);
     BroadCastInGameRoom(packetToLobby);
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Change To Lobby!!!", mRoomIdx);
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "allocated buffers: {}", SendBufferFactory::mSendBuffDebugger.load());
 }
 
 void GameRoom::ChangeToStage1() {

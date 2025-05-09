@@ -108,6 +108,7 @@ public:
     WeaponSystem mWeaponSystem{ INVALID_OBJ_ID };
 
 private:
+    std::atomic_bool mHeartBeat{ false };
     ObjectTag mTag{ ObjectTag::NONE };
     float mDeltaTime{ };
 

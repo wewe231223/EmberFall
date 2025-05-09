@@ -7,16 +7,16 @@ class SectorSystem;
 class ObjectManager {
 public:
     static constexpr size_t MAX_USER = INVALID_SESSION_ID;
-    static constexpr size_t MAX_NPC = 1000;
+    static constexpr size_t MAX_NPC = 2000;
     static constexpr size_t MAX_PROJECTILE = 1000;
     static constexpr size_t MAX_TRIGGER_OBJ = 100;
     static constexpr size_t MAX_ENV = 5000;
 
     static constexpr size_t USER_ID_START = 0;                                          // 0 ~ 255
-    static constexpr size_t MONSTER_ID_START = MAX_USER + 1;                            // 256 ~ 1255
-    static constexpr size_t PROJECTILE_ID_START = MONSTER_ID_START + MAX_NPC;           // 1256 ~ 2255
-    static constexpr size_t TRIGGER_ID_START = PROJECTILE_ID_START + MAX_PROJECTILE;    // 2256 ~ 2355
-    static constexpr size_t ENV_ID_START = TRIGGER_ID_START + MAX_TRIGGER_OBJ;          // 2356 ~ 7255
+    static constexpr size_t MONSTER_ID_START = MAX_USER + 1;                            // 256 ~ 2255
+    static constexpr size_t PROJECTILE_ID_START = MONSTER_ID_START + MAX_NPC;           // 2256 ~ 3255
+    static constexpr size_t TRIGGER_ID_START = PROJECTILE_ID_START + MAX_PROJECTILE;    // 3256 ~ 3355
+    static constexpr size_t ENV_ID_START = TRIGGER_ID_START + MAX_TRIGGER_OBJ;          // 3356 ~ 8255
 
     static constexpr size_t VALID_ID_MAX = ENV_ID_START + MAX_ENV;
     static constexpr size_t DEFAULT_CORRUPTED_GEM_COUNT = 8;

@@ -38,7 +38,7 @@ namespace GameProtocol {
     }
 
     namespace Logic {
-        inline constexpr float PLAYER_VIEW_RANGE = 100.0f;
+        inline constexpr float PLAYER_VIEW_RANGE = 50.0f;
         inline constexpr float SECTOR_SIZE = 200.0f;
 
         inline constexpr uint8_t MAX_ITEM = 3;
@@ -59,6 +59,11 @@ namespace GameProtocol {
         inline const std::pair<SimpleMath::Vector3, SimpleMath::Vector3> GEM_SPAWN_AREA{
             SimpleMath::Vector3{ -50.0f, 0.0f, -50.0f },
             SimpleMath::Vector3{ 50.0f, 0.0f, 50.0f }
+        };
+
+        inline const std::pair<SimpleMath::Vector3, SimpleMath::Vector3> MONSTER_PATROL_AREA{
+            SimpleMath::Vector3{ -5.0f, 0.0f, -5.0f },
+            SimpleMath::Vector3{ 5.0f, 0.0f, 5.0f }
         };
     }
 

@@ -83,7 +83,7 @@ void Stage::StartStage() {
     mActive.exchange(true);
     mObjectManager->Start(1);
 
-    for (int i = 0; i < 200; ++i) {
+    for (int i = 0; i < 1000; ++i) {
         auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
 
         if (i < 10) {

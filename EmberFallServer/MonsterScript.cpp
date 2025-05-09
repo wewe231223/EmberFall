@@ -158,7 +158,7 @@ BT::NodeStatus MonsterScript::SetRandomTargetLocation(const float deltaTime) {
     }
 
     owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE);
-    mTargetPos = Random::GetRandomVec3(SimpleMath::Vector3{ -100.0f, 0.0f, -100.0f }, SimpleMath::Vector3{ 100.0f, 0.0f, 100.0f });
+    mTargetPos = Random::GetRandVecInArea(GameProtocol::Logic::MONSTER_PATROL_AREA, owner->GetPosition());
     return BT::NodeStatus::SUCCESS;
 }
 

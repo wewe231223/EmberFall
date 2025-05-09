@@ -270,6 +270,9 @@
     <ClCompile Include="PlayerScript.cpp">
       <Filter>MultiThreadLoopTest\Script\Player</Filter>
     </ClCompile>
+    <ClCompile Include="BuffGuard.cpp">
+      <Filter>MultiThreadLoopTest\Script\Buff</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BehaviorTreeBase.h">
@@ -433,6 +436,9 @@
     </ClInclude>
     <ClInclude Include="ViewList.h">
       <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
+    </ClInclude>
+    <ClInclude Include="BuffGuard.h">
+      <Filter>MultiThreadLoopTest\Script\Buff</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
