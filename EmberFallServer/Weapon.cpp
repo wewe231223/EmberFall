@@ -5,8 +5,8 @@
 
 using namespace Weapons;
 
-IWeapon::IWeapon(uint16_t roomIdx, Packets::Weapon type)
-    : mWeaponType{ type }, mRoomIdx{ roomIdx } { }
+IWeapon::IWeapon(uint16_t roomIdx, Packets::Weapon type, float damage)
+    : mWeaponType{ type }, mRoomIdx{ roomIdx }, mDamage{ damage } { }
 
 IWeapon::~IWeapon() { }
 
@@ -22,8 +22,8 @@ SimpleMath::Vector3 Weapons::IWeapon::GetHitBoxSize() const {
     return mHitBox;
 }
 
-Fist::Fist(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize)
-    : IWeapon{ roomIdx, Packets::Weapon_SWORD } {
+Fist::Fist(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage)
+    : IWeapon{ roomIdx, Packets::Weapon_SWORD, damage } {
     mHitBox = hitBoxSize;
 }
 
@@ -39,8 +39,8 @@ void Fist::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, c
     gGameRoomManager->GetRoom(GetRoomIdx())->GetObjectManager()->SpawnEventTrigger(event, 0.5f, 0.5f, 1, attackPos, dir, mHitbox);*/
 }
 
-Spear::Spear(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize)
-    : IWeapon{ roomIdx, Packets::Weapon_SPEAR } {
+Spear::Spear(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage)
+    : IWeapon{ roomIdx, Packets::Weapon_SPEAR, damage } {
     mHitBox = hitBoxSize;
 }
 
@@ -55,8 +55,8 @@ void Spear::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
     gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 1.5f, event, 1.5f, 1);
 }
 
-Bow::Bow(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize)
-    : IWeapon{ roomIdx, Packets::Weapon_BOW }, mArrowSpeed{ GameProtocol::Unit::DEFAULT_PROJECTILE_SPEED } {
+Bow::Bow(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage)
+    : IWeapon{ roomIdx, Packets::Weapon_BOW, damage }, mArrowSpeed{ GameProtocol::Unit::DEFAULT_PROJECTILE_SPEED } {
 }
 
 Bow::~Bow() { }
@@ -64,8 +64,8 @@ Bow::~Bow() { }
 void Bow::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
 }
 
-Sword::Sword(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize)
-    : IWeapon{ roomIdx, Packets::Weapon_SWORD } {
+Sword::Sword(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage)
+    : IWeapon{ roomIdx, Packets::Weapon_SWORD, damage } {
     mHitBox = hitBoxSize;
 }
 
@@ -81,8 +81,8 @@ void Sword::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
     gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 1.5f, event, 1.5f, 1);
 }
 
-Staff::Staff(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize)
-    : IWeapon{ roomIdx, Packets::Weapon_STAFF } {
+Staff::Staff(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage)
+    : IWeapon{ roomIdx, Packets::Weapon_STAFF, damage } {
     mHitBox = hitBoxSize;
 }
 

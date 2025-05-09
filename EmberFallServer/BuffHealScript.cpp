@@ -28,7 +28,6 @@ void BuffHealScript::Update(const float deltaTime) {
         owner->mSpec.hp += mHealPoint;
         owner->mSpec.hp = std::clamp(owner->mSpec.hp, 0.0f, GameProtocol::Logic::MAX_HP);
 
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Heal!! Owner CurrHP: {}", owner->mSpec.hp);
         mDelayCounter = SysClock::now();
         
         auto packetHeal = FbsPacketFactory::BuffHealSC(owner->mSpec.hp);

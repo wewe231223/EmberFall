@@ -160,12 +160,6 @@ void HumanPlayerScript::DispatchGameEvent(GameEvent* event) {
 
             auto packetAttacked = FbsPacketFactory::ObjectAttackedSC(owner->GetId(), owner->mSpec.hp);
             owner->StorePacket(packetAttacked);
-
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[{}] Attacked!!, Attacked by Monster: {}", owner->GetId(), event->sender);
-
-            // test
-            auto sPos = sender->GetPosition();
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Attacked: sender Room: {}, sender pos: {}, {}, {}", sender->GetMyRoomIdx(), sPos.x, sPos.y, sPos.z);
         }
         break;
     }
@@ -398,7 +392,6 @@ void HumanPlayerScript::AcquireItem(const float deltaTime, const std::shared_ptr
     auto packetAcquire = FbsPacketFactory::AcquireItemSC(static_cast<SessionIdType>(owner->GetId()), idx, ItemTagToItemType(itemTag));
     gServerCore->Send(static_cast<SessionIdType>(owner->GetId()), packetAcquire);
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player [{}] Acquire Item {}", owner->GetId(), Packets::EnumNameItemType(ItemTagToItemType(itemTag)));
     gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), item->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
 
     SuccessInteraction();

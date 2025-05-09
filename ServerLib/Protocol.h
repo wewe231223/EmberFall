@@ -5,9 +5,10 @@ using PacketSizeT = PacketSizeType;
 using PacketTypeT = uint8_t;
 using SenderIdType = SessionIdType;
 
+inline constexpr UINT16 SERVER_PORT = 7777;
+
 inline constexpr uint8_t PROTOCOL_VERSION_MAJOR = 2; 
 inline constexpr uint8_t PROTOCOL_VERSION_MINOR = 0;
-
 
 #pragma pack(push, 1)
 

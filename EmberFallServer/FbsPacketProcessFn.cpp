@@ -152,12 +152,6 @@ void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, cons
 
         auto clonedPacket = FbsPacketFactory::ClonePacket(packetEnter);
 
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "PlayerEnter Packet - To Other Sessions name: {}, slot: {}",
-            session->GetNameView(), session->GetSlotIndex());
-        otherSession->RegisterSend(clonedPacket);
-
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "PlayerEnter Packet - To Session [{}], name: {}, slot: {}",
-            otherSession->GetId(), otherSession->GetNameView(), otherSession->GetSlotIndex());
         auto oldUserEnter = FbsPacketFactory::PlayerEnterInLobbySC(otherSessionId, otherSession->GetSlotIndex(), otherSession->GetPlayerRole(), otherSession->GetNameView());
         session->RegisterSend(oldUserEnter);
     }

@@ -83,12 +83,13 @@ void Stage::StartStage() {
     mActive.exchange(true);
     mObjectManager->Start(1);
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 1; ++i) {
         auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+        monster->GetTransform()->SetPosition(DirectX::SimpleMath::Vector3::Zero);
 
-        if (i < 10) {
-            auto item = mObjectManager->SpawnObject(Packets::EntityType_ITEM_POTION);
-        }
+        //if (i < 10) {
+        //    auto item = mObjectManager->SpawnObject(Packets::EntityType_ITEM_POTION);
+        //}
     }
 
     //gServerFrame->AddTimerEvent();

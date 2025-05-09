@@ -13,7 +13,7 @@
 namespace Weapons {
     class IWeapon abstract {
     public:
-        IWeapon(uint16_t roomIdx, Packets::Weapon type);
+        IWeapon(uint16_t roomIdx, Packets::Weapon type, float damage=GameProtocol::Logic::DEFAULT_DAMAGE);
         virtual ~IWeapon();
 
     public:
@@ -38,7 +38,7 @@ namespace Weapons {
 
     class Fist : public IWeapon {
     public:
-        Fist(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize);
+        Fist(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage = GameProtocol::Logic::DEFAULT_DAMAGE);
         virtual ~Fist();
 
     public:
@@ -47,7 +47,7 @@ namespace Weapons {
 
     class Spear : public IWeapon {
     public:
-        Spear(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize);
+        Spear(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage = GameProtocol::Logic::DEFAULT_DAMAGE);
         virtual ~Spear();
 
     public:
@@ -56,7 +56,7 @@ namespace Weapons {
 
     class Bow : public IWeapon {
     public:
-        Bow(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize);
+        Bow(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage = GameProtocol::Logic::DEFAULT_DAMAGE);
         virtual ~Bow();
     
     public:
@@ -68,7 +68,7 @@ namespace Weapons {
 
     class Sword : public IWeapon {
     public:
-        Sword(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize);
+        Sword(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage = GameProtocol::Logic::DEFAULT_DAMAGE);
         virtual ~Sword();
     
     public:
@@ -77,7 +77,7 @@ namespace Weapons {
 
     class Staff : public IWeapon {
     public:
-        Staff(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize);
+        Staff(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage = GameProtocol::Logic::DEFAULT_DAMAGE);
         virtual ~Staff();
 
     public:

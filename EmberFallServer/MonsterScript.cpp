@@ -99,12 +99,12 @@ void MonsterScript::DispatchGameEvent(GameEvent* event) {
             owner->mSpec.hp -= attackEvent->damage;
 
             owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED, true);
+            owner->GetPhysics()->AddForce(attackEvent->knockBackForce);
 
             auto packetAttacked = FbsPacketFactory::ObjectAttackedSC(owner->GetId(), owner->mSpec.hp);
             owner->StorePacket(packetAttacked);
 
             mMonsterBT.Interrupt();
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster [{}] Attacked!!, HP: {}", owner->GetId(), owner->mSpec.hp);
         }
         break;
     }

@@ -168,9 +168,6 @@
     <ClCompile Include="Terrain.cpp">
       <Filter>MultiThreadLoopTest\Resource</Filter>
     </ClCompile>
-    <ClCompile Include="InteractionSystem.cpp">
-      <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
-    </ClCompile>
     <ClCompile Include="ViewList.cpp">
       <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
     </ClCompile>
@@ -340,9 +337,6 @@
     </ClInclude>
     <ClInclude Include="Terrain.h">
       <Filter>MultiThreadLoopTest\Resource</Filter>
-    </ClInclude>
-    <ClInclude Include="InteractionSystem.h">
-      <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
     </ClInclude>
     <ClInclude Include="ViewList.h">
       <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>

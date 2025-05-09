@@ -11,14 +11,12 @@
 
 GameObject::GameObject()
     : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mTimer{ std::make_unique<SimpleTimer>() } {
-    mWeaponSystem.SetWeapon(Packets::Weapon_SWORD);
     mPhysics->SetTransform(mTransform);
     mOverlapped = std::make_unique<OverlappedUpdate>();
 }
 
 GameObject::GameObject(uint16_t roomIdx) 
     : INetworkObject{ roomIdx }, mTransform { std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mTimer{ std::make_unique<SimpleTimer>() } {
-    mWeaponSystem.SetWeapon(Packets::Weapon_SWORD);
     mPhysics->SetTransform(mTransform);
     mOverlapped = std::make_unique<OverlappedUpdate>();
 }
@@ -94,7 +92,7 @@ void GameObject::SetTag(ObjectTag tag) {
 }
 
 void GameObject::ChangeWeapon(Packets::Weapon weapon) {
-    mWeaponSystem.SetWeapon(weapon);
+    mWeaponSystem.SetWeapon(weapon, mSpec.damage);
 }
 
 void GameObject::DisablePhysics() {
@@ -146,6 +144,8 @@ void GameObject::Init() {
     if (nullptr != mEntityScript) {
         mEntityScript->Init();
     }
+
+    mWeaponSystem.SetWeapon(Packets::Weapon_SWORD, mSpec.damage);
 }
 
 void GameObject::RegisterUpdate() {
@@ -207,6 +207,9 @@ void GameObject::Update() {
             mPhysics->GetSpeed()
         );
         StorePacket(movePacket);
+        if (ObjectTag::MONSTER == GetTag()) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "MONSTER ROT: {}", GetTransform()->GetEulerRotation().y);
+        }
     }
 
     if (nullptr == mBoundingObject) {

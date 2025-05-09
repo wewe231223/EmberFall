@@ -3,9 +3,9 @@
 #include "BoundingBoxImporter.h"
 #include "Resources.h"
 
-WeaponSystem::WeaponSystem(NetworkObjectIdType ownerId) 
+WeaponSystem::WeaponSystem(NetworkObjectIdType ownerId, float damage)
     : mOwnerId{ ownerId } {
-    SetWeapon(Packets::Weapon_SWORD);
+    SetWeapon(Packets::Weapon_SWORD, damage);
 }
 
 WeaponSystem::~WeaponSystem() { }
@@ -27,24 +27,24 @@ void WeaponSystem::SetOwnerId(uint16_t roomIdx, NetworkObjectIdType id) {
     mOwnerId = id;
 }
 
-void WeaponSystem::SetWeapon(Packets::Weapon weapon) {
+void WeaponSystem::SetWeapon(Packets::Weapon weapon, float damage) {
     mWeapon.reset();
 
     switch (weapon) {
     case Packets::Weapon_SWORD:
-        mWeapon = std::make_shared<Weapons::Sword>(mRoomIdx, SimpleMath::Vector3{ 0.7f, 0.7f, 2.0f });
+        mWeapon = std::make_shared<Weapons::Sword>(mRoomIdx, SimpleMath::Vector3{ 0.7f, 0.7f, 2.0f }, damage);
         break;
 
     case Packets::Weapon_SPEAR:
-        mWeapon = std::make_shared<Weapons::Spear>(mRoomIdx, SimpleMath::Vector3{ 0.5f });
+        mWeapon = std::make_shared<Weapons::Spear>(mRoomIdx, SimpleMath::Vector3{ 0.5f }, damage);
         break;
 
     case Packets::Weapon_BOW:
-        mWeapon = std::make_shared<Weapons::Bow>(mRoomIdx, SimpleMath::Vector3{ 0.5f });
+        mWeapon = std::make_shared<Weapons::Bow>(mRoomIdx, SimpleMath::Vector3{ 0.5f }, damage);
         break;
 
     case Packets::Weapon_STAFF:
-        mWeapon = std::make_shared<Weapons::Staff>(mRoomIdx, SimpleMath::Vector3{ 0.5f });
+        mWeapon = std::make_shared<Weapons::Staff>(mRoomIdx, SimpleMath::Vector3{ 0.5f }, damage);
         break;
 
     default:

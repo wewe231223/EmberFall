@@ -40,7 +40,6 @@ void EventTrigger::OnCollision(const std::shared_ptr<GameObject>& opponent, cons
     auto ownerRoom = owner->GetMyRoomIdx();
     auto opponentTag = opponent->GetTag();
     if (ObjectTag::TRIGGER == opponentTag or ObjectTag::ENV == opponentTag or ObjectTag::NONE == opponentTag) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Trigger: Opponent Is Trigger or ENV or NONE, Tag Value: {}", static_cast<int>(opponentTag));
         return;
     }
 

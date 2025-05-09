@@ -12,7 +12,7 @@
 
 class WeaponSystem {
 public:
-    WeaponSystem(NetworkObjectIdType ownerId);
+    WeaponSystem(NetworkObjectIdType ownerId, float damage=GameProtocol::Logic::DEFAULT_DAMAGE);
     ~WeaponSystem();
 
 public:
@@ -20,7 +20,7 @@ public:
     SimpleMath::Vector3 GetHitBoxSize() const;
 
     void SetOwnerId(uint16_t roomIdx, NetworkObjectIdType id);
-    void SetWeapon(Packets::Weapon weapon);
+    void SetWeapon(Packets::Weapon weapon, float damage);
 
     void Attack(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir);
 

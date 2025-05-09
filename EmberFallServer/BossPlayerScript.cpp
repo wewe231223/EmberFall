@@ -120,7 +120,7 @@ void BossPlayerScript::DispatchGameEvent(GameEvent* event) {
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
     {
-        if (event->sender != event->receiver and ObjectTag::PLAYER != senderTag) {
+        if (event->sender != event->receiver and ObjectTag::PLAYER != senderTag and ObjectTag::MONSTER != senderTag) {
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
             owner->mSpec.hp -= attackEvent->damage;
             owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED, true);
@@ -128,12 +128,6 @@ void BossPlayerScript::DispatchGameEvent(GameEvent* event) {
 
             auto packetAttacked = FbsPacketFactory::ObjectAttackedSC(owner->GetId(), owner->mSpec.hp);
             owner->StorePacket(packetAttacked);
-
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player[{}] Attacked!!, Attacked by Monster: {}", owner->GetId(), event->sender);
-
-            // test
-            auto sPos = sender->GetPosition();
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Attacked: sender Room: {}, sender pos: {}, {}, {}", sender->GetMyRoomIdx(), sPos.x, sPos.y, sPos.z);
         }
         break;
     }
