@@ -244,7 +244,8 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->Init();
 
         obj->GetTransform()->SetY(0.0f);
-        obj->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -200.0f, 0.0f, -200.0f }, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        auto [min, max] = GameProtocol::Logic::MONSTER_SPAWN_AREA;
+        obj->GetTransform()->Translate(Random::GetRandomVec3(min, max));
         
         sector->AddInSector(validId, obj->GetPosition());
 
@@ -272,7 +273,8 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->Init();
 
         obj->GetTransform()->SetY(0.0f);
-        obj->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f }, SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f }));
+        auto [min, max] = GameProtocol::Logic::GEM_SPAWN_AREA;
+        obj->GetTransform()->Translate(Random::GetRandomVec3(min, max));
 
         sector->AddInSector(validId, obj->GetPosition());
         obj->RegisterUpdate();
@@ -311,7 +313,8 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->Init();
 
         obj->GetTransform()->SetY(0.0f);
-        obj->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f }, SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f }));
+        auto [min, max] = GameProtocol::Logic::ITEM_SPAWN_AREA;
+        obj->GetTransform()->Translate(Random::GetRandomVec3(min, max));
 
         sector->AddInSector(validId, obj->GetPosition());
         obj->RegisterUpdate();

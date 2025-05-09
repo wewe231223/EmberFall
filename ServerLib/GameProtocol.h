@@ -45,7 +45,21 @@ namespace GameProtocol {
         inline constexpr float MAX_HP = 100.0f;
 
         inline constexpr float DEFAULT_DAMAGE = 10.0f;
-        //inline constexpr float 
+        
+        inline const std::pair<SimpleMath::Vector3, SimpleMath::Vector3> ITEM_SPAWN_AREA{
+            SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f },
+            SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f }
+        };
+
+        inline const std::pair<SimpleMath::Vector3, SimpleMath::Vector3> MONSTER_SPAWN_AREA{
+            SimpleMath::Vector3{ -400.0f, 0.0f, -400.0f },
+            SimpleMath::Vector3{ 400.0f, 0.0f, 400.0f }
+        };
+
+        inline const std::pair<SimpleMath::Vector3, SimpleMath::Vector3> GEM_SPAWN_AREA{
+            SimpleMath::Vector3{ -50.0f, 0.0f, -50.0f },
+            SimpleMath::Vector3{ 50.0f, 0.0f, 50.0f }
+        };
     }
 
     namespace Map {

@@ -57,10 +57,10 @@ void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj, c
     decltype(auto) sectors = sectorSystem->GetMustCheckSectors(pos, bbExtents);
     const auto myId = obj->GetId();
     for (const auto sector : sectors) {
-        decltype(auto) collisionCheckPlayers = std::move(sectorSystem->GetSector(sector).GetPlayersInRange(pos, bbExtents, objManager));
-        decltype(auto) collisionCheckMonsters = std::move(sectorSystem->GetSector(sector).GetNPCsInRange(pos, bbExtents, objManager));
-        decltype(auto) collisionCheckEnvs = std::move(sectorSystem->GetSector(sector).GetEnvInRange(pos, bbExtents, objManager));
-        decltype(auto) collisionCheckTriggers = std::move(sectorSystem->GetSector(sector).GetTriggersInRange(pos, bbExtents, objManager));
+        decltype(auto) collisionCheckPlayers = std::move(sectorSystem->GetSector(sector).GetPlayers(pos, objManager));
+        decltype(auto) collisionCheckMonsters = std::move(sectorSystem->GetSector(sector).GetNPCs(pos, objManager));
+        decltype(auto) collisionCheckEnvs = std::move(sectorSystem->GetSector(sector).GetEnv(pos, objManager));
+        decltype(auto) collisionCheckTriggers = std::move(sectorSystem->GetSector(sector).GetTriggers(pos, objManager));
 
         UpdateCollisionMonster(obj, objManager, collisionCheckMonsters);
         UpdateCollisionPlayer(obj, objManager, collisionCheckPlayers);

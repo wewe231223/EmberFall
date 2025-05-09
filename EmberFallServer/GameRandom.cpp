@@ -1,6 +1,12 @@
 #include "pch.h"
 #include "GameRandom.h"
 
+SimpleMath::Vector3 Random::GetRandVecInArea(
+    const SimpleMath::Vector3& min, const SimpleMath::Vector3& max, const SimpleMath::Vector3 center) {
+    
+    GetRandomVec3(min + center, max + center);
+}
+
 SimpleMath::Vector3 Random::GetRandomColor() {
     return GetRandomDirVec3();
 }

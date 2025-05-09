@@ -338,9 +338,6 @@
     <ClInclude Include="Terrain.h">
       <Filter>MultiThreadLoopTest\Resource</Filter>
     </ClInclude>
-    <ClInclude Include="ViewList.h">
-      <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
-    </ClInclude>
     <ClInclude Include="PathFinder.h">
       <Filter>MaybeReuse\Map</Filter>
     </ClInclude>
@@ -433,6 +430,9 @@
     </ClInclude>
     <ClInclude Include="ItemScript.h">
       <Filter>MultiThreadLoopTest\Script\Item</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewList.h">
+      <Filter>MultiThreadLoopTest\Sector&amp;View</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

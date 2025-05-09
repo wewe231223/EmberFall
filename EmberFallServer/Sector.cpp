@@ -207,6 +207,69 @@ std::vector<NetworkObjectIdType> Sector::GetEnvInRange(SimpleMath::Vector3 pos, 
     return inRangeEnv;
 }
 
+std::vector<NetworkObjectIdType> Sector::GetTriggers(SimpleMath::Vector3 pos, const std::shared_ptr<ObjectManager>& objManager) {
+    Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
+    std::vector<NetworkObjectIdType> inRangeTriggers{ };
+    for (const auto triggerId : mTriggers) {
+        auto trigger = objManager->GetTrigger(triggerId);
+        if (nullptr == trigger) {
+            continue;
+        }
+
+        inRangeTriggers.emplace_back(triggerId);
+    }
+
+    return inRangeTriggers;
+}
+
+std::vector<NetworkObjectIdType> Sector::GetNPCs(SimpleMath::Vector3 pos, const std::shared_ptr<ObjectManager>& objManager) {
+    Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
+    std::vector<NetworkObjectIdType> inRangeNPCs{ };
+    for (const auto npcId : mNPCs) {
+        auto npc = objManager->GetNPC(npcId);
+        if (nullptr == npc) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "NPC {} is null", npcId);
+            continue;
+        }
+
+        inRangeNPCs.emplace_back(npcId);
+    }
+
+    return inRangeNPCs;
+}
+
+std::vector<NetworkObjectIdType> Sector::GetPlayers(SimpleMath::Vector3 pos, const std::shared_ptr<ObjectManager>& objManager) {
+    Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
+    std::vector<NetworkObjectIdType> inRangePlayer{ };
+    for (const auto playerId : mPlayers) {
+        auto player = objManager->GetPlayer(playerId);
+        if (nullptr == player) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player {} is null", playerId);
+            continue;
+        }
+
+        inRangePlayer.emplace_back(playerId);
+    }
+
+    return inRangePlayer;
+}
+
+std::vector<NetworkObjectIdType> Sector::GetEnv(SimpleMath::Vector3 pos, const std::shared_ptr<ObjectManager>& objManager) {
+    Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
+    std::vector<NetworkObjectIdType> inRangeEnv{ };
+    for (const auto envId : mEnvs) {
+        auto env = objManager->GetEnv(envId);
+        if (nullptr == env) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "ENV {} is null", envId);
+            continue;
+        }
+
+        inRangeEnv.emplace_back(envId);
+    }
+
+    return inRangeEnv;
+}
+
 SectorSystem::SectorSystem(std::shared_ptr<class ObjectManager> objManager) 
     : mObjManager{ objManager } {
     auto mapHeight = 2000.0f;

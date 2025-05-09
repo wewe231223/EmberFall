@@ -61,7 +61,6 @@ void PlayerScript::UpdateViewList(const std::vector<NetworkObjectIdType>& inView
 
         decltype(auto) newObj = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(id);
         if (nullptr == newObj or false == newObj->mSpec.active) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "In UpdateViewListPlayer: INVALID Object");
             continue;
         }
 
@@ -78,7 +77,6 @@ void PlayerScript::UpdateViewList(const std::vector<NetworkObjectIdType>& inView
         if (not newViewList.IsInList(id)) {
             decltype(auto) packetDisappeared = FbsPacketFactory::ObjectDisappearedSC(id);
             
-            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "In UpdateViewListPlayer: Disappeared Object");
             session->RegisterSend(packetDisappeared);
         }
     }

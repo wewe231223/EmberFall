@@ -33,6 +33,10 @@ public:
             return urd(dre);
         }
     }
+
+    static SimpleMath::Vector3 GetRandVecInArea(
+        const SimpleMath::Vector3& min, const SimpleMath::Vector3& max, const SimpleMath::Vector3 center
+    );
     
     static SimpleMath::Vector3 GetRandomColor();
     static SimpleMath::Vector3 GetRandomDirVec3();

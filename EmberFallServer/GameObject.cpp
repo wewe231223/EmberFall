@@ -207,9 +207,6 @@ void GameObject::Update() {
             mPhysics->GetSpeed()
         );
         StorePacket(movePacket);
-        if (ObjectTag::MONSTER == GetTag()) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "MONSTER ROT: {}", GetTransform()->GetEulerRotation().y);
-        }
     }
 
     if (nullptr == mBoundingObject) {
