@@ -236,12 +236,12 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 
 		auto id = packet->playerId(); 
 
-		if (mLookingDemon and mPlayerIndexmap[packet->playerId()] == &mPlayers[5]) {
-			std::get<2>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
-		}
-		
-		if (not mLookingDemon and mPlayerIndexmap[packet->playerId()] != &mPlayers[mMySlot]) {
-			std::get<2>(*(mPlayerIndexmap[packet->playerId()])).SetActiveState(true);
+
+		auto* playerPtr = mPlayerIndexmap[packet->playerId()];
+	
+
+		if ((mLookingDemon and playerPtr == &mPlayers[5]) or (!mLookingDemon and playerPtr != &mPlayers[5])) {
+			std::get<2>(*playerPtr).SetActiveState(true);
 		}
 
 		std::get<3>(*(mPlayerIndexmap[packet->playerId()])) = true; 
