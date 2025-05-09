@@ -8,6 +8,7 @@ enum class EmbeddedMeshType : BYTE {
 	Cube,
 	Sphere,
 	SkyBox, 
+	SkyDome, 
 };
 
 

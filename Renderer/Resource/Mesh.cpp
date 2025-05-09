@@ -271,7 +271,59 @@ Mesh::Mesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> comman
 
 		mIndexed = true;
 	}
-		break;
+	break;
+	case EmbeddedMeshType::SkyDome:
+	{
+		constexpr UINT tessellation = 16;
+		const UINT verticalSegments = tessellation;        
+		const UINT horizontalSegments = tessellation;
+		const float radius = size * 0.5f;
+
+		for (UINT i = 0; i <= verticalSegments; ++i)
+		{
+			float v = float(i) / verticalSegments;
+			float latitude = v * DirectX::XM_PI; 
+			float dy, dxz;
+			DirectX::XMScalarSinCos(&dxz, &dy, latitude);
+
+			for (UINT j = 0; j <= horizontalSegments; ++j)
+			{
+				float u = float(j) / horizontalSegments;
+				float longitude = u * DirectX::XM_2PI;
+				float dx, dz;
+				DirectX::XMScalarSinCos(&dx, &dz, longitude); 
+
+				SimpleMath::Vector3 normal = { dx * dxz, dy, dz * dxz };
+				SimpleMath::Vector3 position = normal * radius;
+
+				positions.push_back(position);
+				texcoords.push_back({ u, v }); 
+			}
+		}
+
+		const UINT stride = horizontalSegments + 1;
+		for (UINT i = 0; i < verticalSegments; ++i)
+		{
+			for (UINT j = 0; j < horizontalSegments; ++j)
+			{
+				UINT nextI = i + 1;
+				UINT nextJ = j + 1;
+
+				indices.push_back(i * stride + j);
+				indices.push_back(nextI * stride + j);
+				indices.push_back(i * stride + nextJ);
+
+				indices.push_back(i * stride + nextJ);
+				indices.push_back(nextI * stride + j);
+				indices.push_back(nextI * stride + nextJ);
+			}
+		}
+
+		mIndexed = true;
+		mUnitCount = static_cast<UINT>(indices.size());
+		mPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	}
+	break;
 	default:
 		break;
 	}

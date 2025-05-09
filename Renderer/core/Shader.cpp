@@ -344,7 +344,6 @@ void GraphicsShaderBase::CreateShader(ComPtr<ID3D12Device> device) {
 	staticSamplers[5] = { 5, D3D12_FILTER_ANISOTROPIC, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, 0.0f, 16, D3D12_COMPARISON_FUNC_GREATER_EQUAL };
 	staticSamplers[6] = { 6, D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0.0f, 16, D3D12_COMPARISON_FUNC_GREATER_EQUAL };
 	
-	
 	staticSamplers[2].ComparisonFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
 
 	D3D12_ROOT_SIGNATURE_DESC rootsignatureDesc{};
@@ -730,18 +729,16 @@ SkyBoxShader::SkyBoxShader() {
 void SkyBoxShader::CreateShader(ComPtr<ID3D12Device> device) {
 	GraphicsShaderBase::CreateShader(device);
 	mAttribute.set(0);
-	mAttribute.set(1);
 	mAttribute.set(2);
 }
 
 GraphicsShaderBase::InputLayout SkyBoxShader::CreateInputLayout() {
 	GraphicsShaderBase::InputLayout inputLayout{};
 
-	inputLayout.ElementCount = 3;
+	inputLayout.ElementCount = 2;
 
 	inputLayout.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	inputLayout.InputElements[1] = { "TEXINDEX", 0, DXGI_FORMAT_R32_UINT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	inputLayout.InputElements[2] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[1] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
 	return inputLayout;
 }
@@ -780,13 +777,33 @@ GraphicsShaderBase::RootParameters SkyBoxShader::CreateRootParameters() {
 	return params;
 }
 
+D3D12_RASTERIZER_DESC SkyBoxShader::CreateRasterizerState() {
+	D3D12_RASTERIZER_DESC rasterizerDesc;
+	::ZeroMemory(&rasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
+
+	//	rasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+	rasterizerDesc.FrontCounterClockwise = FALSE;
+	rasterizerDesc.DepthBias = 0;
+	rasterizerDesc.DepthBiasClamp = 0.0f;
+	rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+	rasterizerDesc.DepthClipEnable = TRUE;
+	rasterizerDesc.MultisampleEnable = FALSE;
+	rasterizerDesc.AntialiasedLineEnable = FALSE;
+	rasterizerDesc.ForcedSampleCount = 0;
+	rasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	return rasterizerDesc;
+}
+
 D3D12_DEPTH_STENCIL_DESC SkyBoxShader::CreateDepthStencilState() {
 	D3D12_DEPTH_STENCIL_DESC depthStencilState;
 	::ZeroMemory(&depthStencilState, sizeof(D3D12_DEPTH_STENCIL_DESC));
 
-	depthStencilState.DepthEnable = FALSE;
-	depthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-	depthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_NEVER;
+	depthStencilState.DepthEnable = TRUE;
+	depthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO; // Z 버퍼 안 씀
+	depthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL; // 깊이 비교 허용
 	depthStencilState.StencilEnable = FALSE;
 	depthStencilState.StencilReadMask = 0x00;
 	depthStencilState.StencilWriteMask = 0x00;

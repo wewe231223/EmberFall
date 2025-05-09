@@ -5,7 +5,6 @@ cbuffer Camera : register(b0)
     matrix viewProjection;
     float3 cameraPosition;
 
-
 }
 
 struct ModelContext
@@ -33,7 +32,6 @@ struct MaterialConstants
 struct SkyBox_VIN
 {
     float3 position : POSITION;
-    uint texIndex   : TEXINDEX;
     float2 texcoord : TEXCOORD;
     uint instanceID : SV_INSTANCEID;
 };
@@ -43,7 +41,6 @@ struct SkyBox_VOUT
     float4 position : SV_POSITION;
     float2 texcoord : TEXCOORD;
     uint material : MATERIALID;
-    uint imageID : IMAGEID;
 };
 
 struct Deffered_POUT
@@ -65,10 +62,11 @@ SamplerState linearWrapSampler : register(s2);
 SamplerState linearClampSampler : register(s3);
 SamplerState anisotropicWrapSampler : register(s4);
 SamplerState anisotropicClampSampler : register(s5);
+SamplerComparisonState PCFSampler : register(s6);
+
 
 SkyBox_VOUT SkyBox_VS(SkyBox_VIN input)
 {
-    // SkyBox is Unique Entity
     ModelContext modelContext = modelContexts[0];
 
     SkyBox_VOUT output;
@@ -77,7 +75,6 @@ SkyBox_VOUT SkyBox_VS(SkyBox_VIN input)
     
     output.texcoord = input.texcoord;
     output.material = modelContext.material;
-    output.imageID = materialConstants[modelContext.material].diffuseTexture[input.texIndex];
     
     return output;
 }
@@ -87,10 +84,8 @@ Deffered_POUT SkyBox_PS(SkyBox_VOUT input)
     
     Deffered_POUT output = (Deffered_POUT)0;
     
-    
-    
-    output.diffuse = textures[input.imageID].Sample(pointWrapSampler, input.texcoord);
-    output.diffuse *= 0.6f;
+   
+    output.diffuse = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearClampSampler, input.texcoord);
     
     output.normal = float4(0.0f, 0.0f, 0.0f, 5.0f);
     return output;

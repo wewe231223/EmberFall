@@ -1089,7 +1089,7 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
 	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, data);
 
-	mMeshMap["SkyBox"] = std::make_unique<Mesh>(device, commandList, 100.f);
+	mMeshMap["SkyBox"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::SkyDome, 100);
 	mMeshMap["SkyFog"] = std::make_unique<Mesh>(device, commandList, 50.f, 40.f, 20);
 	mMeshMap["Plane"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Plane, 10);
 }
@@ -1104,12 +1104,7 @@ void TerrainScene::BuildMaterial() {
 	mRenderManager->GetMaterialManager().CreateMaterial("TerrainMaterial", mat);
 
 
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_Front");
-	mat.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_Back");
-	mat.mDiffuseTexture[2] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_Top");
-	mat.mDiffuseTexture[3] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_Bottom");
-	mat.mDiffuseTexture[4] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_Left");
-	mat.mDiffuseTexture[5] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_Right");
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_EquiRect_flat");
 	mRenderManager->GetMaterialManager().CreateMaterial("SkyBoxMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Paladin_diffuse");

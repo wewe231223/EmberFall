@@ -185,6 +185,7 @@ protected:
 	virtual InputLayout CreateInputLayout() override;
 	virtual RootParameters CreateRootParameters() override;
 
+	virtual D3D12_RASTERIZER_DESC CreateRasterizerState() override;
 	virtual D3D12_DEPTH_STENCIL_DESC CreateDepthStencilState() override;
 
 	virtual UINT CreateNumOfRenderTarget() override;
