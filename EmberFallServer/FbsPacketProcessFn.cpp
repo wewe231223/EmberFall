@@ -138,31 +138,24 @@ void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, cons
 
     auto sessionId = static_cast<SessionIdType>(session->GetId());
     auto sessionGameRoom = session->GetMyRoomIdx();
-    decltype(auto) sessionsInGameRoom = gGameRoomManager->GetSessionsInRoom(sessionGameRoom);
+    decltype(auto) sessionLock = gGameRoomManager->GetRoom(sessionGameRoom)->GetSessionLock();
 
-    std::vector<std::shared_ptr<GameSession>> otherSessionList{ };
-    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
-    {
-        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
-        for (auto& otherSessionId : sessionsInGameRoom) {
-            if (sessionId == otherSessionId) {
-                continue;
-            }
-
-            auto otherSession = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(otherSessionId));
-            if (nullptr == otherSession or SESSION_INLOBBY != otherSession->GetSessionState()) {
-                continue;
-            }
-
-            otherSessionList.push_back(otherSession);
-        }
-    }
+    sessionLock.ReadLock();
+    std::unordered_set<SessionIdType> sessionsInGameRoom = gGameRoomManager->GetSessionsInRoom(sessionGameRoom);
+    sessionLock.ReadUnlock();
 
     auto packetEnter = FbsPacketFactory::PlayerEnterInLobbySC(sessionId, session->GetSlotIndex(), session->GetPlayerRole(), session->GetNameView());
-    for (auto& otherSession : otherSessionList) {
-        auto otherSessionId = static_cast<SessionIdType>(otherSession->GetId());
+    for (auto& otherSessionId : sessionsInGameRoom) {
+        if (sessionId == otherSessionId) {
+            continue;
+        }
 
-        auto clonedPacket = FbsPacketFactory::ClonePacket(packetEnter);
+        auto otherSession = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(otherSessionId));
+        if (nullptr == otherSession or SESSION_INLOBBY != otherSession->GetSessionState()) {
+            continue;
+        }
+
+        otherSession->RegisterSend(FbsPacketFactory::ClonePacket(packetEnter));
 
         auto oldUserEnter = FbsPacketFactory::PlayerEnterInLobbySC(otherSessionId, otherSession->GetSlotIndex(), otherSession->GetPlayerRole(), otherSession->GetNameView());
         session->RegisterSend(oldUserEnter);
