@@ -26,7 +26,12 @@ void MonsterScript::Init() {
 
     auto& spec = owner->mSpec;
     spec.active = true;
-    spec.hp = 10.0f;
+    spec.moveable = true;
+    spec.interactable = false;
+    spec.entity = Packets::EntityType_MONSTER;
+    spec.defence = 0.0f;
+    spec.damage = 10.0f;
+    spec.hp = GameProtocol::Logic::MAX_HP;
 
     mMonsterBT.Build(std::static_pointer_cast<MonsterScript>(shared_from_this()));
     owner->GetPhysics()->mFactor.maxMoveSpeed = 1.5mps;

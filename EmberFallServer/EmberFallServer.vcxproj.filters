@@ -392,9 +392,6 @@
     <ClInclude Include="CorruptedGem.h">
       <Filter>MultiThreadLoopTest\Script</Filter>
     </ClInclude>
-    <ClInclude Include="ItemScript.h">
-      <Filter>MultiThreadLoopTest\Script</Filter>
-    </ClInclude>
     <ClInclude Include="BuffHealScript.h">
       <Filter>MultiThreadLoopTest\Script\Buff</Filter>
     </ClInclude>
@@ -439,6 +436,9 @@
     </ClInclude>
     <ClInclude Include="PlayerScript.h">
       <Filter>MultiThreadLoopTest\Script\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="ItemScript.h">
+      <Filter>MultiThreadLoopTest\Script\Item</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

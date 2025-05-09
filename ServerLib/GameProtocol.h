@@ -33,6 +33,10 @@ namespace GameProtocol {
         };
     }
 
+    namespace Spec {
+        
+    }
+
     namespace Logic {
         inline constexpr float PLAYER_VIEW_RANGE = 100.0f;
         inline constexpr float SECTOR_SIZE = 200.0f;

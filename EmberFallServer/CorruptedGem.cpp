@@ -17,10 +17,12 @@ void CorruptedGemScript::Init() {
         return;
     }
 
-    owner->mSpec.interactable = true;
-    owner->mSpec.entity = Packets::EntityType_CORRUPTED_GEM;
-    owner->mSpec.active = true;
-    owner->mSpec.hp = 10000.0f;
+    auto& spec = owner->mSpec;
+    spec.active = true;
+    spec.moveable = false;
+    spec.interactable = true;
+    spec.entity = Packets::EntityType_CORRUPTED_GEM;
+    spec.hp = 100000.0f;
 }
 
 void CorruptedGemScript::Update(const float deltaTime) { }

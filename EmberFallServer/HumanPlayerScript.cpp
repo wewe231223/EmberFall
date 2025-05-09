@@ -29,8 +29,13 @@ void HumanPlayerScript::Init() {
         return;
     }
 
-    //owner->mSpec.hp = GameProtocol::Logic::MAX_HP;
-    owner->mSpec.hp = 50.0f;
+    auto& spec = owner->mSpec;
+    spec.active = true;
+    spec.moveable = true;
+    spec.interactable = false;
+    spec.damage = 30.0f;
+    spec.defence = 0.0f;
+    owner->mSpec.hp = GameProtocol::Logic::MAX_HP;
 
     const auto pos = owner->GetPosition();
     const auto look = owner->GetTransform()->Forward();

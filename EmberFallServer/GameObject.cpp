@@ -197,15 +197,17 @@ void GameObject::Update() {
     mTransform->SetY(0.0f);
     mTransform->Update();
 
-    auto currPos = mTransform->GetPosition();
-    auto movePacket = FbsPacketFactory::ObjectMoveSC(
-        GetId(),
-        GetTransform()->GetEulerRotation().y,
-        currPos,
-        mTransform->Forward(),
-        mPhysics->GetSpeed()
-    );
-    StorePacket(movePacket);
+    if (true == mSpec.moveable) {
+        auto currPos = mTransform->GetPosition();
+        auto movePacket = FbsPacketFactory::ObjectMoveSC(
+            GetId(),
+            GetTransform()->GetEulerRotation().y,
+            currPos,
+            mTransform->Forward(),
+            mPhysics->GetSpeed()
+        );
+        StorePacket(movePacket);
+    }
 
     if (nullptr == mBoundingObject) {
         return;

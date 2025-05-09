@@ -18,11 +18,16 @@ void ItemScript::Init() {
         return;
     }
 
-    owner->mSpec.active = true;
-    owner->mSpec.interactable = true;
+    auto& spec = owner->mSpec;
+    spec.active = true;
+    spec.moveable = false;
+    spec.interactable = true;
+    spec.entity = ItemTagToEntityType(mItemTag);
+    spec.damage = 10.0f;
+    spec.defence = 0.0f;
+    owner->mSpec.hp = GameProtocol::Logic::MAX_HP;
 
-
-    gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), owner->GetId(), SysClock::now() + 100s, TimerEventType::REMOVE_NPC);
+    gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), owner->GetId(), SysClock::now() + 15s, TimerEventType::REMOVE_NPC);
 }
 
 void ItemScript::Update(const float deltaTime) { }

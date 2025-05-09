@@ -8,7 +8,6 @@ ViewList::~ViewList() { }
 
 ViewList::ViewList(const ViewList& other) 
     : mViewRange{ other.mViewRange } {
-    //std::copy(other.mViewList.begin(), other.mViewList.end(), mViewList.begin());
     mViewList = other.mViewList;
 }
 

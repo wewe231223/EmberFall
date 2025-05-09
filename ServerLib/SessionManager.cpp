@@ -43,7 +43,17 @@ bool SessionManager::AddSession(std::shared_ptr<Session> session) {
 void SessionManager::CloseSession(SessionIdType id) {
     Lock::SRWLockGuard sessionsGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mSessionsLock };
     auto it = mSessions.find(id);
-    if (it != mSessions.end() or not it->second->IsClosed()) {
+    if (it == mSessions.end()) {
+        return;
+    }
+
+    auto session = it->second;
+    if (nullptr == session) {
+        mSessions.unsafe_erase(it);
+        return;
+    }
+
+    if (not session->IsClosed()) {
         it->second->Close();
         mSessions.unsafe_erase(it);
         mSessionCount.fetch_sub(1);

@@ -25,6 +25,12 @@ void Trigger::Init() {
         return;
     }
 
+    auto& spec = owner->mSpec;
+    spec.active = true;
+    spec.moveable = false;
+    spec.interactable = false;
+    spec.entity = Packets::EntityType_ENV;
+
     auto id = owner->GetId();
     auto excuteTime = mLifeTime;
     gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), id, SysClock::now() + std::chrono::milliseconds{ static_cast<long long>(excuteTime * 1000.0f) }, TimerEventType::REMOVE_TRIGGER);

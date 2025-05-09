@@ -37,6 +37,7 @@ void IOCPCore::RegisterSocket(const std::shared_ptr<INetworkObject>& networkObje
 }
 
 void IOCPCore::IOWorker() {
+    static SessionIdType lastErrorClient{ INVALID_SESSION_ID };
     DWORD receivedByte{ };
     ULONG_PTR completionKey{ };
     OVERLAPPED* overlapped{ nullptr };
@@ -72,7 +73,10 @@ void IOCPCore::IOWorker() {
                 if (IOType::SEND == overlappedEx->type) {
                     FbsPacketFactory::ReleasePacketBuf(reinterpret_cast<OverlappedSend*>(overlappedEx));
 
-                    gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Client[{}] Error Send", static_cast<INT32>(clientId));
+                    if (lastErrorClient != clientId) {
+                        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Client[{}] Error Send", static_cast<INT32>(clientId));
+                    }
+                    lastErrorClient = clientId;
                 }
 
                 serverCore->GetSessionManager()->CloseSession(clientId);
