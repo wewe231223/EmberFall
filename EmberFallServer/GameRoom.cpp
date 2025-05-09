@@ -241,15 +241,18 @@ void GameRoom::CheckSessionsHeartBeat() {
 
         bool expected = true;
         mHeartBeat.compare_exchange_strong(expected, false);
+        gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Check Failure HeartBeat", mRoomIdx);
         return;
     }
     std::vector<SessionIdType> sessionsInGameRoom{ sessionList.begin(), sessionList.end() };
     mSessionLock.ReadUnlock();
 
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Check HeartBeat", mRoomIdx);
     gServerCore->GetSessionManager()->CheckSessionsHeartBeat(sessionsInGameRoom);
 
     auto executionTime = SysClock::now() + CHECK_SESSION_HEART_BEAT_DELAY;
     gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, executionTime, TimerEventType::CHECK_SESSION_HEART_BEAT);
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Check HeartBeat End", mRoomIdx);
 }
 
 void GameRoom::CheckGameEnd() {
@@ -276,8 +279,8 @@ void GameRoom::ChangeToLobby() {
     mStage.EndStage();
     mGameRoomState = GameRoomState::GAME_ROOM_STATE_LOBBY;
 
+    mSessionLock.ReadLock();
     decltype(auto) sessionsInGameRoom = GetSessions();
-
     for (auto& sessionId : sessionsInGameRoom) {
         auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
         if (nullptr == session) {
@@ -287,6 +290,7 @@ void GameRoom::ChangeToLobby() {
         session->EnterLobby();
         session->CancelReady();
     }
+    mSessionLock.ReadUnlock();
 
     mIngameCondition.Reset();
 
@@ -299,6 +303,7 @@ void GameRoom::ChangeToLobby() {
 }
 
 void GameRoom::ChangeToStage1() {
+    mSessionLock.ReadLock();
     mReadyPlayerCount = 0;
     decltype(auto) sessionsInGameRoom = GetSessions();
     for (auto& sessionId : sessionsInGameRoom) {
@@ -309,6 +314,7 @@ void GameRoom::ChangeToStage1() {
 
         session->CancelReady();
     }
+    mSessionLock.ReadUnlock();
 
     mGameRoomState = GameRoomState::GAME_ROOM_STATE_INGAME;
 
