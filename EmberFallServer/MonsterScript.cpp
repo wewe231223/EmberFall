@@ -35,6 +35,7 @@ void MonsterScript::Init() {
 
     mMonsterBT.Build(std::static_pointer_cast<MonsterScript>(shared_from_this()));
     owner->GetPhysics()->mFactor.maxMoveSpeed = 1.5mps;
+    owner->mWeaponSystem.SetWeapon(spec.entity, spec.damage);
 }
 
 void MonsterScript::Update(const float deltaTime) {
@@ -79,6 +80,8 @@ void MonsterScript::OnCollision(const std::shared_ptr<GameObject>& opponent, con
     }
 
     owner->GetPhysics()->SolvePenetration(impulse);
+
+    SetRandomTargetLocation(owner->GetDeltaTime());
 }
 
 void MonsterScript::OnCollisionTerrain(const float height) { }

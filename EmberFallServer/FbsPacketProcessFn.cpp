@@ -257,12 +257,11 @@ void ProcessPlayerLookCS(std::shared_ptr<GameSession>& session, const Packets::P
 }
 
 void ProcessPlayerSelectRoleCS(std::shared_ptr<GameSession>& session, const Packets::PlayerSelectRoleCS* const role) {
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player [{}] Change Role: {}!", session->GetId(), Packets::EnumNamePlayerRole(role->role()));
-
     auto sessionId = static_cast<SessionIdType>(session->GetId());
     auto sessionGameRoom = session->GetMyRoomIdx();
     auto success = gGameRoomManager->GetRoom(sessionGameRoom)->ChangeRolePlayer(sessionId, role->role());
     if (not success) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player [{}] Fail Changing Role: {}", session->GetId(), Packets::EnumNamePlayerRole(role->role()));
         auto packetRejectSelection = FbsPacketFactory::RejectSelectionRoleSC();
         session->RegisterSend(packetRejectSelection);
         return;
@@ -273,6 +272,7 @@ void ProcessPlayerSelectRoleCS(std::shared_ptr<GameSession>& session, const Pack
 
     auto packetChangeRole = FbsPacketFactory::PlayerChangeRoleSC(sessionId, role->role());
 
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player [{}] Change Role: {}!", session->GetId(), Packets::EnumNamePlayerRole(role->role()));
     gGameRoomManager->GetRoom(sessionGameRoom)->BroadCast(sessionId, packetChangeRole);
 }
 

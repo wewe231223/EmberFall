@@ -18,7 +18,6 @@
 HumanPlayerScript::HumanPlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input) 
     : PlayerScript{ owner, input, ObjectTag::PLAYER, ScriptType::PLAYER } {
     owner->mSpec.entity = Packets::EntityType_HUMAN;
-    owner->ChangeWeapon(Packets::Weapon_SWORD);
 }
 
 HumanPlayerScript::~HumanPlayerScript() { }

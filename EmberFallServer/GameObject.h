@@ -67,7 +67,6 @@ public:
     void SetTag(ObjectTag tag);
 
     void DisablePhysics();
-    void ChangeWeapon(Packets::Weapon weapon);
 
     void Reset();
     

@@ -13,12 +13,11 @@
 namespace Weapons {
     class IWeapon abstract {
     public:
-        IWeapon(uint16_t roomIdx, Packets::Weapon type, float damage=GameProtocol::Logic::DEFAULT_DAMAGE);
+        IWeapon(uint16_t roomIdx, float damage=GameProtocol::Logic::DEFAULT_DAMAGE);
         virtual ~IWeapon();
 
     public:
         uint16_t GetRoomIdx() const;
-        Packets::Weapon GetWeaponType() const;
         SimpleMath::Vector3 GetHitBoxSize() const;
 
         virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) abstract;
@@ -31,9 +30,6 @@ namespace Weapons {
         uint16_t mRoomIdx{ };
         float mDamage{ };
         SimpleMath::Vector3 mHitBox;
-
-    private:
-        Packets::Weapon mWeaponType;
     };
 
     class Fist : public IWeapon {
@@ -83,4 +79,14 @@ namespace Weapons {
     public:
         virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
     };
+
+    class BossPlayerSword : public IWeapon {
+    public:
+        BossPlayerSword(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage = GameProtocol::Logic::DEFAULT_DAMAGE);
+        virtual ~BossPlayerSword();
+
+    public:
+        virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
+    };
+
 }

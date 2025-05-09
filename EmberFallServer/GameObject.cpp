@@ -91,10 +91,6 @@ void GameObject::SetTag(ObjectTag tag) {
     mTag = tag;
 }
 
-void GameObject::ChangeWeapon(Packets::Weapon weapon) {
-    mWeaponSystem.SetWeapon(weapon, mSpec.damage);
-}
-
 void GameObject::DisablePhysics() {
     mPhysics->Disable();
 }
@@ -144,8 +140,6 @@ void GameObject::Init() {
     if (nullptr != mEntityScript) {
         mEntityScript->Init();
     }
-
-    mWeaponSystem.SetWeapon(Packets::Weapon_SWORD, mSpec.damage);
 }
 
 void GameObject::RegisterUpdate() {
