@@ -250,20 +250,6 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					*nextItemLoc = GameObject{};
 
 					mGameObjectMap[data->objectId()] = &(*nextItemLoc);
-					nextItemLoc->mShader = mShaderMap["StandardNormalShader"].get();
-					nextItemLoc->mMesh = mMeshMap["HealthPotion"].get();
-					nextItemLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("HealthPotionMaterial");
-					nextItemLoc->mCollider = mColliderMap["HealthPotion"];
-					nextItemLoc->SetActiveState(true);
-
-					nextItemLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
-				}
-				break;
-				default:
-				{
-					*nextItemLoc = GameObject{};
-
-					mGameObjectMap[data->objectId()] = &(*nextItemLoc);
 
 					nextItemLoc->mShader = mShaderMap["StandardNormalShader"].get();
 					nextItemLoc->mMesh = mMeshMap["HealthPotion"].get();
@@ -277,6 +263,8 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 					nextItemLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
 				}
+				break;
+				default:
 					break;
 			}
 		}
@@ -346,7 +334,7 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 			mGameObjectMap[data->objectId()]->GetTransform().SetSpeed(data->speed());
 			auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
 			euler.y = data->yaw();
-			//mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
+			mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
 		}
 	}
 }
