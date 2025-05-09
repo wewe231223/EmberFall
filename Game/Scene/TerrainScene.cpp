@@ -136,9 +136,9 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mMyPlayer->SetAnimation(data->animation()); 
 
 				mHealthBarUI.SetHealth(data->hp()); 
-				/*mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);*/
+				mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 
-				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
+				//mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
 				mCameraMode->Enter();
 			}
 			else {
@@ -1104,12 +1104,12 @@ void TerrainScene::BuildMaterial() {
 	mRenderManager->GetMaterialManager().CreateMaterial("TerrainMaterial", mat);
 
 
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("SkyBox_Front_0");
-	mat.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("SkyBox_Back_0");
-	mat.mDiffuseTexture[2] = mRenderManager->GetTextureManager().GetTexture("SkyBox_Top_0");
-	mat.mDiffuseTexture[3] = mRenderManager->GetTextureManager().GetTexture("SkyBox_Bottom_0");
-	mat.mDiffuseTexture[4] = mRenderManager->GetTextureManager().GetTexture("SkyBox_Left_0");
-	mat.mDiffuseTexture[5] = mRenderManager->GetTextureManager().GetTexture("SkyBox_Right_0");
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_Front");
+	mat.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_Back");
+	mat.mDiffuseTexture[2] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_Top");
+	mat.mDiffuseTexture[3] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_Bottom");
+	mat.mDiffuseTexture[4] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_Left");
+	mat.mDiffuseTexture[5] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_Right");
 	mRenderManager->GetMaterialManager().CreateMaterial("SkyBoxMaterial", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Paladin_diffuse");

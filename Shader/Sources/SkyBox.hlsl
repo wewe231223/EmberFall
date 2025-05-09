@@ -90,6 +90,8 @@ Deffered_POUT SkyBox_PS(SkyBox_VOUT input)
     
     
     output.diffuse = textures[input.imageID].Sample(pointWrapSampler, input.texcoord);
+    output.diffuse *= 0.6f;
+    
     output.normal = float4(0.0f, 0.0f, 0.0f, 5.0f);
     return output;
 }

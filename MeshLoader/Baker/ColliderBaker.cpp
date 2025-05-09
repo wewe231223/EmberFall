@@ -5,7 +5,7 @@
 void ColliderBaker::Load(const std::filesystem::path& path) {
     std::ifstream inFile{ path, std::ios::binary };
 
-    Crash(inFile);
+    Crash(bool(inFile));
 
     size_t mapSize;
     inFile.read(reinterpret_cast<char*>(&mapSize), sizeof(size_t));
