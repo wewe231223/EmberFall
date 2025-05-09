@@ -50,7 +50,6 @@ public:
 
     void ReleaseSessionId(SessionIdType id);
 
-    Lock::SRWLock& GetSessionLock();
     std::shared_ptr<Session> GetSession(SessionIdType id);
     Concurrency::concurrent_unordered_map<SessionIdType, std::shared_ptr<Session>>& GetSessionMap();
 

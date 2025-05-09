@@ -66,10 +66,6 @@ void SessionManager::ReleaseSessionId(SessionIdType id) {
     mSessionIdMap.push(id);
 }
 
-Lock::SRWLock& SessionManager::GetSessionLock() {
-    return mSessionsLock;
-}
-
 std::shared_ptr<Session> SessionManager::GetSession(SessionIdType id) {
     Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
     auto it = mSessions.find(id);

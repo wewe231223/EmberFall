@@ -80,39 +80,38 @@ uint8_t GameRoom::TryInsertInRoom(SessionIdType sessionId) {
 }
 
 uint8_t GameRoom::RemovePlayer(SessionIdType id, Packets::PlayerRole lastRole, bool lastReadyState, uint8_t lastSlotIndex) {
-    {
-        Lock::SRWLockGuard sessionGaurd{ Lock::SRWLockMode::SRW_EXCLUSIVE, mSessionLock };
-        if (not mSessionsInRoom.contains(id)) {
-            return GameRoomError::ERROR_SESSION_NOT_EXISTS_IN_THIS_ROOM;
-        }
-
-        if (mGameRoomState == GameRoomState::GAME_ROOM_STATE_TRANSITION) {
-            mTransitionInterruptFlag = true;
-        }
-
-        if (Packets::PlayerRole_BOSS == lastRole) {
-            uint8_t expectedBossCount = 1;
-            mBossPlayerCount.compare_exchange_strong(expectedBossCount, 0);
-        }
-
-        if (true == lastReadyState) {
-            --mReadyPlayerCount;
-        }
-
-        --mPlayerCount;
-
-        if (GameRoomState::GAME_ROOM_STATE_LOBBY != mGameRoomState and 0 == mPlayerCount) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Boss Player Count zero or Player Count is zero");
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Now GameRoom [{}] state is GAME_ROOM_STATE_LOBBBY", mRoomIdx);
-
-            mStage.EndStage();
-            mGameRoomState = GameRoomState::GAME_ROOM_STATE_LOBBY;
-        }
-
-        mSessionsInRoom.erase(id);
-        mSessionSlotIndices.push(lastSlotIndex);
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session [{}] erased in GameRoom [{}], last slot: [{}]", id, mRoomIdx, lastSlotIndex);
+    mSessionLock.WriteLock();
+    if (not mSessionsInRoom.contains(id)) {
+        return GameRoomError::ERROR_SESSION_NOT_EXISTS_IN_THIS_ROOM;
     }
+    mSessionsInRoom.erase(id);
+    mSessionSlotIndices.push(lastSlotIndex);
+    mSessionLock.WriteLock();
+
+    if (mGameRoomState == GameRoomState::GAME_ROOM_STATE_TRANSITION) {
+        mTransitionInterruptFlag = true;
+    }
+
+    if (Packets::PlayerRole_BOSS == lastRole) {
+        uint8_t expectedBossCount = 1;
+        mBossPlayerCount.compare_exchange_strong(expectedBossCount, 0);
+    }
+
+    if (true == lastReadyState) {
+        --mReadyPlayerCount;
+    }
+
+    --mPlayerCount;
+
+    if (GameRoomState::GAME_ROOM_STATE_LOBBY != mGameRoomState and 0 == mPlayerCount) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Boss Player Count zero or Player Count is zero");
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Now GameRoom [{}] state is GAME_ROOM_STATE_LOBBBY", mRoomIdx);
+
+        mStage.EndStage();
+        mGameRoomState = GameRoomState::GAME_ROOM_STATE_LOBBY;
+    }
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session [{}] erased in GameRoom [{}], last slot: [{}]", id, mRoomIdx, lastSlotIndex);
 
     auto packetExit = FbsPacketFactory::PlayerExitSC(id);
     BroadCast(packetExit);
@@ -370,7 +369,6 @@ void GameRoom::BroadCast(SessionIdType sender, OverlappedSend* packet) {
     std::unordered_set<SessionIdType> sessionsInGameRoom = GetSessions();
     mSessionLock.ReadUnlock();
 
-    std::vector<std::shared_ptr<GameSession>> sessionList{ };
     for (auto& sessionId : sessionsInGameRoom) {
         if (sender == sessionId) {
             continue;
@@ -381,10 +379,6 @@ void GameRoom::BroadCast(SessionIdType sender, OverlappedSend* packet) {
             continue;
         }
 
-        sessionList.push_back(session);
-    }
-    
-    for (auto& session : sessionList) {
         auto clonedPacket = FbsPacketFactory::ClonePacket(packet);
         session->RegisterSend(clonedPacket);
     }
@@ -397,17 +391,12 @@ void GameRoom::BroadCast(OverlappedSend* packet) {
     std::unordered_set<SessionIdType> sessionsInGameRoom = GetSessions();
     mSessionLock.ReadUnlock();
 
-    std::vector<std::shared_ptr<GameSession>> sessionList{ };
     for (auto& sessionId : sessionsInGameRoom) {
         auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
         if (nullptr == session) {
             continue;
         }
 
-        sessionList.push_back(session);
-    }
-
-    for (auto& session : sessionList) {
         auto clonedPacket = FbsPacketFactory::ClonePacket(packet);
         session->RegisterSend(clonedPacket);
     }
