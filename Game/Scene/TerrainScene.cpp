@@ -627,6 +627,18 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 	light.Specular = { 1.f, 1.f, 1.f, 1.f };
 	light.Ambient = { 0.2f, 0.2f, 0.2f, 1.f };
 
+
+	Time.AddEvent(66ms, [this]() { 
+		auto look = mCamera.GetTransform().GetForward();
+		look.y = 0.f;
+
+		decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(gClientCore->GetSessionId(), look);
+		gClientCore->Send(packetCamera);
+		
+		return true; 
+	}); 
+
+
 	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
 	gClientCore->Send(packet);
 
@@ -893,7 +905,6 @@ void TerrainScene::SendNetwork() {
 
 	for (const auto& key : std::views::iota(static_cast<uint8_t>(0), static_cast<uint8_t>(255))) {
 		if (keyTracker.IsKeyPressed(static_cast<DirectX::Keyboard::Keys>(key)) or keyTracker.IsKeyReleased(static_cast<DirectX::Keyboard::Keys>(key))) {
-
 			if (keyTracker.IsKeyPressed(static_cast<DirectX::Keyboard::Keys>(key))) {
 				decltype(auto) packet = FbsPacketFactory::PlayerInputCS(id, key, true);
 				gClientCore->Send(packet);
@@ -902,15 +913,8 @@ void TerrainScene::SendNetwork() {
 				decltype(auto) packet = FbsPacketFactory::PlayerInputCS(id, key, false);
 				gClientCore->Send(packet);
 			}
-
 		}
 	}
-
-	auto look = mCamera.GetTransform().GetForward();
-	look.y = 0.f; 
-
-	decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(id, look);
-	gClientCore->Send(packetCamera);
 }
 
 void TerrainScene::Exit() {
