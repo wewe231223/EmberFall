@@ -172,7 +172,8 @@ void GameObject::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
     Update();
     LateUpdate();
 
-    gServerFrame->AddTimerEvent(GetMyRoomIdx(), GetId(), SysClock::now() + 500ms, TimerEventType::UPDATE_NPC);
+    auto nextUpdateTime = SysClock::now() + GameProtocol::Logic::MONSTER_UPDATE_DELAY;
+    gServerFrame->AddTimerEvent(GetMyRoomIdx(), GetId(), nextUpdateTime, TimerEventType::UPDATE_NPC);
 }
 
 void GameObject::Update() {

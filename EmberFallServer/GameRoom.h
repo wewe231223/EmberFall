@@ -75,21 +75,21 @@ public:
     void EndGameLoop();
     bool CheckAndStartGame();
 
+    void CheckSessionsHeartBeat();
     void CheckGameEnd();
     void ChangeToLobby();
     void ChangeToStage1();
 
     void NotifyDestructedObject(ObjectTag tag);
 
-    void BroadCastInGameRoom(SessionIdType sender, OverlappedSend* packet);
-    void BroadCastInGameRoom(OverlappedSend* packet);
-    void BroadCastInGameRoomWithoutLock(SessionIdType sender, OverlappedSend* packet);
-    void BroadCastInGameRoomWithoutLock(OverlappedSend* packet);
+    void BroadCast(SessionIdType sender, OverlappedSend* packet);
+    void BroadCast(OverlappedSend* packet);
 
     void OnSceneCountdownTick();
 
 private:
     uint16_t mRoomIdx{ };
+    std::atomic_bool mHeartBeat{ false };
     std::atomic_uint8_t mGameRoomState{ };
     std::atomic_bool mTransitionInterruptFlag{ false };
     Packets::GameStage mStageTransitionTarget{ Packets::GameStage_LOBBY };

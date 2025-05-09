@@ -1,5 +1,7 @@
 #pragma once
 
+inline constexpr auto CHECK_SESSION_HEART_BEAT_DELAY = 5s;
+
 namespace GameProtocol {
     namespace Unit {
         inline decltype(auto) MONSTER_WALK_SPEED = 1.5mps;
@@ -38,6 +40,10 @@ namespace GameProtocol {
     }
 
     namespace Logic {
+        inline constexpr auto GAME_ROOM_CHECK_GAME_END_DELAY = 1s;
+        inline constexpr auto MONSTER_UPDATE_DELAY = 100ms;
+        inline constexpr auto ITEM_LIFE_TIME = 15s;
+
         inline constexpr float PLAYER_VIEW_RANGE = 50.0f;
         inline constexpr float SECTOR_SIZE = 200.0f;
 

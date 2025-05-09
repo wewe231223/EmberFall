@@ -10,6 +10,9 @@
 
 #include <Windows.h>
 
+#define PRINT_DEBUG_LOG
+//#undef PRINT_DEBUG_LOG
+
 #undef max
 #undef min
 

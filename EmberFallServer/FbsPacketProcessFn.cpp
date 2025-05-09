@@ -25,6 +25,13 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
     Packets::PacketTypes enumType = static_cast<Packets::PacketTypes>(header->type);
     //gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Process: {}", Packets::EnumNamePacketTypes(enumType));
     switch (header->type) {
+    case Packets::PacketTypes_PT_HEART_BEAT_CS:
+    {
+        decltype(auto) packetHeartBeat = FbsPacketFactory::GetDataPtrCS<Packets::HeartBeatCS>(buffer);
+        ProcessHeartBeatCS(session, packetHeartBeat);
+        break;
+    }
+
     case Packets::PacketTypes_PT_PLAYER_INPUT_CS:
     {
         decltype(auto) packetInput = FbsPacketFactory::GetDataPtrCS<Packets::PlayerInputCS>(buffer);
@@ -121,6 +128,11 @@ const uint8_t* ProcessPacket(std::shared_ptr<GameSession>& session, const uint8_
     return buffer + header->size;
 }
 
+void ProcessHeartBeatCS(std::shared_ptr<class GameSession>& session, const Packets::HeartBeatCS* const heartbeat) {
+    session->mHeartBeat.fetch_sub(1);
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player [{}] HeartBeat : {}", session->GetId(), session->mHeartBeat.load());
+}
+
 void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, const Packets::PlayerEnterInLobbyCS* const enter) {
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player [{}] Enter In Lobby!", session->GetId());
 
@@ -170,7 +182,7 @@ void ProcessPlayerReadyInLobby(std::shared_ptr<class GameSession>& session, cons
     }
 
     auto packetReady = FbsPacketFactory::PlayerReadyInLobbySC(sessionId);
-    gGameRoomManager->GetRoom(sessionGameRoom)->BroadCastInGameRoom(packetReady);
+    gGameRoomManager->GetRoom(sessionGameRoom)->BroadCast(packetReady);
 
     gGameRoomManager->GetRoom(sessionGameRoom)->CheckAndStartGame();
 }
@@ -186,7 +198,7 @@ void ProcessPlayerCancelReady(std::shared_ptr<class GameSession>& session, const
     }
 
     auto packetReady = FbsPacketFactory::PlayerCancelReadySC(sessionId);
-    gGameRoomManager->GetRoom(sessionGameRoom)->BroadCastInGameRoom(packetReady);
+    gGameRoomManager->GetRoom(sessionGameRoom)->BroadCast(packetReady);
 }
 
 void ProcessPlayerExitCS(std::shared_ptr<class GameSession>& session, const Packets::PlayerExitCS* const exit) {
@@ -261,7 +273,7 @@ void ProcessPlayerSelectRoleCS(std::shared_ptr<GameSession>& session, const Pack
 
     auto packetChangeRole = FbsPacketFactory::PlayerChangeRoleSC(sessionId, role->role());
 
-    gGameRoomManager->GetRoom(sessionGameRoom)->BroadCastInGameRoom(sessionId, packetChangeRole);
+    gGameRoomManager->GetRoom(sessionGameRoom)->BroadCast(sessionId, packetChangeRole);
 }
 
 void ProcessLatencyCS(std::shared_ptr<GameSession>& session, const Packets::PacketLatencyCS* const latency) {

@@ -71,7 +71,15 @@ Lock::SRWLock& SessionManager::GetSessionLock() {
 }
 
 std::shared_ptr<Session> SessionManager::GetSession(SessionIdType id) {
-    return mSessions[id];
+    Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, mSessionsLock };
+    auto it = mSessions.find(id);
+    if (it == mSessions.end()) {
+        return nullptr;
+    }
+
+    auto session = it->second;
+
+    return session;
 }
 
 Concurrency::concurrent_unordered_map<SessionIdType, std::shared_ptr<Session>>& SessionManager::GetSessionMap() {
@@ -92,6 +100,30 @@ void SessionManager::Send(SessionIdType to, OverlappedSend* const overlappedSend
     }
 
     session->RegisterSend(overlappedSend);
+}
+
+void SessionManager::CheckSessionsHeartBeat(const std::vector<SessionIdType>& sessionsId) {
+    std::vector<SessionIdType> timeOutSessions{ };
+
+    auto packetHeartBeat = FbsPacketFactory::HeartBeatSC();
+    for (auto id : sessionsId) {
+        auto session = GetSession(id);
+        if (nullptr == session) {
+            continue;
+        }
+
+        if (session->mHeartBeat >= MAX_SESSION_HEART_BEAT_CNT) {
+            timeOutSessions.push_back(id);
+        }
+
+        session->mHeartBeat.fetch_add(1);
+        session->RegisterSend(FbsPacketFactory::ClonePacket(packetHeartBeat));
+    }
+    FbsPacketFactory::ReleasePacketBuf(packetHeartBeat);
+
+    for (auto id : timeOutSessions) {
+        CloseSession(id);
+    }
 }
 
 void SessionManager::CheckSessionsHeartBeat() {

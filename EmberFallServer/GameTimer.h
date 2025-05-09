@@ -13,12 +13,15 @@ using Duration = std::chrono::duration<float, TimePeriod>;
 using TimePoint = Clock::time_point;
 using EventCallBack = std::function<void()>;
 
+inline constexpr uint8_t GAME_ROOM_EVENT = 0xF0;
+
 enum class TimerEventType : uint8_t {
     REMOVE_NPC,
     UPDATE_NPC,
     REMOVE_TRIGGER,
-    SCENE_TRANSITION_COUNTDOWN,
-    CHECK_GAME_CONDITION
+    SCENE_TRANSITION_COUNTDOWN = GAME_ROOM_EVENT,
+    CHECK_GAME_CONDITION,
+    CHECK_SESSION_HEART_BEAT
 };
 
 struct TimerEvent {

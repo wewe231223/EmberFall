@@ -11,8 +11,6 @@ inline constexpr size_t FBS_PACKET_SC_END = Packets::PacketTypes_MAX;
 
 class FbsPacketFactory {
 public:
-    static const bool InitTheadSendBuffer();
-
     static const PacketHeaderSC* GetHeaderPtrSC(const uint8_t* const data);
     static const PacketHeaderCS* GetHeaderPtrCS(const uint8_t* const data);
 
@@ -100,9 +98,6 @@ public:
     static SimpleMath::Vector3 GetVector3(const Packets::Vec3* vec);
     static SimpleMath::Vector2 GetVector2(const Packets::Vec2* vec);
     static SimpleMath::Vector2 GetVector2(const Packets::Vec3* vec);
-
-public:
-    inline static std::atomic_int32_t mSendBufferInitCallCnt{ };
 
 private:
     inline static std::shared_ptr<SendBufferFactory> mSendPacketBuffers{ std::make_shared<SendBufferFactory>() };

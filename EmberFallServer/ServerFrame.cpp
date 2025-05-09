@@ -61,6 +61,10 @@ void ServerFrame::AddTimerEvent(uint16_t roomIdx, NetworkObjectIdType id, SysClo
     mTimerEvents.push(TimerEvent{ roomIdx, id, executeTime, eventType });
 }
 
+bool ServerFrame::IsGameRoomEvent(TimerEventType type) const {
+    return static_cast<uint8_t>(type) & GAME_ROOM_EVENT;
+}
+
 void ServerFrame::TimerThread() {
     while (not mDone) {
         auto currentTime = SysClock::now();
@@ -78,22 +82,35 @@ void ServerFrame::TimerThread() {
         }
 
         decltype(auto) gameRoom = gGameRoomManager->GetRoom(event.roomIdx);
-        if (event.eventType == TimerEventType::SCENE_TRANSITION_COUNTDOWN) {
-            gameRoom->OnSceneCountdownTick();
-            continue;
-        }
-        else if (event.eventType == TimerEventType::CHECK_GAME_CONDITION) {
-            gameRoom->CheckGameEnd();
-            continue;
-        }
-        
-        auto obj = gameRoom->GetStage().GetObjectFromId(event.id);
-        if (nullptr == obj) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Object Is Dead");
-            continue;
+       
+        std::shared_ptr<GameObject> obj{ };
+        if (not IsGameRoomEvent(event.eventType)) {
+            obj = gameRoom->GetStage().GetObjectFromId(event.id);
+            if (nullptr == obj) {
+                gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Object Is Dead");
+                continue;
+            }
         }
 
         switch (event.eventType) {
+        case TimerEventType::SCENE_TRANSITION_COUNTDOWN:
+        {
+            gameRoom->OnSceneCountdownTick();
+            break;
+        }
+
+        case TimerEventType::CHECK_GAME_CONDITION:
+        {
+            gameRoom->CheckGameEnd();
+            break;
+        }
+
+        case TimerEventType::CHECK_SESSION_HEART_BEAT:
+        {
+            gameRoom->CheckSessionsHeartBeat();
+            break;
+        }
+
         case TimerEventType::UPDATE_NPC:
         {
             if (false == obj->mSpec.active) {

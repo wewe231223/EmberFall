@@ -31,7 +31,8 @@ void GameSession::Close() {
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameSession Destructor: Session Erase From Room Error: {}", result);
 
     if (nullptr != mUserObject) {
-        gServerFrame->AddTimerEvent(myRoom, myId, SysClock::now(), TimerEventType::REMOVE_NPC);
+        auto executionTime = SysClock::now();
+        gServerFrame->AddTimerEvent(myRoom, myId, executionTime, TimerEventType::REMOVE_NPC);
         mUserObject = nullptr;
     }
 

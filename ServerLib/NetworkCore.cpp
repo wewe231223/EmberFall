@@ -66,12 +66,11 @@ bool ServerCore::Start(const std::string& ip, const UINT16 port) {
     for (size_t threadId = 0; threadId < mWorkerThreadNum; ++threadId) {
         mWorkerThreads.emplace_back(
             [=]() {
-                GetIOCPCore()->IOWorker(threadId);
+                GetIOCPCore()->IOWorker(static_cast<int32_t>(threadId));
             }
         );
     }
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "InitThreadSEndBuffer Call: {} ", FbsPacketFactory::mSendBufferInitCallCnt.load());
     return true;
 }
 

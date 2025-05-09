@@ -56,6 +56,7 @@ public:
 
     void Send(SessionIdType to, OverlappedSend* const overlappedSend);
 
+    void CheckSessionsHeartBeat(const std::vector<SessionIdType>& sessionsId);
     void CheckSessionsHeartBeat();
 
 private:

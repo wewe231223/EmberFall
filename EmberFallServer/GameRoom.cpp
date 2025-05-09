@@ -70,64 +70,52 @@ uint8_t GameRoom::TryInsertInRoom(SessionIdType sessionId) {
     session->SetName(std::format("PID {}", slotIndex));
     mSessionsInRoom.insert(sessionId);
 
+    bool expected = false;
+    if (true == mHeartBeat.compare_exchange_strong(expected, true)) {
+        auto executionTime = SysClock::now() + CHECK_SESSION_HEART_BEAT_DELAY;
+        gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, executionTime, TimerEventType::CHECK_SESSION_HEART_BEAT);
+    }
+
     return GameRoomError::SUCCESS_INSERT_SESSION_IN_ROOM;
 }
 
 uint8_t GameRoom::RemovePlayer(SessionIdType id, Packets::PlayerRole lastRole, bool lastReadyState, uint8_t lastSlotIndex) {
-    Lock::SRWLockGuard sessionGaurd{ Lock::SRWLockMode::SRW_EXCLUSIVE, mSessionLock };
-    if (not mSessionsInRoom.contains(id)) {
-        return GameRoomError::ERROR_SESSION_NOT_EXISTS_IN_THIS_ROOM;
-    }
-
-    if (mGameRoomState == GameRoomState::GAME_ROOM_STATE_TRANSITION) {
-        mTransitionInterruptFlag = true;
-    }
-
-    if (Packets::PlayerRole_BOSS == lastRole) {
-        uint8_t expectedBossCount = 1;
-        mBossPlayerCount.compare_exchange_strong(expectedBossCount, 0);
-    }
-
-    if (true == lastReadyState) {
-        --mReadyPlayerCount;
-    }
-
-    --mPlayerCount;
-
-    if (GameRoomState::GAME_ROOM_STATE_LOBBY != mGameRoomState and 0 == mPlayerCount) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Boss Player Count zero or Player Count is zero");
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Now GameRoom [{}] state is GAME_ROOM_STATE_LOBBBY", mRoomIdx);
-
-        mStage.EndStage();
-        mGameRoomState = GameRoomState::GAME_ROOM_STATE_LOBBY;
-    }
-
-    mSessionsInRoom.erase(id);
-    mSessionSlotIndices.push(lastSlotIndex);
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session [{}] erased in GameRoom [{}], last slot: [{}]", id, mRoomIdx, lastSlotIndex);
-
-    // 이전에 Locking을 하고 있는 와중이므로 (Sesssion Destructor 호출 전 SessionManager::CloseSession 함수) Lock을 걸지 않는다.
-    std::vector<std::shared_ptr<GameSession>> sessionList{ };
-    for (auto& sessionId : mSessionsInRoom) {
-        if (id == sessionId) {
-            continue;
+    {
+        Lock::SRWLockGuard sessionGaurd{ Lock::SRWLockMode::SRW_EXCLUSIVE, mSessionLock };
+        if (not mSessionsInRoom.contains(id)) {
+            return GameRoomError::ERROR_SESSION_NOT_EXISTS_IN_THIS_ROOM;
         }
 
-        auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
-        if (nullptr == session or SESSION_INLOBBY != session->GetSessionState()) {
-            continue;
+        if (mGameRoomState == GameRoomState::GAME_ROOM_STATE_TRANSITION) {
+            mTransitionInterruptFlag = true;
         }
 
-        sessionList.push_back(session);
+        if (Packets::PlayerRole_BOSS == lastRole) {
+            uint8_t expectedBossCount = 1;
+            mBossPlayerCount.compare_exchange_strong(expectedBossCount, 0);
+        }
+
+        if (true == lastReadyState) {
+            --mReadyPlayerCount;
+        }
+
+        --mPlayerCount;
+
+        if (GameRoomState::GAME_ROOM_STATE_LOBBY != mGameRoomState and 0 == mPlayerCount) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Boss Player Count zero or Player Count is zero");
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Now GameRoom [{}] state is GAME_ROOM_STATE_LOBBBY", mRoomIdx);
+
+            mStage.EndStage();
+            mGameRoomState = GameRoomState::GAME_ROOM_STATE_LOBBY;
+        }
+
+        mSessionsInRoom.erase(id);
+        mSessionSlotIndices.push(lastSlotIndex);
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Session [{}] erased in GameRoom [{}], last slot: [{}]", id, mRoomIdx, lastSlotIndex);
     }
 
     auto packetExit = FbsPacketFactory::PlayerExitSC(id);
-    for (auto& session : sessionList) {
-        auto clonedPacket = FbsPacketFactory::ClonePacket(packetExit);
-        session->RegisterSend(clonedPacket);
-    }
-
-    FbsPacketFactory::ReleasePacketBuf(packetExit);
+    BroadCast(packetExit);
 
     return GameRoomError::SUCCESS_REMOVE_SESSION_IN_ROOM;
 }
@@ -153,7 +141,9 @@ bool GameRoom::ChangeRolePlayer(SessionIdType id, Packets::PlayerRole role) {
         return true;
     }
 
+#if defined(DEBUG) || defined(_DEBUG) || defined(PRINT_DEBUG_LOG)
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "allocated buffers: {}", SendBufferFactory::mSendBuffDebugger.load());
+#endif
     if (role != Packets::PlayerRole_BOSS) {
         session->ChangeRole(role);
         return true;
@@ -207,7 +197,9 @@ bool GameRoom::CancelPlayerReady(SessionIdType id) {
 void GameRoom::EndGameLoop() {
     mGameRoomState = GameRoomState::GAME_ROOM_STATE_TRANSITION;
 
+#if defined(DEBUG) || defined(_DEBUG) || defined(PRINT_DEBUG_LOG)
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "allocated buffers: {}", SendBufferFactory::mSendBuffDebugger.load());
+#endif
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom[{}]: Register End Game!!!", mRoomIdx);
 
     auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
@@ -217,7 +209,7 @@ void GameRoom::EndGameLoop() {
     mStageTransitionTarget = Packets::GameStage_LOBBY;
 
     auto packetStartTransition = FbsPacketFactory::StartSceneTransition(SCENE_TRANSITION_COUNT);
-    BroadCastInGameRoom(packetStartTransition);
+    BroadCast(packetStartTransition);
 }
 
 bool GameRoom::CheckAndStartGame() {
@@ -236,24 +228,46 @@ bool GameRoom::CheckAndStartGame() {
     mStageTransitionTarget = Packets::GameStage_TERRAIN;
 
     auto packetStartTransition = FbsPacketFactory::StartSceneTransition(SCENE_TRANSITION_COUNT);
-    BroadCastInGameRoom(packetStartTransition);
+    BroadCast(packetStartTransition);
 
     return true;
 }
 
+void GameRoom::CheckSessionsHeartBeat() { 
+    decltype(auto) sessionList = GetSessions();
+    mSessionLock.ReadLock();
+    if (sessionList.empty()) {
+        mSessionLock.ReadUnlock();
+
+        bool expected = true;
+        mHeartBeat.compare_exchange_strong(expected, false);
+        return;
+    }
+    std::vector<SessionIdType> sessionsInGameRoom{ sessionList.begin(), sessionList.end() };
+    mSessionLock.ReadUnlock();
+
+    gServerCore->GetSessionManager()->CheckSessionsHeartBeat(sessionsInGameRoom);
+
+    auto executionTime = SysClock::now() + CHECK_SESSION_HEART_BEAT_DELAY;
+    gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, executionTime, TimerEventType::CHECK_SESSION_HEART_BEAT);
+}
+
 void GameRoom::CheckGameEnd() {
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Check Game End", mRoomIdx);
+#if defined(DEBUG) || defined(_DEBUG) || defined(PRINT_DEBUG_LOG)
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "allocated buffers: {}", SendBufferFactory::mSendBuffDebugger.load());
+#endif
     auto [isEnd, winner] = mIngameCondition.CheckGameEnd();
     if (not isEnd) {
         if (GameRoomState::GAME_ROOM_STATE_INGAME == mGameRoomState) {
-            gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, SysClock::now() + 1s, TimerEventType::CHECK_GAME_CONDITION);
+            auto executionTime = SysClock::now() + GameProtocol::Logic::GAME_ROOM_CHECK_GAME_END_DELAY;
+            gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, executionTime, TimerEventType::CHECK_GAME_CONDITION);
         }
         return;
     }
 
     auto packetGameEnd = FbsPacketFactory::GameEndSC(winner);
-    BroadCastInGameRoomWithoutLock(packetGameEnd);
+    BroadCast(packetGameEnd);
 
     EndGameLoop();
 }
@@ -261,56 +275,52 @@ void GameRoom::CheckGameEnd() {
 void GameRoom::ChangeToLobby() {
     mStage.EndStage();
     mGameRoomState = GameRoomState::GAME_ROOM_STATE_LOBBY;
-    
-    decltype(auto) sessionsInGameRoom = GetSessions();
-    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
-    {
-        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
-        for (auto& sessionId : sessionsInGameRoom) {
-            auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
-            if (nullptr == session) {
-                continue;
-            }
 
-            session->EnterLobby();
-            session->CancelReady();
+    decltype(auto) sessionsInGameRoom = GetSessions();
+
+    for (auto& sessionId : sessionsInGameRoom) {
+        auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+        if (nullptr == session) {
+            continue;
         }
+
+        session->EnterLobby();
+        session->CancelReady();
     }
 
     mIngameCondition.Reset();
 
     auto packetToLobby = FbsPacketFactory::ChangeSceneSC(Packets::GameStage_LOBBY);
-    BroadCastInGameRoom(packetToLobby);
+    BroadCast(packetToLobby);
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Change To Lobby!!!", mRoomIdx);
+#if defined(DEBUG) || defined(_DEBUG) || defined(PRINT_DEBUG_LOG)
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "allocated buffers: {}", SendBufferFactory::mSendBuffDebugger.load());
+#endif
 }
 
 void GameRoom::ChangeToStage1() {
     mReadyPlayerCount = 0;
     decltype(auto) sessionsInGameRoom = GetSessions();
-    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
-    {
-        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
-        for (auto& sessionId : sessionsInGameRoom) {
-            auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
-            if (nullptr == session) {
-                continue;
-            }
-
-            session->CancelReady();
+    for (auto& sessionId : sessionsInGameRoom) {
+        auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+        if (nullptr == session) {
+            continue;
         }
+
+        session->CancelReady();
     }
 
     mGameRoomState = GameRoomState::GAME_ROOM_STATE_INGAME;
 
-    gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, SysClock::now() + 1s, TimerEventType::CHECK_GAME_CONDITION);
+    auto executionTime = SysClock::now() + GameProtocol::Logic::GAME_ROOM_CHECK_GAME_END_DELAY;
+    gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, executionTime, TimerEventType::CHECK_GAME_CONDITION);
     mStage.StartStage();
     mIngameCondition.InitGameCondition(mPlayerCount - mBossPlayerCount, mBossPlayerCount, 1);
 
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Start Game!!!", mRoomIdx);
 
     auto packetSceneTransition = FbsPacketFactory::ChangeSceneSC(mStageTransitionTarget);
-    BroadCastInGameRoom(packetSceneTransition);
+    BroadCast(packetSceneTransition);
     return;
 }
 
@@ -347,75 +357,25 @@ void GameRoom::NotifyDestructedObject(ObjectTag tag) {
     }
 }
 
-void GameRoom::BroadCastInGameRoom(SessionIdType sender, OverlappedSend* packet) {
-    decltype(auto) sessionsInGameRoom = GetSessions();
+void GameRoom::BroadCast(SessionIdType sender, OverlappedSend* packet) {
+    mSessionLock.ReadLock();
+    std::unordered_set<SessionIdType> sessionsInGameRoom = GetSessions();
+    mSessionLock.ReadUnlock();
+
     std::vector<std::shared_ptr<GameSession>> sessionList{ };
-    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
-    {
-        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
-        for (auto& sessionId : sessionsInGameRoom) {
-            if (sender == sessionId) {
-                continue;
-            }
-
-            auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
-            if (nullptr == session or SESSION_INLOBBY != session->GetSessionState()) {
-                continue;
-            }
-
-            sessionList.push_back(session);
-        }
-    }
-
-    for (auto& session : sessionList) {
-        auto clonedPacket = FbsPacketFactory::ClonePacket(packet);
-        session->RegisterSend(clonedPacket);
-    }
-
-    FbsPacketFactory::ReleasePacketBuf(packet);
-}
-
-void GameRoom::BroadCastInGameRoom(OverlappedSend* packet) {
-    decltype(auto) sessionsInGameRoom = GetSessions();
-    std::vector<std::shared_ptr<GameSession>> sessionList{ };
-    decltype(auto) sessionLock = gServerCore->GetSessionManager()->GetSessionLock();
-    {
-        Lock::SRWLockGuard sessionGuard{ Lock::SRWLockMode::SRW_SHARED, sessionLock };
-        for (auto& sessionId : sessionsInGameRoom) {
-            auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
-            if (nullptr == session or SESSION_INLOBBY != session->GetSessionState()) {
-                continue;
-            }
-
-            sessionList.push_back(session);
-        }
-    }
-
-    for (auto& session : sessionList) {
-        auto clonedPacket = FbsPacketFactory::ClonePacket(packet);
-        session->RegisterSend(clonedPacket);
-    }
-
-    FbsPacketFactory::ReleasePacketBuf(packet);
-}
-
-void GameRoom::BroadCastInGameRoomWithoutLock(SessionIdType sender, OverlappedSend* packet) {
-    decltype(auto) sessionsInGameRoom = GetSessions();
-    std::vector<std::shared_ptr<GameSession>> sessionList{ };
-
     for (auto& sessionId : sessionsInGameRoom) {
         if (sender == sessionId) {
             continue;
         }
 
         auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
-        if (nullptr == session or SESSION_INLOBBY != session->GetSessionState()) {
+        if (nullptr == session) {
             continue;
         }
 
         sessionList.push_back(session);
     }
-
+    
     for (auto& session : sessionList) {
         auto clonedPacket = FbsPacketFactory::ClonePacket(packet);
         session->RegisterSend(clonedPacket);
@@ -424,13 +384,15 @@ void GameRoom::BroadCastInGameRoomWithoutLock(SessionIdType sender, OverlappedSe
     FbsPacketFactory::ReleasePacketBuf(packet);
 }
 
-void GameRoom::BroadCastInGameRoomWithoutLock(OverlappedSend* packet) {
-    decltype(auto) sessionsInGameRoom = GetSessions();
-    std::vector<std::shared_ptr<GameSession>> sessionList{ };
+void GameRoom::BroadCast(OverlappedSend* packet) {
+    mSessionLock.ReadLock();
+    std::unordered_set<SessionIdType> sessionsInGameRoom = GetSessions();
+    mSessionLock.ReadUnlock();
 
+    std::vector<std::shared_ptr<GameSession>> sessionList{ };
     for (auto& sessionId : sessionsInGameRoom) {
         auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
-        if (nullptr == session or SESSION_INLOBBY != session->GetSessionState()) {
+        if (nullptr == session) {
             continue;
         }
 
@@ -449,7 +411,7 @@ void GameRoom::OnSceneCountdownTick() {
     if (GameRoomState::GAME_ROOM_STATE_LOBBY == mGameRoomState and not IsEveryPlayerReady()) {
         mSceneTransitionCounter = SysClock::now();
         auto pakcetCancelTransition = FbsPacketFactory::CancelSceneTransition();
-        BroadCastInGameRoom(pakcetCancelTransition);
+        BroadCast(pakcetCancelTransition);
         return;
     }
 
@@ -460,7 +422,7 @@ void GameRoom::OnSceneCountdownTick() {
 
         mSceneTransitionCounter = SysClock::now();
         auto pakcetCancelTransition = FbsPacketFactory::CancelSceneTransition();
-        BroadCastInGameRoom(pakcetCancelTransition);
+        BroadCast(pakcetCancelTransition);
         return;
     }
 
@@ -503,6 +465,7 @@ std::unique_ptr<GameRoom>& GameRoomManager::GetRoom(uint16_t roomIdx) {
 void GameRoomManager::InitGameRooms() {
     for (auto& room : mGameRooms) {
         room->GetStage().InitObjectManager("../Resources/Binarys/Collider/env1.bin");
+        room->CheckSessionsHeartBeat();
     }
 }
 

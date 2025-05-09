@@ -25,6 +25,7 @@ public:
     void AddTimerEvent(uint16_t roomIdx, NetworkObjectIdType id, SysClock::time_point executeTime, TimerEventType eventType);
 
 private:
+    bool IsGameRoomEvent(TimerEventType type) const;
     void TimerThread();
 
 private:

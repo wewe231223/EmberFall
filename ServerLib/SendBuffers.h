@@ -50,8 +50,12 @@ private:
 };
 
 class SendBufferFactory {
+#if defined(DEBUG) || defined(_DEBUG) || defined(PRINT_DEBUG_LOG)
 public:
     inline static std::atomic_ullong mSendBuffDebugger{ };
+#endif
+
+public:
     SendBufferFactory();
     ~SendBufferFactory();
 

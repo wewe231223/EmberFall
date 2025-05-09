@@ -104,7 +104,8 @@ void HumanPlayerScript::LateUpdate(const float deltaTime) {
 
     if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster Remove");
-        gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), owner->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
+        auto executionTime = SysClock::now();
+        gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), owner->GetId(), executionTime, TimerEventType::REMOVE_NPC);
         owner->mSpec.active = false;
         return;
     }
@@ -392,7 +393,8 @@ void HumanPlayerScript::AcquireItem(const float deltaTime, const std::shared_ptr
     auto packetAcquire = FbsPacketFactory::AcquireItemSC(static_cast<SessionIdType>(owner->GetId()), idx, ItemTagToItemType(itemTag));
     gServerCore->Send(static_cast<SessionIdType>(owner->GetId()), packetAcquire);
 
-    gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), item->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
+    auto executionTime = SysClock::now();
+    gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), item->GetId(), executionTime, TimerEventType::REMOVE_NPC);
 
     SuccessInteraction();
 }
