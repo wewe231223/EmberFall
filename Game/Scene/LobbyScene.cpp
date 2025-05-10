@@ -229,6 +229,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 			break;
 		}
 	}
+
 	break; 
 	case Packets::PacketTypes_PT_PLAYER_READY_IN_LOBBY_SC:
 	{
@@ -245,8 +246,6 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		}
 
 		std::get<3>(*(mPlayerIndexmap[packet->playerId()])) = true; 
-		
-
 	}
 	break;
 	case Packets::PacketTypes_PT_PLAYER_CANCEL_READY_SC:
@@ -677,6 +676,13 @@ void LobbyScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCom
 
 	data = Loader.Load("Resources/Assets/Env/Castle.glb", 7);
 	mMeshMap["SideBastion"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Tree/pine2/pine4.glb");
+	mMeshMap["Pine4"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Tree/pine2/pine2.glb");
+	mMeshMap["Pine2"] = std::make_unique<Mesh>(device, commandList, data);
+
 }
 
 void LobbyScene::BuildMaterial() {

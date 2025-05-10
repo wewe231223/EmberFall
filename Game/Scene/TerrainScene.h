@@ -30,6 +30,7 @@ public:
 	virtual void SendNetwork(); 
 	virtual void Exit();
 
+	void SendLook(); 
 private:
 	void BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList); 
 	void BuildMaterial();

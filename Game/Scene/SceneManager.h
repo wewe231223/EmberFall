@@ -28,7 +28,7 @@ public:
 	void ChangeSceneTo(SceneType nextScene);
 
 private:
-	std::array<std::unique_ptr<IScene>, static_cast<size_t>(SceneType::END)> mScenes{};
+	std::array<std::shared_ptr<IScene>, static_cast<size_t>(SceneType::END)> mScenes{};
 	std::array<SceneFeatureType, static_cast<size_t>(SceneType::END)> mSceneFeatureType{};
 
 	IScene* mCurrentScene = nullptr;

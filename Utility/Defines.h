@@ -3,6 +3,7 @@
 #include <tuple>
 #include <bitset>
 #include <array>
+#include <memory>
 #include "../Utility/DirectXInclude.h"
 #include "../Config/Config.h"
 
@@ -25,7 +26,6 @@ struct CameraConstants {
     SimpleMath::Vector3 cameraPosition;
     int isShadow{ 0 };
     SimpleMath::Vector3 lengthOffset;
-
 };
 
 using MaterialIndex = UINT;
@@ -63,7 +63,7 @@ struct ModelContext2D {
 };
 
 
-class IScene abstract {
+class IScene abstract : public std::enable_shared_from_this<IScene> {
 public:
 	virtual ~IScene() = default;
 	virtual void Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) PURE;

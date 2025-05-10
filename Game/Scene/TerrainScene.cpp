@@ -628,13 +628,16 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 	light.Ambient = { 0.2f, 0.2f, 0.2f, 1.f };
 
 
-	Time.AddEvent(66ms, [this]() { 
-		auto look = mCamera.GetTransform().GetForward();
-		look.y = 0.f;
+	std::weak_ptr<TerrainScene> sharedThis{ std::static_pointer_cast<TerrainScene>(shared_from_this()) };
 
-		decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(gClientCore->GetSessionId(), look);
-		gClientCore->Send(packetCamera);
-		
+	Time.AddEvent(66ms, [sharedThis]() {
+		if (sharedThis.expired()) {
+			return false; 
+		}
+		auto scene = sharedThis.lock();
+
+		scene->SendLook(); 
+
 		return true; 
 	}); 
 
@@ -910,6 +913,15 @@ void TerrainScene::SendNetwork() {
 }
 
 void TerrainScene::Exit() {
+
+}
+
+void TerrainScene::SendLook() {
+	auto look = mCamera.GetTransform().GetForward();
+	look.y = 0.f;
+
+	decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(gClientCore->GetSessionId(), look);
+	gClientCore->Send(packetCamera);
 
 }
 
