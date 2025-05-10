@@ -161,7 +161,7 @@ std::array<SimpleMath::Vector3, 8> ShadowRenderer::ComputeFrustumCorners(SimpleM
 SimpleMath::Matrix ShadowRenderer::ComputeLightViewMatrix(CameraParameter cameraParam, SimpleMath::Matrix invView, float nearZ, float farZ) {
 
 
-	SimpleMath::Matrix invProj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(cameraParam.fov, cameraParam.aspect, nearZ, farZ).Invert();
+	SimpleMath::Matrix invProj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(cameraParam.fov, cameraParam.aspect, farZ, nearZ).Invert();
 
 	SimpleMath::Matrix invViewProj = invProj * invView;
 	std::array<SimpleMath::Vector3, 8> frustumPosition = ComputeFrustumCorners(invViewProj);
@@ -170,8 +170,8 @@ SimpleMath::Matrix ShadowRenderer::ComputeLightViewMatrix(CameraParameter camera
 
 	SimpleMath::Vector3 directionNormalized = LIGHTDIRECTION;
 	directionNormalized.Normalize();
-	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (250.0f));
-	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (farZ - nearZ) );
+	SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (250.0f));
+	//SimpleMath::Vector3 cameraPos(centerFrustum - directionNormalized * (farZ - nearZ) );
 
 	
 

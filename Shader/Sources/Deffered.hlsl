@@ -163,24 +163,16 @@ float4 Lighting(float3 normal, float3 toCamera, float3 worldPos, float2 texcoord
     return Color;
 }
 
-float ComputeShadowFactor(float4 shadowPosH, float bias, float depth)
+float ComputeShadowFactor(float shadowIndex, float4 shadowPosH, float bias, float depth)
 {
     depth = depth + bias;
     uint width, height, numMips;
-    //GBuffers[3].GetDimensions(0, width, height, numMips);
+    GBuffers[4 + shadowIndex].GetDimensions(0, width, height, numMips);
     
-    if (depth >= 0.1f && depth <= shadowOffset.x)
-    {
-        GBuffers[3].GetDimensions(0, width, height, numMips);
-
-    }
-    else
-    {
-        GBuffers[4].GetDimensions(0, width, height, numMips);
-    }
   
     float dx = 1.0f / (float) width;
     float dy = 1.0f / (float) height;
+    
 
     const float2 offsets[9] =
     {
@@ -192,20 +184,14 @@ float ComputeShadowFactor(float4 shadowPosH, float bias, float depth)
     [unroll]
     for (int i = 0; i < 9; ++i)
     {
-        if (depth >= 0.1f && depth <= shadowOffset.x )
-        {
-            percentLit += GBuffers[3].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
+        
+        percentLit += GBuffers[4 + shadowIndex].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
 
-        }
-        else
-        {
-            percentLit += GBuffers[4].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
-        }
-      
     }
+    float shadowFactor = lerp(0.4f, 1.0f, percentLit / 9.0f);
     
     
-    return percentLit / 9.0f;
+    return shadowFactor;
     
    
 }
@@ -219,12 +205,10 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     float3 toCamera = normalize(cameraPosition - worldPos.xyz);
     float4 emissive = GBuffers[3].Sample(linearWrapSampler, input.texcoord);
     float white = 21.0f;
-
-    //emissive = emissive * (1.0f + emissive / (white * white)) / (emissive + 1.0f);
     
     
     float4 LightingColor = Lighting(normal, toCamera, worldPos.xyz, input.texcoord);
-    
+    [unroll]
     for (int i = 0; i < step(4.0f, GBuffers[1].Sample(linearWrapSampler, input.texcoord).w); ++i)
     {
         LightingColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -255,7 +239,6 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     
     float bias = 0.003f;
 
-    float blendOffset = 2.0f;
     float depth;
     
     
@@ -263,17 +246,18 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     depth = GBuffers[4 + shadowIndex].Sample(linearWrapSampler, texPos.xy).r;
     
     
-
+    float isBackFace;
     
-    //float shadowFactor = ComputeShadowFactor(texPos, bias, viewPos.z);
+    float shadowFactor = ComputeShadowFactor(shadowIndex, texPos, bias, texPos.z);
+    //float shadowFactor = 0.5f;
    
-    float shadowFactor = 0.5f;
-   
-    float isBackFace = step(0, dot((cameraPosition - worldPos.xyz), normal));
+    isBackFace = step(0, dot((cameraPosition - worldPos.xyz), normal));
     isBackFace = GBuffers[1].Sample(linearWrapSampler, input.texcoord).a;
-    shadowFactor = 0.5f + 0.5f * isBackFace;
+    shadowFactor = shadowFactor + (1.0f - shadowFactor) * isBackFace;
    
+    float mask = step(depth, 0.0f);
     
+    shadowFactor = lerp(shadowFactor, 1.0f, mask);
   
 
     float shadowApply = step(texPos.z + bias, depth) * valid;

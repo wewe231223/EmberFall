@@ -14,11 +14,11 @@ class ShadowRenderer {
 	static constexpr T SHADOWMAPSIZE = static_cast<T>(2000);
 
 	static constexpr float NEAROFFSET = 20.0f;  // 조명 투영행렬의 근,원평면에 약간의 여유 공간을 추가할때 사용.
-	static constexpr float FAROFFSET = 20.0f;
+	static constexpr float FAROFFSET = 0.0f;
 
 	static constexpr float PROJECTIONOFFSET = 5.0f; // 조명 투영공간의 크기를 조정하기 위한 오프셋값.
 
-	static constexpr std::array<float, Config::SHADOWMAP_COUNT<int>> SHADOWMAPOFFSET = { 12.0f, 70.0f };
+	static constexpr std::array<float, Config::SHADOWMAP_COUNT<int>> SHADOWMAPOFFSET = { 20.0f, 90.0f };
 public:
 	ShadowRenderer() = default;
 	ShadowRenderer(ComPtr<ID3D12Device> device, DefaultBufferCPUIterator mainCameraBufferLoc);
