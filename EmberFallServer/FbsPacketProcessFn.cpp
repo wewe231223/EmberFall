@@ -162,6 +162,7 @@ void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, cons
     }
 
     session->RegisterSend(packetEnter);
+    session->EnterLobby();
 }
 
 void ProcessPlayerReadyInLobby(std::shared_ptr<class GameSession>& session, const Packets::PlayerReadyInLobbyCS* const ready) {

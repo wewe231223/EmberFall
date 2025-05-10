@@ -228,6 +228,11 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         return nullptr;
     }
 
+    auto collisionManager = gGameRoomManager->GetRoom(mRoomIdx)->GetStage().GetCollisionManager();
+    if (nullptr == collisionManager) {
+        return nullptr;
+    }
+
     NetworkObjectIdType validId{ };
     switch (entity) {
     case Packets::EntityType_MONSTER:

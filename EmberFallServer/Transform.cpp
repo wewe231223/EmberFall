@@ -150,6 +150,10 @@ void Transform::Scale(const SimpleMath::Vector3& v) {
 }
 
 void Transform::Update() {
+    const float MAX_MAP_RANGE = 500.0f;
+    mPosition.x = std::clamp(mPosition.x, -MAX_MAP_RANGE, MAX_MAP_RANGE);
+    mPosition.z = std::clamp(mPosition.z, -MAX_MAP_RANGE, MAX_MAP_RANGE);
+
     mWorld = SimpleMath::Matrix::CreateScale(mScale) 
         * SimpleMath::Matrix::CreateFromQuaternion(mRotation)
         * SimpleMath::Matrix::CreateTranslation(mPosition);

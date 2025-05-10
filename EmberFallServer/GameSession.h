@@ -3,11 +3,13 @@
 #include "../ServerLib/Session.h"
 #include "GameObject.h"
 
-inline constexpr uint8_t SESSION_CONNECT = 0;
-inline constexpr uint8_t SESSION_INLOBBY = 1;
-inline constexpr uint8_t SESSION_INGAME = 2;
-inline constexpr uint8_t SESSION_CLOSE = 3;
-inline constexpr uint8_t SESSION_STATE_NONE = 4;
+inline constexpr uint8_t SESSION_CONNECT = 0b0000'0001;
+inline constexpr uint8_t SESSION_INLOBBY = 0b0000'0010;
+inline constexpr uint8_t SESSION_INGAME = 0b0000'0100;
+inline constexpr uint8_t SESSION_CLOSE = 0b0000'1000;
+inline constexpr uint8_t SESSION_STATE_NONE = 0b0001'0000;
+
+inline constexpr uint8_t SESSION_READY_TO_RECV = SESSION_INLOBBY | SESSION_INGAME;
 
 inline constexpr uint8_t PLAYER_ROLE_NONE = 0;
 inline constexpr uint8_t PLAYER_ROLE_PLAYER = 1;
@@ -31,6 +33,7 @@ public:
     void SetName(const std::string& str);
 
     void ChangeRole(Packets::PlayerRole role);
+    bool ReadyToRecv() const;
     bool Ready();
     bool CancelReady();
     void EnterLobby();
@@ -44,9 +47,7 @@ public:
 
 private:
     // for lobby
-    bool mReady{ false };
-    uint8_t mSlotIndexInLobby{ };
-    std::atomic<Packets::PlayerRole> mPlayerRole{ Packets::PlayerRole::PlayerRole_NONE };
+    SessionLobbyInfo mLobbyInfo{ false, 0, Packets::PlayerRole::PlayerRole_NONE };
     std::atomic_uint8_t mSessionState{ SESSION_STATE_NONE };
 
     std::string mName{ };

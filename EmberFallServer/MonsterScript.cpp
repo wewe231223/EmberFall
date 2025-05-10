@@ -70,7 +70,8 @@ void MonsterScript::LateUpdate(const float deltaTime) {
 }
 
 void MonsterScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    if (ObjectTag::TRIGGER == opponent->GetTag()) {
+    auto tag = opponent->GetTag();
+    if (ObjectTag::TRIGGER == tag or ObjectTag::ITEM == tag) {
         return;
     }
 

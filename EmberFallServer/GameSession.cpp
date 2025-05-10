@@ -26,13 +26,12 @@ void GameSession::Close() {
     auto myId = static_cast<SessionIdType>(GetId());
     auto myRoom = GetMyRoomIdx();
 
-    // TODO - Remove In GameRoom
-    auto result = gGameRoomManager->TryRemoveGameRoom(myRoom, myId, mPlayerRole, mReady, mSlotIndexInLobby);
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameSession Destructor: Session Erase From Room Error: {}", result);
+    auto executionTime = SysClock::now();
+    SessionLobbyInfo info = mLobbyInfo;
+    gServerFrame->AddTimerEvent(myRoom, myId, executionTime, TimerEventType::REMOVE_PLAYER_IN_ROOM, info);
 
     if (nullptr != mUserObject) {
-        auto executionTime = SysClock::now();
-        gServerFrame->AddTimerEvent(myRoom, myId, executionTime, TimerEventType::REMOVE_NPC);
+        gServerFrame->AddTimerEvent(myRoom, myId, executionTime, TimerEventType::REMOVE_NPC, info);
         mUserObject = nullptr;
     }
 
@@ -53,7 +52,6 @@ void GameSession::OnConnect() {
     }
     
     SetRoomIdx(gameRoomIdx);
-    EnterLobby();
 }
 
 void GameSession::ProcessRecv(INT32 numOfBytes) {
@@ -105,7 +103,7 @@ void GameSession::InitUserObject() {
     InitPlayerScript();
 
     mUserObject->mSpec.active = true;
-    mUserObject->mSpec.entity = static_cast<Packets::EntityType>(mPlayerRole.load());
+    mUserObject->mSpec.entity = static_cast<Packets::EntityType>(mLobbyInfo.lastRole);
     mUserObject->mSpec.hp = GameProtocol::Logic::MAX_HP;
     
     mUserObject->GetTransform()->Translate(TestPos);
@@ -134,12 +132,13 @@ void GameSession::InitUserObject() {
 }
 
 void GameSession::InitPlayerScript() {
-    switch (mPlayerRole) {
+    switch (mLobbyInfo.lastRole) {
     case Packets::PlayerRole_HUMAN_ARCHER:
     {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_ARCHER);
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
 
         auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
@@ -156,6 +155,7 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_SHIELD_MAN);
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
 
         auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
@@ -188,6 +188,7 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_MAGICIAN);
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
 
         auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
@@ -204,6 +205,7 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<BossPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_DEMON).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_DEMON);
+        mUserObject->GetTransform()->SetPosition(SimpleMath::Vector3{ -200.0f, 0.0f, -200.0f });
 
         auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<BossPlayerScript>();
@@ -223,8 +225,12 @@ void GameSession::InitPlayerScript() {
 void GameSession::EnterLobby() {
     mSessionState = SESSION_INLOBBY;
 
+    auto myId = static_cast<SessionIdType>(GetId());
+    auto myRoom = GetMyRoomIdx();
+
+    auto executionTime = SysClock::now();
     if (nullptr != mUserObject) {
-        mUserObject->Reset();
+        gServerFrame->AddTimerEvent(myRoom, myId, executionTime, TimerEventType::REMOVE_NPC);
         mUserObject = nullptr;
     }
 }
@@ -235,25 +241,29 @@ void GameSession::EnterInGame() {
 }
 
 bool GameSession::Ready() {
-    if (true == mReady) {
+    if (true == mLobbyInfo.readyState) {
         return false;
     }
 
-    mReady = true;
+    mLobbyInfo.readyState = true;
     return true;
 }
 
 bool GameSession::CancelReady() {
-    if (false == mReady) {
+    if (false == mLobbyInfo.readyState) {
         return false;
     }
 
-    mReady = false;
+    mLobbyInfo.readyState = false;
     return true;
 }
 
 void GameSession::ChangeRole(Packets::PlayerRole role) {
-    mPlayerRole = role;
+    mLobbyInfo.lastRole = role;
+}
+
+bool GameSession::ReadyToRecv() const {
+    return mSessionState & SESSION_READY_TO_RECV;
 }
 
 std::shared_ptr<GameObject> GameSession::GetUserObject() const {
@@ -261,7 +271,7 @@ std::shared_ptr<GameObject> GameSession::GetUserObject() const {
 }
 
 void GameSession::SetSlotIndex(uint8_t slotIndex) {
-    mSlotIndexInLobby = slotIndex;
+    mLobbyInfo.sessionSlot = slotIndex;
 }
 
 void GameSession::SetName(const std::string& str) {
@@ -273,11 +283,11 @@ uint8_t GameSession::GetSessionState() const {
 }
 
 uint8_t GameSession::GetSlotIndex() const {
-    return mSlotIndexInLobby;
+    return mLobbyInfo.sessionSlot;
 }
 
 Packets::PlayerRole GameSession::GetPlayerRole() const {
-    return mPlayerRole;
+    return mLobbyInfo.lastRole;
 }
 
 std::string GameSession::GetName() const {
@@ -289,5 +299,5 @@ std::string_view GameSession::GetNameView() const {
 }
 
 bool GameSession::GetReadyState() const {
-    return mReady;
+    return mLobbyInfo.readyState;
 }

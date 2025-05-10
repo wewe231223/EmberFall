@@ -79,11 +79,11 @@ std::shared_ptr<GameObject> Stage::GetEnv(NetworkObjectIdType id) {
     return mObjectManager->GetEnv(id);
 }
 
-void Stage::StartStage() {
+void Stage::StartStage(uint8_t playerCount) {
     mActive.exchange(true);
-    mObjectManager->Start(1);
+    mObjectManager->Start(playerCount * 2);
 
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 100; ++i) {
         auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
 
         if (i < 10) {

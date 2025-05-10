@@ -86,7 +86,7 @@ uint8_t GameRoom::RemovePlayer(SessionIdType id, Packets::PlayerRole lastRole, b
     }
     mSessionsInRoom.erase(id);
     mSessionSlotIndices.push(lastSlotIndex);
-    mSessionLock.WriteLock();
+    mSessionLock.WriteUnlock();
 
     if (mGameRoomState == GameRoomState::GAME_ROOM_STATE_TRANSITION) {
         mTransitionInterruptFlag = true;
@@ -305,8 +305,10 @@ void GameRoom::ChangeToLobby() {
 
 void GameRoom::ChangeToStage1() {
     mSessionLock.ReadLock();
+    std::unordered_set<SessionIdType> sessionsInGameRoom = GetSessions();
+    mSessionLock.ReadUnlock();
+
     mReadyPlayerCount = 0;
-    decltype(auto) sessionsInGameRoom = GetSessions();
     for (auto& sessionId : sessionsInGameRoom) {
         auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
         if (nullptr == session) {
@@ -315,13 +317,12 @@ void GameRoom::ChangeToStage1() {
 
         session->CancelReady();
     }
-    mSessionLock.ReadUnlock();
 
     mGameRoomState = GameRoomState::GAME_ROOM_STATE_INGAME;
 
     auto executionTime = SysClock::now() + GameProtocol::Logic::GAME_ROOM_CHECK_GAME_END_DELAY;
     gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, executionTime, TimerEventType::CHECK_GAME_CONDITION);
-    mStage.StartStage();
+    mStage.StartStage(mPlayerCount);
     mIngameCondition.InitGameCondition(mPlayerCount - mBossPlayerCount, mBossPlayerCount, 1);
 
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Start Game!!!", mRoomIdx);
@@ -375,7 +376,7 @@ void GameRoom::BroadCast(SessionIdType sender, OverlappedSend* packet) {
         }
 
         auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
-        if (nullptr == session) {
+        if (nullptr == session or not session->ReadyToRecv()) {
             continue;
         }
 
@@ -393,7 +394,7 @@ void GameRoom::BroadCast(OverlappedSend* packet) {
 
     for (auto& sessionId : sessionsInGameRoom) {
         auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
-        if (nullptr == session) {
+        if (nullptr == session or not session->ReadyToRecv()) {
             continue;
         }
 

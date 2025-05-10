@@ -22,7 +22,7 @@ public:
     void Done();
 
     void PQCS(int32_t transfferedBytes, ULONG_PTR completionKey, OverlappedEx* overlapped);
-    void AddTimerEvent(uint16_t roomIdx, NetworkObjectIdType id, SysClock::time_point executeTime, TimerEventType eventType);
+    void AddTimerEvent(uint16_t roomIdx, NetworkObjectIdType id, SysClock::time_point executeTime, TimerEventType eventType, ExtraInfo info = { });
 
 private:
     bool IsGameRoomEvent(TimerEventType type) const;

@@ -57,8 +57,8 @@ void ServerFrame::PQCS(int32_t transfferedBytes, ULONG_PTR completionKey, Overla
     gServerCore->PQCS(transfferedBytes, completionKey, overlapped);
 }
 
-void ServerFrame::AddTimerEvent(uint16_t roomIdx, NetworkObjectIdType id, SysClock::time_point executeTime, TimerEventType eventType) {
-    mTimerEvents.push(TimerEvent{ roomIdx, id, executeTime, eventType });
+void ServerFrame::AddTimerEvent(uint16_t roomIdx, NetworkObjectIdType id, SysClock::time_point executeTime, TimerEventType eventType, ExtraInfo info) {
+    mTimerEvents.push(TimerEvent{ roomIdx, id, executeTime, eventType, info });
 }
 
 bool ServerFrame::IsGameRoomEvent(TimerEventType type) const {
@@ -118,6 +118,14 @@ void ServerFrame::TimerThread() {
             }
 
             obj->RegisterUpdate();
+            break;
+        }
+
+        case TimerEventType::REMOVE_PLAYER_IN_ROOM:
+        {
+            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Remove Player!!!!");
+            auto lobbyInfo = std::get<SessionLobbyInfo>(event.extraInfo);
+            gameRoom->RemovePlayer(event.id, lobbyInfo.lastRole, lobbyInfo.readyState, lobbyInfo.sessionSlot);
             break;
         }
 

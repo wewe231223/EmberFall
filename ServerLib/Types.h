@@ -22,8 +22,6 @@ using SessionIdType = BYTE;
 using PacketSizeType = BYTE;
 using NetworkObjectIdType = unsigned short;
 
-using ExtraInfo = std::variant<void*, SOCKET, unsigned long long, HANDLE>;
-
 enum class ObjectTag : uint8_t {
     ENV,
     BOSSPLAYER,

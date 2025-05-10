@@ -54,7 +54,7 @@ void SessionManager::CloseSession(SessionIdType id) {
     }
 
     if (not session->IsClosed()) {
-        it->second->Close();
+        session->Close();
         mSessions.unsafe_erase(it);
         mSessionCount.fetch_sub(1);
         gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Session[{}]: erased from session map", id);

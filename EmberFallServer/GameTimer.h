@@ -15,11 +15,20 @@ using EventCallBack = std::function<void()>;
 
 inline constexpr uint8_t GAME_ROOM_EVENT = 0xF0;
 
+struct SessionLobbyInfo {
+    bool readyState;
+    uint8_t sessionSlot;
+    Packets::PlayerRole lastRole;
+};
+
+using ExtraInfo = std::variant<SessionLobbyInfo>;
+
 enum class TimerEventType : uint8_t {
     REMOVE_NPC,
     UPDATE_NPC,
     REMOVE_TRIGGER,
     SCENE_TRANSITION_COUNTDOWN = GAME_ROOM_EVENT,
+    REMOVE_PLAYER_IN_ROOM,
     CHECK_GAME_CONDITION,
     CHECK_SESSION_HEART_BEAT
 };
@@ -29,6 +38,7 @@ struct TimerEvent {
     NetworkObjectIdType id{ };
     SysClock::time_point executeTime{ };
     TimerEventType eventType{ };
+    ExtraInfo extraInfo{ };
 
     constexpr bool operator<(const TimerEvent& other) const {
         return executeTime > other.executeTime;
