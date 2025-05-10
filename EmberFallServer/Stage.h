@@ -24,7 +24,7 @@ public:
     //std::shared_ptr<GameObject> GetProjectile(NetworkObjectIdType id);
     std::shared_ptr<GameObject> GetEnv(NetworkObjectIdType id);
 
-    void StartStage(uint8_t playerCount);
+    void StartStage(uint8_t gemCount);
     void EndStage();
 
     bool InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2, const float range);

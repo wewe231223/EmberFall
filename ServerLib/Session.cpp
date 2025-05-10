@@ -269,7 +269,14 @@ void Session::HandleSocketError(INT32 errorCore) {
     switch (errorCore) {
     case WSAECONNRESET: // 소프트웨어로 인해 연결 중단.
     case WSAECONNABORTED: // 피어별 연결 다시 설정. (원격 호스트에서 강제 중단.)
-        gServerCore->GetSessionManager()->CloseSession(static_cast<SessionIdType>(GetId()));
+        if (NetworkType::CLIENT == mNetworkType) {
+            gClientCore->CloseSession();
+            MessageBoxA(nullptr, "Socket Error!", NetworkUtil::WSAErrorMessage().c_str(), MB_OK | MB_ICONERROR);
+        }
+        else {
+            gServerCore->GetSessionManager()->CloseSession(static_cast<SessionIdType>(GetId()));
+            gLogConsole->PushLog(DebugLevel::LEVEL_ERROR, "Socket Error: {}", NetworkUtil::WSAErrorMessage());
+        }
         break;
 
     default:

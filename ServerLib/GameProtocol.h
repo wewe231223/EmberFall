@@ -41,10 +41,10 @@ namespace GameProtocol {
 
     namespace Logic {
         inline constexpr auto GAME_ROOM_CHECK_GAME_END_DELAY = 1s;
-        inline constexpr auto MONSTER_UPDATE_DELAY = 100ms;
+        inline constexpr auto MONSTER_UPDATE_DELAY = 500ms;
         inline constexpr auto ITEM_LIFE_TIME = 15s;
 
-        inline constexpr float PLAYER_VIEW_RANGE = 50.0f;
+        inline constexpr float PLAYER_VIEW_RANGE = 100.0f;
         inline constexpr float SECTOR_SIZE = 200.0f;
 
         inline constexpr uint8_t MAX_ITEM = 3;

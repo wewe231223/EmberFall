@@ -322,8 +322,11 @@ void GameRoom::ChangeToStage1() {
 
     auto executionTime = SysClock::now() + GameProtocol::Logic::GAME_ROOM_CHECK_GAME_END_DELAY;
     gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, executionTime, TimerEventType::CHECK_GAME_CONDITION);
-    mStage.StartStage(mPlayerCount);
-    mIngameCondition.InitGameCondition(mPlayerCount - mBossPlayerCount, mBossPlayerCount, 1);
+
+    auto humanCnt = mPlayerCount - mBossPlayerCount;
+    auto gemCnt = humanCnt * 2;
+    mStage.StartStage(gemCnt);
+    mIngameCondition.InitGameCondition(humanCnt, mBossPlayerCount, gemCnt);
 
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Start Game!!!", mRoomIdx);
 

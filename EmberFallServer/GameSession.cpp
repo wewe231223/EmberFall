@@ -172,6 +172,7 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_LONGSWORD_MAN);
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
 
         auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
