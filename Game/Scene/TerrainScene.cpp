@@ -831,6 +831,7 @@ void TerrainScene::Update() {
 
 	static BoneTransformBuffer boneTransformBuffer{};
 
+
 	for (auto& gameObject : mGameObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
 		if (gameObject.mAnimated) {
 			gameObject.ForwardUpdate(); 
@@ -1291,143 +1292,144 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 		float rotation;
 	};
 
-	GameObject stem{};
-	GameObject leaves{};
+	// 모든 원형 GameObject를 free-store 공간에 할당
+	auto stem = std::make_unique<GameObject>();
+	auto leaves = std::make_unique<GameObject>();
 
-	stem.mShader = mShaderMap["TreeShader"].get();
-	stem.mMesh = mMeshMap["Pine3_Stem"].get();
-	stem.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine3StemMaterial");
-	stem.SetActiveState(true);
-	stem.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
-	stem.mCollider = mColliderMap["Pine3_Stem"];
+	stem->mShader = mShaderMap["TreeShader"].get();
+	stem->mMesh = mMeshMap["Pine3_Stem"].get();
+	stem->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine3StemMaterial");
+	stem->SetActiveState(true);
+	stem->GetTransform().GetPosition() = { 20.f, tCollider.GetHeight(20.f, 20.f), 20.f };
+	stem->mCollider = mColliderMap["Pine3_Stem"];
 
-	leaves.mShader = mShaderMap["TreeShader"].get();
-	leaves.mMesh = mMeshMap["Pine3_Leaves"].get();
-	leaves.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine3LeavesMaterial");
-	leaves.SetActiveState(true);
-	leaves.GetTransform().GetPosition() = { 20.f,tCollider.GetHeight(20.f, 20.f),20.f };
-	leaves.mCollider = mColliderMap["Pine3_Leaves"];
+	leaves->mShader = mShaderMap["TreeShader"].get();
+	leaves->mMesh = mMeshMap["Pine3_Leaves"].get();
+	leaves->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine3LeavesMaterial");
+	leaves->SetActiveState(true);
+	leaves->GetTransform().GetPosition() = { 20.f, tCollider.GetHeight(20.f, 20.f), 20.f };
+	leaves->mCollider = mColliderMap["Pine3_Leaves"];
 
-	GameObject pinetree{};
-	pinetree.mShader = mShaderMap["TreeShader"].get();
-	pinetree.mMesh = mMeshMap["Pine2"].get();
-	pinetree.SetActiveState(true);
-	pinetree.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine2Material");
-	pinetree.mCollider = mColliderMap["Pine2"];
+	auto pinetree = std::make_unique<GameObject>();
+	pinetree->mShader = mShaderMap["TreeShader"].get();
+	pinetree->mMesh = mMeshMap["Pine2"].get();
+	pinetree->SetActiveState(true);
+	pinetree->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine2Material");
+	pinetree->mCollider = mColliderMap["Pine2"];
 
-	GameObject pinetree2{};
-	pinetree2.mShader = mShaderMap["TreeShader"].get();
-	pinetree2.mMesh = mMeshMap["Pine4"].get();
-	pinetree2.SetActiveState(true);
-	pinetree2.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine2Material");
-	pinetree2.mCollider = mColliderMap["Pine4"];
+	auto pinetree2 = std::make_unique<GameObject>();
+	pinetree2->mShader = mShaderMap["TreeShader"].get();
+	pinetree2->mMesh = mMeshMap["Pine4"].get();
+	pinetree2->SetActiveState(true);
+	pinetree2->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine2Material");
+	pinetree2->mCollider = mColliderMap["Pine4"];
 
-	GameObject rock1{};
-	rock1.mShader = mShaderMap["StandardNormalShader"].get();
-	rock1.mMesh = mMeshMap["Rock_1"].get();
-	rock1.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_1_Material");
-	rock1.SetActiveState(true);
-	rock1.mCollider = mColliderMap["Rock_1"];
+	auto rock1 = std::make_unique<GameObject>();
+	rock1->mShader = mShaderMap["StandardNormalShader"].get();
+	rock1->mMesh = mMeshMap["Rock_1"].get();
+	rock1->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_1_Material");
+	rock1->SetActiveState(true);
+	rock1->mCollider = mColliderMap["Rock_1"];
 
-	GameObject rock2{};
-	rock2.mShader = mShaderMap["StandardNormalShader"].get();
-	rock2.mMesh = mMeshMap["Rock_2"].get();
-	rock2.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_2_Material");
-	rock2.SetActiveState(true);
-	rock2.mCollider = mColliderMap["Rock_2"];
+	auto rock2 = std::make_unique<GameObject>();
+	rock2->mShader = mShaderMap["StandardNormalShader"].get();
+	rock2->mMesh = mMeshMap["Rock_2"].get();
+	rock2->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_2_Material");
+	rock2->SetActiveState(true);
+	rock2->mCollider = mColliderMap["Rock_2"];
 
-	GameObject rock3{};
-	rock3.mShader = mShaderMap["StandardNormalShader"].get();
-	rock3.mMesh = mMeshMap["Rock_3"].get();
-	rock3.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_3_Material");
-	rock3.SetActiveState(true);
-	rock3.mCollider = mColliderMap["Rock_3"];
+	auto rock3 = std::make_unique<GameObject>();
+	rock3->mShader = mShaderMap["StandardNormalShader"].get();
+	rock3->mMesh = mMeshMap["Rock_3"].get();
+	rock3->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_3_Material");
+	rock3->SetActiveState(true);
+	rock3->mCollider = mColliderMap["Rock_3"];
 
-	GameObject rock4{};
-	rock4.mShader = mShaderMap["StandardNormalShader"].get();
-	rock4.mMesh = mMeshMap["Rock_4"].get();
-	rock4.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_4_Material");
-	rock4.SetActiveState(true);
-	rock4.mCollider = mColliderMap["Rock_4"];
+	auto rock4 = std::make_unique<GameObject>();
+	rock4->mShader = mShaderMap["StandardNormalShader"].get();
+	rock4->mMesh = mMeshMap["Rock_4"].get();
+	rock4->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_4_Material");
+	rock4->SetActiveState(true);
+	rock4->mCollider = mColliderMap["Rock_4"];
 
-	GameObject bigrock1{};
-	bigrock1.mShader = mShaderMap["StandardNormalShader"].get();
-	bigrock1.mMesh = mMeshMap["LargeRock1"].get();
-	bigrock1.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LargeRock1_Material");
-	bigrock1.SetActiveState(true);
-	bigrock1.mCollider = mColliderMap["LargeRock1"];
+	auto bigrock1 = std::make_unique<GameObject>();
+	bigrock1->mShader = mShaderMap["StandardNormalShader"].get();
+	bigrock1->mMesh = mMeshMap["LargeRock1"].get();
+	bigrock1->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LargeRock1_Material");
+	bigrock1->SetActiveState(true);
+	bigrock1->mCollider = mColliderMap["LargeRock1"];
 
-	GameObject bigrock2{};
-	bigrock2.mShader = mShaderMap["StandardNormalShader"].get();
-	bigrock2.mMesh = mMeshMap["LargeRock2"].get();
-	bigrock2.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LargeRock2_Material");
-	bigrock2.SetActiveState(true);
-	bigrock2.mCollider = mColliderMap["LargeRock2"];
+	auto bigrock2 = std::make_unique<GameObject>();
+	bigrock2->mShader = mShaderMap["StandardNormalShader"].get();
+	bigrock2->mMesh = mMeshMap["LargeRock2"].get();
+	bigrock2->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LargeRock2_Material");
+	bigrock2->SetActiveState(true);
+	bigrock2->mCollider = mColliderMap["LargeRock2"];
 
-	GameObject fern{};
-	fern.mShader = mShaderMap["TreeShader"].get();
-	fern.mMesh = mMeshMap["Fern"].get();
-	fern.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("FernMaterial");
-	fern.SetActiveState(true);
-	//fern.mCollider = mColliderMap["Fern"];
+	auto fern = std::make_unique<GameObject>();
+	fern->mShader = mShaderMap["TreeShader"].get();
+	fern->mMesh = mMeshMap["Fern"].get();
+	fern->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("FernMaterial");
+	fern->SetActiveState(true);
 
-	GameObject baseMountain;
-	baseMountain.mShader = mShaderMap["StandardShader"].get();
-	baseMountain.mMesh = mMeshMap["Mountain"].get();
-	baseMountain.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("MountainMaterial");
-	baseMountain.mCollider = mColliderMap["Mountain"];
+	auto baseMountain = std::make_unique<GameObject>();
+	baseMountain->mShader = mShaderMap["StandardShader"].get();
+	baseMountain->mMesh = mMeshMap["Mountain"].get();
+	baseMountain->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("MountainMaterial");
+	baseMountain->mCollider = mColliderMap["Mountain"];
 
-	GameObject baseMountain1;
-	baseMountain1.mMesh = mMeshMap["Mountain1"].get();
-	baseMountain1.mShader = mShaderMap["StandardShader"].get();
-	baseMountain1.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Mountain1Material");
-	baseMountain1.mCollider = mColliderMap["Mountain1"];
+	auto baseMountain1 = std::make_unique<GameObject>();
+	baseMountain1->mShader = mShaderMap["StandardShader"].get();
+	baseMountain1->mMesh = mMeshMap["Mountain1"].get();
+	baseMountain1->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Mountain1Material");
+	baseMountain1->mCollider = mColliderMap["Mountain1"];
 
-	GameObject baseMountain2;
-	baseMountain2.mMesh = mMeshMap["Mountain3"].get();
-	baseMountain2.mShader = mShaderMap["StandardShader"].get();
-	baseMountain2.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Mountain3Material");
-	baseMountain2.mCollider = mColliderMap["Mountain3"];
+	auto baseMountain2 = std::make_unique<GameObject>();
+	baseMountain2->mShader = mShaderMap["StandardShader"].get();
+	baseMountain2->mMesh = mMeshMap["Mountain3"].get();
+	baseMountain2->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Mountain3Material");
+	baseMountain2->mCollider = mColliderMap["Mountain3"];
 
-	GameObject baseTimberHouse;
-	baseTimberHouse.mShader = mShaderMap["StandardNormalShader"].get();
-	baseTimberHouse.mMesh = mMeshMap["TimberHouse"].get();
-	baseTimberHouse.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("TimberHouseMaterial");
-	baseTimberHouse.mCollider = mColliderMap["TimberHouse"];
+	auto baseTimberHouse = std::make_unique<GameObject>();
+	baseTimberHouse->mShader = mShaderMap["StandardNormalShader"].get();
+	baseTimberHouse->mMesh = mMeshMap["TimberHouse"].get();
+	baseTimberHouse->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("TimberHouseMaterial");
+	baseTimberHouse->mCollider = mColliderMap["TimberHouse"];
 
-	GameObject baseStoneHouse = baseTimberHouse.Clone();
-	baseStoneHouse.mMesh = mMeshMap["StoneHouse"].get();
-	baseStoneHouse.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("StoneHouseMaterial");
-	baseStoneHouse.mCollider = mColliderMap["StoneHouse"];
+	auto baseStoneHouse = std::make_unique<GameObject>(*baseTimberHouse);
+	baseStoneHouse->mMesh = mMeshMap["StoneHouse"].get();
+	baseStoneHouse->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("StoneHouseMaterial");
+	baseStoneHouse->mCollider = mColliderMap["StoneHouse"];
 
-	GameObject baseLogHouse = baseTimberHouse.Clone();
-	baseLogHouse.mMesh = mMeshMap["LogHouse"].get();
-	baseLogHouse.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LogHouseMaterial");
-	baseLogHouse.mCollider = mColliderMap["LogHouse"];
+	auto baseLogHouse = std::make_unique<GameObject>(*baseTimberHouse);
+	baseLogHouse->mMesh = mMeshMap["LogHouse"].get();
+	baseLogHouse->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LogHouseMaterial");
+	baseLogHouse->mCollider = mColliderMap["LogHouse"];
 
-	GameObject baseLogHouseDoor = baseLogHouse.Clone();
-	baseLogHouseDoor.mMesh = mMeshMap["LogHouseDoor"].get();
-	baseLogHouseDoor.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LogHouseDoorMaterial");
-	//baseLogHouseDoor.mCollider = mColliderMap["LogHouse"];
+	auto baseLogHouseDoor = std::make_unique<GameObject>(*baseLogHouse);
+	baseLogHouseDoor->mMesh = mMeshMap["LogHouseDoor"].get();
+	baseLogHouseDoor->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LogHouseDoorMaterial");
+	baseLogHouseDoor->mCollider = mColliderMap["LogHouse"];
 
-	GameObject baseWindMill;
-	baseWindMill.mShader = mShaderMap["StandardShader"].get();
-	baseWindMill.mMesh = mMeshMap["WindMill"].get();
-	baseWindMill.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("WindMillMaterial");
-	baseWindMill.mCollider = mColliderMap["WindMill"];
+	auto baseWindMill = std::make_unique<GameObject>();
+	baseWindMill->mShader = mShaderMap["StandardShader"].get();
+	baseWindMill->mMesh = mMeshMap["WindMill"].get();
+	baseWindMill->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("WindMillMaterial");
+	baseWindMill->mCollider = mColliderMap["WindMill"];
 
-	GameObject baseWindMillBlade = baseWindMill.Clone();
-	baseWindMillBlade.mShader = mShaderMap["TreeShader"].get();
-	baseWindMillBlade.mMesh = mMeshMap["WindMillBlade"].get();
-	baseWindMillBlade.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("WindMillBladeMaterial");
-	//baseWindMillBlade.mCollider = mColliderMap["WindMill"];
+	auto baseWindMillBlade = std::make_unique<GameObject>(*baseWindMill);
+	baseWindMillBlade->mShader = mShaderMap["TreeShader"].get();
+	baseWindMillBlade->mMesh = mMeshMap["WindMillBlade"].get();
+	baseWindMillBlade->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("WindMillBladeMaterial");
+	baseWindMillBlade->mCollider = mColliderMap["WindMill"];
 
 
-	GameObject baseWell;
-	baseWell.mMesh = mMeshMap["Well"].get();
-	baseWell.mShader = mShaderMap["StandardShader"].get();
-	baseWell.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("WellMaterial");
-	baseWell.mCollider = mColliderMap["Well"];
+	auto baseWell = std::make_unique<GameObject>();
+	baseWell->mShader = mShaderMap["StandardShader"].get();
+	baseWell->mMesh = mMeshMap["Well"].get();
+	baseWell->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("WellMaterial");
+	baseWell->mCollider = mColliderMap["Well"];
+
 
 
 	std::ifstream ifs(envFile, std::ios::binary);
@@ -1453,12 +1455,12 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 		{
 			{
 				auto& object = envObjects.emplace_back();
-				object = stem.Clone();
+				object = stem->Clone();
 				object.GetTransform().SetPosition(envData.position);
 			}
 			{
 				auto& object = envObjects.emplace_back();
-				object = leaves.Clone();
+				object = leaves->Clone();
 				object.GetTransform().SetPosition(envData.position);
 			}
 		}
@@ -1466,70 +1468,70 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 		case GameProtocol::EnvironmentType::Tree2:
 		{
 			auto& object = envObjects.emplace_back();
-			object = pinetree.Clone();
+			object = pinetree->Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
 		case GameProtocol::EnvironmentType::Tree3:
 		{
 			auto& object = envObjects.emplace_back();
-			object = pinetree2.Clone();
+			object = pinetree2->Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
 		case GameProtocol::EnvironmentType::Rock1:
 		{
 			auto& object = envObjects.emplace_back();
-			object = rock1.Clone();
+			object = rock1->Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
 		case GameProtocol::EnvironmentType::Rock2:
 		{
 			auto& object = envObjects.emplace_back();
-			object = rock2.Clone();
+			object = rock2->Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
 		case GameProtocol::EnvironmentType::Rock3:
 		{
 			auto& object = envObjects.emplace_back();
-			object = rock3.Clone();
+			object = rock3->Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
 		case GameProtocol::EnvironmentType::Rock4:
 		{
 			auto& object = envObjects.emplace_back();
-			object = rock4.Clone();
+			object = rock4->Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
 		case GameProtocol::EnvironmentType::LargeRock1:
 		{
 			auto& object = envObjects.emplace_back();
-			object = bigrock1.Clone();
+			object = bigrock1->Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
 		case GameProtocol::EnvironmentType::LargeRock2:
 		{
 			auto& object = envObjects.emplace_back();
-			object = bigrock2.Clone();
+			object = bigrock2->Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
 		case GameProtocol::EnvironmentType::Fern:
 		{
 			auto& object = envObjects.emplace_back();
-			object = fern.Clone();
+			object = fern->Clone();
 			object.GetTransform().SetPosition(envData.position);
 		}
 		break;
 		case GameProtocol::EnvironmentType::Mountain1:
 		{
 			auto& object = envObjects.emplace_back();
-			object = baseMountain.Clone();
+			object = baseMountain->Clone();
 			object.GetTransform().SetPosition(envData.position);
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
@@ -1537,7 +1539,7 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 		case GameProtocol::EnvironmentType::Mountain2:
 		{
 			auto& object = envObjects.emplace_back();
-			object = baseMountain1.Clone();
+			object = baseMountain1->Clone();
 			object.GetTransform().SetPosition(envData.position);
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
@@ -1545,7 +1547,7 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 		case GameProtocol::EnvironmentType::TimberHouse:
 		{
 			auto& object = envObjects.emplace_back();
-			object = baseTimberHouse.Clone();
+			object = baseTimberHouse->Clone();
 			object.GetTransform().SetPosition(envData.position);
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
@@ -1553,7 +1555,7 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 		case GameProtocol::EnvironmentType::StoneHouse:
 		{
 			auto& object = envObjects.emplace_back();
-			object = baseStoneHouse.Clone();
+			object = baseStoneHouse->Clone();
 			object.GetTransform().SetPosition(envData.position);
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
@@ -1561,7 +1563,7 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 		case GameProtocol::EnvironmentType::LogHouse:
 		{
 			auto& object = envObjects.emplace_back();
-			object = baseLogHouse.Clone();
+			object = baseLogHouse->Clone();
 			object.GetTransform().SetPosition(envData.position);
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
@@ -1569,7 +1571,7 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 		case GameProtocol::EnvironmentType::LogHouseDoor:
 		{
 			auto& object = envObjects.emplace_back();
-			object = baseLogHouseDoor.Clone();
+			object = baseLogHouseDoor->Clone();
 			object.GetTransform().SetPosition(envData.position);
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
@@ -1577,7 +1579,7 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 		case GameProtocol::EnvironmentType::WindMill:
 		{
 			auto& object = envObjects.emplace_back();
-			object = baseWindMill.Clone();
+			object = baseWindMill->Clone();
 			object.GetTransform().SetPosition(envData.position);
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
@@ -1585,7 +1587,7 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 		case GameProtocol::EnvironmentType::WindMillBlade:
 		{
 			auto& object = envObjects.emplace_back();
-			object = baseWindMillBlade.Clone();
+			object = baseWindMillBlade->Clone();
 			object.GetTransform().SetPosition(envData.position);
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
@@ -1593,7 +1595,7 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 		case GameProtocol::EnvironmentType::Well:
 		{
 			auto& object = envObjects.emplace_back();
-			object = baseWell.Clone();
+			object = baseWell->Clone();
 			object.GetTransform().SetPosition(envData.position);
 			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
 		}
