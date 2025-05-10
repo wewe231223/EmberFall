@@ -54,7 +54,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		
 	auto FindNextObjectLoc = [this]() {
 		for (auto iter = mGameObjects.begin(); iter != mGameObjects.end(); ++iter) {
-			if (not *iter) {
+			if (not iter->GetActiveState()) {
 				return iter;
 			}
 		}
@@ -63,7 +63,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		
 	auto FindNextItemLoc = [this]() {
 		for (auto iter = mItemObjects.begin(); iter != mItemObjects.end(); ++iter) {
-			if (not *iter) {
+			if (not iter->GetActiveState()) {
 				return iter;
 			}
 		}
@@ -775,35 +775,30 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 
 
 void TerrainScene::Update() {
-	for (auto& player : mPlayers) {
-		if (false == player.GetActiveState()) {
-			continue; 
-		}
+	for (auto& player : mPlayers | std::views::filter([](const Player& p) { return p.GetActiveState();  })) {
 		player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
 	}
 
-	for (auto& [key, object] : mGameObjectMap) {
-		if (object) {
-			object->GetTransform().GetPosition().y = tCollider.GetHeight(object->GetTransform().GetPosition().x, object->GetTransform().GetPosition().z);
-		}
+	for (auto& [key, object] : mGameObjectMap | std::views::filter([](const std::pair<NetworkObjectIdType, GameObject*>& pair) { return pair.second->GetActiveState(); })) {
+
+		object->GetTransform().GetPosition().y = tCollider.GetHeight(object->GetTransform().GetPosition().x, object->GetTransform().GetPosition().z);
+
 	}
-	
-	for (auto& item : mItemObjects) {
-		if (item) {
-			item.GetTransform().GetPosition().y += 0.5f;
-			item.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(50.f) * Time.GetDeltaTime<float>(), 0.f);
-		}
+
+	for (auto& item : mItemObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
+		item.GetTransform().GetPosition().y += 0.5f;
+		item.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(50.f) * Time.GetDeltaTime<float>(), 0.f);
 	}
 
 
-		// test.Get()->position = mMyPlayer->GetTransform().GetPosition(); 
+	// test.Get()->position = mMyPlayer->GetTransform().GetPosition(); 
 	test.Get()->position = mGameObjects[3].GetTransform().GetPosition();
 	test1.Get()->position = mGameObjects[4].GetTransform().GetPosition();
 	test2.Get()->position = mGameObjects[5].GetTransform().GetPosition();
 
 
-	
- 
+
+
 	mInventoryUI.Update();
 	mHealthBarUI.Update();
 	mProfileUI.Update();
@@ -816,56 +811,54 @@ void TerrainScene::Update() {
 		if (pos.y <= y + 0.5f) {
 			pos.y = y + 0.5f;
 		}
-		
-		mCameraMode->FocusUpdate(); 
+
+		mCameraMode->FocusUpdate();
 	}
-	mCamera.UpdateBuffer(); 
+	mCamera.UpdateBuffer();
 	mRenderManager->GetShadowRenderer().Update();
 
 	static BoneTransformBuffer boneTransformBuffer{};
 
-	for (auto& gameObject : mGameObjects) {
-		if (gameObject) {
-			if (gameObject.mAnimated) {
-				gameObject.UpdateShaderVariables(boneTransformBuffer); 
-				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
+	for (auto& gameObject : mGameObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
+		
+		if (gameObject.mAnimated) {
+			gameObject.UpdateShaderVariables(boneTransformBuffer); 
+			auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 
-				if (mCamera.FrustumCulling(gameObject.mCollider)) {
-				}
-				mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
+			if (mCamera.FrustumCulling(gameObject.mCollider)) {
+			}
+			mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
 				
-				// TODO :: 아예 의미가 없는 코드이다. 정석적인 CasCade 구현에서 벗어남. 
-				//for (int i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
-				//	if (mRenderManager->GetShadowRenderer().ShadowMapCulling(i, gameObject.mCollider)) {
-				//		mRenderManager->GetMeshRenderManager().AppendShadowBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer, i);
-				//	}
-				//}
-			}
-			else {
-				gameObject.UpdateShaderVariables();
-				auto [mesh, shader, modelContext] = gameObject.GetRenderData();
-
-
-				mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
-				mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
-				mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
-
-			}
+			// TODO :: 아예 의미가 없는 코드이다. 정석적인 CasCade 구현에서 벗어남. 
+			//for (int i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
+			//	if (mRenderManager->GetShadowRenderer().ShadowMapCulling(i, gameObject.mCollider)) {
+			//		mRenderManager->GetMeshRenderManager().AppendShadowBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer, i);
+			//	}
+			//}
 		}
-	}
+		else {
+			gameObject.UpdateShaderVariables();
+			auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 
-	for (auto& item : mItemObjects) {
-		if (item) {
-			item.UpdateShaderVariables();
-			auto [mesh, shader, modelContext] = item.GetRenderData();
 
-			if (mCamera.FrustumCulling(item.mCollider)) {
-				mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
-			}
-
+			mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
 			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
 			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
+
 		}
+		
+	}
+
+	for (auto& item : mItemObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
+		item.UpdateShaderVariables();
+		auto [mesh, shader, modelContext] = item.GetRenderData();
+
+		if (mCamera.FrustumCulling(item.mCollider)) {
+			mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
+		}
+
+		mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
+		mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
 	}
 
 	for (auto& object : mEnvironmentObjects) {
@@ -881,7 +874,6 @@ void TerrainScene::Update() {
 				auto [mesh, shader, modelContext] = object.GetRenderData();
 				mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
 			}
-				
 		}
 	}
 

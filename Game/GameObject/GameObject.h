@@ -17,7 +17,7 @@ class GameObject {
 public:
 	GameObject() = default;
 public:
-	operator bool() const;
+	bool GetActiveState() const;
 
 	std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GetRenderData() const;
 

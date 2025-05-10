@@ -2,7 +2,7 @@
 #include "GameObject.h"
 #include "../Game/System/Timer.h"
 
-GameObject::operator bool() const {
+bool GameObject::GetActiveState() const {
 	return mActiveState;
 }
 
