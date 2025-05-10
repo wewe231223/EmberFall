@@ -40,8 +40,7 @@ void Player::AddEquipment(EquipmentObject equipment) {
 	mEquipments.emplace_back(equipment);
 }
 
-void Player::Update(MeshRenderManager& manager) {
-
+void Player::ForwardUpdate() {
 	if (mMyPlayer) {
 		static const SimpleMath::Matrix localRotations[] = {
 			SimpleMath::Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(45.f), 0.f, 0.f),	// 상 or 하 + 우 
@@ -80,8 +79,12 @@ void Player::Update(MeshRenderManager& manager) {
 		mTransform.Rotate(0.f, Input.GetDeltaMouseX() * Time.GetSmoothDeltaTime<float>() * XSensivity, 0.f);
 	}
 
-	static BoneTransformBuffer boneTransformBuffer{};
+	mTransform.Update(Time.GetDeltaTime<float>());
 
+}
+
+void Player::Update(MeshRenderManager& manager) {
+	static BoneTransformBuffer boneTransformBuffer{};
 
 	if (mBoneMaskController.GetActiveState()) {
 		mBoneMaskController.Update(Time.GetDeltaTime(), boneTransformBuffer);
@@ -90,7 +93,6 @@ void Player::Update(MeshRenderManager& manager) {
 		mAnimController.Update(Time.GetDeltaTime(), boneTransformBuffer);
 	}
 
-	mTransform.Update(Time.GetDeltaTime<float>());
 	mTransform.UpdateWorldMatrix();
 	mModelContext.world = mTransform.GetWorldMatrix();
 

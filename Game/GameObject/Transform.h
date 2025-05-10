@@ -38,8 +38,7 @@ public:
 	void Translate(const SimpleMath::Vector3&);
 	void SetPosition(const SimpleMath::Vector3&);
 
-	void SetSpeed(float speed);
-	void SetDirection(const SimpleMath::Vector3&);
+	void SetPrediction(const SimpleMath::Vector3& target, const float time);
 
 	void Scaling(const SimpleMath::Vector3&);
 	void Scaling(float x = 1.f, float y = 1.f, float z = 1.f);
@@ -68,6 +67,7 @@ private:
 	Transform* mParent{ nullptr };
 	std::vector<Transform*> mChildren{};
 
-	float mSpeed{ 0.f };
-	SimpleMath::Vector3 mDirection{ DirectX::SimpleMath::Vector3::Zero };
+	float mLerpElapsed{ 0.f };
+	float mLerpDuration{ 0.f };
+	SimpleMath::Vector3 mTargetPosition{ mPosition };
 };

@@ -229,8 +229,8 @@ void ProcessPlayerInputCS(std::shared_ptr<GameSession>& session, const Packets::
     }
 
     player->GetInput()->UpdateInput(input->key(), input->down());
-    userObject->Update();
-    userObject->LateUpdate();
+  //  userObject->Update();
+   // userObject->LateUpdate();
 }
 
 void ProcessPlayerLookCS(std::shared_ptr<GameSession>& session, const Packets::PlayerLookCS* const look) {

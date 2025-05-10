@@ -27,6 +27,7 @@ public:
 
 	void AddEquipment(EquipmentObject equipment);
 
+	void ForwardUpdate(); 
 	void Update(MeshRenderManager& manager);
 
 	Transform& GetTransform();

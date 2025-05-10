@@ -27,6 +27,8 @@ public:
 	void SetActiveState(bool state); 
 	void ToggleActiveState();
 
+	void ForwardUpdate();
+
 	void UpdateShaderVariables(); 
 	void UpdateShaderVariables(SimpleMath::Matrix& parent);
 	void UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer);

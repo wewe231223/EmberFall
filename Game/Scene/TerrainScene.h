@@ -18,6 +18,7 @@
 #include "../UI/Profile.h"
 
 class TerrainScene : public IScene {
+	using duration = std::chrono::milliseconds; 
 public:
 	TerrainScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCamLocation); 
 	virtual ~TerrainScene();
@@ -47,6 +48,9 @@ private:
 
 	void BuildMonsterType1AnimationController();
 	void BuildDemonAnimationController(); 
+
+	template<typename Tu> 
+	float GetAverageLatency(); 
 private:
 	void ProcessPackets(const uint8_t* buffer, size_t size); 
 	const uint8_t* ProcessPacket(const uint8_t* buffer);
@@ -91,6 +95,11 @@ private:
 	int mNetworkSign{};
 	int mInputSign{}; 
 
+	std::array<duration, 10> mLatency{}; 
+	UINT mLatencySampleIndex{ 0 };
+
+	TextBlock* mLatencyBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1000.f, 50.f, 1500.f, 100.f }, StringColor::White, "NotoSansKR") };
+
 	std::unordered_map<NetworkObjectIdType, Player*> mPlayerIndexmap{};
 	std::array<Player, 5> mPlayers{ Player{}, };
 	
@@ -125,5 +134,19 @@ private:
 	HealthBar mHealthBarUI{};
 	Profile mProfileUI{};
 
+	float mAvgLatency{ 0.f };
+
 	bool mInitialized{ false }; 
 };
+
+template<typename Tu> 
+inline float TerrainScene::GetAverageLatency() {
+	auto sumofSamples = std::accumulate(mLatency.begin(), mLatency.end(), duration::zero(),
+		[](const duration& a, const duration& b) {
+			if (b.count() <= 0.0)
+				return a;
+			return a + b;
+		});
+
+	return std::chrono::duration_cast<std::chrono::duration<float, typename Tu::period>> (sumofSamples / mLatency.size()).count();
+}

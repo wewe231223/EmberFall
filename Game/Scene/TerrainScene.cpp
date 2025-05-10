@@ -38,6 +38,13 @@ void TerrainScene::ProcessPlayerExit(const uint8_t* buffer) {
 void TerrainScene::ProcessLatency(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::PacketLatencySC>(buffer);
 
+	auto now = std::chrono::steady_clock::now(); 
+	auto old = std::chrono::time_point<std::chrono::steady_clock>(std::chrono::nanoseconds(data->latency()));
+
+	mLatency[mLatencySampleIndex] = std::chrono::duration_cast<duration>(now - old);
+	mLatencySampleIndex = (mLatencySampleIndex + 1) % mLatency.size();
+
+	mAvgLatency = GetAverageLatency<std::chrono::seconds>();
 }
 
 void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
@@ -282,7 +289,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 void TerrainScene::ProcessObjectDisappeared(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectDisappearedSC>(buffer);
-
+	return; 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
 			mPlayerIndexmap[data->objectId()]->SetActiveState(false);
@@ -290,14 +297,14 @@ void TerrainScene::ProcessObjectDisappeared(const uint8_t* buffer) {
 	}
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
-			//mGameObjectMap[data->objectId()]->SetActiveState(false);
+			mGameObjectMap[data->objectId()]->SetActiveState(false);
 		}
 	}
 }
 
 void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectRemovedSC>(buffer);
-
+	return;
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
 			mPlayerIndexmap[data->objectId()]->SetActiveState(false);
@@ -305,7 +312,7 @@ void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
 	}
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
-			//mGameObjectMap[data->objectId()]->SetActiveState(false);
+			mGameObjectMap[data->objectId()]->SetActiveState(false);
 		}
 	}
 }
@@ -315,16 +322,15 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
-			mPlayerIndexmap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
+			float predictDuration = mAvgLatency / 2.f + data->duration();
 
+			mPlayerIndexmap[data->objectId()]->GetTransform().SetPrediction(FbsPacketFactory::GetVector3(data->pos()), predictDuration);
 
-			mPlayerIndexmap[data->objectId()]->GetTransform().SetDirection(FbsPacketFactory::GetVector3(data->dir()));
-			mPlayerIndexmap[data->objectId()]->GetTransform().SetSpeed(data->speed());
 
 			if (data->objectId() == gClientCore->GetSessionId()) {
 				return;
 			}
-
+			
 			auto euler = mPlayerIndexmap[data->objectId()]->GetTransform().GetRotation().ToEuler();
 			euler.y = data->yaw();
 			mPlayerIndexmap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
@@ -332,11 +338,13 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 	}
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
-			mGameObjectMap[data->objectId()]->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
-			mGameObjectMap[data->objectId()]->GetTransform().SetDirection(FbsPacketFactory::GetVector3(data->dir()));
-			mGameObjectMap[data->objectId()]->GetTransform().SetSpeed(data->speed());
+			float predictDuration = mAvgLatency / 2.f + data->duration();
+			
+			mGameObjectMap[data->objectId()]->GetTransform().SetPrediction(FbsPacketFactory::GetVector3(data->pos()), predictDuration);
+
 			auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
 			euler.y = data->yaw();
+			
 			mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
 		}
 	}
@@ -627,7 +635,6 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 	light.Specular = { 1.f, 1.f, 1.f, 1.f };
 	light.Ambient = { 0.2f, 0.2f, 0.2f, 1.f };
 
-
 	std::weak_ptr<TerrainScene> sharedThis{ std::static_pointer_cast<TerrainScene>(shared_from_this()) };
 
 	Time.AddEvent(66ms, [sharedThis]() {
@@ -635,11 +642,22 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 			return false; 
 		}
 		auto scene = sharedThis.lock();
-
 		scene->SendLook(); 
-
 		return true; 
 	}); 
+
+	Time.AddEvent(500ms, [sharedThis]() {
+		if (sharedThis.expired()) {
+			return false;
+		}
+
+		auto time = std::chrono::steady_clock::now(); 
+		auto packet = FbsPacketFactory::LatencyCS(gClientCore->GetSessionId(), time.time_since_epoch().count());
+		gClientCore->Send(packet);
+
+		return true; 
+	});
+
 
 
 	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
@@ -778,15 +796,17 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 
 
 void TerrainScene::Update() {
-	for (auto& player : mPlayers | std::views::filter([](const Player& p) { return p.GetActiveState();  })) {
-		player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
-	}
+	//mLatencyBlock->GetText() = std::format(L"Latency : {} ms", TerrainScene::GetAverageLatency<std::chrono::milliseconds>());
 
-	for (auto& [key, object] : mGameObjectMap | std::views::filter([](const std::pair<NetworkObjectIdType, GameObject*>& pair) { return pair.second->GetActiveState(); })) {
+	//for (auto& player : mPlayers | std::views::filter([](const Player& p) { return p.GetActiveState();  })) {
+	//	player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
+	//}
 
-		object->GetTransform().GetPosition().y = tCollider.GetHeight(object->GetTransform().GetPosition().x, object->GetTransform().GetPosition().z);
+	//for (auto& [key, object] : mGameObjectMap | std::views::filter([](const std::pair<NetworkObjectIdType, GameObject*>& pair) { return pair.second->GetActiveState(); })) {
 
-	}
+	//	object->GetTransform().GetPosition().y = tCollider.GetHeight(object->GetTransform().GetPosition().x, object->GetTransform().GetPosition().z);
+
+	//}
 
 	for (auto& item : mItemObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
 		item.GetTransform().GetPosition().y += 0.5f;
@@ -823,14 +843,16 @@ void TerrainScene::Update() {
 	static BoneTransformBuffer boneTransformBuffer{};
 
 	for (auto& gameObject : mGameObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
-		
 		if (gameObject.mAnimated) {
+			gameObject.ForwardUpdate(); 
+			gameObject.GetTransform().GetPosition().y = tCollider.GetHeight(gameObject.GetTransform().GetPosition().x, gameObject.GetTransform().GetPosition().z);
 			gameObject.UpdateShaderVariables(boneTransformBuffer); 
+
 			auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 
 			if (mCamera.FrustumCulling(gameObject.mCollider)) {
+				mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
 			}
-			mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
 				
 			// TODO :: 아예 의미가 없는 코드이다. 정석적인 CasCade 구현에서 벗어남. 
 			//for (int i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
@@ -841,6 +863,7 @@ void TerrainScene::Update() {
 		}
 		else {
 			gameObject.UpdateShaderVariables();
+
 			auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 
 
@@ -854,6 +877,7 @@ void TerrainScene::Update() {
 
 	for (auto& item : mItemObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
 		item.UpdateShaderVariables();
+
 		auto [mesh, shader, modelContext] = item.GetRenderData();
 
 		if (mCamera.FrustumCulling(item.mCollider)) {
@@ -883,6 +907,8 @@ void TerrainScene::Update() {
 
 	for (auto& player : mPlayers) {
 		if (player.GetActiveState()) {
+			player.ForwardUpdate(); 
+			player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
 			player.Update(mRenderManager->GetMeshRenderManager());
 		}
 	}
@@ -2087,3 +2113,4 @@ void TerrainScene::BuildDemonAnimationController() {
 
 	mDemonAnimationController = AnimatorGraph::AnimationGraphController({ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState });
 }
+
