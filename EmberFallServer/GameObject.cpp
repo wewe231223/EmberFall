@@ -198,8 +198,7 @@ void GameObject::Update() {
             GetId(),
             GetTransform()->GetEulerRotation().y,
             currPos,
-            mTransform->Forward(),
-            mPhysics->GetSpeed()
+            mDeltaTime
         );
         StorePacket(movePacket);
     }

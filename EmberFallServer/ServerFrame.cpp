@@ -125,7 +125,7 @@ void ServerFrame::TimerThread() {
         {
             gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Remove Player!!!!");
             auto lobbyInfo = std::get<SessionLobbyInfo>(event.extraInfo);
-            gameRoom->RemovePlayer(event.id, lobbyInfo.lastRole, lobbyInfo.readyState, lobbyInfo.sessionSlot);
+            gameRoom->RemovePlayer(static_cast<SessionIdType>(event.id), lobbyInfo.lastRole, lobbyInfo.readyState, lobbyInfo.sessionSlot);
             break;
         }
 

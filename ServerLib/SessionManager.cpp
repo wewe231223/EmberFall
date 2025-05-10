@@ -55,6 +55,8 @@ void SessionManager::CloseSession(SessionIdType id) {
 
     if (not session->IsClosed()) {
         session->Close();
+        it->second.reset();
+
         mSessions.unsafe_erase(it);
         mSessionCount.fetch_sub(1);
         gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Session[{}]: erased from session map", id);
@@ -127,7 +129,7 @@ void SessionManager::CheckSessionsHeartBeat() {
 
     auto packetHeartBeat = FbsPacketFactory::HeartBeatSC();
     mSessionsLock.ReadLock();
-    for (auto& [id, session] : mSessions) {
+    for (auto [id, session] : mSessions) {
         if (nullptr == session) {
             continue;
         }

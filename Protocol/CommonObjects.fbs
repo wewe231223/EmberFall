@@ -30,8 +30,7 @@ table ObjectMoveSC {
 	objectId: ushort;
 	yaw: float;
 	pos: Vec3;
-	dir: Vec3;
-	speed: float;
+	duration: float;
 }
 
 table ObjectAttackedSC {

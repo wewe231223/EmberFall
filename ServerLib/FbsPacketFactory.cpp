@@ -259,13 +259,11 @@ OverlappedSend* FbsPacketFactory::ObjectRemoveSC(NetworkObjectIdType id) {
     return mSendPacketBuffers->GetOverlapped(&headerSC, payload, payloadSize);
 }
 
-OverlappedSend* FbsPacketFactory::ObjectMoveSC(NetworkObjectIdType id, float yaw,
-    const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir, float speed) {
+OverlappedSend* FbsPacketFactory::ObjectMoveSC(NetworkObjectIdType id, float yaw, const SimpleMath::Vector3& pos, float duration) {
     flatbuffers::FlatBufferBuilder builder{ };
 
     Packets::Vec3 fbsPos = GetVec3(pos);
-    Packets::Vec3 fbsDir = GetVec3(dir);
-    auto offset = Packets::CreateObjectMoveSC(builder, id, yaw, &fbsPos, &fbsDir, speed);
+    auto offset = Packets::CreateObjectMoveSC(builder, id, yaw, &fbsPos, duration);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();

@@ -54,7 +54,7 @@ public:
         Packets::AnimationState animation, float hp, const SimpleMath::Vector3& pos);
     static OverlappedSend* ObjectDisappearedSC(NetworkObjectIdType id);
     static OverlappedSend* ObjectRemoveSC(NetworkObjectIdType id);
-    static OverlappedSend* ObjectMoveSC(NetworkObjectIdType id, float yaw, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir, float speed);
+    static OverlappedSend* ObjectMoveSC(NetworkObjectIdType id, float yaw, const SimpleMath::Vector3& pos, float duration);
     static OverlappedSend* ObjectAttackedSC(NetworkObjectIdType id, float hp);
     static OverlappedSend* ObjectAnimationChangedSC(NetworkObjectIdType id, Packets::AnimationState animation);
 
