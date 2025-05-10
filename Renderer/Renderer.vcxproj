@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\Renderer\;$(USERPROFILE)\.nuget\packages\microsoft.direct3d.d3d12\1.615.1\build\native\include\;</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\Renderer\;$(USERPROFILE)\.nuget\packages\microsoft.direct3d.d3d12\1.615.1\build\native\include\;$(SolutionDir)\External\Include\</IncludePath>
     <OutDir>$(SolutionDir)\out\debug\</OutDir>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(USERPROFILE)\.nuget\packages\microsoft.direct3d.d3d12\1.615.1\build\native\x64\;</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\Renderer\;$(USERPROFILE)\.nuget\packages\microsoft.direct3d.d3d12\1.615.1\build\native\include\;</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)\Renderer\;$(USERPROFILE)\.nuget\packages\microsoft.direct3d.d3d12\1.615.1\build\native\include\;$(SolutionDir)\External\Include\</IncludePath>
     <OutDir>$(SolutionDir)\out\release\</OutDir>
     <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(USERPROFILE)\.nuget\packages\microsoft.direct3d.d3d12\1.615.1\build\native\x64\;</LibraryPath>
   </PropertyGroup>

@@ -35,6 +35,11 @@
 #include "Config/Config.h"
 
 
+#ifdef _DEBUG 
+#define MONITER_CPU_GPU_TIME
+#endif 
+
+#define MONITER_CPU_GPU_TIME
 
 #define MAX_LOADSTRING 100
 // 전역 변수:
@@ -105,7 +110,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
 
-#ifdef _DEBUG
+#ifdef MONITER_CPU_GPU_TIME
     TextBlock* CPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1000.f, 0.f, 1400.f, 100.f }, StringColor::Black, "NotoSansKR");
     IntervalTimer CPUTimer{};
     TextBlock* GPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1000.f, 30.f, 1400.f, 200.f }, StringColor::Black, "NotoSansKR");
@@ -123,7 +128,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         }
         else {
-#ifdef _DEBUG
+#ifdef MONITER_CPU_GPU_TIME
             CPUTimer.Start();
 #endif
             Time.AdvanceTime();
@@ -133,18 +138,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 
             renderer.Render();
-#ifdef _DEBUG
+#ifdef MONITER_CPU_GPU_TIME
             CPUTimer.End();
 #endif 
             if (sceneManager.CheckLoaded()) {
                 renderer.ExecuteLoadCommandList();
 				renderer.SetFeatureEnabled(sceneManager.GetCurrentSceneFeatureType());
             }
-#ifdef _DEBUG
+#ifdef MONITER_CPU_GPU_TIME
             GPUTimer.Start();
 #endif  
             renderer.ExecuteRender();
-#ifdef _DEBUG
+#ifdef MONITER_CPU_GPU_TIME
             GPUTimer.End();
             CPUTime->GetText() = std::format(L"CPU Time : {:.2f}us", CPUTimer.Microseconds());
             GPUTime->GetText() = std::format(L"GPU Time : {:.2f}us", GPUTimer.Microseconds());

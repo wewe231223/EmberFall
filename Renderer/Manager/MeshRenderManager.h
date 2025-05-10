@@ -7,10 +7,10 @@
 #include "../Utility/Defines.h"
 #include "../Config/Config.h"
 
+#include "../External/Include/absl/container/flat_hash_map.h"
 #ifdef max 
 #undef max
 #endif
-
 
 //#define RENDER_BB 
 
@@ -71,14 +71,15 @@ private:
 
 	std::vector<SimpleMath::Matrix> mBoneTransforms{};
 	std::vector<SimpleMath::Matrix> mShadowBoneTransforms{};
-	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<AnimationModelContext>>> mBonedMeshContexts{};
-	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<AnimationModelContext>>> mShadowBonedMeshContexts{};
-	
-	std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<ModelContext>>> mPlainMeshReserved{};
-	std::unordered_map<GraphicsShaderBase* ,std::unordered_map<Mesh*, std::vector<ModelContext>>> mPlainMeshContexts{};
+	absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<AnimationModelContext>>> mBonedMeshContexts{};
+	absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<AnimationModelContext>>> mShadowBonedMeshContexts{};
 
-	std::array<std::unordered_map<GraphicsShaderBase*, std::unordered_map<Mesh*, std::vector<ModelContext>>>, 2> mShadowPlainMeshContexts{};
+	absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<ModelContext>>> mPlainMeshReserved{};
+	absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<ModelContext>>> mPlainMeshContexts{};
+
+	std::array<absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<ModelContext>>>, 2> mShadowPlainMeshContexts{};
 
 	std::unique_ptr<GraphicsShaderBase> mSkeletonBoundingboxRenderShader{};
-	std::unique_ptr<GraphicsShaderBase> mStandardBoundingBoxRenderShader{}; 
+	std::unique_ptr<GraphicsShaderBase> mStandardBoundingBoxRenderShader{};
+
 };

@@ -75,15 +75,10 @@ void Transform::SetPosition(const SimpleMath::Vector3& pos) {
 }
 
 void Transform::SetPrediction(const SimpleMath::Vector3& target, const float time) {
-
-	mTargetPosition = target - mPosition; 
+	mDirection = target - mPosition; 
 	
-	mLerpDuration = mTargetPosition.Length() / time; 
-	mTargetPosition.Normalize(); 
-
-	//mTargetPosition = target; 
-	//mLerpDuration = time; 
-
+	mSpeed = mDirection.Length() / time; 
+	mDirection.Normalize(); 
 }
 
 void Transform::Scaling(const SimpleMath::Vector3& scale) {
@@ -137,20 +132,7 @@ void Transform::SetLocalTransform(const SimpleMath::Matrix& localMatrix) {
 }
 
 void Transform::Update(float deltaTime) {
-	//if (mLerpDuration == 0.f) {
-	//	return;
-	//}
-
-	//mLerpElapsed += deltaTime; 
-	//float t = std::clamp(mLerpElapsed / mLerpDuration, 0.f, 1.f);
-
-	//auto zxPosition = mPosition;
-	//zxPosition.y = mTargetPosition.y;
-
-	//mPosition = SimpleMath::Vector3::Lerp(zxPosition, mTargetPosition, t);
-
-	mPosition += mTargetPosition * mLerpDuration * deltaTime;
-
+	mPosition += mDirection * mSpeed * deltaTime;
 }
 
 void Transform::UpdateWorldMatrix() {

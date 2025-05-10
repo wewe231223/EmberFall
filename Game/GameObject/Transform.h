@@ -67,7 +67,6 @@ private:
 	Transform* mParent{ nullptr };
 	std::vector<Transform*> mChildren{};
 
-	float mLerpElapsed{ 0.f };
-	float mLerpDuration{ 0.f };
-	SimpleMath::Vector3 mTargetPosition{ mPosition };
+	float mSpeed{ 0.f };
+	SimpleMath::Vector3 mDirection{ DirectX::SimpleMath::Vector3::Zero };
 };

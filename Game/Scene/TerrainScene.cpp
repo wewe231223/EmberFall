@@ -250,6 +250,8 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("CorruptedGemMaterial");
 					nextLoc->SetActiveState(true);
 		
+					nextItemLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextItemLoc->GetTransform().GetPosition().x, nextItemLoc->GetTransform().GetPosition().z);
+					nextItemLoc->GetTransform().GetPosition().y += 0.5f;
 
 					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
 				}
@@ -798,16 +800,6 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 void TerrainScene::Update() {
 	//mLatencyBlock->GetText() = std::format(L"Latency : {} ms", TerrainScene::GetAverageLatency<std::chrono::milliseconds>());
 
-	//for (auto& player : mPlayers | std::views::filter([](const Player& p) { return p.GetActiveState();  })) {
-	//	player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
-	//}
-
-	//for (auto& [key, object] : mGameObjectMap | std::views::filter([](const std::pair<NetworkObjectIdType, GameObject*>& pair) { return pair.second->GetActiveState(); })) {
-
-	//	object->GetTransform().GetPosition().y = tCollider.GetHeight(object->GetTransform().GetPosition().x, object->GetTransform().GetPosition().z);
-
-	//}
-
 	for (auto& item : mItemObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
 		item.GetTransform().GetPosition().y += 0.5f;
 		item.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(50.f) * Time.GetDeltaTime<float>(), 0.f);
@@ -818,9 +810,6 @@ void TerrainScene::Update() {
 	test.Get()->position = mGameObjects[3].GetTransform().GetPosition();
 	test1.Get()->position = mGameObjects[4].GetTransform().GetPosition();
 	test2.Get()->position = mGameObjects[5].GetTransform().GetPosition();
-
-
-
 
 	mInventoryUI.Update();
 	mHealthBarUI.Update();
@@ -866,7 +855,6 @@ void TerrainScene::Update() {
 
 			auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 
-
 			mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
 			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
 			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
@@ -905,12 +893,10 @@ void TerrainScene::Update() {
 	}
 
 
-	for (auto& player : mPlayers) {
-		if (player.GetActiveState()) {
-			player.ForwardUpdate(); 
-			player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
-			player.Update(mRenderManager->GetMeshRenderManager());
-		}
+	for (auto& player : mPlayers | std::views::filter([](const Player& p) { return p.GetActiveState(); })) {
+		player.ForwardUpdate(); 
+		player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
+		player.Update(mRenderManager->GetMeshRenderManager());
 	}
 
 	mSkyBox.GetTransform().GetPosition() = mCamera.GetTransform().GetPosition();
