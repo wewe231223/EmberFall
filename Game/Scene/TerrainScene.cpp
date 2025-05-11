@@ -250,8 +250,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("CorruptedGemMaterial");
 					nextLoc->SetActiveState(true);
 		
-					nextItemLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextItemLoc->GetTransform().GetPosition().x, nextItemLoc->GetTransform().GetPosition().z);
-					nextItemLoc->GetTransform().GetPosition().y += 0.5f;
+					nextLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextItemLoc->GetTransform().GetPosition().x, nextItemLoc->GetTransform().GetPosition().z);
 
 					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
 				}
