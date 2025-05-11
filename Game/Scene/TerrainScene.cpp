@@ -77,7 +77,6 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		return mItemObjects.end();
 	};
 
-		
 	// 플레이어 등장 
 	if (data->objectId() < OBJECT_ID_START) {
 		// 내 플레이어 등장 
@@ -101,26 +100,22 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mSwordManAnimationController);
 					nextLoc->AddEquipment(mEquipments["GreatSword"].Clone());
 					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("GreatSword"));
-
 					break;
 				case Packets::EntityType_HUMAN_SWORD:
 					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mShieldManController);
 					nextLoc->AddEquipment(mEquipments["Sword"].Clone());
 					nextLoc->AddEquipment(mEquipments["Shield"].Clone());
 					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("ShieldMan"));
-
 					break;
 				case Packets::EntityType_HUMAN_ARCHER:
 					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mArcherAnimationController);
 					nextLoc->AddEquipment(mEquipments["Bow"].Clone());
 					nextLoc->AddEquipment(mEquipments["Quiver"].Clone());
 					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Archer"));
-
 					break;
 				case Packets::EntityType_HUMAN_MAGICIAN:
 					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mMageAnimationController);
 					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Magician"));
-
 					break;
 				case Packets::EntityType_BOSS:
 					*nextLoc = Player(mMeshMap["Demon"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial"), mDemonAnimationController);
@@ -128,7 +123,6 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextLoc->AddEquipment(mEquipments["DemonCloth"].Clone());
 					cameraOffset *= 2.f; 
 					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Devil"));
-
 					break;
 				default:
 					MessageBox(nullptr, L"Something went wrong!!", L"", MB_OK | MB_ICONERROR);
@@ -422,14 +416,6 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 	}
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
-			
-			//volatile NetworkObjectIdType id = data->objectId(); 
-			//
-			//if (not mGameObjectMap[data->objectId()]->mAnimated) {
-			//	DebugBreak(); 
-			//}
-
-
 			mGameObjectMap[data->objectId()]->GetAnimationController().Transition(static_cast<size_t>(data->animation()));
 		}
 	}
@@ -990,6 +976,19 @@ void TerrainScene::SendNetwork() {
 			}
 		}
 	}
+
+
+	auto& mouseTracker = Input.GetMouseTracker(); 
+
+	if (mouseTracker.leftButton == DirectX::Mouse::ButtonStateTracker::PRESSED) {
+		
+		if (mMyPlayer != nullptr) {
+			auto dir = mMyPlayer->GetTransform().GetForward();
+			dir.y = 0.f;
+			decltype(auto) packet = FbsPacketFactory::RequestAttackCS(gClientCore->GetSessionId(), dir); 
+		}
+	}
+
 }
 
 void TerrainScene::Exit() {
