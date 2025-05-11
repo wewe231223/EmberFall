@@ -10,6 +10,7 @@ Player::Player(Mesh* mesh, GraphicsShaderBase* shader, MaterialIndex material, A
 	mBoneMaskController = boneMaskController;
 
 	mActiveState = true;
+	mEmpty = false;
 
 	DirectX::BoundingBox box{ {0.f,0.8f,0.f}, {0.25f, 0.8f, 0.25f} };
 	mCollider = Collider{ box };
@@ -23,6 +24,7 @@ Player::Player(Mesh* mesh, GraphicsShaderBase* shader, MaterialIndex material, A
 	mAnimController = animController;
 
 	mActiveState = true;
+	mEmpty = false;
 
 	DirectX::BoundingBox box{ {0.f,0.8f,0.f}, {0.25f, 0.8f, 0.25f} };
 	mCollider = Collider{ box };

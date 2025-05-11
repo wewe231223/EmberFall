@@ -32,6 +32,7 @@ void TerrainScene::ProcessPlayerExit(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::PlayerExitSC>(buffer);
 	if (mPlayerIndexmap.contains(data->playerId())) {
 		mPlayerIndexmap[data->playerId()]->SetActiveState(false);
+		mPlayerIndexmap[data->playerId()]->SetEmpty(true);
 	}
 }
 
@@ -82,7 +83,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		// 내 플레이어 등장 
 		if (data->objectId() == gClientCore->GetSessionId()) {
 			// 플레이어 인스턴스가 없다면 
-			if (not mPlayerIndexmap.contains(data->objectId())) {
+			if (mMyPlayer == nullptr) {
 		
 				auto nextLoc = FindNextPlayerLoc();
 		
@@ -90,8 +91,6 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					MessageBox(nullptr, L"ERROR!!!!!\nThere is no more space for My Player!!", L"", MB_OK | MB_ICONERROR);
 					Crash("There is no more space for My Player!!");
 				}
-
-				nextLoc->SetEmpty(false);
 
 				SimpleMath::Vector3 cameraOffset{ 0.f, 1.75f, 3.f };
 
@@ -139,9 +138,9 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mMyPlayer->SetAnimation(data->animation()); 
 
 				mHealthBarUI.SetHealth(data->hp()); 
-				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+				mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 
-				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
+				//mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
 				mCameraMode->Enter();
 			}
 			else {
@@ -169,7 +168,6 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					Crash("There is no more space for Other Player!!"); 
 				}
 		
-				nextLoc->SetEmpty(false);
 
 				switch (data->entity()) {
 				case Packets::EntityType_HUMAN_LONGSWORD:
@@ -986,7 +984,7 @@ void TerrainScene::SendNetwork() {
 			auto dir = mMyPlayer->GetTransform().GetForward();
 			dir.y = 0.f;
 			decltype(auto) packet = FbsPacketFactory::RequestAttackCS(gClientCore->GetSessionId(), dir);
-			gClientCore->Send(packet); 
+			gClientCore->Send(packet);
 		}
 	}
 
