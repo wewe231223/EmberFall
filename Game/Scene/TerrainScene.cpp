@@ -250,9 +250,11 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("CorruptedGemMaterial");
 					nextLoc->SetActiveState(true);
 		
+					
+					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
 					nextLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextItemLoc->GetTransform().GetPosition().x, nextItemLoc->GetTransform().GetPosition().z);
 
-					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
+
 				}
 					break;
 
@@ -1154,9 +1156,10 @@ void TerrainScene::BuildMaterial() {
 	mRenderManager->GetMaterialManager().CreateMaterial("MonsterType1Material", mat);
 	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
-
+	mat.mEmissiveColor = SimpleMath::Color(16.0f, 0.0f, 14.0f, 1.0f);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("CorrupedGem_BaseColor");
 	mRenderManager->GetMaterialManager().CreateMaterial("CorruptedGemMaterial", mat);
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
 	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 1.0f);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Albedo_Skin_3");

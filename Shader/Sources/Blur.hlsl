@@ -2,7 +2,7 @@
 Texture2D<float4> gInput : register(t0);
 RWTexture2D<float4> gRWOutput : register(u0);
 
-#define WEIGHTS float3(0.3126, 0.7152, 0.0722)
+#define WEIGHTS float3(0.4126, 0.3152, 0.3722)
 
 //static const float gGaussianBlurMask1D[11] = { 0.05f, 0.05f, 0.1f, 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.05f, 0.05f};
 //static const int maskWidth = 5;
@@ -31,7 +31,7 @@ void HorzBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID :
  
     
  
-    float4 midColor = pow(float4(brightness, brightness, brightness, brightness), 4.0f);
+    float4 midColor = pow(float4(brightness, brightness, brightness, 1.0f), 4.0f);
 
     float mask1 = step(0.8f, brightness); 
     float mask0 = step(0.5f, brightness); 
