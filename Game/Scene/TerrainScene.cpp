@@ -150,8 +150,15 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 			}
 			else {
 				if (mPlayerIndexmap[data->objectId()] != nullptr) {
-					mHealthBarUI.SetHealth(data->hp());
-					mPlayerIndexmap[data->objectId()]->SetActiveState(true);
+					auto& player = *mPlayerIndexmap[data->objectId()];
+					player.SetActiveState(true);
+
+					auto zxPos = FbsPacketFactory::GetVector3(data->pos());
+					zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+
+					player.GetTransform().GetPosition() = zxPos;
+					player.SetAnimation(data->animation());
+					player.GetTransform().ResetPrediction();
 				}
 			}
 		}
@@ -206,7 +213,15 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 			}
 			else {
 				if (mPlayerIndexmap[data->objectId()] != nullptr) {
-					mPlayerIndexmap[data->objectId()]->SetActiveState(true);
+					auto& player = *mPlayerIndexmap[data->objectId()];
+					player.SetActiveState(true);
+
+					auto zxPos = FbsPacketFactory::GetVector3(data->pos());
+					zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+
+					player.GetTransform().GetPosition() = zxPos;
+					player.SetAnimation(data->animation());
+					player.GetTransform().ResetPrediction();
 				}
 			}
 		}
@@ -283,7 +298,19 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		}
 		else {
 			if (mGameObjectMap[data->objectId()] != nullptr) {
-				mGameObjectMap[data->objectId()]->SetActiveState(true);
+				auto& object = *mGameObjectMap[data->objectId()];
+				object.SetActiveState(true);
+
+				auto zxPos = FbsPacketFactory::GetVector3(data->pos());
+				zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+				
+				object.GetTransform().GetPosition() = zxPos;
+				object.GetTransform().ResetPrediction();
+
+				if (object.mAnimated) {
+					object.mGraphController.Transition(static_cast<size_t>(data->animation()));
+				}
+					
 			}
 		}
 		
@@ -295,11 +322,13 @@ void TerrainScene::ProcessObjectDisappeared(const uint8_t* buffer) {
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
+			mPlayerIndexmap[data->objectId()]->GetTransform().ResetPrediction(); 
 			mPlayerIndexmap[data->objectId()]->SetActiveState(false);
 		}
 	}
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
+			mGameObjectMap[data->objectId()]->GetTransform().ResetPrediction();
 			mGameObjectMap[data->objectId()]->SetActiveState(false);
 		}
 	}
@@ -327,7 +356,10 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
 			float predictDuration = mAvgLatency / 2.f + data->duration();
 
-			mPlayerIndexmap[data->objectId()]->GetTransform().SetPrediction(FbsPacketFactory::GetVector3(data->pos()), predictDuration);
+			auto zxPos = FbsPacketFactory::GetVector3(data->pos());
+			zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+
+			mPlayerIndexmap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
 
 
 			if (data->objectId() == gClientCore->GetSessionId()) {
@@ -343,7 +375,10 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 		if (mGameObjectMap.contains(data->objectId())) {
 			float predictDuration = mAvgLatency / 2.f + data->duration();
 			
-			mGameObjectMap[data->objectId()]->GetTransform().SetPrediction(FbsPacketFactory::GetVector3(data->pos()), predictDuration);
+			auto zxPos = FbsPacketFactory::GetVector3(data->pos());
+			zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+
+			mGameObjectMap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
 
 			auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
 			euler.y = data->yaw();

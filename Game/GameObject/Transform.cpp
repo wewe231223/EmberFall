@@ -83,6 +83,13 @@ void Transform::SetPrediction(const SimpleMath::Vector3& target, const float tim
 
 }
 
+void Transform::ResetPrediction() {
+	mPrevPos = mPosition; 
+	mTargetPos = mPosition;
+	mPredictTime = 0.f;
+	mCumulateTime = 0.f;
+}
+
 void Transform::Scaling(const SimpleMath::Vector3& scale) {
 	mScale *= scale;
 }
