@@ -141,14 +141,14 @@ void Transform::SetLocalTransform(const SimpleMath::Matrix& localMatrix) {
 }
 
 void Transform::Update(float deltaTime) {
-	//if (mPredictTime == 0.f) {
-	//	return;
-	//}
+	if (mPredictTime == 0.f) {
+		return;
+	}
 
-	//mCumulateTime += deltaTime; 
-	//float t = std::clamp(mCumulateTime / mPredictTime, 0.f, 1.f);
+	mCumulateTime += deltaTime; 
+	float t = std::clamp(mCumulateTime / mPredictTime, 0.f, 1.f);
 
-	//mPosition = SimpleMath::Vector3::Lerp(mPrevPos, mTargetPos, t);
+	mPosition = SimpleMath::Vector3::Lerp(mPrevPos, mTargetPos, t);
 }
 
 void Transform::UpdateWorldMatrix() {
