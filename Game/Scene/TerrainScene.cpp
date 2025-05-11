@@ -985,7 +985,8 @@ void TerrainScene::SendNetwork() {
 		if (mMyPlayer != nullptr) {
 			auto dir = mMyPlayer->GetTransform().GetForward();
 			dir.y = 0.f;
-			decltype(auto) packet = FbsPacketFactory::RequestAttackCS(gClientCore->GetSessionId(), dir); 
+			decltype(auto) packet = FbsPacketFactory::RequestAttackCS(gClientCore->GetSessionId(), dir);
+			gClientCore->Send(packet); 
 		}
 	}
 
