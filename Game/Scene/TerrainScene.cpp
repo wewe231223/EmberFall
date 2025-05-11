@@ -291,7 +291,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 void TerrainScene::ProcessObjectDisappeared(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectDisappearedSC>(buffer);
-	return; 
+
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
 			mPlayerIndexmap[data->objectId()]->SetActiveState(false);
@@ -306,7 +306,7 @@ void TerrainScene::ProcessObjectDisappeared(const uint8_t* buffer) {
 
 void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectRemovedSC>(buffer);
-	return;
+
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
 			mPlayerIndexmap[data->objectId()]->SetActiveState(false);
