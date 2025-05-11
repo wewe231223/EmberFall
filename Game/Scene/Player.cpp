@@ -36,6 +36,14 @@ void Player::SetActiveState(bool state) {
 	mActiveState = state; 
 }
 
+bool Player::GetEmpty() const {
+	return mEmpty;
+}
+
+void Player::SetEmpty(bool state) {
+	mEmpty = state; 
+}
+
 void Player::AddEquipment(EquipmentObject equipment) {
 	mEquipments.emplace_back(equipment);
 }

@@ -24,6 +24,9 @@ public:
 public:
 	bool GetActiveState() const;
 	void SetActiveState(bool state);
+	
+	bool GetEmpty() const; 
+	void SetEmpty(bool state);
 
 	void AddEquipment(EquipmentObject equipment);
 
@@ -56,5 +59,7 @@ private:
 	Collider mCollider{};
 
 	bool mActiveState{ false };
+	bool mEmpty{ true };
+
 	bool mMyPlayer{ false };
 };

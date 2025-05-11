@@ -6,6 +6,14 @@ bool GameObject::GetActiveState() const {
 	return mActiveState;
 }
 
+bool GameObject::GetEmpty() const {
+	return mEmpty;
+}
+
+void GameObject::SetEmpty(bool state) {
+	mEmpty = state; 
+}
+
 std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GameObject::GetRenderData() const {
 	return std::make_tuple(mMesh, mShader, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents() ,mMaterial});
 }

@@ -52,7 +52,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 	auto FindNextPlayerLoc = [this]() {
 		for (auto iter = mPlayers.begin(); iter != mPlayers.end(); ++iter) {
-			if (not iter->GetActiveState()) {
+			if (iter->GetEmpty()) {
 				return iter;
 			}
 		}
@@ -61,7 +61,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		
 	auto FindNextObjectLoc = [this]() {
 		for (auto iter = mGameObjects.begin(); iter != mGameObjects.end(); ++iter) {
-			if (not iter->GetActiveState()) {
+			if (iter->GetEmpty()) {
 				return iter;
 			}
 		}
@@ -70,7 +70,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		
 	auto FindNextItemLoc = [this]() {
 		for (auto iter = mItemObjects.begin(); iter != mItemObjects.end(); ++iter) {
-			if (not iter->GetActiveState()) {
+			if (iter->GetEmpty()) {
 				return iter;
 			}
 		}
@@ -91,6 +91,8 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					MessageBox(nullptr, L"ERROR!!!!!\nThere is no more space for My Player!!", L"", MB_OK | MB_ICONERROR);
 					Crash("There is no more space for My Player!!");
 				}
+
+				nextLoc->SetEmpty(false);
 
 				SimpleMath::Vector3 cameraOffset{ 0.f, 1.75f, 3.f };
 
@@ -173,6 +175,8 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					Crash("There is no more space for Other Player!!"); 
 				}
 		
+				nextLoc->SetEmpty(false);
+
 				switch (data->entity()) {
 				case Packets::EntityType_HUMAN_LONGSWORD:
 					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mSwordManAnimationController);
@@ -205,6 +209,8 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					MessageBox(nullptr, L"Something went wrong!!", L"", MB_OK | MB_ICONERROR);
 					break;
 				}
+				
+
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 
 				nextLoc->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
@@ -236,7 +242,11 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				MessageBox(nullptr, L"ERROR!!!!!\nThere is no more space for Other Object!!", L"", MB_OK | MB_ICONERROR);
 				Crash("There is no more space for Other Object!!");
 			}
-
+				
+			if (nextItemLoc == mItemObjects.end()) {
+				MessageBox(nullptr, L"ERROR!!!!!\nThere is no more space for Item!!", L"", MB_OK | MB_ICONERROR);
+				Crash("There is no more space for Item!!");
+			}
 			switch (data->entity()) {
 				case Packets::EntityType_MONSTER:
 				{
@@ -254,6 +264,8 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
 					nextLoc->mGraphController.Transition(static_cast<size_t>(data->animation()));
+
+					nextLoc->SetEmpty(false); 
 				}
 					break;
 				case Packets::EntityType_CORRUPTED_GEM:
@@ -267,12 +279,12 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		
 					
 					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
-					nextLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextItemLoc->GetTransform().GetPosition().x, nextItemLoc->GetTransform().GetPosition().z);
+					nextLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextLoc->GetTransform().GetPosition().x, nextLoc->GetTransform().GetPosition().z);
 
+					nextLoc->SetEmpty(false);
 
 				}
-					break;
-
+				break;
 				case Packets::EntityType_ITEM_POTION:
 				{
 					*nextItemLoc = GameObject{};
@@ -286,10 +298,12 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 					nextItemLoc->SetActiveState(true);
 
+					nextItemLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
 					nextItemLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextItemLoc->GetTransform().GetPosition().x, nextItemLoc->GetTransform().GetPosition().z);
 					nextItemLoc->GetTransform().GetPosition().y += 0.5f;
 
-					nextItemLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
+
+					nextItemLoc->SetEmpty(false); 
 				}
 				break;
 				default:
@@ -340,11 +354,13 @@ void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
 			mPlayerIndexmap[data->objectId()]->SetActiveState(false);
+			mPlayerIndexmap[data->objectId()]->SetEmpty(true);
 		}
 	}
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
 			mGameObjectMap[data->objectId()]->SetActiveState(false);
+			mGameObjectMap[data->objectId()]->SetEmpty(true);
 		}
 	}
 }
@@ -406,6 +422,14 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 	}
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
+			
+			//volatile NetworkObjectIdType id = data->objectId(); 
+			//
+			//if (not mGameObjectMap[data->objectId()]->mAnimated) {
+			//	DebugBreak(); 
+			//}
+
+
 			mGameObjectMap[data->objectId()]->GetAnimationController().Transition(static_cast<size_t>(data->animation()));
 		}
 	}
@@ -515,6 +539,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 		object.mMesh = mMeshMap["Terrain"].get();
 		object.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("TerrainMaterial");
 		object.SetActiveState(true);
+		object.SetEmpty(false);
 
 		object.GetTransform().GetPosition() = { 0.f, 0.f, 0.f };
 		object.GetTransform().Scaling(1.f, 1.f, 1.f);
@@ -532,6 +557,8 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 		boss.mAnimated = true;
 		boss.mCollider = mColliderMap["Demon"];
 		boss.SetActiveState(true);
+		boss.SetEmpty(false);
+
 		boss.GetTransform().GetPosition() = { 3.f, tCollider.GetHeight(3.f, 36.f), 36.f };
 	}
 
@@ -544,6 +571,8 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 		imp.mAnimated = true;
 		imp.mCollider = mColliderMap["MonsterType1"];
 		imp.SetActiveState(true);
+		imp.SetEmpty(false);
+
 		imp.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 36.f), 36.f };
 	}
 
@@ -837,7 +866,9 @@ void TerrainScene::Update() {
 	mLatencyBlock->GetText() = std::format(L"Latency : {} ms", TerrainScene::GetAverageLatency<std::chrono::milliseconds>());
 
 	for (auto& item : mItemObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
-		item.GetTransform().GetPosition().y += 0.5f;
+		auto& Pos = item.GetTransform().GetPosition();
+		Pos.y = tCollider.GetHeight(Pos.x, Pos.z);
+		Pos.y += 0.5f;
 		item.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(50.f) * Time.GetDeltaTime<float>(), 0.f);
 	}
 

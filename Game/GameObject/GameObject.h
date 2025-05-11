@@ -18,6 +18,8 @@ public:
 	GameObject() = default;
 public:
 	bool GetActiveState() const;
+	bool GetEmpty() const; 
+	void SetEmpty(bool state); 
 
 	std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GetRenderData() const;
 
@@ -54,6 +56,7 @@ private:
 	Transform mTransform{};
 
 	bool mActiveState{ false };
+	bool mEmpty{ true }; 
 };
 #else 
 

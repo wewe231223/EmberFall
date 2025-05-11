@@ -29,7 +29,7 @@ void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferC
 	mCurrentScene = mScenes[static_cast<size_t>(SceneType::LOADING)].get();
 
 	gClientCore->Init();
-	if (!gClientCore->Start("210.99.120.103", 7777)) {
+	if (!gClientCore->Start("192.168.172.255", 7777)) {
 		DebugBreak();
 		Crash(false);
 	}
