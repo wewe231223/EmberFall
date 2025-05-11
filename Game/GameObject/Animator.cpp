@@ -669,6 +669,11 @@ namespace AnimatorGraph {
     }
 
     void AnimationGraphController::Transition(size_t targretIndex, double transitionDuration) {
+
+        if (targretIndex < 0 or targretIndex > static_cast<size_t>(Packets::AnimationState_MAX)) {
+            DebugBreak(); 
+        }
+
         mAnimator.SetTransitionDuration(transitionDuration);
 		mAnimator.SetLoop(mStates[targretIndex].loop);
 		mAnimator.TransitionToClip(targretIndex);
