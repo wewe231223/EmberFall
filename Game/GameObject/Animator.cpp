@@ -670,6 +670,7 @@ namespace AnimatorGraph {
 
     void AnimationGraphController::Transition(size_t targretIndex, double transitionDuration) {
         mAnimator.SetTransitionDuration(transitionDuration);
+		mAnimator.SetLoop(mStates[targretIndex].loop);
 		mAnimator.TransitionToClip(targretIndex);
 		mCurrentStateIndex = targretIndex;
     }

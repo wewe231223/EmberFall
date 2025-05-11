@@ -75,12 +75,6 @@ void Transform::SetPosition(const SimpleMath::Vector3& pos) {
 }
 
 void Transform::SetPrediction(const SimpleMath::Vector3& target, const float time) {
-	//mDirection = target - mPosition; 
-	//
-	//mSpeed = mDirection.Length() / time; 
-	//mDirection.Normalize(); 
-
-
 	mPrevPos = mPosition; 
 	mTargetPos = target; 
 
@@ -148,7 +142,6 @@ void Transform::Update(float deltaTime) {
 	float t = std::clamp(mCumulateTime / mPredictTime, 0.f, 1.f);
 
 	mPosition = SimpleMath::Vector3::Lerp(mPrevPos, mTargetPos, t);
-	// mPosition += mDirection * mSpeed * deltaTime;
 }
 
 void Transform::UpdateWorldMatrix() {

@@ -67,9 +67,6 @@ private:
 	Transform* mParent{ nullptr };
 	std::vector<Transform*> mChildren{};
 
-	float mSpeed{ 0.f };
-	SimpleMath::Vector3 mDirection{ DirectX::SimpleMath::Vector3::Zero };
-
 	SimpleMath::Vector3 mPrevPos{ DirectX::SimpleMath::Vector3::Zero };
 	SimpleMath::Vector3 mTargetPos{ DirectX::SimpleMath::Vector3::Zero };
 	float mPredictTime{ 0.f };
