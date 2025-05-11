@@ -798,7 +798,7 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 
 
 void TerrainScene::Update() {
-	//mLatencyBlock->GetText() = std::format(L"Latency : {} ms", TerrainScene::GetAverageLatency<std::chrono::milliseconds>());
+	mLatencyBlock->GetText() = std::format(L"Latency : {} ms", TerrainScene::GetAverageLatency<std::chrono::milliseconds>());
 
 	for (auto& item : mItemObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
 		item.GetTransform().GetPosition().y += 0.5f;

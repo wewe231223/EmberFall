@@ -98,7 +98,7 @@ private:
 	std::array<duration, 10> mLatency{}; 
 	UINT mLatencySampleIndex{ 0 };
 
-	TextBlock* mLatencyBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1000.f, 50.f, 1500.f, 100.f }, StringColor::White, "NotoSansKR") };
+	TextBlock* mLatencyBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 50.f, 1920.f, 100.f }, StringColor::BurlyWood, "NotoSansKR") };
 
 	std::unordered_map<NetworkObjectIdType, Player*> mPlayerIndexmap{};
 	std::array<Player, 5> mPlayers{ Player{}, };
