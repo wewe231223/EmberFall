@@ -93,3 +93,12 @@ void PlayerScript::UpdateViewList(const std::vector<NetworkObjectIdType>& inView
     mViewList = newViewList;
     mViewListLock.WriteUnlock();
 }
+
+void PlayerScript::Suicide() {
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    owner->mSpec.hp = 0.0f;
+}

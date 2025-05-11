@@ -104,14 +104,18 @@ std::shared_ptr<GameObject> Stage::GetEnv(NetworkObjectIdType id) {
 
 void Stage::StartStage(uint8_t gemCount) {
     mActive.exchange(true);
+#ifdef DEV_MODE
+    mObjectManager->Start(1);
+#else
     mObjectManager->Start(gemCount);
+#endif
 
     for (int i = 0; i < 200; ++i) {
         auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+    }
 
-        if (i < 10) {
-            auto item = mObjectManager->SpawnObject(Packets::EntityType_ITEM_POTION);
-        }
+    for (int i = 0; i < 10; ++i) {
+        auto item = mObjectManager->SpawnObject(Packets::EntityType_ITEM_POTION);
     }
 }
 

@@ -215,7 +215,6 @@ void GameObject::Update() {
 
 void GameObject::LateUpdate() {
     if (not mSpec.active) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Entity: {}, Update Failure", Packets::EnumNameEntityType(mSpec.entity));
         return;
     }
 

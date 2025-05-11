@@ -48,6 +48,10 @@ void BossPlayerScript::Update(const float deltaTime) {
         mSuperMode = !mSuperMode;
     }
 
+    if (mInput->IsDown(VK_F4)) {
+        Suicide();
+    }
+
     CheckAndJump(deltaTime);
     CheckAndMove(deltaTime);
 

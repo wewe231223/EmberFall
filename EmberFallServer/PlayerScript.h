@@ -18,6 +18,7 @@ public:
     void SetOwnerSession(std::shared_ptr<class GameSession> session);
 
     void UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeNPC, const std::vector<NetworkObjectIdType>& inViewRangePlayer);
+    void Suicide();
 
     virtual void Init() abstract;
 

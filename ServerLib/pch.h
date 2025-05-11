@@ -10,8 +10,15 @@
 
 #include <Windows.h>
 
-#define PRINT_DEBUG_LOG
+
+#define DEV_MODE // 디버그 모드 설정 여부
+//#undef DEV_MODE
+
+#ifdef DEV_MODE
+#define PRINT_DEBUG_LOG // 디버깅용 로그 출력여부 설정
 #undef PRINT_DEBUG_LOG
+#endif
+
 
 #undef max
 #undef min

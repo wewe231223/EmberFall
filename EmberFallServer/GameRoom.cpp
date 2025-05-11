@@ -215,11 +215,17 @@ void GameRoom::EndGameLoop() {
 }
 
 bool GameRoom::CheckAndStartGame() {
+#ifdef DEV_MODE
+    if (not IsEveryPlayerReady()) {
+        return false;
+    }
+#else
     const uint8_t expectedBossCnt = 1;
     const uint8_t minimumPlayerCount = 2;
     if (not (IsEveryPlayerReady() and minimumPlayerCount <= mPlayerCount and expectedBossCnt == mBossPlayerCount)) {
         return false;
     }
+#endif
 
     mGameRoomState = GameRoomState::GAME_ROOM_STATE_TRANSITION;
 
@@ -589,6 +595,13 @@ void GameCondition::InitGameCondition(uint8_t humanCount, uint8_t bossCount, uin
 
 std::pair<bool, Packets::PlayerRole> GameCondition::CheckGameEnd() {
     auto pair = std::make_pair(false, Packets::PlayerRole_HUMAN);
+#ifdef DEV_MODE
+    if (0 == mAliveHumanCount + mBossCount) {
+        pair.first = true;
+        return pair;
+    }
+
+#else
     if (0 == mBossCount) {
         pair.first = true;
         return pair;
@@ -599,6 +612,7 @@ std::pair<bool, Packets::PlayerRole> GameCondition::CheckGameEnd() {
         pair.second = Packets::PlayerRole_BOSS;
         return pair;
     }
+#endif
 
     return pair;
 }

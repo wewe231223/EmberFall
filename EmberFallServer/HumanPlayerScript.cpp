@@ -62,6 +62,10 @@ void HumanPlayerScript::Update(const float deltaTime) {
         mSuperMode = !mSuperMode;
     }
 
+    if (mInput->IsDown(VK_F4)) {
+        Suicide();
+    }
+
     // Item
     if (mInput->IsDown(GameProtocol::Key::KEY_USE_ITEM)) {
         UseItem();
