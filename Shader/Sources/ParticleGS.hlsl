@@ -48,7 +48,7 @@ struct ParticleVertex
     float halfWidth : WIDTH;
     
     float3 direction : DIRECTION;
-    float velocity : VELOCITY;
+    float3 velocity : VELOCITY;
     
     float totalLifetime : TOTALLIFETIME;
     float lifetime : LIFETIME;
@@ -66,7 +66,7 @@ struct ParticleVertex
     uint emitIndex : EMITINDEX;
 
     float mass : MASS;
-    float drag : DRAG;
+    float3 drag : DRAG;
     float opacity : OPACITY;
 };
 

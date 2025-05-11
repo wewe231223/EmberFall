@@ -145,7 +145,7 @@ struct ParticleVertex {
 #pragma endregion Sprite
 
     DirectX::XMFLOAT3 direction{ 0.f, 0.f, 0.f };
-    float velocity{ 0.f };
+    DirectX::XMFLOAT3 velocity{ 0.f, 0.f, 0.f };
 
     float totalLifeTime{ 0.f };
     float lifeTime{ 0.f };
@@ -156,7 +156,7 @@ struct ParticleVertex {
     UINT emitIndex{ std::numeric_limits<UINT>::max() };
 
     float mass{ 1.f };           
-    float drag{ 0.1f };          
+    DirectX::XMFLOAT3 drag{ 0.f, 0.f, 0.f };
     float opacity{ 1.f };        
 };
 

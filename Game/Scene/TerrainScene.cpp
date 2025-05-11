@@ -138,9 +138,9 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mMyPlayer->SetAnimation(data->animation()); 
 
 				mHealthBarUI.SetHealth(data->hp()); 
-				mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 
-				//mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
+				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
 				mCameraMode->Enter();
 			}
 			else {
@@ -284,9 +284,9 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					v.material = 0;
 					v.spritable = false;
 					v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
-					v.velocity = 0.f;
-					v.totalLifeTime = 0.1f;
-					v.lifeTime = 0.1f;
+					v.velocity = { 0.f, 0.f, 0.f };
+					v.totalLifeTime = 0.3f;
+					v.lifeTime = 0.5f;
 					v.type = ParticleType_emit;
 					v.emitType = ParticleType_ember;
 					v.remainEmit = 100000;

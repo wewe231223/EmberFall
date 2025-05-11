@@ -40,7 +40,7 @@ struct ParticleVertex
     float halfWidth : WIDTH;
     
     float3 direction : DIRECTION;
-    float velocity : VELOCITY;
+    float3 velocity : VELOCITY;
     
     float totalLifetime : TOTALLIFETIME;
     float lifetime : LIFETIME;
@@ -58,7 +58,7 @@ struct ParticleVertex
     uint emitIndex : EMITINDEX;
 
     float mass : MASS;
-    float drag : DRAG;
+    float3 drag : DRAG;
     float opacity : OPACITY;
 };
 
@@ -68,7 +68,7 @@ struct ParticleSO_GS_IN
     float halfWidth : WIDTH;
     
     float3 direction : DIRECTION;
-    float velocity : VELOCITY;
+    float3 velocity : VELOCITY;
     
     float totalLifetime : TOTALLIFETIME;
     float lifetime : LIFETIME;
@@ -86,7 +86,7 @@ struct ParticleSO_GS_IN
     uint emitIndex : EMITINDEX;
 
     float mass : MASS;
-    float drag : DRAG;
+    float3 drag : DRAG;
     float opacity : OPACITY;
     
     uint vertexID : VERTEXID;
@@ -152,14 +152,19 @@ float GetHeight(float x, float z)
 
 //----------------------------------------------------------[ Physics Helpers ]----------------------------------------------------------
 
-void Gravity(inout ParticleVertex v)
+void ApplyPhysics(inout ParticleVertex v)
 {
     float3 g = float3(0, -9.8f, 0);
-    float3 vel = v.direction * v.velocity + g * deltaTime;
-    v.direction = normalize(vel);
-    v.velocity = length(vel);
-    v.position += vel * deltaTime;
+    float3 dragForce = -v.drag * v.velocity;
+
+    float3 acceleration = (g + dragForce) / max(v.mass, 0.0001f);
+    v.velocity += acceleration * deltaTime;
+
+    v.position += v.velocity * deltaTime;
+
+    v.direction = normalize(v.velocity); // optional
 }
+
 
 void OnTerrain(inout ParticleVertex v)
 {
@@ -180,29 +185,56 @@ void AppendVertex(inout ParticleVertex v, inout PointStream<ParticleVertex> stre
 
 void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
 {
-    
-
     emitter.position = EmitPosition[emitter.emitIndex].position;
-    
-    
-    // 이 위치로 이동
+
     if (emitter.lifetime <= 0.f)
     {
         ParticleVertex p = (ParticleVertex) 0;
 
-        // 초기 방향: 위쪽 중심으로 약간의 흔들림
-        float3 up = float3(0, 1.0f, 0);
-        float3 jitter = float3(
-            GenerateRandomInRange(-0.3f, 0.3f, vertexID * 13),
-            GenerateRandomInRange(0.1f, 0.2f, vertexID * 19), // Y 흔들림도 추가
-            GenerateRandomInRange(-0.3f, 0.3f, vertexID * 17)
+        // 생성 위치: 지면에서 약간 위로 띄움
+        float minHeight = 1.0f;
+        float maxHeight = 4.0f;
+        p.position = emitter.position + float3(0, GenerateRandomInRange(minHeight, maxHeight, vertexID * 101), 0);
+
+        // 방향 (시각용): 수평 중심 + 약간 위로
+        float3 spreadDir = float3(
+            GenerateRandomInRange(-1.f, 1.f, vertexID * 13),
+            GenerateRandomInRange(0.1f, 0.4f, vertexID * 19),
+            GenerateRandomInRange(-1.f, 1.f, vertexID * 17)
         );
-        p.direction = normalize(up + jitter);
-        
+        p.direction = normalize(spreadDir);
 
-        p.velocity = GenerateRandomInRange(10.f, 14.f, vertexID);
+        // 수명 결정
+        float baseLife = 5.0f;
+        float growth = saturate(globalTime / 120.f);
+        p.totalLifetime = GenerateRandomInRange(baseLife, baseLife + 3.0f + 60.0f * growth, vertexID);
+        p.lifetime = p.totalLifetime;
 
-        p.position = emitter.position;
+        // 수명 기반 보간 계수 (0~1)
+        float lifeFactor = saturate((p.totalLifetime - baseLife) / 60.f);
+
+        // 속도 설정: 수명이 길수록 천천히, 위로는 높게
+        float horizontalSpeed = lerp(5.f, 2.f, lifeFactor);
+        float verticalSpeed = lerp(1.5f, 4.0f, lifeFactor); // 오래 뜨도록 높게
+        p.velocity = float3(
+            GenerateRandomInRange(-horizontalSpeed, horizontalSpeed, vertexID * 13),
+            GenerateRandomInRange(1.5f, verticalSpeed, vertexID * 19), // Y 속도 강조
+            GenerateRandomInRange(-horizontalSpeed, horizontalSpeed, vertexID * 17)
+        );
+
+        // drag 설정: 수명이 길수록 → 수평 drag 줄이고, 수직 drag도 낮춤
+        float horizontalDrag = lerp(0.6f, 0.2f, lifeFactor);
+        float verticalDrag = lerp(1.2f, 0.3f, lifeFactor); // Y drag 줄여서 오래 부유
+
+        p.drag = float3(
+            GenerateRandomInRange(horizontalDrag * 0.8f, horizontalDrag * 1.2f, vertexID * 71),
+            GenerateRandomInRange(verticalDrag * 0.8f, verticalDrag * 1.2f, vertexID * 73),
+            GenerateRandomInRange(horizontalDrag * 0.8f, horizontalDrag * 1.2f, vertexID * 79)
+        );
+
+        p.mass = 10.0f; // 고정 질량
+
+        // 기타 속성 복사
         p.halfWidth = emitter.halfWidth;
         p.halfHeight = emitter.halfHeight;
         p.material = emitter.material;
@@ -210,25 +242,25 @@ void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout Point
         p.spriteFrameInRow = emitter.spriteFrameInRow;
         p.spriteFrameInCol = emitter.spriteFrameInCol;
         p.spriteDuration = emitter.spriteDuration;
-
-        p.totalLifetime = GenerateRandomInRange(3.f, 6.f, vertexID);
-        p.lifetime = p.totalLifetime;
+        p.opacity = 1.0f;
 
         p.type = ParticleType_ember;
         p.emitType = ParticleType_ember;
         p.remainEmit = 0;
         p.emitIndex = emitter.emitIndex;
 
-        emitter.lifetime = 0.5f;
+        // 에미터 재발사 대기시간
+        emitter.lifetime = emitter.totalLifetime;
         if (emitter.remainEmit > 0)
             emitter.remainEmit--;
 
         stream.Append(p);
     }
 
-    emitter.lifetime -= deltaTime; // ★ 이걸 넣어야 에미터가 시간이 흐르면서 다시 쏘게 됨
-    stream.Append(emitter); // ★ 최종적으로 감소된 emitter 를 Append
+    emitter.lifetime -= deltaTime;
+    stream.Append(emitter);
 }
+
 
 //----------------------------------------------------------[ Ember Particle Update ]----------------------------------------------------------
 
@@ -237,8 +269,10 @@ void EmberParticleUpdate(inout ParticleVertex v, inout PointStream<ParticleVerte
     if (v.lifetime >= 0.f)
     {
         ParticleVertex n = v;
-        Gravity(n);
-        OnTerrain(n);
+
+        ApplyPhysics(n); // 중력 + 공기저항
+        OnTerrain(n); // 지면 충돌 처리
+
         stream.Append(n);
     }
 }
@@ -265,6 +299,10 @@ ParticleSO_GS_IN ParticleSOPassVS(ParticleVertex inV, uint vid : SV_VertexID)
     o.remainEmit = inV.remainEmit;
     o.emitIndex = inV.emitIndex;
     o.vertexID = vid;
+    o.mass = inV.mass;
+    o.drag = inV.drag;
+    o.opacity = inV.opacity;
+    
     return o;
 }
 
@@ -290,6 +328,9 @@ void ParticleSOPassGS(point ParticleSO_GS_IN input[1], inout PointStream<Particl
     outP.emitType = input[0].emitType;
     outP.remainEmit = input[0].remainEmit;
     outP.emitIndex = input[0].emitIndex;
+    outP.mass = input[0].mass;
+    outP.drag = input[0].drag;
+    outP.opacity = input[0].opacity;
 
     if (outP.type == ParticleType_emit)
     {
