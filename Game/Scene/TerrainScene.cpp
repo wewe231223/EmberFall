@@ -138,9 +138,9 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mMyPlayer->SetAnimation(data->animation()); 
 
 				mHealthBarUI.SetHealth(data->hp()); 
-				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+				mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 
-				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
+				//mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
 				mCameraMode->Enter();
 			}
 			else {
@@ -274,6 +274,26 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextLoc->GetTransform().GetPosition().x, nextLoc->GetTransform().GetPosition().z);
 
 					nextLoc->SetEmpty(false);
+
+
+					ParticleVertex v{};
+
+					v.position = DirectX::XMFLOAT3(10.f, 10.f, 10.f);
+					v.halfheight = 0.5f;
+					v.halfWidth = 0.5f;
+					v.material = 0;
+					v.spritable = false;
+					v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+					v.velocity = 0.f;
+					v.totalLifeTime = 0.1f;
+					v.lifeTime = 0.1f;
+					v.type = ParticleType_emit;
+					v.emitType = ParticleType_ember;
+					v.remainEmit = 100000;
+					v.emitIndex = 0;
+
+					mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v); 
+
 
 				}
 				break;
@@ -639,33 +659,8 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 	mGameObjects.resize(MeshRenderManager::MAX_INSTANCE_COUNT<size_t>, GameObject{});
 	mItemObjects.resize(1024, GameObject{});
 
-	ParticleVertex v{};
-
-	v.position = DirectX::XMFLOAT3(10.f, 10.f, 10.f);
-	v.halfheight = 0.5f;
-	v.halfWidth = 0.5f;
-	v.material = 0;
-
-	v.spritable = false;
-
-	v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
-	v.velocity = 0.f;
-	v.totalLifeTime = 0.1f;
-	v.lifeTime = 0.1f;
-
-	v.type = ParticleType_emit;
-	v.emitType = ParticleType_ember;
-	v.remainEmit = 100000;
-	v.emitIndex = 0;
 
 
-	test = mRenderManager->GetParticleManager().CreateEmitParticle(commandList, v);
-
-	v.position = DirectX::XMFLOAT3(10.f, 20.f, 10.f);
-	test1 = mRenderManager->GetParticleManager().CreateEmitParticle(commandList, v);
-
-	v.position = DirectX::XMFLOAT3(10.f, 30.f, 10.f);
-	test2 = mRenderManager->GetParticleManager().CreateEmitParticle(commandList, v);
 
 	mInventoryUI.Init(mRenderManager->GetCanvas(),
 		mRenderManager->GetTextureManager().GetTexture("mid_dark_bar"),
@@ -856,11 +851,12 @@ void TerrainScene::Update() {
 		item.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(50.f) * Time.GetDeltaTime<float>(), 0.f);
 	}
 
-
-	// test.Get()->position = mMyPlayer->GetTransform().GetPosition(); 
-	test.Get()->position = mGameObjects[3].GetTransform().GetPosition();
-	test1.Get()->position = mGameObjects[4].GetTransform().GetPosition();
-	test2.Get()->position = mGameObjects[5].GetTransform().GetPosition();
+	for (auto& [id, particle] : mParticleMap) {
+		if (mGameObjectMap.contains(id)) {
+			particle.Get()->position = mGameObjectMap[id]->GetTransform().GetPosition();
+			particle.Get()->position.y += 0.5f; 
+		}
+	}
 
 	mInventoryUI.Update();
 	mHealthBarUI.Update();

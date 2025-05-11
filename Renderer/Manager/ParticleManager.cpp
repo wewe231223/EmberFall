@@ -45,7 +45,7 @@ void ParticleManager::SetTerrain(DefaultBufferGPUIterator terrainHeader, Default
 	mTerrainDataBuffer = terrainData;
 }
 
-Particle ParticleManager::CreateEmitParticle(ComPtr<ID3D12GraphicsCommandList> commandList, ParticleVertex& newParticle) {
+Particle ParticleManager::CreateEmitParticle(ParticleVertex& newParticle) {
 	newParticle.emitIndex = mNextEmitParticleIndex;
 	
 	std::memcpy(*mNewParticleUploadLoc, &newParticle, sizeof(ParticleVertex));

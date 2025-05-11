@@ -16,6 +16,7 @@
 #include "../UI/Inventory.h"
 #include "../UI/HealthBar.h"
 #include "../UI/Profile.h"
+#include "../External/Include/absl/container/flat_hash_map.h"
 
 class TerrainScene : public IScene {
 	using duration = std::chrono::milliseconds; 
@@ -78,15 +79,15 @@ private:
 private:
 	std::shared_ptr<RenderManager> mRenderManager{};
 
-	std::unordered_map<std::string, Collider> mColliderMap{};
-	std::unordered_map<std::string, std::unique_ptr<Mesh>> mMeshMap{};
-	std::unordered_map<std::string, std::unique_ptr<GraphicsShaderBase>> mShaderMap{};
+	absl::flat_hash_map<std::string, Collider> mColliderMap{};
+	absl::flat_hash_map<std::string, std::unique_ptr<Mesh>> mMeshMap{};
+	absl::flat_hash_map<std::string, std::unique_ptr<GraphicsShaderBase>> mShaderMap{};
 	std::unordered_map<std::string, AnimationLoader> mAnimationMap{};
 
 	Camera mCamera{};
 	std::unique_ptr<CameraMode> mCameraMode{ nullptr };
 
-	std::unordered_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
+	absl::flat_hash_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
 	std::vector<GameObject> mGameObjects{};
 	std::vector<GameObject> mItemObjects{}; 
 
@@ -100,12 +101,14 @@ private:
 
 	TextBlock* mLatencyBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 50.f, 1920.f, 100.f }, StringColor::BurlyWood, "NotoSansKR") };
 
-	std::unordered_map<NetworkObjectIdType, Player*> mPlayerIndexmap{};
+	absl::flat_hash_map<NetworkObjectIdType, Player*> mPlayerIndexmap{};
 	std::array<Player, 5> mPlayers{ Player{}, };
 	
 	Player* mMyPlayer{ nullptr };
 
-	std::unordered_map<std::string, EquipmentObject> mEquipments{}; 
+	absl::flat_hash_map<std::string, EquipmentObject> mEquipments{};
+
+	absl::flat_hash_map<NetworkObjectIdType, Particle> mParticleMap{};
 
 	AnimatorGraph::BoneMaskAnimationGraphController mBaseAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mArcherAnimationController{};
@@ -124,9 +127,7 @@ private:
 	DefaultBuffer mTerrainHeaderBuffer{};
 	DefaultBuffer mTerrainDataBuffer{};
 
-	Particle test{};
-	Particle test1{};
-	Particle test2{}; 
+	
 
 	IntervalTimer mIntervalTimer{};
 

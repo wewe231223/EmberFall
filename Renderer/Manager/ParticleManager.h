@@ -22,7 +22,7 @@ public:
 public:
 	void SetTerrain(DefaultBufferGPUIterator terrainHeader, DefaultBufferGPUIterator terrainData); 
 
-	Particle CreateEmitParticle(ComPtr<ID3D12GraphicsCommandList> commandList, ParticleVertex& newParticle); 
+	Particle CreateEmitParticle(ParticleVertex& newParticle); 
 
 	void RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList);
 	void RenderGS(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator cameraBuffer, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS material);

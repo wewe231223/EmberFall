@@ -47,7 +47,7 @@ extern ShaderFileManager gShaderManager;
 class GraphicsShaderBase {
 protected:
 	struct InputLayout {
-		std::array<D3D12_INPUT_ELEMENT_DESC, 16> InputElements{};
+		std::array<D3D12_INPUT_ELEMENT_DESC, 32> InputElements{};
 		UINT ElementCount{ 0 };
 	};
 

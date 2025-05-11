@@ -1,24 +1,24 @@
-#define ParticleType_emit 1
-#define ParticleType_shell 2
-#define ParticleType_ember 3
+#define ParticleType_emit   1
+#define ParticleType_shell  2
+#define ParticleType_ember  3
 
-#define ember_LifeTime 2.f
+#define ember_LifeTime      2.f
 
-#define RANDOM_BUFFER_SIZE 4096
+#define RANDOM_BUFFER_SIZE  4096
+#define NULL_INDEX 0xFFFFFFFF
+
 cbuffer GlobalCB : register(b0)
 {
     float globalTime; // 초 단위 
     float deltaTime; // 초 단위 
 }
 
-
 StructuredBuffer<float> RandomBuffer : register(t0);
-
 
 struct EmitParticleContext
 {
     float3 position;
-    uint flag; 
+    uint flag;
 };
 
 StructuredBuffer<EmitParticleContext> EmitPosition : register(t1);
@@ -38,325 +38,265 @@ struct ParticleVertex
 {
     float3 position : POSITION;
     float halfWidth : WIDTH;
+    
+    float3 direction : DIRECTION;
+    float velocity : VELOCITY;
+    
+    float totalLifetime : TOTALLIFETIME;
+    float lifetime : LIFETIME;
     float halfHeight : HEIGHT;
     uint material : MATERIAL;
-    
+
     uint spritable : SPRITABLE;
     uint spriteFrameInRow : SPRITEFRAMEINROW;
     uint spriteFrameInCol : SPRITEFRAMEINCOL;
     float spriteDuration : SPRITEDURATION;
-    
-    float3 direction : DIRECTION;
-    float velocity : VELOCITY;
-    float totalLifetime : TOTALLIFETIME;
-    float lifetime : LIFETIME;
-    
+
     uint type : PARTICLETYPE;
     uint emitType : EMITTYPE;
     uint remainEmit : REMAINEMIT;
     uint emitIndex : EMITINDEX;
+
+    float mass : MASS;
+    float drag : DRAG;
+    float opacity : OPACITY;
 };
 
 struct ParticleSO_GS_IN
 {
     float3 position : POSITION;
     float halfWidth : WIDTH;
+    
+    float3 direction : DIRECTION;
+    float velocity : VELOCITY;
+    
+    float totalLifetime : TOTALLIFETIME;
+    float lifetime : LIFETIME;
     float halfHeight : HEIGHT;
     uint material : MATERIAL;
-    
+
     uint spritable : SPRITABLE;
     uint spriteFrameInRow : SPRITEFRAMEINROW;
     uint spriteFrameInCol : SPRITEFRAMEINCOL;
     float spriteDuration : SPRITEDURATION;
-    
-    float3 direction : DIRECTION;
-    float velocity : VELOCITY;
-    float totalLifetime : TOTALLIFETIME;
-    float lifetime : LIFETIME;
-    
+
     uint type : PARTICLETYPE;
     uint emitType : EMITTYPE;
     uint remainEmit : REMAINEMIT;
     uint emitIndex : EMITINDEX;
+
+    float mass : MASS;
+    float drag : DRAG;
+    float opacity : OPACITY;
     
     uint vertexID : VERTEXID;
 };
 
-
 //----------------------------------------------------------[ Random ]----------------------------------------------------------
-// 해시 함수
+
 uint FastHash(uint seed)
 {
-    uint hash = seed * 1665u + 101423u; // 선형 합동 생성기
-    return hash ^ (hash >> 16); // 비트 셔플
+    uint hash = seed * 1665u + 101423u;
+    return hash ^ (hash >> 16);
 }
 
-// 랜덤 값 추출 함수
 float FetchRandomValue(uint index)
 {
-    return RandomBuffer[index % 4096]; // 4096으로 나눠 순환
+    return RandomBuffer[index % RANDOM_BUFFER_SIZE];
 }
 
-// 난수 생성
 float GenerateRandom(uint seed)
 {
-    // 시간을 밀리초 단위로 변환하고 정수화
     uint timeSeed = uint(globalTime * 1000.f);
- //   uint deltaSeed = uint(deltaTime * 1000.f);
-
-    // 시드 결합 후 해시 생성
     uint combinedSeed = FastHash(seed) ^ FastHash(timeSeed);
-    return FetchRandomValue(combinedSeed); // [0, 1] 범위의 난수 반환
+    return FetchRandomValue(combinedSeed);
 }
 
-// 특정 범위 내 난수 생성
 float GenerateRandomInRange(float min, float max, uint seed)
 {
-    float randomValue = GenerateRandom(seed);
-    return lerp(min, max, randomValue); // [min, max] 범위로 매핑
+    float r = GenerateRandom(seed);
+    return lerp(min, max, r);
 }
 
-// 랜덤 방향 생성
 float3 GenerateRandomDirection(uint seed)
 {
-    // 두 개의 난수 값 생성
-    float rand1 = GenerateRandom(seed); // 첫 번째 난수
-    float rand2 = GenerateRandom(seed + 1); // 두 번째 난수
-
-    // [-1, 1] 범위로 변환
-    rand1 = rand1 * 2.0 - 1.0;
-    rand2 = rand2 * 2.0 - 1.0;
-
-    // 랜덤 방향 계산
-    float z = rand1; // -1에서 1까지의 Z 축 값
-    float xyMagnitude = sqrt(max(1.0 - z * z, 0.0)); // XY 평면상의 반지름
-
-    // 랜덤 각도 (theta)
-    float theta = rand2 * 3.14159; // [0, π] 범위
-
-    float3 direction = float3(
-        xyMagnitude * cos(theta), // X 값
-        xyMagnitude * sin(theta), // Y 값
-        z // Z 값
-    );
-
-    return normalize(direction); // 단위 벡터로 정규화
+    float rand1 = GenerateRandom(seed) * 2.0 - 1.0;
+    float rand2 = GenerateRandom(seed + 1) * 2.0 - 1.0;
+    float z = rand1;
+    float xy = sqrt(max(1.0 - z * z, 0.0));
+    float theta = rand2 * 3.14159;
+    float3 dir = float3(xy * cos(theta), xy * sin(theta), z);
+    return normalize(dir);
 }
-//----------------------------------------------------------[ Random ]----------------------------------------------------------
+
+//----------------------------------------------------------[ Terrain Height ]----------------------------------------------------------
 
 float GetHeight(float x, float z)
 {
-    // 로컬 좌표 계산
     float localX = x - minX;
     float localZ = z - minZ;
-
-    // 그리드상의 부동소수점 좌표
     float fcol = localX / gridSpacing;
     float frow = localZ / gridSpacing;
-
-    // 정수 인덱스는 소수점 부분을 버림(floor) 처리
-    int col = (int) fcol;
-    int row = (int) frow;
-
-    // 인덱스를 범위 내로 제한 (분기 없는 clamp 함수 사용)
-    col = clamp(col, 0, globalWidth - 2);
-    row = clamp(row, 0, globalHeight - 2);
-
-    // 보간 계수 계산
+    int col = clamp((int) fcol, 0, globalWidth - 2);
+    int row = clamp((int) frow, 0, globalHeight - 2);
     float t = fcol - col;
     float u = frow - row;
-
-    // 인덱스 계산
-    int index00 = row * globalWidth + col;
-    int index10 = index00 + 1;
-    int index01 = index00 + globalWidth;
-    int index11 = index01 + 1;
-
-    // x 방향 선형 보간
-    float y0 = lerp(TerrainVertices[index00].y, TerrainVertices[index10].y, t);
-    float y1 = lerp(TerrainVertices[index01].y, TerrainVertices[index11].y, t);
-
-    // z 방향 보간하여 최종 높이 산출
+    int idx00 = row * globalWidth + col;
+    int idx10 = idx00 + 1;
+    int idx01 = idx00 + globalWidth;
+    int idx11 = idx01 + 1;
+    float y0 = lerp(TerrainVertices[idx00].y, TerrainVertices[idx10].y, t);
+    float y1 = lerp(TerrainVertices[idx01].y, TerrainVertices[idx11].y, t);
     return lerp(y0, y1, u);
 }
 
-void Gravity(inout ParticleVertex vertex)
+//----------------------------------------------------------[ Physics Helpers ]----------------------------------------------------------
+
+void Gravity(inout ParticleVertex v)
 {
-    float3 gravity = float3(0.f, -9.8f, 0.f);
-    float3 velocity = vertex.direction * vertex.velocity;
-    velocity += gravity * deltaTime;
-    vertex.direction = normalize(velocity);
-    vertex.velocity = length(velocity);
-    vertex.position += velocity * deltaTime;
+    float3 g = float3(0, -9.8f, 0);
+    float3 vel = v.direction * v.velocity + g * deltaTime;
+    v.direction = normalize(vel);
+    v.velocity = length(vel);
+    v.position += vel * deltaTime;
 }
 
-void OnTerrain(inout ParticleVertex vertex) 
+void OnTerrain(inout ParticleVertex v)
 {
-    float h = GetHeight(vertex.position.x, vertex.position.z);
-        
-    if (vertex.position.y < h + vertex.halfHeight)
+    float h = GetHeight(v.position.x, v.position.z);
+    if (v.position.y < h + v.halfHeight)
     {
-        vertex.position.y = h + vertex.halfHeight;
-        vertex.velocity = 0.f;
+        v.position.y = h + v.halfHeight;
+        v.velocity = 0;
     }
 }
 
+//----------------------------------------------------------[ Emit Particle Update ]----------------------------------------------------------
 
-void FoggyEmberParticleUpdate(inout ParticleVertex vertex, inout PointStream<ParticleVertex> stream, uint vertexID)
+void AppendVertex(inout ParticleVertex v, inout PointStream<ParticleVertex> stream)
 {
-    if (vertex.lifetime >= 0.f)
+    stream.Append(v);
+}
+
+void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
+{
+    
+
+    emitter.position = EmitPosition[emitter.emitIndex].position;
+    
+    
+    // 이 위치로 이동
+    if (emitter.lifetime <= 0.f)
     {
-        ParticleVertex n = vertex;
+        ParticleVertex p = (ParticleVertex) 0;
 
-        float riseSpeed = 0.05f;
- 
-        float3 horizontalDir = normalize(float3(n.direction.x, 0.0f, n.direction.z));
-        float3 velocity = horizontalDir * n.velocity;
-
-        float ageFactor = (n.totalLifetime - n.lifetime) / n.totalLifetime; // 0~1 범위
-        float expansionMultiplier = 1.0f + 2.0f * ageFactor;
-        velocity.x *= expansionMultiplier;
-        velocity.z *= expansionMultiplier;
-
-        float randomX = GenerateRandomInRange(-0.1f, 0.1f, vertexID * 13);
-        float randomZ = GenerateRandomInRange(-0.1f, 0.1f, vertexID * 17);
-        velocity.x += randomX;
-        velocity.z += randomZ;
+        // 초기 방향: 위쪽 중심으로 약간의 흔들림
+        float3 up = float3(0, 1.0f, 0);
+        float3 jitter = float3(
+            GenerateRandomInRange(-0.3f, 0.3f, vertexID * 13),
+            GenerateRandomInRange(0.1f, 0.2f, vertexID * 19), // Y 흔들림도 추가
+            GenerateRandomInRange(-0.3f, 0.3f, vertexID * 17)
+        );
+        p.direction = normalize(up + jitter);
         
 
-        velocity.y = riseSpeed;
-        
- 
-        n.position += velocity * deltaTime;
- 
-        n.velocity *= 0.995f;
-        
-        OnTerrain(n);
-        
-        stream.Append(n);
+        p.velocity = GenerateRandomInRange(10.f, 14.f, vertexID);
+
+        p.position = emitter.position;
+        p.halfWidth = emitter.halfWidth;
+        p.halfHeight = emitter.halfHeight;
+        p.material = emitter.material;
+        p.spritable = emitter.spritable;
+        p.spriteFrameInRow = emitter.spriteFrameInRow;
+        p.spriteFrameInCol = emitter.spriteFrameInCol;
+        p.spriteDuration = emitter.spriteDuration;
+
+        p.totalLifetime = GenerateRandomInRange(3.f, 6.f, vertexID);
+        p.lifetime = p.totalLifetime;
+
+        p.type = ParticleType_ember;
+        p.emitType = ParticleType_ember;
+        p.remainEmit = 0;
+        p.emitIndex = emitter.emitIndex;
+
+        emitter.lifetime = 0.5f;
+        if (emitter.remainEmit > 0)
+            emitter.remainEmit--;
+
+        stream.Append(p);
     }
+
+    emitter.lifetime -= deltaTime; // ★ 이걸 넣어야 에미터가 시간이 흐르면서 다시 쏘게 됨
+    stream.Append(emitter); // ★ 최종적으로 감소된 emitter 를 Append
 }
 
+//----------------------------------------------------------[ Ember Particle Update ]----------------------------------------------------------
 
-ParticleSO_GS_IN ParticleSOPassVS(ParticleVertex input, uint vertedID : SV_VertexID)
+void EmberParticleUpdate(inout ParticleVertex v, inout PointStream<ParticleVertex> stream)
 {
-    ParticleSO_GS_IN output = (ParticleSO_GS_IN) 0;
-    
-    output.position = input.position;
-    output.halfWidth = input.halfWidth;
-    output.halfHeight = input.halfHeight;
-    output.material = input.material;
-    output.spritable = input.spritable;
-    output.spriteFrameInRow = input.spriteFrameInRow;
-    output.spriteFrameInCol = input.spriteFrameInCol;
-    output.spriteDuration = input.totalLifetime;
-    output.direction = input.direction;
-    output.velocity = input.velocity;
-    output.totalLifetime = input.totalLifetime;
-    output.lifetime = input.lifetime;
-    output.type = input.type;
-    output.emitType = input.emitType;
-    output.remainEmit = input.remainEmit;
-    output.emitIndex = input.emitIndex;
-    output.vertexID = vertedID;
-    
-    return output;
-}
-
-void AppendVertex(inout ParticleVertex vertex, inout PointStream<ParticleVertex> stream)
-{
-    stream.Append(vertex);
-}
-
-void EmitParticleUpdate(inout ParticleVertex vertex, uint vertexID, inout PointStream<ParticleVertex> stream)
-{
-    vertex.position = EmitPosition[vertex.emitIndex].position;
-    
-    ParticleVertex newParticle = (ParticleVertex) 0;
-    if (vertex.lifetime <= 0.f)
+    if (v.lifetime >= 0.f)
     {
-        newParticle.position = vertex.position;
-        newParticle.halfWidth = vertex.halfWidth;
-        newParticle.halfHeight = vertex.halfHeight;
-        newParticle.material = vertex.material;
-        newParticle.spritable = vertex.spritable;
-        newParticle.spriteFrameInRow = vertex.spriteFrameInRow;
-        newParticle.spriteFrameInCol = vertex.spriteFrameInCol;
-        newParticle.spriteDuration = vertex.spriteDuration;
-        
-        // 초기 방향은 랜덤하되, y 성분은 아주 작게 설정하여 거의 수평으로 확산되도록 함
-        newParticle.direction = GenerateRandomDirection(vertexID);
-        newParticle.direction.y = 0.05f; // 거의 수평, 약간의 상승
-        newParticle.direction = normalize(newParticle.direction);
-        
-        // 느린 속도로 설정하여 안개처럼 확산 (예: 1~3)
-        newParticle.velocity = GenerateRandomInRange(1.f, 3.f, vertexID);
-        // 긴 수명 (예: 10~15초)으로 천천히 퍼지도록 함
-        newParticle.totalLifetime = GenerateRandomInRange(10.f, 15.f, vertexID);
-        newParticle.lifetime = newParticle.totalLifetime;
-        newParticle.type = ParticleType_ember; // Ember 타입으로 전환하여 안개 효과 적용
-        newParticle.emitType = ParticleType_ember;
-        newParticle.remainEmit = 0;
-        
-        // Emit 파티클은 주기적으로 발산 (0.5초 간격)
-        vertex.lifetime = 0.5f;
-        if (vertex.remainEmit > 0)
-            vertex.remainEmit--;
-        
-        AppendVertex(newParticle, stream);
-    }
-   
-    AppendVertex(vertex, stream);
-}
-
-void EmberParticleUpdate(inout ParticleVertex vertex, inout PointStream<ParticleVertex> stream)
-{
-    if (vertex.lifetime >= 0.f)
-    {
-        ParticleVertex n = vertex; 
-        
+        ParticleVertex n = v;
         Gravity(n);
-        
-        float h = GetHeight(n.position.x, n.position.z);
-        
-        if (n.position.y < h + n.halfHeight)
-        {
-            n.position.y = h + n.halfHeight;
-            n.velocity = 0.f;
-        }
-        
+        OnTerrain(n);
         stream.Append(n);
     }
 }
 
+//----------------------------------------------------------[ Stream-Out VS ]----------------------------------------------------------
+
+ParticleSO_GS_IN ParticleSOPassVS(ParticleVertex inV, uint vid : SV_VertexID)
+{
+    ParticleSO_GS_IN o = (ParticleSO_GS_IN) 0;
+    o.position = inV.position;
+    o.halfWidth = inV.halfWidth;
+    o.halfHeight = inV.halfHeight;
+    o.material = inV.material;
+    o.spritable = inV.spritable;
+    o.spriteFrameInRow = inV.spriteFrameInRow;
+    o.spriteFrameInCol = inV.spriteFrameInCol;
+    o.spriteDuration = inV.totalLifetime;
+    o.direction = inV.direction;
+    o.velocity = inV.velocity;
+    o.totalLifetime = inV.totalLifetime;
+    o.lifetime = inV.lifetime;
+    o.type = inV.type;
+    o.emitType = inV.emitType;
+    o.remainEmit = inV.remainEmit;
+    o.emitIndex = inV.emitIndex;
+    o.vertexID = vid;
+    return o;
+}
+
+//----------------------------------------------------------[ Stream-Out GS ]----------------------------------------------------------
 
 [maxvertexcount(16)]
 void ParticleSOPassGS(point ParticleSO_GS_IN input[1], inout PointStream<ParticleVertex> output)
 {
-    ParticleVertex outPoint = (ParticleVertex) 0;
-    
-    outPoint.position = input[0].position;
-    
-    outPoint.halfWidth = input[0].halfWidth;
-    outPoint.halfHeight = input[0].halfHeight;
-    outPoint.material = input[0].material;
-    outPoint.spritable = input[0].spritable;
-    outPoint.spriteFrameInRow = input[0].spriteFrameInRow;
-    outPoint.spriteFrameInCol = input[0].spriteFrameInCol;
-    outPoint.spriteDuration = input[0].spriteDuration;
-    outPoint.direction = input[0].direction;
-    outPoint.velocity = input[0].velocity;
-    outPoint.totalLifetime = input[0].totalLifetime;
-    outPoint.lifetime = input[0].lifetime - deltaTime;
-    outPoint.type = input[0].type;
-    outPoint.emitType = input[0].emitType;
-    outPoint.remainEmit = input[0].remainEmit;
-    outPoint.emitIndex = input[0].emitIndex;
-   
-    
-    
-    if (outPoint.type == ParticleType_emit)
-        EmitParticleUpdate(outPoint, input[0].vertexID, output);
-    else if (outPoint.type == ParticleType_ember)
-        FoggyEmberParticleUpdate(outPoint, output, input[0].vertexID);
+    ParticleVertex outP = (ParticleVertex) 0;
+    outP.position = input[0].position;
+    outP.halfWidth = input[0].halfWidth;
+    outP.halfHeight = input[0].halfHeight;
+    outP.material = input[0].material;
+    outP.spritable = input[0].spritable;
+    outP.spriteFrameInRow = input[0].spriteFrameInRow;
+    outP.spriteFrameInCol = input[0].spriteFrameInCol;
+    outP.spriteDuration = input[0].spriteDuration;
+    outP.direction = input[0].direction;
+    outP.velocity = input[0].velocity;
+    outP.totalLifetime = input[0].totalLifetime;
+    outP.lifetime = input[0].lifetime - deltaTime;
+    outP.type = input[0].type;
+    outP.emitType = input[0].emitType;
+    outP.remainEmit = input[0].remainEmit;
+    outP.emitIndex = input[0].emitIndex;
+
+    if (outP.type == ParticleType_emit)
+    {
+        EmitParticleUpdate(outP, input[0].vertexID, output);
+    }
+    else if (outP.type == ParticleType_ember)
+    {
+        EmberParticleUpdate(outP, output);
+    }
 }

@@ -1098,7 +1098,11 @@ GraphicsShaderBase::InputLayout ParticleSOShader::CreateInputLayout() {
 	result.InputElements[14] = { "REMAINEMIT",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	result.InputElements[15] = { "EMITINDEX",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
-	result.ElementCount = 16;
+	result.InputElements[16] = { "MASS",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[17] = { "DRAG",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[18] = { "OPACITY",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.ElementCount = 19;
 
 	return result;
 }
@@ -1195,35 +1199,36 @@ D3D12_PRIMITIVE_TOPOLOGY_TYPE ParticleSOShader::CreatePrimitiveTopologyType() {
 GraphicsShaderBase::StreamOutputState ParticleSOShader::CreateStreamOutputState() {
 	StreamOutputState result{};
 
-	result.SODeclaration[0]		= { 0, "POSITION",			0, 0, 3, 0 };
-	result.SODeclaration[1]		= { 0, "WIDTH",				0, 0, 1, 0 };
-	result.SODeclaration[2]		= { 0, "HEIGHT",			0, 0, 1, 0 };
-	result.SODeclaration[3]		= { 0, "MATERIAL",			0, 0, 1, 0 };
+	result.SODeclaration[0] = { 0, "POSITION",			0, 0, 3, 0 };
+	result.SODeclaration[1] = { 0, "WIDTH",				0, 0, 1, 0 };
+	result.SODeclaration[2] = { 0, "HEIGHT",			0, 0, 1, 0 };
+	result.SODeclaration[3] = { 0, "MATERIAL",			0, 0, 1, 0 };
 
-	result.SODeclaration[4]		= { 0, "SPRITABLE",			0, 0, 1, 0 };
-	result.SODeclaration[5]		= { 0, "SPRITEFRAMEINROW",	0, 0, 1, 0 };
-	result.SODeclaration[6]		= { 0, "SPRITEFRAMEINCOL",	0, 0, 1, 0 };
-	result.SODeclaration[7]		= { 0, "SPRITEDURATION",	0, 0, 1, 0 };
+	result.SODeclaration[4] = { 0, "SPRITABLE",			0, 0, 1, 0 };
+	result.SODeclaration[5] = { 0, "SPRITEFRAMEINROW",	0, 0, 1, 0 };
+	result.SODeclaration[6] = { 0, "SPRITEFRAMEINCOL",	0, 0, 1, 0 };
+	result.SODeclaration[7] = { 0, "SPRITEDURATION",	0, 0, 1, 0 };
 
-	result.SODeclaration[8]		= { 0, "DIRECTION",			0, 0, 3, 0 };
-	result.SODeclaration[9]		= { 0, "VELOCITY",			0, 0, 1, 0 };
-	result.SODeclaration[10]	= { 0, "TOTALLIFETIME",		0, 0, 1, 0 };
-	result.SODeclaration[11]	= { 0, "LIFETIME",			0, 0, 1, 0 };
+	result.SODeclaration[8] = { 0, "DIRECTION",			0, 0, 3, 0 };
+	result.SODeclaration[9] = { 0, "VELOCITY",			0, 0, 1, 0 };
+	result.SODeclaration[10] = { 0, "TOTALLIFETIME",	0, 0, 1, 0 };
+	result.SODeclaration[11] = { 0, "LIFETIME",			0, 0, 1, 0 };
 
-	result.SODeclaration[12]	= { 0, "PARTICLETYPE",		0, 0, 1, 0 };
-	result.SODeclaration[13]	= { 0, "EMITTYPE",			0, 0, 1, 0 };
-	result.SODeclaration[14]	= { 0, "REMAINEMIT",		0, 0, 1, 0 };
-	result.SODeclaration[15]	= { 0, "EMITINDEX",			0, 0, 1, 0 };
+	result.SODeclaration[12] = { 0, "PARTICLETYPE",		0, 0, 1, 0 };
+	result.SODeclaration[13] = { 0, "EMITTYPE",			0, 0, 1, 0 };
+	result.SODeclaration[14] = { 0, "REMAINEMIT",		0, 0, 1, 0 };
+	result.SODeclaration[15] = { 0, "EMITINDEX",		0, 0, 1, 0 };
 
-	result.SODeclarationCount = 16;
+	result.SODeclaration[16] = { 0, "MASS",				0, 0, 1, 0 };
+	result.SODeclaration[17] = { 0, "DRAG",				0, 0, 1, 0 };
+	result.SODeclaration[18] = { 0, "OPACITY",			0, 0, 1, 0 };
 
+	result.SODeclarationCount = 19;
 	result.BufferStrides[0] = sizeof(ParticleVertex);
+	result.BufferCount = 1;
+	result.RasterizedStream = D3D12_SO_NO_RASTERIZED_STREAM;
 
-	result.BufferCount = 1; 
-
-	result.RasterizedStream = D3D12_SO_NO_RASTERIZED_STREAM; 
-
-	return result; 
+	return result;
 }
 
 D3D12_SHADER_BYTECODE ParticleSOShader::CreateVertexShader() {
@@ -1280,7 +1285,11 @@ GraphicsShaderBase::InputLayout ParticleGSShader::CreateInputLayout() {
 	result.InputElements[14] = { "REMAINEMIT",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	result.InputElements[15] = { "EMITINDEX",		0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
-	result.ElementCount = 16;
+	result.InputElements[16] = { "MASS",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[17] = { "DRAG",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[18] = { "OPACITY",			0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	result.ElementCount = 19;
 
 	return result;
 }

@@ -132,26 +132,32 @@ enum PlayerRole : BYTE {
 // 이 외의 계산 과정은 동일. 
 
 struct ParticleVertex {
-	DirectX::XMFLOAT3 position{ 0.f,0.f,0.f };
-	float halfWidth{ 0.f };
-	float halfheight{ 0.f };
-	UINT material{};
-#pragma region Sprite 
-	UINT spritable{ 0 };
-	UINT spriteFrameInRow{ 0 };
-	UINT spriteFrameInCol{ 0 };
-	float spriteDuration{ 0 };
-#pragma endregion Sprite 
-	DirectX::XMFLOAT3 direction{ 0.f,0.f,0.f };
+    DirectX::XMFLOAT3 position{ 0.f, 0.f, 0.f };
+    float halfWidth{ 0.f };
+    float halfheight{ 0.f };
+    UINT material{};
 
-	float velocity{ 0.f };
-	float totalLifeTime{ 0.f };
-	float lifeTime{ 0.f };
+#pragma region Sprite
+    UINT spritable{ 0 };
+    UINT spriteFrameInRow{ 0 };
+    UINT spriteFrameInCol{ 0 };
+    float spriteDuration{ 0 };
+#pragma endregion Sprite
 
-	UINT type{ ParticleType_ember };
-	UINT emitType{ ParticleType_ember };
-	UINT remainEmit{ 0 };
+    DirectX::XMFLOAT3 direction{ 0.f, 0.f, 0.f };
+    float velocity{ 0.f };
+
+    float totalLifeTime{ 0.f };
+    float lifeTime{ 0.f };
+
+    UINT type{ ParticleType_ember };
+    UINT emitType{ ParticleType_ember };
+    UINT remainEmit{ 0 };
     UINT emitIndex{ std::numeric_limits<UINT>::max() };
+
+    float mass{ 1.f };           
+    float drag{ 0.1f };          
+    float opacity{ 1.f };        
 };
 
 /*
