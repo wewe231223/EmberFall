@@ -124,18 +124,24 @@ void BossPlayerScript::DispatchGameEvent(GameEvent* event) {
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
     {
-        if (event->sender != event->receiver and ObjectTag::MONSTER != senderTag) {
+        if (event->sender == event->receiver and ObjectTag::MONSTER == senderTag) {
             break;
         }
 
         if (ObjectTag::PLAYER == senderTag) {
             auto player = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetPlayer(event->sender);
             if (nullptr == player or false == player->mSpec.active) {
+#if defined(PRINT_DEBUG_LOG)
+                gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player Cannot Attack Boss!!! - nullptr or not activated");
+#endif
                 break;
             }
             
             auto humanScript = player->GetScript<HumanPlayerScript>();
-            if (nullptr == humanScript or not humanScript->IsAttackableBoss()) {
+            if (nullptr == humanScript or false == humanScript->IsAttackableBoss()) {
+#if defined(PRINT_DEBUG_LOG)
+                gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Player Cannot Attack Boss!!!");
+#endif
                 break;
             }
         }
@@ -184,11 +190,11 @@ void BossPlayerScript::CheckAndMove(const float deltaTime) {
     if (not MathUtil::IsZero(moveDir.z)) {
         if (not mSuperMode) {
             if (moveDir.z > 0.0f) {
-                physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_WALK_SPEED;
+                physics->mFactor.maxMoveSpeed = GameProtocol::Unit::BOSS_PLAYER_WALK_SPEED;
                 changeState = Packets::AnimationState_MOVE_BACKWARD;
             }
             else {
-                physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_RUN_SPEED;
+                physics->mFactor.maxMoveSpeed = GameProtocol::Unit::BOSS_PLAYER_RUN_SPEED;
                 changeState = Packets::AnimationState_MOVE_FORWARD;
             }
         }

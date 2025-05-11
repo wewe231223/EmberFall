@@ -425,5 +425,11 @@ void HumanPlayerScript::UseItem() {
 }
 
 void HumanPlayerScript::NotifyAllOfGemDestroyed() {
+    auto owner = GetOwner();
+    if (nullptr == owner) {
+        return;
+    }
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Now Player: {} Can Attack Boss!", owner->GetId());
     mAttackableBoss = true;
 }

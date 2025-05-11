@@ -215,7 +215,9 @@ void GameRoom::EndGameLoop() {
 }
 
 bool GameRoom::CheckAndStartGame() {
-    if (not IsEveryPlayerReady() or 0 == mPlayerCount or 0 == mBossPlayerCount) {
+    const uint8_t expectedBossCnt = 1;
+    const uint8_t minimumPlayerCount = 2;
+    if (not (IsEveryPlayerReady() and minimumPlayerCount <= mPlayerCount and expectedBossCnt == mBossPlayerCount)) {
         return false;
     }
 
@@ -243,24 +245,24 @@ void GameRoom::CheckSessionsHeartBeat() {
 
         bool expected = true;
         mHeartBeat.compare_exchange_strong(expected, false);
+#if defined(DEBUG) || defined(_DEBUG) || defined(PRINT_DEBUG_LOG)
         gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Check Failure HeartBeat", mRoomIdx);
+#endif
         return;
     }
     std::vector<SessionIdType> sessionsInGameRoom{ sessionList.begin(), sessionList.end() };
     mSessionLock.ReadUnlock();
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Check HeartBeat", mRoomIdx);
     gServerCore->GetSessionManager()->CheckSessionsHeartBeat(sessionsInGameRoom);
 
     auto executionTime = SysClock::now() + CHECK_SESSION_HEART_BEAT_DELAY;
     gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, executionTime, TimerEventType::CHECK_SESSION_HEART_BEAT);
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Check HeartBeat End", mRoomIdx);
 }
 
 void GameRoom::CheckGameEnd() {
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Check Game End", mRoomIdx);
 #if defined(DEBUG) || defined(_DEBUG) || defined(PRINT_DEBUG_LOG)
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "allocated buffers: {}", SendBufferFactory::mSendBuffDebugger.load());
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Check Game End", mRoomIdx);
+    //gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "allocated buffers: {}", SendBufferFactory::mSendBuffDebugger.load());
 #endif
     auto [isEnd, winner] = mIngameCondition.CheckGameEnd();
     if (not isEnd) {

@@ -290,7 +290,7 @@ void ProcessRequestAttackCS(std::shared_ptr<GameSession>& session, const Packets
     }
 
     auto dir = FbsPacketFactory::GetVector3(attack->dir());
-    userObject->Attack(dir);
+    userObject->Attack(-dir);
     userObject->Update();
     userObject->LateUpdate();
 }

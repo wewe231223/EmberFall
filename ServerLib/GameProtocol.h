@@ -9,7 +9,7 @@ namespace GameProtocol {
         inline decltype(auto) PLAYER_RUN_SPEED = 4.0mps;
 
         inline decltype(auto) BOSS_PLAYER_WALK_SPEED = 3.3mps;
-        inline decltype(auto) BOSS_PLAYER_RUN_SPEED = 5.5mps;
+        inline decltype(auto) BOSS_PLAYER_RUN_SPEED = 6.5mps;
 
         inline decltype(auto) DEFAULT_PROJECTILE_SPEED = 33.3mps;
         inline decltype(auto) ARROW_SPEED = 30.0mps;
