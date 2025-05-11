@@ -28,6 +28,7 @@ void MonsterScript::Init() {
     spec.active = true;
     spec.moveable = true;
     spec.interactable = false;
+    spec.animated = true;
     spec.entity = Packets::EntityType_MONSTER;
     spec.defence = 0.0f;
     spec.damage = 10.0f;

@@ -71,17 +71,20 @@ void GameSession::ProcessRecv(INT32 numOfBytes) {
     auto sharedThis = std::static_pointer_cast<GameSession>(shared_from_this());
     if (nullptr == sharedThis) {
         gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Process Recv: Create Shared This Error In GameSession!!!");
+        Crash("");
         return;
     }
 
     decltype(auto) dataPtr = reinterpret_cast<const uint8_t* const>(mOverlappedRecv.buffer.data());
     ProcessPackets(sharedThis, dataPtr, dataSize);
     if (false == IsConnected()) {
+        gServerCore->GetSessionManager()->CloseSession(static_cast<SessionIdType>(GetId()));
+        Crash("");
         return;
     }
 
     if (0 < mPrevRemainSize) {
-        std::copy(remainBegin, dataEnd, dataBeg);
+        std::move(remainBegin, dataEnd, dataBeg);
     }
 
     RegisterRecv();
@@ -138,7 +141,8 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_ARCHER);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        //mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA));
 
         auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
@@ -155,7 +159,8 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_SHIELD_MAN);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        //mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA));
 
         auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
@@ -172,7 +177,8 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_LONGSWORD_MAN);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        //mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA));
 
         auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
@@ -189,7 +195,8 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_MAGICIAN);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        //mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA));
 
         auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
@@ -206,7 +213,8 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<BossPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_DEMON).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_DEMON);
-        mUserObject->GetTransform()->SetPosition(SimpleMath::Vector3{ -200.0f, 0.0f, -200.0f });
+        //mUserObject->GetTransform()->SetPosition(SimpleMath::Vector3{ -200.0f, 0.0f, -200.0f });
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA));
 
         auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<BossPlayerScript>();

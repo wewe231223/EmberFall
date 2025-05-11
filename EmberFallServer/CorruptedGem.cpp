@@ -21,6 +21,7 @@ void CorruptedGemScript::Init() {
     spec.active = true;
     spec.moveable = false;
     spec.interactable = true;
+    spec.animated = false;
     spec.entity = Packets::EntityType_CORRUPTED_GEM;
     spec.hp = 100000.0f;
 }

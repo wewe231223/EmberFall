@@ -13,9 +13,9 @@ OverlappedSend* SendBuffers::GetOverlapped(const PacketHeaderSC* const header, c
     if (nullptr == ptr) {
         return nullptr;
     }
-
+    
+    auto overlappedSend = new(ptr) OverlappedSend{ };
     auto buf = reinterpret_cast<char*>(ptr) + sizeof(OverlappedSend);
-    auto overlappedSend = reinterpret_cast<OverlappedSend*>(ptr);
 
     overlappedSend->ResetOverlapped();
     ::memcpy(buf, header, sizeof(PacketHeaderSC));
@@ -34,8 +34,8 @@ OverlappedSend* SendBuffers::GetOverlapped(const PacketHeaderCS* const header, c
         return nullptr;
     }
 
+    auto overlappedSend = new(ptr) OverlappedSend{ };
     auto buf = reinterpret_cast<char*>(ptr) + sizeof(OverlappedSend);
-    auto overlappedSend = reinterpret_cast<OverlappedSend*>(ptr);
 
     overlappedSend->ResetOverlapped();
     ::memcpy(buf, header, sizeof(PacketHeaderCS));
@@ -54,8 +54,8 @@ OverlappedSend* SendBuffers::GetOverlapped(OverlappedSend* const srcOverlapped) 
         return nullptr;
     }
 
+    auto overlappedSend = new(ptr) OverlappedSend{ };
     auto buf = reinterpret_cast<char*>(ptr) + sizeof(OverlappedSend);
-    auto overlappedSend = reinterpret_cast<OverlappedSend*>(ptr);
 
     overlappedSend->ResetOverlapped();
     auto copySrcBuf = srcOverlapped->wsaBuf.buf;
@@ -81,8 +81,8 @@ OverlappedSend* SendBuffers::GetOverlapped(void* data, size_t dataSize) {
         return nullptr;
     }
 
+    auto overlappedSend = new(ptr) OverlappedSend{ };
     auto buf = reinterpret_cast<char*>(ptr) + sizeof(OverlappedSend);
-    auto overlappedSend = reinterpret_cast<OverlappedSend*>(ptr);
 
     overlappedSend->ResetOverlapped();
     ::memcpy(buf, data, dataSize);
@@ -95,6 +95,7 @@ OverlappedSend* SendBuffers::GetOverlapped(void* data, size_t dataSize) {
 }
 
 bool SendBuffers::ReleaseOverlapped(OverlappedSend* const overlapped) {
+    overlapped->owner = nullptr;
     return mPool.Push(overlapped);
 }
 

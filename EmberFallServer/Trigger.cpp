@@ -29,6 +29,7 @@ void Trigger::Init() {
     spec.active = true;
     spec.moveable = false;
     spec.interactable = false;
+    spec.animated = false;
     spec.entity = Packets::EntityType_ENV;
 
     auto id = owner->GetId();

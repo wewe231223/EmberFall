@@ -22,6 +22,8 @@ void ItemScript::Init() {
     spec.active = true;
     spec.moveable = false;
     spec.interactable = true;
+    spec.animated = true;
+
     spec.entity = ItemTagToEntityType(mItemTag);
     spec.damage = 10.0f;
     spec.defence = 0.0f;

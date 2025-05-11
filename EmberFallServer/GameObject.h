@@ -26,6 +26,8 @@ struct ObjectSpec {
     bool active;                    // 활성화 여부
     bool moveable;                  // 이동 가능 여부
     bool interactable;              // 상호작용 가능 여부
+    bool animated;                  // 애니메이션
+
     Packets::EntityType entity;     // 외형 정보
     GameStage stage;                // 스테이지 정보
 

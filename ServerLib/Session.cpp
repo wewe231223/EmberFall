@@ -100,11 +100,13 @@ void Session::RegisterSend(OverlappedSend* const overlappedSend) {
         Crash("Overlapped Send's owner is Null");
     }
 
+    DWORD sentBytes{ };
+    DWORD dataSize = overlappedSend->wsaBuf.len;
     auto result = ::WSASend(
         mSocket,
         &overlappedSend->wsaBuf,
         1,
-        0,
+        &sentBytes,
         0,
         overlappedSend,
         nullptr
@@ -116,6 +118,10 @@ void Session::RegisterSend(OverlappedSend* const overlappedSend) {
             FbsPacketFactory::ReleasePacketBuf(overlappedSend);
             HandleSocketError(errorCode);
         }
+    }
+
+    if (sentBytes != dataSize) {
+        Crash(true);
     }
 }
 
@@ -251,6 +257,12 @@ RecvBuf::iterator Session::ValidatePackets(RecvBuf::iterator iter, RecvBuf::iter
         if (std::distance(it, last) < packetSize) {
             break;
         }
+
+#if defined(DEBUG) || defined(_DEBUG)
+        if (0 == packetSize) {
+            Crash("asd");
+        }
+#endif
         it += packetSize;
     }
 

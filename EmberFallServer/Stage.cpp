@@ -90,8 +90,6 @@ void Stage::StartStage(uint8_t gemCount) {
             auto item = mObjectManager->SpawnObject(Packets::EntityType_ITEM_POTION);
         }
     }
-
-    //gServerFrame->AddTimerEvent();
 }
 
 void Stage::EndStage() {

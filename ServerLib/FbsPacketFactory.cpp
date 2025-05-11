@@ -302,7 +302,7 @@ OverlappedSend* FbsPacketFactory::ObjectAnimationChangedSC(NetworkObjectIdType i
 OverlappedSend* FbsPacketFactory::UseItemSC(SessionIdType id, uint8_t itemIdx) {
     flatbuffers::FlatBufferBuilder builder{ };
 
-    auto offset = Packets::CreateUseItemSC(builder, 0, itemIdx);
+    auto offset = Packets::CreateUseItemSC(builder, id, itemIdx);
     builder.Finish(offset);
 
     const uint8_t* payload = builder.GetBufferPointer();

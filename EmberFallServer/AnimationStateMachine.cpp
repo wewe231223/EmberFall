@@ -43,6 +43,10 @@ void AnimationStateMachine::ChangeState(Packets::AnimationState nextState, bool 
         return;
     }
 
+    if (not mOwner->mSpec.animated) {
+        return;
+    }
+
     auto ownerId = mOwner->GetId();
     mCurrState = nextState;
     mCurrAnimInfo = mAnimInfo->states[static_cast<size_t>(nextState)];
@@ -56,7 +60,7 @@ void AnimationStateMachine::ChangeState(Packets::AnimationState nextState, bool 
 }
 
 void AnimationStateMachine::Update(const float deltaTime) {
-    if (true == mCurrAnimInfo.loop) {
+    if (not mOwner->mSpec.animated or true == mCurrAnimInfo.loop) {
         return;
     }
 

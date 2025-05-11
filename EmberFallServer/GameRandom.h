@@ -35,10 +35,10 @@ public:
     }
 
     static SimpleMath::Vector3 GetRandVecInArea(
-        const SimpleMath::Vector3& min, const SimpleMath::Vector3& max, const SimpleMath::Vector3 center
+        const SimpleMath::Vector3& min, const SimpleMath::Vector3& max, const SimpleMath::Vector3 center=SimpleMath::Vector3::Zero
     );
     static SimpleMath::Vector3 GetRandVecInArea(
-        const std::pair<SimpleMath::Vector3, SimpleMath::Vector3>& area, const SimpleMath::Vector3 center
+        const std::pair<SimpleMath::Vector3, SimpleMath::Vector3>& area, const SimpleMath::Vector3 center=SimpleMath::Vector3::Zero
     );
     
     static SimpleMath::Vector3 GetRandomColor();

@@ -32,6 +32,7 @@ void HumanPlayerScript::Init() {
     spec.active = true;
     spec.moveable = true;
     spec.interactable = false;
+    spec.animated = true;
     spec.damage = 30.0f;
     spec.defence = 0.0f;
     owner->mSpec.hp = GameProtocol::Logic::MAX_HP;
