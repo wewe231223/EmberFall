@@ -23,6 +23,7 @@ table NotifyIdSC {
 table PlayerEnterInLobbySC {
 	playerId: ubyte;
 	playerSlot: ubyte;
+	playerReady: bool;
 	role: PlayerRole;
 	name: string;
 }

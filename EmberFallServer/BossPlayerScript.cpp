@@ -6,6 +6,7 @@
 #include "GameSession.h"
 #include "Input.h"
 #include "GameObject.h"
+#include "HumanPlayerScript.h"
 
 BossPlayerScript::BossPlayerScript(std::shared_ptr<GameObject> owner, std::shared_ptr<Input> input)
     : PlayerScript{ owner, input, ObjectTag::BOSSPLAYER, ScriptType::BOSSPLAYER } {  
@@ -43,13 +44,12 @@ void BossPlayerScript::Update(const float deltaTime) {
         return;
     }
 
+    if (mInput->IsDown(VK_F1)) {
+        mSuperMode = !mSuperMode;
+    }
+
     CheckAndJump(deltaTime);
     CheckAndMove(deltaTime);
-
-    // Attack
-    if (mInput->IsActiveKey(VK_SPACE)) {
-        owner->Attack();
-    }
 
     mInput->Update();
 
@@ -124,15 +124,29 @@ void BossPlayerScript::DispatchGameEvent(GameEvent* event) {
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
     {
-        if (event->sender != event->receiver and ObjectTag::PLAYER != senderTag and ObjectTag::MONSTER != senderTag) {
-            auto attackEvent = reinterpret_cast<AttackEvent*>(event);
-            owner->mSpec.hp -= attackEvent->damage;
-            owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED, true);
-            owner->GetPhysics()->AddForce(attackEvent->knockBackForce);
-
-            auto packetAttacked = FbsPacketFactory::ObjectAttackedSC(owner->GetId(), owner->mSpec.hp);
-            owner->StorePacket(packetAttacked);
+        if (event->sender != event->receiver and ObjectTag::MONSTER != senderTag) {
+            break;
         }
+
+        if (ObjectTag::PLAYER == senderTag) {
+            auto player = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetPlayer(event->sender);
+            if (nullptr == player or false == player->mSpec.active) {
+                break;
+            }
+            
+            auto humanScript = player->GetScript<HumanPlayerScript>();
+            if (nullptr == humanScript or not humanScript->IsAttackableBoss()) {
+                break;
+            }
+        }
+
+        auto attackEvent = reinterpret_cast<AttackEvent*>(event);
+        owner->mSpec.hp -= attackEvent->damage;
+        owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED, true);
+        owner->GetPhysics()->AddForce(attackEvent->knockBackForce);
+
+        auto packetAttacked = FbsPacketFactory::ObjectAttackedSC(owner->GetId(), owner->mSpec.hp);
+        owner->StorePacket(packetAttacked);
         break;
     }
 
@@ -168,13 +182,25 @@ void BossPlayerScript::CheckAndMove(const float deltaTime) {
 
     Packets::AnimationState changeState{ Packets::AnimationState_IDLE };
     if (not MathUtil::IsZero(moveDir.z)) {
-        if (moveDir.z > 0.0f) {
-            physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_WALK_SPEED;
-            changeState = Packets::AnimationState_MOVE_BACKWARD;
+        if (not mSuperMode) {
+            if (moveDir.z > 0.0f) {
+                physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_WALK_SPEED;
+                changeState = Packets::AnimationState_MOVE_BACKWARD;
+            }
+            else {
+                physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_RUN_SPEED;
+                changeState = Packets::AnimationState_MOVE_FORWARD;
+            }
         }
         else {
-            physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_RUN_SPEED;
-            changeState = Packets::AnimationState_MOVE_FORWARD;
+            if (moveDir.z > 0.0f) {
+                physics->mFactor.maxMoveSpeed = mSuperSpeed;
+                changeState = Packets::AnimationState_MOVE_BACKWARD;
+            }
+            else {
+                physics->mFactor.maxMoveSpeed = mSuperSpeed;
+                changeState = Packets::AnimationState_MOVE_FORWARD;
+            }
         }
     }
     else if (not MathUtil::IsZero(moveDir.x)) {

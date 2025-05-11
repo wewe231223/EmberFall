@@ -32,6 +32,8 @@ public:
     virtual void DispatchGameEvent(struct GameEvent* event) abstract;
 
 protected:
+    bool mSuperMode{ false };
+    GameUnits::GameUnit<GameUnits::MeterPerSec> mSuperSpeed{ 10.0mps };
     std::shared_ptr<Input> mInput{ };
 
 private:

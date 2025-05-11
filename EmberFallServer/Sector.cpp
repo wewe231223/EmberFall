@@ -609,7 +609,7 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
 
     while (true == object->GetSendBuf().try_pop(sendPacket)) {
         if (nullptr == sendPacket) {
-            continue;;
+            continue;
         }
 
         for (const auto playerId : nearbyPlayers) {

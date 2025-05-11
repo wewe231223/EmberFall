@@ -23,6 +23,8 @@ public:
     virtual ~HumanPlayerScript();
 
 public:
+    bool IsAttackableBoss();
+
     virtual void Init() override;
 
     virtual void Update(const float deltaTime) override;
@@ -34,6 +36,8 @@ public:
     virtual void DoInteraction(const std::shared_ptr<GameObject>& target) override;
 
     virtual void DispatchGameEvent(struct GameEvent* event) override;
+
+    void NotifyAllOfGemDestroyed();
 
 private:
     std::shared_ptr<GameObject> GetNearestObject();
@@ -48,6 +52,7 @@ private:
     void UseItem();
 
 private:
+    bool mAttackableBoss{ false };
     bool mInteraction{ false };
     Inventory mInventory{ };
 

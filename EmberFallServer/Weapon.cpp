@@ -31,8 +31,8 @@ void Fist::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, c
     event->damage = mDamage;
     event->knockBackForce = dir * 5000.0f;
 
-    /*auto attackPos = pos + dir * mHitbox->GetForwardExtents();
-    gGameRoomManager->GetRoom(GetRoomIdx())->GetObjectManager()->SpawnEventTrigger(event, 0.5f, 0.5f, 1, attackPos, dir, mHitbox);*/
+    auto attackPos = pos + dir * mHitBox.Length();
+    gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 1.5f, event, 1.5f, 1);
 }
 
 Spear::Spear(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage)

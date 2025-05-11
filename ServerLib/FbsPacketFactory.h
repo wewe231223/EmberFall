@@ -39,7 +39,7 @@ public:
     static OverlappedSend* HeartBeatSC();
 
     // In Lobby
-    static OverlappedSend* PlayerEnterInLobbySC(SessionIdType id, uint8_t slotIndex, Packets::PlayerRole role, std::string_view name);
+    static OverlappedSend* PlayerEnterInLobbySC(SessionIdType id, uint8_t slotIndex, bool ready, Packets::PlayerRole role, std::string_view name);
     static OverlappedSend* PlayerReadyInLobbySC(SessionIdType id);
     static OverlappedSend* PlayerCancelReadySC(SessionIdType id);
     static OverlappedSend* RejectSelectionRoleSC();

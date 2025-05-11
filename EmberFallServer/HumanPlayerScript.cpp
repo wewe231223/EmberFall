@@ -22,7 +22,11 @@ HumanPlayerScript::HumanPlayerScript(std::shared_ptr<GameObject> owner, std::sha
 
 HumanPlayerScript::~HumanPlayerScript() { }
 
-void HumanPlayerScript::Init() { 
+bool HumanPlayerScript::IsAttackableBoss() {
+    return mAttackableBoss;
+}
+
+void HumanPlayerScript::Init() {
     auto owner = GetOwner();
     if (nullptr == owner) {
         return;
@@ -54,6 +58,10 @@ void HumanPlayerScript::Update(const float deltaTime) {
     mInteractionTrigger->GetTransform()->SetLook(owner->GetTransform()->Forward());
     mInteractionTrigger->Update();
 
+    if (mInput->IsDown(VK_F1)) {
+        mSuperMode = !mSuperMode;
+    }
+
     // Item
     if (mInput->IsDown(GameProtocol::Key::KEY_USE_ITEM)) {
         UseItem();
@@ -73,11 +81,6 @@ void HumanPlayerScript::Update(const float deltaTime) {
 
     CheckAndJump(deltaTime);
     CheckAndMove(deltaTime);
-
-    // Attack
-    if (mInput->IsActiveKey(VK_SPACE)) {
-        owner->Attack();
-    }
 
     mInput->Update();
 
@@ -251,13 +254,25 @@ void HumanPlayerScript::CheckAndMove(const float deltaTime) {
 
     Packets::AnimationState changeState{ Packets::AnimationState_IDLE };
     if (not MathUtil::IsZero(moveDir.z)) {
-        if (moveDir.z > 0.0f) {
-            physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_WALK_SPEED;
-            changeState = Packets::AnimationState_MOVE_BACKWARD;
+        if (not mSuperMode) {
+            if (moveDir.z > 0.0f) {
+                physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_WALK_SPEED;
+                changeState = Packets::AnimationState_MOVE_BACKWARD;
+            }
+            else {
+                physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_RUN_SPEED;
+                changeState = Packets::AnimationState_MOVE_FORWARD;
+            }
         }
         else {
-            physics->mFactor.maxMoveSpeed = GameProtocol::Unit::PLAYER_RUN_SPEED;
-            changeState = Packets::AnimationState_MOVE_FORWARD;
+            if (moveDir.z > 0.0f) {
+                physics->mFactor.maxMoveSpeed = mSuperSpeed;
+                changeState = Packets::AnimationState_MOVE_BACKWARD;
+            }
+            else {
+                physics->mFactor.maxMoveSpeed = mSuperSpeed;
+                changeState = Packets::AnimationState_MOVE_FORWARD;
+            }
         }
     }
     else if (not MathUtil::IsZero(moveDir.x)) {
@@ -407,4 +422,8 @@ void HumanPlayerScript::UseItem() {
     }
 
     mInventory.UseItem(owner);
+}
+
+void HumanPlayerScript::NotifyAllOfGemDestroyed() {
+    mAttackableBoss = true;
 }

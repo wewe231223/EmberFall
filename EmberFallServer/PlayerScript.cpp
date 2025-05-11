@@ -62,12 +62,13 @@ void PlayerScript::UpdateViewList(const std::vector<NetworkObjectIdType>& inView
     }
 
     auto ownerRoom = session->GetMyRoomIdx();
+    decltype(auto) roomStage = gGameRoomManager->GetRoom(ownerRoom)->GetStage();
     for (const auto id : newViewList.GetCurrViewList()) {
         if (oldViewList.contains(id)) {
             continue;
         }
 
-        decltype(auto) newObj = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(id);
+        decltype(auto) newObj = roomStage.GetObjectFromId(id);
         if (nullptr == newObj or false == newObj->mSpec.active) {
             continue;
         }
@@ -76,15 +77,14 @@ void PlayerScript::UpdateViewList(const std::vector<NetworkObjectIdType>& inView
         const auto yaw = newObj->GetEulerRotation().y;
         const auto pos = newObj->GetPosition();
         const auto anim = newObj->mAnimationStateMachine.GetCurrState();
-        decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(id, spec.entity, yaw, anim, spec.hp, pos);
 
+        decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(id, spec.entity, yaw, anim, spec.hp, pos);
         session->RegisterSend(packetAppeared);
     }
 
     for (const auto id : oldViewList) {
         if (not newViewList.IsInList(id)) {
             decltype(auto) packetDisappeared = FbsPacketFactory::ObjectDisappearedSC(id);
-            
             session->RegisterSend(packetDisappeared);
         }
     }

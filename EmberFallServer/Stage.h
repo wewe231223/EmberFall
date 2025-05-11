@@ -34,6 +34,8 @@ public:
     void AddInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos);
     void RemoveInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos);
 
+    void NotifyAllOfGemDestroyed(const std::vector<SessionIdType>& sessions);
+
     std::shared_ptr<GameObject> SpawnObject(Packets::EntityType entity);
     std::shared_ptr<GameObject> SpawnTrigger(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& ext, const SimpleMath::Vector3& dir, float lifeTime);
     std::shared_ptr<GameObject> SpawnEventTrigger(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& ext, const SimpleMath::Vector3& dir,

@@ -63,8 +63,8 @@ namespace GameProtocol {
         };
 
         inline const std::pair<SimpleMath::Vector3, SimpleMath::Vector3> MONSTER_SPAWN_AREA{
-            SimpleMath::Vector3{ -50.0f, 0.0f, -50.0f },
-            SimpleMath::Vector3{ 50.0f, 0.0f, 50.0f }
+            SimpleMath::Vector3{ -200.0f, 0.0f, -200.0f },
+            SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }
         };
 
         inline const std::pair<SimpleMath::Vector3, SimpleMath::Vector3> GEM_SPAWN_AREA{

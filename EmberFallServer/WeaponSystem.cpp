@@ -48,7 +48,8 @@ void WeaponSystem::SetWeapon(Packets::EntityType type, float damage) {
         break;
 
     case Packets::EntityType_MONSTER:
-        mWeapon = std::make_shared<Weapons::Fist>(mRoomIdx, SimpleMath::Vector3{ 0.7f, 0.7f, 1.0f });
+        mWeapon = std::make_shared<Weapons::Fist>(mRoomIdx, SimpleMath::Vector3{ 0.7f, 0.7f, 2.0f });
+        break;
 
     default:
         break;

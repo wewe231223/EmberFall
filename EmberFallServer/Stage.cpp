@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "Stage.h"
+#include "GameSession.h"
+#include "HumanPlayerScript.h"
 
 Stage::Stage(GameStage stageIdx, uint16_t roomIdx) 
     : mStage{ stageIdx }, mGameRoomIdx{ roomIdx },
@@ -36,6 +38,27 @@ void Stage::AddInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos) 
 
 void Stage::RemoveInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos) {
     mSectorSystem->RemoveInSector(id, pos);
+}
+
+void Stage::NotifyAllOfGemDestroyed(const std::vector<SessionIdType>& sessions) {
+    for (auto sessionId : sessions) {
+        auto gameSession = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+        if (nullptr == gameSession or false == gameSession->IsConnected()) {
+            continue;
+        }
+
+        auto userObject = GetPlayer(sessionId);
+        if (nullptr == userObject or false == userObject->mSpec.active or userObject->IsDead() or ObjectTag::BOSSPLAYER == userObject->GetTag()) {
+            continue;
+        }
+
+        auto playerScript = userObject->GetScript<HumanPlayerScript>();
+        if (nullptr == playerScript) {
+            continue;
+        }
+
+        playerScript->NotifyAllOfGemDestroyed();
+    }
 }
 
 void Stage::UpdateCollision(const std::shared_ptr<GameObject>& obj) {

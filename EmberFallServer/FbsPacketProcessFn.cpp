@@ -144,7 +144,9 @@ void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, cons
     std::unordered_set<SessionIdType> sessionsInGameRoom = gGameRoomManager->GetSessionsInRoom(sessionGameRoom);
     sessionLock.ReadUnlock();
 
-    auto packetEnter = FbsPacketFactory::PlayerEnterInLobbySC(sessionId, session->GetSlotIndex(), session->GetPlayerRole(), session->GetNameView());
+    auto packetEnter = FbsPacketFactory::PlayerEnterInLobbySC(sessionId, session->GetSlotIndex(),
+        session->GetReadyState(), session->GetPlayerRole(), session->GetNameView());
+
     for (auto& otherSessionId : sessionsInGameRoom) {
         if (sessionId == otherSessionId) {
             continue;
@@ -156,8 +158,9 @@ void ProcessPlayerEnterInLobby(std::shared_ptr<class GameSession>& session, cons
         }
 
         otherSession->RegisterSend(FbsPacketFactory::ClonePacket(packetEnter));
+        auto oldUserEnter = FbsPacketFactory::PlayerEnterInLobbySC(otherSessionId, otherSession->GetSlotIndex(), 
+            otherSession->GetReadyState(), otherSession->GetPlayerRole(), otherSession->GetNameView());
 
-        auto oldUserEnter = FbsPacketFactory::PlayerEnterInLobbySC(otherSessionId, otherSession->GetSlotIndex(), otherSession->GetPlayerRole(), otherSession->GetNameView());
         session->RegisterSend(oldUserEnter);
     }
 

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "GameRoom.h"
 #include "ServerFrame.h"
+#include "HumanPlayerScript.h"
 
 GameRoom::GameRoom(uint16_t roomIdx)
     : mRoomIdx{ roomIdx }, mGameRoomState{ GameRoomState::GAME_ROOM_STATE_LOBBY }, mStage{ GameStage::STAGE1, roomIdx } { 
@@ -214,7 +215,7 @@ void GameRoom::EndGameLoop() {
 }
 
 bool GameRoom::CheckAndStartGame() {
-    if (not IsEveryPlayerReady() or 0 == mPlayerCount) {
+    if (not IsEveryPlayerReady() or 0 == mPlayerCount or 0 == mBossPlayerCount) {
         return false;
     }
 
@@ -345,6 +346,14 @@ void GameRoom::NotifyDestructedObject(ObjectTag tag) {
     case ObjectTag::CORRUPTED_GEM:
     {
         mIngameCondition.FetchSubGemCount();
+        if (0 == mIngameCondition.GetGemCount()) {
+            decltype(auto) sessionsRef = GetSessions();
+            mSessionLock.ReadLock();
+            std::vector<SessionIdType> sessions{ sessionsRef.begin(), sessionsRef.end() };
+            mSessionLock.ReadUnlock();
+
+            mStage.NotifyAllOfGemDestroyed(sessions);
+        }
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Corrupted Gem, Gem Count : {}", mIngameCondition.GetGemCount());
         break;
     }
@@ -578,15 +587,10 @@ void GameCondition::InitGameCondition(uint8_t humanCount, uint8_t bossCount, uin
 
 std::pair<bool, Packets::PlayerRole> GameCondition::CheckGameEnd() {
     auto pair = std::make_pair(false, Packets::PlayerRole_HUMAN);
-    if (0 == mGemCount) {
+    if (0 == mBossCount) {
         pair.first = true;
         return pair;
     }
-
-    //if (0 == mBossCount) {
-    //    pair.first = true;
-    //    return pair;
-    //}
 
     if (0 == mAliveHumanCount) {
         pair.first = true;
