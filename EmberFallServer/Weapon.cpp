@@ -29,23 +29,24 @@ void Fist::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, c
     std::shared_ptr<AttackEvent> event = std::make_shared<AttackEvent>();
     event->sender = ownerId;
     event->damage = mDamage;
-    event->knockBackForce = dir * 5000.0f;
+    event->knockBackForce = dir * GameProtocol::Logic::MONSTER_KNOCK_BACK_POWER;
 
     auto attackPos = pos + dir * mHitBox.Length();
     gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 1.5f, event, 1.5f, 1);
 }
 
-Spear::Spear(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage)
+Sword::Sword(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage)
     : IWeapon{ roomIdx, damage } {
     mHitBox = hitBoxSize;
 }
 
-Spear::~Spear() { }
+Sword::~Sword() { }
 
-void Spear::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
+void Sword::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
     std::shared_ptr<AttackEvent> event = std::make_shared<AttackEvent>();
     event->sender = ownerId;
     event->damage = mDamage;
+    event->knockBackForce = dir * GameProtocol::Logic::SWORD_KNOCK_BACK_POWER;
 
     auto attackPos = pos + dir * mHitBox.Length();
     gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 1.5f, event, 1.5f, 1);
@@ -60,18 +61,18 @@ Bow::~Bow() { }
 void Bow::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
 }
 
-Sword::Sword(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage)
+LongSword::LongSword(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage)
     : IWeapon{ roomIdx, damage } {
     mHitBox = hitBoxSize;
 }
 
-Sword::~Sword() { }
+LongSword::~LongSword() { }
 
-void Sword::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
+void LongSword::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
     std::shared_ptr<AttackEvent> event = std::make_shared<AttackEvent>();
     event->sender = ownerId;
     event->damage = mDamage;
-    event->knockBackForce = dir * 5000.0f;
+    event->knockBackForce = dir * GameProtocol::Logic::LONGSWORD_KNOCK_BACK_POWER;
 
     auto attackPos = pos + dir * mHitBox.z;
     gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 1.5f, event, 1.5f, 1);
@@ -104,7 +105,7 @@ void Weapons::BossPlayerSword::Attack(NetworkObjectIdType ownerId, const SimpleM
     std::shared_ptr<AttackEvent> event = std::make_shared<AttackEvent>();
     event->sender = ownerId;
     event->damage = mDamage;
-    event->knockBackForce = dir * 15000.0f;
+    event->knockBackForce = dir * GameProtocol::Logic::BOSS_SWORD_KNOCK_BACK_POWER;
 
     auto attackPos = pos + dir * mHitBox.z;
     gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 3.0f, event, 3.0f, 1);
