@@ -13,7 +13,7 @@ class ShadowRenderer {
 	template<typename T>
 	static constexpr T SHADOWMAPSIZE = static_cast<T>(2000);
 
-	static constexpr float NEAROFFSET = 20.0f;  // 조명 투영행렬의 근,원평면에 약간의 여유 공간을 추가할때 사용.
+	static constexpr float NEAROFFSET = 30.0f;  // 조명 투영행렬의 근,원평면에 약간의 여유 공간을 추가할때 사용.
 	static constexpr float FAROFFSET = 0.0f;
 
 	static constexpr float PROJECTIONOFFSET = 5.0f; // 조명 투영공간의 크기를 조정하기 위한 오프셋값.
