@@ -44,6 +44,9 @@ public:
 	void SetMyPlayer();
 	
 	Player Clone();
+
+	void LockRotate(bool state); 
+	bool GetRotateState() const;
 private:
 	Mesh* mMesh{};
 	GraphicsShaderBase* mShader{};
@@ -62,4 +65,5 @@ private:
 	bool mEmpty{ true };
 
 	bool mMyPlayer{ false };
+	bool mRotateLock{ false };
 };

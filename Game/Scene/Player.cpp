@@ -51,7 +51,7 @@ void Player::AddEquipment(EquipmentObject equipment) {
 }
 
 void Player::ForwardUpdate() {
-	if (mMyPlayer) {
+	if (mMyPlayer and not mRotateLock) {
 		static const SimpleMath::Matrix localRotations[] = {
 			SimpleMath::Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(45.f), 0.f, 0.f),	// 상 or 하 + 우 
 			SimpleMath::Matrix::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(-45.f), 0.f, 0.f),	// 상 or 하 + 좌
@@ -182,4 +182,12 @@ Player Player::Clone() {
 	result.mMyPlayer = mMyPlayer;
 
 	return result;
+}
+
+void Player::LockRotate(bool state) {
+	mRotateLock = state; 
+}
+
+bool Player::GetRotateState() const {
+	return mRotateLock;
 }

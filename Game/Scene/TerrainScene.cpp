@@ -276,29 +276,29 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextLoc->SetEmpty(false);
 
 
-					ParticleVertex v{};
+					//ParticleVertex v{};
 
-					v.position = DirectX::XMFLOAT3(10.f, 10.f, 10.f);
-					v.halfheight = 0.5f;
-					v.halfWidth = 0.5f;
-					v.material = mRenderManager->GetMaterialManager().GetMaterial("SmokeMaterial");
-					
-					v.spritable = true;
-					v.spriteDuration = 1.f;
-					v.spriteFrameInRow = 6;
-					v.spriteFrameInCol = 6;
+					//v.position = DirectX::XMFLOAT3(10.f, 10.f, 10.f);
+					//v.halfheight = 0.5f;
+					//v.halfWidth = 0.5f;
+					//v.material = mRenderManager->GetMaterialManager().GetMaterial("SmokeMaterial");
+					//
+					//v.spritable = true;
+					//v.spriteDuration = 1.f;
+					//v.spriteFrameInRow = 6;
+					//v.spriteFrameInCol = 6;
 
-					
-					v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
-					v.velocity = { 0.f, 0.f, 0.f };
-					v.totalLifeTime = 0.3f;
-					v.lifeTime = 0.5f;
-					v.type = ParticleType_emit;
-					v.emitType = ParticleType_ember;
-					v.remainEmit = 100000;
-					v.emitIndex = 0;
+					//
+					//v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+					//v.velocity = { 0.f, 0.f, 0.f };
+					//v.totalLifeTime = 0.3f;
+					//v.lifeTime = 0.5f;
+					//v.type = ParticleType_emit;
+					//v.emitType = ParticleType_ember;
+					//v.remainEmit = 100000;
+					//v.emitIndex = 0;
 
-					mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v); 
+					//mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v); 
 
 
 				}
@@ -388,7 +388,7 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
-			float predictDuration = mAvgLatency / 2.f + data->duration();
+			float predictDuration = mAvgLatency  + data->duration();
 
 			auto zxPos = FbsPacketFactory::GetVector3(data->pos());
 			zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
@@ -407,7 +407,7 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 	}
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
-			float predictDuration = mAvgLatency / 2.f + data->duration();
+			float predictDuration = mAvgLatency + data->duration();
 			
 			auto zxPos = FbsPacketFactory::GetVector3(data->pos());
 			zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
@@ -427,6 +427,11 @@ void TerrainScene::ProcessObjectAttacked(const uint8_t* buffer) {
 	// HP 깍기 
 	if (data->objectId() == gClientCore->GetSessionId()) {
 		mHealthBarUI.SetHealth(data->hp());
+
+		if (data->hp() <= MathUtil::EPSILON and mMyPlayer != nullptr) {
+			mMyPlayer->LockRotate(true); 
+		}
+
 	}
 }
 
@@ -435,7 +440,18 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
+			
+			if (data->objectId() == gClientCore->GetSessionId()) {
+				if (data->animation() == Packets::AnimationState_ATTACK) {
+					mMyPlayer->LockRotate(true); 
+				}
+				else {
+					mMyPlayer->LockRotate(false);
+				}
+			}
+			
 			mPlayerIndexmap[data->objectId()]->SetAnimation(data->animation());
+
 		}
 	}
 	else {
@@ -557,7 +573,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 
 
 
-
+#ifdef DEV_MODE
 	{
 		auto& boss = mGameObjects.emplace_back();
 		boss.mShader = mShaderMap["SkinnedNormalShader"].get();
@@ -585,6 +601,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 
 		imp.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 36.f), 36.f };
 	}
+#endif 
 
 
 	{
