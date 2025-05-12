@@ -182,14 +182,14 @@ Deffered_POUT ParticleGSPassPS(Particle_PS_IN input)
     Deffered_POUT output = (Deffered_POUT) 0;
     
     float4 Color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.uv);
-    if (Color.a < 0.25f)
-    {
-        discard;
-    }
-    
-    
-    Color.a *= input.color.a;
+
+    clip(Color.a - 0.0001f);
+        
+    Color.rgb *= materialConstants[input.material].diffuse.rgb;
+    Color.rgb = normalize(Color.rgb);
+    Color.a = 1.f;
     
     output.diffuse = Color;
+    output.normal = float4(0.f, 0.f, 0.f, 5.f);
     return output;
 }

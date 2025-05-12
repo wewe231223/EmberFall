@@ -281,8 +281,14 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					v.position = DirectX::XMFLOAT3(10.f, 10.f, 10.f);
 					v.halfheight = 0.5f;
 					v.halfWidth = 0.5f;
-					v.material = 0;
-					v.spritable = false;
+					v.material = mRenderManager->GetMaterialManager().GetMaterial("SmokeMaterial");
+					
+					v.spritable = true;
+					v.spriteDuration = 1.f;
+					v.spriteFrameInRow = 6;
+					v.spriteFrameInCol = 6;
+
+					
 					v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
 					v.velocity = { 0.f, 0.f, 0.f };
 					v.totalLifeTime = 0.3f;
@@ -1296,6 +1302,10 @@ void TerrainScene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("HealthPotion_Color");
 	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("HealthPotion_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("HealthPotionMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("smoke_sheet");
+	mat.mDiffuseColor = SimpleMath::Color(16.0f, 0.0f, 14.0f, 1.0f);
+	mRenderManager->GetMaterialManager().CreateMaterial("SmokeMaterial", mat);
 
 } 
 

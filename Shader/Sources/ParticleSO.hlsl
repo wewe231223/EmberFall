@@ -152,19 +152,21 @@ float GetHeight(float x, float z)
 
 //----------------------------------------------------------[ Physics Helpers ]----------------------------------------------------------
 
+#define GRAVITY_CONST 9.8f
+
 void ApplyPhysics(inout ParticleVertex v)
 {
-    float3 g = float3(0, -9.8f, 0);
-    float3 dragForce = -v.drag * v.velocity;
-
-    float3 acceleration = (g + dragForce) / max(v.mass, 0.0001f);
-    v.velocity += acceleration * deltaTime;
-
+    // 중력 가속도 (y축 방향)
+    const float3 gravity = float3(0.0f, -GRAVITY_CONST, 0.0f);
+    // 선형 드래그 가속도: a_drag = -drag * velocity / mass
+    float3 a_drag = -v.drag * v.velocity / v.mass;
+    // 총 가속도
+    float3 accel = gravity + a_drag;
+    // 속도 적분
+    v.velocity += accel * deltaTime;
+    // 위치 적분
     v.position += v.velocity * deltaTime;
-
-    v.direction = normalize(v.velocity); // optional
 }
-
 
 void OnTerrain(inout ParticleVertex v)
 {
@@ -172,84 +174,60 @@ void OnTerrain(inout ParticleVertex v)
     if (v.position.y < h + v.halfHeight)
     {
         v.position.y = h + v.halfHeight;
-        v.velocity = 0;
+        v.velocity = float3(0.0f, 0.0f, 0.0f);
     }
 }
 
 //----------------------------------------------------------[ Emit Particle Update ]----------------------------------------------------------
 
-void AppendVertex(inout ParticleVertex v, inout PointStream<ParticleVertex> stream)
-{
-    stream.Append(v);
-}
-
 void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
 {
+    // 에미터 위치 갱신
     emitter.position = EmitPosition[emitter.emitIndex].position;
 
-    if (emitter.lifetime <= 0.f)
+    // 타이머 만료 시 새로운 입자 생성
+    if (emitter.lifetime <= 0.0f && emitter.remainEmit != 0)
     {
         ParticleVertex p = (ParticleVertex) 0;
-
-        // 생성 위치: 지면에서 약간 위로 띄움
-        float minHeight = 1.0f;
-        float maxHeight = 4.0f;
-        p.position = emitter.position + float3(0, GenerateRandomInRange(minHeight, maxHeight, vertexID * 101), 0);
-
-        // 방향 (시각용): 수평 중심 + 약간 위로
-        float3 spreadDir = float3(
-            GenerateRandomInRange(-1.f, 1.f, vertexID * 13),
-            GenerateRandomInRange(0.1f, 0.4f, vertexID * 19),
-            GenerateRandomInRange(-1.f, 1.f, vertexID * 17)
-        );
-        p.direction = normalize(spreadDir);
-
-        // 수명 결정
-        float baseLife = 5.0f;
-        float growth = saturate(globalTime / 120.f);
-        p.totalLifetime = GenerateRandomInRange(baseLife, baseLife + 3.0f + 60.0f * growth, vertexID);
-        p.lifetime = p.totalLifetime;
-
-        // 수명 기반 보간 계수 (0~1)
-        float lifeFactor = saturate((p.totalLifetime - baseLife) / 60.f);
-
-        // 속도 설정: 수명이 길수록 천천히, 위로는 높게
-        float horizontalSpeed = lerp(5.f, 2.f, lifeFactor);
-        float verticalSpeed = lerp(1.5f, 4.0f, lifeFactor); // 오래 뜨도록 높게
-        p.velocity = float3(
-            GenerateRandomInRange(-horizontalSpeed, horizontalSpeed, vertexID * 13),
-            GenerateRandomInRange(1.5f, verticalSpeed, vertexID * 19), // Y 속도 강조
-            GenerateRandomInRange(-horizontalSpeed, horizontalSpeed, vertexID * 17)
-        );
-
-        // drag 설정: 수명이 길수록 → 수평 drag 줄이고, 수직 drag도 낮춤
-        float horizontalDrag = lerp(0.6f, 0.2f, lifeFactor);
-        float verticalDrag = lerp(1.2f, 0.3f, lifeFactor); // Y drag 줄여서 오래 부유
-
-        p.drag = float3(
-            GenerateRandomInRange(horizontalDrag * 0.8f, horizontalDrag * 1.2f, vertexID * 71),
-            GenerateRandomInRange(verticalDrag * 0.8f, verticalDrag * 1.2f, vertexID * 73),
-            GenerateRandomInRange(horizontalDrag * 0.8f, horizontalDrag * 1.2f, vertexID * 79)
-        );
-
-        p.mass = 10.0f; // 고정 질량
-
-        // 기타 속성 복사
+        p.position = emitter.position;
         p.halfWidth = emitter.halfWidth;
         p.halfHeight = emitter.halfHeight;
         p.material = emitter.material;
+        
         p.spritable = emitter.spritable;
         p.spriteFrameInRow = emitter.spriteFrameInRow;
         p.spriteFrameInCol = emitter.spriteFrameInCol;
-        p.spriteDuration = emitter.spriteDuration;
+       
+        
         p.opacity = 1.0f;
 
+        // 랜덤 방향 생성 (수평 확산 위주, 약간의 상승 성분만)
+        float3 dir = GenerateRandomDirection(vertexID);
+        dir.y = abs(dir.y); // 아래로 떨어지는 방향 제거
+        dir.y *= 0.3f; // 상승 성분 약화
+        dir = normalize(dir);
+
+        p.direction = dir;
+        // 초기 속도: 1 ~ 2.5 범위의 랜덤
+        float speed = GenerateRandomInRange(1.0f, 2.5f, vertexID + 1);
+        p.velocity = dir * speed;
+
+        // 물리 파라미터
+        p.mass = emitter.mass;
+        p.drag = emitter.drag;
+
+        // 수명
+        p.totalLifetime = ember_LifeTime;
+        p.lifetime = 1.f;
+        p.spriteDuration = p.totalLifetime;
+        
+        // 파티클 타입 설정
         p.type = ParticleType_ember;
         p.emitType = ParticleType_ember;
         p.remainEmit = 0;
         p.emitIndex = emitter.emitIndex;
 
-        // 에미터 재발사 대기시간
+        // 에미터 리셋
         emitter.lifetime = emitter.totalLifetime;
         if (emitter.remainEmit > 0)
             emitter.remainEmit--;
@@ -257,9 +235,11 @@ void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout Point
         stream.Append(p);
     }
 
+    // 에미터 라이프 타이머 감소 및 스트림에 다시 추가
     emitter.lifetime -= deltaTime;
     stream.Append(emitter);
 }
+
 
 
 //----------------------------------------------------------[ Ember Particle Update ]----------------------------------------------------------
@@ -289,7 +269,7 @@ ParticleSO_GS_IN ParticleSOPassVS(ParticleVertex inV, uint vid : SV_VertexID)
     o.spritable = inV.spritable;
     o.spriteFrameInRow = inV.spriteFrameInRow;
     o.spriteFrameInCol = inV.spriteFrameInCol;
-    o.spriteDuration = inV.totalLifetime;
+    o.spriteDuration = inV.spriteDuration;
     o.direction = inV.direction;
     o.velocity = inV.velocity;
     o.totalLifetime = inV.totalLifetime;

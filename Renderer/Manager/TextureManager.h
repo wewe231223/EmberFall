@@ -38,7 +38,7 @@ private:
 
 
 struct MaterialConstants {
-	SimpleMath::Color mDiffuseColor{};
+	SimpleMath::Color mDiffuseColor{ 1.f,1.f,1.f,1.f };
 	SimpleMath::Color mSpecularColor{};
 	SimpleMath::Color mEmissiveColor{};
 

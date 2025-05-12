@@ -1329,6 +1329,31 @@ GraphicsShaderBase::RootParameters ParticleGSShader::CreateRootParameters() {
 	return result;
 }
 
+//D3D12_BLEND_DESC ParticleGSShader::CreateBlendState() {
+//	D3D12_BLEND_DESC blendStateDesc;
+//	::ZeroMemory(&blendStateDesc, sizeof(D3D12_BLEND_DESC));
+//
+//	blendStateDesc.AlphaToCoverageEnable = FALSE;
+//	blendStateDesc.IndependentBlendEnable = FALSE;
+//
+//	D3D12_RENDER_TARGET_BLEND_DESC& rt = blendStateDesc.RenderTarget[0];
+//	rt.BlendEnable = TRUE;
+//	rt.LogicOpEnable = FALSE;
+//
+//	rt.SrcBlend = D3D12_BLEND_SRC_ALPHA;
+//	rt.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+//	rt.BlendOp = D3D12_BLEND_OP_ADD;
+//
+//	rt.SrcBlendAlpha = D3D12_BLEND_ONE;
+//	rt.DestBlendAlpha = D3D12_BLEND_ZERO;
+//	rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
+//
+//	rt.LogicOp = D3D12_LOGIC_OP_NOOP;
+//	rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+//
+//	return blendStateDesc;
+//}
+
 D3D12_PRIMITIVE_TOPOLOGY_TYPE ParticleGSShader::CreatePrimitiveTopologyType() {
 	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
 }
