@@ -153,7 +153,7 @@ void BossPlayerScript::DispatchGameEvent(GameEvent* event) {
         auto attackEvent = reinterpret_cast<AttackEvent*>(event);
         owner->mSpec.hp -= attackEvent->damage;
         owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED, true);
-        owner->GetPhysics()->AddForce(attackEvent->knockBackForce);
+        owner->GetPhysics()->AddForce(attackEvent->knockBackForce, owner->GetDeltaTime());
 
         auto packetAttacked = FbsPacketFactory::ObjectAttackedSC(owner->GetId(), owner->mSpec.hp);
         owner->StorePacket(packetAttacked);

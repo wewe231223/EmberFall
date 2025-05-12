@@ -49,23 +49,24 @@ public:
     void Disable();
     void Reset();
 
-    void CheckAndJump(const float deltaTime);
+    void CheckAndJump(const float time);
 
     void ResizeVelocity(float speed);
 
-    void Accelerate(const SimpleMath::Vector3& dir, const float deltaTime);
+    void Accelerate(const SimpleMath::Vector3& dir, const float time);
 
     void AddVelocity(const SimpleMath::Vector3& velocity);
-    void AddForce(const SimpleMath::Vector3& force);
-    void AddForce(const SimpleMath::Vector3& dir, const float force);
-    void Update(const float deltaTime);
+    void AddForce(const SimpleMath::Vector3& force, const float time);
+    void AddForce(const SimpleMath::Vector3& dir, const float force, const float time);
+    void Update(const float time);
 
     void SolvePenetration(const SimpleMath::Vector3& penetrationVec);
+    void ExternalForceDecay(const float time);
 
 private:
     void ClampVelocity();
-    void UpdateFriction(const float deltaTime, const SimpleMath::Vector3& moveDir, const float speed);
-    void UpdateGravity(const float deltaTime, const SimpleMath::Vector3& moveDir, const float speed);
+    void UpdateFriction(const float time, const SimpleMath::Vector3& moveDir, const float speed);
+    void UpdateGravity(const float time, const SimpleMath::Vector3& moveDir, const float speed);
 
 public:
     PhysicsFactor mFactor{ };
@@ -76,5 +77,6 @@ private:
     bool mOnOtherObject{ true };
 
     SimpleMath::Vector3 mVelocity{ SimpleMath::Vector3::Zero };
+    SimpleMath::Vector3 mExternalVelocity{ SimpleMath::Vector3::Zero };
     std::weak_ptr<Transform> mTransform{ };
 };

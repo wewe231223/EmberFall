@@ -41,10 +41,10 @@ namespace Weapons {
         virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
     };
 
-    class Spear : public IWeapon {
+    class Sword : public IWeapon {
     public:
-        Spear(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage = GameProtocol::Logic::DEFAULT_DAMAGE);
-        virtual ~Spear();
+        Sword(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage = GameProtocol::Logic::DEFAULT_DAMAGE);
+        virtual ~Sword();
 
     public:
         virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
@@ -62,10 +62,10 @@ namespace Weapons {
         GameUnits::GameUnit<GameUnits::StandardSpeed> mArrowSpeed{ };
     };
 
-    class Sword : public IWeapon {
+    class LongSword : public IWeapon {
     public:
-        Sword(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage = GameProtocol::Logic::DEFAULT_DAMAGE);
-        virtual ~Sword();
+        LongSword(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage = GameProtocol::Logic::DEFAULT_DAMAGE);
+        virtual ~LongSword();
     
     public:
         virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;

@@ -28,11 +28,11 @@ void WeaponSystem::SetWeapon(Packets::EntityType type, float damage) {
 
     switch (type) {
     case Packets::EntityType_HUMAN_LONGSWORD:
-        mWeapon = std::make_shared<Weapons::Sword>(mRoomIdx, SimpleMath::Vector3{ 0.7f, 0.7f, 2.0f }, damage);
+        mWeapon = std::make_shared<Weapons::LongSword>(mRoomIdx, SimpleMath::Vector3{ 0.7f, 0.7f, 2.0f }, damage);
         break;
 
     case Packets::EntityType_HUMAN_SWORD:
-        mWeapon = std::make_shared<Weapons::Spear>(mRoomIdx, SimpleMath::Vector3{ 0.7f, 0.7f, 1.5f }, damage);
+        mWeapon = std::make_shared<Weapons::Sword>(mRoomIdx, SimpleMath::Vector3{ 0.7f, 0.7f, 1.5f }, damage);
         break;
 
     case Packets::EntityType_HUMAN_ARCHER:

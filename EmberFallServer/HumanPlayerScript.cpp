@@ -163,7 +163,7 @@ void HumanPlayerScript::DispatchGameEvent(GameEvent* event) {
             auto attackEvent = reinterpret_cast<AttackEvent*>(event);
             owner->mSpec.hp -= attackEvent->damage;
             owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_ATTACKED, true);
-            owner->GetPhysics()->AddForce(attackEvent->knockBackForce);
+            owner->GetPhysics()->AddForce(attackEvent->knockBackForce, owner->GetDeltaTime());
 
             CancelInteraction();
 
