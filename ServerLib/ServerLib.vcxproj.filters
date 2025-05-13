@@ -35,6 +35,9 @@
     <Filter Include="Fbs">
       <UniqueIdentifier>{44f33d66-3009-4536-bab7-197a8f87ca78}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Concurrency">
+      <UniqueIdentifier>{7ad990df-eef2-4bcf-ba83-b84ec5db6f7b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NetworkUtils.cpp">
@@ -60,9 +63,6 @@
     </ClCompile>
     <ClCompile Include="Listener.cpp">
       <Filter>Server</Filter>
-    </ClCompile>
-    <ClCompile Include="Lock.cpp">
-      <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="PacketHandler.cpp">
       <Filter>Server</Filter>
@@ -100,6 +100,15 @@
     <ClCompile Include="Protocol.cpp">
       <Filter>Common\Protocol</Filter>
     </ClCompile>
+    <ClCompile Include="Lock.cpp">
+      <Filter>Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="EBR.cpp">
+      <Filter>Concurrency</Filter>
+    </ClCompile>
+    <ClCompile Include="Sync.cpp">
+      <Filter>Concurrency</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkUtils.h">
@@ -122,9 +131,6 @@
     </ClInclude>
     <ClInclude Include="Listener.h">
       <Filter>Server</Filter>
-    </ClInclude>
-    <ClInclude Include="Lock.h">
-      <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="PacketHandler.h">
       <Filter>Server</Filter>
@@ -167,6 +173,15 @@
     </ClInclude>
     <ClInclude Include="Protocol.h">
       <Filter>Common\Protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="Lock.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="EBR.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="Sync.h">
+      <Filter>Concurrency</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -32,9 +32,14 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-inline constexpr size_t RECV_BUF_SIZE = std::numeric_limits<unsigned short>::max() * 10; // 655350
+inline constexpr size_t RECV_BUF_SIZE = std::numeric_limits<unsigned short>::max();
 
 class RecvBuffer {
+public:
+#if DEF_DEBUG_OR_DEV
+    std::atomic_uint64_t mPacketHandlerDebugSize{ };
+#endif
+
 public:
     RecvBuffer();
     ~RecvBuffer();

@@ -29,6 +29,8 @@ public:
 public:
     static OverlappedSend* ClonePacket(OverlappedSend* const overlapped);
     static void ReleasePacketBuf(OverlappedSend* const overlapped);
+    static OverlappedSend* CreateDataSC(const flatbuffers::FlatBufferBuilder& builder, Packets::PacketTypes type);
+    static OverlappedSend* CreateDataCS(const flatbuffers::FlatBufferBuilder& builder, Packets::PacketTypes type, SessionIdType id);
 
 public:
     // Server To Client
