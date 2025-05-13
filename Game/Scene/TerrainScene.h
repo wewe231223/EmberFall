@@ -1,7 +1,6 @@
 #pragma once 
 #include <array>
 #include "../Renderer/Manager/RenderManager.h"
-
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Game/System/Input.h"
 #include "../Game/System/Timer.h"

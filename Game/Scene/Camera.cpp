@@ -3,7 +3,7 @@
 #include "../System/Timer.h"
 #include "../System/Input.h"
 #include "../Utility/NonReplacementSampler.h"
-#include "../EditorInterface/Console/Console.h"
+#include "../Renderer/Core/Console.h"
 
 Camera::Camera(DefaultBufferCPUIterator bufferLocation) : mCameraBufferCPU(bufferLocation) {
 	mCameraConstant.proj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(CameraParam.fov, CameraParam.aspect, CameraParam.nearZ, CameraParam.farZ).Transpose();

@@ -29,6 +29,7 @@ public:
 	ShaderFileManager& operator=(ShaderFileManager&&) = delete;
 public:
 	void Test() {}
+	void Init(); 
 	
 	ComPtr<ID3D12Blob>& GetShaderBlob(const std::string& name, ShaderType type);
 	std::array<ComPtr<ID3D12Blob>, ShaderType::END>& GetShaderBlobs(const std::string& name);

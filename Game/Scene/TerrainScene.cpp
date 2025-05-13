@@ -734,12 +734,14 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 
 }
 
+// 별도 시간 누적 타이머 
 void TerrainScene::ProcessNetwork() {
 	auto packetHandler = gClientCore->GetPacketHandler(); 
 	decltype(auto) buffer = packetHandler->GetBuffer(); 
 
+
+
 	TerrainScene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
-	
 }
 
 void TerrainScene::ProcessPackets(const uint8_t* buffer, size_t size) { 

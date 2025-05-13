@@ -35,6 +35,8 @@ public:
 	ConsoleBase(ConsoleBase&& other) = delete;
 	ConsoleBase& operator=(ConsoleBase&& other) = delete;
 public:
+	void Init(); 
+
 	template<typename... Args>
 	void Log(std::format_string<Args...> fmt, LogType type, Args&&... args) {
 		auto now = std::chrono::system_clock::now();

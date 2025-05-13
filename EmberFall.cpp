@@ -9,9 +9,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"
+#include "Renderer/Core/Console.h"
 #include "EmberFall.h"
-#include "EditorInterface/Impl/EditorDevice.h"
-#include "EditorInterface/Console/Console.h"
 #include "Renderer/core/Renderer.h"
 #include "Game/System/Timer.h"
 #include "Game/System/Input.h"
@@ -21,12 +20,10 @@
 #include "Utility/IntervalTimer.h"
 
 #ifdef _DEBUG
-#pragma comment(lib,"out/debug/EditorInterface.lib")
 #pragma comment(lib,"out/debug/Renderer.lib")
 #pragma comment(lib,"out/debug/Game.lib")
 #pragma comment(lib,"out/debug/MeshLoader.lib")
 #else 
-#pragma comment(lib,"out/release/EditorInterface.lib")
 #pragma comment(lib,"out/release/Renderer.lib")
 #pragma comment(lib,"out/release/Game.lib")
 #pragma comment(lib,"out/release/MeshLoader.lib")
@@ -69,8 +66,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             CrashExp(true, "Failed to connect");
             return -1; 
         }
-    }
-
+    } 
     
     MSG msg{};
     
@@ -90,7 +86,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-	Console.Log("Application Start!",LogType::Info);
 
     Renderer renderer{ hWnd };
     renderer.UploadResource();
@@ -383,18 +378,16 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
-   gDevice.Initialize(hWnd);
-
    return TRUE;
 }
 
 
 INT_PTR IPDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
-    constexpr std::string LOCALHOST{ "127.0.0.1" };
+    constexpr const char* LOCALHOST{ "127.0.0.1" };
 
     switch (message) {
     case WM_INITDIALOG:
-        SetDlgItemTextA(hWnd, IDC_IPADDRESS1, LOCALHOST.c_str());  // 기본 IP 표시
+        SetDlgItemTextA(hWnd, IDC_IPADDRESS1, LOCALHOST);  // 기본 IP 표시
         return TRUE;
 
     case WM_COMMAND:

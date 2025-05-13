@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Renderer.h"
-#include "../EditorInterface/Console/Console.h"
+#include "../Renderer/Core/Console.h"
 #include "../Utility/Enumerate.h"
 #include "../Utility/Serializer.h"
 #include "../Utility/Exceptions.h"
@@ -568,6 +568,7 @@ void Renderer::InitTerrainBuffer() {
 }
 
 void Renderer::InitCoreResources() {
+	gShaderManager.Init(); 
 	mRenderManager = std::make_shared<RenderManager>(mDevice, mCommandList, mRendererWindow, mMainCameraBuffer.CPUBegin()); 
 }
 

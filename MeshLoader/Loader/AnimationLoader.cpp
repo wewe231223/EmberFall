@@ -1,7 +1,7 @@
 #include <functional>
 #include "AnimationLoader.h"
 #include "../Utility/Crash.h"
-#include "../EditorInterface/Console/Console.h"
+#include "../Renderer/Core/Console.h"
 
 #ifdef max 
 #undef max 

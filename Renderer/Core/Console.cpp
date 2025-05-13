@@ -15,6 +15,14 @@ constexpr ImVec4 WARNING_COLOR{ F4_WHEAT };
 constexpr ImVec4 ERROR_COLOR{ F4_RED };
 
 ConsoleBase::ConsoleBase() {
+	ConsoleBase::Init(); 
+}
+
+ConsoleBase::~ConsoleBase() {
+
+}
+
+void ConsoleBase::Init() {
 	ConsoleBase::ManageLogFile();
 
 	auto now = std::chrono::system_clock::now();
@@ -22,7 +30,7 @@ ConsoleBase::ConsoleBase() {
 
 
 	std::tm localTime{};
-	localtime_s(&localTime, &in_time_t); 
+	localtime_s(&localTime, &in_time_t);
 
 
 
@@ -40,18 +48,14 @@ ConsoleBase::ConsoleBase() {
 	CrashExp(mLogFile.is_open(), "로그 파일을 생성할 수 없습니다.");
 
 	mLogFile << std::format("Log : {:04}-{:02}-{:02} {:02}:{:02}:{:02}\n",
-			localTime.tm_year + 1900,
-			localTime.tm_mon + 1,
-			localTime.tm_mday,
-			localTime.tm_hour,
-			localTime.tm_min,
-			localTime.tm_sec) << std::endl;
+		localTime.tm_year + 1900,
+		localTime.tm_mon + 1,
+		localTime.tm_mday,
+		localTime.tm_hour,
+		localTime.tm_min,
+		localTime.tm_sec) << std::endl;
 
 	ConsoleBase::Log("{} 에 로그 파일이 생성되었습니다.", LogType::Info, fileName);
-}
-
-ConsoleBase::~ConsoleBase() {
-
 }
 
 void ConsoleBase::Render() {
