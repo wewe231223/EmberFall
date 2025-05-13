@@ -544,7 +544,7 @@ TerrainScene::~TerrainScene() {
 
 }
 
-void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	TerrainScene::BuildShader(device);
 	TerrainScene::BuildMesh(device, commandList);
 	TerrainScene::BuildMaterial();

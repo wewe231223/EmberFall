@@ -11,7 +11,7 @@ public:
 	LoadingScene(std::shared_ptr<RenderManager> renderMgr);
 	~LoadingScene();
 public:
-	virtual void Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList);
+	virtual void Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
 	virtual void ProcessNetwork();
 	virtual void Update();
 	virtual void SendNetwork();

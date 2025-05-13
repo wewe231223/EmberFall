@@ -2,6 +2,7 @@
 #include "../Utility/Defines.h"
 #include "../Renderer/Resource/DefaultBuffer.h"
 #include "../Renderer/Manager/RenderManager.h"
+#include <thread>
 
 enum class SceneType : BYTE {
 	TITLE,
@@ -21,9 +22,9 @@ public:
 public:
 	SceneFeatureType GetCurrentSceneFeatureType();
 
-	void Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCameraBufferLocation, ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList, std::function<void()> initLoadFunc);
+	void Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCameraBufferLocation, ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList, std::function<void()> initLoadFunc);
 	bool CheckLoaded();
-	void Update(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList);
+	void Update(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList);
 
 	void ChangeSceneTo(SceneType nextScene);
 

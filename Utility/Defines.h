@@ -66,7 +66,7 @@ struct ModelContext2D {
 class IScene abstract : public std::enable_shared_from_this<IScene> {
 public:
 	virtual ~IScene() = default;
-	virtual void Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) PURE;
+	virtual void Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) PURE;
 	virtual void ProcessNetwork() PURE;
 	virtual void Update() PURE;
 	virtual void SendNetwork() PURE;

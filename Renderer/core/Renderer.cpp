@@ -51,7 +51,7 @@ DefaultBufferCPUIterator Renderer::GetMainCameraBuffer() {
 	return mMainCameraBuffer.CPUBegin();
 }
 
-ComPtr<ID3D12Device10> Renderer::GetDevice() {
+ComPtr<ID3D12Device> Renderer::GetDevice() {
 	return mDevice;
 }
 
@@ -66,17 +66,18 @@ ComPtr<ID3D12GraphicsCommandList> Renderer::GetLoadCommandList() {
 void Renderer::LoadTextures() {
 	mRenderManager->GetTextureManager().LoadAllImages(mDevice, mLoadCommandList); 
 
-	MaterialConstants material{};
+	if (mShaderModel6_5Support) {
+		MaterialConstants material{};
 
-	material.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Grass0");
-	material.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("Grass1");
-	material.mDiffuseTexture[2] = mRenderManager->GetTextureManager().GetTexture("Grass2");
-	material.mDiffuseTexture[3] = mRenderManager->GetTextureManager().GetTexture("Grass3");
+		material.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Grass0");
+		material.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("Grass1");
+		material.mDiffuseTexture[2] = mRenderManager->GetTextureManager().GetTexture("Grass2");
+		material.mDiffuseTexture[3] = mRenderManager->GetTextureManager().GetTexture("Grass3");
 
-	mRenderManager->GetMaterialManager().CreateMaterial("GrassMaterial", material);
+		mRenderManager->GetMaterialManager().CreateMaterial("GrassMaterial", material);
 
-	mGrassRenderer.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("GrassMaterial"));
-
+		mGrassRenderer.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("GrassMaterial"));
+	}
 }
 
 void Renderer::UploadResource(){ 
@@ -188,8 +189,10 @@ void Renderer::Render() {
 	mRenderManager->GetMeshRenderManager().RenderGPass(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
 	mRenderManager->GetMeshRenderManager().Reset();
 
-	if (std::get<static_cast<size_t>(RenderFeature::GRASS)>(mFeatureEnabled)) {
-		mGrassRenderer.Render(mCommandList, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
+	if (std::get<static_cast<size_t>(RenderFeature::GRASS)>(mFeatureEnabled) and mShaderModel6_5Support) {
+		ComPtr<ID3D12GraphicsCommandList6> commandList6{};
+		CheckHR(mCommandList.As(&commandList6));
+		mGrassRenderer.Render(commandList6, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
 
 	if (std::get<static_cast<size_t>(RenderFeature::PARTICLE)>(mFeatureEnabled)) {
@@ -350,6 +353,7 @@ ComPtr<IDXGIAdapter1> Renderer::GetBestAdapter() {
 }
 
 bool Renderer::CheckMeshShaderSupport() {
+	return false; 
 	// Shader Model 6.5 이상 확인
 	D3D12_FEATURE_DATA_SHADER_MODEL shaderModel = {};
 	shaderModel.HighestShaderModel = D3D_SHADER_MODEL_6_5;
@@ -379,23 +383,15 @@ void Renderer::InitDevice() {
 
 	CrashExp(adapter != nullptr, "No suitable GPU found.");
 
-
-	ComPtr<ID3D12Device> base{};
-	auto hr = ::D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&base));
-
-
+	auto hr = ::D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice));
 
 	if (FAILED(hr)) {
 		ComPtr<IDXGIAdapter> warpAdapter{ nullptr };
 		CheckHR(mFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
-		CheckHR(::D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&base)));
+		CheckHR(::D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice)));
 	}
 
-
-	CheckHR(base.As(&mDevice));
-
-	// 메시 셰이더 지원됨 
-	// Renderer::CheckMeshShaderSupport(); 
+	mShaderModel6_5Support = CheckMeshShaderSupport();
 }
 
 void Renderer::InitCommandQueue() {
@@ -445,14 +441,8 @@ void Renderer::InitCommandList() {
 
 	CheckHR(mLoadCommandList->Close());
 
-	ComPtr<ID3D12GraphicsCommandList> base{}; 
-
 	CheckHR(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&mAllocator)));
-	CheckHR(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mAllocator.Get(), nullptr, IID_PPV_ARGS(&base)));
-
-
-	CheckHR(base.As(&mCommandList));
-
+	CheckHR(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mAllocator.Get(), nullptr, IID_PPV_ARGS(&mCommandList)));
 
 	mCommandList->SetName(L"Main Command List");
 	mAllocator->SetName(L"Main Command Allocator");
@@ -554,7 +544,11 @@ void Renderer::InitParticleManager() {
 }
 
 void Renderer::InitGrassRenderer() {
-	mGrassRenderer = GrassRenderer(mDevice, mCommandList, mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
+	if (mShaderModel6_5Support) {
+		ComPtr<ID3D12Device10> device10{};
+		CheckHR(mDevice.As(&device10));
+		mGrassRenderer = GrassRenderer(device10, mCommandList, mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
+	}
 }
 
 void Renderer::InitTerrainBuffer() {

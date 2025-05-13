@@ -42,7 +42,7 @@ public:
 	std::shared_ptr<RenderManager> GetRenderManager(); 
 	DefaultBufferCPUIterator GetMainCameraBuffer();
 
-	ComPtr<ID3D12Device10> GetDevice();
+	ComPtr<ID3D12Device> GetDevice();
 	ComPtr<ID3D12GraphicsCommandList> GetCommandList();
 	ComPtr<ID3D12GraphicsCommandList> GetLoadCommandList(); 
 
@@ -104,7 +104,7 @@ private:
 	ComPtr<ID3D12Debug6> mDebugController{ nullptr };
 	ComPtr<IDXGIDebug1> mDXGIDebug{ nullptr };
 #endif 
-	ComPtr<ID3D12Device10> mDevice{ nullptr };
+	ComPtr<ID3D12Device> mDevice{ nullptr };
 
 	ComPtr<ID3D12CommandQueue> mCommandQueue{ nullptr };
 
@@ -118,7 +118,7 @@ private:
 	ComPtr<ID3D12GraphicsCommandList> mLoadCommandList{ nullptr };
 
 	ComPtr<ID3D12CommandAllocator> mAllocator{ nullptr };
-	ComPtr<ID3D12GraphicsCommandList6> mCommandList{ nullptr };
+	ComPtr<ID3D12GraphicsCommandList> mCommandList{ nullptr };
 
 	ComPtr<ID3D12DescriptorHeap> mRTVHeap{ nullptr };
 	std::array<Texture, Config::BACKBUFFER_COUNT<UINT>> mRenderTargets{};
@@ -150,4 +150,5 @@ private:
 	DefaultBuffer mMainCameraBuffer{};
 
 	bool mIsFullScreen{ false };
+	bool mShaderModel6_5Support{ false };
 };

@@ -19,7 +19,7 @@ LoadingScene::LoadingScene(std::shared_ptr<RenderManager> renderMgr) {
 LoadingScene::~LoadingScene() {
 }
 
-void LoadingScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+void LoadingScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 
 }
 

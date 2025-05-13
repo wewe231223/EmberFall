@@ -373,7 +373,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 }
 
 
-void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+void LobbyScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	LobbyScene::BuildShader(device);
 	LobbyScene::BuildMesh(device, commandList);
 	LobbyScene::BuildMaterial();
