@@ -191,6 +191,7 @@
     </ClCompile>
     <ClCompile Include="Render\Canvas.cpp" />
     <ClCompile Include="Render\GrassRenderer.cpp" />
+    <ClCompile Include="Render\IMGUIRenderer.cpp" />
     <ClCompile Include="Resource\DefaultBuffer.cpp" />
     <ClCompile Include="Resource\Mesh.cpp" />
     <ClCompile Include="Resource\Particle.cpp" />
@@ -222,6 +223,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Render\Canvas.h" />
     <ClInclude Include="Render\GrassRenderer.h" />
+    <ClInclude Include="Render\IMGUIRenderer.h" />
     <ClInclude Include="Resource\DefaultBuffer.h" />
     <ClInclude Include="Resource\Mesh.h" />
     <ClInclude Include="Resource\Particle.h" />

@@ -20,6 +20,7 @@
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Renderer/Render/GrassRenderer.h"
 #include "../Renderer/Core/BlurComputeProcessor.h"
+#include "../Renderer/Render/IMGUIRenderer.h"
 
 enum class RenderFeature : BYTE {
 	PARTICLE, 
@@ -86,6 +87,7 @@ private:
 	void InitCoreResources(); 
 	void InitDefferedRenderer();
 	void InitBlurComputeProcesser();
+	void InitIMGUIRenderer();
 
 	void TransitionGBuffers(D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState);
 
@@ -148,6 +150,8 @@ private:
 	DefaultBuffer mTerrainDataBuffer{}; 
 
 	DefaultBuffer mMainCameraBuffer{};
+
+	IMGUIRenderer mIMGUIRenderer{};
 
 	bool mIsFullScreen{ false };
 	bool mShaderModel6_5Support{ false };

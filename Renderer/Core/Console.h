@@ -47,7 +47,6 @@ public:
 		switch (type) {
 		case LogType::Info:
 		{
-			std::lock_guard lock{ mConsoleLock };
 			decltype(auto) msg = mBuffer.EmplaceBack(
 				std::make_pair(
 					std::make_pair(std::format("[ INFO - {:02}:{:02}:{:02} ] ", local_time.tm_hour, local_time.tm_min, local_time.tm_sec), std::format(fmt, std::forward<Args>(args)...)), type)
@@ -59,7 +58,6 @@ public:
 			break; 
 		case LogType::Warning:
 		{
-			std::lock_guard lock{ mConsoleLock };
 			decltype(auto) msg = mBuffer.EmplaceBack(
 				std::make_pair(
 					std::make_pair(std::format("[ WARN - {:02}:{:02}:{:02} ] ", local_time.tm_hour, local_time.tm_min, local_time.tm_sec), std::format(fmt, std::forward<Args>(args)...)), type)
@@ -70,7 +68,6 @@ public:
 			break;
 		case LogType::Error:
 		{
-			std::lock_guard lock{ mConsoleLock };
 			decltype(auto) msg = mBuffer.EmplaceBack(
 				std::make_pair(
 					std::make_pair(std::format("[ ERROR - {:02}:{:02}:{:02} ] ", local_time.tm_hour, local_time.tm_min, local_time.tm_sec), std::format(fmt, std::forward<Args>(args)...)), type)
@@ -91,7 +88,6 @@ private:
 private:
 	CircularBuffer<std::pair<std::pair<std::string, std::string>,LogType>, CONSOLE_BUFFER_SIZE> mBuffer{};
 	std::ofstream mLogFile{};
-	std::mutex mConsoleLock{};
 };
 
 extern ConsoleBase Console;

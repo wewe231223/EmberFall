@@ -114,6 +114,9 @@
     <ClCompile Include="..\External\Include\ImGui\imgui_widgets.cpp">
       <Filter>IMGUI</Filter>
     </ClCompile>
+    <ClCompile Include="Render\IMGUIRenderer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -202,6 +205,9 @@
     </ClInclude>
     <ClInclude Include="..\External\Include\ImGui\imstb_truetype.h">
       <Filter>IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Render\IMGUIRenderer.h">
+      <Filter>Render</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

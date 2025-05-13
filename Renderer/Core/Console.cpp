@@ -59,14 +59,7 @@ void ConsoleBase::Init() {
 }
 
 void ConsoleBase::Render() {
-
-	// 창의 위치와 크기를 고정
-	ImGui::SetNextWindowPos(ImVec2{ 0, 0 });
-	ImGui::SetNextWindowSize(ImVec2{ Config::EDITOR_WINDOW_WIDTH<>,Config::EDITOR_WINDOW_HEIGHT<> / 2 });
-
-	ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
-
-	std::lock_guard lock{ mConsoleLock };
+	ImGui::Begin("Console", nullptr );
 
 	ImGuiListClipper clipper;
 	clipper.Begin(static_cast<int>(mBuffer.Size()));

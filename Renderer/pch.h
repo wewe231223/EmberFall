@@ -10,9 +10,6 @@
 #include <array>
 #include <numeric>
 #include "../Utility/DirectXInclude.h"
-#include "../External/Include/ImGui/imgui.h"
-#include "../External/Include/ImGui/imgui_impl_dx12.h"
-#include "../External/Include/ImGui/imgui_impl_win32.h"
-#include "../External/Include/ImGui/imgui_internal.h"
+
 
 

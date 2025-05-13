@@ -25,6 +25,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitDepthStencilBuffer();
 	Renderer::InitStringRenderer();
 	Renderer::InitBlurComputeProcesser();
+	Renderer::InitIMGUIRenderer();
 
 	Renderer::ResetCommandList();
 
@@ -229,6 +230,12 @@ void Renderer::Render() {
 	mRenderManager->GetTextureManager().Bind(mCommandList);
 
 	mRenderManager->GetCanvas().Render(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress()); 
+	mIMGUIRenderer.BeginRender();
+
+	// Other IMGUI Renders... 
+	Console.Render(); 
+
+	mIMGUIRenderer.EndRender(mCommandList); 
 }
 
 void Renderer::ExecuteRender() {
@@ -583,6 +590,10 @@ void Renderer::InitDefferedRenderer() {
 void Renderer::InitBlurComputeProcesser() {
 	mBlurComputeProcessor = BlurComputeProcessor(mDevice);
 
+}
+
+void Renderer::InitIMGUIRenderer() {
+	mIMGUIRenderer.Initialize(mRendererWindow, mDevice); 
 }
 
 void Renderer::TransitionGBuffers(D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState) {
