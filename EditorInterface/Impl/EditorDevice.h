@@ -59,6 +59,6 @@ private:
 	std::unique_ptr<DirectXImpl> mDirectXImpl{ nullptr };
 };
 
-// extern EditorDevice gDevice;
+extern EditorDevice gDevice;
 
 														

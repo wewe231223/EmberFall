@@ -175,4 +175,4 @@ void EditorDevice::Render() {
 }
 
 
-// EditorDevice gDevice{};
+EditorDevice gDevice{};

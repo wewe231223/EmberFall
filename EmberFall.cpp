@@ -383,7 +383,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
-  // gDevice.Initialize(hWnd);
+   gDevice.Initialize(hWnd);
 
    return TRUE;
 }
