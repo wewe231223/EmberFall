@@ -353,7 +353,6 @@ ComPtr<IDXGIAdapter1> Renderer::GetBestAdapter() {
 }
 
 bool Renderer::CheckMeshShaderSupport() {
-	return false; 
 	// Shader Model 6.5 이상 확인
 	D3D12_FEATURE_DATA_SHADER_MODEL shaderModel = {};
 	shaderModel.HighestShaderModel = D3D_SHADER_MODEL_6_5;

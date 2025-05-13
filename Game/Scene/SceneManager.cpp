@@ -3,6 +3,7 @@
 #include "../Scene/LoadingScene.h"
 #include "../Scene/TerrainScene.h"
 #include "../Scene/LobbyScene.h"
+#include "../resource.h"
 
 SceneManager::SceneManager() {}
 
@@ -27,12 +28,6 @@ void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferC
 
 	mCurrentSceneType = SceneType::LOADING;
 	mCurrentScene = mScenes[static_cast<size_t>(SceneType::LOADING)].get();
-
-	gClientCore->Init();
-	if (!gClientCore->Start("183.101.111.244", 7777)) {
-		DebugBreak();
-		Crash(false);
-	}
 
 	mNextSceneType = SceneType::LOBBY;
 	mNextScene = mScenes[static_cast<size_t>(SceneType::LOBBY)].get();

@@ -11,7 +11,7 @@
 #include <Windows.h>
 
 
-//#define DEV_MODE // 디버그 모드 설정 여부
+#define DEV_MODE // 디버그 모드 설정 여부
 //#undef DEV_MODE
 
 #ifdef DEV_MODE

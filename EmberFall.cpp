@@ -52,14 +52,26 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름�
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK IPDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 SceneManager sceneManager{};
+
+CHAR iPAddr[64]{};
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
+    if (DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, IPDialogProc) == IDOK) {
+        gClientCore->Init(); 
+        if (not gClientCore->Start(iPAddr, 7777)) {
+            CrashExp(true, "Failed to connect");
+            return -1; 
+        }
+    }
+
+    
     MSG msg{};
     
     UNREFERENCED_PARAMETER(hPrevInstance);
@@ -376,3 +388,26 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
+
+INT_PTR IPDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    constexpr std::string LOCALHOST{ "127.0.0.1" };
+
+    switch (message) {
+    case WM_INITDIALOG:
+        SetDlgItemTextA(hWnd, IDC_IPADDRESS1, LOCALHOST.c_str());  // 기본 IP 표시
+        return TRUE;
+
+    case WM_COMMAND:
+        switch (LOWORD(wParam)) {
+        case IDOK:
+            GetDlgItemTextA(hWnd, IDC_IPADDRESS1, iPAddr, sizeof(iPAddr));
+            EndDialog(hWnd, IDOK);
+            return TRUE;
+        case IDCANCEL:
+            EndDialog(hWnd, IDCANCEL);
+            return TRUE;
+        }
+        break;
+    }
+    return FALSE;
+}
