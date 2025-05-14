@@ -151,7 +151,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 #endif 
             if (sceneManager.CheckLoaded()) {
                 renderer.ExecuteLoadCommandList();
-				renderer.SetFeatureEnabled(sceneManager.GetCurrentSceneFeatureType());
             }
 #ifdef DEV_MODE
             GPUTimer.Start();

@@ -20,8 +20,6 @@ public:
 	~SceneManager();
 
 public:
-	Features GetCurrentSceneFeatureType();
-
 	void Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCameraBufferLocation, ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList, std::function<void()> initLoadFunc);
 	bool CheckLoaded();
 	void Update(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList);

@@ -5,6 +5,7 @@
 #include "../Renderer/Manager/MeshRenderManager.h"
 #include "../Renderer/Core/ShadowRenderer.h"
 #include "../Renderer/Render/Canvas.h"
+#include "../Renderer/Manager/FeatureManager.h"
 
 
 class RenderManager {
@@ -26,8 +27,10 @@ public:
 	ParticleManager&		GetParticleManager();
 	MeshRenderManager&		GetMeshRenderManager();
 	ShadowRenderer&			GetShadowRenderer();
-	Canvas&					GetCanvas(); 
+	Canvas&					GetCanvas();
+	FeatureManager&			GetFeatureManager();
 	HWND					GetWindowHandle(); 
+
 private:
 	HWND mHwnd{ nullptr };
 	LightingManager mLightingManager{};
@@ -37,4 +40,5 @@ private:
 	ParticleManager mParticleManager{};
 	ShadowRenderer mShadowRenderer{};
 	Canvas mCanvas{}; 
+	FeatureManager mFeatureManager{};
 };

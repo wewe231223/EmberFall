@@ -13,8 +13,16 @@ public:
 	FeatureManager& operator=(FeatureManager&& other) = default;
 
 public:
+	void SetFixedFeatures(Features& f);
+	void SetFeature(Features& f); 
+	void swap(); 
 
+	void Render(); 
+
+	Features& GetCurrentFeature();
 public:
-	Features mCurrentFeatures{}; 
+	Features mFixedFeatures{};
 
+	Features mCurrentFeatures{}; 
+	Features mNextFeatures{};
 };

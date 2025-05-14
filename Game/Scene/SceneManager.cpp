@@ -13,10 +13,6 @@ SceneManager::~SceneManager() {
 	}
 }
 
-Features SceneManager::GetCurrentSceneFeatureType() {
-	return mSceneFeatureType[static_cast<size_t>(mCurrentSceneType)];
-}
-
 void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCameraBufferLocation, ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList, std::function<void()> initLoadFunc) {
 	mScenes[static_cast<size_t>(SceneType::TERRAIN)] = std::make_shared<TerrainScene>(renderMgr, mainCameraBufferLocation);
 	mScenes[static_cast<size_t>(SceneType::LOADING)] = std::make_shared<LoadingScene>(renderMgr);
@@ -24,7 +20,7 @@ void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferC
 
 	mSceneFeatureType[static_cast<size_t>(SceneType::LOADING)]	= { false, false, false }; 
 	mSceneFeatureType[static_cast<size_t>(SceneType::LOBBY)]	= { false, false, true }; 
-	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)]	= { true, true, true }; 
+	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)]	= { true, true, true, true }; 
 
 	mCurrentSceneType = SceneType::LOADING;
 	mCurrentScene = mScenes[static_cast<size_t>(SceneType::LOADING)].get();
@@ -57,6 +53,9 @@ bool SceneManager::CheckLoaded() {
 		}
 		mCurrentSceneType = mNextSceneType;
 		mCurrentScene = mNextScene;
+
+		mRenderManager->GetFeatureManager().SetFeature(mSceneFeatureType[static_cast<size_t>(mCurrentSceneType)]);
+		mRenderManager->GetFeatureManager().SetFixedFeatures(mSceneFeatureType[static_cast<size_t>(mCurrentSceneType)]);
 		mLoaded.store(false);
 	}
 	return loaded; 

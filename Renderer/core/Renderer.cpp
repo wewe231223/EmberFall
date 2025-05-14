@@ -102,10 +102,6 @@ void Renderer::ExecuteLoadCommandList() {
 	mExecute = true; 
 }
 
-void Renderer::SetFeatureEnabled(Features type) {
-	mFeatureEnabled = type; 
-}
-
 void Renderer::Update() {
 	// Update... 
 }
@@ -190,13 +186,13 @@ void Renderer::Render() {
 	mRenderManager->GetMeshRenderManager().RenderGPass(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
 	mRenderManager->GetMeshRenderManager().Reset();
 
-	if (mFeatureEnabled.Grass and mShaderModel6_5Support) {
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Grass and mShaderModel6_5Support) {
 		ComPtr<ID3D12GraphicsCommandList6> commandList6{};
 		CheckHR(mCommandList.As(&commandList6));
 		mGrassRenderer.Render(commandList6, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
 
-	if (mFeatureEnabled.Grass) {
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Grass) {
 		mRenderManager->GetParticleManager().RenderSO(mCommandList);
 		mRenderManager->GetParticleManager().RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
@@ -217,7 +213,7 @@ void Renderer::Render() {
 	mDefferedRenderer.Render(mCommandList, mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0), mRenderManager->GetLightingManager().GetLightingBuffer());
 
 	// Blurring Pass
-	if (mFeatureEnabled.Bloom) {
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Bloom) {
 
 		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
 		mBlurComputeProcessor.DispatchHorzBlur(mDevice, mCommandList, currentBackBuffer.GetResource());
@@ -234,10 +230,7 @@ void Renderer::Render() {
 
 	// Other IMGUI Renders... 
 	Console.Render(); 
-
-	// IMGUI 코드 (예: 렌더링 루프 안)
-	ImGui::Begin("Game Effects");
-
+	mRenderManager->GetFeatureManager().Render(); 
 
 	ImGui::End();
 
@@ -278,7 +271,7 @@ void Renderer::ExecuteRender() {
 
 	mStringRenderer.Render();
 
-	if (mFeatureEnabled.Particle) {
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Particle) {
 		mRenderManager->GetParticleManager().PostRender();
 		mRenderManager->GetParticleManager().ValidateParticle();
 	}
@@ -286,6 +279,8 @@ void Renderer::ExecuteRender() {
 
 	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
 	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
+
+	mRenderManager->GetFeatureManager().swap(); 
 #endif
 }
 
