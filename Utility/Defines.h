@@ -16,6 +16,12 @@ concept HasIndex = requires {
 	{ T::index } -> std::convertible_to<size_t>;
 };
 
+template<typename Duration>
+constexpr int64_t UnitsPerSecond() {
+    using period = typename Duration::period;
+    return period::den / period::num;
+}
+
 struct CameraConstants {
     SimpleMath::Matrix view;
     SimpleMath::Matrix proj;

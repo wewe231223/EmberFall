@@ -755,14 +755,29 @@ void TerrainScene::ProcessNetwork() {
 
 void TerrainScene::ProcessPackets(const uint8_t* buffer, size_t size) { 
 	const uint8_t* iter = buffer; 
-	
+#ifdef DEV_MODE 	
+	IntervalTimer timer;
+	UINT cnt{ 0 }; 
+
+	timer.Start();
+	while (iter < buffer + size) {
+		iter = ProcessPacket(iter, cnt);
+	}
+	timer.End(); 
+
+	auto elapsed = timer.Elapsed<std::chrono::nanoseconds>();
+
+	if (elapsed != 0 and cnt != 0) {
+		mPktElapsedBlock->GetText() = std::format(L"Pkt Process : {:.3f}", (static_cast<double>(cnt * UnitsPerSecond<std::chrono::nanoseconds>())) / elapsed );
+	}
+#else 
 	while (iter < buffer + size) {
 		iter = ProcessPacket(iter);
 	}
-
+#endif 
 }
 
-const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
+const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer, UINT& cnt) {
 	decltype(auto) header = FbsPacketFactory::GetHeaderPtrSC(buffer); 
 	
 	switch (header->type) {
@@ -869,6 +884,10 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 	default:
 		break;
 	}
+
+#ifdef DEV_MODE
+	cnt += header->size;
+#endif 
 
 	return buffer + header->size; 
 }

@@ -53,7 +53,7 @@ private:
 	float GetAverageLatency(); 
 private:
 	void ProcessPackets(const uint8_t* buffer, size_t size); 
-	const uint8_t* ProcessPacket(const uint8_t* buffer);
+	const uint8_t* ProcessPacket(const uint8_t* buffer, UINT& cnt);
 
 	void ProcessPacketProtocolVersion(const uint8_t* buffer);
 	void ProcessNotifyId(const uint8_t* buffer);
@@ -100,6 +100,7 @@ private:
 #ifdef DEV_MODE
 	TextBlock* mLatencyBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 50.f, 1920.f, 100.f }, StringColor::BurlyWood, "NotoSansKR") };
 	TextBlock* mPktsBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 70.f, 1920.f, 120.f }, StringColor::BurlyWood, "NotoSansKR") };
+	TextBlock* mPktElapsedBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 90.f, 1920.f, 140.f }, StringColor::BurlyWood, "NotoSansKR") };
 #endif 
 
 	absl::flat_hash_map<NetworkObjectIdType, Player*> mPlayerIndexmap{};
@@ -139,6 +140,8 @@ private:
 	float mAvgLatency{ 0.f };
 
 	bool mInitialized{ false }; 
+
+	size_t mProcessedPacketSize{ 0 };
 };
 
 template<typename Tu> 
