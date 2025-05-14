@@ -11,6 +11,7 @@
 #include "../Utility/NonReplacementSampler.h"
 #include "../MeshLoader/Loader/TerrainBaker.h"
 #include "../ServerLib/GameProtocol.h"
+#include "../Renderer/Core/Console.h"
 
 #pragma region PacketProcessFn 
 void TerrainScene::ProcessPacketProtocolVersion(const uint8_t* buffer) {
@@ -732,6 +733,10 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
 	gClientCore->Send(packet);
 
+	Time.AddEvent(1s, []() {
+		Console.Log(" {:^4}", LogType::Info, PacketHandler::mPacketHandlerDebugSize.load());
+		return true; }
+	);
 }
 
 // 별도 시간 누적 타이머 

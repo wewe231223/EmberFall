@@ -36,11 +36,6 @@ inline constexpr size_t RECV_BUF_SIZE = std::numeric_limits<unsigned short>::max
 
 class RecvBuffer {
 public:
-#if DEF_DEBUG_OR_DEV
-    std::atomic_uint64_t mPacketHandlerDebugSize{ };
-#endif
-
-public:
     RecvBuffer();
     ~RecvBuffer();
 
@@ -67,6 +62,10 @@ private:
 };
 
 class PacketHandler {
+public:
+#ifdef DEF_DEBUG_OR_DEV
+    inline static std::atomic_uint64_t mPacketHandlerDebugSize{ };
+#endif
 public:
     PacketHandler();
     ~PacketHandler();
