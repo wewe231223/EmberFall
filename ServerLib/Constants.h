@@ -17,6 +17,11 @@ inline constexpr size_t BUF_NETWORK_RECV_SIZE = 65535;
 inline constexpr NetworkObjectIdType OBJECT_ID_START = INVALID_SESSION_ID + 1;
 
 inline const uint32_t HARDWARE_CONCURRENCY = std::thread::hardware_concurrency();
+inline constexpr size_t CACHE_LINE_SIZE = std::hardware_constructive_interference_size;
+//inline constexpr size_t CACHE_LINE_SIZE = std::hardware_destructive_interference_size;
+
+inline constexpr std::endian NATIVE_ENDIAN = std::endian::native;
+inline constexpr std::endian FBS_ENDIAN = std::endian::little; // flatbuffers 엔디안 형식
 
 enum class IOType : uint32_t {
     SEND,
@@ -24,7 +29,15 @@ enum class IOType : uint32_t {
     CONNECT,
     DISCONNECT,
     ACCEPT,
-    UPDATE // NPC, ENEMIES AI, PHYSICS ...
+    UPDATE, // NPC, ENEMIES AI, PHYSICS ...
+
+    // UPDATE 세분화
+        // NPC
+    MOVE_NPC,
+    DISPATCH_EVENT,
+        // GAME ROOM
+    CHECK_GAME_END,
+    TRANSITION_STAGE,
 };
 
 enum class CollisionState : BYTE {

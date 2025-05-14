@@ -117,7 +117,7 @@ OverlappedSend* SendBufferFactory::GetOverlapped(const PacketHeaderSC* const hea
 #if defined(DEBUG) || defined(_DEBUG) || defined(PRINT_DEBUG_LOG)
     mSendBuffDebugger.fetch_add(1);
 #endif
-    size_t bufferSize = *std::upper_bound(MEM_BLOCK_SIZES, MEM_BLOCK_SIZES + MEM_BLOCK_SIZE_CNT, dataSize);
+    size_t bufferSize = std::bit_ceil(dataSize);
     return mBuffers[bufferSize].GetOverlapped(header, payload, payloadSize);
 }
 
@@ -131,7 +131,7 @@ OverlappedSend* SendBufferFactory::GetOverlapped(const PacketHeaderCS* const hea
 #if defined(DEBUG) || defined(_DEBUG) || defined(PRINT_DEBUG_LOG)
     mSendBuffDebugger.fetch_add(1);
 #endif
-    size_t bufferSize = *std::upper_bound(MEM_BLOCK_SIZES, MEM_BLOCK_SIZES + MEM_BLOCK_SIZE_CNT, dataSize);
+    size_t bufferSize = std::bit_ceil(dataSize);
     return mBuffers[bufferSize].GetOverlapped(header, payload, payloadSize);
 }
 
@@ -145,7 +145,7 @@ OverlappedSend* SendBufferFactory::GetOverlapped(OverlappedSend* const srcOverla
 #if defined(DEBUG) || defined(_DEBUG) || defined(PRINT_DEBUG_LOG)
     mSendBuffDebugger.fetch_add(1);
 #endif
-    size_t bufferSize = *std::upper_bound(MEM_BLOCK_SIZES, MEM_BLOCK_SIZES + MEM_BLOCK_SIZE_CNT, dataSize);
+    size_t bufferSize = std::bit_ceil(dataSize);
     return mBuffers[bufferSize].GetOverlapped(srcOverlapped);
 }
 
@@ -158,7 +158,7 @@ OverlappedSend* SendBufferFactory::GetOverlapped(void* data, size_t dataSize) {
 #if defined(DEBUG) || defined(_DEBUG) || defined(PRINT_DEBUG_LOG)
     mSendBuffDebugger.fetch_add(1);
 #endif
-    size_t bufferSize = *std::upper_bound(MEM_BLOCK_SIZES, MEM_BLOCK_SIZES + MEM_BLOCK_SIZE_CNT, dataSize);
+    size_t bufferSize = std::bit_ceil(dataSize);
     return mBuffers[bufferSize].GetOverlapped(data, dataSize);
 }
 
@@ -170,7 +170,7 @@ bool SendBufferFactory::ReleaseOverlapped(OverlappedSend* const overlapped) {
     }
 
     overlapped->owner.reset();
-    size_t bufferSize = *std::upper_bound(MEM_BLOCK_SIZES, MEM_BLOCK_SIZES + MEM_BLOCK_SIZE_CNT, dataSize);
+    size_t bufferSize = std::bit_ceil(dataSize);
 
 #if defined(DEBUG) || defined(_DEBUG) || defined(PRINT_DEBUG_LOG)
     mSendBuffDebugger.fetch_sub(1);

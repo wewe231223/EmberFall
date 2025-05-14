@@ -156,6 +156,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="EBR.h" />
     <ClInclude Include="FbsPacketFactory.h" />
     <ClInclude Include="GameMath.h" />
     <ClInclude Include="GameProtocol.h" />
@@ -174,12 +175,14 @@
     <ClInclude Include="SendBuffers.h" />
     <ClInclude Include="Session.h" />
     <ClInclude Include="SessionManager.h" />
+    <ClInclude Include="Sync.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="NetworkUtils.h" />
     <ClInclude Include="GameUnits.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Constants.cpp" />
+    <ClCompile Include="EBR.cpp" />
     <ClCompile Include="FbsPacketFactory.cpp" />
     <ClCompile Include="GameMath.cpp" />
     <ClCompile Include="GameProtocol.cpp" />
@@ -203,6 +206,7 @@
     <ClCompile Include="SendBuffers.cpp" />
     <ClCompile Include="Session.cpp" />
     <ClCompile Include="SessionManager.cpp" />
+    <ClCompile Include="Sync.cpp" />
     <ClCompile Include="Types.cpp" />
     <ClCompile Include="NetworkUtils.cpp" />
   </ItemGroup>

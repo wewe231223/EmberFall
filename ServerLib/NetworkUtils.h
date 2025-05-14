@@ -89,14 +89,102 @@ namespace NetworkUtil {
         return 0 == result;
     }
 
+    class Serializer;
+
     template <std::contiguous_iterator Iter> requires std::is_same_v<typename Iter::value_type, char>
     inline PacketSizeType GetPacketSizeFromIter(Iter iter)
     {
-        return *(reinterpret_cast<PacketSizeType*>(AddressOf(iter)));
+        auto size = *(reinterpret_cast<PacketSizeType*>(AddressOf(iter)));
+        Serializer::Deserialize(&size);
+        return size;
     }
 
     inline NetworkObjectIdType ObjectIdToIndexId(NetworkObjectIdType objectId)
     {
         return objectId - OBJECT_ID_START;
     }
+
+    class Serializer {
+    public:
+        // 05-13 김성준 추가 : 직렬화 함수는 산술타입의 주소를 인자로 받는다.
+        template <typename From> requires std::is_arithmetic_v<From>
+        static void Serialize(From* value)
+        {
+            if constexpr (NATIVE_ENDIAN == FBS_ENDIAN or sizeof(From) == sizeof(char)) {
+                return;
+            }
+            else {
+                if constexpr (std::is_integral_v<From>) {
+                    From data{ };
+
+                    // From 타입에 맞는 바이트 정렬
+                    if constexpr (sizeof(From) == sizeof(short)) {
+                        data = ::htons(*value);
+                    }
+                    else if constexpr (sizeof(From) == sizeof(long)) {
+                        data = ::htonl(*value);
+                    }
+                    else if constexpr (sizeof(From) == sizeof(long long)) {
+                        data = ::htonll(*value);
+                    }
+
+                    memcpy(value, &data, sizeof(From));
+                }
+                else if constexpr (std::is_floating_point_v<From>) {
+                    if constexpr (sizeof(From) == sizeof(float)) {
+                        unsigned int data = ::htonf(*value);
+                        memcpy(value, &data, sizeof(From));
+                    }
+                    else if constexpr (sizeof(From) == sizeof(double)) {
+                        unsigned long long data = ::htond(*value);
+                        memcpy(value, &data, sizeof(From));
+                    }
+                }
+            }
+        }
+
+        // 05-13 김성준 추가 : 역직렬화 함수는 산술 타입의 주소를 인자로 받는다.
+        //					  해당 산술타입의 값을 호스트의 바이트 정렬 방식으로 바꾸어
+        //					  해당 값의 주소에 복사한다.
+        template <typename To> requires std::is_arithmetic_v<To>
+        static void Deserialize(To* data)
+        {
+            if constexpr (NATIVE_ENDIAN == FBS_ENDIAN) {
+                return;
+            }
+            else {
+                if constexpr (std::is_integral_v<To>) {
+                    To value{ };
+                    if constexpr (sizeof(To) == sizeof(short)) {
+                        value = ::ntohs(*data);
+                    }
+                    else if constexpr (sizeof(To) == sizeof(long)) {
+                        value = ::ntohl(*data);
+                    }
+                    else if constexpr (sizeof(To) == sizeof(long long)) {
+                        value = ::ntohll(*data);
+                    }
+
+                    memcpy(data, &value, sizeof(To));
+                }
+                else if constexpr (std::is_floating_point_v<To>) {
+                    To value{ };
+                    if constexpr (sizeof(To) == sizeof(float)) {
+                        unsigned int integralData{ };
+                        memcpy(&integralData, data, sizeof(To));
+
+                        value = ::ntohf(integralData);
+                    }
+                    else if constexpr (sizeof(To) == sizeof(double)) {
+                        unsigned long long integralData{ };
+                        memcpy(&integralData, data, sizeof(To));
+
+                        value = ::ntohd(integralData);
+                    }
+
+                    memcpy(data, &value, sizeof(To));
+                }
+            }
+        }
+    };
 }

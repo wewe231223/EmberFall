@@ -19,6 +19,8 @@
 #undef PRINT_DEBUG_LOG
 #endif
 
+#define DEF_DEBUG_OR_DEV defined(DEBUG) || defined(DEV_MODE) || defined(_DEBUG)
+#define DEF_DEBUG_OR_PRINT_LOG defined(DEBUG) || defined(PRINT_DEBUG_LOG) || defined(_DEBUG)
 
 #undef max
 #undef min
