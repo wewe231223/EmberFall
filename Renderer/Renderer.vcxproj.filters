@@ -117,6 +117,9 @@
     <ClCompile Include="Render\IMGUIRenderer.cpp">
       <Filter>Render</Filter>
     </ClCompile>
+    <ClCompile Include="Manager\FeatureManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -208,6 +211,9 @@
     </ClInclude>
     <ClInclude Include="Render\IMGUIRenderer.h">
       <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Manager\FeatureManager.h">
+      <Filter>Manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -180,6 +180,7 @@
     <ClCompile Include="core\Shader.cpp" />
     <ClCompile Include="Core\ShadowRenderer.cpp" />
     <ClCompile Include="Core\StringRenderer.cpp" />
+    <ClCompile Include="Manager\FeatureManager.cpp" />
     <ClCompile Include="Manager\LightingManager.cpp" />
     <ClCompile Include="Manager\MeshRenderManager.cpp" />
     <ClCompile Include="Manager\ParticleManager.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="core\Shader.h" />
     <ClInclude Include="Core\ShadowRenderer.h" />
     <ClInclude Include="Core\StringRenderer.h" />
+    <ClInclude Include="Manager\FeatureManager.h" />
     <ClInclude Include="Manager\LightingManager.h" />
     <ClInclude Include="Manager\MeshRenderManager.h" />
     <ClInclude Include="Manager\ParticleManager.h" />

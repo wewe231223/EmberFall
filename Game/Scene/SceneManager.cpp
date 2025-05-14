@@ -13,7 +13,7 @@ SceneManager::~SceneManager() {
 	}
 }
 
-SceneFeatureType SceneManager::GetCurrentSceneFeatureType() {
+Features SceneManager::GetCurrentSceneFeatureType() {
 	return mSceneFeatureType[static_cast<size_t>(mCurrentSceneType)];
 }
 
@@ -22,9 +22,9 @@ void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferC
 	mScenes[static_cast<size_t>(SceneType::LOADING)] = std::make_shared<LoadingScene>(renderMgr);
 	mScenes[static_cast<size_t>(SceneType::LOBBY)] = std::make_shared<LobbyScene>(renderMgr, mainCameraBufferLocation);
 
-	mSceneFeatureType[static_cast<size_t>(SceneType::LOADING)] = std::make_tuple(false, false, false);
-	mSceneFeatureType[static_cast<size_t>(SceneType::LOBBY)] = std::make_tuple(false, false, true);
-	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)] = std::make_tuple(true, true, true);
+	mSceneFeatureType[static_cast<size_t>(SceneType::LOADING)]	= { false, false, false }; 
+	mSceneFeatureType[static_cast<size_t>(SceneType::LOBBY)]	= { false, false, true }; 
+	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)]	= { true, true, true }; 
 
 	mCurrentSceneType = SceneType::LOADING;
 	mCurrentScene = mScenes[static_cast<size_t>(SceneType::LOADING)].get();

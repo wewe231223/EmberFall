@@ -102,8 +102,8 @@ void Renderer::ExecuteLoadCommandList() {
 	mExecute = true; 
 }
 
-void Renderer::SetFeatureEnabled(SceneFeatureType type) {
-	mFeatureEnabled = type;
+void Renderer::SetFeatureEnabled(Features type) {
+	mFeatureEnabled = type; 
 }
 
 void Renderer::Update() {
@@ -190,13 +190,13 @@ void Renderer::Render() {
 	mRenderManager->GetMeshRenderManager().RenderGPass(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
 	mRenderManager->GetMeshRenderManager().Reset();
 
-	if (std::get<static_cast<size_t>(RenderFeature::GRASS)>(mFeatureEnabled) and mShaderModel6_5Support) {
+	if (mFeatureEnabled.Grass and mShaderModel6_5Support) {
 		ComPtr<ID3D12GraphicsCommandList6> commandList6{};
 		CheckHR(mCommandList.As(&commandList6));
 		mGrassRenderer.Render(commandList6, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
 
-	if (std::get<static_cast<size_t>(RenderFeature::PARTICLE)>(mFeatureEnabled)) {
+	if (mFeatureEnabled.Grass) {
 		mRenderManager->GetParticleManager().RenderSO(mCommandList);
 		mRenderManager->GetParticleManager().RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
@@ -217,7 +217,7 @@ void Renderer::Render() {
 	mDefferedRenderer.Render(mCommandList, mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0), mRenderManager->GetLightingManager().GetLightingBuffer());
 
 	// Blurring Pass
-	if (std::get<static_cast<size_t>(RenderFeature::BLOOM)>(mFeatureEnabled)) {
+	if (mFeatureEnabled.Bloom) {
 
 		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
 		mBlurComputeProcessor.DispatchHorzBlur(mDevice, mCommandList, currentBackBuffer.GetResource());
@@ -234,6 +234,12 @@ void Renderer::Render() {
 
 	// Other IMGUI Renders... 
 	Console.Render(); 
+
+	// IMGUI 코드 (예: 렌더링 루프 안)
+	ImGui::Begin("Game Effects");
+
+
+	ImGui::End();
 
 	mIMGUIRenderer.EndRender(mCommandList); 
 }
@@ -272,7 +278,7 @@ void Renderer::ExecuteRender() {
 
 	mStringRenderer.Render();
 
-	if (std::get<static_cast<size_t>(RenderFeature::PARTICLE)>(mFeatureEnabled)) {
+	if (mFeatureEnabled.Particle) {
 		mRenderManager->GetParticleManager().PostRender();
 		mRenderManager->GetParticleManager().ValidateParticle();
 	}

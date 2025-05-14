@@ -734,8 +734,10 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	gClientCore->Send(packet);
 
 	Time.AddEvent(1s, []() {
-		Console.Log(" {:^4}", LogType::Info, PacketHandler::mPacketHandlerDebugSize.load());
-		return true; }
+		Console.Log("Pkt/s {:^4}", LogType::Info, PacketHandler::mPacketHandlerDebugSize.load());
+		PacketHandler::mPacketHandlerDebugSize.store(0); 
+		return true; 
+		}
 	);
 }
 

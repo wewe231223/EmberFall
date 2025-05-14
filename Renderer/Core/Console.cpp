@@ -72,17 +72,17 @@ void ConsoleBase::Render() {
 			case LogType::Info:
 				ImGui::TextColored(INFO_COLOR, msg.first.c_str());
 				ImGui::SameLine(0.f,10.f);
-				ImGui::TextWrapped(msg.second.c_str());
+				ImGui::Text(msg.second.c_str());
 				break;
 			case LogType::Warning:
 				ImGui::TextColored(WARNING_COLOR, msg.first.c_str());
 				ImGui::SameLine(0.f, 10.f);
-				ImGui::TextWrapped(msg.second.c_str());
+				ImGui::Text(msg.second.c_str());
 				break;
 			case LogType::Error:
 				ImGui::TextColored(ERROR_COLOR, msg.first.c_str());
 				ImGui::SameLine(0.f, 10.f);
-				ImGui::TextWrapped(msg.second.c_str());
+				ImGui::Text(msg.second.c_str());
 				break;
 			default:
 				break;
@@ -91,7 +91,8 @@ void ConsoleBase::Render() {
 		}
 	}
 
-	ImGui::SetScrollHereY(1.0f);
+
+	ImGui::SetScrollHereY(1.f);
 	ImGui::End();
 }
 

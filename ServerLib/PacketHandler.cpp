@@ -106,8 +106,8 @@ void PacketHandler::Reset() {
 RecvBuffer& PacketHandler::GetBuffer(bool swap) {
     if (swap) {
         Swap();
-#if DEF_DEBUG_OR_DEV
-        gPacketHandlerDebugSize += mBuffers[mReadOnlyIdx].Size();
+#ifdef DEF_DEBUG_OR_DEV
+        mPacketHandlerDebugSize += mBuffers[mReadOnlyIdx].Size();
 #endif
     }
 

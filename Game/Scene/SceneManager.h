@@ -20,7 +20,7 @@ public:
 	~SceneManager();
 
 public:
-	SceneFeatureType GetCurrentSceneFeatureType();
+	Features GetCurrentSceneFeatureType();
 
 	void Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCameraBufferLocation, ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList, std::function<void()> initLoadFunc);
 	bool CheckLoaded();
@@ -29,7 +29,7 @@ public:
 	void ChangeSceneTo(SceneType nextScene);
 private:
 	std::array<std::shared_ptr<IScene>, static_cast<size_t>(SceneType::END)> mScenes{};
-	std::array<SceneFeatureType, static_cast<size_t>(SceneType::END)> mSceneFeatureType{};
+	std::array<Features, static_cast<size_t>(SceneType::END)> mSceneFeatureType{};
 
 	IScene* mCurrentScene = nullptr;
 	IScene* mNextScene = nullptr;

@@ -53,7 +53,7 @@ public:
 	void ResetLoadCommandList(); 
 	void ExecuteLoadCommandList();
 
-	void SetFeatureEnabled(SceneFeatureType type);
+	void SetFeatureEnabled(Features type);
 
 	void Update();
 
@@ -143,7 +143,7 @@ private:
 
 	std::shared_ptr<RenderManager> mRenderManager{ nullptr };
 
-	SceneFeatureType mFeatureEnabled{ false, false, false };
+	Features mFeatureEnabled{ false, false, false };
 	GrassRenderer mGrassRenderer{};
 
 	DefaultBuffer mTerrainHeaderBuffer{}; 

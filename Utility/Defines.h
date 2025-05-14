@@ -160,6 +160,15 @@ struct ParticleVertex {
     float opacity{ 1.f };        
 };
 
+
+struct Features {
+    bool Particle{ false };
+	bool Grass{ false };
+	bool Shadow{ false };
+    bool Bloom{ false };
+};
+
+
 /*
 * Flags!
 * 0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 - Common 
