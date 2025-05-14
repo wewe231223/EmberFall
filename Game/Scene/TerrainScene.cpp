@@ -733,8 +733,8 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
 	gClientCore->Send(packet);
 
-	Time.AddEvent(1s, []() {
-		Console.Log("Pkt/s {:^4}", LogType::Info, PacketHandler::mPacketHandlerDebugSize.load());
+	Time.AddEvent(1s, [&]() {
+		mPktsBlock->GetText() = std::format(L"Packet/s : {}", PacketHandler::mPacketHandlerDebugSize.load());
 		PacketHandler::mPacketHandlerDebugSize.store(0); 
 		return true; 
 		}
