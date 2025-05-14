@@ -733,12 +733,14 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
 	gClientCore->Send(packet);
 
+#ifdef DEV_MODE
 	Time.AddEvent(1s, [&]() {
 		mPktsBlock->GetText() = std::format(L"Packet/s : {}", PacketHandler::mPacketHandlerDebugSize.load());
 		PacketHandler::mPacketHandlerDebugSize.store(0); 
 		return true; 
 		}
 	);
+#endif 
 }
 
 // 별도 시간 누적 타이머 
@@ -874,7 +876,9 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 
 
 void TerrainScene::Update() {
+#ifdef DEV_MODE
 	mLatencyBlock->GetText() = std::format(L"Latency : {} ms", TerrainScene::GetAverageLatency<std::chrono::milliseconds>());
+#endif 
 
 	for (auto& item : mItemObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
 		auto& Pos = item.GetTransform().GetPosition();
