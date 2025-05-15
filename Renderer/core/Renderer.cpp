@@ -241,8 +241,6 @@ void Renderer::Render() {
 	Console.Render(); 
 	mRenderManager->GetFeatureManager().Render(); 
 
-	ImGui::End();
-
 	mIMGUIRenderer.EndRender(mCommandList); 
 }
 
