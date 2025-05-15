@@ -110,36 +110,45 @@ void Renderer::Update() {
 void Renderer::Render() {
 	Renderer::ResetCommandList();
 	D3D12_VIEWPORT viewport{};
-
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.Width = ShadowRenderer::GetShadowMapSize<float>();
-	viewport.Height = ShadowRenderer::GetShadowMapSize<float>();
-	viewport.MinDepth = 0.f;
-	viewport.MaxDepth = 1.f;
-
 	D3D12_RECT scissorRect{};
-	scissorRect.left = 0;
-	scissorRect.top = 0;
-	scissorRect.right = ShadowRenderer::GetShadowMapSize<LONG>();
-	scissorRect.bottom = ShadowRenderer::GetShadowMapSize<LONG>();
-
-	mCommandList->RSSetViewports(1, &viewport);
-	mCommandList->RSSetScissorRects(1, &scissorRect);
 
 	mMainCameraBuffer.Upload(mCommandList);
-	mRenderManager->GetShadowRenderer().Upload(mCommandList);
 	mRenderManager->GetMeshRenderManager().PrepareRender(mCommandList);
 	mRenderManager->GetTextureManager().Bind(mCommandList);
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Shadow) {
 
-	mRenderManager->GetShadowRenderer().TransitionShadowMap(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		viewport.TopLeftX = 0;
+		viewport.TopLeftY = 0;
+		viewport.Width = ShadowRenderer::GetShadowMapSize<float>();
+		viewport.Height = ShadowRenderer::GetShadowMapSize<float>();
+		viewport.MinDepth = 0.f;
+		viewport.MaxDepth = 1.f;
+
+		scissorRect.left = 0;
+		scissorRect.top = 0;
+		scissorRect.right = ShadowRenderer::GetShadowMapSize<LONG>();
+		scissorRect.bottom = ShadowRenderer::GetShadowMapSize<LONG>();
+
+		mCommandList->RSSetViewports(1, &viewport);
+		mCommandList->RSSetScissorRects(1, &scissorRect);
+		mRenderManager->GetShadowRenderer().Upload(mCommandList);
+		mRenderManager->GetShadowRenderer().TransitionShadowMap(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	}
+
 	mRenderManager->GetShadowRenderer().SetShadowDSVRTV(mDevice, mCommandList, 0);
-	mRenderManager->GetMeshRenderManager().RenderShadowPass(0, mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0));
 
-	// mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Shadow) {
+
+		mRenderManager->GetMeshRenderManager().RenderShadowPass(0, mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0));
+	}
 
 	mRenderManager->GetShadowRenderer().SetShadowDSVRTV(mDevice, mCommandList, 1);
-	mRenderManager->GetMeshRenderManager().RenderShadowPass(1, mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(1));
+
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Shadow) {
+
+		mRenderManager->GetMeshRenderManager().RenderShadowPass(1, mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(1));
+	}
+
 
 	//mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 2);
 	//mMeshRenderManager->RenderShadowPass(2, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(2));
