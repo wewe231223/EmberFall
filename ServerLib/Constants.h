@@ -14,6 +14,8 @@ inline constexpr NetworkObjectIdType INVALID_OBJ_ID = std::numeric_limits<Networ
 inline constexpr size_t MAX_KEY_SIZE = 256;
 inline constexpr size_t MAX_BUF_SIZE = std::numeric_limits<unsigned short>::max();
 inline constexpr size_t BUF_NETWORK_RECV_SIZE = 65535;
+inline constexpr size_t ADDR_BUF_SIZE = (sizeof(sockaddr_in) + 16) * 2;
+
 inline constexpr NetworkObjectIdType OBJECT_ID_START = INVALID_SESSION_ID + 1;
 
 inline const uint32_t HARDWARE_CONCURRENCY = std::thread::hardware_concurrency();

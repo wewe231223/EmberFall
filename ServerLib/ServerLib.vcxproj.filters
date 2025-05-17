@@ -109,6 +109,9 @@
     <ClCompile Include="Sync.cpp">
       <Filter>Concurrency</Filter>
     </ClCompile>
+    <ClCompile Include="RefCounting.cpp">
+      <Filter>Concurrency</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkUtils.h">
@@ -181,6 +184,9 @@
       <Filter>Concurrency</Filter>
     </ClInclude>
     <ClInclude Include="Sync.h">
+      <Filter>Concurrency</Filter>
+    </ClInclude>
+    <ClInclude Include="RefCounting.h">
       <Filter>Concurrency</Filter>
     </ClInclude>
   </ItemGroup>

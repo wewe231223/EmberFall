@@ -33,8 +33,8 @@ void Trigger::Init() {
     spec.entity = Packets::EntityType_ENV;
 
     auto id = owner->GetId();
-    auto excuteTime = mLifeTime;
-    gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), id, SysClock::now() + std::chrono::milliseconds{ static_cast<long long>(excuteTime * 1000.0f) }, TimerEventType::REMOVE_TRIGGER);
+    auto executeTime = SysClock::now() + std::chrono::milliseconds{ static_cast<long long>(mLifeTime * 1000.0f) };
+    gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), id, executeTime, TimerEventType::REMOVE_TRIGGER);
 }
 
 void Trigger::Update(const float deltaTime) { }

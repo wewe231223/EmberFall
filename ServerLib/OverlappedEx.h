@@ -34,7 +34,6 @@ public:
     std::shared_ptr<INetworkObject> owner;
 };
 
-inline constexpr size_t ADDR_BUF_SIZE = (sizeof(sockaddr_in) + 16) * 2;
 struct OverlappedAccept : public OverlappedEx {
     OverlappedAccept();
 

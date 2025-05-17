@@ -16,12 +16,12 @@ concept HasEpochCount = requires(T t) {
 
 template <typename T>
 class EBR {
-private:
+protected:
     inline static constexpr size_t ALIGN_SIZE = MIN_ARRAY_ALIGN_SIZE<std::atomic_uint64_t>;
 
 public:
     EBR() : mEBRArray{ std::make_unique<EpochCounter[]>(MAX_THREAD * ALIGN_SIZE) }, mEpochCounter{ 1 } {}
-    ~EBR() { ClearThreadEpoch(); }
+    ~EBR() { }
 
 public:
     void StartEpoch(const ThreadIdType id) {
@@ -33,7 +33,8 @@ public:
         mEBRArray[id * ALIGN_SIZE] = 0;
     }
 
-    void ClearThreadEpoch() {
+    //
+    void CleanupThreadLocalQueue() {
         while (false == mFreeQueue.empty()) {
             auto ptr = mFreeQueue.front();
             mFreeQueue.pop();
@@ -67,7 +68,7 @@ public:
         mFreeQueue.pop();
 
         std::destroy_at(ptr);
-        ptr = new(ptr) T{ std::forward<Args>(args)... };
+        new(ptr) T{ std::forward<Args>(args)... };
         return ptr;
     }
 
@@ -75,7 +76,23 @@ public:
     inline static thread_local std::queue<T*> mFreeQueue{ };
     inline static const size_t MAX_THREAD = HARDWARE_CONCURRENCY;
 
-private:
+protected:
     EpochCounter mEpochCounter{ };
     const std::unique_ptr<EpochCounter[]> mEBRArray;
+};
+
+template <typename T>
+class EBRGaurd {
+public:
+    explicit EBRGuard(EBR<T>& ebr) 
+        : mEBR{ ebr } { 
+        mEBR.StartEpoch();
+    }
+
+    ~EBRGuard() {
+        mEBR.EndEpoch();
+    }
+
+private:
+    EBR<T>& mEBR;
 };

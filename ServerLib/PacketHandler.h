@@ -37,7 +37,7 @@ inline constexpr size_t RECV_BUF_SIZE = std::numeric_limits<unsigned short>::max
 class RecvBuffer {
 public:
 #if DEF_DEBUG_OR_DEV
-    std::atomic_uint64_t mPacketHandlerDebugSize{ };
+    inline static std::atomic_uint64_t mPacketHandlerDebugSize{ };
 #endif
 
 public:
@@ -61,7 +61,7 @@ public:
     void Reset();
 
 private:
-    std::atomic_ullong mWritePos{ };
+    std::atomic_size_t mWritePos{ };
     size_t mReadPos{ };
     std::array<char, RECV_BUF_SIZE> mBuffer{ };
 };
@@ -86,7 +86,7 @@ public:
 private:
     UINT8 mReadOnlyIdx{ 0 };
     UINT8 mWriteOnlyIdx{ 1 };
-    Lock::SRWLock mBufferLock{ };
+    std::shared_timed_mutex mBufferLock{ };
     std::array<RecvBuffer, 2> mBuffers{ };
 };
 
