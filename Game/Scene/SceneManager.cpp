@@ -4,6 +4,7 @@
 #include "../Scene/TerrainScene.h"
 #include "../Scene/LobbyScene.h"
 #include "../resource.h"
+#include "../Renderer/Core/Console.h"
 
 SceneManager::SceneManager() {}
 
@@ -41,7 +42,6 @@ void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferC
 void SceneManager::ChangeSceneTo(SceneType nextScene) {
 	mAdvance = true;
 	mNextSceneType = nextScene;
-	mNextScene = mScenes[static_cast<size_t>(nextScene)].get();
 }
 
 bool SceneManager::CheckLoaded() {
@@ -65,15 +65,16 @@ void SceneManager::Update(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComm
 	if (mAdvance && !mLoadingThread.joinable()) {
 		if (mCurrentScene) mCurrentScene->Exit();
 
-		switch (mNextSceneType)
-		{
+		switch (mNextSceneType) {
 		case SceneType::TITLE:
 			break;
 		case SceneType::LOBBY:
 			mScenes[static_cast<size_t>(SceneType::LOBBY)] = std::make_unique<LobbyScene>(mRenderManager, mMainCameraBufferLocation);
+			Console.Log("Lobby Scene 이 로드되었습니다.", LogType::Warning); 
 			break;
 		case SceneType::TERRAIN:
 			mScenes[static_cast<size_t>(SceneType::TERRAIN)] = std::make_unique<TerrainScene>(mRenderManager, mMainCameraBufferLocation);
+			Console.Log("Terrain Scene 이 로드되었습니다.", LogType::Warning);
 			break;
 		case SceneType::FINAL:
 			break;
@@ -81,6 +82,7 @@ void SceneManager::Update(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComm
 			break;
 		case SceneType::LOADING:
 			mScenes[static_cast<size_t>(SceneType::LOADING)] = std::make_unique<LoadingScene>(mRenderManager);
+			Console.Log("Loading Scene 이 로드되었습니다.", LogType::Warning);
 			break;
 		default:
 			break;

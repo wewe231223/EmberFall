@@ -434,7 +434,7 @@ void LobbyScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 
 	mLeftArrowButton = Button{};
-	mLeftArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("Left"));
+	mLeftArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("left"));
 	mLeftArrowButton.SetRect(0.f, 0.f, 100.f, 100.f);
 
 	mRightArrowButton = Button{};
