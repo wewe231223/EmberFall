@@ -102,12 +102,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		[&renderer]() { renderer.LoadTextures(); });
 
     int n = NonReplacementSampler::GetInstance().Sample();
+    
     Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::Escape, n, []() {
         PostQuitMessage(0);
-        });
+    });
+    
     Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F2, n, []() {Input.ToggleVirtualMouse(); });
-
     Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F5, n, [&renderer]() { renderer.ToggleFullScreen(); });
+
     size_t frameCount = 0;
     Time.AddEvent(1s, [&frameCount]() {
         std::string title = "FPS : " + std::to_string(frameCount);

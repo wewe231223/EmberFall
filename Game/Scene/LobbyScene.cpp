@@ -434,11 +434,11 @@ void LobbyScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 
 	mLeftArrowButton = Button{};
-	mLeftArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("left"));
+	mLeftArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("left_arrow"));
 	mLeftArrowButton.SetRect(0.f, 0.f, 100.f, 100.f);
 
 	mRightArrowButton = Button{};
-	mRightArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("Right"));
+	mRightArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("right_arrow"));
 	mRightArrowButton.SetRect(100.f, 0.f, 100.f, 100.f);
 
 	mReadyButton = Button{};
@@ -448,7 +448,6 @@ void LobbyScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mLeftArrowButton.SetActiveState(false); 
 	mRightArrowButton.SetActiveState(false);
 	mReadyButton.SetActiveState(false);
-
 }
 
 void LobbyScene::ProcessNetwork() {
