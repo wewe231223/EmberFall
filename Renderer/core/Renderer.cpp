@@ -42,6 +42,11 @@ Renderer::Renderer(HWND rendererWindowHandle)
 
 Renderer::~Renderer() {
 	Renderer::FlushCommandQueue(); 
+
+
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 }
 
 std::shared_ptr<RenderManager> Renderer::GetRenderManager() {

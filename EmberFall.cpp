@@ -176,6 +176,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     gClientCore->End();
 
+
+
+
     return (int) msg.wParam;
 }
 
