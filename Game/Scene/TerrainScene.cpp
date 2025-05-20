@@ -1219,7 +1219,8 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 	mMeshMap["HealthPotion"] = std::make_unique<Mesh>(device, commandList, data);
 	mColliderMap["HealthPotion"] = Collider{ data.position };
 
-	data = tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", true);
+	tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw");
+	data = tLoader.GetData(); 
 	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, data);
 
 	mMeshMap["SkyBox"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::SkyDome, 100);

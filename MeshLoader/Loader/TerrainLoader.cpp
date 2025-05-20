@@ -8,57 +8,82 @@
 #undef max
 #endif // max
 
-int TerrainLoader::GetLength() const {
-    return mLength;
+void TerrainLoader::Load(const std::filesystem::path& path) {
+    CrashExp(path.extension() == ".raw", "Height map should be .raw File");
+
+    size_t size = std::filesystem::file_size(path);
+    mLength = static_cast<int>(std::sqrt(size));
+    CrashExp(mLength * mLength == static_cast<int>(size),
+        "Height map must be square of BYTE");
+
+    // 읽기
+    mHeight.assign(mLength, std::vector<float>(mLength));
+    std::ifstream file{ path, std::ios::binary };
+    std::vector<BYTE> rowData(mLength);
+    for (int z = 0; z < mLength; ++z) {
+        file.read(reinterpret_cast<char*>(rowData.data()), mLength);
+        for (int x = 0; x < mLength; ++x) {
+            mHeight[z][x] = static_cast<float>(rowData[x]);
+        }
+    }
 }
 
-MeshData TerrainLoader::Load(const std::filesystem::path& path, bool patch) {
-    MeshData meshData{};
+MeshData TerrainLoader::GetData() const {
+    MeshData meshData;
+    int patchSize = PATCH_LENGTH * PATCH_SCALE;
+    int numPatches = mLength / patchSize;
 
-    CrashExp((path.extension() == ".raw"), "Height map should be .raw File");
-
-    if (patch) {
-        size_t size = std::filesystem::file_size(path);
-        mLength = static_cast<int>(::sqrt(size));
-        int half = mLength / 2;
-
-        std::ifstream file{ path, std::ios::binary };
-
-        mHeight.resize(mLength, std::vector<float>(mLength));
-        std::vector<BYTE> data(mLength);
-
-        for (auto& line : mHeight) {
-            file.read(reinterpret_cast<char*>(data.data()), mLength * sizeof(BYTE));
-            for (size_t i = 0; auto & dot : line) {
-                dot = static_cast<float>(data[i++]);
-            }
+    // 모든 패치 생성
+    for (int pr = 0; pr < numPatches; ++pr) {
+        for (int pc = 0; pc < numPatches; ++pc) {
+            int zEnd = mLength - (pr + 1) * patchSize;
+            int zStart = zEnd + patchSize;
+            int xStart = pc * patchSize;
+            int xEnd = xStart + patchSize;
+            CreatePatch(meshData, zStart, zEnd, xStart, xEnd);
         }
-
-        int patchSize = PATCH_LENGTH * PATCH_SCALE;
-        for (int pz = mLength - patchSize; pz >= 0; pz -= patchSize) {
-            for (int px = 0; px <= mLength - patchSize; px += patchSize) {
-                CreatePatch(meshData, pz + patchSize, pz, px, px + patchSize);
-            }
-        }
-
-        meshData.primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST;
-        meshData.indexed = false;
-        meshData.unitCount = static_cast<UINT>(meshData.position.size());
-        meshData.vertexAttribute.set(0);
-		meshData.vertexAttribute.set(1);
-        meshData.vertexAttribute.set(2);
-        meshData.vertexAttribute.set(3);
-		meshData.vertexAttribute.set(4);
-		meshData.vertexAttribute.set(5);
     }
-    else {
-        // 일반 처리 (변경 없음)
-    }
+
+    // 공통 설정
+    meshData.primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST;
+    meshData.indexed = false;
+    meshData.unitCount = static_cast<UINT>(meshData.position.size());
+    for (int i = 0; i <= 5; ++i)
+        meshData.vertexAttribute.set(i);
+
+    return meshData;
+}
+
+MeshData TerrainLoader::GetData(int patchRow, int patchCol) const {
+    MeshData meshData;
+    int patchSize = PATCH_LENGTH * PATCH_SCALE;
+    int numPatches = mLength / patchSize;
+
+    CrashExp(patchRow >= 0 && patchRow < numPatches && patchCol >= 0 && patchCol < numPatches, "patchRow/patchCol out of range");
+
+    int zEnd = mLength - (patchRow + 1) * patchSize;
+    int zStart = zEnd + patchSize;
+    int xStart = patchCol * patchSize;
+    int xEnd = xStart + patchSize;
+
+    CreatePatch(meshData, zStart, zEnd, xStart, xEnd);
+
+    meshData.primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST;
+    meshData.indexed = false;
+    meshData.unitCount = static_cast<UINT>(meshData.position.size());
+    for (int i = 0; i <= 5; ++i)
+        meshData.vertexAttribute.set(i);
 
     return meshData;
 }
 
 
+const std::pair<int, int> TerrainLoader::GetPatchCount() const {
+    int patchSize = PATCH_LENGTH * PATCH_SCALE;
+    int numPatches = mLength / patchSize;
+
+	return { numPatches, numPatches };
+}
 
 SimpleMath::Vector3 TerrainLoader::CalculateNormal(int z, int x) const {
     const int clampZ = std::clamp(z, 1, mLength - 2);
@@ -70,12 +95,12 @@ SimpleMath::Vector3 TerrainLoader::CalculateNormal(int z, int x) const {
     float hu = mHeight[clampZ - 1][clampX]; // up
 
     DirectX::SimpleMath::Vector3 normal{ hl - hr, 2.f, hd - hu };
-    normal.Normalize(); 
+    normal.Normalize();
 
     return normal;
 }
 
-void TerrainLoader::CreatePatch(MeshData& data, int zStart, int zEnd, int xStart, int xEnd) {
+void TerrainLoader::CreatePatch(MeshData& data, int zStart, int zEnd, int xStart, int xEnd) const {
     float stepSize = static_cast<float>(zStart - zEnd) / PATCH_LENGTH;
 
     int patchStride = PATCH_LENGTH + 1;
@@ -103,7 +128,7 @@ void TerrainLoader::CreatePatch(MeshData& data, int zStart, int zEnd, int xStart
             data.bitangent.emplace_back(0.f, 0.f, 0.f);
         }
     }
-    
+
     patchVertexStart = static_cast<int>(data.position.size()) - patchStride * patchStride;
 
     // 편미분 함수 (같이 정의)
@@ -149,7 +174,6 @@ void TerrainLoader::CreatePatch(MeshData& data, int zStart, int zEnd, int xStart
         }
     }
 }
-
 
 bool TerrainCollider::LoadFromFile(const std::filesystem::path& filePath) {
     std::ifstream file(filePath, std::ios::binary);

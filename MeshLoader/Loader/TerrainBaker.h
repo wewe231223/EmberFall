@@ -58,7 +58,9 @@ static std::vector<::DirectX::SimpleMath::Vector3> SimulateTessellationForPatch(
 
 bool SimulateGlobalTessellationAndWriteFile(const std::filesystem::path& heightMapPath, const std::filesystem::path& outputFilePath) {
     TerrainLoader loader;
-    MeshData meshData = loader.Load(heightMapPath, true);
+    loader.Load(heightMapPath); 
+
+    MeshData meshData = loader.GetData();
 
     int PATCH_LENGTH = 4;
 	int PATCH_SCALE = 8;

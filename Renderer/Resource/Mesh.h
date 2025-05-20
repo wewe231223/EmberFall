@@ -33,6 +33,7 @@ public:
 	Mesh& operator=(Mesh&& other) noexcept;
 public:
 	void Bind(ComPtr<ID3D12GraphicsCommandList> commandList,const std::bitset<8>& attribute) const;
+
 	bool GetIndexed() const;
 	UINT GetUnitCount() const; 
 private:

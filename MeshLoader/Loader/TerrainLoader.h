@@ -7,22 +7,28 @@
 #include <vector>
 
 class TerrainLoader {
-	static constexpr int PATCH_LENGTH = 4;
-	static constexpr int PATCH_SCALE = 8;
+    static constexpr int PATCH_LENGTH = 4;
+    static constexpr int PATCH_SCALE = 8;
+    static constexpr int TILE_SCALE = 15;
 
-	static constexpr int TILE_SCALE = 15; 
 public:
-	TerrainLoader() = default;
-	~TerrainLoader() = default;
-public:
-	int GetLength() const;
-	MeshData Load(const std::filesystem::path& path, bool patch);
+    TerrainLoader() = default;
+    ~TerrainLoader() = default;
+
+    void Load(const std::filesystem::path& path);
+
+    MeshData GetData() const;
+    MeshData GetData(int patchRow, int patchCol) const;
+
+    int GetLength() const { return mLength; }
+
+    const std::pair<int, int> GetPatchCount() const;
 private:
-	SimpleMath::Vector3 CalculateNormal(int z, int x) const;
-	void CreatePatch(MeshData& data, int zStart, int zEnd, int xStart, int xEnd);
-private:
-	std::vector<std::vector<float>> mHeight{};
-	int mLength{};
+    SimpleMath::Vector3 CalculateNormal(int z, int x) const;
+    void CreatePatch(MeshData& data, int zStart, int zEnd, int xStart, int xEnd) const;
+
+    std::vector<std::vector<float>> mHeight{};
+    int mLength = 0;
 };
 
 class TerrainCollider {
