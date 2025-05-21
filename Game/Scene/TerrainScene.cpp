@@ -734,12 +734,12 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	gClientCore->Send(packet);
 
 #ifdef DEV_MODE
-	Time.AddEvent(1s, [&]() {
-		mPktsBlock->GetText() = std::format(L"Packet/s : {}", PacketHandler::mPacketHandlerDebugSize.load());
-		PacketHandler::mPacketHandlerDebugSize.store(0); 
-		return true; 
-		}
-	);
+	//Time.AddEvent(1s, [&]() {
+	//	mPktsBlock->GetText() = std::format(L"Packet/s : {}", PacketHandler::mPacketHandlerDebugSize.load());
+	//	PacketHandler::mPacketHandlerDebugSize.store(0); 
+	//	return true; 
+	//	}
+	//);
 #endif 
 }
 

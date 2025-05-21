@@ -251,22 +251,23 @@ void Session::NotifyingSessionConn() {
 }
 
 RecvBuf::iterator Session::ValidatePackets(RecvBuf::iterator iter, RecvBuf::iterator last) {
-    auto it = iter;
-    while (it != last) {
-        auto packetSize = NetworkUtil::GetPacketSizeFromIter(it);
-        if (std::distance(it, last) < packetSize) {
-            break;
+    while (iter != last) {
+        if constexpr (sizeof(PacketSizeT) > sizeof(char)) {
+            if (std::distance(iter, last) < sizeof(PacketSizeT)) {
+                break;
+            }
         }
 
-#if defined(DEBUG) || defined(_DEBUG)
-        if (0 == packetSize) {
-            Crash("asd");
+        auto packetSize = NetworkUtil::GetPacketSizeFromIter(iter);
+        if (sizeof(PacketHeaderSC) > packetSize) {
+            MessageBoxA(nullptr, std::format("PacketSize is: {}", packetSize).c_str(), "", MB_OK | MB_ICONERROR);
+            exit(-1);
         }
-#endif
-        it += packetSize;
+
+        iter += packetSize;
     }
 
-    return it;
+    return iter;
 }
 
 void Session::OnConnect() { 
