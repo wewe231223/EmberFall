@@ -574,11 +574,15 @@ void LobbyScene::Update() {
 
 
 	mCamera.UpdateBuffer(); 
+	mRenderManager->GetShadowRenderer().Update();
 
 	for (auto& object : mLobbyProps) {
 		object.UpdateShaderVariables();
 		auto [mesh, shader, modelContext] = object.GetRenderData();
 		mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
+		for (int i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
+			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, i);
+		}
 	}
 
 	for (auto& player : mPlayers) {

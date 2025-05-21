@@ -132,9 +132,8 @@ void Renderer::Render() {
 		mCommandList->RSSetViewports(1, &viewport);
 		mCommandList->RSSetScissorRects(1, &scissorRect);
 		mRenderManager->GetShadowRenderer().Upload(mCommandList);
-		mRenderManager->GetShadowRenderer().TransitionShadowMap(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	}
-
+	mRenderManager->GetShadowRenderer().TransitionShadowMap(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	mRenderManager->GetShadowRenderer().SetShadowDSVRTV(mDevice, mCommandList, 0);
 
 	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Shadow) {
