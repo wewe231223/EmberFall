@@ -37,6 +37,7 @@
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 
+
 #ifdef _DEBUG
 #pragma comment(lib, "External/lib/debug/DirectXTK12.lib")
 #else 

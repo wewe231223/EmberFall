@@ -1232,9 +1232,17 @@ void TerrainScene::BuildMaterial() {
 	MaterialConstants mat{};
 	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Rolling Hills");
-	mat.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("ground9_Diffuse");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("ground9_Normal");
+	mat.mAlphaTexture[0] = mRenderManager->GetTextureManager().GetTexture("Splatmap_Combined_0");
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_YFGM_GrassLeafs02_d");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_YFGM_GrassLeafs02_n");
+
+	mat.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("T_YFGM_SoilGravel01_d");
+	mat.mNormalTexture[1] = mRenderManager->GetTextureManager().GetTexture("T_YFGM_SoilGravel01_n");
+
+	mat.mDiffuseTexture[2] = mRenderManager->GetTextureManager().GetTexture("T_YFGM_MossStones_d");
+	mat.mNormalTexture[2] = mRenderManager->GetTextureManager().GetTexture("T_YFGM_MossStones_n");
+
 	mRenderManager->GetMaterialManager().CreateMaterial("TerrainMaterial", mat);
 
 

@@ -318,30 +318,53 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
         return output;
     }
 
-   
     const MaterialConstants matConst = materialConstants[input.material];
 
-    float4 baseColor = textures[matConst.diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord1);
-    float4 detailColor = textures[matConst.diffuseTexture[1]].Sample(anisotropicWrapSampler, input.texcoord2);
-    float4 normalSample = textures[matConst.normalTexture[0]].Sample(anisotropicWrapSampler, input.texcoord2);
 
-    float3 normalTS = normalSample.xyz * 2.0f - 1.0f; 
+    float4 splatWeight = textures[matConst.alphaTexture[0]].Sample(linearWrapSampler, input.texcoord1);
+    splatWeight = saturate(splatWeight);
+    float totalWeight = splatWeight.r + splatWeight.g + splatWeight.b + splatWeight.a;
+    splatWeight /= max(totalWeight, 1e-5);
+
+
+    float4 baseColor = 0;
+    float3 blendedNormalTS = 0;
+
+    [unroll]
+    for (int i = 0; i < 3; ++i) 
+    {
+        float4 layerColor = textures[matConst.diffuseTexture[i]].Sample(anisotropicWrapSampler, input.texcoord2);
+        float3 layerNormalTS = textures[matConst.normalTexture[i]].Sample(anisotropicWrapSampler, input.texcoord2).xyz * 2.0f - 1.0f;
+
+   
+        layerNormalTS.xy *= 20.0f;
+        layerNormalTS = normalize(layerNormalTS);
+
+        float weight = (i == 0) ? splatWeight.r :
+                       (i == 1) ? splatWeight.g :
+                       splatWeight.b;
+
+        
+        
+        baseColor += float4(layerColor.rgb, 1.f) * weight;
+        blendedNormalTS += layerNormalTS * weight;
+    }
     
-    normalTS.xy *= 5.f; //  X,Y 성분 확대
-    normalTS = normalize(normalTS);
-    
+
+    blendedNormalTS = normalize(blendedNormalTS);
 
     float3 T = normalize(input.tangent);
     float3 B = normalize(input.bitangent);
     float3 N = normalize(input.normal);
     float3x3 TBN = float3x3(T, B, N);
 
-    float3 finalNormal = normalize(mul(normalTS, TBN));
+    float3 finalNormalWS = normalize(mul(blendedNormalTS, TBN));
 
-    output.diffuse = saturate(baseColor * 0.3f + detailColor * 0.7f);
-    output.normal = float4(finalNormal, 0.0f);
-    output.position = float4(input.wPosition, 1.0f);
-    output.emissive = float4(0, 0, 0, 0);
+
+    output.diffuse = baseColor; 
+    output.normal = float4(finalNormalWS, 0); 
+    output.position = float4(input.wPosition, 1.0f); 
+    output.emissive = float4(0, 0, 0, 0); 
 
     return output;
 }
