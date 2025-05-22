@@ -13,6 +13,8 @@ class TerrainLoader {
 
 public:
     TerrainLoader() = default;
+    TerrainLoader(const std::filesystem::path& path); 
+    
     ~TerrainLoader() = default;
 
     void Load(const std::filesystem::path& path);

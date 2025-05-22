@@ -8,6 +8,10 @@
 #undef max
 #endif // max
 
+TerrainLoader::TerrainLoader(const std::filesystem::path& path) {
+	Load(path);
+}
+
 void TerrainLoader::Load(const std::filesystem::path& path) {
     CrashExp(path.extension() == ".raw", "Height map should be .raw File");
 

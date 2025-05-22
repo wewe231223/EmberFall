@@ -139,9 +139,9 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mMyPlayer->SetAnimation(data->animation()); 
 
 				mHealthBarUI.SetHealth(data->hp()); 
-				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+				mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 
-				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
+				//mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
 				mCameraMode->Enter();
 			}
 			else {
@@ -560,20 +560,8 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 
 	TerrainScene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
 
-	{
-		auto& object = mGameObjects.emplace_back();
-		object.mShader = mShaderMap["TerrainShader"].get();
-		object.mMesh = mMeshMap["Terrain"].get();
-		object.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("TerrainMaterial");
-		object.SetActiveState(true);
-		object.SetEmpty(false);
-
-		object.GetTransform().GetPosition() = { 0.f, 0.f, 0.f };
-		object.GetTransform().Scaling(1.f, 1.f, 1.f);
-	}
-
-
-
+	mTerrainObject = TerrainObject{ device, commandList,"Resources/Binarys/Terrain/terrain.raw" };
+	mTerrainObject.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("TerrainMaterial"));
 #ifdef DEV_MODE
 	{
 		auto& boss = mGameObjects.emplace_back();
@@ -931,9 +919,10 @@ void TerrainScene::Update() {
 	mCamera.UpdateBuffer();
 	mRenderManager->GetShadowRenderer().Update();
 
+
+	mTerrainObject.Update(mCamera, mRenderManager); 
+
 	static BoneTransformBuffer boneTransformBuffer{};
-
-
 	for (auto& gameObject : mGameObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
 		if (gameObject.mAnimated) {
 			gameObject.ForwardUpdate(); 
@@ -942,7 +931,7 @@ void TerrainScene::Update() {
 
 			auto [mesh, shader, modelContext] = gameObject.GetRenderData();
 
-			if (mCamera.FrustumCulling(gameObject.mCollider)) {
+			if (mCamera.IsInFrustum(gameObject.mCollider)) {
 				mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
 			}
 				
@@ -971,7 +960,7 @@ void TerrainScene::Update() {
 
 		auto [mesh, shader, modelContext] = item.GetRenderData();
 
-		if (mCamera.FrustumCulling(item.mCollider)) {
+		if (mCamera.IsInFrustum(item.mCollider)) {
 			mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
 		}
 
@@ -982,13 +971,13 @@ void TerrainScene::Update() {
 	for (auto& object : mEnvironmentObjects) {
 		if (object.mCollider.GetActiveState()) {
 			for (int i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
-				if (mRenderManager->GetShadowRenderer().ShadowMapCulling(i, object.mCollider)) {
+				if (mRenderManager->GetShadowRenderer().IsInShadowFrustum(i, object.mCollider)) {
 					auto [mesh, shader, modelContext] = object.GetRenderData();
 					mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, i);
 				}
 			}
 
-			if (mCamera.FrustumCulling(object.mCollider)) {
+			if (mCamera.IsInFrustum(object.mCollider)) {
 				auto [mesh, shader, modelContext] = object.GetRenderData();
 				mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
 			}

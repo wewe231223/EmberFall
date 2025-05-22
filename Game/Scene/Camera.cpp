@@ -23,10 +23,14 @@ void Camera::UpdateBuffer() {
 	::memcpy(*mCameraBufferCPU, &mCameraConstant, sizeof(CameraConstants));
 }
 
-bool Camera::FrustumCulling(Collider& other) const {
+bool Camera::IsInFrustum(Collider& other) const {
 	auto& box = other.GetWorldBox();
 
 	return mWorldFrustum.Intersects(box);
+}
+
+bool Camera::IsInFrustum(DirectX::BoundingBox& other) const {
+	return mWorldFrustum.Intersects(other); 
 }
 
 CameraMode::CameraMode(Camera* camera) : mCamera(camera) {

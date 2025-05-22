@@ -20,7 +20,9 @@ public:
 public:
 	void UpdateBuffer();
 	Transform& GetTransform() { return mTransform; }
-	bool FrustumCulling(Collider& other) const; 
+
+	bool IsInFrustum(Collider& other) const; 
+	bool IsInFrustum(DirectX::BoundingBox& other) const;
 public:
 	CameraParameter CameraParam{};
 private:

@@ -15,6 +15,7 @@
 #include "../UI/Inventory.h"
 #include "../UI/HealthBar.h"
 #include "../UI/Profile.h"
+#include "../Game/GameObject/TerrainObject.h"
 #include "../External/Include/absl/container/flat_hash_map.h"
 
 class TerrainScene : public IScene {
@@ -125,11 +126,10 @@ private:
 
 	TerrainLoader tLoader{}; 
 	TerrainCollider tCollider{};
+	TerrainObject mTerrainObject{}; 
 
 	DefaultBuffer mTerrainHeaderBuffer{};
 	DefaultBuffer mTerrainDataBuffer{};
-
-	
 
 	IntervalTimer mIntervalTimer{};
 

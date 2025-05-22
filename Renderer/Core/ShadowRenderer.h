@@ -34,12 +34,15 @@ public:
 public:
 	// 그림자 맵 만들기 
 	void SetShadowDSVRTV(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList,int index);
+
 	void Update(); 
 	void Upload(ComPtr<ID3D12GraphicsCommandList> commandList);
-	bool ShadowMapCulling(int index, Collider& other);
-	void TransitionShadowMap(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
-
 	DefaultBufferGPUIterator GetShadowCameraBuffer(int index);
+
+	bool IsInShadowFrustum(int index, Collider& other);
+	bool IsInShadowFrustum(int index, DirectX::BoundingBox& other);
+
+	void TransitionShadowMap(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after);
 
 	Texture& GetShadowMap(int index);
 	std::array<Texture, Config::SHADOWMAP_COUNT<int>>& GetShadowMapArray();
