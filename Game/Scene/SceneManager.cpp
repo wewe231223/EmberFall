@@ -29,7 +29,7 @@ void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferC
 	mCurrentScene = mScenes[static_cast<size_t>(SceneType::LOADING)].get();
 
 	gClientCore->Init();
-	if (!gClientCore->Start("183.101.111.244", 7777)) {
+	if (!gClientCore->Start("127.0.0.1", SERVER_PORT)) {
 		DebugBreak();
 		Crash(false);
 	}

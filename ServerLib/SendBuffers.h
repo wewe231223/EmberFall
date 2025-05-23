@@ -50,7 +50,7 @@ private:
 };
 
 class SendBufferFactory {
-#if DEF_DEBUG_OR_PRINT_LOG
+#ifdef DEF_DEBUG_OR_PRINT_LOG
 public:
     inline static std::atomic_ullong mSendBuffDebugger{ };
 #endif

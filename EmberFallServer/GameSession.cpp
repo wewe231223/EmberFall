@@ -143,13 +143,10 @@ void GameSession::InitPlayerScript() {
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_ARCHER);
         mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
 
-        auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
-
-        player->SetOwnerSession(sharedFromThis);
         break;
     }
 
@@ -160,13 +157,10 @@ void GameSession::InitPlayerScript() {
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_SHIELD_MAN);
         mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
 
-        auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
-
-        player->SetOwnerSession(sharedFromThis);
         break;
     }
 
@@ -177,13 +171,10 @@ void GameSession::InitPlayerScript() {
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_LONGSWORD_MAN);
         mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
 
-        auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
-
-        player->SetOwnerSession(sharedFromThis);
         break;
     }
 
@@ -194,13 +185,10 @@ void GameSession::InitPlayerScript() {
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_MAGICIAN);
         mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
 
-        auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
-
-        player->SetOwnerSession(sharedFromThis);
         break;
     }
 
@@ -211,19 +199,76 @@ void GameSession::InitPlayerScript() {
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_DEMON);
         mUserObject->GetTransform()->SetPosition(SimpleMath::Vector3{ -200.0f, 0.0f, -200.0f });
 
-        auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<BossPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
-
-        player->SetOwnerSession(sharedFromThis);
         break;
     }
 
     default:
         break;
     }
+}
+
+void GameSession::UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeNPC, const std::vector<NetworkObjectIdType>& inViewRangePlayer) {
+    std::unordered_set<NetworkObjectIdType> oldViewList;
+    {
+        std::shared_lock viewListGuard{ mViewListLock };
+        oldViewList = mViewList;
+    }
+
+    if (SESSION_INGAME != mSessionState) {
+        return;
+    }
+
+    decltype(auto) myRoomStage = gGameRoomManager->GetRoom(GetMyRoomIdx())->GetStage();
+
+    std::unordered_set<NetworkObjectIdType> newViewList{};
+    for (const auto id : inViewRangePlayer) {
+        auto [iter, success] = newViewList.insert(id);
+        if (not success) {
+            continue;
+        }
+    }
+
+    for (const auto id : inViewRangeNPC) {
+        auto [iter, success] = newViewList.insert(id);
+        if (not success) {
+            continue;
+        }
+    }
+
+    auto ownerRoom = GetMyRoomIdx();
+    decltype(auto) roomStage = gGameRoomManager->GetRoom(ownerRoom)->GetStage();
+    for (const auto id : newViewList) {
+        if (oldViewList.contains(id)) {
+            continue;
+        }
+
+        decltype(auto) newObj = roomStage.GetObjectFromId(id);
+        if (nullptr == newObj or false == newObj->mSpec.active) {
+            continue;
+        }
+
+        const ObjectSpec spec = newObj->mSpec;
+        const auto yaw = newObj->GetEulerRotation().y;
+        const auto pos = newObj->GetPosition();
+        const auto anim = newObj->mAnimationStateMachine.GetCurrState();
+
+        decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(id, spec.entity, yaw, anim, spec.hp, pos);
+        RegisterSend(packetAppeared);
+    }
+
+    for (const auto id : oldViewList) {
+        if (not newViewList.contains(id)) {
+            decltype(auto) packetDisappeared = FbsPacketFactory::ObjectDisappearedSC(id);
+            RegisterSend(packetDisappeared);
+        }
+    }
+
+    std::unique_lock viewListGuard{ mViewListLock };
+    mViewList = newViewList;
 }
 
 void GameSession::EnterLobby() {

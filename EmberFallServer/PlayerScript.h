@@ -15,9 +15,6 @@ public:
     std::shared_ptr<Input> GetInput() const;
     ViewList& GetViewList();
 
-    void SetOwnerSession(std::shared_ptr<class GameSession> session);
-
-    void UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeNPC, const std::vector<NetworkObjectIdType>& inViewRangePlayer);
     void Suicide();
 
     virtual void Init() abstract;
@@ -42,6 +39,4 @@ private:
     ViewList mViewList;
     
     NetworkObjectIdType mInteractionObj{ };
-
-    std::weak_ptr<GameSession> mSession{ };
 };

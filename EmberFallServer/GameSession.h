@@ -41,6 +41,8 @@ public:
     void InitUserObject();
     void InitPlayerScript();
 
+    void UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeNPC, const std::vector<NetworkObjectIdType>& inViewRangePlayer);
+
     virtual void Close() override;
     virtual void OnConnect() override;
     virtual void ProcessRecv(INT32 numOfBytes) override;
@@ -52,4 +54,7 @@ private:
 
     std::string mName{ };
     std::shared_ptr<GameObject> mUserObject{ nullptr };
+
+    std::shared_mutex mViewListLock{ };
+    std::unordered_set<NetworkObjectIdType> mViewList{ };
 };

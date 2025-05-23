@@ -82,10 +82,10 @@ protected:
 };
 
 template <typename T>
-class EBRGaurd {
+class EBRGuard {
 public:
-    explicit EBRGuard(EBR<T>& ebr) 
-        : mEBR{ ebr } { 
+    EBRGuard(EBR<T>& ebr) 
+        : mEBR{ std::ref(ebr) } { 
         mEBR.StartEpoch();
     }
 

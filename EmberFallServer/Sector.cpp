@@ -574,7 +574,12 @@ void SectorSystem::UpdatePlayerViewList(const std::shared_ptr<GameObject>& playe
         inViewRangeMonsters.insert(inViewRangeMonsters.end(), monsters.begin(), monsters.end());
         inViewRangePlayers.insert(inViewRangePlayers.end(), players.begin(), players.end());
     }
-    playerScript->UpdateViewList(inViewRangeMonsters, inViewRangePlayers);
+
+    auto gameSession = static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(id));
+    if (nullptr == gameSession) {
+        return;
+    }
+    gameSession->UpdateViewList(inViewRangeMonsters, inViewRangePlayers);
 }
 
 void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
