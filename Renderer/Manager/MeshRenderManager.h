@@ -6,7 +6,6 @@
 #include "../Core/Shader.h"
 #include "../Utility/Defines.h"
 #include "../Config/Config.h"
-
 #include "../External/Include/absl/container/flat_hash_map.h"
 #ifdef max 
 #undef max

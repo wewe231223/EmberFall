@@ -25,12 +25,18 @@ public:
     int GetLength() const { return mLength; }
 
     const std::pair<int, int> GetPatchCount() const;
+
+    std::vector<SimpleMath::Vector3>& GetControlPoints(); 
 private:
     SimpleMath::Vector3 CalculateNormal(int z, int x) const;
     void CreatePatch(MeshData& data, int zStart, int zEnd, int xStart, int xEnd) const;
 
     std::vector<std::vector<float>> mHeight{};
     int mLength = 0;
+
+    std::vector<SimpleMath::Vector3> mCPPositions{};
+
+	MeshData mMeshData{};
 };
 
 class TerrainCollider {

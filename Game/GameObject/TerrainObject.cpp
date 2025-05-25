@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "TerrainObject.h"
 #include "../MeshLoader/Loader/TerrainLoader.h"
+#include <algorithm>
+#include <execution>
 
 TerrainSegment::TerrainSegment() {
 
@@ -28,18 +30,37 @@ TerrainObject::TerrainObject(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 	
 	auto [width, height] = loader.GetPatchCount();
 
+	struct PatchIndex {
+		int i, j;
+	};
+
+	std::vector<PatchIndex> indices;
+	indices.reserve(width * height);
 	for (int i = 0; i < height; ++i) {
 		for (int j = 0; j < width; ++j) {
-			auto data = loader.GetData(i, j);
-			mSegments.emplace_back(device, commandList, data);
+			indices.push_back({ i, j });
 		}
 	}
 
+	std::vector<MeshData> patchData(indices.size());
+	std::transform(std::execution::par, indices.begin(), indices.end(), patchData.begin(),
+		[&](const PatchIndex& idx) {
+			return loader.GetData(idx.i, idx.j);
+		});
+
+	for (auto& data : patchData) {
+		mSegments.emplace_back(device, commandList, data);
+	}
 
 	mTerrainShader = std::make_shared<TerrainShader>(); 
 	mTerrainShader->CreateShader(device); 
 
 	mModelContext.world = SimpleMath::Matrix::Identity;
+
+
+	auto& cpPos = loader.GetControlPoints();
+
+	mCPPositionBuffer = DefaultBuffer(device, commandList, sizeof(SimpleMath::Vector3), cpPos.size(), cpPos.data());
 }
 
 void TerrainObject::SetMaterial(MaterialIndex idx) {
@@ -63,6 +84,5 @@ void TerrainObject::Update(Camera& camera, std::shared_ptr<RenderManager> mgr) {
 				mgr->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, mModelContext, i);
 			}
 		}
-
 	}
 }

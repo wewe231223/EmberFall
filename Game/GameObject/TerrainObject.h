@@ -32,7 +32,6 @@ private:
 	DirectX::BoundingBox mBoundingBox{};
 };
 
-// 여기서 내일 부터 
 class TerrainObject {
 public:
 	TerrainObject() = default;
@@ -56,4 +55,6 @@ private:
 	std::shared_ptr<GraphicsShaderBase> mTerrainShader{ nullptr };
 
 	ModelContext mModelContext{};
+
+	DefaultBuffer mCPPositionBuffer{}; 
 }; 

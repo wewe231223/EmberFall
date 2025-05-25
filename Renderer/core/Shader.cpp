@@ -553,14 +553,19 @@ GraphicsShaderBase::RootParameters TerrainShader::CreateRootParameters() {
 	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[1].Descriptor.ShaderRegister = 0;
+	params.Parameters[1].Descriptor.ShaderRegister = 0;	
 	params.Parameters[1].Descriptor.RegisterSpace = 0;
 	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	params.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[2].Descriptor.ShaderRegister = 1;
+	params.Parameters[2].Descriptor.ShaderRegister = 0;
 	params.Parameters[2].Descriptor.RegisterSpace = 0;
 	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[3].Descriptor.ShaderRegister = 1;
+	params.Parameters[3].Descriptor.RegisterSpace = 0;
+	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	params.Ranges[0].NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
@@ -568,12 +573,12 @@ GraphicsShaderBase::RootParameters TerrainShader::CreateRootParameters() {
 	params.Ranges[0].RegisterSpace = 0;
 	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	params.Parameters[3].DescriptorTable.NumDescriptorRanges = 1;
-	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
-	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	params.Parameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[4].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[4].DescriptorTable.pDescriptorRanges = params.Ranges.data();
+	params.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.ParameterCount = 4;
+	params.ParameterCount = 5;
 
 	return params;
 }

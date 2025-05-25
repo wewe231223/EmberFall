@@ -8,6 +8,10 @@
 #undef max
 #endif // max
 
+#ifdef min
+#undef min
+#endif // min
+
 TerrainLoader::TerrainLoader(const std::filesystem::path& path) {
 	Load(path);
 }
@@ -28,6 +32,32 @@ void TerrainLoader::Load(const std::filesystem::path& path) {
         file.read(reinterpret_cast<char*>(rowData.data()), mLength);
         for (int x = 0; x < mLength; ++x) {
             mHeight[z][x] = static_cast<float>(rowData[x]);
+        }
+    }
+
+    mMeshData = TerrainLoader::GetData(); 
+
+
+    mCPPositions.clear();
+    const int patchSize = PATCH_LENGTH * PATCH_SCALE;
+    const int numPatches = mLength / patchSize;
+    const int numCPsPerRow = numPatches * PATCH_LENGTH + 1;
+    mCPPositions.reserve(numCPsPerRow * numCPsPerRow);
+
+    for (int pr = 0; pr <= numPatches * PATCH_LENGTH; ++pr) {
+        for (int pc = 0; pc <= numPatches * PATCH_LENGTH; ++pc) {
+            int x = pc * TILE_SCALE;
+            int z = mLength - 1 - pr * TILE_SCALE; 
+
+            float height = 0.0f;
+            if (z >= 0 && z < mLength && x >= 0 && x < mLength)
+                height = mHeight[z][x];
+
+            mCPPositions.emplace_back(
+                static_cast<float>(x),
+                height,
+                static_cast<float>(z)
+            );
         }
     }
 }
@@ -52,33 +82,43 @@ MeshData TerrainLoader::GetData() const {
     meshData.primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST;
     meshData.indexed = false;
     meshData.unitCount = static_cast<UINT>(meshData.position.size());
-    for (int i = 0; i <= 5; ++i)
+    for (int i = 0; i <= 5; ++i) {
         meshData.vertexAttribute.set(i);
+    }
 
     return meshData;
-}
+}   
 
 MeshData TerrainLoader::GetData(int patchRow, int patchCol) const {
-    MeshData meshData;
-    int patchSize = PATCH_LENGTH * PATCH_SCALE;
-    int numPatches = mLength / patchSize;
+    MeshData patchData;
 
-    CrashExp(patchRow >= 0 && patchRow < numPatches && patchCol >= 0 && patchCol < numPatches, "patchRow/patchCol out of range");
+    const int patchStride = PATCH_LENGTH + 1;
+    const int numPatches = mLength / (PATCH_LENGTH * PATCH_SCALE);
 
-    int zEnd = mLength - (patchRow + 1) * patchSize;
-    int zStart = zEnd + patchSize;
-    int xStart = patchCol * patchSize;
-    int xEnd = xStart + patchSize;
+    CrashExp(patchRow >= 0 && patchRow < numPatches, "Invalid patchRow");
+    CrashExp(patchCol >= 0 && patchCol < numPatches, "Invalid patchCol");
 
-    CreatePatch(meshData, zStart, zEnd, xStart, xEnd);
+    // 전체 패치 순서상 인덱스
+    const int patchIndex = patchRow * numPatches + patchCol;
+    const int verticesPerPatch = patchStride * patchStride;
+    const int vertexOffset = patchIndex * verticesPerPatch;
 
-    meshData.primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST;
-    meshData.indexed = false;
-    meshData.unitCount = static_cast<UINT>(meshData.position.size());
+    for (int i = 0; i < verticesPerPatch; ++i) {
+        patchData.position.push_back(mMeshData.position[vertexOffset + i]);
+        patchData.normal.push_back(mMeshData.normal[vertexOffset + i]);
+        patchData.tangent.push_back(mMeshData.tangent[vertexOffset + i]);
+        patchData.bitangent.push_back(mMeshData.bitangent[vertexOffset + i]);
+        patchData.texCoord1.push_back(mMeshData.texCoord1[vertexOffset + i]);
+        patchData.texCoord2.push_back(mMeshData.texCoord2[vertexOffset + i]);
+    }
+
+    patchData.primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST;
+    patchData.indexed = false;
+    patchData.unitCount = static_cast<UINT>(patchData.position.size());
     for (int i = 0; i <= 5; ++i)
-        meshData.vertexAttribute.set(i);
+        patchData.vertexAttribute.set(i);
 
-    return meshData;
+    return patchData;
 }
 
 
@@ -87,6 +127,10 @@ const std::pair<int, int> TerrainLoader::GetPatchCount() const {
     int numPatches = mLength / patchSize;
 
 	return { numPatches, numPatches };
+}
+
+std::vector<SimpleMath::Vector3>& TerrainLoader::GetControlPoints() {
+	return mCPPositions;
 }
 
 SimpleMath::Vector3 TerrainLoader::CalculateNormal(int z, int x) const {
@@ -98,7 +142,7 @@ SimpleMath::Vector3 TerrainLoader::CalculateNormal(int z, int x) const {
     float hd = mHeight[clampZ + 1][clampX]; // down
     float hu = mHeight[clampZ - 1][clampX]; // up
 
-    DirectX::SimpleMath::Vector3 normal{ hl - hr, 2.f, hd - hu };
+    DirectX::SimpleMath::Vector3 normal{ hl - hr, 1.f, hd - hu };
     normal.Normalize();
 
     return normal;

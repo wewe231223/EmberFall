@@ -261,37 +261,39 @@ Terrain_PIN Terrain_DS(PatchTessFactor tess, float2 uv : SV_DomainLocation, cons
 {
     Terrain_PIN o;
 
-
     float basisU[5], basisV[5];
     BernsteinBasis(uv.x, basisU);
     BernsteinBasis(uv.y, basisV);
 
     float3 worldPos = CubicBezierSum(patch, basisU, basisV);
-    o.position = mul(float4(worldPos, 1), modelContexts[patch[0].instanceID].world);
-    o.wPosition = o.position.xyz;
-    o.vPosition = mul(o.position, view).xyz;
-    o.position = mul(o.position, viewProjection);
+    float4 worldPos4 = mul(float4(worldPos, 1), modelContexts[patch[0].instanceID].world);
+    
+    o.position = mul(worldPos4, viewProjection);
+    o.wPosition = worldPos4.xyz;
+    o.vPosition = mul(worldPos4, view).xyz;
     o.material = modelContexts[patch[0].instanceID].material;
 
-
+    // Compute partial derivatives of position in parametric space
     float Bu4[4], Bv4[4], dBu4[4], dBv4[4];
     CubicBernstein(uv.x, Bu4, dBu4);
     CubicBernstein(uv.y, Bv4, dBv4);
 
-    float3 dpdu = dPatchPositionU(patch, Bu4, Bv4, dBu4);
-    float3 dpdv = dPatchPositionV(patch, Bu4, Bv4, dBv4);
-
+    float3 dpdu_local = dPatchPositionU(patch, Bu4, Bv4, dBu4);
+    float3 dpdv_local = dPatchPositionV(patch, Bu4, Bv4, dBv4);
 
     float3x3 W = (float3x3) modelContexts[patch[0].instanceID].world;
-    float3 Nw = normalize(mul(W, CubicBezierSumNormal(patch, basisU, basisV)));
-    float3 Tu = mul(W, dpdu);
-    float3 Tn = normalize(Tu - Nw * dot(Nw, Tu));
-    float3 Bn = normalize(cross(Nw, Tn));
 
-    o.normal = Nw;
-    o.tangent = Tn;
-    o.bitangent = Bn;
+    float3 dpdu = mul(W, dpdu_local);
+    float3 dpdv = mul(W, dpdv_local);
 
+    float3 normalWS = normalize(cross(dpdv, dpdu));
+    float3 tangentWS = normalize(dpdu);
+    tangentWS = normalize(tangentWS - normalWS * dot(normalWS, tangentWS));
+    float3 bitangentWS = normalize(cross(normalWS, tangentWS));
+
+    o.normal = normalWS; 
+    o.tangent = tangentWS;
+    o.bitangent = bitangentWS;
 
     o.texcoord1 = lerp(
         lerp(patch[0].texcoord1, patch[4].texcoord1, uv.x),
@@ -305,6 +307,8 @@ Terrain_PIN Terrain_DS(PatchTessFactor tess, float2 uv : SV_DomainLocation, cons
     return o;
 }
 
+
+// #define ENABLE_SPLATTING 1
 
 Deffered_POUT Terrain_PS(Terrain_PIN input)
 {
@@ -320,23 +324,24 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
 
     const MaterialConstants matConst = materialConstants[input.material];
 
-
+#if ENABLE_SPLATTING
     float4 splatWeight = textures[matConst.alphaTexture[0]].Sample(linearWrapSampler, input.texcoord1);
     splatWeight = saturate(splatWeight);
     float totalWeight = splatWeight.r + splatWeight.g + splatWeight.b + splatWeight.a;
     splatWeight /= max(totalWeight, 1e-5);
-
+#else
+    float4 splatWeight = float4(1, 0, 0, 0);
+#endif
 
     float4 baseColor = 0;
     float3 blendedNormalTS = 0;
 
     [unroll]
-    for (int i = 0; i < 3; ++i) 
+    for (int i = 0; i < 3; ++i)
     {
         float4 layerColor = textures[matConst.diffuseTexture[i]].Sample(anisotropicWrapSampler, input.texcoord2);
         float3 layerNormalTS = textures[matConst.normalTexture[i]].Sample(anisotropicWrapSampler, input.texcoord2).xyz * 2.0f - 1.0f;
 
-   
         layerNormalTS.xy *= 20.0f;
         layerNormalTS = normalize(layerNormalTS);
 
@@ -344,12 +349,9 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
                        (i == 1) ? splatWeight.g :
                        splatWeight.b;
 
-        
-        
         baseColor += float4(layerColor.rgb, 1.f) * weight;
         blendedNormalTS += layerNormalTS * weight;
     }
-    
 
     blendedNormalTS = normalize(blendedNormalTS);
 
@@ -360,11 +362,10 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
 
     float3 finalNormalWS = normalize(mul(blendedNormalTS, TBN));
 
-
-    output.diffuse = baseColor; 
-    output.normal = float4(finalNormalWS, 0); 
-    output.position = float4(input.wPosition, 1.0f); 
-    output.emissive = float4(0, 0, 0, 0); 
+    output.diffuse = baseColor;
+    output.normal = float4(finalNormalWS, 0);
+    output.position = float4(input.wPosition, 1.0f);
+    output.emissive = float4(0, 0, 0, 0);
 
     return output;
 }

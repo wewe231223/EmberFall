@@ -558,7 +558,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
 	mSkyBox.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("SkyBoxMaterial");
 
-	TerrainScene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
+	//TerrainScene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
 
 	mTerrainObject = TerrainObject{ device, commandList,"Resources/Binarys/Terrain/terrain.raw" };
 	mTerrainObject.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("TerrainMaterial"));
@@ -908,11 +908,11 @@ void TerrainScene::Update() {
 	if (mCameraMode) {
 		mCameraMode->Update();
 
-		auto& pos = mCamera.GetTransform().GetPosition();
+		/*auto& pos = mCamera.GetTransform().GetPosition();
 		auto y = tCollider.GetHeight(pos.x, pos.z);
 		if (pos.y <= y + 0.5f) {
 			pos.y = y + 0.5f;
-		}
+		}*/
 
 		mCameraMode->FocusUpdate();
 	}
