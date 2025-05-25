@@ -15,6 +15,20 @@ BlurComputeProcessor::BlurComputeProcessor(ComPtr<ID3D12Device> device) {
 	
 }
 
+void BlurComputeProcessor::RegisterEmissiveMap(ComPtr<ID3D12Device> device, Texture& texture) {
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Texture2D.MipLevels = 1;
+	
+	CD3DX12_CPU_DESCRIPTOR_HANDLE blurHandle(mBlurHeap->GetCPUDescriptorHandleForHeapStart());
+	blurHandle.Offset(4, device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+
+	device->CreateShaderResourceView(texture.GetResource().Get(), &srvDesc, blurHandle);
+
+}
+
 void BlurComputeProcessor::DispatchHorzBlur(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, ComPtr<ID3D12Resource> input) {
 	
 	mHorzBlurMap.Transition(commandList, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -32,7 +46,8 @@ void BlurComputeProcessor::DispatchHorzBlur(ComPtr<ID3D12Device> device, ComPtr<
 	commandList->SetComputeRootDescriptorTable(0, gpuHandle);
 	gpuHandle.Offset(1, device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	commandList->SetComputeRootDescriptorTable(1, gpuHandle);
-	
+	gpuHandle.Offset(2, device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	commandList->SetComputeRootDescriptorTable(2, gpuHandle);
 
 	UINT numGroupsX = static_cast<UINT>(std::ceilf(Config::WINDOW_WIDTH<UINT> / 256.0f));
 
@@ -55,7 +70,8 @@ void BlurComputeProcessor::DispatchVertBlur(ComPtr<ID3D12Device> device, ComPtr<
 	commandList->SetComputeRootDescriptorTable(0, gpuHandle);
 	gpuHandle.Offset(3, device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
 	commandList->SetComputeRootDescriptorTable(1, gpuHandle);
-	
+	gpuHandle.Offset(1, device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+	commandList->SetComputeRootDescriptorTable(2, gpuHandle);
 
 	UINT numGroupsY = static_cast<UINT>(ceilf(Config::WINDOW_HEIGHT<UINT> / 256.0f));
 
@@ -89,7 +105,7 @@ void BlurComputeProcessor::CreateBlurHeap(ComPtr<ID3D12Device> device) {
 	D3D12_DESCRIPTOR_HEAP_DESC blurDesc{};
 	blurDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	blurDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	blurDesc.NumDescriptors = 4; 
+	blurDesc.NumDescriptors = 5; 
 	blurDesc.NodeMask = 0;
 	device->CreateDescriptorHeap(&blurDesc, IID_PPV_ARGS(mBlurHeap.GetAddressOf()));
 	
@@ -166,12 +182,16 @@ void BlurComputeProcessor::CreateRootSignature(ComPtr<ID3D12Device> device) {
 	CD3DX12_DESCRIPTOR_RANGE uavTable;
 	uavTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);
 
-	CD3DX12_ROOT_PARAMETER rootParameter[2];
+	CD3DX12_DESCRIPTOR_RANGE emissiveTable;
+	emissiveTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);
+
+	CD3DX12_ROOT_PARAMETER rootParameter[3];
 
 	rootParameter[0].InitAsDescriptorTable(1, &srvTable);
 	rootParameter[1].InitAsDescriptorTable(1, &uavTable);
+	rootParameter[2].InitAsDescriptorTable(1, &emissiveTable);
 
-	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(2, rootParameter,
+	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(3, rootParameter,
 		0, nullptr,
 		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 	

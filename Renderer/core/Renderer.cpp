@@ -596,7 +596,7 @@ void Renderer::InitDefferedRenderer() {
 
 void Renderer::InitBlurComputeProcesser() {
 	mBlurComputeProcessor = BlurComputeProcessor(mDevice);
-
+	mBlurComputeProcessor.RegisterEmissiveMap(mDevice, mGBuffers[3]);
 }
 
 void Renderer::InitIMGUIRenderer() {

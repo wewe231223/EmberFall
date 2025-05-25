@@ -1,17 +1,18 @@
 
 Texture2D<float4> gInput : register(t0);
+Texture2D<float4> emissiveMap : register(t1);
 RWTexture2D<float4> gRWOutput : register(u0);
 
-#define WEIGHTS float3(0.4126, 0.3152, 0.3722)
+#define WEIGHTS float3(0.3126, 0.6152, 0.0722)
 
 //static const float gGaussianBlurMask1D[11] = { 0.05f, 0.05f, 0.1f, 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.05f, 0.05f};
 //static const int maskWidth = 5;
 
-//static const float gGaussianBlurMask1D[15] = { 0.01f, 0.015f, 0.03f, 0.05f, 0.10f, 0.10f, 0.10f, 0.20f, 0.10f, 0.10f, 0.10f, 0.05f, 0.03f, 0.015f, 0.01f };
-//static const int maskWidth = 7;
+static const float gGaussianBlurMask1D[15] = { 0.01f, 0.015f, 0.03f, 0.05f, 0.10f, 0.10f, 0.10f, 0.20f, 0.10f, 0.10f, 0.10f, 0.05f, 0.03f, 0.015f, 0.01f };
+static const int maskWidth = 7;
 
-static const float gGaussianBlurMask1D[19] = { 0.0015f, 0.0038f, 0.0087f, 0.0180f, 0.0332f, 0.0548f, 0.0808f, 0.1067f, 0.1260f, 0.1332f, 0.1260f, 0.1067f, 0.0808f, 0.0548f, 0.0332f, 0.0180f, 0.0087f, 0.0038f, 0.0015f };
-static const int maskWidth = 9;
+//static const float gGaussianBlurMask1D[19] = { 0.0015f, 0.0038f, 0.0087f, 0.0180f, 0.0332f, 0.0548f, 0.0808f, 0.1067f, 0.1260f, 0.1332f, 0.1260f, 0.1067f, 0.0808f, 0.0548f, 0.0332f, 0.0180f, 0.0087f, 0.0038f, 0.0015f };
+//static const int maskWidth = 9;
 
 
 static const int threadGroupSize = 256;
@@ -43,9 +44,17 @@ void HorzBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID :
 
     gRWOutput[uv] = result;
 
+    emissive = emissiveMap[uv].rgb;
+    float useEmissiveMap = step(0.00001f, length(emissive));
+    [unroll]
+    for (int i = 0; i < useEmissiveMap; ++i)
+    {
+        gRWOutput[uv] = float4(emissive, 1.0f);
+
+    }
     
 
-    int leftEdge = (int) step(groupThreadID.x, maskWidth - 1);
+        int leftEdge = (int) step(groupThreadID.x, maskWidth - 1);
 
     [unroll]
     for (int i = 0; i < 1 * leftEdge; ++i)
@@ -103,7 +112,7 @@ void VertBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID :
     [unroll]
     for (int i = 0; i < 1 * bottomEdge; ++i)
     {
-        gGroupSharedCache[groupThreadID.y + (2 * maskWidth)] = gInput[int2(dispatchThreadID.x, min(dispatchThreadID.y + maskWidth, gInput.Length.x - 1))];
+        gGroupSharedCache[groupThreadID.y + (2 * maskWidth)] = gInput[int2(dispatchThreadID.x, min(dispatchThreadID.y + maskWidth, gInput.Length.y - 1))];
 
     }
 
