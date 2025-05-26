@@ -1,6 +1,5 @@
 
 Texture2D<float4> gInput : register(t0);
-Texture2D<float4> emissiveMap : register(t1);
 RWTexture2D<float4> gRWOutput : register(u0);
 
 #define WEIGHTS float3(0.3126, 0.6152, 0.0722)
@@ -27,7 +26,7 @@ void HorzBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID :
     
     
    
-    float3 emissive = gInput[uv].rgb;
+    float3 emissive = gRWOutput[uv].rgb;
     float brightness = dot(emissive, WEIGHTS);
  
     
@@ -40,11 +39,11 @@ void HorzBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID :
 
 
     float4 result = lerp(float4(0.0, 0.0, 0.0, 0.0), midColor, mask0);
-    result = lerp(result, gInput[uv], mask1);
+    result = lerp(result, gRWOutput[uv], mask1);
 
     gRWOutput[uv] = result;
 
-    emissive = emissiveMap[uv].rgb;
+    emissive = gInput[uv].rgb;
     float useEmissiveMap = step(0.00001f, length(emissive));
     [unroll]
     for (int i = 0; i < useEmissiveMap; ++i)
@@ -53,8 +52,9 @@ void HorzBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID :
 
     }
     
+    AllMemoryBarrierWithGroupSync();
 
-        int leftEdge = (int) step(groupThreadID.x, maskWidth - 1);
+    int leftEdge = (int) step(groupThreadID.x, maskWidth - 1);
 
     [unroll]
     for (int i = 0; i < 1 * leftEdge; ++i)

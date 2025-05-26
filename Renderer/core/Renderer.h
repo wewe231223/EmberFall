@@ -19,7 +19,7 @@
 #include "../Resource/Mesh.h"
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Renderer/Render/GrassRenderer.h"
-#include "../Renderer/Core/BlurComputeProcessor.h"
+#include "../Renderer/Core/ComputeProcessor.h"
 #include "../Renderer/Render/IMGUIRenderer.h"
 
 enum class RenderFeature : BYTE {
@@ -84,7 +84,7 @@ private:
 
 	void InitCoreResources(); 
 	void InitDefferedRenderer();
-	void InitBlurComputeProcesser();
+	void InitComputeProcesser();
 	void InitIMGUIRenderer();
 
 	void TransitionGBuffers(D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState);
@@ -134,7 +134,7 @@ private:
 	ComPtr<ID3D12DescriptorHeap> mGBufferHeap{ nullptr };
 
 	DefferedRenderer mDefferedRenderer{};
-	BlurComputeProcessor mBlurComputeProcessor{};
+	std::vector<std::unique_ptr<ComputeProcessor>> mComputeProcessors;
 
 	ComPtr<ID3D12DescriptorHeap> mDSHeap{ nullptr };
 	Texture mDepthStencilBuffer{};

@@ -173,7 +173,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="core\BlurComputeProcessor.cpp" />
+    <ClCompile Include="core\ComputeProcessor.cpp" />
     <ClCompile Include="Core\Console.cpp" />
     <ClCompile Include="Core\DefferedRenderer.cpp" />
     <ClCompile Include="Core\Renderer.cpp" />
@@ -209,7 +209,7 @@
     <ClInclude Include="..\External\Include\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\External\Include\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\External\Include\ImGui\imstb_truetype.h" />
-    <ClInclude Include="core\BlurComputeProcessor.h" />
+    <ClInclude Include="core\ComputeProcessor.h" />
     <ClInclude Include="Core\Console.h" />
     <ClInclude Include="Core\DefferedRenderer.h" />
     <ClInclude Include="Core\Renderer.h" />

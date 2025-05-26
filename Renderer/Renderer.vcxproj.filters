@@ -87,7 +87,7 @@
     <ClCompile Include="Manager\RenderManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
-    <ClCompile Include="core\BlurComputeProcessor.cpp">
+    <ClCompile Include="core\ComputeProcessor.cpp">
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Core\Console.cpp">
@@ -176,7 +176,7 @@
     <ClInclude Include="Manager\RenderManager.h">
       <Filter>Manager</Filter>
     </ClInclude>
-    <ClInclude Include="core\BlurComputeProcessor.h">
+    <ClInclude Include="core\ComputeProcessor.h">
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Core\Console.h">

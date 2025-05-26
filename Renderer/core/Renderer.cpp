@@ -24,7 +24,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitRenderTargets();
 	Renderer::InitDepthStencilBuffer();
 	Renderer::InitStringRenderer();
-	Renderer::InitBlurComputeProcesser();
+	Renderer::InitComputeProcesser();
 	Renderer::InitIMGUIRenderer();
 
 	Renderer::ResetCommandList();
@@ -224,10 +224,10 @@ void Renderer::Render() {
 	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Bloom) {
 
 		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
-		mBlurComputeProcessor.DispatchHorzBlur(mDevice, mCommandList, currentBackBuffer.GetResource());
+		mComputeProcessors[0]->Dispatch(mDevice, mCommandList, &currentBackBuffer);
 
-		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
-		mBlurComputeProcessor.DispatchVertBlur(mDevice, mCommandList, currentBackBuffer.GetResource());
+		//currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
+		mComputeProcessors[1]->Dispatch(mDevice, mCommandList, &mComputeProcessors[0]->GetComputeMap(), &currentBackBuffer);
 		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	}
 
@@ -594,9 +594,16 @@ void Renderer::InitDefferedRenderer() {
 
 }
 
-void Renderer::InitBlurComputeProcesser() {
-	mBlurComputeProcessor = BlurComputeProcessor(mDevice);
-	mBlurComputeProcessor.RegisterEmissiveMap(mDevice, mGBuffers[3]);
+void Renderer::InitComputeProcesser() {
+	std::unique_ptr<ComputeProcessor> processor = std::make_unique<HorzBloomProcessor>(mDevice);
+	processor->CreateShader(mDevice);
+	processor->RegisterTexture(mDevice, mGBuffers[3]);
+	mComputeProcessors.emplace_back(std::move(processor));
+
+	processor = std::make_unique<VertBloomProcessor>(mDevice);
+	processor->CreateShader(mDevice);
+	processor->RegisterTexture(mDevice, mComputeProcessors[0]->GetComputeMap());
+	mComputeProcessors.emplace_back(std::move(processor));
 }
 
 void Renderer::InitIMGUIRenderer() {
