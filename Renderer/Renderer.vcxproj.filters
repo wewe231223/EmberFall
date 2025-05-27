@@ -253,7 +253,7 @@
     <FxCompile Include="..\Shader\Sources\GrassShader.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="..\Shader\Sources\Blur.hlsl">
+    <FxCompile Include="..\Shader\Sources\Bloom.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="..\Shader\Sources\StandardAnimationNormal.hlsl">

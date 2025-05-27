@@ -226,7 +226,6 @@ void Renderer::Render() {
 		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
 		mComputeProcessors[0]->Dispatch(mDevice, mCommandList, &currentBackBuffer);
 
-		//currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_COPY_DEST);
 		mComputeProcessors[1]->Dispatch(mDevice, mCommandList, &mComputeProcessors[0]->GetComputeMap(), &currentBackBuffer);
 		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	}

@@ -54,7 +54,7 @@ void HorzBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID :
     
     AllMemoryBarrierWithGroupSync();
 
-    int leftEdge = (int) step(groupThreadID.x, maskWidth - 1);
+    int leftEdge = step(groupThreadID.x, maskWidth - 1);
 
     [unroll]
     for (int i = 0; i < 1 * leftEdge; ++i)
@@ -62,7 +62,7 @@ void HorzBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID :
         gGroupSharedCache[groupThreadID.x] = gRWOutput[int2(max(dispatchThreadID.x - maskWidth, 0), dispatchThreadID.y)];
     }
     
-    int rightEdge = (int) step(threadGroupSize - maskWidth, groupThreadID.x);
+    int rightEdge = step(threadGroupSize - maskWidth, groupThreadID.x);
     
     [unroll]
     for (int i = 0; i < 1 * rightEdge; ++i)
@@ -99,7 +99,7 @@ void VertBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID :
 {
     
 
-    int topEdge = (int) step(groupThreadID.y, maskWidth - 1);
+    int topEdge = step(groupThreadID.y, maskWidth - 1);
 
     [unroll]
     for (int i = 0; i < 1 * topEdge; ++i)
@@ -107,7 +107,7 @@ void VertBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID :
         gGroupSharedCache[groupThreadID.y] = gInput[int2(dispatchThreadID.x, max(dispatchThreadID.y - maskWidth, 0))];
     }
     
-    int bottomEdge = (int) step(threadGroupSize - maskWidth, groupThreadID.y);
+    int bottomEdge = step(threadGroupSize - maskWidth, groupThreadID.y);
     
     [unroll]
     for (int i = 0; i < 1 * bottomEdge; ++i)

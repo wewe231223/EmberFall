@@ -233,7 +233,7 @@
     <ClInclude Include="Resource\UploadBuffer.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\Shader\Sources\Blur.hlsl">
+    <FxCompile Include="..\Shader\Sources\Bloom.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

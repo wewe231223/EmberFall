@@ -5,6 +5,7 @@
 
 
 ComputeProcessor::ComputeProcessor(ComPtr<ID3D12Device> device) {
+
 }
 
 void ComputeProcessor::CreateShader(ComPtr<ID3D12Device> device) {
@@ -18,22 +19,15 @@ void ComputeProcessor::CreateShader(ComPtr<ID3D12Device> device) {
 
 void ComputeProcessor::RegisterTexture(ComPtr<ID3D12Device> device, Texture& texture) {
 	
-
 }
 
 void ComputeProcessor::Dispatch(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, Texture* input, Texture* output) {
 	
-
 }
-
-
-
 
 Texture& ComputeProcessor::GetComputeMap() {
 	return mComputeMap;
 }
-
-
 
 void ComputeProcessor::CreateResource(ComPtr<ID3D12Device> device) {
 	  
@@ -41,21 +35,17 @@ void ComputeProcessor::CreateResource(ComPtr<ID3D12Device> device) {
 
 void ComputeProcessor::CreateHeap(ComPtr<ID3D12Device> device) {
 	
-	
 }
 
 void ComputeProcessor::CreateView(ComPtr<ID3D12Device> device) {
 
-
 }
-
 
 void ComputeProcessor::CompileShader() {
 	
 }
 
 void ComputeProcessor::CreateRootSignature(ComPtr<ID3D12Device> device) {
-	
 
 }
 
@@ -109,13 +99,10 @@ void HorzBloomProcessor::Dispatch(ComPtr<ID3D12Device> device, ComPtr<ID3D12Grap
 	UINT numGroupsX = static_cast<UINT>(std::ceilf(Config::WINDOW_WIDTH<UINT> / 256.0f));
 
 	commandList->Dispatch(numGroupsX, Config::WINDOW_HEIGHT<UINT>, 1);
-
-
 }
 
 void HorzBloomProcessor::CreateResource(ComPtr<ID3D12Device> device) {
 	mComputeMap = Texture(device, DXGI_FORMAT_R8G8B8A8_UNORM, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
-
 }
 
 void HorzBloomProcessor::CreateHeap(ComPtr<ID3D12Device> device) {
@@ -130,8 +117,6 @@ void HorzBloomProcessor::CreateHeap(ComPtr<ID3D12Device> device) {
 void HorzBloomProcessor::CreateView(ComPtr<ID3D12Device> device) {
 	CD3DX12_CPU_DESCRIPTOR_HANDLE blurHandle(mHeap->GetCPUDescriptorHandleForHeapStart());
 
-	
-
 	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
 	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
 	uavDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -142,7 +127,7 @@ void HorzBloomProcessor::CreateView(ComPtr<ID3D12Device> device) {
 }
 
 void HorzBloomProcessor::CompileShader() {
-	std::wstring filename = L"Shader/Sources/Blur.hlsl";
+	std::wstring filename = L"Shader/Sources/Bloom.hlsl";
 	std::filesystem::path filePath(filename);
 
 	if (std::filesystem::exists(filePath)) {
@@ -289,7 +274,7 @@ void VertBloomProcessor::CreateView(ComPtr<ID3D12Device> device) {
 }
 
 void VertBloomProcessor::CompileShader() {
-	std::wstring filename = L"Shader/Sources/Blur.hlsl";
+	std::wstring filename = L"Shader/Sources/Bloom.hlsl";
 	
 #ifdef _DEBUG
 	UINT flags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
