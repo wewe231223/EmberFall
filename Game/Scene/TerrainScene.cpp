@@ -562,6 +562,8 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 
 	mTerrainObject = TerrainObject{ device, commandList,"Resources/Binarys/Terrain/terrain.raw" };
 	mTerrainObject.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("TerrainMaterial"));
+	mRenderManager->GetMeshRenderManager().RegisterTerrainCPPointBuffer(mTerrainObject.GetCPPositionBuffer());
+
 #ifdef DEV_MODE
 	{
 		auto& boss = mGameObjects.emplace_back();
@@ -1220,6 +1222,10 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 void TerrainScene::BuildMaterial() {
 	MaterialConstants mat{};
 	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
+
+	mat.mMetalicTexture[0] = mRenderManager->GetTextureManager().GetTexture("TerrainNormals");
+	mat.mMetalicTexture[1] = mRenderManager->GetTextureManager().GetTexture("Terrain_Tangent");
+	mat.mMetalicTexture[2] = mRenderManager->GetTextureManager().GetTexture("Terrain_Bitangent");	
 
 	mat.mAlphaTexture[0] = mRenderManager->GetTextureManager().GetTexture("Splatmap_Combined_0");
 

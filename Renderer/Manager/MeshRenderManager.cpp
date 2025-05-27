@@ -7,10 +7,12 @@ MeshRenderManager::MeshRenderManager(ComPtr<ID3D12Device> device) {
 	mPlainMeshBuffer = DefaultBuffer(device, sizeof(ModelContext), MeshRenderManager::MAX_INSTANCE_COUNT<size_t>);
 	mBonedMeshBuffer = DefaultBuffer(device, sizeof(AnimationModelContext), MeshRenderManager::MAX_INSTANCE_COUNT<size_t>);
 	mAnimationBuffer = DefaultBuffer(device, sizeof(SimpleMath::Matrix), MeshRenderManager::MAX_BONE_COUNT<size_t>);
+	mTerrainMeshBuffer = DefaultBuffer(device, sizeof(TerrainSegmentContext), MeshRenderManager::MAX_TERRAIN_SEGMENT_COUNT<size_t>);
 
 	mShadowPlainMeshBuffer = DefaultBuffer(device, sizeof(ModelContext), MeshRenderManager::MAX_INSTANCE_COUNT<size_t>);
 	mShadowBonedMeshBuffer = DefaultBuffer(device, sizeof(AnimationModelContext), MeshRenderManager::MAX_INSTANCE_COUNT<size_t>);
 	mShadowAnimationBuffer = DefaultBuffer(device, sizeof(SimpleMath::Matrix), MeshRenderManager::MAX_BONE_COUNT<size_t>);
+	mShadowTerrainMeshBuffer = DefaultBuffer(device, sizeof(TerrainSegmentContext), MeshRenderManager::MAX_TERRAIN_SEGMENT_COUNT<size_t>);
 
 	mSkeletonBoundingboxRenderShader = std::make_unique<SkeletonBBShader>();
 	mSkeletonBoundingboxRenderShader->CreateShader(device);
@@ -40,12 +42,10 @@ void MeshRenderManager::AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh*
 }
 
 void MeshRenderManager::AppendShadowPlaneMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, UINT index) {
-	
 	mShadowPlainMeshContexts[index][shader][mesh].emplace_back(world);
 	if (index == 0) {
 		mShadowMeshCounter[index + 1] += 1;
 	}
-	
 }
 
 void MeshRenderManager::AppendShadowBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms) {
@@ -56,6 +56,22 @@ void MeshRenderManager::AppendShadowBonedMeshContext(GraphicsShaderBase* shader,
 	mShadowBoneTransforms.insert(mShadowBoneTransforms.end(), std::make_move_iterator(boneTransforms.boneTransforms.begin()), std::make_move_iterator(boneTransforms.boneTransforms.begin() + boneTransforms.boneCount));
 
 }
+
+void MeshRenderManager::RegisterTerrainCPPointBuffer(DefaultBufferGPUIterator terrainCPPointBuffer) {
+	mTerrainCPPointBuffer = terrainCPPointBuffer;
+}
+
+void MeshRenderManager::AppendTerrainMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const TerrainSegmentContext& world) {
+	mTerrainMeshContexts[shader][mesh].emplace_back(world);
+}
+
+void MeshRenderManager::AppendShadowTerrainMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const TerrainSegmentContext& world, UINT index) {
+	mShadowTerrainMeshContexts[index][shader][mesh].emplace_back(world);
+	if (index == 0) {
+		mShadowTerrainMeshCounter[index + 1] += 1;
+	}
+}
+
 
 void MeshRenderManager::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	DefaultBufferCPUIterator it{ mPlainMeshBuffer.CPUBegin() };
@@ -78,6 +94,17 @@ void MeshRenderManager::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandL
 
 	mPlainMeshBuffer.Upload(commandList, mPlainMeshBuffer.CPUBegin(), it);
 
+	it = mTerrainMeshBuffer.CPUBegin();
+
+	for (auto& [shader, meshContexts] : mTerrainMeshContexts) {
+		for (auto& [mesh, worlds] : meshContexts) {
+			std::memcpy(*it, worlds.data(), worlds.size() * sizeof(ModelContext));
+			it += worlds.size();
+		}
+	}
+
+	mTerrainMeshBuffer.Upload(commandList, mTerrainMeshBuffer.CPUBegin(), it);
+
 	it = mBonedMeshBuffer.CPUBegin();
 
 	for (auto& [shader, meshContexts] : mBonedMeshContexts) {
@@ -99,6 +126,20 @@ void MeshRenderManager::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandL
 		}
 	}
 	mShadowPlainMeshBuffer.Upload(commandList, mShadowPlainMeshBuffer.CPUBegin(), it);
+
+
+	it = mShadowTerrainMeshBuffer.CPUBegin();
+
+	for (auto& shadowTerrainMeshContext : mShadowTerrainMeshContexts) {
+		for (auto& [shader, meshContexts] : shadowTerrainMeshContext) {
+			for (auto& [mesh, worlds] : meshContexts) {
+				std::memcpy(*it, worlds.data(), worlds.size() * sizeof(ModelContext));
+				it += worlds.size();
+			}
+		}
+	}
+
+	mShadowTerrainMeshBuffer.Upload(commandList, mShadowTerrainMeshBuffer.CPUBegin(), it);
 
 
 	it = mShadowBonedMeshBuffer.CPUBegin();
@@ -124,6 +165,7 @@ void MeshRenderManager::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandL
 }
 
 void MeshRenderManager::RenderShadowPass(UINT index, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex,D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
+	MeshRenderManager::RenderShadowPassTerrainMesh(index, commandList, tex, mat, camera);
 	MeshRenderManager::RenderShadowPassPlainMesh(index, commandList, tex, mat, camera);
 	MeshRenderManager::RenderShadowPassBonedMesh(commandList, mat, camera);
 }
@@ -131,6 +173,7 @@ void MeshRenderManager::RenderShadowPass(UINT index, ComPtr<ID3D12GraphicsComman
 // 복사 2 
 void MeshRenderManager::RenderGPass(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
 	MeshRenderManager::RenderGPassPlainMesh(commandList, tex, mat, camera);
+	MeshRenderManager::RenderGPassTerrainMesh(commandList, tex, mat, camera);
 	MeshRenderManager::RenderGPassBonedMesh(commandList, tex, mat, camera);
 }
 
@@ -144,12 +187,46 @@ void MeshRenderManager::Reset(){
 	mBonedMeshContexts.clear();
 	mPlainMeshReserved.clear();
 	mPlainMeshContexts.clear(); 
+	
+	mTerrainMeshContexts.clear();
+	mShadowTerrainMeshCounter.fill(0);
+
+	for (auto& shadowTerrainMeshContext : mShadowTerrainMeshContexts) {
+		shadowTerrainMeshContext.clear();
+	}
 
 	mShadowBonedMeshContexts.clear();
 	for (auto& shadowPlainMeshContext : mShadowPlainMeshContexts) {
 		shadowPlainMeshContext.clear();
 	}
-	
+}
+
+void MeshRenderManager::RenderShadowPassTerrainMesh(UINT index, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
+	auto gpuIt = mShadowTerrainMeshBuffer.GPUBegin() + static_cast<std::ptrdiff_t>(mShadowTerrainMeshCounter[index]);
+
+	for (auto& [shader, meshContexts] : mShadowTerrainMeshContexts[index]) {
+		shader->SetShadowPassShader(commandList);
+		commandList->SetGraphicsRootConstantBufferView(0, camera);
+		commandList->SetGraphicsRootShaderResourceView(1, *mTerrainCPPointBuffer);
+		commandList->SetGraphicsRootShaderResourceView(3, mat);
+		commandList->SetGraphicsRootDescriptorTable(4, tex);
+
+		for (auto& [mesh, worlds] : meshContexts) {
+
+			mesh->Bind(commandList, shader->GetAttribute());
+
+			commandList->SetGraphicsRootShaderResourceView(2, *gpuIt);
+
+			if (mesh->GetIndexed()) {
+				commandList->DrawIndexedInstanced(mesh->GetUnitCount(), static_cast<UINT>(worlds.size()), 0, 0, 0);
+			}
+			else {
+				commandList->DrawInstanced(mesh->GetUnitCount(), static_cast<UINT>(worlds.size()), 0, 0);
+			}
+
+			gpuIt += worlds.size();
+		}
+	}
 }
 
 void MeshRenderManager::RenderShadowPassPlainMesh(UINT index, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
@@ -207,6 +284,36 @@ void MeshRenderManager::RenderShadowPassBonedMesh(ComPtr<ID3D12GraphicsCommandLi
 		}
 	}
 
+}
+
+void MeshRenderManager::RenderGPassTerrainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
+	DefaultBufferGPUIterator gpuIt{ mTerrainMeshBuffer.GPUBegin() };
+
+	for (auto& [shader, meshContexts] : mTerrainMeshContexts) {
+		shader->SetGPassShader(commandList);
+
+		commandList->SetGraphicsRootConstantBufferView(0, camera);
+		commandList->SetGraphicsRootShaderResourceView(1, *mTerrainCPPointBuffer);
+		commandList->SetGraphicsRootShaderResourceView(3, mat);
+		commandList->SetGraphicsRootDescriptorTable(4, tex);
+
+
+		for (auto& [mesh, worlds] : meshContexts) {
+
+			mesh->Bind(commandList, shader->GetAttribute());
+
+			commandList->SetGraphicsRootShaderResourceView(2, *gpuIt);
+
+			if (mesh->GetIndexed()) {
+				commandList->DrawIndexedInstanced(mesh->GetUnitCount(), static_cast<UINT>(worlds.size()), 0, 0, 0);
+			}
+			else {
+				commandList->DrawInstanced(mesh->GetUnitCount(), static_cast<UINT>(worlds.size()), 0, 0);
+			}
+
+			gpuIt += worlds.size();
+		}
+	}
 }
 
 void MeshRenderManager::RenderGPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {

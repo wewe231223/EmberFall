@@ -9,7 +9,7 @@
 class TerrainSegment {
 public:
 	TerrainSegment(); 
-	TerrainSegment(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList,const MeshData& data); 
+	TerrainSegment(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList,const MeshData& data, int x, int z); 
 	
 	~TerrainSegment();
 
@@ -22,7 +22,9 @@ public:
 	DirectX::BoundingBox& GetBB(); 
 
 	Mesh* GetMesh() const; 
+	TerrainSegmentContext& GetContext(); 
 
+	void SetMaterial(MaterialIndex idx); 
 private:
 	// Shader, Material 와 같은 Context 는 TerrainObject 에서 관리한다. 
 	// 이는 Segment 가 하나의 지형 조각을 그리는 데 의미가 있음을 시사한다 
@@ -30,6 +32,8 @@ private:
 
 	// Terrain Segment 의 BB 이다. 
 	DirectX::BoundingBox mBoundingBox{};
+
+	TerrainSegmentContext mSegmentContext{};
 };
 
 class TerrainObject {
@@ -47,14 +51,14 @@ public:
 public:
 	void SetMaterial(MaterialIndex idx);
 
+	DefaultBufferGPUIterator GetCPPositionBuffer(); 
+
 	void Update(Camera& camera, std::shared_ptr<RenderManager> mgr); 
 
 private: 
 	std::vector<TerrainSegment> mSegments{}; 
 
 	std::shared_ptr<GraphicsShaderBase> mTerrainShader{ nullptr };
-
-	ModelContext mModelContext{};
 
 	DefaultBuffer mCPPositionBuffer{}; 
 }; 

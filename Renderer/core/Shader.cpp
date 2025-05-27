@@ -546,30 +546,30 @@ GraphicsShaderBase::InputLayout TerrainShader::CreateInputLayout() {
 
 GraphicsShaderBase::RootParameters TerrainShader::CreateRootParameters() {
 	GraphicsShaderBase::RootParameters params{};
-
+	// camera 
 	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	params.Parameters[0].Descriptor.ShaderRegister = 0;
 	params.Parameters[0].Descriptor.RegisterSpace = 0;
 	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	// globalPoints 
 	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 	params.Parameters[1].Descriptor.ShaderRegister = 0;	
 	params.Parameters[1].Descriptor.RegisterSpace = 0;
 	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	// modelContexts 
 	params.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[2].Descriptor.ShaderRegister = 0;
+	params.Parameters[2].Descriptor.ShaderRegister = 1;
 	params.Parameters[2].Descriptor.RegisterSpace = 0;
 	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	// materials 
 	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[3].Descriptor.ShaderRegister = 1;
+	params.Parameters[3].Descriptor.ShaderRegister = 2;
 	params.Parameters[3].Descriptor.RegisterSpace = 0;
 	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	// textures 
 	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	params.Ranges[0].NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
-	params.Ranges[0].BaseShaderRegister = 2;
+	params.Ranges[0].BaseShaderRegister = 3;
 	params.Ranges[0].RegisterSpace = 0;
 	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 

@@ -43,6 +43,15 @@ struct ModelContext {
 	UINT material;
 };
 
+struct TerrainSegmentContext {
+    SimpleMath::Matrix world;
+    SimpleMath::Vector3 BBCenter{};
+    SimpleMath::Vector3 BBextents{};
+    UINT material;
+    UINT xPatchIndex{ 0 };
+	UINT zPatchIndex{ 0 };
+};
+
 struct AnimationModelContext {
 	SimpleMath::Matrix world;
 	SimpleMath::Vector3 BBCenter{};
