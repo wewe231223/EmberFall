@@ -314,6 +314,29 @@ void MeshRenderManager::RenderGPassTerrainMesh(ComPtr<ID3D12GraphicsCommandList>
 			gpuIt += worlds.size();
 		}
 	}
+
+#ifdef RENDER_BB
+
+	gpuIt = mTerrainMeshBuffer.GPUBegin();
+
+
+	mStandardBoundingBoxRenderShader->SetGPassShader(commandList);
+
+	commandList->IASetVertexBuffers(0, 0, nullptr);
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+	commandList->SetGraphicsRootConstantBufferView(0, camera);
+
+
+	for (auto& [shader, meshContexts] : mTerrainMeshContexts) {
+		for (auto& [mesh, worlds] : meshContexts) {
+
+			commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
+			commandList->DrawInstanced(1, static_cast<UINT>(worlds.size()), 0, 0);
+
+			gpuIt += worlds.size();
+		}
+	}
+#endif 
 }
 
 void MeshRenderManager::RenderGPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
