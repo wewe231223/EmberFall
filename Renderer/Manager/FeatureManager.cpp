@@ -28,6 +28,7 @@ void FeatureManager::Render() {
     drawFeatureCheckbox("Grass", mNextFeatures.Grass, mFixedFeatures.Grass);
     drawFeatureCheckbox("Shadow", mNextFeatures.Shadow, mFixedFeatures.Shadow);
     drawFeatureCheckbox("Bloom", mNextFeatures.Bloom, mFixedFeatures.Bloom);
+	drawFeatureCheckbox("BB", mNextFeatures.RenderBB, mFixedFeatures.RenderBB);
 
     ImGui::End();
 }

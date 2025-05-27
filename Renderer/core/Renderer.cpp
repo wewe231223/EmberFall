@@ -197,7 +197,7 @@ void Renderer::Render() {
 	auto& currentBackBuffer = mRenderTargets[mRTIndex];
 
 	mRenderManager->GetTextureManager().Bind(mCommandList);
-	mRenderManager->GetMeshRenderManager().RenderGPass(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
+	mRenderManager->GetMeshRenderManager().RenderGPass(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin(), mRenderManager->GetFeatureManager().GetCurrentFeature().RenderBB);
 	mRenderManager->GetMeshRenderManager().Reset();
 
 	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Grass and mShaderModel6_5Support) {

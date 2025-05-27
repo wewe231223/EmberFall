@@ -49,7 +49,7 @@ public:
 	void PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList);
 	
 	void RenderShadowPass(UINT index, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex,D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
-	void RenderGPass(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
+	void RenderGPass(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera, bool renderBB = false);
 	void Reset(); 
 private:
 	void RenderShadowPassTerrainMesh(UINT index, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
@@ -95,4 +95,6 @@ private:
 
 	std::unique_ptr<GraphicsShaderBase> mSkeletonBoundingboxRenderShader{};
 	std::unique_ptr<GraphicsShaderBase> mStandardBoundingBoxRenderShader{};
+
+	bool mRenderBB{ false };
 };

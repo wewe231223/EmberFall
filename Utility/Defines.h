@@ -181,6 +181,7 @@ struct Features {
 	bool Grass{ false };
 	bool Shadow{ false };
     bool Bloom{ false };
+    bool RenderBB{ false };
 };
 
 

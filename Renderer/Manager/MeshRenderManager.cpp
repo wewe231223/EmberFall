@@ -171,7 +171,9 @@ void MeshRenderManager::RenderShadowPass(UINT index, ComPtr<ID3D12GraphicsComman
 }
 
 // 복사 2 
-void MeshRenderManager::RenderGPass(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
+void MeshRenderManager::RenderGPass(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera, bool renderBB) {
+	mRenderBB = renderBB; 
+
 	MeshRenderManager::RenderGPassPlainMesh(commandList, tex, mat, camera);
 	MeshRenderManager::RenderGPassTerrainMesh(commandList, tex, mat, camera);
 	MeshRenderManager::RenderGPassBonedMesh(commandList, tex, mat, camera);
@@ -315,28 +317,28 @@ void MeshRenderManager::RenderGPassTerrainMesh(ComPtr<ID3D12GraphicsCommandList>
 		}
 	}
 
-#ifdef RENDER_BB
 
-	gpuIt = mTerrainMeshBuffer.GPUBegin();
-
-
-	mStandardBoundingBoxRenderShader->SetGPassShader(commandList);
-
-	commandList->IASetVertexBuffers(0, 0, nullptr);
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
-	commandList->SetGraphicsRootConstantBufferView(0, camera);
+	if (mRenderBB) {
+		gpuIt = mTerrainMeshBuffer.GPUBegin();
 
 
-	for (auto& [shader, meshContexts] : mTerrainMeshContexts) {
-		for (auto& [mesh, worlds] : meshContexts) {
+		mStandardBoundingBoxRenderShader->SetGPassShader(commandList);
 
-			commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
-			commandList->DrawInstanced(1, static_cast<UINT>(worlds.size()), 0, 0);
+		commandList->IASetVertexBuffers(0, 0, nullptr);
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+		commandList->SetGraphicsRootConstantBufferView(0, camera);
 
-			gpuIt += worlds.size();
+
+		for (auto& [shader, meshContexts] : mTerrainMeshContexts) {
+			for (auto& [mesh, worlds] : meshContexts) {
+
+				commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
+				commandList->DrawInstanced(1, static_cast<UINT>(worlds.size()), 0, 0);
+
+				gpuIt += worlds.size();
+			}
 		}
 	}
-#endif 
 }
 
 void MeshRenderManager::RenderGPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera) {
@@ -390,29 +392,27 @@ void MeshRenderManager::RenderGPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> c
 		}
 	}
 
-
-#ifdef RENDER_BB
-
-	gpuIt = mPlainMeshBuffer.GPUBegin() + static_cast<std::ptrdiff_t>(MeshRenderManager::RESERVED_CONTEXT_SLOT);
+	if(mRenderBB){
+		gpuIt = mPlainMeshBuffer.GPUBegin() + static_cast<std::ptrdiff_t>(MeshRenderManager::RESERVED_CONTEXT_SLOT);
 
 
-	mStandardBoundingBoxRenderShader->SetGPassShader(commandList);
+		mStandardBoundingBoxRenderShader->SetGPassShader(commandList);
 
-	commandList->IASetVertexBuffers(0, 0, nullptr);
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
-	commandList->SetGraphicsRootConstantBufferView(0, camera);
+		commandList->IASetVertexBuffers(0, 0, nullptr);
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+		commandList->SetGraphicsRootConstantBufferView(0, camera);
 
 
-	for (auto& [shader, meshContexts] : mPlainMeshContexts) {
-		for (auto& [mesh, worlds] : meshContexts) {
+		for (auto& [shader, meshContexts] : mPlainMeshContexts) {
+			for (auto& [mesh, worlds] : meshContexts) {
 
-			commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
-			commandList->DrawInstanced(1, static_cast<UINT>(worlds.size()), 0, 0);
+				commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
+				commandList->DrawInstanced(1, static_cast<UINT>(worlds.size()), 0, 0);
 
-			gpuIt += worlds.size();
+				gpuIt += worlds.size();
+			}
 		}
 	}
-#endif 
 
 }
 
@@ -446,27 +446,26 @@ void MeshRenderManager::RenderGPassBonedMesh(ComPtr<ID3D12GraphicsCommandList> c
 		}
 	}
 
-#ifdef RENDER_BB
-
-	gpuIt = mBonedMeshBuffer.GPUBegin(); 
-
-
-	mSkeletonBoundingboxRenderShader->SetGPassShader(commandList);
-	
-	commandList->IASetVertexBuffers(0, 0, nullptr);
-	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST); 
-	commandList->SetGraphicsRootConstantBufferView(0, camera);
+	if(mRenderBB){
+		gpuIt = mBonedMeshBuffer.GPUBegin();
 
 
-	for (auto& [shader, meshContexts] : mBonedMeshContexts) {
-		for (auto& [mesh, worlds] : meshContexts) {
+		mSkeletonBoundingboxRenderShader->SetGPassShader(commandList);
 
-			commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
-			commandList->DrawInstanced(1, static_cast<UINT>(worlds.size()), 0, 0);
+		commandList->IASetVertexBuffers(0, 0, nullptr);
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+		commandList->SetGraphicsRootConstantBufferView(0, camera);
 
-			gpuIt += worlds.size(); 
+
+		for (auto& [shader, meshContexts] : mBonedMeshContexts) {
+			for (auto& [mesh, worlds] : meshContexts) {
+
+				commandList->SetGraphicsRootShaderResourceView(1, *gpuIt);
+				commandList->DrawInstanced(1, static_cast<UINT>(worlds.size()), 0, 0);
+
+				gpuIt += worlds.size();
+			}
 		}
 	}
-#endif RENDER_BB
 
 }
