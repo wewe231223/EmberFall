@@ -179,14 +179,16 @@ void Renderer::Render() {
 		gBufferHandle,
 		gBufferHandle.Offset(1, rtvDescriptorSize),
 		gBufferHandle.Offset(1, rtvDescriptorSize),
+		gBufferHandle.Offset(1, rtvDescriptorSize),
 		gBufferHandle.Offset(1, rtvDescriptorSize)
 	};
 	mCommandList->ClearRenderTargetView(gBufferHandles[0], DirectX::Colors::Black, 0, nullptr);
 	mCommandList->ClearRenderTargetView(gBufferHandles[1], DirectX::Colors::Black, 0, nullptr);
 	mCommandList->ClearRenderTargetView(gBufferHandles[2], DirectX::Colors::Black, 0, nullptr);
 	mCommandList->ClearRenderTargetView(gBufferHandles[3], DirectX::Colors::Black, 0, nullptr);
+	mCommandList->ClearRenderTargetView(gBufferHandles[4], DirectX::Colors::Black, 0, nullptr);
 
-	mCommandList->OMSetRenderTargets(4, gBufferHandles, FALSE, &dsvHandle);
+	mCommandList->OMSetRenderTargets(5, gBufferHandles, FALSE, &dsvHandle);
 
 	auto& currentBackBuffer = mRenderTargets[mRTIndex];
 
@@ -493,6 +495,7 @@ void Renderer::InitRenderTargets() {
 	mGBuffers[1] = Texture(mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 	mGBuffers[2] = Texture(mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 	mGBuffers[3] = Texture(mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+	mGBuffers[4] = Texture(mDevice, DXGI_FORMAT_R32G32B32A32_FLOAT, Config::WINDOW_WIDTH<UINT64>, Config::WINDOW_HEIGHT<UINT>, D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE gBufferHandle{ mGBufferHeap->GetCPUDescriptorHandleForHeapStart() };
 
@@ -503,6 +506,8 @@ void Renderer::InitRenderTargets() {
 	mDevice->CreateRenderTargetView(mGBuffers[2].GetResource().Get(), nullptr, gBufferHandle);
 	gBufferHandle.ptr += rtvDescriptorSize;
 	mDevice->CreateRenderTargetView(mGBuffers[3].GetResource().Get(), nullptr, gBufferHandle);
+	gBufferHandle.ptr += rtvDescriptorSize;
+	mDevice->CreateRenderTargetView(mGBuffers[4].GetResource().Get(), nullptr, gBufferHandle);
 
 }
 
@@ -614,10 +619,11 @@ void Renderer::TransitionGBuffers(D3D12_RESOURCE_STATES beforeState, D3D12_RESOU
 		CD3DX12_RESOURCE_BARRIER::Transition(mGBuffers[0].GetResource().Get(), beforeState, afterState),
 		CD3DX12_RESOURCE_BARRIER::Transition(mGBuffers[1].GetResource().Get(), beforeState, afterState),
 		CD3DX12_RESOURCE_BARRIER::Transition(mGBuffers[2].GetResource().Get(), beforeState, afterState),
-		CD3DX12_RESOURCE_BARRIER::Transition(mGBuffers[3].GetResource().Get(), beforeState, afterState)
+		CD3DX12_RESOURCE_BARRIER::Transition(mGBuffers[3].GetResource().Get(), beforeState, afterState),
+		CD3DX12_RESOURCE_BARRIER::Transition(mGBuffers[4].GetResource().Get(), beforeState, afterState)
 	};
 
-	mCommandList->ResourceBarrier(4, barriers);
+	mCommandList->ResourceBarrier(5, barriers);
 }
 
 void Renderer::ResetCommandList() {

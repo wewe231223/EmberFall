@@ -42,6 +42,7 @@ struct Deffered_POUT
     float4 normal : SV_TARGET1;
     float4 position : SV_TARGET2;
     float4 emissive : SV_TARGET3;
+    float4 velocity : SV_TARGET4;
 };
 
 

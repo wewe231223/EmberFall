@@ -401,12 +401,13 @@ void GraphicsShaderBase::CreateShader(ComPtr<ID3D12Device> device) {
 
 	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPipelineState)));
 
-	psoDesc.NumRenderTargets = 4;
+	psoDesc.NumRenderTargets = 5;
 	std::memset(psoDesc.RTVFormats, DXGI_FORMAT_UNKNOWN, sizeof(DXGI_FORMAT) * 8);
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R32_FLOAT;
 	psoDesc.RTVFormats[1] = DXGI_FORMAT_R32_FLOAT;
 	psoDesc.RTVFormats[2] = DXGI_FORMAT_R32_FLOAT;
 	psoDesc.RTVFormats[3] = DXGI_FORMAT_R32_FLOAT;
+	psoDesc.RTVFormats[4] = DXGI_FORMAT_R32_FLOAT;
 	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	//psoDesc.RasterizerState.DepthBias = 10000;
@@ -503,6 +504,7 @@ void StandardShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE StandardShader::CreateVertexShader() {
@@ -607,6 +609,7 @@ void TerrainShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE TerrainShader::CreateVertexShader() {
@@ -710,6 +713,7 @@ void SkinnedShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE SkinnedShader::CreateVertexShader() {
@@ -832,6 +836,7 @@ void SkyBoxShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE SkyBoxShader::CreateVertexShader() {
@@ -990,6 +995,7 @@ void SkeletonBBShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE SkeletonBBShader::CreateVertexShader() {
@@ -1051,6 +1057,7 @@ void StandardBBShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE StandardBBShader::CreateVertexShader() {
@@ -1378,7 +1385,7 @@ D3D12_SHADER_BYTECODE ParticleGSShader::CreatePixelShader() {
 }
 
 UINT ParticleGSShader::CreateNumOfRenderTarget() {
-	return 4;
+	return Config::GBUFFER_COUNT<UINT>;
 }
 
 void ParticleGSShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& targets) {
@@ -1386,6 +1393,7 @@ void ParticleGSShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& targets) {
 	targets[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	targets[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	targets[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	targets[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 
@@ -1456,6 +1464,7 @@ void TreeShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE TreeShader::CreateVertexShader() {
@@ -1573,6 +1582,7 @@ void SkyFogShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE SkyFogShader::CreateVertexShader() {
@@ -1743,6 +1753,7 @@ void StandardNormalShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE StandardNormalShader::CreateVertexShader() {
@@ -1838,6 +1849,7 @@ void SkinnedNormalShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats)
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE SkinnedNormalShader::CreateVertexShader() {

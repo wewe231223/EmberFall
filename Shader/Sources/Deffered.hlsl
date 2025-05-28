@@ -11,6 +11,8 @@ SamplerComparisonState PCFSampler : register(s6);
 #define LightType_Point         2
 #define LightType_Spot          3
 
+#define GBUFFER_COUNT 5
+
 struct Light
 {
     uint lightType; 
@@ -26,7 +28,7 @@ struct Light
     
 };
 
-Texture2D GBuffers[6] : register(t0, space0);
+Texture2D GBuffers[7] : register(t0, space0);
 StructuredBuffer<Light> gLight : register(t1, space1);
 
 cbuffer Camera : register(b0)
@@ -167,7 +169,7 @@ float ComputeShadowFactor(float shadowIndex, float4 shadowPosH, float bias, floa
 {
     depth = depth + bias;
     uint width, height, numMips;
-    GBuffers[4 + shadowIndex].GetDimensions(0, width, height, numMips);
+    GBuffers[GBUFFER_COUNT + shadowIndex].GetDimensions(0, width, height, numMips);
     
   
     float dx = 1.0f / (float) width;
@@ -185,7 +187,7 @@ float ComputeShadowFactor(float shadowIndex, float4 shadowPosH, float bias, floa
     for (int i = 0; i < 9; ++i)
     {
         
-        percentLit += GBuffers[4 + shadowIndex].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
+        percentLit += GBuffers[GBUFFER_COUNT + shadowIndex].SampleCmpLevelZero(PCFSampler, shadowPosH.xy + offsets[i], depth).r;
 
     }
     float shadowFactor = lerp(0.4f, 1.0f, percentLit / 9.0f);
@@ -243,7 +245,7 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     
     
   
-    depth = GBuffers[4 + shadowIndex].Sample(linearWrapSampler, texPos.xy).r;
+    depth = GBuffers[GBUFFER_COUNT + shadowIndex].Sample(linearWrapSampler, texPos.xy).r;
     
     
     float isBackFace;
