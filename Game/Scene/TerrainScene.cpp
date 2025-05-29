@@ -139,9 +139,9 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mMyPlayer->SetAnimation(data->animation()); 
 
 				mHealthBarUI.SetHealth(data->hp()); 
-				mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 
-				//mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
+				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
 				mCameraMode->Enter();
 			}
 			else {
@@ -551,8 +551,8 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	TerrainScene::BuildMaterial();
 	TerrainScene::BuildAniamtionController();
 
-	// SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/Rolling Hills Height Map.raw", "Resources/Binarys/Terrain/TerrainBaked.bin");
-	tCollider.LoadFromFile("Resources/Binarys/Terrain/TerrainBaked.bin");
+	//SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/terrain.raw", "Resources/Binarys/Terrain/NTerrain.bin");
+	tCollider.LoadFromFile("Resources/Binarys/Terrain/NTerrain.bin");
 
 	mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();

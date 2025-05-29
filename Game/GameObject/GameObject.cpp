@@ -101,3 +101,71 @@ GameObject GameObject::Clone() {
 AnimatorGraph::AnimationGraphController& GameObject::GetAnimationController() {
 	return mGraphController; 
 }
+
+bool LODGameObject::GetActiveState() const {
+	return mActiveState;
+}
+
+bool LODGameObject::GetEmpty() const {
+	return mEmpty;
+}
+
+void LODGameObject::SetEmpty(bool state) {
+	mEmpty = state;
+}
+
+std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> LODGameObject::GetRenderData() const {
+	return { mLODGroups[mCurrentLODLevel].mMesh, mShader, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial } };
+}
+
+const Transform& LODGameObject::GetTransform() const {
+	return mTransform; 
+}
+
+Transform& LODGameObject::GetTransform() {
+	return mTransform; 
+}
+
+void LODGameObject::SetActiveState(bool state) {
+	mActiveState = state; 
+}
+
+void LODGameObject::ToggleActiveState() {
+	mActiveState = !mActiveState;
+}
+
+void LODGameObject::UpdateLODLevel(const SimpleMath::Vector3& pos) {
+	auto distanceSq = (pos - mTransform.GetPosition()).LengthSquared();
+
+	mCurrentLODLevel = 0; 
+	for (auto& lodGroup : mLODGroups) {
+		if (distanceSq < lodGroup.mDistanceSquared or lodGroup.mMesh == nullptr) {
+			break;
+		} 
+		++mCurrentLODLevel;
+	}
+}
+
+void LODGameObject::UpdateShaderVariables() {
+	mTransform.Update(Time.GetDeltaTime<float>());
+	mTransform.UpdateWorldMatrix();
+
+	if (mCollider.GetActiveState()) {
+		mCollider.UpdateBox(mTransform.GetWorldMatrix());
+	}
+
+	mModelContext.world = mTransform.GetWorldMatrix();
+}
+
+LODGameObject LODGameObject::Clone() {
+	LODGameObject clone{};
+	clone.mActiveState = true;
+	clone.mShader = mShader;
+	clone.mMaterial = mMaterial;
+	clone.mTransform = mTransform;
+	clone.mCollider = mCollider;
+	std::copy(mLODGroups.begin(), mLODGroups.end(), clone.mLODGroups.begin()); 
+
+	clone.mCurrentLODLevel = mCurrentLODLevel;
+	return clone;
+}

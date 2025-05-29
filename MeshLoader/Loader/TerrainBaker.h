@@ -63,7 +63,7 @@ bool SimulateGlobalTessellationAndWriteFile(const std::filesystem::path& heightM
     MeshData meshData = loader.GetData();
 
     int PATCH_LENGTH = 4;
-	int PATCH_SCALE = 8;
+	int PATCH_SCALE = 16;
 
    
     int patchSize = PATCH_LENGTH * PATCH_SCALE;
