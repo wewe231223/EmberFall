@@ -31,7 +31,7 @@ void TerrainLoader::Load(const std::filesystem::path& path) {
     for (int z = 0; z < mLength; ++z) {
         file.read(reinterpret_cast<char*>(rowData.data()), mLength);
         for (int x = 0; x < mLength; ++x) {
-            mHeight[z][x] = static_cast<float>(rowData[x]);
+            mHeight[z][x] = 0.f;
         }
     }
 

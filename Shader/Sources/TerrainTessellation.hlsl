@@ -181,6 +181,13 @@ float3 CubicBezierSum(OutputPatch<Terrain_DIN, 25> patch, float basisU[5], float
     return sum;
 }
 
+float2 ComputeHeightmapUV(float3 worldPos)
+{
+    float u = (worldPos.x + 512.5) / 1025.0;
+    float v = (worldPos.z + 512.5) / 1025.0;
+    return float2(u, v);
+}
+
 [domain("quad")]
 Terrain_PIN Terrain_DS(
     PatchTessFactor tess,
@@ -196,8 +203,11 @@ Terrain_PIN Terrain_DS(
     BernsteinBasis(uv.y, basisV5);
     
     float3 worldPos = CubicBezierSum(patch, basisU5, basisV5);
-    float4 worldPos4 = mul(float4(worldPos, 1), ctx.world);
+    float2 puv = ComputeHeightmapUV(worldPos);
     
+    worldPos.y = textures[materialConstants[ctx.material].emissiveTexture[0]].SampleLevel(anisotropicWrapSampler, puv, 0).r * 256.f;
+    
+    float4 worldPos4 = mul(float4(worldPos, 1), ctx.world);
     o.position = mul(worldPos4, viewProjection);
     o.wPosition = worldPos4.xyz;
     o.vPosition = mul(worldPos4, view).xyz;

@@ -139,9 +139,9 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mMyPlayer->SetAnimation(data->animation()); 
 
 				mHealthBarUI.SetHealth(data->hp()); 
-				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+				mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 
-				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
+				//mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
 				mCameraMode->Enter();
 			}
 			else {
@@ -1222,6 +1222,8 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 void TerrainScene::BuildMaterial() {
 	MaterialConstants mat{};
 	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
+
+	mat.mEmissiveTexture[0] = mRenderManager->GetTextureManager().GetTexture("TerrainHeightmap_2048");
 
 	mat.mMetalicTexture[0] = mRenderManager->GetTextureManager().GetTexture("TerrainNormals");
 	mat.mMetalicTexture[1] = mRenderManager->GetTextureManager().GetTexture("Terrain_Tangent");
