@@ -11,11 +11,10 @@
 #undef max
 #endif
 
-template <typename T>
-concept HasIndex = requires {
-	{ T::index } -> std::convertible_to<size_t>;
-};
-
+template<typename T>
+T Lerp(T& a, T& b, float t) {
+    return a * (1 - t) + b * t;
+}
 template<typename Duration>
 constexpr int64_t UnitsPerSecond() {
     using period = typename Duration::period;

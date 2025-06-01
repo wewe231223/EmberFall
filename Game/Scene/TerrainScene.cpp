@@ -139,9 +139,9 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mMyPlayer->SetAnimation(data->animation()); 
 
 				mHealthBarUI.SetHealth(data->hp()); 
-				mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 
-				//mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
+				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
 				mCameraMode->Enter();
 			}
 			else {
@@ -989,6 +989,7 @@ void TerrainScene::Update() {
 
 	for (auto& player : mPlayers | std::views::filter([](const Player& p) { return p.GetActiveState(); })) {
 		player.ForwardUpdate(); 
+		Console.Log("Terrain Height : {}", LogType::Info, tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z));
 		player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
 		player.Update(mRenderManager->GetMeshRenderManager());
 	}
