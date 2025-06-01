@@ -6,8 +6,7 @@
 #include "../Utility/Exceptions.h"
 #include "../Game/System/Timer.h"
 
-GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator terrainHeader, DefaultBufferGPUIterator terrainData) {
-	mTerrainHeader = terrainHeader;
+GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator terrainData) {
 	mTerrainData = terrainData; 
 
 	std::vector<GrassPoint> points{};

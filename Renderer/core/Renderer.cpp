@@ -559,32 +559,39 @@ void Renderer::InitCameraBuffer() {
 }
 
 void Renderer::InitParticleManager() {
-	mRenderManager->GetParticleManager().SetTerrain(mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
+	mRenderManager->GetParticleManager().SetTerrain(mTerrainDataBuffer.GPUBegin());
 }
 
 void Renderer::InitGrassRenderer() {
 	if (mShaderModel6_5Support) {
 		ComPtr<ID3D12Device10> device10{};
 		CheckHR(mDevice.As(&device10));
-		mGrassRenderer = GrassRenderer(device10, mCommandList, mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
+		mGrassRenderer = GrassRenderer(device10, mCommandList, mTerrainDataBuffer.GPUBegin());
 	}
 }
 
 void Renderer::InitTerrainBuffer() {
-	TerrainHeader header{};
-	std::vector<SimpleMath::Vector3> vertices{};
+	std::filesystem::path terrainPath = "Resources/Terrain/Heightmap.raw";
 
-	std::ifstream file("Resources/Binarys/Terrain/TerrainBaked.bin", std::ios::binary);
+	auto size = std::filesystem::file_size(terrainPath); 
+	std::vector<BYTE> data{}; 
 
-	file.read(reinterpret_cast<char*>(&header), sizeof(TerrainHeader));
+	data.resize(size);
+
+	std::ifstream file{ terrainPath }; 
+
+	file.read(reinterpret_cast<char*>(data.data()), size);
 
 
-	vertices.resize(header.globalWidth * header.globalHeight);
-	file.read(reinterpret_cast<char*>(vertices.data()), vertices.size() * sizeof(SimpleMath::Vector3));
+	std::vector<float> fdata{}; 
+	fdata.resize(size);
 
 
-	mTerrainHeaderBuffer = DefaultBuffer(mDevice, mCommandList, sizeof(TerrainHeader), 1, &header, true);
-	mTerrainDataBuffer = DefaultBuffer(mDevice, mCommandList, sizeof(SimpleMath::Vector3), header.globalWidth * header.globalHeight,  vertices.data() );
+	for (size_t i = 0; i < size; i++) {
+		fdata[i] = static_cast<float>(data[i]);
+	}
+
+	mTerrainDataBuffer = DefaultBuffer(mDevice, mCommandList, sizeof(float), size, fdata.data()); 
 }
 
 void Renderer::InitCoreResources() {

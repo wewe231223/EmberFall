@@ -4,14 +4,13 @@
 
 cbuffer CameraCB : register(b0)
 {
-    matrix view;
-    matrix proj;
-    matrix viewProj;
-    matrix middleViewProjection;
+    float4x4 view;
+    float4x4 proj;
+    float4x4 viewProj;
+    float4x4 middleViewProjection;
     float3 cameraPosition;
     int isShadow;
 };
-
 
 cbuffer GlobalCB : register(b1)
 {
@@ -94,54 +93,50 @@ ParticleVertex ParticleGSPassVS(ParticleVertex input)
 
 uint GetSpriteIndex(float TimeSinceStarted, float SpriteDuration, uint TotalSpriteCount)
 {
-    float frame_duration_ms = (1000.0 * SpriteDuration) / TotalSpriteCount; // 각 그림이 표시되는 시간 (밀리초 단위)
-    return ((uint) (TimeSinceStarted / frame_duration_ms) % TotalSpriteCount); // 현재 그림 번호
+    float frame_duration_ms = (1000.0 * SpriteDuration) / TotalSpriteCount;
+    return ((uint) (TimeSinceStarted / frame_duration_ms) % TotalSpriteCount);
 }
-
 
 void CreateBillBoard(ParticleVertex vertex, inout TriangleStream<Particle_PS_IN> stream)
 {
     float3 forward, right, up;
 
-    
     forward = normalize(cameraPosition - vertex.position);
     right = normalize(cross(float3(0.f, 1.f, 0.f), forward));
     up = normalize(cross(forward, right));
-    
+
     float3x3 uvTransform = float3x3(
-                                    1.f, 0.f, 0.f,
-                                    0.f, 1.f, 0.f,
-                                    0.f, 0.f, 1.f
-                                    );
-    
+        1.f, 0.f, 0.f,
+        0.f, 1.f, 0.f,
+        0.f, 0.f, 1.f
+    );
+
     if (vertex.spritable == 1)
     {
         uint spriteIndex = GetSpriteIndex(globalTime, vertex.spriteDuration, vertex.spriteFrameInRow * vertex.spriteFrameInCol);
-        
+
         float spriteWidthRatio = 1.f / vertex.spriteFrameInRow;
         float spriteHeightRatio = 1.f / vertex.spriteFrameInCol;
-        
+
         uvTransform = float3x3(
-                            spriteWidthRatio, 0.f, (spriteIndex % vertex.spriteFrameInRow) * spriteWidthRatio,
-                            0.f, spriteHeightRatio, (spriteIndex / vertex.spriteFrameInCol) * spriteHeightRatio,
-                            0.f, 0.f, 1.f
-                            );
+            spriteWidthRatio, 0.f, (spriteIndex % vertex.spriteFrameInRow) * spriteWidthRatio,
+            0.f, spriteHeightRatio, (spriteIndex / vertex.spriteFrameInCol) * spriteHeightRatio,
+            0.f, 0.f, 1.f
+        );
     }
-    
-    
+
     float2 uvs[4];
     uvs[1] = float2(0.f, 0.f);
     uvs[0] = float2(0.f, 1.f);
     uvs[3] = float2(1.f, 0.f);
     uvs[2] = float2(1.f, 1.f);
-    
-    
+
     float4 positions[4];
     positions[0] = float4(vertex.position + right * vertex.halfWidth - up * vertex.halfHeight, 1.f);
     positions[1] = float4(vertex.position + right * vertex.halfWidth + up * vertex.halfHeight, 1.f);
     positions[2] = float4(vertex.position - right * vertex.halfWidth - up * vertex.halfHeight, 1.f);
     positions[3] = float4(vertex.position - right * vertex.halfWidth + up * vertex.halfHeight, 1.f);
-   
+
     Particle_PS_IN outpoint;
     [unroll(4)]
     for (uint i = 0; i < 4; i++)
@@ -150,7 +145,7 @@ void CreateBillBoard(ParticleVertex vertex, inout TriangleStream<Particle_PS_IN>
         outpoint.positionH = mul(positions[i], viewProj);
         outpoint.material = vertex.material;
         outpoint.uv = mul(uvTransform, float3(uvs[i], 1.f)).xy;
-        
+
         if (vertex.type == ParticleType_ember)
         {
             outpoint.color = float4(1.f, 1.f, 1.f, 1.f) * (vertex.lifetime / vertex.totalLifetime);
@@ -159,13 +154,10 @@ void CreateBillBoard(ParticleVertex vertex, inout TriangleStream<Particle_PS_IN>
         {
             outpoint.color = float4(1.f, 1.f, 1.f, 1.f);
         }
-        
+
         stream.Append(outpoint);
     }
-    
-    
 }
-
 
 [maxvertexcount(4)]
 void ParticleGSPassGS(point ParticleVertex input[1], inout TriangleStream<Particle_PS_IN> output)
@@ -177,18 +169,18 @@ void ParticleGSPassGS(point ParticleVertex input[1], inout TriangleStream<Partic
     }
 }
 
-Deffered_POUT ParticleGSPassPS(Particle_PS_IN input) 
+Deffered_POUT ParticleGSPassPS(Particle_PS_IN input)
 {
     Deffered_POUT output = (Deffered_POUT) 0;
-    
+
     float4 Color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.uv);
 
     clip(Color.a - 0.0001f);
-        
+
     Color.rgb *= materialConstants[input.material].diffuse.rgb;
     Color.rgb = normalize(Color.rgb);
     Color.a = 1.f;
-    
+
     output.diffuse = Color;
     output.normal = float4(0.f, 0.f, 0.f, 5.f);
     return output;

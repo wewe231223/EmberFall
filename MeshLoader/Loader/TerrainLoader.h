@@ -9,7 +9,7 @@
 class TerrainLoader {
     static constexpr int PATCH_LENGTH = 4;
     static constexpr int PATCH_SCALE = 32;
-    static constexpr int TILE_SCALE = 15;
+    static constexpr int TILE_SCALE = 32;
 
 public:
     TerrainLoader() = default;
@@ -47,9 +47,8 @@ public:
 	bool LoadFromFile(const std::filesystem::path& filePath);
 	float GetHeight(float x, float z) const;
 
-	TerrainHeader& GetHeader();
-	std::vector<SimpleMath::Vector3>& GetData();
+	std::shared_ptr<float[]>& GetData();
 private:
-	std::vector<SimpleMath::Vector3> mGlobalVertices;
-	TerrainHeader mHeader{}; 
+    std::shared_ptr<float[]> mPixels{};
+	size_t mLength{ 0 };
 };

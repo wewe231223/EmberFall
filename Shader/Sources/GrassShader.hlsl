@@ -1,21 +1,21 @@
 cbuffer CameraCB : register(b0)
 {
-    matrix view;
-    matrix proj;
-    matrix viewProj;
-    matrix middleViewProjection;
+    float4x4 view;
+    float4x4 proj;
+    float4x4 viewProj;
+    float4x4 middleViewProjection;
     float3 cameraPosition;
     int isShadow;
 };
 
-cbuffer Time
+cbuffer Time : register(b1)
 {
     uint globalTime; // milliseconds 
 };
 
 cbuffer MaterialIndex : register(b2)
 {
-    uint materialIndex; 
+    uint materialIndex;
 };
 
 struct MaterialConstants
@@ -35,10 +35,9 @@ struct MaterialConstants
 struct GrassPosition
 {
     float3 position;
-    float scale; 
-    uint tex; 
+    float scale;
+    uint tex;
 };
-
 
 StructuredBuffer<GrassPosition> grassVertices : register(t0);
 StructuredBuffer<MaterialConstants> materialConstants : register(t1);
@@ -51,24 +50,20 @@ SamplerState linearClampSampler : register(s3);
 SamplerState anisotropicWrapSampler : register(s4);
 SamplerState anisotropicClampSampler : register(s5);
 
-
 struct Payload
 {
     uint baseIndex;
-    bool culled; 
+    bool culled;
 };
 
 #define GRASS_GRID_COUNT 2500
 #define GRASS_PER_DISPATCH 16
 
-// 이 상수를 통해 그리드 당 풀의 개수를 제어함. 
-// 이 상수는 반드시 GRASS_PER_DISPATCH 의 배수여야 함 ( GRASS_PER_DISPATCH <= 16 ) 
 #define GRASS_PER_GRID 400
 #define GRASS_CULL_DISTANCE 200.0f
 #define GRASS_COUNT GRASS_PER_GRID * GRASS_GRID_COUNT
 #define MAX_VERTEX_COUNT (GRASS_PER_DISPATCH * 8)
 #define MAX_INDEX_COUNT  (GRASS_PER_DISPATCH * 12)
-
 
 [numthreads(1, 1, 1)]
 void mainAS(uint3 groupId : SV_GroupID)
@@ -83,7 +78,6 @@ void mainAS(uint3 groupId : SV_GroupID)
 
     float2 centerXZ = gridMin + float2((gridX + 0.5f) * gridSize, (gridZ + 0.5f) * gridSize);
 
-
     float2 toCamera = centerXZ - cameraPosition.xz;
     float distSq = dot(toCamera, toCamera);
 
@@ -91,19 +85,16 @@ void mainAS(uint3 groupId : SV_GroupID)
     if (distSq < GRASS_CULL_DISTANCE * GRASS_CULL_DISTANCE)
     {
         pl.baseIndex = gridIndex * GRASS_PER_GRID;
-        pl.culled = false; 
+        pl.culled = false;
     }
     else
     {
         pl.baseIndex = 0;
-        pl.culled = true; 
+        pl.culled = true;
     }
-    
 
-    DispatchMesh(GRASS_PER_GRID / GRASS_PER_DISPATCH, 1, 1, pl); 
+    DispatchMesh(GRASS_PER_GRID / GRASS_PER_DISPATCH, 1, 1, pl);
 }
-
-
 
 struct VSOutput
 {
@@ -112,7 +103,6 @@ struct VSOutput
     float3 normal : NORMAL;
     uint texIndex : TEXID;
 };
-
 
 float hash(uint x)
 {
@@ -155,16 +145,15 @@ void mainMS(
     float randPhase = hash(grassIndex);
     float halfSize = grass.scale * 0.4f;
 
-    // 흔들림 세기 = WIND_STRENGTH * halfSize 
     float sway = sin(globalTime * WIND_FREQ + randPhase * 6.2831f) * (WIND_STRENGTH * halfSize);
-    float3 swayDir = float3(0.0f, 0.0f, 1.0f); // Z+ 방향
+    float3 swayDir = float3(0.0f, 0.0f, 1.0f);
     float3 swayOffset = swayDir * sway;
 
     float3 basePos = grass.position;
     basePos.y += halfSize * 0.9f;
 
     const float3 up = float3(0.0f, 1.0f, 0.0f);
-    
+
     float randRotation = hash(grassIndex) * 6.2831f;
     float cosTheta = cos(randRotation);
     float sinTheta = sin(randRotation);
@@ -174,13 +163,11 @@ void mainMS(
 
     float3 verts[8];
 
-    // right-plane
     verts[0] = basePos + (-right + up) * halfSize + swayOffset;
     verts[1] = basePos + (right + up) * halfSize + swayOffset;
     verts[2] = basePos + (right - up) * halfSize;
     verts[3] = basePos + (-right - up) * halfSize;
 
-    // forward-plane
     verts[4] = basePos + (-forward + up) * halfSize + swayOffset;
     verts[5] = basePos + (forward + up) * halfSize + swayOffset;
     verts[6] = basePos + (forward - up) * halfSize;
@@ -221,8 +208,6 @@ void mainMS(
     outIndices[idxBase + 3] = uint3(vtxBase + 4, vtxBase + 7, vtxBase + 6);
 }
 
-
-
 struct Deffered_POUT
 {
     float4 diffuse : SV_TARGET0;
@@ -230,18 +215,17 @@ struct Deffered_POUT
     float4 position : SV_TARGET2;
 };
 
-// Pixel Shader
 Deffered_POUT mainPS(VSOutput input)
 {
     Texture2D tex = textures[materialConstants[materialIndex].diffuseTexture[input.texIndex]];
     float4 color = tex.Sample(anisotropicWrapSampler, input.uv);
-    
+
     clip(color.a - 0.5f);
-    
+
     Deffered_POUT output = (Deffered_POUT) 0;
     output.diffuse = color;
     output.normal = float4(input.normal, 1.f);
     output.position = input.position;
-    
-    return output; 
+
+    return output;
 }

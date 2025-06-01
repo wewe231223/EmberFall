@@ -31,11 +31,10 @@ StructuredBuffer<Light> gLight : register(t1, space1);
 
 cbuffer Camera : register(b0)
 {
-    matrix view;
-    matrix projection;
-    matrix viewProjection;
-    Matrix middleViewProjection;
-    //Matrix farViewProjection;
+    float4x4 view;
+    float4x4 projection;
+    float4x4 viewProjection;
+    float4x4 middleViewProjection;
 
     float3 cameraPosition;
     int isShadow;

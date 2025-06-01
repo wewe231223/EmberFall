@@ -182,45 +182,54 @@ bool TerrainCollider::LoadFromFile(const std::filesystem::path& filePath) {
         return false;
     }
 
-	file.read(reinterpret_cast<char*>(&mHeader), sizeof(TerrainHeader));
+	auto size = std::filesystem::file_size(filePath);
 
+    std::vector<BYTE> data{}; 
+	data.resize(size);
 
-    mGlobalVertices.resize(mHeader.globalWidth * mHeader.globalHeight);
-    file.read(reinterpret_cast<char*>(mGlobalVertices.data()), mGlobalVertices.size() * sizeof(SimpleMath::Vector3));
+	file.read(reinterpret_cast<char*>(data.data()), size);
+    
+    mPixels = std::make_shared<float[]>(size);
+	mLength = std::sqrt(size); 
+
+    for (auto i = 0; i < mLength; ++i) {
+		for (auto j = 0; j < mLength; ++j) {
+			mPixels[i * mLength + j] = static_cast<float>(data[i * mLength + j]);
+		}
+    }
+
     return true;
 }
 
-TerrainHeader& TerrainCollider::GetHeader() {
-    return mHeader; 
-}
-
-std::vector<SimpleMath::Vector3>& TerrainCollider::GetData() {
-    return mGlobalVertices;
+std::shared_ptr<float[]>& TerrainCollider::GetData() {
+    return mPixels;
 }
 
 float TerrainCollider::GetHeight(float x, float z) const {
-    float localX = x - mHeader.minX;
-    float localZ = z - mHeader.minZ;
+    float center = static_cast<float>(mLength - 1) * 0.5f;
 
-    float fcol = localX / mHeader.gridSpacing;
-    float frow = localZ / mHeader.gridSpacing;
+    float heightMapX = x + center;
+    float heightMapZ = z + center;
 
-    int col = static_cast<int>(fcol);
-    int row = static_cast<int>(frow);
 
-	col = std::clamp(col, 0, mHeader.globalWidth - 2);
-	row = std::clamp(row, 0, mHeader.globalHeight - 2);
+    if (heightMapX < 0.f || heightMapZ < 0.f || heightMapX >= static_cast<float>(mLength - 1) || heightMapZ >= static_cast<float>(mLength - 1)) {
+        return 0.f;
+    }
 
-    float t = fcol - col;
-    float u = frow - row;
+    int ix = static_cast<int>(heightMapX);
+    int iz = static_cast<int>(heightMapZ);
+    float fx = heightMapX - ix;
+    float fz = heightMapZ - iz;
 
-    const SimpleMath::Vector3& v00 = mGlobalVertices[row * mHeader.globalWidth + col];
-    const SimpleMath::Vector3& v10 = mGlobalVertices[row * mHeader.globalWidth + col + 1];
-    const SimpleMath::Vector3& v01 = mGlobalVertices[(row + 1) * mHeader.globalWidth + col];
-    const SimpleMath::Vector3& v11 = mGlobalVertices[(row + 1) * mHeader.globalWidth + col + 1];
+    float* pixels = mPixels.get();
+    float LT = static_cast<float>(pixels[ix + ((iz + 1) * mLength)]);
+    float RT = static_cast<float>(pixels[(ix + 1) + ((iz + 1) * mLength)]);
+    float LB = static_cast<float>(pixels[ix + (iz * mLength)]);
+    float RB = static_cast<float>(pixels[(ix + 1) + (iz * mLength)]);
 
-    float y0 = v00.y * (1.0f - t) + v10.y * t;
-    float y1 = v01.y * (1.0f - t) + v11.y * t;
 
-    return y0 * (1.0f - u) + y1 * u;
+    float topHeight = std::lerp(LT, RT, fx);
+    float botHeight = std::lerp(LB, RB, fx);
+
+    return std::lerp(botHeight, topHeight, fz);
 }

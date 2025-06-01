@@ -40,8 +40,7 @@ ParticleManager::ParticleManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graph
 
 
 
-void ParticleManager::SetTerrain(DefaultBufferGPUIterator terrainHeader, DefaultBufferGPUIterator terrainData) {
-	mTerrainHeaderBuffer = terrainHeader;
+void ParticleManager::SetTerrain(DefaultBufferGPUIterator terrainData) {
 	mTerrainDataBuffer = terrainData;
 }
 
@@ -99,10 +98,9 @@ void ParticleManager::RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	DirectX::XMFLOAT2 time{ Time.GetTimeSinceStarted<float>(), Time.GetDeltaTime<float>() };
 
 	commandList->SetGraphicsRoot32BitConstants(0, 2, &time, 0);
-	commandList->SetGraphicsRootConstantBufferView(1, *mTerrainHeaderBuffer);
-	commandList->SetGraphicsRootShaderResourceView(2, *mRandomBuffer.GPUBegin());
-	commandList->SetGraphicsRootShaderResourceView(3, *mEmitParticleBuffer.GPUBegin());
-	commandList->SetGraphicsRootShaderResourceView(4, *mTerrainDataBuffer);
+	commandList->SetGraphicsRootShaderResourceView(1, *mRandomBuffer.GPUBegin());
+	commandList->SetGraphicsRootShaderResourceView(2, *mEmitParticleBuffer.GPUBegin());
+	commandList->SetGraphicsRootShaderResourceView(3, *mTerrainDataBuffer);
 
 	commandList->DrawInstanced(mParticleCount, 1, 0, 0); 
 

@@ -1,22 +1,21 @@
 cbuffer Camera : register(b0)
 {
-    matrix view;
-    matrix projection;
-    matrix viewProjection;
-    Matrix middleViewProjection;
-    //Matrix farViewProjection;
+    float4x4 view;
+    float4x4 projection;
+    float4x4 viewProjection;
+    float4x4 middleViewProjection;
+    // float4x4 farViewProjection;
 
     float3 cameraPosition;
     int isShadow;
-
-}
+};
 
 struct ModelContext
 {
-    matrix world;
+    float4x4 world;
     float3 BBCenter;
     float3 BBExtents;
-    uint material; 
+    uint material;
 };
 
 struct MaterialConstants
@@ -59,7 +58,6 @@ struct Deffered_POUT
     float4 emissive : SV_TARGET3;
 };
 
-
 StructuredBuffer<ModelContext> modelContexts : register(t0);
 StructuredBuffer<MaterialConstants> materialConstants : register(t1);
 Texture2D textures[1024] : register(t2);
@@ -71,24 +69,22 @@ SamplerState linearClampSampler : register(s3);
 SamplerState anisotropicWrapSampler : register(s4);
 SamplerState anisotropicClampSampler : register(s5);
 
-Standard_VOUT Standard_VS(Standard_VIN input) {
+Standard_VOUT Standard_VS(Standard_VIN input)
+{
     ModelContext modelContext = modelContexts[input.instanceID];
 
     Standard_VOUT output;
     output.position = mul(float4(input.position, 1.f), modelContext.world);
-    output.wPosition = output.position.xyz; 
-    output.vPosition = mul(output.position, view).xyz; 
-    //output.position = mul(output.position, projection);
+    output.wPosition = output.position.xyz;
+    output.vPosition = mul(output.position, view).xyz;
     output.position = mul(output.position, viewProjection);
     
-    
-    output.normal = mul(input.normal, (float3x3)modelContext.world);
+    output.normal = mul(input.normal, (float3x3) modelContext.world);
     output.texcoord = input.texcoord;
     output.material = modelContext.material;
     
     return output;
 }
-
 
 float4 Fog(float4 Color, float Distance, float fogStart, float fogEnd)
 {
@@ -96,11 +92,11 @@ float4 Fog(float4 Color, float Distance, float fogStart, float fogEnd)
     return lerp(Color, float4(0.5, 0.5, 0.5, 1.0), 1 - fogFactor);
 }
 
-Deffered_POUT Standard_PS(Standard_VOUT input) {
+Deffered_POUT Standard_PS(Standard_VOUT input)
+{
     Deffered_POUT output = (Deffered_POUT) 0;
     
     float4 color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(anisotropicWrapSampler, input.texcoord);
-    // color += materialConstants[input.material].diffuse;
     
     clip(color.a - 0.2f);
 
@@ -112,10 +108,10 @@ Deffered_POUT Standard_PS(Standard_VOUT input) {
         return output;
     }
 
-
-    output.diffuse = color; 
+    output.diffuse = color;
     output.normal = float4(input.normal, 1.0f);
     output.position = float4(input.wPosition, 1.0f);
+
     float4 emissiveColor = materialConstants[input.material].emissive;
     
     float isEmissive = step(1.0f, emissiveColor.a);

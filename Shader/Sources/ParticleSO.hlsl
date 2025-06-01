@@ -22,17 +22,7 @@ struct EmitParticleContext
 };
 
 StructuredBuffer<EmitParticleContext> EmitPosition : register(t1);
-
-cbuffer TerrainGlobal : register(b1)
-{
-    int globalWidth;
-    int globalHeight;
-    float gridSpacing;
-    float minX;
-    float minZ;
-};
-
-StructuredBuffer<float3> TerrainVertices : register(t2);
+StructuredBuffer<float> TerrainVertices : register(t2);
 
 struct ParticleVertex
 {
@@ -131,25 +121,34 @@ float3 GenerateRandomDirection(uint seed)
 
 //----------------------------------------------------------[ Terrain Height ]----------------------------------------------------------
 
-float GetHeight(float x, float z)
+#define HEIGHT_MAP_LENGTH 512
+inline float GetHeight(float x, float z)
 {
-    float localX = x - minX;
-    float localZ = z - minZ;
-    float fcol = localX / gridSpacing;
-    float frow = localZ / gridSpacing;
-    int col = clamp((int) fcol, 0, globalWidth - 2);
-    int row = clamp((int) frow, 0, globalHeight - 2);
-    float t = fcol - col;
-    float u = frow - row;
-    int idx00 = row * globalWidth + col;
-    int idx10 = idx00 + 1;
-    int idx01 = idx00 + globalWidth;
-    int idx11 = idx01 + 1;
-    float y0 = lerp(TerrainVertices[idx00].y, TerrainVertices[idx10].y, t);
-    float y1 = lerp(TerrainVertices[idx01].y, TerrainVertices[idx11].y, t);
-    return lerp(y0, y1, u);
-}
+    float center = (HEIGHT_MAP_LENGTH - 1) * 0.5f;
 
+    float heightMapX = x + center;
+    float heightMapZ = z + center;
+
+    if (heightMapX < 0.0f || heightMapZ < 0.0f || heightMapX >= (HEIGHT_MAP_LENGTH - 1) || heightMapZ >= (HEIGHT_MAP_LENGTH - 1))
+    {
+        return 0.0f;
+    }
+
+    int ix = (int) heightMapX;
+    int iz = (int) heightMapZ;
+    float fx = heightMapX - ix;
+    float fz = heightMapZ - iz;
+
+    float LT = TerrainVertices[ix + ((iz + 1) * HEIGHT_MAP_LENGTH)];
+    float RT = TerrainVertices[(ix + 1) + ((iz + 1) * HEIGHT_MAP_LENGTH)];
+    float LB = TerrainVertices[ix + (iz * HEIGHT_MAP_LENGTH)];
+    float RB = TerrainVertices[(ix + 1) + (iz * HEIGHT_MAP_LENGTH)];
+
+    float topHeight = lerp(LT, RT, fx);
+    float botHeight = lerp(LB, RB, fx);
+
+    return lerp(botHeight, topHeight, fz);
+}
 //----------------------------------------------------------[ Physics Helpers ]----------------------------------------------------------
 
 #define GRAVITY_CONST 9.8f
@@ -168,7 +167,7 @@ void ApplyPhysics(inout ParticleVertex v)
     v.position += v.velocity * deltaTime;
 }
 
-void OnTerrain(inout ParticleVertex v)
+inline void OnTerrain(inout ParticleVertex v)
 {
     float h = GetHeight(v.position.x, v.position.z);
     if (v.position.y < h + v.halfHeight)

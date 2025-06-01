@@ -1,20 +1,19 @@
 cbuffer Camera : register(b0)
 {
-    matrix view;
-    matrix projection;
-    matrix viewProjection;
-    Matrix middleViewProjection;
-    //Matrix farViewProjection;
+    float4x4 view;
+    float4x4 projection;
+    float4x4 viewProjection;
+    float4x4 middleViewProjection;
+    // float4x4 farViewProjection;
 
     float3 cameraPosition;
     int isShadow;
-
-}
+};
 
 struct ModelContext
 {
-    matrix world;
-    float3 BBCenter; 
+    float4x4 world;
+    float3 BBCenter;
     float3 BBExtents;
     uint material;
     uint boneStart;
@@ -61,7 +60,6 @@ struct Deffered_POUT
     float4 emissive : SV_TARGET3;
 };
 
-
 StructuredBuffer<ModelContext> modelContexts : register(t0);
 StructuredBuffer<MaterialConstants> materialConstants : register(t1);
 Texture2D textures[1024] : register(t2, space0);
@@ -75,21 +73,20 @@ SamplerState linearClampSampler : register(s3);
 SamplerState anisotropicWrapSampler : register(s4);
 SamplerState anisotropicClampSampler : register(s5);
 
-StandardAnimation_PIN StandardAnimation_VS(StandardAnimation_VIN input) {
+StandardAnimation_PIN StandardAnimation_VS(StandardAnimation_VIN input)
+{
     ModelContext modelContext = modelContexts[input.instanceID];
 
     StandardAnimation_PIN output;
     
-    float4x4 boneTransform = (float4x4)0;
+    float4x4 boneTransform = (float4x4) 0;
     
- 
     boneTransform += boneTransforms[modelContext.boneStart + input.boneID[0]] * input.boneWeight.x;
     boneTransform += boneTransforms[modelContext.boneStart + input.boneID[1]] * input.boneWeight.y;
     boneTransform += boneTransforms[modelContext.boneStart + input.boneID[2]] * input.boneWeight.z;
     boneTransform += boneTransforms[modelContext.boneStart + input.boneID[3]] * input.boneWeight.w;
     
     output.position = mul(float4(input.position, 1.0f), boneTransform);
-        
     output.position = mul(output.position, modelContext.world);
     output.wPosition = output.position.xyz;
     output.position = mul(output.position, viewProjection);
@@ -103,9 +100,9 @@ StandardAnimation_PIN StandardAnimation_VS(StandardAnimation_VIN input) {
     return output;
 }
 
-Deffered_POUT StandardAnimation_PS(StandardAnimation_PIN input) {
-    
-    Deffered_POUT output = (Deffered_POUT)0;
+Deffered_POUT StandardAnimation_PS(StandardAnimation_PIN input)
+{
+    Deffered_POUT output = (Deffered_POUT) 0;
     
     [unroll]
     for (int i = 0; i < isShadow; ++i)
@@ -116,18 +113,17 @@ Deffered_POUT StandardAnimation_PS(StandardAnimation_PIN input) {
     }
     
     output.diffuse = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord);
-    // color += materialConstants[input.material].diffuse;
     output.normal = float4(input.normal, 1.0f);
     output.position = float4(input.wPosition, 1.0f);
+    
     float4 emissiveColor = materialConstants[input.material].emissive;
     
     float isEmissive = step(1.0f, emissiveColor.a);
     [unroll]
     for (int i = 0; i < isEmissive; ++i)
     {
-        //output.emissive = float4(emissiveColor.rgb, 1.0f);
         output.emissive = textures[materialConstants[input.material].emissiveTexture[0]].Sample(linearWrapSampler, input.texcoord) * 20.0f;
-
     }
+    
     return output;
 }
