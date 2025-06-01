@@ -571,7 +571,7 @@ void Renderer::InitGrassRenderer() {
 }
 
 void Renderer::InitTerrainBuffer() {
-	std::filesystem::path terrainPath = "Resources/Terrain/Heightmap.raw";
+	std::filesystem::path terrainPath = "Resources/Binarys/Terrain/terrain.raw";
 
 	auto size = std::filesystem::file_size(terrainPath); 
 	std::vector<BYTE> data{}; 

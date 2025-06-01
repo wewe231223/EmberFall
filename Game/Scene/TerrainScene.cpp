@@ -551,8 +551,8 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	TerrainScene::BuildMaterial();
 	TerrainScene::BuildAniamtionController();
 
-	SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/terrain.raw", "Resources/Binarys/Terrain/NTerrain.bin");
-	tCollider.LoadFromFile("Resources/Binarys/Terrain/NTerrain.bin");
+	//SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/terrain.raw", "Resources/Binarys/Terrain/NTerrain.bin");
+	tCollider.LoadFromFile("Resources/Binarys/Terrain/terrain.raw");
 
 	mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();

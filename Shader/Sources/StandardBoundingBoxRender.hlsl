@@ -1,16 +1,16 @@
 cbuffer Camera : register(b0)
 {
-    matrix view;
-    matrix proj;
-    matrix viewProj;
-    Matrix middleViewProjection;
+    float4x4 view;
+    float4x4 proj;
+    float4x4 viewProj;
+    float4x4 middleViewProjection;
     float3 cameraPosition;
     int isShadow;
 }
 
 struct ModelContext
 {
-    matrix world;
+    float4x4 world;
     float3 BBcenter; 
     float3 BBExtents;
     uint material;

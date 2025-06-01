@@ -141,38 +141,80 @@ void ShaderFileManager::ProcessShader(const std::filesystem::path& source, const
 }
 
 void ShaderFileManager::ReCompile(const std::filesystem::path& source, const std::string& type, const std::string& model, const std::string& entry) {
-	Console.Log("Compiling shader : {}", LogType::Info, source.string());
+	Console.Log("Compiling shader (DXC) : {}", LogType::Info, source.string());
 
-	ComPtr<ID3D12Blob> shaderBlob{};
-	ComPtr<ID3D12Blob> errorBlob{};
-	
-	auto hr = ::D3DCompileFromFile(source.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entry.c_str(), model.c_str(), 0, 0, &shaderBlob, &errorBlob);
+	// DXC 초기화
+	ComPtr<IDxcUtils> dxcUtils{};
+	ComPtr<IDxcCompiler3> dxcCompiler{};
+	ComPtr<IDxcIncludeHandler> includeHandler{};
 
-	if (FAILED(hr)) {
-		OutputDebugStringA(reinterpret_cast<const char*>(errorBlob->GetBufferPointer()));
+	CheckHR(DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils)));
+	CheckHR(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler)));
+	CheckHR(dxcUtils->CreateDefaultIncludeHandler(&includeHandler));
+
+	// 소스 파일 로드
+	ComPtr<IDxcBlobEncoding> sourceBlob{};
+	CheckHR(dxcUtils->LoadFile(source.c_str(), nullptr, &sourceBlob));
+
+	DxcBuffer sourceBuffer{};
+	sourceBuffer.Ptr = sourceBlob->GetBufferPointer();
+	sourceBuffer.Size = sourceBlob->GetBufferSize();
+	sourceBuffer.Encoding = DXC_CP_UTF8;
+
+	// DXC 인자 구성
+	std::wstring wEntry(entry.begin(), entry.end());
+	std::wstring wModel(model.begin(), model.end());
+	std::wstring wSource = source.wstring();
+
+#ifdef _DEBUG
+	std::vector<LPCWSTR> arguments = {
+		wSource.c_str(),
+		L"-T", wModel.c_str(),
+		L"-E", wEntry.c_str(),
+		L"-Zi",
+		L"-Qembed_debug",
+		L"-Od",
+	};
+#else
+	std::vector<LPCWSTR> arguments = {
+		wSource.c_str(),
+		L"-T", wModel.c_str(),
+		L"-E", wEntry.c_str(),
+		L"-O3",
+	};
+#endif
+
+	// 컴파일
+	ComPtr<IDxcResult> compileResult{};
+	CheckHR(dxcCompiler->Compile(&sourceBuffer, arguments.data(), (uint32_t)arguments.size(), includeHandler.Get(), IID_PPV_ARGS(&compileResult)));
+
+	// 에러 출력 확인
+	ComPtr<IDxcBlobUtf8> errors{};
+	ComPtr<IDxcBlobUtf16> name{};
+	CheckHR(compileResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), name.GetAddressOf()));
+	if (errors && errors->GetStringLength() > 0) {
+		OutputDebugStringA((char*)errors->GetStringPointer());
+		Console.Log("Shader compile error : {}\nLoad previous version!", LogType::Error, (char*)errors->GetStringPointer());
 	}
 
+	// 바이너리 추출
+	ComPtr<IDxcBlob> shaderBinary{};
+	CheckHR(compileResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBinary), name.GetAddressOf()));
 
+	// DXC Blob -> D3D12 Blob 변환
+	ComPtr<ID3D12Blob> shaderBlob{};
+	CheckHR(shaderBinary->QueryInterface(IID_PPV_ARGS(&shaderBlob)));
+
+	// 바이너리 저장
 	std::string binaryFileName{ source.stem().string() + "_" + type + ".bin" };
 	std::filesystem::path binaryPath{ "Shader/Binarys/" + binaryFileName };
 
-	if (SUCCEEDED(hr)) {
-		std::ofstream binaryFile{ binaryPath, std::ios::binary };
-		CrashExp(binaryFile.is_open(), "Failed to create binary file");
+	std::ofstream binaryFile{ binaryPath, std::ios::binary };
+	CrashExp(binaryFile.is_open(), "Failed to create binary file");
 
-		binaryFile.write(static_cast<char*>(shaderBlob->GetBufferPointer()), shaderBlob->GetBufferSize());
-	}
-	else {
-		Console.Log("Failed to compile shader : {}\nLoad previous version!", LogType::Error, reinterpret_cast<const char*>(errorBlob->GetBufferPointer()));
-		CrashExp(std::filesystem::exists(binaryPath), "Binary file not found");
-		
-		if (shaderBlob) {
-			shaderBlob->Release();
-		}
+	binaryFile.write(static_cast<char*>(shaderBlob->GetBufferPointer()), shaderBlob->GetBufferSize());
 
-		ShaderFileManager::Load(shaderBlob, binaryPath);
-	}
-	
+	// ShaderType 설정
 	ShaderType eType{};
 
 	if (type == "vs") {
@@ -191,9 +233,10 @@ void ShaderFileManager::ReCompile(const std::filesystem::path& source, const std
 		eType = ShaderType::DomainShader;
 	}
 	else {
-		Crash(("Invalid Shaer Type : " + type).c_str());
+		Crash(("Invalid Shader Type : " + type).c_str());
 	}
 
+	// 결과 저장 (ID3D12Blob 기준으로 저장)
 	mShaderBlobs[source.stem().string()][eType] = shaderBlob;
 }
 

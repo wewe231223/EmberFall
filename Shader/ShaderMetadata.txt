@@ -1,13 +1,13 @@
 Standard.hlsl { vs vs_6_0 Standard_VS ps ps_6_0 Standard_PS }
-TerrainTessellation.hlsl { vs vs_5_1 Terrain_VS hs hs_5_1 Terrain_HS ds ds_5_1 Terrain_DS ps ps_6_0 Terrain_PS }
+TerrainTessellation.hlsl { vs vs_6_0 Terrain_VS hs hs_6_0 Terrain_HS ds ds_6_0 Terrain_DS ps ps_6_0 Terrain_PS }
 StandardAnimation.hlsl { vs vs_6_0 StandardAnimation_VS ps ps_6_0 StandardAnimation_PS }
 SkyBox.hlsl { vs vs_6_0 SkyBox_VS ps ps_6_0 SkyBox_PS }
 SkyFog.hlsl { vs vs_6_0 SkyFog_VS ps ps_6_0 SkyFog_PS }
 Deffered.hlsl { vs vs_6_0 Deffered_VS ps ps_6_0 Deffered_PS }
-SkeletonBoundingBoxRender.hlsl { vs vs_5_1 BB_VS gs gs_5_1 BB_GS ps ps_6_0 BB_PS }
-StandardBoundingBoxRender.hlsl { vs vs_5_1 BB_VS gs gs_5_1 BB_GS ps ps_6_0 BB_PS }
-ParticleSO.hlsl { vs vs_5_1 ParticleSOPassVS gs gs_5_1 ParticleSOPassGS }
-ParticleGS.hlsl { vs vs_5_1 ParticleGSPassVS gs gs_5_1 ParticleGSPassGS ps ps_6_0 ParticleGSPassPS }
+SkeletonBoundingBoxRender.hlsl { vs vs_6_0 BB_VS gs gs_6_0 BB_GS ps ps_6_0 BB_PS }
+StandardBoundingBoxRender.hlsl { vs vs_6_0 BB_VS gs gs_6_0 BB_GS ps ps_6_0 BB_PS }
+ParticleSO.hlsl { vs vs_6_0 ParticleSOPassVS gs gs_6_0 ParticleSOPassGS }
+ParticleGS.hlsl { vs vs_6_0 ParticleGSPassVS gs gs_6_0 ParticleGSPassGS ps ps_6_0 ParticleGSPassPS }
 UI.hlsl { vs vs_6_0 UI_VS ps ps_6_0 UI_PS }
 StandardNormal.hlsl { vs vs_6_0 StandardNormal_VS ps ps_6_0 StandardNormal_PS }
 StandardAnimationNormal.hlsl { vs vs_6_0 StandardAnimationNormal_VS ps ps_6_0 StandardAnimationNormal_PS }
