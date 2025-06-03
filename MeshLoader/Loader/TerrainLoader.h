@@ -20,11 +20,11 @@ public:
     void Load(const std::filesystem::path& path);
 
     MeshData GetData() const;
-    MeshData GetData(int patchRow, int patchCol) const;
+    MeshData GetData(int patchRow, int patchCol, int mergeCount) const;
 
     int GetLength() const { return mLength; }
 
-    const std::pair<int, int> GetPatchCount() const;
+    const std::pair<int, int> GetPatchCount(int mergeCount) const;
 
     std::vector<SimpleMath::Vector3>& GetControlPoints(); 
 private:

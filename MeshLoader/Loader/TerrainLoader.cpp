@@ -92,43 +92,64 @@ MeshData TerrainLoader::GetData() const {
     return meshData;
 }
 
-MeshData TerrainLoader::GetData(int patchRow, int patchCol) const {
-    MeshData patchData;
+MeshData TerrainLoader::GetData(int patchRow, int patchCol, int mergeCount) const {
+    MeshData mergedData;
 
     const int patchStride = PATCH_LENGTH + 1;
     const int numPatches = mLength / (PATCH_LENGTH * PATCH_SCALE);
 
+    int mergeSize = static_cast<int>(std::sqrt(mergeCount));
+    CrashExp(mergeSize * mergeSize == mergeCount, "mergeCount must be perfect square");
     CrashExp(patchRow >= 0 && patchRow < numPatches, "Invalid patchRow");
     CrashExp(patchCol >= 0 && patchCol < numPatches, "Invalid patchCol");
 
-    const int patchIndex = patchRow * numPatches + patchCol;
     const int verticesPerPatch = patchStride * patchStride;
-    const int vertexOffset = patchIndex * verticesPerPatch;
 
-    for (int i = 0; i < verticesPerPatch; ++i) {
-        patchData.position.push_back(mMeshData.position[vertexOffset + i]);
-        patchData.texCoord1.push_back(mMeshData.texCoord1[vertexOffset + i]);
-        patchData.texCoord2.push_back(mMeshData.texCoord2[vertexOffset + i]);
+    for (int pr = 0; pr < mergeSize; ++pr) {
+        for (int pc = 0; pc < mergeSize; ++pc) {
+            int currentPatchRow = patchRow + pr;
+            int currentPatchCol = patchCol + pc;
+
+            // 경계처리 (넘어가는 경우 → 포함 X)
+            if (currentPatchRow >= numPatches || currentPatchCol >= numPatches)
+                continue;
+
+            int patchIndex = currentPatchRow * numPatches + currentPatchCol;
+            int vertexOffset = patchIndex * verticesPerPatch;
+
+            // 그대로 패치 하나 통째로 append → CP 25개 그대로 유지
+            for (int i = 0; i < verticesPerPatch; ++i) {
+                mergedData.position.push_back(mMeshData.position[vertexOffset + i]);
+                mergedData.texCoord1.push_back(mMeshData.texCoord1[vertexOffset + i]);
+                mergedData.texCoord2.push_back(mMeshData.texCoord2[vertexOffset + i]);
+            }
+        }
     }
 
-    patchData.primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST;
-    patchData.indexed = false;
-    patchData.unitCount = static_cast<UINT>(patchData.position.size());
+    mergedData.primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST;
+    mergedData.indexed = false;
+    mergedData.unitCount = static_cast<UINT>(mergedData.position.size());
 
-    patchData.vertexAttribute.set(0);
-    patchData.vertexAttribute.set(2);
-    patchData.vertexAttribute.set(3);
+    mergedData.vertexAttribute.set(0);
+    mergedData.vertexAttribute.set(2);
+    mergedData.vertexAttribute.set(3);
 
-    return patchData;
+    return mergedData;
 }
 
-const std::pair<int, int> TerrainLoader::GetPatchCount() const {
+
+const std::pair<int, int> TerrainLoader::GetPatchCount(int mergeCount) const {
     int patchSize = PATCH_LENGTH * PATCH_SCALE;
     int numPatches = mLength / patchSize;
 
-    return { numPatches, numPatches };
-}
+    int mergeSize = static_cast<int>(std::sqrt(mergeCount));
+    CrashExp(mergeSize * mergeSize == mergeCount, "mergeCount must be perfect square");
 
+    // 올림 division
+    int mergedPatchCount = (numPatches + mergeSize - 1) / mergeSize;
+
+    return { mergedPatchCount, mergedPatchCount };
+}
 std::vector<SimpleMath::Vector3>& TerrainLoader::GetControlPoints() {
     return mCPPositions;
 }

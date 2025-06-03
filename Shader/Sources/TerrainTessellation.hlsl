@@ -110,7 +110,7 @@ struct PatchTessFactor
 
 float GetTessFactor(float4 center)
 {
-    return 16.f;
+    return 32.f;
     
     float fDistToCamera = distance(center.xyz, cameraPosition);
     float s = saturate((fDistToCamera - 10.0f) / (500.0f - 10.0f));

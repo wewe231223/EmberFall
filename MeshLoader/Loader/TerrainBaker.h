@@ -31,7 +31,7 @@ static SimpleMath::Vector3 EvaluateBiQuarticBezierPatch(const SimpleMath::Vector
 }
 
 static std::vector<::DirectX::SimpleMath::Vector3> SimulateTessellationForPatch(const std::vector<SimpleMath::Vector3>& patchControlPoints) {
-    const int tessFactor = 16; // 고정 테셀레이션 팩터: 16분할 → 17×17 정점
+    const int tessFactor = 32; // 고정 테셀레이션 팩터: 16분할 → 17×17 정점
     const int gridSize = tessFactor + 1; // 17
 
     SimpleMath::Vector3 bezier[5][5];
@@ -71,7 +71,7 @@ bool SimulateGlobalTessellationAndWriteFile(const std::filesystem::path& heightM
     int patchesX = (loader.GetLength() - patchSize) / patchSize + 1;
     int patchesZ = (loader.GetLength() - patchSize) / patchSize + 1;
 
-    const int tessFactor = 16;             
+    const int tessFactor = 32;             
     const int tessGridSize = tessFactor + 1;  
     int totalPatches = patchesX * patchesZ;
 

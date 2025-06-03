@@ -43,8 +43,10 @@ void TerrainSegment::SetMaterial(MaterialIndex idx) {
 
 TerrainObject::TerrainObject(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const std::filesystem::path& heightmap) {
 	TerrainLoader loader{ heightmap };
-	
-	auto [width, height] = loader.GetPatchCount();
+
+	int MERGE_COUNT = 36; 
+
+	auto [width, height] = loader.GetPatchCount(MERGE_COUNT);
 
 	struct PatchIndex {
 		int i, j;
@@ -63,14 +65,17 @@ TerrainObject::TerrainObject(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 
 	std::transform(std::execution::par, indices.begin(), indices.end(), patchData.begin(),
 		[&](const PatchIndex& idx) {
-			MeshData data = loader.GetData(idx.i, idx.j);
+			int mergeSize = static_cast<int>(std::sqrt(MERGE_COUNT));
+			int patchRow = idx.i * mergeSize;
+			int patchCol = idx.j * mergeSize;
+
+			MeshData data = loader.GetData(patchRow, patchCol, MERGE_COUNT);
 			return std::make_tuple(std::move(data), idx.i, idx.j);
 		});
 
 	for (auto& [data, i, j] : patchData) {
 		mSegments.emplace_back(device, commandList, data, i, j);
 	}
-
 	mTerrainShader = std::make_shared<TerrainShader>(); 
 	mTerrainShader->CreateShader(device); 
 
