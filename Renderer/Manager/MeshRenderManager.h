@@ -19,7 +19,7 @@ public:
 	static constexpr T MAX_INSTANCE_COUNT = static_cast<T>(10000);
 
 	template<typename T> 
-	static constexpr T MAX_TERRAIN_SEGMENT_COUNT = static_cast<T>(10000);
+	static constexpr T MAX_TERRAIN_SEGMENT_COUNT = static_cast<T>(10'0000);
 
 	template<typename T> 
 	static constexpr T MAX_BONE_COUNT = static_cast<T>(MAX_INSTANCE_COUNT<T> * Config::MAX_BONE_COUNT_PER_INSTANCE<T>);

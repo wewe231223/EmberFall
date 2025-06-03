@@ -8,7 +8,7 @@
 
 class TerrainLoader {
     static constexpr int PATCH_LENGTH = 4;
-    static constexpr int PATCH_SCALE = 32;
+    static constexpr int PATCH_SCALE = 16;
     static constexpr int TILE_SCALE = 32;
 
 public:
@@ -39,16 +39,18 @@ private:
 	MeshData mMeshData{};
 };
 
+
 class TerrainCollider {
 public:
-	TerrainCollider() = default;
-	~TerrainCollider() = default;
+    TerrainCollider() = default;
+    ~TerrainCollider() = default;
 public:
-	bool LoadFromFile(const std::filesystem::path& filePath);
-	float GetHeight(float x, float z) const;
+    bool LoadFromFile(const std::filesystem::path& filePath);
+    float GetHeight(float x, float z) const;
 
-	std::shared_ptr<float[]>& GetData();
+    TerrainHeader& GetHeader();
+    std::vector<SimpleMath::Vector3>& GetData();
 private:
-    std::shared_ptr<float[]> mPixels{};
-	size_t mLength{ 0 };
+    std::vector<SimpleMath::Vector3> mGlobalVertices;
+    TerrainHeader mHeader{};
 };

@@ -182,94 +182,45 @@ bool TerrainCollider::LoadFromFile(const std::filesystem::path& filePath) {
         return false;
     }
 
-    auto size = std::filesystem::file_size(filePath);
-    int sourceLength = static_cast<int>(std::sqrt(size));  // 1025 expected
+    file.read(reinterpret_cast<char*>(&mHeader), sizeof(TerrainHeader));
 
-    std::vector<BYTE> sourceData{};
-    sourceData.resize(size);
 
-    file.read(reinterpret_cast<char*>(sourceData.data()), size);
-
-    // Target resolution: 2048 x 2048
-    const int targetLength = 8192;
-    mLength = targetLength;
-    mPixels = std::make_shared<float[]>(targetLength * targetLength);
-
-    // Perform bilinear upscaling
-    for (int i = 0; i < targetLength; ++i) {
-        for (int j = 0; j < targetLength; ++j) {
-            // Map target pixel to source space
-            float u = static_cast<float>(j) / (targetLength - 1);
-            float v = static_cast<float>(i) / (targetLength - 1);
-
-            float srcX = u * (sourceLength - 1);
-            float srcY = v * (sourceLength - 1);
-
-            int ix = static_cast<int>(srcX);
-            int iy = static_cast<int>(srcY);
-
-            float fx = srcX - ix;
-            float fy = srcY - iy;
-
-            // Clamp to source bounds
-            ix = std::clamp(ix, 0, sourceLength - 2);
-            iy = std::clamp(iy, 0, sourceLength - 2);
-
-            float h00 = static_cast<float>(sourceData[ix + iy * sourceLength]);
-            float h10 = static_cast<float>(sourceData[(ix + 1) + iy * sourceLength]);
-            float h01 = static_cast<float>(sourceData[ix + (iy + 1) * sourceLength]);
-            float h11 = static_cast<float>(sourceData[(ix + 1) + (iy + 1) * sourceLength]);
-
-            // Bilinear interpolation
-            float h0 = h00 * (1.0f - fx) + h10 * fx;
-            float h1 = h01 * (1.0f - fx) + h11 * fx;
-            float finalHeight = h0 * (1.0f - fy) + h1 * fy;
-
-            // Store flipped vertically (same as your original code)
-            mPixels[j + ((targetLength - i - 1) * targetLength)] = finalHeight;
-        }
-    }
-
+    mGlobalVertices.resize(mHeader.globalWidth * mHeader.globalHeight);
+    file.read(reinterpret_cast<char*>(mGlobalVertices.data()), mGlobalVertices.size() * sizeof(SimpleMath::Vector3));
     return true;
 }
 
-std::shared_ptr<float[]>& TerrainCollider::GetData() {
-    return mPixels;
+TerrainHeader& TerrainCollider::GetHeader() {
+    return mHeader;
+}
+
+std::vector<SimpleMath::Vector3>& TerrainCollider::GetData() {
+    return mGlobalVertices;
 }
 
 float TerrainCollider::GetHeight(float x, float z) const {
+    float localX = x - mHeader.minX;
+    float localZ = z - mHeader.minZ;
 
-    const float terrainWorldSizeX = 1025.f;  
-    const float terrainWorldSizeZ = 1025.f;  
+    float fcol = localX / mHeader.gridSpacing;
+    float frow = localZ / mHeader.gridSpacing;
 
-    // Transform world x,z → u,v (0~1)
-    float u = (x + terrainWorldSizeX * 0.5f) / terrainWorldSizeX;
-    float v = (z + terrainWorldSizeZ * 0.5f) / terrainWorldSizeZ;
+    int col = static_cast<int>(fcol);
+    int row = static_cast<int>(frow);
 
-    // Clamp to 0~1 range
-    u = std::clamp(u, 0.0f, 1.0f);
-    v = std::clamp(v, 0.0f, 1.0f);
+    col = std::clamp(col, 0, mHeader.globalWidth - 2);
+    row = std::clamp(row, 0, mHeader.globalHeight - 2);
 
-    // Map u,v → texture space
-    float texX = u * (mLength - 1);
-    float texZ = v * (mLength - 1);
+    float t = fcol - col;
+    float u = frow - row;
 
-    int ix = static_cast<int>(texX);
-    int iz = static_cast<int>(texZ);
+    const SimpleMath::Vector3& v00 = mGlobalVertices[row * mHeader.globalWidth + col];
+    const SimpleMath::Vector3& v10 = mGlobalVertices[row * mHeader.globalWidth + col + 1];
+    const SimpleMath::Vector3& v01 = mGlobalVertices[(row + 1) * mHeader.globalWidth + col];
+    const SimpleMath::Vector3& v11 = mGlobalVertices[(row + 1) * mHeader.globalWidth + col + 1];
 
-    float fx = texX - ix;
-    float fz = texZ - iz;
+    float y0 = v00.y * (1.0f - t) + v10.y * t;
+    float y1 = v01.y * (1.0f - t) + v11.y * t;
 
-    float* pixels = mPixels.get();
-
-    float h00 = pixels[ix + iz * mLength];
-    float h10 = pixels[(ix + 1) + iz * mLength];
-    float h01 = pixels[ix + (iz + 1) * mLength];
-    float h11 = pixels[(ix + 1) + (iz + 1) * mLength];
-
-    float h0 = Lerp(h00, h10, fx);
-    float h1 = Lerp(h01, h11, fx);
-    float finalHeight = Lerp(h0, h1, fz);
-
-    return finalHeight;
+    return y0 * (1.0f - u) + y1 * u;
 }

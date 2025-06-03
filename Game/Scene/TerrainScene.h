@@ -85,7 +85,9 @@ private:
 	std::unordered_map<std::string, AnimationLoader> mAnimationMap{};
 
 	Camera mCamera{};
-	std::unique_ptr<CameraMode> mCameraMode{ nullptr };
+	CameraMode* mCurrentCameraMode{ nullptr };
+	std::unique_ptr<CameraMode> mFreeCameraMode{ nullptr };
+	std::unique_ptr<CameraMode> mTPPCameraMode{ nullptr };
 
 	absl::flat_hash_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
 	std::vector<GameObject> mGameObjects{};

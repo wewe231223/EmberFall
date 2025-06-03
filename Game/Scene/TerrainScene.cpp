@@ -139,10 +139,29 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mMyPlayer->SetAnimation(data->animation()); 
 
 				mHealthBarUI.SetHealth(data->hp()); 
-				//mCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+				mFreeCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
+				mTPPCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
 
-				mCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
-				mCameraMode->Enter();
+				mCurrentCameraMode = mTPPCameraMode.get(); 
+
+				mCurrentCameraMode->Enter();
+
+#ifdef DEV_MODE
+				int sign = NonReplacementSampler::GetInstance().Sample(); 
+
+				Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::P, sign, [this]() {
+					mCurrentCameraMode->Exit(); 
+					if (mCurrentCameraMode == mTPPCameraMode.get()) {
+						mCurrentCameraMode = mFreeCameraMode.get();
+					}
+					else {
+						mCurrentCameraMode = mTPPCameraMode.get();
+					}
+
+					mCurrentCameraMode->Enter(); 
+				});
+#endif 
+
 			}
 			else {
 				if (mPlayerIndexmap[data->objectId()] != nullptr) {
@@ -551,8 +570,8 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	TerrainScene::BuildMaterial();
 	TerrainScene::BuildAniamtionController();
 
-	//SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/terrain.raw", "Resources/Binarys/Terrain/NTerrain.bin");
-	tCollider.LoadFromFile("Resources/Binarys/Terrain/terrain.raw");
+	SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/terrain.raw", "Resources/Binarys/Terrain/NTerrain.bin");
+	tCollider.LoadFromFile("Resources/Binarys/Terrain/NTerrain.bin");
 
 	mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
@@ -563,6 +582,35 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	mTerrainObject = TerrainObject{ device, commandList,"Resources/Binarys/Terrain/terrain.raw" };
 	mTerrainObject.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("TerrainMaterial"));
 	mRenderManager->GetMeshRenderManager().RegisterTerrainCPPointBuffer(mTerrainObject.GetCPPositionBuffer());
+
+	{
+		auto bigrock1 = std::make_unique<GameObject>();
+		bigrock1->mShader = mShaderMap["StandardNormalShader"].get();
+		bigrock1->mMesh = mMeshMap["LargeRock1"].get();
+		bigrock1->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LargeRock1_Material");
+		bigrock1->SetActiveState(true);
+		bigrock1->mCollider = mColliderMap["LargeRock1"];
+
+		float rangeMin = -512.0f;
+		float rangeMax = 512.0f;
+		int count = 50;
+		float spacing = (rangeMax - rangeMin) / (count - 1);
+
+		for (int i = 0; i < count; ++i) {
+			for (int j = 0; j < count; ++j) {
+				float x = rangeMin + spacing * i;
+				float z = rangeMin + spacing * j;
+				float y = tCollider.GetHeight(x, z);
+
+				auto& rock = mGameObjects.emplace_back();
+				rock = bigrock1->Clone();
+				rock.GetTransform().GetPosition() = { x, y, z };
+			}
+		}
+
+
+	}
+
 
 #ifdef DEV_MODE
 	{
@@ -907,8 +955,8 @@ void TerrainScene::Update() {
 	mHealthBarUI.Update();
 	mProfileUI.Update();
 
-	if (mCameraMode) {
-		mCameraMode->Update();
+	if (mCurrentCameraMode) {
+		mCurrentCameraMode->Update();
 
 		/*auto& pos = mCamera.GetTransform().GetPosition();
 		auto y = tCollider.GetHeight(pos.x, pos.z);
@@ -916,7 +964,7 @@ void TerrainScene::Update() {
 			pos.y = y + 0.5f;
 		}*/
 
-		mCameraMode->FocusUpdate();
+		mCurrentCameraMode->FocusUpdate();
 	}
 	mCamera.UpdateBuffer();
 	mRenderManager->GetShadowRenderer().Update();

@@ -110,7 +110,7 @@ struct PatchTessFactor
 
 float GetTessFactor(float4 center)
 {
-    return 32.f;
+    return 16.f;
     
     float fDistToCamera = distance(center.xyz, cameraPosition);
     float s = saturate((fDistToCamera - 10.0f) / (500.0f - 10.0f));
@@ -140,7 +140,7 @@ PatchTessFactor Constant_HS(InputPatch<Terrain_HIN, 25> patch, uint patchID : SV
 }
 
 [domain("quad")]
-[partitioning("fractional_even")]
+[partitioning("integer")]
 [outputtopology("triangle_cw")]
 [outputcontrolpoints(25)]
 [patchconstantfunc("Constant_HS")]
@@ -204,8 +204,6 @@ Terrain_PIN Terrain_DS(
     
     float3 worldPos = CubicBezierSum(patch, basisU5, basisV5);
     float2 puv = ComputeHeightmapUV(worldPos);
-    
-    worldPos.y = textures[materialConstants[ctx.material].emissiveTexture[0]].SampleLevel(anisotropicWrapSampler, puv, 0).r * 256.f;
     
     float4 worldPos4 = mul(float4(worldPos, 1), ctx.world);
     o.position = mul(worldPos4, viewProjection);
