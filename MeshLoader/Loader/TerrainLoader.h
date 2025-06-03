@@ -31,6 +31,9 @@ private:
     SimpleMath::Vector3 CalculateNormal(int z, int x) const;
     void CreatePatch(MeshData& data, int zStart, int zEnd, int xStart, int xEnd) const;
 
+    void SmoothMeshData(int iterations /* = 1 */);
+
+private:
     std::vector<std::vector<float>> mHeight{};
     int mLength = 0;
 

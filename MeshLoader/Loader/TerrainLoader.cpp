@@ -6,14 +6,14 @@
 
 #ifdef max 
 #undef max
-#endif // max
+#endif
 
 #ifdef min
 #undef min
-#endif // min
+#endif
 
 TerrainLoader::TerrainLoader(const std::filesystem::path& path) {
-	Load(path);
+    Load(path);
 }
 
 void TerrainLoader::Load(const std::filesystem::path& path) {
@@ -21,10 +21,8 @@ void TerrainLoader::Load(const std::filesystem::path& path) {
 
     size_t size = std::filesystem::file_size(path);
     mLength = static_cast<int>(std::sqrt(size));
-    CrashExp(mLength * mLength == static_cast<int>(size),
-        "Height map must be square of BYTE");
+    CrashExp(mLength * mLength == static_cast<int>(size), "Height map must be square of BYTE");
 
-    // 읽기
     mHeight.assign(mLength, std::vector<float>(mLength));
     std::ifstream file{ path, std::ios::binary };
     std::vector<BYTE> rowData(mLength);
@@ -35,8 +33,7 @@ void TerrainLoader::Load(const std::filesystem::path& path) {
         }
     }
 
-    mMeshData = TerrainLoader::GetData(); 
-
+    mMeshData = TerrainLoader::GetData();
 
     mCPPositions.clear();
     const int patchSize = PATCH_LENGTH * PATCH_SCALE;
@@ -47,7 +44,7 @@ void TerrainLoader::Load(const std::filesystem::path& path) {
     for (int pr = 0; pr <= numPatches * PATCH_LENGTH; ++pr) {
         for (int pc = 0; pc <= numPatches * PATCH_LENGTH; ++pc) {
             int x = pc * TILE_SCALE;
-            int z = mLength - 1 - pr * TILE_SCALE; 
+            int z = mLength - 1 - pr * TILE_SCALE;
 
             float height = 0.0f;
             if (z >= 0 && z < mLength && x >= 0 && x < mLength)
@@ -60,14 +57,20 @@ void TerrainLoader::Load(const std::filesystem::path& path) {
             );
         }
     }
+
+    TerrainLoader::SmoothMeshData(2);
 }
 
 MeshData TerrainLoader::GetData() const {
+	if (mMeshData.position.size() > 0) {
+		return mMeshData;
+	}
+
+
     MeshData meshData;
     int patchSize = PATCH_LENGTH * PATCH_SCALE;
     int numPatches = mLength / patchSize;
 
-    // 모든 패치 생성
     for (int pr = 0; pr < numPatches; ++pr) {
         for (int pc = 0; pc < numPatches; ++pc) {
             int zEnd = mLength - (pr + 1) * patchSize;
@@ -78,7 +81,6 @@ MeshData TerrainLoader::GetData() const {
         }
     }
 
-    // 공통 설정
     meshData.primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST;
     meshData.indexed = false;
     meshData.unitCount = static_cast<UINT>(meshData.position.size());
@@ -88,7 +90,7 @@ MeshData TerrainLoader::GetData() const {
     meshData.vertexAttribute.set(3);
 
     return meshData;
-}   
+}
 
 MeshData TerrainLoader::GetData(int patchRow, int patchCol) const {
     MeshData patchData;
@@ -99,7 +101,6 @@ MeshData TerrainLoader::GetData(int patchRow, int patchCol) const {
     CrashExp(patchRow >= 0 && patchRow < numPatches, "Invalid patchRow");
     CrashExp(patchCol >= 0 && patchCol < numPatches, "Invalid patchCol");
 
-    // 전체 패치 순서상 인덱스
     const int patchIndex = patchRow * numPatches + patchCol;
     const int verticesPerPatch = patchStride * patchStride;
     const int vertexOffset = patchIndex * verticesPerPatch;
@@ -113,34 +114,33 @@ MeshData TerrainLoader::GetData(int patchRow, int patchCol) const {
     patchData.primitiveTopology = D3D_PRIMITIVE_TOPOLOGY_25_CONTROL_POINT_PATCHLIST;
     patchData.indexed = false;
     patchData.unitCount = static_cast<UINT>(patchData.position.size());
-    
-	patchData.vertexAttribute.set(0);
-	patchData.vertexAttribute.set(2);
-	patchData.vertexAttribute.set(3);
+
+    patchData.vertexAttribute.set(0);
+    patchData.vertexAttribute.set(2);
+    patchData.vertexAttribute.set(3);
 
     return patchData;
 }
-
 
 const std::pair<int, int> TerrainLoader::GetPatchCount() const {
     int patchSize = PATCH_LENGTH * PATCH_SCALE;
     int numPatches = mLength / patchSize;
 
-	return { numPatches, numPatches };
+    return { numPatches, numPatches };
 }
 
 std::vector<SimpleMath::Vector3>& TerrainLoader::GetControlPoints() {
-	return mCPPositions;
+    return mCPPositions;
 }
 
 SimpleMath::Vector3 TerrainLoader::CalculateNormal(int z, int x) const {
     const int clampZ = std::clamp(z, 1, mLength - 2);
     const int clampX = std::clamp(x, 1, mLength - 2);
 
-    float hl = mHeight[clampZ][clampX - 1]; // left
-    float hr = mHeight[clampZ][clampX + 1]; // right
-    float hd = mHeight[clampZ + 1][clampX]; // down
-    float hu = mHeight[clampZ - 1][clampX]; // up
+    float hl = mHeight[clampZ][clampX - 1];
+    float hr = mHeight[clampZ][clampX + 1];
+    float hd = mHeight[clampZ + 1][clampX];
+    float hu = mHeight[clampZ - 1][clampX];
 
     DirectX::SimpleMath::Vector3 normal{ hl - hr, 1.f, hd - hu };
     normal.Normalize();
@@ -154,7 +154,6 @@ void TerrainLoader::CreatePatch(MeshData& data, int zStart, int zEnd, int xStart
     int patchStride = PATCH_LENGTH + 1;
     int patchVertexStart = static_cast<int>(data.position.size());
 
-
     for (int i = 0; i <= PATCH_LENGTH; ++i) {
         for (int j = 0; j <= PATCH_LENGTH; ++j) {
             int z = std::clamp(static_cast<int>(zStart - i * stepSize), 0, mLength - 1);
@@ -167,12 +166,81 @@ void TerrainLoader::CreatePatch(MeshData& data, int zStart, int zEnd, int xStart
             float nx = static_cast<float>(x - mLength / 2);
 
             data.position.emplace_back(nx, mHeight[z][x], nz);
-     
             data.texCoord1.emplace_back(uv0);
             data.texCoord2.emplace_back(uv1);
         }
     }
+}
 
+void TerrainLoader::SmoothMeshData(int iterations) {
+    int patchSize = PATCH_LENGTH * PATCH_SCALE;
+    int numPatches = mLength / patchSize;
+
+    int patchStride = PATCH_LENGTH + 1;
+    int verticesPerPatch = patchStride * patchStride;
+
+    int numCPsPerRow = numPatches * PATCH_LENGTH + 1;
+
+    std::vector<std::vector<float>> heightGrid(numCPsPerRow, std::vector<float>(numCPsPerRow));
+
+    for (int pr = 0; pr < numPatches; ++pr) {
+        for (int pc = 0; pc < numPatches; ++pc) {
+            int patchIndex = pr * numPatches + pc;
+            int vertexOffset = patchIndex * verticesPerPatch;
+
+            for (int i = 0; i <= PATCH_LENGTH; ++i) {
+                for (int j = 0; j <= PATCH_LENGTH; ++j) {
+                    int globalRow = pr * PATCH_LENGTH + i;
+                    int globalCol = pc * PATCH_LENGTH + j;
+
+                    const auto& pos = mMeshData.position[vertexOffset + i * patchStride + j];
+                    heightGrid[globalRow][globalCol] = pos.y;
+                }
+            }
+        }
+    }
+
+    for (int iter = 0; iter < iterations; ++iter) {
+        std::vector<std::vector<float>> current = heightGrid;
+
+        for (int r = 0; r < numCPsPerRow; ++r) {
+            for (int c = 0; c < numCPsPerRow; ++c) {
+                float sum = 0.0f;
+                int count = 0;
+
+                for (int dr = -1; dr <= 1; ++dr) {
+                    for (int dc = -1; dc <= 1; ++dc) {
+                        int nr = r + dr;
+                        int nc = c + dc;
+
+                        if (nr >= 0 && nr < numCPsPerRow && nc >= 0 && nc < numCPsPerRow) {
+                            sum += current[nr][nc];
+                            count++;
+                        }
+                    }
+                }
+
+                heightGrid[r][c] = sum / static_cast<float>(count);
+            }
+        }
+    }
+
+    for (int pr = 0; pr < numPatches; ++pr) {
+        for (int pc = 0; pc < numPatches; ++pc) {
+            int patchIndex = pr * numPatches + pc;
+            int vertexOffset = patchIndex * verticesPerPatch;
+
+            for (int i = 0; i <= PATCH_LENGTH; ++i) {
+                for (int j = 0; j <= PATCH_LENGTH; ++j) {
+                    int globalRow = pr * PATCH_LENGTH + i;
+                    int globalCol = pc * PATCH_LENGTH + j;
+
+                    auto& pos = mMeshData.position[vertexOffset + i * patchStride + j];
+                    pos.y = heightGrid[globalRow][globalCol];
+                }
+            }
+        }
+    }
 }
 
 bool TerrainCollider::LoadFromFile(const std::filesystem::path& filePath) {
@@ -183,7 +251,6 @@ bool TerrainCollider::LoadFromFile(const std::filesystem::path& filePath) {
     }
 
     file.read(reinterpret_cast<char*>(&mHeader), sizeof(TerrainHeader));
-
 
     mGlobalVertices.resize(mHeader.globalWidth * mHeader.globalHeight);
     file.read(reinterpret_cast<char*>(mGlobalVertices.data()), mGlobalVertices.size() * sizeof(SimpleMath::Vector3));
