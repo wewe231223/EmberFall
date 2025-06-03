@@ -8,7 +8,7 @@
 
 class TerrainLoader {
     static constexpr int PATCH_LENGTH = 4;
-    static constexpr int PATCH_SCALE = 16;
+    static constexpr int PATCH_SCALE = 1;
     static constexpr int TILE_SCALE = 32;
 
 public:

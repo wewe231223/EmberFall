@@ -1,6 +1,6 @@
 #pragma once
 
-inline constexpr auto CHECK_SESSION_HEART_BEAT_DELAY = 5s;
+inline constexpr auto CHECK_SESSION_HEART_BEAT_DELAY = 1000s;
 
 namespace GameProtocol {
     namespace Unit {
