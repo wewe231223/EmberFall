@@ -15,7 +15,7 @@ class GrassRenderer {
 
 public:
 	GrassRenderer() = default;
-	GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator terrainData);
+	GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList);
 	
 	~GrassRenderer() = default;
 
@@ -31,8 +31,6 @@ private:
 	void CreatePipelineState(ComPtr<ID3D12Device10> device);
 	void CreateRootSignature(ComPtr<ID3D12Device10> device);
 private:
-	DefaultBufferGPUIterator mTerrainData{};
-
 	DefaultBuffer mGrassPosition{}; 
 
 	D3D12_SHADER_BYTECODE mMeshShader{};

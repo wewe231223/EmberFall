@@ -20,7 +20,7 @@ public:
 	ParticleManager& operator=(ParticleManager&&) = default;
 
 public:
-	void SetTerrain(DefaultBufferGPUIterator terrainData); 
+	void SetTerrain(DefaultBufferGPUIterator terrainHeader, DefaultBufferGPUIterator terrainData); 
 
 	Particle CreateEmitParticle(ParticleVertex& newParticle); 
 
@@ -50,6 +50,7 @@ private:
 	DefaultBuffer mParticleCountBuffer{};
 	DefaultBuffer mRandomBuffer{}; 
 
+	DefaultBufferGPUIterator mTerrainHeaderBuffer{}; 
 	DefaultBufferGPUIterator mTerrainDataBuffer{};
 
 	ComPtr<ID3D12Resource> mParticleCountReadbackBuffer{};

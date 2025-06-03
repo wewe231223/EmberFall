@@ -6,9 +6,7 @@
 #include "../Utility/Exceptions.h"
 #include "../Game/System/Timer.h"
 
-GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator terrainData) {
-	mTerrainData = terrainData; 
-
+GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	std::vector<GrassPoint> points{};
 	points.resize(GRASS_INSTANCE_COUNT<size_t>);
 
