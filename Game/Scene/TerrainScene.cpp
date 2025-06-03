@@ -1269,6 +1269,10 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 }
 
 void TerrainScene::BuildMaterial() {
+	mMaterialLoader = MaterialFileLoader{ mRenderManager };
+
+	MaterialConstants a{ mMaterialLoader.Load("Resources/Materials/TerrainMaterial.txt") };
+
 	MaterialConstants mat{};
 	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 

@@ -17,6 +17,7 @@
 #include "../UI/Profile.h"
 #include "../Game/GameObject/TerrainObject.h"
 #include "../External/Include/absl/container/flat_hash_map.h"
+#include "../Game/Scene/MaterialLoader.h"
 
 class TerrainScene : public IScene {
 	using duration = std::chrono::milliseconds; 
@@ -138,6 +139,8 @@ private:
 	Inventory mInventoryUI{};
 	HealthBar mHealthBarUI{};
 	Profile mProfileUI{};
+
+	MaterialFileLoader mMaterialLoader{};
 
 	float mAvgLatency{ 0.f };
 

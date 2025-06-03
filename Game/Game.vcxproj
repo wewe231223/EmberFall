@@ -161,6 +161,7 @@
     <ClCompile Include="Scene\LoadingScene.cpp" />
     <ClCompile Include="Scene\LobbyPlayer.cpp" />
     <ClCompile Include="Scene\LobbyScene.cpp" />
+    <ClCompile Include="Scene\MaterialLoader.cpp" />
     <ClCompile Include="Scene\Player.cpp" />
     <ClCompile Include="Scene\SceneManager.cpp" />
     <ClCompile Include="Scene\TerrainScene.cpp" />
@@ -186,6 +187,7 @@
     <ClInclude Include="Scene\LoadingScene.h" />
     <ClInclude Include="Scene\LobbyPlayer.h" />
     <ClInclude Include="Scene\LobbyScene.h" />
+    <ClInclude Include="Scene\MaterialLoader.h" />
     <ClInclude Include="Scene\Player.h" />
     <ClInclude Include="Scene\SceneManager.h" />
     <ClInclude Include="Scene\TerrainScene.h" />

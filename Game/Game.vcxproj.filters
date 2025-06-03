@@ -105,6 +105,9 @@
     <ClCompile Include="GameObject\TerrainObject.cpp">
       <Filter>GameObject</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\MaterialLoader.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -175,6 +178,9 @@
     </ClInclude>
     <ClInclude Include="GameObject\TerrainObject.h">
       <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\MaterialLoader.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
