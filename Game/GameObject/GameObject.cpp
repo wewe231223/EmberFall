@@ -102,6 +102,74 @@ AnimatorGraph::AnimationGraphController& GameObject::GetAnimationController() {
 	return mGraphController; 
 }
 
+LODGameObject::LODGameObject(const LODGameObject& other) {
+	mShader = other.mShader;
+	mMaterial = other.mMaterial;
+	mTransform = other.mTransform;
+	mCollider = other.mCollider;
+	
+	std::copy(other.mLODGroups.begin(), other.mLODGroups.end(), mLODGroups.begin());
+	
+	mCurrentLODLevel = other.mCurrentLODLevel;
+	mActiveState = other.mActiveState;
+	mEmpty = other.mEmpty;
+	mModelContext = other.mModelContext;
+}
+
+LODGameObject& LODGameObject::operator=(const LODGameObject& other) {
+	if (this == &other) {
+		return *this;
+	}
+
+	mShader = other.mShader;
+	mMaterial = other.mMaterial;
+	mTransform = other.mTransform;
+	mCollider = other.mCollider;
+	
+	std::copy(other.mLODGroups.begin(), other.mLODGroups.end(), mLODGroups.begin());
+	
+	mCurrentLODLevel = other.mCurrentLODLevel;
+	mActiveState = other.mActiveState;
+	mEmpty = other.mEmpty;
+	mModelContext = other.mModelContext;
+	
+	return *this;
+}
+
+LODGameObject::LODGameObject(LODGameObject&& other) {
+	mShader = std::move(other.mShader);
+	mMaterial = std::move(other.mMaterial);
+	mTransform = std::move(other.mTransform);
+	mCollider = std::move(other.mCollider);
+
+	std::move(other.mLODGroups.begin(), other.mLODGroups.end(), mLODGroups.begin());
+
+	mCurrentLODLevel = other.mCurrentLODLevel;
+	mActiveState = other.mActiveState;
+	mEmpty = other.mEmpty;
+	mModelContext = std::move(other.mModelContext);
+}
+
+LODGameObject& LODGameObject::operator=(LODGameObject&& other) {
+	if (this == &other) {
+		return *this;
+	}
+	
+	mShader = std::move(other.mShader);
+	mMaterial = std::move(other.mMaterial);
+	mTransform = std::move(other.mTransform);
+	mCollider = std::move(other.mCollider);
+	
+	std::move(other.mLODGroups.begin(), other.mLODGroups.end(), mLODGroups.begin());
+	
+	mCurrentLODLevel = other.mCurrentLODLevel;
+	mActiveState = other.mActiveState;
+	mEmpty = other.mEmpty;
+	mModelContext = std::move(other.mModelContext);
+
+	return *this;
+}
+
 bool LODGameObject::GetActiveState() const {
 	return mActiveState;
 }

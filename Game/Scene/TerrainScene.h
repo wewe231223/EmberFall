@@ -94,7 +94,7 @@ private:
 	std::vector<GameObject> mGameObjects{};
 	std::vector<GameObject> mItemObjects{}; 
 
-	std::vector<GameObject> mEnvironmentObjects{};
+	std::vector<LODGameObject> mEnvironmentObjects{};
 
 	int mNetworkSign{};
 	int mInputSign{}; 
@@ -141,10 +141,6 @@ private:
 	Profile mProfileUI{};
 
 	MaterialFileLoader mMaterialLoader{};
-
-
-	LODGameObject mLODGameObject{};
-	LODGameObject mLODGameObject2{};
 
 	float mAvgLatency{ 0.f };
 

@@ -66,6 +66,12 @@ struct LODGroup {
 class LODGameObject {
 public:
 	LODGameObject() = default;
+
+	LODGameObject(const LODGameObject&);
+	LODGameObject& operator=(const LODGameObject&);
+
+	LODGameObject(LODGameObject&&);
+	LODGameObject& operator=(LODGameObject&&);
 public:
 	bool GetActiveState() const;
 	bool GetEmpty() const;

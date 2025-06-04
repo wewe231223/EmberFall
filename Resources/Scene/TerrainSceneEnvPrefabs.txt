@@ -1,0 +1,15 @@
+# ObjectName ShaderName MaterialName ColliderName
+# LODCount
+# LODIndex MeshName Distance
+
+Tree1_stem StandardNormalShader LodTree1_Stem Tree1_LOD0_Stem
+3
+0 Tree1_LOD0_Stem 10.0
+1 Tree1_LOD1_Stem 20.0
+2 Tree1_LOD2_Stem 200.0
+
+Tree1_leaves TreeShader LodTree1_Leaves Tree1_LOD0_Leaves
+3
+0 Tree1_LOD0_Leaves 10.0
+1 Tree1_LOD1_Leaves 20.0
+2 Tree1_LOD2_Leaves 200.0
