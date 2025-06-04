@@ -3,7 +3,12 @@ cbuffer Camera : register(b0)
     matrix view;
     matrix projection;
     matrix viewProjection;
+    matrix middleViewProjection;
+    matrix prevViewProjection;
+
     float3 cameraPosition;
+    int isShadow;
+    float3 shadowOffset;
 }
 
 struct ModelContext

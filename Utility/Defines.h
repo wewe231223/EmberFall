@@ -27,7 +27,7 @@ struct CameraConstants {
     SimpleMath::Matrix proj;
     SimpleMath::Matrix viewProj;
     SimpleMath::Matrix middleViewProj;
-    //SimpleMath::Matrix farViewProj;
+    SimpleMath::Matrix prevViewProj;
 
     SimpleMath::Vector3 cameraPosition;
     int isShadow{ 0 };

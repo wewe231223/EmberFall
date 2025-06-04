@@ -3,11 +3,12 @@ cbuffer Camera : register(b0)
     matrix view;
     matrix projection;
     matrix viewProjection;
-    Matrix middleViewProjection;
-    //Matrix farViewProjection;
+    matrix middleViewProj;
+    matrix prevViewProj;
 
     float3 cameraPosition;
     int isShadow;
+    float3 shadowOffset;
 
 }
 
@@ -49,7 +50,9 @@ struct StandardAnimationNormal_VIN
 struct StandardAnimationNormal_PIN
 {
     float4 position : SV_POSITION;
-    float3 wPosition : POSITION;
+    float3 wPosition : POSITION0;
+    float4 curPosition : POSITION1;
+    float4 prevPosition : POSITION2;
     float3 normal : NORMAL;
     float2 texcoord : TEXCOORD;
     float3 tangent : TANGENT;
@@ -96,8 +99,10 @@ StandardAnimationNormal_PIN StandardAnimationNormal_VS(StandardAnimationNormal_V
     output.position = mul(float4(input.position, 1.0f), boneTransform);
         
     output.position = mul(output.position, modelContext.world);
+    output.prevPosition = mul(output.position, prevViewProj);
     output.wPosition = output.position.xyz;
     output.position = mul(output.position, viewProjection);
+    output.curPosition = output.position;
     
     float3x3 boneWorldTransform = mul((float3x3) boneTransform, (float3x3) modelContext.world);
     
@@ -142,5 +147,14 @@ Deffered_POUT StandardAnimationNormal_PS(StandardAnimationNormal_PIN input) {
         output.emissive = textures[materialConstants[input.material].emissiveTexture[0]].Sample(linearWrapSampler, input.texcoord) * 20.0f;
 
     }
+    
+    float4 curNDC = input.curPosition / input.curPosition.w;
+    float4 prevNDC = input.prevPosition / input.prevPosition.w;
+    
+    curNDC.xy = curNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+    prevNDC.xy = prevNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+    
+    float2 velocity = (curNDC.xy - prevNDC.xy) * 10.0f;
+    output.velocity = float4(velocity, 0.0f, 1.0f);
     return output;
 }

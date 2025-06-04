@@ -3,7 +3,8 @@ cbuffer Camera : register(b0)
     matrix view;
     matrix projection;
     matrix viewProjection;
-    matrix middleViewProjection;
+    matrix middleViewProj;
+    matrix prevViewProj;
 
     float3 cameraPosition;
     int isShadow;
@@ -67,8 +68,10 @@ struct Terrain_DIN
 struct Terrain_PIN
 {
     float4 position : SV_POSITION;
-    float3 wPosition : POSITION1;
-    float3 vPosition : POSITION2;
+    float3 wPosition : POSITION0;
+    float3 vPosition : POSITION1;
+    float4 curPosition : POSITION2;
+    float4 prevPosition : POSITION3;
     float3 normal : NORMAL;
     float2 texcoord1 : TEXCOORD0;
     float2 texcoord2 : TEXCOORD1;
@@ -269,11 +272,12 @@ Terrain_PIN Terrain_DS(PatchTessFactor tess, float2 uv : SV_DomainLocation, cons
 
     float3 worldPos = CubicBezierSum(patch, basisU, basisV);
     o.position = mul(float4(worldPos, 1), modelContexts[patch[0].instanceID].world);
+    o.prevPosition = mul(o.position, prevViewProj);
     o.wPosition = o.position.xyz;
     o.vPosition = mul(o.position, view).xyz;
     o.position = mul(o.position, viewProjection);
     o.material = modelContexts[patch[0].instanceID].material;
-
+    o.curPosition = o.position;
 
     float Bu4[4], Bv4[4], dBu4[4], dBv4[4];
     CubicBernstein(uv.x, Bu4, dBu4);
@@ -344,5 +348,14 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
     output.position = float4(input.wPosition, 1.0f);
     output.emissive = float4(0, 0, 0, 0);
 
+    float4 curNDC = input.curPosition / input.curPosition.w;
+    float4 prevNDC = input.prevPosition / input.prevPosition.w;
+    
+    curNDC.xy = curNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+    prevNDC.xy = prevNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+   
+    float2 velocity = (curNDC.xy - prevNDC.xy) * 10.0f;
+    output.velocity = float4(velocity, 0.0f, 1.0f);
+    
     return output;
 }

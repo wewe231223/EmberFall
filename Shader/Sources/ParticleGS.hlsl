@@ -7,7 +7,8 @@ cbuffer CameraCB : register(b0)
     matrix view;
     matrix proj;
     matrix viewProj;
-    matrix middleViewProjection;
+    matrix middleViewProj;
+    matrix prevViewProj;
     float3 cameraPosition;
     int isShadow;
 };
@@ -73,8 +74,10 @@ struct ParticleVertex
 struct Particle_PS_IN
 {
     float4 positionH : SV_Position;
-    float3 positionV : POSITION;
+    float3 positionV : POSITION0;
     uint material : MATERIAL;
+    float4 curPosition : POSITION1;
+    float4 prevPosition : POSITION2;
     float2 uv : TEXCOORD;
     float4 color : Color;
 };
@@ -149,6 +152,9 @@ void CreateBillBoard(ParticleVertex vertex, inout TriangleStream<Particle_PS_IN>
     {
         outpoint.positionV = mul(positions[i], view).xyz;
         outpoint.positionH = mul(positions[i], viewProj);
+        outpoint.curPosition = outpoint.positionH;
+        outpoint.prevPosition = mul(positions[i], prevViewProj);
+        
         outpoint.material = vertex.material;
         outpoint.uv = mul(uvTransform, float3(uvs[i], 1.f)).xy;
         
@@ -192,5 +198,14 @@ Deffered_POUT ParticleGSPassPS(Particle_PS_IN input)
     
     output.diffuse = Color;
     output.normal = float4(0.f, 0.f, 0.f, 5.f);
+    
+    float4 curNDC = input.curPosition / input.curPosition.w;
+    float4 prevNDC = input.prevPosition / input.prevPosition.w;
+    
+    curNDC.xy = curNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+    prevNDC.xy = prevNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+    
+    float2 velocity = (curNDC.xy - prevNDC.xy) * 10.0f;
+    output.velocity = float4(velocity, 0.0f, 1.0f);
     return output;
 }

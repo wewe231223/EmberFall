@@ -3,8 +3,8 @@ cbuffer Camera : register(b0)
     matrix view;
     matrix projection;
     matrix viewProjection;
-    Matrix middleViewProjection;
-    //Matrix farViewProjection;
+    matrix middleViewProj;
+    matrix prevViewProj;
 
     float3 cameraPosition;
     int isShadow;
@@ -46,8 +46,10 @@ struct StandardNormal_VIN
 struct StandardNormal_VOUT
 {
     float4 position : SV_POSITION;
-    float3 wPosition : POSITION1;
-    float3 vPosition : POSITION2;
+    float3 wPosition : POSITION0;
+    float3 vPosition : POSITION1;
+    float4 curPosition : POSITION2;
+    float4 prevPosition : POSITION3;
     float3 normal : NORMAL;
     float2 texcoord : TEXCOORD;
     float3 tangent : TANGENT;
@@ -81,11 +83,12 @@ StandardNormal_VOUT StandardNormal_VS(StandardNormal_VIN input) {
 
     StandardNormal_VOUT output;
     output.position = mul(float4(input.position, 1.f), modelContext.world);
+    output.prevPosition = mul(output.position, prevViewProj);
     output.wPosition = output.position.xyz; 
     output.vPosition = mul(output.position, view).xyz; 
     //output.position = mul(output.position, projection);
     output.position = mul(output.position, viewProjection);
-    
+    output.curPosition = output.position;
     
     output.normal = mul(input.normal, (float3x3)modelContext.world);
     output.tangent = mul(input.tangent, (float3x3) modelContext.world);
@@ -134,6 +137,15 @@ Deffered_POUT StandardNormal_PS(StandardNormal_VOUT input) {
     {
         output.emissive = float4(emissiveColor.rgb, 1.0f);
     }
+    
+    float4 curNDC = input.curPosition / input.curPosition.w;
+    float4 prevNDC = input.prevPosition / input.prevPosition.w;
+    
+    curNDC.xy = curNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+    prevNDC.xy = prevNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+    
+    float2 velocity = (curNDC.xy - prevNDC.xy) * 10.0f;
+    output.velocity = float4(velocity, 0.0f, 1.0f);
     
     return output;
 }
