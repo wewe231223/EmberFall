@@ -698,7 +698,6 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 
 	mLODGameObject.mLODGroups[2].mMesh = mMeshMap["Tree1_LOD2_Stem"].get();
 	mLODGameObject.mLODGroups[2].mDistanceSquared = std::powf(300.f, 2.f);
-	mLODGameObject.mLODGroups[3].mMesh = mMeshMap["Tree1_LOD3_Stem"].get();
 
 	mLODGameObject.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LodTree1_Stem");
 	mLODGameObject.mCollider = mColliderMap["Tree1_LOD0_Stem"];
@@ -708,6 +707,25 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 
 	mLODGameObject.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 0.f), 0.f };
 	mLODGameObject.UpdateShaderVariables(); 
+
+	mLODGameObject2.mShader = mShaderMap["TreeShader"].get();
+	mLODGameObject2.mLODGroups[0].mMesh = mMeshMap["Tree1_LOD0_Leaves"].get();
+	mLODGameObject2.mLODGroups[0].mDistanceSquared = std::powf(100.f, 2.f);
+
+	mLODGameObject2.mLODGroups[1].mMesh = mMeshMap["Tree1_LOD1_Leaves"].get();
+	mLODGameObject2.mLODGroups[1].mDistanceSquared = std::powf(200.f, 2.f);
+
+	mLODGameObject2.mLODGroups[2].mMesh = mMeshMap["Tree1_LOD2_Leaves"].get();
+	mLODGameObject2.mLODGroups[2].mDistanceSquared = std::powf(300.f, 2.f);
+
+	mLODGameObject2.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LodTree1_Leaves");
+	mLODGameObject2.mCollider = mColliderMap["Tree1_LOD0_Leaves"];
+
+	mLODGameObject2.SetActiveState(true);
+	mLODGameObject2.SetEmpty(false);
+
+	mLODGameObject2.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 0.f), 0.f };
+	mLODGameObject2.UpdateShaderVariables();
 
 
 	for (auto& environment : mEnvironmentObjects) {
@@ -968,6 +986,14 @@ void TerrainScene::Update() {
 	mLODGameObject.UpdateLODLevel(mCamera.GetTransform().GetPosition()); 
 	{
 		auto [mesh, shader, modelContext] = mLODGameObject.GetRenderData();
+		if (mesh != nullptr) {
+			mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
+		}
+	}
+
+	mLODGameObject2.UpdateLODLevel(mCamera.GetTransform().GetPosition());
+	{
+		auto [mesh, shader, modelContext] = mLODGameObject2.GetRenderData();
 		if (mesh != nullptr) {
 			mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
 		}

@@ -144,6 +144,7 @@ private:
 
 
 	LODGameObject mLODGameObject{};
+	LODGameObject mLODGameObject2{};
 
 	float mAvgLatency{ 0.f };
 
