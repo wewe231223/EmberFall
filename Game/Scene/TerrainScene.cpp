@@ -577,7 +577,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
 	mSkyBox.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("SkyBoxMaterial");
 
-	TerrainScene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
+	//TerrainScene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
 
 	mTerrainObject = TerrainObject{ device, commandList,"Resources/Binarys/Terrain/terrain.raw" };
 	mTerrainObject.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("TerrainMaterial"));
@@ -687,6 +687,28 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 		mEquipments["DemonWeapon"].mEquipJointIndex = 28;
 		mEquipments["DemonWeapon"].SetActiveState(true);
 	}
+
+
+	mLODGameObject.mShader = mShaderMap["StandardNormalShader"].get();
+	mLODGameObject.mLODGroups[0].mMesh = mMeshMap["Tree1_LOD0_Stem"].get();
+	mLODGameObject.mLODGroups[0].mDistanceSquared = std::powf(100.f, 2.f); 
+
+	mLODGameObject.mLODGroups[1].mMesh = mMeshMap["Tree1_LOD1_Stem"].get();
+	mLODGameObject.mLODGroups[1].mDistanceSquared = std::powf(200.f, 2.f);
+
+	mLODGameObject.mLODGroups[2].mMesh = mMeshMap["Tree1_LOD2_Stem"].get();
+	mLODGameObject.mLODGroups[2].mDistanceSquared = std::powf(300.f, 2.f);
+	mLODGameObject.mLODGroups[3].mMesh = mMeshMap["Tree1_LOD3_Stem"].get();
+
+	mLODGameObject.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LodTree1_Stem");
+	mLODGameObject.mCollider = mColliderMap["Tree1_LOD0_Stem"];
+
+	mLODGameObject.SetActiveState(true);
+	mLODGameObject.SetEmpty(false);
+
+	mLODGameObject.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 0.f), 0.f };
+	mLODGameObject.UpdateShaderVariables(); 
+
 
 	for (auto& environment : mEnvironmentObjects) {
 		environment.UpdateShaderVariables();
@@ -943,6 +965,14 @@ void TerrainScene::Update() {
 	mCamera.UpdateBuffer();
 	mRenderManager->GetShadowRenderer().Update();
 
+	mLODGameObject.UpdateLODLevel(mCamera.GetTransform().GetPosition()); 
+	{
+		auto [mesh, shader, modelContext] = mLODGameObject.GetRenderData();
+		if (mesh != nullptr) {
+			mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
+		}
+	}
+
 
 	mTerrainObject.Update(mCamera, mRenderManager); 
 
@@ -1074,7 +1104,6 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 
 	MeshLoader loader{};
 
-	// Embedded MeshType 매핑 (C++20 static map)
 	const static std::unordered_map<std::string_view, EmbeddedMeshType> embeddedMeshMap{
 		{ "Cube", EmbeddedMeshType::Cube },
 		{ "SkyDome", EmbeddedMeshType::SkyDome },
@@ -1099,7 +1128,6 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 			mMeshMap[name] = std::make_unique<Mesh>(device, commandList, data);
 			mColliderMap[name] = Collider{ data.position };
 
-			// Optional tokens parsing
 			for (std::string token; iss >> token;) {
 				if (token == "CENTER") {
 					float x, y, z;

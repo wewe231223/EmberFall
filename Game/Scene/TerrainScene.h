@@ -142,6 +142,9 @@ private:
 
 	MaterialFileLoader mMaterialLoader{};
 
+
+	LODGameObject mLODGameObject{};
+
 	float mAvgLatency{ 0.f };
 
 	bool mInitialized{ false }; 
