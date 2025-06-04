@@ -143,7 +143,7 @@ Deffered_POUT StandardAnimation_PS(StandardAnimation_PIN input) {
     curNDC.xy = curNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
     prevNDC.xy = prevNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
     
-    float2 velocity = (curNDC.xy - prevNDC.xy) * 10.0f;
+    float2 velocity = (curNDC.xy - prevNDC.xy) * 50.0f;
     output.velocity = float4(velocity, 0.0f, 1.0f);
     return output;
 }
