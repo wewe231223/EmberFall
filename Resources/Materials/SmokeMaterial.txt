@@ -1,0 +1,16 @@
+DiffuseColor: 16.0 0.0 14.0 1.0
+SpecularColor: 0.0 0.0 0.0 0.0
+EmissiveColor: 0.0 0.0 0.0 0.0
+
+DiffuseTextures:
+smoke_sheet
+
+SpecularTextures:
+
+EmissiveTextures:
+
+MetalicTextures:
+
+NormalTextures:
+
+AlphaTextures:

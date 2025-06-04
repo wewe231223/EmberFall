@@ -1,0 +1,69 @@
+# ===== Embedded Mesh =====
+EMBEDDED Cube - Cube 1
+EMBEDDED SkyDome - SkyBox 100
+EMBEDDED Plane - Plane 10
+EMBEDDED - SkyFog 50 40 20
+
+# ===== Characters =====
+FILE Resources/Assets/Knight/BaseAnim/BaseAnim.gltf - HumanBaseAnim
+FILE Resources/Assets/Knight/LongSword/SwordMan.glb - SwordMan
+FILE Resources/Assets/Demon/Demon.glb - Demon
+# Collider size not set in code
+
+FILE Resources/Assets/imp/imp.glb - MonsterType1 CENTER 0 0.65 0 EXTENTS 0.3 0.65 0.3
+
+# ===== Environment: Mountains =====
+FILE Resources/Assets/Mountain/Mountain.gltf - Mountain
+FILE Resources/Assets/Mountain/Mountain1.glb - Mountain1
+
+# ===== Weapons =====
+FILE Resources/Assets/Weapon/sword/LongSword.glb - Sword
+FILE Resources/Assets/Weapon/great_sword/Sword.glb - GreatSword
+FILE Resources/Assets/Weapon/Bow/Bow.glb - Bow
+FILE Resources/Assets/Weapon/Bow/Arrow.glb - Arrow
+FILE Resources/Assets/Weapon/Bow/quiver.glb - Quiver
+FILE Resources/Assets/Weapon/Shield/Shield.glb - Shield
+FILE Resources/Assets/Demon/DemonWeapon.glb - DemonWeapon
+FILE Resources/Assets/Demon/DemonCloth.glb - DemonCloth
+FILE Resources/Assets/CorruptedGem/CorruptedGem.glb - CorruptedGem
+
+# ===== Environment: Flora =====
+FILE Resources/Assets/Env/Fern.glb - Fern
+
+# ===== Environment: Trees =====
+FILE Resources/Assets/Tree/pine2/pine2.glb - Pine2
+# Pine2 collider (commented in code):
+# CENTER 0 10.7970114 0 EXTENTS 0.33 10.797011 0.33
+
+FILE Resources/Assets/Tree/pine2/pine3.glb 0 Pine3_Stem
+# Pine3_Stem collider (commented in code):
+# EXTENTS 0.3 7.51479626 0.3
+
+FILE Resources/Assets/Tree/pine2/pine3.glb 1 Pine3_Leaves
+
+FILE Resources/Assets/Tree/pine2/pine4.glb - Pine4
+# Pine4 collider (commented in code):
+# CENTER 0 10.7723713 0 EXTENTS 0.35 10.7723713 0.35
+
+# ===== Environment: Rocks =====
+FILE Resources/Assets/Env/Rocks.glb 0 Rock_1
+FILE Resources/Assets/Env/Rocks.glb 1 Rock_2
+FILE Resources/Assets/Env/Rocks.glb 2 Rock_3
+FILE Resources/Assets/Env/Rocks.glb 3 Rock_4
+
+FILE Resources/Assets/Env/LargeRocks.glb 0 LargeRock1
+FILE Resources/Assets/Env/LargeRocks.glb 1 LargeRock2
+
+# ===== Environment: Houses =====
+FILE Resources/Assets/House/TimberHouse.glb - TimberHouse
+FILE Resources/Assets/House/StoneHouse.glb - StoneHouse
+FILE Resources/Assets/House/LogHouse.glb 1 LogHouse
+FILE Resources/Assets/House/LogHouse.glb 0 LogHouseDoor
+
+# ===== Environment: Misc =====
+FILE Resources/Assets/Env/WindMill.glb 1 WindMill
+FILE Resources/Assets/Env/WindMill.glb 0 WindMillBlade
+FILE Resources/Assets/Env/Well.glb - Well
+
+# ===== Items =====
+FILE Resources/Assets/Item/HealthPotion.glb - HealthPotion

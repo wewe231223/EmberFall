@@ -1,0 +1,16 @@
+DiffuseColor: 1.0 1.0 1.0 1.0
+SpecularColor: 0.0 0.0 0.0 0.0
+EmissiveColor: 16.0 0.0 14.0 1.0
+
+DiffuseTextures:
+CorrupedGem_BaseColor
+
+SpecularTextures:
+
+EmissiveTextures:
+
+MetalicTextures:
+
+NormalTextures:
+
+AlphaTextures:

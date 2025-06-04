@@ -577,39 +577,13 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
 	mSkyBox.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("SkyBoxMaterial");
 
-	// TerrainScene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
+	TerrainScene::BuildEnvironment("Resources/Binarys/Terrain/env1.bin");
 
 	mTerrainObject = TerrainObject{ device, commandList,"Resources/Binarys/Terrain/terrain.raw" };
 	mTerrainObject.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("TerrainMaterial"));
 	mRenderManager->GetMeshRenderManager().RegisterTerrainCPPointBuffer(mTerrainObject.GetCPPositionBuffer());
 
-	{
-		auto bigrock1 = std::make_unique<GameObject>();
-		bigrock1->mShader = mShaderMap["StandardNormalShader"].get();
-		bigrock1->mMesh = mMeshMap["LargeRock1"].get();
-		bigrock1->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LargeRock1_Material");
-		bigrock1->SetActiveState(true);
-		bigrock1->mCollider = mColliderMap["LargeRock1"];
 
-		float rangeMin = -512.0f;
-		float rangeMax = 512.0f;
-		int count = 50;
-		float spacing = (rangeMax - rangeMin) / (count - 1);
-
-		for (int i = 0; i < count; ++i) {
-			for (int j = 0; j < count; ++j) {
-				float x = rangeMin + spacing * i;
-				float z = rangeMin + spacing * j;
-				float y = tCollider.GetHeight(x, z);
-
-				auto& rock = mGameObjects.emplace_back();
-				rock = bigrock1->Clone();
-				rock.GetTransform().GetPosition() = { x, y, z };
-			}
-		}
-
-
-	}
 
 
 #ifdef DEV_MODE
@@ -1095,326 +1069,69 @@ void TerrainScene::SendLook() {
 }
 
 void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
-	MeshLoader Loader{};
-	MeshData data{}; 
+	std::ifstream file("Resources/MeshList/TerrainSceneMeshList.txt");
+	std::string line;
 
-	mMeshMap["Cube"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Cube, 1);
+	MeshLoader loader{};
 
-	data = Loader.Load("Resources/Assets/Knight/BaseAnim/BaseAnim.gltf");
-	mMeshMap["HumanBaseAnim"] = std::make_unique<Mesh>(device, commandList, data);
+	// Embedded MeshType 매핑 (C++20 static map)
+	const static std::unordered_map<std::string_view, EmbeddedMeshType> embeddedMeshMap{
+		{ "Cube", EmbeddedMeshType::Cube },
+		{ "SkyDome", EmbeddedMeshType::SkyDome },
+		{ "Plane", EmbeddedMeshType::Plane }
+	};
 
-	data = Loader.Load("Resources/Assets/Knight/LongSword/SwordMan.glb");
-	mMeshMap["SwordMan"] = std::make_unique<Mesh>(device, commandList, data);
+	while (std::getline(file, line)) {
+		if (line.empty() || line.starts_with('#'))
+			continue;
 
-	data = Loader.Load("Resources/Assets/Demon/Demon.glb");
-	mMeshMap["Demon"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Demon"] = Collider{ data.position };
+		std::istringstream iss(line);
+		std::string type;
+		iss >> type;
 
-	// 파일에 기록할 크기
-	//mColliderMap["Demon"].SetExtents(0.9f, 1.8f, 0.9f);
-	//mColliderMap["Demon"].SetCenter(-0.4f, 1.8f, 0.f);
+		if (type == "FILE") {
+			std::string path, indexStr, name;
+			iss >> path >> indexStr >> name;
 
-	data = Loader.Load("Resources/Assets/imp/imp.glb");
-	mMeshMap["MonsterType1"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["MonsterType1"] = Collider{ data.position };
+			int index = (indexStr == "-") ? -1 : std::stoi(indexStr);
+			MeshData data = (index == -1) ? loader.Load(path) : loader.Load(path, index);
 
-	mColliderMap["MonsterType1"].SetCenter(0.f, 0.65f, 0.f);
-	mColliderMap["MonsterType1"].SetExtents(0.3f, 0.65f, 0.3f);
+			mMeshMap[name] = std::make_unique<Mesh>(device, commandList, data);
+			mColliderMap[name] = Collider{ data.position };
 
+			// Optional tokens parsing
+			for (std::string token; iss >> token;) {
+				if (token == "CENTER") {
+					float x, y, z;
+					iss >> x >> y >> z;
+					mColliderMap[name].SetCenter(x, y, z);
+				}
+				else if (token == "EXTENTS") {
+					float x, y, z;
+					iss >> x >> y >> z;
+					mColliderMap[name].SetExtents(x, y, z);
+				}
+			}
+		}
+		else if (type == "EMBEDDED") {
+			std::string embeddedTypeStr, dash, name;
+			float param;
+			iss >> embeddedTypeStr >> dash >> name >> param;
 
-	data = Loader.Load("Resources/Assets/Mountain/Mountain.gltf");
-	mMeshMap["Mountain"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Mountain"] = Collider{ data.position };
+			auto it = embeddedMeshMap.find(embeddedTypeStr);
+			if (it == embeddedMeshMap.end()) {
+				std::cerr << "Unknown embedded type: " << embeddedTypeStr << '\n';
+				continue;
+			}
 
-	data = Loader.Load("Resources/Assets/Mountain/Mountain1.glb");
-	mMeshMap["Mountain1"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Mountain1"] = Collider{ data.position };
-
-	
-	data = Loader.Load("Resources/Assets/Weapon/sword/LongSword.glb");
-	mMeshMap["Sword"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Sword"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Weapon/great_sword/Sword.glb");
-	mMeshMap["GreatSword"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["GreatSword"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Weapon/Bow/Bow.glb");
-	mMeshMap["Bow"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Bow"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Weapon/Bow/Arrow.glb");
-	mMeshMap["Arrow"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Arrow"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Weapon/Bow/quiver.glb");
-	mMeshMap["Quiver"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Quiver"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Weapon/Shield/Shield.glb");
-	mMeshMap["Shield"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Shield"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Demon/DemonWeapon.glb");
-	mMeshMap["DemonWeapon"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["DemonWeapon"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Demon/DemonCloth.glb");
-	mMeshMap["DemonCloth"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["DemonCloth"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/CorruptedGem/CorruptedGem.glb");
-	mMeshMap["CorruptedGem"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["CorruptedGem"] = Collider{ data.position };
-
-
-	data = Loader.Load("Resources/Assets/Env/Fern.glb");
-	mMeshMap["Fern"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Fern"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Tree/pine2/pine2.glb");
-	mMeshMap["Pine2"] = std::make_unique<Mesh>(device, commandList, data); 
-	mColliderMap["Pine2"] = Collider{ data.position };
-
-
-	//// 파일에 기록할 크기 
-	//mColliderMap["Pine2"].SetExtents(0.33f, 10.797011f, 0.33f);
-	//mColliderMap["Pine2"].SetCenter(0.f, 10.7970114f, 0.f);
-
-
-	data = Loader.Load("Resources/Assets/Tree/pine2/pine3.glb", 0);
-	mMeshMap["Pine3_Stem"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Pine3_Stem"] = Collider{ data.position };
-	
-
-	// 파일에 기록할 크기 
-	//mColliderMap["Pine3_Stem"].SetExtents(0.3f, 7.51479626f, 0.3f);
-
-
-	data = Loader.Load("Resources/Assets/Tree/pine2/pine3.glb", 1);
-	mMeshMap["Pine3_Leaves"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Pine3_Leaves"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Tree/pine2/pine4.glb");
-	mMeshMap["Pine4"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Pine4"] = Collider{ data.position };
-
-
-	// 파일에 기록할 크기 
-	//mColliderMap["Pine4"].SetCenter(0.f, 10.7723713f, 0.f);
-	//mColliderMap["Pine4"].SetExtents(0.35f, 10.7723713f, 0.35f);
-
-
-	data = Loader.Load("Resources/Assets/Env/Rocks.glb", 0);
-	mMeshMap["Rock_1"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Rock_1"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Env/Rocks.glb", 1);
-	mMeshMap["Rock_2"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Rock_2"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Env/Rocks.glb", 2);
-	mMeshMap["Rock_3"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Rock_3"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Env/Rocks.glb", 3);
-	mMeshMap["Rock_4"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Rock_4"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Env/LargeRocks.glb", 0);
-	mMeshMap["LargeRock1"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["LargeRock1"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Env/LargeRocks.glb", 1);
-	mMeshMap["LargeRock2"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["LargeRock2"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/House/TimberHouse.glb");
-	mMeshMap["TimberHouse"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["TimberHouse"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/House/StoneHouse.glb");
-	mMeshMap["StoneHouse"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["StoneHouse"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/House/LogHouse.glb", 1);
-	mMeshMap["LogHouse"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["LogHouse"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/House/LogHouse.glb", 0);
-	mMeshMap["LogHouseDoor"] = std::make_unique<Mesh>(device, commandList, data);
-
-	data = Loader.Load("Resources/Assets/Env/WindMill.glb", 1);
-	mMeshMap["WindMill"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["WindMill"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Env/WindMill.glb", 0);
-	mMeshMap["WindMillBlade"] = std::make_unique<Mesh>(device, commandList, data);
-	
-	data = Loader.Load("Resources/Assets/Env/Well.glb");
-	mMeshMap["Well"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["Well"] = Collider{ data.position };
-
-	data = Loader.Load("Resources/Assets/Item/HealthPotion.glb");
-	mMeshMap["HealthPotion"] = std::make_unique<Mesh>(device, commandList, data);
-	mColliderMap["HealthPotion"] = Collider{ data.position };
-
-	tLoader.Load("Resources/Binarys/Terrain/Rolling Hills Height Map.raw");
-	data = tLoader.GetData(); 
-	mMeshMap["Terrain"] = std::make_unique<Mesh>(device, commandList, data);
-
-	mMeshMap["SkyBox"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::SkyDome, 100);
-	mMeshMap["SkyFog"] = std::make_unique<Mesh>(device, commandList, 50.f, 40.f, 20);
-	mMeshMap["Plane"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Plane, 10);
+			mMeshMap[name] = std::make_unique<Mesh>(device, commandList, it->second, param);
+		}
+	}
 }
 
 void TerrainScene::BuildMaterial() {
 	mMaterialLoader = MaterialFileLoader{ mRenderManager };
-
-	MaterialConstants a{ mMaterialLoader.Load("Resources/Materials/TerrainMaterial.txt") };
-
-	MaterialConstants mat{};
-	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
-
-	mat.mEmissiveTexture[0] = mRenderManager->GetTextureManager().GetTexture("TerrainHeightmap_2048");
-
-	mat.mMetalicTexture[0] = mRenderManager->GetTextureManager().GetTexture("TerrainNormals");
-	mat.mMetalicTexture[1] = mRenderManager->GetTextureManager().GetTexture("Terrain_Tangent");
-	mat.mMetalicTexture[2] = mRenderManager->GetTextureManager().GetTexture("Terrain_Bitangent");	
-
-	mat.mAlphaTexture[0] = mRenderManager->GetTextureManager().GetTexture("Splatmap_Combined_0");
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_YFGM_GrassLeafs02_d");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_YFGM_GrassLeafs02_n");
-
-	mat.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("T_YFGM_SoilGravel01_d");
-	mat.mNormalTexture[1] = mRenderManager->GetTextureManager().GetTexture("T_YFGM_SoilGravel01_n");
-
-	mat.mDiffuseTexture[2] = mRenderManager->GetTextureManager().GetTexture("T_YFGM_MossStones_d");
-	mat.mNormalTexture[2] = mRenderManager->GetTextureManager().GetTexture("T_YFGM_MossStones_n");
-
-	mRenderManager->GetMaterialManager().CreateMaterial("TerrainMaterial", mat);
-
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_EquiRect_flat");
-	mRenderManager->GetMaterialManager().CreateMaterial("SkyBoxMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Paladin_diffuse");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Paladin_normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("CubeMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Default_OBJ_baseColor");
-	mRenderManager->GetMaterialManager().CreateMaterial("MountainMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("rock_base_color");
-	mRenderManager->GetMaterialManager().CreateMaterial("Mountain1Material", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("SwordA_v004_Default_AlbedoTransparency");
-	mRenderManager->GetMaterialManager().CreateMaterial("SwordMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("sword_base");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("sword_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("GreatSwordMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Bow_DIFF");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Bow_NM");
-	mRenderManager->GetMaterialManager().CreateMaterial("BowMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Quiver_baseColor");
-	mRenderManager->GetMaterialManager().CreateMaterial("QuiverMaterial", mat);
-
-	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 1.0f);
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_Demon_Imp_Monster_Bloody_Albedo_Skin_4");
-	mat.mEmissiveTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_Demon_Imp_Monster_Emissive");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_Demon_Imp_Monster_Bloody_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("MonsterType1Material", mat);
-	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
-
-	mat.mEmissiveColor = SimpleMath::Color(16.0f, 0.0f, 14.0f, 1.0f);
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("CorrupedGem_BaseColor");
-	mRenderManager->GetMaterialManager().CreateMaterial("CorruptedGemMaterial", mat);
-	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
-
-	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 1.0f);
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Albedo_Skin_3");
-	mat.mEmissiveTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Emissive");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("DemonMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Axe_Albedo_Skin_1");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Axe_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("DemonWeaponMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Clothes_Albedo_Skin_1");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Clothes_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("DemonClothMaterial", mat);
-	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("ferns");
-	mRenderManager->GetMaterialManager().CreateMaterial("FernMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("pinetree-albedo");
-	mRenderManager->GetMaterialManager().CreateMaterial("Pine2Material", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("bark01");
-	mRenderManager->GetMaterialManager().CreateMaterial("Pine3StemMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("pinebranch");
-	mRenderManager->GetMaterialManager().CreateMaterial("Pine3LeavesMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 1 RFS_DefaultMaterial_AlbedoTransparency");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 1 RFS_DefaultMaterial_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("Rock_1_Material", mat);
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 2 RFS_DefaultMaterial_AlbedoTransparency");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 2 RFS_DefaultMaterial_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("Rock_2_Material", mat);
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 3 RFS_DefaultMaterial_AlbedoTransparency");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 3 RFS_DefaultMaterial_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("Rock_3_Material", mat);
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 4 Moss RFS_DefaultMaterial_AlbedoTransparency");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Small Rock 4 Moss RFS_DefaultMaterial_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("Rock_4_Material", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Large Rock 1 RFS_DefaultMaterial_AlbedoTransparency");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Large Rock 1 RFS_DefaultMaterial_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("LargeRock1_Material", mat);
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Large Rock 2 RFS_DefaultMaterial_AlbedoTransparency");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Large Rock 2 RFS_DefaultMaterial_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("LargeRock2_Material", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Timber house_AlbedoTransparency");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Timber house_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("TimberHouseMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Farmhouse_Albedo");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Farmhouse_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("StoneHouseMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Log_House_AlbedoTransparency");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Log_House_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("LogHouseMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Door_AlbedoTransparency");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Door_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("LogHouseDoorMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("windmill_001_base_COL");
-	mRenderManager->GetMaterialManager().CreateMaterial("WindMillMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("windmill_001_lopatky_COL");
-	mRenderManager->GetMaterialManager().CreateMaterial("WindMillBladeMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("well_albedo");
-	mRenderManager->GetMaterialManager().CreateMaterial("WellMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("HealthPotion_Color");
-	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("HealthPotion_Normal");
-	mRenderManager->GetMaterialManager().CreateMaterial("HealthPotionMaterial", mat);
-
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("smoke_sheet");
-	mat.mDiffuseColor = SimpleMath::Color(16.0f, 0.0f, 14.0f, 1.0f);
-	mRenderManager->GetMaterialManager().CreateMaterial("SmokeMaterial", mat);
-
+	mMaterialLoader.Load(); 
 } 
 
 void TerrainScene::BuildShader(ComPtr<ID3D12Device> device) {

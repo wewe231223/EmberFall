@@ -2,8 +2,7 @@
 #include <fstream>
 #include "../Renderer/Manager/RenderManager.h"
 
-class MaterialFileLoader
-{
+class MaterialFileLoader {
 public:
     MaterialFileLoader() = default;
     MaterialFileLoader(std::shared_ptr<RenderManager> renderManager);
@@ -16,7 +15,8 @@ public:
 	MaterialFileLoader(MaterialFileLoader&&) = default;
 	MaterialFileLoader& operator=(MaterialFileLoader&&) = default;
 public:
-    MaterialConstants Load(const std::filesystem::path& materialFilePath); 
+	void Load(); 
+    void LoadMaterial(const std::filesystem::path& materialFilePath); 
 
 private:
 	std::shared_ptr<RenderManager> mRenderManager;
