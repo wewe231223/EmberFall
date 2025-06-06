@@ -93,9 +93,9 @@ StandardAnimation_PIN StandardAnimation_VS(StandardAnimation_VIN input) {
     boneTransform += boneTransforms[modelContext.boneStart + input.boneID[3]] * input.boneWeight.w;
     
     output.position = mul(float4(input.position, 1.0f), boneTransform);
-    output.prevPosition = mul(output.position, prevViewProj);
         
     output.position = mul(output.position, modelContext.world);
+    output.prevPosition = mul(output.position, prevViewProj);
     output.wPosition = output.position.xyz;
     output.position = mul(output.position, viewProjection);
     

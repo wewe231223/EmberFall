@@ -3,7 +3,8 @@ cbuffer CameraCB : register(b0)
     matrix view;
     matrix proj;
     matrix viewProj;
-    matrix middleViewProjection;
+    matrix middleViewProj;
+    matrix prevViewProj;
     float3 cameraPosition;
     int isShadow;
 };
@@ -108,7 +109,9 @@ void mainAS(uint3 groupId : SV_GroupID)
 struct VSOutput
 {
     float4 position : SV_Position;
-    float2 uv : TEXCOORD;
+    float4 curPosition : POSITION0;
+    float4 prevPosition : POSITION1;
+    float2 uv : TEXCOORD0;
     float3 normal : NORMAL;
     uint texIndex : TEXID;
 };
@@ -201,6 +204,8 @@ void mainMS(
     for (int i = 0; i < 8; ++i)
     {
         outVerts[vtxBase + i].position = mul(float4(verts[i], 1.0f), viewProj);
+        outVerts[vtxBase + i].curPosition = mul(float4(verts[i], 1.0f), viewProj);
+        outVerts[vtxBase + i].prevPosition = mul(float4(verts[i], 1.0f), prevViewProj);
         outVerts[vtxBase + i].texIndex = grass.tex;
 
         if (i % 4 == 0)
@@ -228,6 +233,8 @@ struct Deffered_POUT
     float4 diffuse : SV_TARGET0;
     float4 normal : SV_TARGET1;
     float4 position : SV_TARGET2;
+    float4 emissive : SV_TARGET3;
+    float4 velocity : SV_TARGET4;
 };
 
 // Pixel Shader
@@ -242,6 +249,15 @@ Deffered_POUT mainPS(VSOutput input)
     output.diffuse = color;
     output.normal = float4(input.normal, 1.f);
     output.position = input.position;
+    
+    float4 curNDC = input.curPosition / input.curPosition.w;
+    float4 prevNDC = input.prevPosition / input.prevPosition.w;
+    
+    curNDC.xy = curNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+    prevNDC.xy = prevNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+    
+    float2 velocity = (curNDC.xy - prevNDC.xy) * 50.0f;
+    output.velocity = float4(velocity, 0.0f, 1.0f);
     
     return output; 
 }
