@@ -176,6 +176,7 @@
     <ClInclude Include="SendBuffers.h" />
     <ClInclude Include="Session.h" />
     <ClInclude Include="SessionManager.h" />
+    <ClInclude Include="std_ex.h" />
     <ClInclude Include="Sync.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="NetworkUtils.h" />

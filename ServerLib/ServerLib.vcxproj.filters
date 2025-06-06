@@ -189,5 +189,8 @@
     <ClInclude Include="RefCounting.h">
       <Filter>Concurrency</Filter>
     </ClInclude>
+    <ClInclude Include="std_ex.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -20,7 +20,6 @@ OverlappedSend* SendBuffers::GetOverlapped(const PacketHeaderSC* const header, c
     overlappedSend->ResetOverlapped();
     ::memcpy(buf, header, sizeof(PacketHeaderSC));
     ::memcpy(buf + sizeof(PacketHeaderSC), payload, payloadSize);
-    ::memset(&(overlappedSend->owner), 0, sizeof(std::shared_ptr<INetworkObject>));
     overlappedSend->type = IOType::SEND;
     overlappedSend->wsaBuf.buf = buf;
     overlappedSend->wsaBuf.len = static_cast<UINT32>(payloadSize + sizeof(PacketHeaderSC));
@@ -40,7 +39,6 @@ OverlappedSend* SendBuffers::GetOverlapped(const PacketHeaderCS* const header, c
     overlappedSend->ResetOverlapped();
     ::memcpy(buf, header, sizeof(PacketHeaderCS));
     ::memcpy(buf + sizeof(PacketHeaderCS), payload, payloadSize);
-    ::memset(&(overlappedSend->owner), 0, sizeof(std::shared_ptr<INetworkObject>));
     overlappedSend->type = IOType::SEND;
     overlappedSend->wsaBuf.buf = buf;
     overlappedSend->wsaBuf.len = static_cast<UINT32>(payloadSize + sizeof(PacketHeaderCS));
@@ -62,8 +60,6 @@ OverlappedSend* SendBuffers::GetOverlapped(OverlappedSend* const srcOverlapped) 
     auto copySrcLen = srcOverlapped->wsaBuf.len;
 
     ::memcpy(buf, copySrcBuf, copySrcLen);
-    ::memset(&(overlappedSend->owner), 0, sizeof(std::shared_ptr<INetworkObject>));
-
     if (nullptr != srcOverlapped->owner) {
         overlappedSend->owner = srcOverlapped->owner;
     }
@@ -86,7 +82,6 @@ OverlappedSend* SendBuffers::GetOverlapped(void* data, size_t dataSize) {
 
     overlappedSend->ResetOverlapped();
     ::memcpy(buf, data, dataSize);
-    ::memset(&(overlappedSend->owner), 0, sizeof(std::shared_ptr<INetworkObject>));
     overlappedSend->type = IOType::SEND;
     overlappedSend->wsaBuf.buf = buf;
     overlappedSend->wsaBuf.len = static_cast<UINT32>(dataSize);
