@@ -46,6 +46,9 @@ void ParticleManager::SetTerrain(DefaultBufferGPUIterator terrainHeader, Default
 }
 
 Particle ParticleManager::CreateEmitParticle(ParticleVertex& newParticle) {
+	bool expected{ false }; 
+	while (false == mParticleAppendFlag.compare_exchange_strong(expected, true)); 
+
 	newParticle.emitIndex = mNextEmitParticleIndex;
 	
 	std::memcpy(*mNewParticleUploadLoc, &newParticle, sizeof(ParticleVertex));
@@ -64,6 +67,8 @@ Particle ParticleManager::CreateEmitParticle(ParticleVertex& newParticle) {
 
 	mNewParticleCount++;
 
+	mParticleAppendFlag.store(false);
+
 	return result;
 }
 
@@ -75,11 +80,17 @@ void ParticleManager::RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	std::memcpy(*mEmitParticleBuffer.CPUBegin(), mEmitParticleContexts.data(), sizeof(EmitParticleContext) * EMIT_PARTICLE_COUNT);
 	mEmitParticleBuffer.Upload(commandList);
 
+
+	bool expected{ false };
+	while (false == mParticleAppendFlag.compare_exchange_strong(expected, true));
+
 	if (mNewParticleUploadLoc != mParticleVertexBuffer.CPUBegin()) {
 		mParticleVertexBuffer.Upload(commandList, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, mParticleVertexBuffer.CPUBegin(), mNewParticleUploadLoc, mParticleCount * sizeof(ParticleVertex));
 		mParticleCount += mNewParticleCount; 
 		mNewParticleCount = 0; 
 	}
+
+	mParticleAppendFlag.store(false);
 
 	mParticleSOShader->SetGPassShader(commandList);
 

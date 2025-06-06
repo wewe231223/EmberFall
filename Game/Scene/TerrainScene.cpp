@@ -756,6 +756,29 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 		}
 	);
 #endif 
+
+
+	ParticleVertex v{};
+	v.position = DirectX::XMFLOAT3(10.f, 10.f, 10.f);
+	v.halfheight = 10.f;
+	v.halfWidth = 10.f;
+	v.material = mRenderManager->GetMaterialManager().GetMaterial("SmokeMaterial");
+	v.spritable = true;
+	v.spriteDuration = 1.f;
+	v.spriteFrameInRow = 6;
+	v.spriteFrameInCol = 6;
+	v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+	v.velocity = { 0.f, 0.f, 0.f };
+	v.totalLifeTime = 0.3f;
+	v.lifeTime = 0.5f;
+	v.type = ParticleType_emit;
+	v.emitType = ParticleType_ember;
+	v.remainEmit = 100000;
+	v.emitIndex = 0;
+	
+	mParticleMap[gClientCore->GetSessionId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
+
+
 }
 
 // 별도 시간 누적 타이머 
@@ -1019,7 +1042,6 @@ void TerrainScene::Update() {
 
 	for (auto& player : mPlayers | std::views::filter([](const Player& p) { return p.GetActiveState(); })) {
 		player.ForwardUpdate(); 
-		Console.Log("Terrain Height : {}", LogType::Info, tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z));
 		player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
 		player.Update(mRenderManager->GetMeshRenderManager());
 	}
@@ -1238,7 +1260,7 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 
 	std::random_device rd;
 	std::mt19937 MersenneTwister(rd());
-	std::uniform_real_distribution<float> rdi(-500.f, 500.f);
+	std::uniform_real_distribution<float> rdi(-250.f, 250.f);
 
 	for (auto i = 0; i < 10000; ++i) {
 		auto& stem = mEnvironmentObjects.emplace_back(objects["Tree1_stem"].Clone()); 

@@ -59,4 +59,6 @@ private:
 
 	std::array<EmitParticleContext, EMIT_PARTICLE_COUNT> mEmitParticleContexts{};
 	UINT mNextEmitParticleIndex{ 0 };
+
+	inline static std::atomic_bool mParticleAppendFlag{ false };
 };

@@ -206,7 +206,7 @@ void Renderer::Render() {
 		mGrassRenderer.Render(commandList6, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
 
-	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Grass) {
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Particle) {
 		mRenderManager->GetParticleManager().RenderSO(mCommandList);
 		mRenderManager->GetParticleManager().RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
