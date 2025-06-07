@@ -559,7 +559,7 @@ void Renderer::InitCameraBuffer() {
 }
 
 void Renderer::InitParticleManager() {
-	mRenderManager->GetParticleManager().SetTerrain(mTerrainDataBuffer.GPUBegin(), mTerrainHeaderBuffer.GPUBegin());
+	mRenderManager->GetParticleManager().SetTerrain(mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
 }
 
 void Renderer::InitGrassRenderer() {
