@@ -25,6 +25,10 @@ const SimpleMath::Vector3& Transform::GetScale() const {
     return mScale; 
 }
 
+const SimpleMath::Matrix& Transform::GetPrevWorldMatrix() const {
+	return mPrevWorldMatrix;
+}
+
 const SimpleMath::Matrix& Transform::GetWorldMatrix() const {
     return mWorldMatrix; 
 }
@@ -55,6 +59,10 @@ SimpleMath::Quaternion& Transform::GetRotation() {
 
 SimpleMath::Vector3& Transform::GetScale() {
     return mScale;
+}
+
+SimpleMath::Matrix& Transform::GetPrevWorldMatrix() {
+	return mPrevWorldMatrix;
 }
 
 SimpleMath::Matrix& Transform::GetWorldMatrix() {
@@ -152,9 +160,11 @@ void Transform::Update(float deltaTime) {
 }
 
 void Transform::UpdateWorldMatrix() {
+	mPrevWorldMatrix = mWorldMatrix;
 	mWorldMatrix = mLocalMatrix * SimpleMath::Matrix::CreateScale(mScale) * SimpleMath::Matrix::CreateFromQuaternion(mRotation) * SimpleMath::Matrix::CreateTranslation(mPosition) ;
 }
 
 void Transform::UpdateWorldMatrix(SimpleMath::Matrix& parent) {
+	mPrevWorldMatrix = mWorldMatrix;
 	mWorldMatrix = SimpleMath::Matrix::CreateScale(mScale) * SimpleMath::Matrix::CreateFromQuaternion(mRotation) * SimpleMath::Matrix::CreateTranslation(mPosition) * ( mLocalMatrix * parent );
 }

@@ -13,6 +13,7 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
+    matrix prevWorld;
     matrix world;
     float3 BBCenter;
     float3 BBExtents;
@@ -40,7 +41,7 @@ struct SkyFog_VIN
 
 struct SkyFog_VOUT
 {
-    float4 position : SV_POSITION;
+    float4 position : SV_Position;
     uint material : MATERIAL; 
 };
 

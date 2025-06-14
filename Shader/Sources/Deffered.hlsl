@@ -52,7 +52,7 @@ struct Deffered_VIN
 
 struct Deffered_VOUT
 {
-    float4 position : SV_POSITION;
+    float4 position : SV_Position;
     float2 texcoord : TEXCOORD;
 };
 

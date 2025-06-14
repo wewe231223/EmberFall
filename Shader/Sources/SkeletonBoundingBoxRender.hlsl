@@ -11,6 +11,7 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
+    matrix prevWorld;
     matrix world;
     float3 BBCenter; 
     float3 BBExtents;
@@ -34,7 +35,7 @@ struct BB_GIN
 
 struct BB_PIN
 {
-    float4 position : SV_POSITION;
+    float4 position : SV_Position;
     float4 color : COLOR;
 };
 

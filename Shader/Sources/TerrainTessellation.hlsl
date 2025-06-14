@@ -12,6 +12,7 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
+    matrix prevWorld;
     matrix world;
     float3 BBCenter;
     float3 BBExtents;
@@ -67,7 +68,7 @@ struct Terrain_DIN
 
 struct Terrain_PIN
 {
-    float4 position : SV_POSITION;
+    float4 position : SV_Position;
     float3 wPosition : POSITION0;
     float3 vPosition : POSITION1;
     float4 curPosition : POSITION2;
@@ -272,7 +273,7 @@ Terrain_PIN Terrain_DS(PatchTessFactor tess, float2 uv : SV_DomainLocation, cons
 
     float3 worldPos = CubicBezierSum(patch, basisU, basisV);
     o.position = mul(float4(worldPos, 1), modelContexts[patch[0].instanceID].world);
-    o.prevPosition = mul(o.position, prevViewProj);
+    o.prevPosition = mul(mul(float4(worldPos, 1), modelContexts[patch[0].instanceID].prevWorld), prevViewProj);
     o.wPosition = o.position.xyz;
     o.vPosition = mul(o.position, view).xyz;
     o.position = mul(o.position, viewProjection);

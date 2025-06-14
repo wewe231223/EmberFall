@@ -14,6 +14,7 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
+    matrix prevWorld;
     matrix world;
     float3 BBCenter; 
     float3 BBExtents;
@@ -43,7 +44,7 @@ struct SkyBox_VIN
 
 struct SkyBox_VOUT
 {
-    float4 position : SV_POSITION;
+    float4 position : SV_Position;
     float4 curPosition : POSITION0;
     float4 prevPosition : POSITION1;
     float2 texcoord : TEXCOORD;

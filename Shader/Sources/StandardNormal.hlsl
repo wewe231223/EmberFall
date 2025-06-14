@@ -13,6 +13,7 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
+    matrix prevWorld;
     matrix world;
     float3 BBCenter;
     float3 BBExtents;
@@ -45,7 +46,7 @@ struct StandardNormal_VIN
 
 struct StandardNormal_VOUT
 {
-    float4 position : SV_POSITION;
+    float4 position : SV_Position;
     float3 wPosition : POSITION0;
     float3 vPosition : POSITION1;
     float4 curPosition : POSITION2;

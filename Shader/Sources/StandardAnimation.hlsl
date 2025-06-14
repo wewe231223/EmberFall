@@ -14,6 +14,7 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
+    matrix prevWorld;
     matrix world;
     float3 BBCenter; 
     float3 BBExtents;
@@ -47,7 +48,7 @@ struct StandardAnimation_VIN
 
 struct StandardAnimation_PIN
 {
-    float4 position : SV_POSITION;
+    float4 position : SV_Position;
     float3 wPosition : POSITION0;
     float4 curPosition : POSITION1;
     float4 prevPosition : POSITION2;
@@ -95,7 +96,7 @@ StandardAnimation_PIN StandardAnimation_VS(StandardAnimation_VIN input) {
     output.position = mul(float4(input.position, 1.0f), boneTransform);
         
     output.position = mul(output.position, modelContext.world);
-    output.prevPosition = mul(output.position, prevViewProj);
+    output.prevPosition = mul(mul(float4(input.position, 1.0f), modelContext.prevWorld), prevViewProj);
     output.wPosition = output.position.xyz;
     output.position = mul(output.position, viewProjection);
     
