@@ -34,7 +34,7 @@ public:
 
 protected:
     bool mSuperMode{ false };
-    GameUnits::GameUnit<GameUnits::MeterPerSec> mSuperSpeed{ 10.0mps };
+    GameUnits::GameUnit<GameUnits::MeterPerSec> mSuperSpeed{ 25.0mps };
     std::shared_ptr<Input> mInput{ };
 
 private:

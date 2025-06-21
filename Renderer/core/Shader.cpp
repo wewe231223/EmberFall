@@ -1891,3 +1891,90 @@ D3D12_SHADER_BYTECODE SkinnedNormalShader::CreatePixelShader() {
 	auto& blob = gShaderManager.GetShaderBlob("StandardAnimationNormal", ShaderType::PixelShader);
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }
+
+
+
+GrassShader::GrassShader() {
+
+}
+
+void GrassShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+}
+
+GraphicsShaderBase::InputLayout GrassShader::CreateInputLayout() {
+	GraphicsShaderBase::InputLayout inputLayout{};
+
+	inputLayout.ElementCount = 1;
+	inputLayout.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	return inputLayout;
+}
+
+GraphicsShaderBase::RootParameters GrassShader::CreateRootParameters() {
+	GraphicsShaderBase::RootParameters params{};
+	// b0 : Camera 
+	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	params.Parameters[0].Descriptor.ShaderRegister = 0;
+	params.Parameters[0].Descriptor.RegisterSpace = 0;
+	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	// b1 : Time 
+	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	params.Parameters[1].Constants.Num32BitValues = 1;
+	params.Parameters[1].Constants.ShaderRegister = 1;
+	params.Parameters[1].Constants.RegisterSpace = 0;
+	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	// b2 : Material Index 
+	params.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	params.Parameters[2].Constants.Num32BitValues = 1;
+	params.Parameters[2].Constants.ShaderRegister = 2;
+	params.Parameters[2].Constants.RegisterSpace = 0;
+	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	// t0 : Material Constants 
+	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[3].Descriptor.ShaderRegister = 0;
+	params.Parameters[3].Descriptor.RegisterSpace = 0;
+	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	// t2 : Textures 
+	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	params.Ranges[0].NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
+	params.Ranges[0].BaseShaderRegister = 1;
+	params.Ranges[0].RegisterSpace = 0;
+	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	params.Parameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[4].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[4].DescriptorTable.pDescriptorRanges = params.Ranges.data();
+	params.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.ParameterCount = 5;
+
+	return params;
+}
+
+UINT GrassShader::CreateNumOfRenderTarget() {
+	return Config::GBUFFER_COUNT<UINT>;
+}
+
+void GrassShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
+	formats[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+}
+
+D3D12_SHADER_BYTECODE GrassShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("GrassShaderV2", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE GrassShader::CreateGeometryShader() {
+	auto& blob = gShaderManager.GetShaderBlob("GrassShaderV2", ShaderType::GeometryShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE GrassShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("GrassShaderV2", ShaderType::PixelShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
