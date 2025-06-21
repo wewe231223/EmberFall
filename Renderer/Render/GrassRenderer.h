@@ -85,7 +85,7 @@ namespace V2 {
 	class GrassRenderer {
 	public:
 		GrassRenderer() = default; 
-		GrassRenderer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
+		GrassRenderer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator cameraBufferLocation);
 
 		~GrassRenderer() = default;
 
@@ -102,10 +102,11 @@ namespace V2 {
 		DefaultBuffer mGrassInstance{}; // StructuredBuffer -	이는 현재 그릴 GrassInstance 의 위치 정보를 담고 있다. 매 프레임 업데이트 된다. 
 		
 		GrassTree mGrassTree{}; 
-		std::vector<SimpleMath::Vector2> mGrass{}; // 매 프레임 컬링을 진행한 결과를 저장하는 장소이다. 
+		std::vector<SimpleMath::Vector3> mGrass{}; // 매 프레임 컬링을 진행한 결과를 저장하는 장소이다. 
 
 		UINT mMaterialIndex{ 0 };
 
-		std::shared_ptr<GraphicsShaderBase> mShader{}; 
+		std::shared_ptr<GraphicsShaderBase> mShader{};
+		DefaultBufferCPUIterator mCameraBufferLocation{};
 	};
 }

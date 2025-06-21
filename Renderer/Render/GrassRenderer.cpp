@@ -522,7 +522,7 @@ namespace V2 {
 		}
 	}
 
-	GrassRenderer::GrassRenderer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+	GrassRenderer::GrassRenderer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator cameraBufferLocation) {
 		const std::filesystem::path grassPath{ "Resources/Binarys/Terrain/grass.bin" };
 		const std::filesystem::path grassTreePath{ "Resources/Binarys/Terrain/grass_tree.bin" };
 
@@ -543,6 +543,8 @@ namespace V2 {
 		mGrassInstance = DefaultBuffer(device, sizeof(SimpleMath::Vector3), mGrassTree.GetSize());
 		mShader = std::make_shared<GrassShader>();
 		mShader->CreateShader(device); 
+
+		mCameraBufferLocation = cameraBufferLocation;
 	}
 
 	void GrassRenderer::SetMaterial(UINT materialIndex) {
@@ -551,6 +553,36 @@ namespace V2 {
 
 	void GrassRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator cameraBuffer, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS material) {
 
+		CameraConstants cameraConstants{};
+		std::memcpy(&cameraConstants, *mCameraBufferLocation, sizeof(CameraConstants));
+
+		mGrass.clear(); 
+		mGrassTree.QueryRange(SimpleMath::Vector2(cameraConstants.cameraPosition.x, cameraConstants.cameraPosition.z), 100.0f, mGrass);
+
+
+		mShader->SetGPassShader(commandList);
+
+		// 0. Camera 
+		// 1. Time
+		// 2. grass position
+		// 3. material Index 
+		// 4. material 
+		// 5. textures 
+		commandList->SetGraphicsRootConstantBufferView(0, *cameraBuffer);
+		commandList->SetGraphicsRoot32BitConstant(1, Time.GetTimeSinceSceneStarted<UINT, std::chrono::milliseconds>(), 0);
+		commandList->SetGraphicsRoot32BitConstants(2, 1, &mMaterialIndex, 0);
+		commandList->SetGraphicsRootShaderResourceView(3, material);
+		commandList->SetGraphicsRootDescriptorTable(4, tex);
+
+		D3D12_VERTEX_BUFFER_VIEW grassInstanceView{};
+		grassInstanceView.BufferLocation = *mGrassInstance.GPUBegin();
+		grassInstanceView.SizeInBytes = static_cast<UINT>(mGrassTree.GetSize() * sizeof(SimpleMath::Vector3));
+		grassInstanceView.StrideInBytes = sizeof(SimpleMath::Vector3);
+
+		commandList->IASetVertexBuffers(0, 1, &grassInstanceView);
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+
+		commandList->DrawInstanced(static_cast<UINT>(mGrass.size()), 1, 0, 0); 
 	}
 
 }
