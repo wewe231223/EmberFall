@@ -81,9 +81,8 @@ Grass_GIN Grass_VS(Grass_VIN input)
     Grass_GIN output;
     MaterialConstants material = materialConstants[materialIndex];
     
-    int index = GetIndexFromFloat3(input.position);
     output.position = input.position;
-    output.textureID = GetIndexFromFloat3(output.position); 
+    output.textureID = 1; 
     
     return output;
 }
@@ -100,7 +99,7 @@ void Grass_GS(point Grass_GIN input[1], inout TriangleStream<Grass_PIN> TriStrea
 {
     float3 basePos = input[0].position;
 
-    float scale = 1.0f; 
+    float scale = 1.0f;
     float halfSize = scale * GRASS_HALF_WIDTH_RATIO;
 
     // 흔들림
@@ -166,7 +165,6 @@ void Grass_GS(point Grass_GIN input[1], inout TriangleStream<Grass_PIN> TriStrea
         TriStream.RestartStrip();
     }
 }
-
 
 Deffered_POUT Grass_PS(Grass_PIN input)
 {

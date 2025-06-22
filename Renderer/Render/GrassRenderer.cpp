@@ -370,7 +370,9 @@ namespace V2 {
 		mTerrainCollider.LoadFromFile("Resources/Binarys/Terrain/NTerrain.bin");
 
 		std::ifstream ifs(filename, std::ios::binary);
-		if (!ifs) throw std::runtime_error("Failed to open file");
+		if (!ifs) {
+			CrashExp(false, "Failed to open file for reading");
+		}
 
 		size_t pointCount;
 		ifs.read(reinterpret_cast<char*>(&pointCount), sizeof(size_t));
@@ -395,7 +397,9 @@ namespace V2 {
 
 	void GrassTree::SaveToFile(const std::string& filename) const {
 		std::ofstream ofs(filename, std::ios::binary);
-		if (!ofs) throw std::runtime_error("Failed to open file");
+		if (!ofs) {
+			CrashExp(false, "Failed to open file for writing");
+		}
 
 		size_t pointCount = mPoints.size();
 		ofs.write(reinterpret_cast<const char*>(&pointCount), sizeof(size_t));
@@ -523,15 +527,15 @@ namespace V2 {
 	}
 
 	GrassRenderer::GrassRenderer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator cameraBufferLocation) {
-		const std::filesystem::path grassPath{ "Resources/Binarys/Terrain/grass.bin" };
+		const std::filesystem::path grassPath{ "Resources/Binarys/Terrain/GrassXZ.bin" };
 		const std::filesystem::path grassTreePath{ "Resources/Binarys/Terrain/grass_tree.bin" };
 
 
 		if (std::filesystem::exists(grassPath)) {
-			mGrassTree.BuildTreeFromFile(grassTreePath.string());
+			mGrassTree.BuildTreeFromFile(grassPath.string());
 			mGrassTree.SaveToFile(grassTreePath.string()); 
 		
-			std::filesystem::rename(grassPath, "Resources/Binarys/Terrain/grass_old.bin");
+			//std::filesystem::rename(grassPath, "Resources/Binarys/Terrain/grass_old.bin");
 		}
 		else {
 			if (not std::filesystem::exists(grassTreePath)) {
@@ -559,6 +563,8 @@ namespace V2 {
 		mGrass.clear(); 
 		mGrassTree.QueryRange(SimpleMath::Vector2(cameraConstants.cameraPosition.x, cameraConstants.cameraPosition.z), 100.0f, mGrass);
 
+		std::memcpy(*mGrassInstance.CPUBegin(), mGrass.data(), mGrass.size() * sizeof(SimpleMath::Vector3));
+		mGrassInstance.Upload(commandList,mGrassInstance.CPUBegin(), mGrassInstance.CPUBegin() + mGrass.size()); 
 
 		mShader->SetGPassShader(commandList);
 

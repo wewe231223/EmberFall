@@ -419,4 +419,6 @@ protected:
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
 	virtual D3D12_SHADER_BYTECODE CreateGeometryShader() override;
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
+
+	virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE CreatePrimitiveTopologyType();
 };

@@ -1978,3 +1978,7 @@ D3D12_SHADER_BYTECODE GrassShader::CreatePixelShader() {
 	auto& blob = gShaderManager.GetShaderBlob("GrassShaderV2", ShaderType::PixelShader);
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }
+
+D3D12_PRIMITIVE_TOPOLOGY_TYPE GrassShader::CreatePrimitiveTopologyType() {
+	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+}

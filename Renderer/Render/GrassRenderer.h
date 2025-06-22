@@ -61,7 +61,12 @@ namespace V2 {
 
 	public:
 		GrassTree() = default;
+		GrassTree(const GrassTree& other) = default;
 
+		GrassTree& operator=(const GrassTree& other) = default;
+		GrassTree(GrassTree&& other) = default;
+
+	public:
 		void QueryRange(const SimpleMath::Vector2& center, float radius, std::vector<SimpleMath::Vector3>& result) const;
 		void SaveToFile(const std::string& filename) const;
 		void LoadFromFile(const std::string& filename);
