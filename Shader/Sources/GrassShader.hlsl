@@ -78,6 +78,8 @@ uint GetIndexFromFloat3(float3 v)
     return (uint) (hash * 4.0);
 }
 
+#define MAX_SCALE_DIST 5.f
+
 #define WIND_STRENGTH 0.2f   
 #define WIND_FREQ     0.002f 
 [outputtopology("triangle")]
@@ -104,15 +106,23 @@ void mainMS(
 
     float3 grass = grassVertices[grassIndex];
 
-    float randPhase = hash(grassIndex);
-    float halfSize = 0.5f; // 수정 필요
+    float randSize = hash(grassIndex + 12345); // seed offset
+    float maxSize = lerp(0.4f, 0.6f, randSize);
 
+    float3 toCam = cameraPosition - grass;
+    float dist = length(toCam);
+    
+    float scaleFactor = min(1.0f, MAX_SCALE_DIST / dist);
+    
+    float halfSize = 0.5f * maxSize * scaleFactor;
+    
+    float randPhase = hash(grassIndex);
     float sway = sin(globalTime * WIND_FREQ + randPhase * 6.2831f) * (WIND_STRENGTH * halfSize);
     float3 swayDir = float3(0.0f, 0.0f, 1.0f);
     float3 swayOffset = swayDir * sway;
 
     float3 basePos = grass;
-    basePos.y += halfSize * 0.9f;
+    basePos.y += halfSize;
 
     const float3 up = float3(0.0f, 1.0f, 0.0f);
 
