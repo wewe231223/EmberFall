@@ -141,7 +141,7 @@ private:
 
 	std::shared_ptr<RenderManager> mRenderManager{ nullptr };
 
-	V2::GrassRenderer mGrassRenderer{};
+	GrassRenderer mGrassRenderer{};
 
 	DefaultBuffer mTerrainHeaderBuffer{}; 
 	DefaultBuffer mTerrainDataBuffer{}; 

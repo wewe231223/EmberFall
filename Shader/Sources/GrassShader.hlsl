@@ -18,6 +18,11 @@ cbuffer MaterialIndex : register(b2)
     uint materialIndex;
 };
 
+cbuffer GrassMeta : register(b3)
+{
+    uint totalGrassCount;
+};
+
 struct MaterialConstants
 {
     float4 diffuse;
@@ -32,14 +37,7 @@ struct MaterialConstants
     uint alphaTexture[8];
 };
 
-struct GrassPosition
-{
-    float3 position;
-    float scale;
-    uint tex;
-};
-
-StructuredBuffer<GrassPosition> grassVertices : register(t0);
+StructuredBuffer<float3> grassVertices : register(t0);
 StructuredBuffer<MaterialConstants> materialConstants : register(t1);
 Texture2D textures[1024] : register(t2);
 
@@ -50,51 +48,9 @@ SamplerState linearClampSampler : register(s3);
 SamplerState anisotropicWrapSampler : register(s4);
 SamplerState anisotropicClampSampler : register(s5);
 
-struct Payload
-{
-    uint baseIndex;
-    bool culled;
-};
-
-#define GRASS_GRID_COUNT 2500
 #define GRASS_PER_DISPATCH 16
-
-#define GRASS_PER_GRID 400
-#define GRASS_CULL_DISTANCE 200.0f
-#define GRASS_COUNT GRASS_PER_GRID * GRASS_GRID_COUNT
 #define MAX_VERTEX_COUNT (GRASS_PER_DISPATCH * 8)
 #define MAX_INDEX_COUNT  (GRASS_PER_DISPATCH * 12)
-
-[numthreads(1, 1, 1)]
-void mainAS(uint3 groupId : SV_GroupID)
-{
-    uint gridIndex = groupId.x;
-
-    float2 gridMin = float2(-250.0f, -250.0f);
-    float gridSize = 10.0f;
-
-    uint gridX = gridIndex % 50;
-    uint gridZ = gridIndex / 50;
-
-    float2 centerXZ = gridMin + float2((gridX + 0.5f) * gridSize, (gridZ + 0.5f) * gridSize);
-
-    float2 toCamera = centerXZ - cameraPosition.xz;
-    float distSq = dot(toCamera, toCamera);
-
-    Payload pl;
-    if (distSq < GRASS_CULL_DISTANCE * GRASS_CULL_DISTANCE)
-    {
-        pl.baseIndex = gridIndex * GRASS_PER_GRID;
-        pl.culled = false;
-    }
-    else
-    {
-        pl.baseIndex = 0;
-        pl.culled = true;
-    }
-
-    DispatchMesh(GRASS_PER_GRID / GRASS_PER_DISPATCH, 1, 1, pl);
-}
 
 struct VSOutput
 {
@@ -116,40 +72,46 @@ float hash(uint x)
     return frac(x * (1.0 / 4294967296.0));
 }
 
+uint GetIndexFromFloat3(float3 v)
+{
+    float hash = frac(dot(v, float3(12.9898, 78.233, 37.719)));
+    return (uint) (hash * 4.0);
+}
+
 #define WIND_STRENGTH 0.2f   
 #define WIND_FREQ     0.002f 
-
 [outputtopology("triangle")]
 [numthreads(GRASS_PER_DISPATCH, 1, 1)]
 void mainMS(
     uint3 threadId : SV_DispatchThreadID,
     uint3 groupThreadId : SV_GroupThreadID,
     uint3 groupId : SV_GroupID,
-    in payload Payload pl,
     out indices uint3 outIndices[MAX_INDEX_COUNT],
     out vertices VSOutput outVerts[MAX_VERTEX_COUNT])
 {
     const uint localId = groupThreadId.x;
-    const uint groupIndex = threadId.x / GRASS_PER_DISPATCH;
-    const uint offsetInGrid = localId;
-    const uint grassIndex = pl.baseIndex + groupIndex * GRASS_PER_DISPATCH + offsetInGrid;
+    const uint grassIndex = groupId.x * GRASS_PER_DISPATCH + localId;
 
-    bool shouldCull = pl.culled;
-    SetMeshOutputCounts(shouldCull ? 0 : 8, shouldCull ? 0 : 12);
+    bool isValid = grassIndex < totalGrassCount;
 
-    if (shouldCull)
+    // 반드시 조건문 밖에서 호출해야 함
+    SetMeshOutputCounts(isValid ? 8 : 0, isValid ? 12 : 0);
+
+    if (!isValid)
+    {
         return;
+    }
 
-    GrassPosition grass = grassVertices[grassIndex];
+    float3 grass = grassVertices[grassIndex];
 
     float randPhase = hash(grassIndex);
-    float halfSize = grass.scale * 0.4f;
+    float halfSize = 0.5f; // 수정 필요
 
     float sway = sin(globalTime * WIND_FREQ + randPhase * 6.2831f) * (WIND_STRENGTH * halfSize);
     float3 swayDir = float3(0.0f, 0.0f, 1.0f);
     float3 swayOffset = swayDir * sway;
 
-    float3 basePos = grass.position;
+    float3 basePos = grass;
     basePos.y += halfSize * 0.9f;
 
     const float3 up = float3(0.0f, 1.0f, 0.0f);
@@ -181,14 +143,14 @@ void mainMS(
     float3 edge2_f = verts[6] - verts[4];
     float3 normal2 = normalize(cross(edge1_f, edge2_f));
 
-    uint vtxBase = localId * 8;
-    uint idxBase = localId * 4;
+    const uint vtxBase = localId * 8;
+    const uint idxBase = localId * 4;
 
     [unroll]
     for (int i = 0; i < 8; ++i)
     {
         outVerts[vtxBase + i].position = mul(float4(verts[i], 1.0f), viewProj);
-        outVerts[vtxBase + i].texIndex = grass.tex;
+        outVerts[vtxBase + i].texIndex = GetIndexFromFloat3(grass);
 
         if (i % 4 == 0)
             outVerts[vtxBase + i].uv = float2(0, 0);

@@ -82,7 +82,7 @@ Grass_GIN Grass_VS(Grass_VIN input)
     MaterialConstants material = materialConstants[materialIndex];
     
     output.position = input.position;
-    output.textureID = 1; 
+    output.textureID = GetIndexFromFloat3(output.position); 
     
     return output;
 }

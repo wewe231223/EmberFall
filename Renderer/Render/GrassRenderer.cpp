@@ -5,20 +5,195 @@
 #include <filesystem>
 #include "../Utility/Exceptions.h"
 #include "../Game/System/Timer.h"
+#include "../Renderer/Core/Console.h"
 
-GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
-	std::vector<GrassPoint> points{};
-	points.resize(GRASS_INSTANCE_COUNT<size_t>);
+void GrassTree::BuildTreeFromFile(const std::string& filename) {
+	mTerrainCollider.LoadFromFile("Resources/Binarys/Terrain/NTerrain.bin");
 
-	std::ifstream file{ "Resources/Binarys/Terrain/grass.bin", std::ios::binary };
-
-	if (not file) {
-		Crash("Failed to open grass.bin file");
+	std::ifstream ifs(filename, std::ios::binary);
+	if (!ifs) {
+		CrashExp(false, "Failed to open file for reading");
 	}
 
-	file.read(reinterpret_cast<char*>(points.data()), sizeof(GrassPoint) * GRASS_INSTANCE_COUNT<size_t>); 
+	size_t pointCount;
+	ifs.read(reinterpret_cast<char*>(&pointCount), sizeof(size_t));
 
-	mGrassPosition = DefaultBuffer(device, commandList, sizeof(GrassPoint), points.size(), points.data());
+	std::vector<SimpleMath::Vector2> flatPoints(pointCount);
+	ifs.read(reinterpret_cast<char*>(flatPoints.data()), pointCount * sizeof(SimpleMath::Vector2));
+
+	mPoints.resize(flatPoints.size());
+	for (size_t i = 0; i < flatPoints.size(); ++i) {
+		float y = mTerrainCollider.GetHeight(flatPoints[i].x, flatPoints[i].y);
+		mPoints[i] = SimpleMath::Vector3(flatPoints[i].x, y, flatPoints[i].y);
+	}
+
+	mNodes.clear();
+	mNodes.reserve(mPoints.size());
+	Build(0, mPoints.size());
+}
+
+size_t GrassTree::GetSize() const {
+	return mPoints.size();
+}
+
+std::vector<SimpleMath::Vector3>& GrassTree::GetPoints() {
+	return mPoints;
+}
+
+void GrassTree::SaveToFile(const std::string& filename) const {
+	std::ofstream ofs(filename, std::ios::binary);
+	if (!ofs) {
+		CrashExp(false, "Failed to open file for writing");
+	}
+
+	size_t pointCount = mPoints.size();
+	ofs.write(reinterpret_cast<const char*>(&pointCount), sizeof(size_t));
+	ofs.write(reinterpret_cast<const char*>(mPoints.data()), pointCount * sizeof(SimpleMath::Vector3));
+
+	size_t nodeCount = mNodes.size();
+	ofs.write(reinterpret_cast<const char*>(&nodeCount), sizeof(size_t));
+	ofs.write(reinterpret_cast<const char*>(mNodes.data()), nodeCount * sizeof(Node));
+}
+
+void GrassTree::LoadFromFile(const std::string& filename) {
+	mTerrainCollider.LoadFromFile("Resources/Binarys/Terrain/NTerrain.bin");
+
+	std::ifstream ifs(filename, std::ios::binary);
+	if (!ifs) throw std::runtime_error("Failed to open file");
+
+	size_t pointCount;
+	ifs.read(reinterpret_cast<char*>(&pointCount), sizeof(size_t));
+	mPoints.resize(pointCount);
+	ifs.read(reinterpret_cast<char*>(mPoints.data()), pointCount * sizeof(SimpleMath::Vector3));
+
+	size_t nodeCount;
+	ifs.read(reinterpret_cast<char*>(&nodeCount), sizeof(size_t));
+	mNodes.resize(nodeCount);
+	ifs.read(reinterpret_cast<char*>(mNodes.data()), nodeCount * sizeof(Node));
+}
+
+int GrassTree::ChooseAxis(size_t begin, size_t end) {
+	size_t count = end - begin;
+	if (count == 0) return 0;
+
+	float meanX = 0, meanZ = 0;
+	for (size_t i = begin; i < end; ++i) {
+		meanX += mPoints[i].x;
+		meanZ += mPoints[i].z;
+	}
+	meanX /= count;
+	meanZ /= count;
+
+	float varX = 0, varZ = 0;
+	for (size_t i = begin; i < end; ++i) {
+		float dx = mPoints[i].x - meanX;
+		float dz = mPoints[i].z - meanZ;
+		varX += dx * dx;
+		varZ += dz * dz;
+	}
+
+	return (varX >= varZ) ? 0 : 1;
+}
+
+int GrassTree::Build(size_t begin, size_t end) {
+	if (begin >= end) return -1;
+
+	size_t count = end - begin;
+	if (count <= LEAF_SIZE) {
+		Node node;
+		node.axis = -1;
+		node.leaf.begin = begin;
+		node.leaf.end = end;
+		node.point = SimpleMath::Vector2(mPoints[begin].x, mPoints[begin].z);
+
+		int idx = static_cast<int>(mNodes.size());
+		mNodes.emplace_back(node);
+		return idx;
+	}
+
+	int axis = ChooseAxis(begin, end);
+	size_t medianIdx = (begin + end) / 2;
+	auto predicate = [axis](const SimpleMath::Vector3& a, const SimpleMath::Vector3& b) {
+		return (axis == 0) ? (a.x < b.x) : (a.z < b.z);
+		};
+	std::nth_element(mPoints.begin() + begin, mPoints.begin() + medianIdx, mPoints.begin() + end, predicate);
+
+	Node node;
+	node.point = SimpleMath::Vector2(mPoints[medianIdx].x, mPoints[medianIdx].z);
+	node.axis = axis;
+
+	int currentIdx = static_cast<int>(mNodes.size());
+	mNodes.emplace_back(node);
+
+	int left = Build(begin, medianIdx);
+	int right = Build(medianIdx + 1, end);
+
+	mNodes[currentIdx].internal.left = left;
+	mNodes[currentIdx].internal.right = right;
+
+	return currentIdx;
+}
+
+void GrassTree::QueryRange(const SimpleMath::Vector2& center, float radius, std::vector<SimpleMath::Vector3>& result) const {
+	result.clear();
+	QueryRecursive(0, center, radius, result);
+}
+
+void GrassTree::QueryRecursive(int nodeIdx, const SimpleMath::Vector2& center, float radius, std::vector<SimpleMath::Vector3>& result) const {
+	if (nodeIdx == -1) return;
+
+	const Node& node = mNodes[nodeIdx];
+
+	if (node.axis == -1) {
+		for (size_t i = node.leaf.begin; i < node.leaf.end; ++i) {
+			float dx = mPoints[i].x - center.x;
+			float dz = mPoints[i].z - center.y;
+			if (dx * dx + dz * dz <= radius * radius) {
+				result.emplace_back(mPoints[i]);
+			}
+		}
+		return;
+	}
+
+	float dx = node.point.x - center.x;
+	float dz = node.point.y - center.y;
+	if (dx * dx + dz * dz <= radius * radius) {
+		result.emplace_back(SimpleMath::Vector3(node.point.x, mTerrainCollider.GetHeight(node.point.x, node.point.y), node.point.y));
+	}
+
+	float splitCoord = (node.axis == 0) ? node.point.x : node.point.y;
+	float centerCoord = (node.axis == 0) ? center.x : center.y;
+
+	if (centerCoord - radius <= splitCoord) {
+		QueryRecursive(node.internal.left, center, radius, result);
+	}
+	if (centerCoord + radius >= splitCoord) {
+		QueryRecursive(node.internal.right, center, radius, result);
+	}
+}
+
+GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator cameraBuffer) {
+	mCameraBuffer = cameraBuffer; 
+
+	const std::filesystem::path grassPath{ "Resources/Binarys/Terrain/GrassXZ.bin" };
+	const std::filesystem::path grassTreePath{ "Resources/Binarys/Terrain/grass_tree.bin" };
+
+
+	if (std::filesystem::exists(grassPath)) {
+		mGrassTree.BuildTreeFromFile(grassPath.string());
+		mGrassTree.SaveToFile(grassTreePath.string());
+
+		std::filesystem::rename(grassPath, "Resources/Binarys/Terrain/grass_old.bin");
+	}
+	else {
+		if (not std::filesystem::exists(grassTreePath)) {
+			CrashExp(false, "Grass tree file does not exist. Please build the grass tree first.");
+		}
+		mGrassTree.LoadFromFile(grassTreePath.string());
+	}
+
+	mGrassPosition = DefaultBuffer(device, sizeof(SimpleMath::Vector3), mGrassTree.GetSize()); 
+
 	
 	ComPtr<IDxcUtils> dxcUtils{};
 	ComPtr<IDxcCompiler3> dxcCompiler{};
@@ -44,15 +219,6 @@ GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12Graphic
 		L"-Od",                     // 최적화 비활성화 (디버깅용)
 	};
 
-	LPCWSTR amplificationShaderArgs[] = {
-		shaderPath.c_str(),         // 소스 파일 경로
-		L"-T", L"as_6_5",           // Target: Amplification Shader 6.5
-		L"-E", L"mainAS",           // Entry point
-		L"-Zi",                     // 디버그 정보 포함
-		L"-Qembed_debug",			// cso 에 디버그 정보 포함 
-		L"-Od",                     // 최적화 비활성화 (디버깅용)
-	};
-
 	LPCWSTR pixelShaderArgs[] = {
 		shaderPath.c_str(),         // 소스 파일 경로
 		L"-T", L"ps_6_0",           // Target: Pixel Shader 6.5
@@ -66,13 +232,6 @@ GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12Graphic
 		shaderPath.c_str(),         // 소스 파일 경로 
 		L"-T", L"ms_6_5",			// Target: Mesh Shader 6.5
 		L"-E", L"mainMS",
-		L"-O3",						// <- 최적화 최대화
-	};
-
-	LPCWSTR amplificationShaderArgs[] = {
-		shaderPath.c_str(),         // 소스 파일 경로
-		L"-T", L"as_6_5",           // Target: Amplification Shader 6.5
-		L"-E", L"mainAS",             // Entry point
 		L"-O3",						// <- 최적화 최대화
 	};
 
@@ -102,15 +261,6 @@ GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12Graphic
 		Crash(false); 
 	} 
 
-	ComPtr<IDxcResult> amplificationShaderResult{};
-	CheckHR(dxcCompiler->Compile(&sourceBuffer, amplificationShaderArgs, _countof(amplificationShaderArgs), includeHandler.Get(), IID_PPV_ARGS(&amplificationShaderResult)));
-
-	CheckHR(amplificationShaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), name.GetAddressOf()));
-	if (errors and errors->GetStringLength() > 0) {
-		OutputDebugStringA((char*)errors->GetStringPointer());
-		Crash(false);
-	}
-
 	ComPtr<IDxcResult> pixelShaderResult{};
 	CheckHR(dxcCompiler->Compile(&sourceBuffer, pixelShaderArgs, _countof(pixelShaderArgs), includeHandler.Get(), IID_PPV_ARGS(&pixelShaderResult)));
 
@@ -123,17 +273,11 @@ GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12Graphic
 	ComPtr<IDxcBlob> meshShaderBinary{};
 	CheckHR(meshShaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&meshShaderBinary), name.GetAddressOf()));
 
-	ComPtr<IDxcBlob> amplificationShaderBinary{};
-	CheckHR(amplificationShaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&amplificationShaderBinary), name.GetAddressOf()));
-
 	ComPtr<IDxcBlob> pixelShaderBinary{};
 	CheckHR(pixelShaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&pixelShaderBinary), name.GetAddressOf()));
 
-	mAmplificationShader	= { amplificationShaderBinary->GetBufferPointer()		, amplificationShaderBinary->GetBufferSize() };
 	mMeshShader				= { meshShaderBinary->GetBufferPointer()				, meshShaderBinary->GetBufferSize() };
 	mPixelShader			= { pixelShaderBinary->GetBufferPointer()				, pixelShaderBinary->GetBufferSize() };
-
-
 
 	GrassRenderer::CreateRootSignature(device);
 	GrassRenderer::CreatePipelineState(device);
@@ -144,27 +288,52 @@ void GrassRenderer::SetMaterial(UINT materialIndex) {
 }
 
 void GrassRenderer::Render(ComPtr<ID3D12GraphicsCommandList6> commandList, DefaultBufferGPUIterator cameraBuffer, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS material) {
+	
+	CameraConstants cameraConstants{};
+	std::memcpy(&cameraConstants, *mCameraBuffer, sizeof(CameraConstants));
+
+	mGrass.clear(); 
+	mGrassTree.QueryRange(SimpleMath::Vector2(cameraConstants.cameraPosition.x, cameraConstants.cameraPosition.z), 100.0f, mGrass);
+
+	std::memcpy(*mGrassPosition.CPUBegin(), mGrass.data(), mGrass.size() * sizeof(SimpleMath::Vector3));
+	mGrassPosition.Upload(commandList, mGrassPosition.CPUBegin(), mGrassPosition.CPUBegin() + mGrass.size());
+
 	commandList->SetGraphicsRootSignature(mRootSignature.Get());
 	commandList->SetPipelineState(mPipelineState.Get());
 
 
+
+	UINT grassCount = static_cast<UINT>(mGrassTree.GetSize());
 	// 0. Camera 
 	// 1. Time
-	// 2. grass position
-	// 3. material Index 
-	// 4. material 
-	// 5. textures 
+	// 2. material Index 
+	// 3. Total Grass Count
+	// 4. grass position
+	// 5. material 
+	// 6. textures 
 	commandList->SetGraphicsRootConstantBufferView(0, *cameraBuffer);
 	commandList->SetGraphicsRoot32BitConstant(1, Time.GetTimeSinceSceneStarted<UINT, std::chrono::milliseconds>(), 0);
-	commandList->SetGraphicsRootShaderResourceView(2, *mGrassPosition.GPUBegin());
-	commandList->SetGraphicsRoot32BitConstants(3, 1, &mMaterialIndex, 0);
-	commandList->SetGraphicsRootShaderResourceView(4, material);
-	commandList->SetGraphicsRootDescriptorTable(5, tex);
+	commandList->SetGraphicsRoot32BitConstants(2, 1, &mMaterialIndex, 0);
+	commandList->SetGraphicsRoot32BitConstants(3, 1, &grassCount, 0);
+	commandList->SetGraphicsRootShaderResourceView(4, *mGrassPosition.GPUBegin());
+	commandList->SetGraphicsRootShaderResourceView(5, material);
+	commandList->SetGraphicsRootDescriptorTable(6, tex);
 
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_UNDEFINED);
 
 	// Dispatch mesh 
-	commandList->DispatchMesh(2500, 1, 1);
+	const UINT GRASS_PER_DISPATCH = 16;
+	UINT dispatchCount = (mGrass.size() + GRASS_PER_DISPATCH - 1) / GRASS_PER_DISPATCH;
+
+	if (dispatchCount * GRASS_PER_DISPATCH > mGrassTree.GetSize()) {
+		dispatchCount -= 1;
+	}
+
+	// Console.Log("Grass Count : {}, Total Grass Count : {}, Dispatch : {}", LogType::Info, mGrass.size(), mGrassTree.GetSize(), dispatchCount);
+
+	if (dispatchCount != 0) {
+		commandList->DispatchMesh(dispatchCount, 1, 1);
+	}
 }
 
 
@@ -213,7 +382,6 @@ void GrassRenderer::CreatePipelineState(ComPtr<ID3D12Device10> device) {
 	// 전체 스트림 구조체
 	struct alignas(8) MeshPipelineStream {
 		Subobject_RootSignature Root;
-		Subobject_Shader AS;
 		Subobject_Shader MS;
 		Subobject_Shader PS;
 		Subobject_Blend Blend;
@@ -229,9 +397,6 @@ void GrassRenderer::CreatePipelineState(ComPtr<ID3D12Device10> device) {
 
 	stream.Root.Type = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_ROOT_SIGNATURE;
 	stream.Root.pRootSignature = mRootSignature.Get();
-
-	stream.AS.Type = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_AS;
-	stream.AS.Shader = mAmplificationShader;
 
 	stream.MS.Type = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_MS;
 	stream.MS.Shader = mMeshShader;
@@ -302,14 +467,15 @@ void GrassRenderer::CreateRootSignature(ComPtr<ID3D12Device10> device) {
 	descriptorRange.RegisterSpace = 0;
 	descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	// 1. Camera 
-	// 2. Time
-	// 3. grass position
-	// 4. material Index 
+	// 0. Camera 
+	// 1. Time
+	// 2. material Index 
+	// 3. Total Grass Count
+	// 4. grass position
 	// 5. material 
 	// 6. textures 
-	D3D12_ROOT_PARAMETER rootParameters[6]{};
-
+	D3D12_ROOT_PARAMETER rootParameters[7]{};
+	
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[0].Descriptor.ShaderRegister = 0;
 	rootParameters[0].Descriptor.RegisterSpace = 0;
@@ -321,26 +487,32 @@ void GrassRenderer::CreateRootSignature(ComPtr<ID3D12Device10> device) {
 	rootParameters[1].Constants.Num32BitValues = 1;
 	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	rootParameters[2].Descriptor.ShaderRegister = 0;
-	rootParameters[2].Descriptor.RegisterSpace = 0;
+	rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	rootParameters[2].Constants.ShaderRegister = 2;
+	rootParameters[2].Constants.RegisterSpace = 0;
+	rootParameters[2].Constants.Num32BitValues = 1;
 	rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-	rootParameters[3].Constants.ShaderRegister = 2;
+	rootParameters[3].Constants.ShaderRegister = 3;
 	rootParameters[3].Constants.RegisterSpace = 0;
 	rootParameters[3].Constants.Num32BitValues = 1;
 	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	rootParameters[4].Descriptor.ShaderRegister = 1;
+	rootParameters[4].Descriptor.ShaderRegister = 0;
 	rootParameters[4].Descriptor.RegisterSpace = 0;
 	rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	rootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	rootParameters[5].DescriptorTable.NumDescriptorRanges = 1;
-	rootParameters[5].DescriptorTable.pDescriptorRanges = &descriptorRange;
-	rootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	rootParameters[5].Descriptor.ShaderRegister = 1;
+	rootParameters[5].Descriptor.RegisterSpace = 0;
+	rootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	rootParameters[6].DescriptorTable.NumDescriptorRanges = 1;
+	rootParameters[6].DescriptorTable.pDescriptorRanges = &descriptorRange;
+	rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
@@ -362,233 +534,5 @@ void GrassRenderer::CreateRootSignature(ComPtr<ID3D12Device10> device) {
 	CheckHR(device->CreateRootSignature(0, rootSignatureBlob->GetBufferPointer(), rootSignatureBlob->GetBufferSize(), IID_PPV_ARGS(&mRootSignature)));
 }
 
+#include "../Renderer/Core/Console.h"
 
-
-
-namespace V2 {
-	void GrassTree::BuildTreeFromFile(const std::string& filename) {
-		mTerrainCollider.LoadFromFile("Resources/Binarys/Terrain/NTerrain.bin");
-
-		std::ifstream ifs(filename, std::ios::binary);
-		if (!ifs) {
-			CrashExp(false, "Failed to open file for reading");
-		}
-
-		size_t pointCount;
-		ifs.read(reinterpret_cast<char*>(&pointCount), sizeof(size_t));
-
-		std::vector<SimpleMath::Vector2> flatPoints(pointCount);
-		ifs.read(reinterpret_cast<char*>(flatPoints.data()), pointCount * sizeof(SimpleMath::Vector2));
-
-		mPoints.resize(pointCount);
-		for (size_t i = 0; i < pointCount; ++i) {
-			float y = mTerrainCollider.GetHeight(flatPoints[i].x, flatPoints[i].y);
-			mPoints[i] = SimpleMath::Vector3(flatPoints[i].x, y, flatPoints[i].y);
-		}
-
-		mNodes.clear();
-		mNodes.reserve(pointCount);
-		Build(0, pointCount);
-	}
-
-	size_t GrassTree::GetSize() const {
-		return mPoints.size();
-	}
-
-	void GrassTree::SaveToFile(const std::string& filename) const {
-		std::ofstream ofs(filename, std::ios::binary);
-		if (!ofs) {
-			CrashExp(false, "Failed to open file for writing");
-		}
-
-		size_t pointCount = mPoints.size();
-		ofs.write(reinterpret_cast<const char*>(&pointCount), sizeof(size_t));
-		ofs.write(reinterpret_cast<const char*>(mPoints.data()), pointCount * sizeof(SimpleMath::Vector3));
-
-		size_t nodeCount = mNodes.size();
-		ofs.write(reinterpret_cast<const char*>(&nodeCount), sizeof(size_t));
-		ofs.write(reinterpret_cast<const char*>(mNodes.data()), nodeCount * sizeof(Node));
-	}
-
-	void GrassTree::LoadFromFile(const std::string& filename) {
-		std::ifstream ifs(filename, std::ios::binary);
-		if (!ifs) throw std::runtime_error("Failed to open file");
-
-		size_t pointCount;
-		ifs.read(reinterpret_cast<char*>(&pointCount), sizeof(size_t));
-
-		mPoints.resize(pointCount);
-		ifs.read(reinterpret_cast<char*>(mPoints.data()), pointCount * sizeof(SimpleMath::Vector3));
-
-		size_t nodeCount;
-		ifs.read(reinterpret_cast<char*>(&nodeCount), sizeof(size_t));
-		mNodes.resize(nodeCount);
-		ifs.read(reinterpret_cast<char*>(mNodes.data()), nodeCount * sizeof(Node));
-	}
-
-	int GrassTree::ChooseAxis(size_t begin, size_t end) {
-		size_t count = end - begin;
-		if (count == 0) return 0;
-
-		float meanX = 0, meanZ = 0;
-		for (size_t i = begin; i < end; ++i) {
-			meanX += mPoints[i].x;
-			meanZ += mPoints[i].z;
-		}
-		meanX /= count;
-		meanZ /= count;
-
-		float varX = 0, varZ = 0;
-		for (size_t i = begin; i < end; ++i) {
-			float dx = mPoints[i].x - meanX;
-			float dz = mPoints[i].z - meanZ;
-			varX += dx * dx;
-			varZ += dz * dz;
-		}
-
-		return (varX >= varZ) ? 0 : 1;
-	}
-
-	int GrassTree::Build(size_t begin, size_t end) {
-		if (begin >= end) return -1;
-
-		size_t count = end - begin;
-		if (count <= LEAF_SIZE) {
-			Node node;
-			node.axis = -1;
-			node.leaf.begin = begin;
-			node.leaf.end = end;
-			node.point = SimpleMath::Vector2(mPoints[begin].x, mPoints[begin].z);
-
-			int idx = static_cast<int>(mNodes.size());
-			mNodes.emplace_back(node);
-			return idx;
-		}
-
-		int axis = ChooseAxis(begin, end);
-		size_t medianIdx = (begin + end) / 2;
-		auto predicate = [axis](const SimpleMath::Vector3& a, const SimpleMath::Vector3& b) {
-			return (axis == 0) ? (a.x < b.x) : (a.z < b.z);
-			};
-		std::nth_element(mPoints.begin() + begin, mPoints.begin() + medianIdx, mPoints.begin() + end, predicate);
-
-		Node node;
-		node.point = SimpleMath::Vector2(mPoints[medianIdx].x, mPoints[medianIdx].z);
-		node.axis = axis;
-
-		int currentIdx = static_cast<int>(mNodes.size());
-		mNodes.emplace_back(node);
-
-		int left = Build(begin, medianIdx);
-		int right = Build(medianIdx + 1, end);
-
-		mNodes[currentIdx].internal.left = left;
-		mNodes[currentIdx].internal.right = right;
-
-		return currentIdx;
-	}
-
-	void GrassTree::QueryRange(const SimpleMath::Vector2& center, float radius, std::vector<SimpleMath::Vector3>& result) const {
-		result.clear();
-		QueryRecursive(0, center, radius, result);
-	}
-
-	void GrassTree::QueryRecursive(int nodeIdx, const SimpleMath::Vector2& center, float radius, std::vector<SimpleMath::Vector3>& result) const {
-		if (nodeIdx == -1) return;
-
-		const Node& node = mNodes[nodeIdx];
-
-		if (node.axis == -1) {
-			for (size_t i = node.leaf.begin; i < node.leaf.end; ++i) {
-				float dx = mPoints[i].x - center.x;
-				float dz = mPoints[i].z - center.y;
-				if (dx * dx + dz * dz <= radius * radius) {
-					result.emplace_back(mPoints[i]);
-				}
-			}
-			return;
-		}
-
-		float dx = node.point.x - center.x;
-		float dz = node.point.y - center.y;
-		if (dx * dx + dz * dz <= radius * radius) {
-			result.emplace_back(SimpleMath::Vector3(node.point.x, mTerrainCollider.GetHeight(node.point.x, node.point.y), node.point.y));
-		}
-
-		float splitCoord = (node.axis == 0) ? node.point.x : node.point.y;
-		float centerCoord = (node.axis == 0) ? center.x : center.y;
-
-		if (centerCoord - radius <= splitCoord) {
-			QueryRecursive(node.internal.left, center, radius, result);
-		}
-		if (centerCoord + radius >= splitCoord) {
-			QueryRecursive(node.internal.right, center, radius, result);
-		}
-	}
-
-	GrassRenderer::GrassRenderer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator cameraBufferLocation) {
-		const std::filesystem::path grassPath{ "Resources/Binarys/Terrain/GrassXZ.bin" };
-		const std::filesystem::path grassTreePath{ "Resources/Binarys/Terrain/grass_tree.bin" };
-
-
-		if (std::filesystem::exists(grassPath)) {
-			mGrassTree.BuildTreeFromFile(grassPath.string());
-			mGrassTree.SaveToFile(grassTreePath.string()); 
-		
-			//std::filesystem::rename(grassPath, "Resources/Binarys/Terrain/grass_old.bin");
-		}
-		else {
-			if (not std::filesystem::exists(grassTreePath)) {
-				CrashExp(false, "Grass tree file does not exist. Please build the grass tree first.");
-			}
-			mGrassTree.LoadFromFile(grassTreePath.string());
-		}
-
-		mGrassInstance = DefaultBuffer(device, sizeof(SimpleMath::Vector3), mGrassTree.GetSize());
-		mShader = std::make_shared<GrassShader>();
-		mShader->CreateShader(device); 
-
-		mCameraBufferLocation = cameraBufferLocation;
-	}
-
-	void GrassRenderer::SetMaterial(UINT materialIndex) {
-		mMaterialIndex = materialIndex;
-	}
-
-	void GrassRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator cameraBuffer, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS material) {
-
-		CameraConstants cameraConstants{};
-		std::memcpy(&cameraConstants, *mCameraBufferLocation, sizeof(CameraConstants));
-
-		mGrass.clear(); 
-		mGrassTree.QueryRange(SimpleMath::Vector2(cameraConstants.cameraPosition.x, cameraConstants.cameraPosition.z), 100.0f, mGrass);
-
-		std::memcpy(*mGrassInstance.CPUBegin(), mGrass.data(), mGrass.size() * sizeof(SimpleMath::Vector3));
-		mGrassInstance.Upload(commandList,mGrassInstance.CPUBegin(), mGrassInstance.CPUBegin() + mGrass.size()); 
-
-		mShader->SetGPassShader(commandList);
-
-		// 0. Camera 
-		// 1. Time
-		// 2. grass position
-		// 3. material Index 
-		// 4. material 
-		// 5. textures 
-		commandList->SetGraphicsRootConstantBufferView(0, *cameraBuffer);
-		commandList->SetGraphicsRoot32BitConstant(1, Time.GetTimeSinceSceneStarted<UINT, std::chrono::milliseconds>(), 0);
-		commandList->SetGraphicsRoot32BitConstants(2, 1, &mMaterialIndex, 0);
-		commandList->SetGraphicsRootShaderResourceView(3, material);
-		commandList->SetGraphicsRootDescriptorTable(4, tex);
-
-		D3D12_VERTEX_BUFFER_VIEW grassInstanceView{};
-		grassInstanceView.BufferLocation = *mGrassInstance.GPUBegin();
-		grassInstanceView.SizeInBytes = static_cast<UINT>(mGrassTree.GetSize() * sizeof(SimpleMath::Vector3));
-		grassInstanceView.StrideInBytes = sizeof(SimpleMath::Vector3);
-
-		commandList->IASetVertexBuffers(0, 1, &grassInstanceView);
-		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
-
-		commandList->DrawInstanced(static_cast<UINT>(mGrass.size()), 1, 0, 0); 
-	}
-
-}

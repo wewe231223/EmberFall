@@ -564,7 +564,9 @@ void Renderer::InitParticleManager() {
 
 void Renderer::InitGrassRenderer() {
 	if (mShaderModel6_5Support) {
-		mGrassRenderer = V2::GrassRenderer(mDevice, mCommandList, mMainCameraBuffer.CPUBegin());
+		ComPtr<ID3D12Device10> device10{};
+		CheckHR(mDevice.As(&device10));
+		mGrassRenderer = GrassRenderer(device10, mCommandList, mMainCameraBuffer.CPUBegin());
 	}
 }
 
