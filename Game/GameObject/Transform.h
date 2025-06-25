@@ -20,7 +20,6 @@ public:
 	const SimpleMath::Vector3& GetPosition() const;
 	const SimpleMath::Quaternion& GetRotation() const;
 	const SimpleMath::Vector3& GetScale() const;
-	const SimpleMath::Matrix& GetPrevWorldMatrix() const;
 	const SimpleMath::Matrix& GetWorldMatrix() const;
 
 	const SimpleMath::Vector3 GetForward() const;
@@ -32,7 +31,6 @@ public:
 	SimpleMath::Vector3& GetPosition();
 	SimpleMath::Quaternion& GetRotation();
 	SimpleMath::Vector3& GetScale();
-	SimpleMath::Matrix& GetPrevWorldMatrix();
 	SimpleMath::Matrix& GetWorldMatrix();
 	
 	Transform& GetChild(int index);
@@ -64,7 +62,6 @@ private:
 	SimpleMath::Quaternion mRotation{ DirectX::SimpleMath::Quaternion::Identity };
 	SimpleMath::Vector3 mScale{ DirectX::SimpleMath::Vector3::One };
 
-	SimpleMath::Matrix mPrevWorldMatrix{ DirectX::SimpleMath::Matrix::Identity };
 	SimpleMath::Matrix mWorldMatrix{ DirectX::SimpleMath::Matrix::Identity };
 	SimpleMath::Matrix mLocalMatrix{ DirectX::SimpleMath::Matrix::Identity };
 
