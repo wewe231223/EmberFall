@@ -82,7 +82,7 @@ private:
 	ComPtr<ID3D12RootSignature> mRootSignature{};
 	ComPtr<ID3D12PipelineState> mPipelineState{};
 
-	GrassTree mGrassTree{};
+	TerrainCollider mTerrainCollider{}; 
 	std::vector<SimpleMath::Vector3> mGrass{};
 	DefaultBufferCPUIterator mCameraBuffer{}; 
 };

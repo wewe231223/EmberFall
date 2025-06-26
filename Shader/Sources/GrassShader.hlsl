@@ -113,8 +113,8 @@ void mainMS(
     float dist = length(toCam);
     
     float scaleFactor = min(1.0f, MAX_SCALE_DIST / dist);
-    
     float halfSize = 0.5f * maxSize * scaleFactor;
+
     
     float randPhase = hash(grassIndex);
     float sway = sin(globalTime * WIND_FREQ + randPhase * 6.2831f) * (WIND_STRENGTH * halfSize);

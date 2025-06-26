@@ -6,6 +6,7 @@
 #include "../Utility/Exceptions.h"
 #include "../Game/System/Timer.h"
 #include "../Renderer/Core/Console.h"
+#include "../Utility/Enumerate.h"
 
 void GrassTree::BuildTreeFromFile(const std::string& filename) {
 	mTerrainCollider.LoadFromFile("Resources/Binarys/Terrain/NTerrain.bin");
@@ -175,25 +176,25 @@ void GrassTree::QueryRecursive(int nodeIdx, const SimpleMath::Vector2& center, f
 GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator cameraBuffer) {
 	mCameraBuffer = cameraBuffer; 
 
+	mTerrainCollider.LoadFromFile("Resources/Binarys/Terrain/NTerrain.bin");
 	const std::filesystem::path grassPath{ "Resources/Binarys/Terrain/GrassXZ.bin" };
-	const std::filesystem::path grassTreePath{ "Resources/Binarys/Terrain/grass_tree.bin" };
+	
+	std::ifstream in{ grassPath, std::ios::binary };
+	
+	size_t count{}; 
+	in.read(reinterpret_cast<char*>(&count), sizeof(size_t));
 
+	std::vector<SimpleMath::Vector2> xzPoints{}; 
 
-	if (std::filesystem::exists(grassPath)) {
-		mGrassTree.BuildTreeFromFile(grassPath.string());
-		mGrassTree.SaveToFile(grassTreePath.string());
+	xzPoints.resize(count);
+	in.read(reinterpret_cast<char*>(xzPoints.data()), count * sizeof(SimpleMath::Vector2));
 
-		std::filesystem::rename(grassPath, "Resources/Binarys/Terrain/grass_old.bin");
+	for (const auto& [i, point] : Enumerate(xzPoints)) {
+		float y = mTerrainCollider.GetHeight(point.x, point.y);
+		mGrass.emplace_back(SimpleMath::Vector3(point.x, y, point.y));
 	}
-	else {
-		if (not std::filesystem::exists(grassTreePath)) {
-			CrashExp(false, "Grass tree file does not exist. Please build the grass tree first.");
-		}
-		mGrassTree.LoadFromFile(grassTreePath.string());
-	}
 
-	mGrassPosition = DefaultBuffer(device, sizeof(SimpleMath::Vector3), mGrassTree.GetSize()); 
-
+	mGrassPosition = DefaultBuffer(device, commandList, sizeof(SimpleMath::Vector3), count, mGrass.data());
 	
 	ComPtr<IDxcUtils> dxcUtils{};
 	ComPtr<IDxcCompiler3> dxcCompiler{};
@@ -281,6 +282,10 @@ GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12Graphic
 
 	GrassRenderer::CreateRootSignature(device);
 	GrassRenderer::CreatePipelineState(device);
+
+
+
+
 }
 
 void GrassRenderer::SetMaterial(UINT materialIndex) {
@@ -292,18 +297,18 @@ void GrassRenderer::Render(ComPtr<ID3D12GraphicsCommandList6> commandList, Defau
 	CameraConstants cameraConstants{};
 	std::memcpy(&cameraConstants, *mCameraBuffer, sizeof(CameraConstants));
 
-	mGrass.clear(); 
+	/*mGrass.clear(); 
 	mGrassTree.QueryRange(SimpleMath::Vector2(cameraConstants.cameraPosition.x, cameraConstants.cameraPosition.z), 100.0f, mGrass);
 
 	std::memcpy(*mGrassPosition.CPUBegin(), mGrass.data(), mGrass.size() * sizeof(SimpleMath::Vector3));
-	mGrassPosition.Upload(commandList, mGrassPosition.CPUBegin(), mGrassPosition.CPUBegin() + mGrass.size());
+	mGrassPosition.Upload(commandList, mGrassPosition.CPUBegin(), mGrassPosition.CPUBegin() + mGrass.size());*/
 
 	commandList->SetGraphicsRootSignature(mRootSignature.Get());
 	commandList->SetPipelineState(mPipelineState.Get());
 
 
 
-	UINT grassCount = static_cast<UINT>(mGrassTree.GetSize());
+	UINT grassCount = static_cast<UINT>(mGrass.size());
 	// 0. Camera 
 	// 1. Time
 	// 2. material Index 
@@ -325,7 +330,7 @@ void GrassRenderer::Render(ComPtr<ID3D12GraphicsCommandList6> commandList, Defau
 	const UINT GRASS_PER_DISPATCH = 16;
 	UINT dispatchCount = (mGrass.size() + GRASS_PER_DISPATCH - 1) / GRASS_PER_DISPATCH;
 
-	if (dispatchCount * GRASS_PER_DISPATCH > mGrassTree.GetSize()) {
+	if (dispatchCount * GRASS_PER_DISPATCH > mGrass.size()) {
 		dispatchCount -= 1;
 	}
 
