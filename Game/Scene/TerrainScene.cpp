@@ -577,7 +577,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
 	mSkyBox.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("SkyBoxMaterial");
 
-	TerrainScene::BuildEnvironment("Resources/Scene/TreePositions.bin");
+	TerrainScene::BuildEnvironment("Resources/Binarys/Terrain/SceneObjects.bin");
 
 	for (auto& environment : mEnvironmentObjects) {
 		environment.UpdateShaderVariables();
@@ -1263,19 +1263,54 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 	UINT objectCount;
 	efile.read(reinterpret_cast<char*>(&objectCount), sizeof(UINT));
 
-	std::vector<DirectX::XMFLOAT2> xzPos{}; 
-	xzPos.resize(objectCount);
+	struct Data {
+		GameProtocol::EnvironmentType1 type;
+		SimpleMath::Vector2 xzPosition;
+		float yaw; 
+	};
 
-	efile.read(reinterpret_cast<char*>(xzPos.data()), sizeof(DirectX::XMFLOAT2) * objectCount);
 
-	for (auto& [x, z] : xzPos) {
-		auto& stem = mEnvironmentObjects.emplace_back(objects["Tree1_stem"].Clone());
-		stem.GetTransform().GetPosition() = { x, tCollider.GetHeight(x, z), z };
-		
-		auto& leaves = mEnvironmentObjects.emplace_back(objects["Tree1_leaves"].Clone());
-		leaves.GetTransform().GetPosition() = { x, tCollider.GetHeight(x, z), z };
+	std::vector<Data> envData{}; 
+	envData.resize(objectCount);
+
+	efile.read(reinterpret_cast<char*>(envData.data()), sizeof(Data)* objectCount);
+
+	for (auto& data : envData) {
+		switch (data.type) {
+		case GameProtocol::EnvironmentType1::Tree1:
+		case GameProtocol::EnvironmentType1::Tree2:
+		case GameProtocol::EnvironmentType1::Tree3:
+		case GameProtocol::EnvironmentType1::Tree4:
+		case GameProtocol::EnvironmentType1::Tree5:
+		case GameProtocol::EnvironmentType1::Tree6:
+		case GameProtocol::EnvironmentType1::Tree7:
+		case GameProtocol::EnvironmentType1::Tree8:
+		{
+			auto& stem = mEnvironmentObjects.emplace_back(objects["Tree1_stem"].Clone());
+			stem.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
+
+			auto& leaves = mEnvironmentObjects.emplace_back(objects["Tree1_leaves"].Clone());
+			leaves.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
+		}
+		break; 
+		case GameProtocol::EnvironmentType1::SRock1:
+		{
+			auto& obj = mEnvironmentObjects.emplace_back(objects["SRock1"].Clone());
+			obj.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
+			obj.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
+		}
+		break; 
+		case GameProtocol::EnvironmentType1::Fern1:
+		{
+			auto& obj = mEnvironmentObjects.emplace_back(objects["Fern1"].Clone());
+			obj.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
+			obj.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
+		}
+		break;
+		default:
+			break;
+		}
 	}
-
 
 }
 

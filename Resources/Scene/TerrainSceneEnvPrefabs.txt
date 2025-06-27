@@ -13,3 +13,11 @@ Tree1_leaves TreeShader LodTree1_Leaves Tree1_LOD0_Leaves
 0 Tree1_LOD0_Leaves 10.0
 1 Tree1_LOD1_Leaves 20.0
 2 Tree1_LOD2_Leaves 200.0
+
+SRock1 StandardNormalShader Rock_1_Material Rock_1
+1
+0 Rock_1 100.0
+
+Fern1 TreeShader FernMaterial Fern
+1
+0 Fern 100.0

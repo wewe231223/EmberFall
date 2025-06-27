@@ -116,4 +116,18 @@ namespace GameProtocol {
         WindMillBlade = 17,
         Well = 18,
     };
+
+
+    enum class EnvironmentType1 : UINT {
+        Tree1 = 0,
+        Tree2 = 1,
+        Tree3 = 2, 
+        Tree4 = 3,
+		Tree5 = 4,
+        Tree6 = 5,
+        Tree7 = 6, 
+        Tree8 = 7,
+        SRock1 = 8,
+        Fern1 = 9
+    };
 }
