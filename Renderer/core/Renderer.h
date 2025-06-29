@@ -53,6 +53,7 @@ public:
 	void ResetLoadCommandList(); 
 	void ExecuteLoadCommandList();
 
+	void UpdatePrevWorldMat();
 	void Update();
 
 	void Render();

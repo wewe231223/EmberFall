@@ -37,7 +37,6 @@ struct CameraConstants {
 using MaterialIndex = UINT;
 
 struct ModelContext {
-	SimpleMath::Matrix prevWorld;
 	SimpleMath::Matrix world;
     SimpleMath::Vector3 BBCenter{}; 
 	SimpleMath::Vector3 BBextents{};
@@ -45,7 +44,6 @@ struct ModelContext {
 };
 
 struct AnimationModelContext {
-	SimpleMath::Matrix prevWorld;
 	SimpleMath::Matrix world;
 	SimpleMath::Vector3 BBCenter{};
 	SimpleMath::Vector3 BBextents{};

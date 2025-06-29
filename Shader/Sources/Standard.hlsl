@@ -14,7 +14,6 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
-    matrix prevWorld;
     matrix world;
     float3 BBCenter;
     float3 BBExtents;
@@ -67,7 +66,8 @@ struct Deffered_POUT
 
 StructuredBuffer<ModelContext> modelContexts : register(t0);
 StructuredBuffer<MaterialConstants> materialConstants : register(t1);
-Texture2D textures[1024] : register(t2);
+Texture2D textures[1024] : register(t2, space0);
+StructuredBuffer<float4x4> prevWorldMat : register(t2, space1);
 
 SamplerState pointWrapSampler : register(s0);
 SamplerState pointClampSampler : register(s1);
@@ -81,6 +81,7 @@ Standard_VOUT Standard_VS(Standard_VIN input) {
 
     Standard_VOUT output;
     output.position = mul(float4(input.position, 1.f), modelContext.world);
+    //output.prevPosition = mul(mul(float4(input.position, 1.0f), prevWorldMat[input.instanceID]), prevViewProj);
     output.prevPosition = mul(output.position, prevViewProj);
     output.wPosition = output.position.xyz; 
     output.vPosition = mul(output.position, view).xyz; 
@@ -138,7 +139,7 @@ Deffered_POUT Standard_PS(Standard_VOUT input) {
     curNDC.xy = curNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
     prevNDC.xy = prevNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
     
-    float2 velocity = (curNDC.xy - prevNDC.xy);
+    float2 velocity = (curNDC.xy - prevNDC.xy) * 50.0f;
     output.velocity = float4(velocity, 0.0f, 1.0f);
     
     return output;

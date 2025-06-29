@@ -94,7 +94,6 @@ void Player::ForwardUpdate() {
 }
 
 void Player::Update(MeshRenderManager& manager) {
-	mModelContext.prevWorld = mTransform.GetWorldMatrix();
 
 	static BoneTransformBuffer boneTransformBuffer{};
 
@@ -110,8 +109,8 @@ void Player::Update(MeshRenderManager& manager) {
 
 	mCollider.UpdateBox(mTransform.GetWorldMatrix());
 
-	manager.AppendBonedMeshContext(mShader, mMesh, ModelContext{ mModelContext.prevWorld.Transpose(), mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
-	manager.AppendShadowBonedMeshContext(mShader, mMesh, ModelContext{ mModelContext.prevWorld.Transpose(), mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
+	manager.AppendBonedMeshContext(mShader, mMesh, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
+	manager.AppendShadowBonedMeshContext(mShader, mMesh, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
 
 	for (auto& equipment : mEquipments) {
 		if (false == equipment.GetActiveState()) {

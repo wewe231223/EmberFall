@@ -6,7 +6,7 @@ bool EquipmentObject::GetActiveState() const {
 }
 
 std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> EquipmentObject::GetRenderData() const {
-	return std::make_tuple(mMesh, mShader, ModelContext{ mModelContext.prevWorld.Transpose(), mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter() , mCollider.GetExtents() ,mMaterial });
+	return std::make_tuple(mMesh, mShader, ModelContext{  mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter() , mCollider.GetExtents() ,mMaterial });
 }
 
 const Transform& EquipmentObject::GetTransform() const {
@@ -26,7 +26,6 @@ void EquipmentObject::ToggleActiveState() {
 }
 
 void EquipmentObject::UpdateShaderVariables(BoneTransformBuffer& boneTransform, SimpleMath::Matrix& worldTransform) {
-	mModelContext.prevWorld = mTransform.GetWorldMatrix();
 
 	mTransform.SetLocalTransform(boneTransform.boneTransforms[mEquipJointIndex].Transpose());
 	mTransform.UpdateWorldMatrix(worldTransform);

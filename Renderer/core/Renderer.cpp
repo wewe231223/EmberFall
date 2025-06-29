@@ -102,13 +102,19 @@ void Renderer::ExecuteLoadCommandList() {
 	mExecute = true; 
 }
 
+void Renderer::UpdatePrevWorldMat() {
+	mRenderManager->GetMeshRenderManager().PreparePrevWorldMat(mCommandList);
+}
+
 void Renderer::Update() {
 	// Update... 
 }
 
 
 void Renderer::Render() {
+
 	Renderer::ResetCommandList();
+
 	D3D12_VIEWPORT viewport{};
 	D3D12_RECT scissorRect{};
 
@@ -194,6 +200,8 @@ void Renderer::Render() {
 
 	mRenderManager->GetTextureManager().Bind(mCommandList);
 	mRenderManager->GetMeshRenderManager().RenderGPass(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
+	mRenderManager->GetMeshRenderManager().PreparePrevWorldMat(mCommandList);
+	
 	mRenderManager->GetMeshRenderManager().Reset();
 
 	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Grass and mShaderModel6_5Support) {

@@ -40,7 +40,7 @@ public:
 	void AppendShadowPlaneMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, UINT index);
 	void AppendShadowBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms);
 
-
+	void PreparePrevWorldMat(ComPtr<ID3D12GraphicsCommandList> commandList);
 	void PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList);
 	
 	void RenderShadowPass(UINT index, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex,D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
@@ -53,6 +53,10 @@ private:
 	void RenderGPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 	void RenderGPassBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 private:
+	DefaultBuffer mPlainMeshPrevWorldMatBuffer{};
+
+	DefaultBuffer mBonedMeshPrevWorldMatBuffer{};
+
 	DefaultBuffer mPlainMeshBuffer{};
 
 	DefaultBuffer mBonedMeshBuffer{}; 

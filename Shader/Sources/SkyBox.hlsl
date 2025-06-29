@@ -14,7 +14,6 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
-    matrix prevWorld;
     matrix world;
     float3 BBCenter; 
     float3 BBExtents;
@@ -63,7 +62,8 @@ struct Deffered_POUT
 
 StructuredBuffer<ModelContext> modelContexts : register(t0);
 StructuredBuffer<MaterialConstants> materialConstants : register(t1);
-Texture2D textures[1024] : register(t2);
+Texture2D textures[1024] : register(t2, space0);
+StructuredBuffer<float4x4> prevWorldMat : register(t2, space1);
 
 SamplerState pointWrapSampler : register(s0);
 SamplerState pointClampSampler : register(s1);
@@ -80,7 +80,7 @@ SkyBox_VOUT SkyBox_VS(SkyBox_VIN input)
 
     SkyBox_VOUT output;
     output.position = mul(float4(input.position, 1.f), modelContext.world);
-    output.prevPosition = mul(output.position, prevViewProj);
+    output.prevPosition = mul(mul(float4(input.position, 1.0f), prevWorldMat[0]), prevViewProj);
 
     output.position = mul(output.position, viewProjection);
     output.curPosition = output.position;

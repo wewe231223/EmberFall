@@ -12,7 +12,6 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
-    matrix prevWorld;
     matrix world;
     float3 BBCenter;
     float3 BBExtents;
@@ -92,7 +91,8 @@ struct Deffered_POUT
 
 StructuredBuffer<ModelContext> modelContexts : register(t0);
 StructuredBuffer<MaterialConstants> materialConstants : register(t1);
-Texture2D textures[1024] : register(t2);
+Texture2D textures[1024] : register(t2, space0);
+StructuredBuffer<float4x4> prevWorldMat : register(t2, space1);
 
 SamplerState pointWrapSampler : register(s0);
 SamplerState pointClampSampler : register(s1);
@@ -273,7 +273,7 @@ Terrain_PIN Terrain_DS(PatchTessFactor tess, float2 uv : SV_DomainLocation, cons
 
     float3 worldPos = CubicBezierSum(patch, basisU, basisV);
     o.position = mul(float4(worldPos, 1), modelContexts[patch[0].instanceID].world);
-    o.prevPosition = mul(mul(float4(worldPos, 1), modelContexts[patch[0].instanceID].prevWorld), prevViewProj);
+    o.prevPosition = mul(mul(float4(worldPos, 1), prevWorldMat[patch[0].instanceID]), prevViewProj);
     o.wPosition = o.position.xyz;
     o.vPosition = mul(o.position, view).xyz;
     o.position = mul(o.position, viewProjection);

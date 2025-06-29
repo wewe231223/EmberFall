@@ -14,7 +14,6 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
-    matrix prevWorld;
     matrix world;
     float3 BBCenter; 
     float3 BBExtents;
@@ -72,6 +71,7 @@ StructuredBuffer<MaterialConstants> materialConstants : register(t1);
 Texture2D textures[1024] : register(t2, space0);
 
 StructuredBuffer<float4x4> boneTransforms : register(t2, space1);
+StructuredBuffer<float4x4> prevWorldMat : register(t3, space1);
 
 SamplerState pointWrapSampler : register(s0);
 SamplerState pointClampSampler : register(s1);
@@ -96,7 +96,7 @@ StandardAnimation_PIN StandardAnimation_VS(StandardAnimation_VIN input) {
     output.position = mul(float4(input.position, 1.0f), boneTransform);
         
     output.position = mul(output.position, modelContext.world);
-    output.prevPosition = mul(mul(float4(input.position, 1.0f), modelContext.prevWorld), prevViewProj);
+    output.prevPosition = mul(mul(float4(input.position, 1.0f), prevWorldMat[input.instanceID]), prevViewProj);
     output.wPosition = output.position.xyz;
     output.position = mul(output.position, viewProjection);
     
