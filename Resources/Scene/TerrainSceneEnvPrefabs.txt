@@ -1,23 +1,24 @@
-# ObjectName ShaderName MaterialName ColliderName
+# ObjectName ColliderName
 # LODCount
-# LODIndex MeshName Distance
+# LODIndex MeshName ShaderName MaterialName Distance
 
-Tree1_stem StandardNormalShader LodTree1_Stem Tree1_LOD0_Stem
+Tree1_stem Tree1_LOD0_Stem
 3
-0 Tree1_LOD0_Stem 10.0
-1 Tree1_LOD1_Stem 20.0
-2 Tree1_LOD2_Stem 200.0
+0 Tree1_LOD0_Stem StandardNormalShader LodTree1_Stem 10.0
+1 Tree1_LOD1_Stem StandardNormalShader LodTree1_Stem 20.0
+2 Tree1_LOD2_Stem StandardNormalShader LodTree1_Stem 50.0
 
-Tree1_leaves TreeShader LodTree1_Leaves Tree1_LOD0_Leaves
-3
-0 Tree1_LOD0_Leaves 10.0
-1 Tree1_LOD1_Leaves 20.0
-2 Tree1_LOD2_Leaves 200.0
+Tree1_leaves Tree1_LOD0_Leaves
+4
+0 Tree1_LOD0_Leaves TreeShader LodTree1_Leaves 10.0
+1 Tree1_LOD1_Leaves TreeShader LodTree1_Leaves 20.0
+2 Tree1_LOD2_Leaves TreeShader LodTree1_Leaves 50.0
+3 Tree1_LOD3 TreeCrossShader Tree1Cross 1000.0
 
-SRock1 StandardNormalShader Rock_1_Material Rock_1
+SRock1 Rock_1
 1
-0 Rock_1 100.0
+0 Rock_1 StandardNormalShader Rock_1_Material 100.0
 
-Fern1 TreeShader FernMaterial Fern
+Fern1 Fern
 1
-0 Fern 100.0
+0 Fern TreeShader FernMaterial 100.0

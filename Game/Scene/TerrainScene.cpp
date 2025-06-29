@@ -1195,6 +1195,10 @@ void TerrainScene::BuildShader(ComPtr<ID3D12Device> device) {
 	shader = std::make_unique<SkinnedNormalShader>();
 	shader->CreateShader(device);
 	mShaderMap["SkinnedNormalShader"] = std::move(shader);
+
+	shader = std::make_unique<TreeCrossShader>(); 
+	shader->CreateShader(device);
+	mShaderMap["TreeCrossShader"] = std::move(shader);
 }
 
 
@@ -1217,42 +1221,38 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 	std::string line;
 
 	while (std::getline(file, line)) {
-		if (line.empty() || line.starts_with('#')) {
+		if (line.empty() || line.starts_with('#'))
 			continue;
-		}
 
 		std::istringstream iss(line);
-
-		std::string objectName, shaderName, materialName, colliderName;
-		iss >> objectName >> shaderName >> materialName >> colliderName;
+		std::string objectName, colliderName;
+		iss >> objectName >> colliderName;
 
 		auto& obj = objects[objectName];
-		obj.mShader = mShaderMap[shaderName].get();
-		obj.mMaterial = mRenderManager->GetMaterialManager().GetMaterial(materialName);
 		obj.mCollider = mColliderMap[colliderName];
-
 		obj.SetActiveState(true);
 		obj.SetEmpty(false);
 
 		std::getline(file, line);
-		if (line.empty() || line[0] == '#') {
+		if (line.empty() || line.starts_with('#'))
 			continue;
-		}
 
 		int lodCount = std::stoi(line);
-
 		for (int i = 0; i < lodCount; ++i) {
 			std::getline(file, line);
 			std::istringstream lodIss(line);
 
 			int lodIndex;
-			std::string meshName;
+			std::string meshName, lodShaderName, lodMaterialName;
 			float distance;
 
-			lodIss >> lodIndex >> meshName >> distance;
+			lodIss >> lodIndex >> meshName >> lodShaderName >> lodMaterialName >> distance;
 
-			obj.mLODGroups[lodIndex].mMesh = mMeshMap[meshName].get();
-			obj.mLODGroups[lodIndex].mDistanceSquared = std::powf(distance, 2.f);
+			auto& lodGroup = obj.mLODGroups[lodIndex];
+			lodGroup.mMesh = mMeshMap[meshName].get();
+			lodGroup.mShader = mShaderMap[lodShaderName].get();
+			lodGroup.mMaterial = mRenderManager->GetMaterialManager().GetMaterial(lodMaterialName);
+			lodGroup.mDistanceSquared = std::powf(distance, 2.f);
 		}
 	}
 

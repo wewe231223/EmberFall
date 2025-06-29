@@ -12,3 +12,4 @@ UI.hlsl { vs vs_6_0 UI_VS ps ps_6_0 UI_PS }
 StandardNormal.hlsl { vs vs_6_0 StandardNormal_VS ps ps_6_0 StandardNormal_PS }
 StandardAnimationNormal.hlsl { vs vs_6_0 StandardAnimationNormal_VS ps ps_6_0 StandardAnimationNormal_PS }
 GrassShaderV2.hlsl { vs vs_6_0 Grass_VS gs gs_6_0 Grass_GS ps ps_6_0 Grass_PS }
+TreeCross.hlsl { vs vs_6_0 TreeCross_VS ps ps_6_0 TreeCross_PS }

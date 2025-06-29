@@ -103,8 +103,6 @@ AnimatorGraph::AnimationGraphController& GameObject::GetAnimationController() {
 }
 
 LODGameObject::LODGameObject(const LODGameObject& other) {
-	mShader = other.mShader;
-	mMaterial = other.mMaterial;
 	mTransform = other.mTransform;
 	mCollider = other.mCollider;
 	
@@ -121,8 +119,6 @@ LODGameObject& LODGameObject::operator=(const LODGameObject& other) {
 		return *this;
 	}
 
-	mShader = other.mShader;
-	mMaterial = other.mMaterial;
 	mTransform = other.mTransform;
 	mCollider = other.mCollider;
 	
@@ -136,9 +132,7 @@ LODGameObject& LODGameObject::operator=(const LODGameObject& other) {
 	return *this;
 }
 
-LODGameObject::LODGameObject(LODGameObject&& other) {
-	mShader = std::move(other.mShader);
-	mMaterial = std::move(other.mMaterial);
+LODGameObject::LODGameObject(LODGameObject&& other) noexcept {
 	mTransform = std::move(other.mTransform);
 	mCollider = std::move(other.mCollider);
 
@@ -150,13 +144,11 @@ LODGameObject::LODGameObject(LODGameObject&& other) {
 	mModelContext = std::move(other.mModelContext);
 }
 
-LODGameObject& LODGameObject::operator=(LODGameObject&& other) {
+LODGameObject& LODGameObject::operator=(LODGameObject&& other) noexcept {
 	if (this == &other) {
 		return *this;
 	}
 	
-	mShader = std::move(other.mShader);
-	mMaterial = std::move(other.mMaterial);
 	mTransform = std::move(other.mTransform);
 	mCollider = std::move(other.mCollider);
 	
@@ -183,7 +175,7 @@ void LODGameObject::SetEmpty(bool state) {
 }
 
 std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> LODGameObject::GetRenderData() const {
-	return { mLODGroups[mCurrentLODLevel].mMesh, mShader, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial } };
+	return { mLODGroups[mCurrentLODLevel].mMesh, mLODGroups[mCurrentLODLevel].mShader, ModelContext{mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mLODGroups[mCurrentLODLevel].mMaterial}};
 }
 
 const Transform& LODGameObject::GetTransform() const {
@@ -212,6 +204,8 @@ void LODGameObject::UpdateLODLevel(const SimpleMath::Vector3& pos) {
 		} 
 		++mCurrentLODLevel;
 	}
+
+	mCurrentLODLevel = std::clamp(mCurrentLODLevel, 0u, static_cast<unsigned int>(mLODGroups.size() - 1));
 }
 
 void LODGameObject::UpdateShaderVariables() {
@@ -228,8 +222,6 @@ void LODGameObject::UpdateShaderVariables() {
 LODGameObject LODGameObject::Clone() {
 	LODGameObject clone{};
 	clone.mActiveState = true;
-	clone.mShader = mShader;
-	clone.mMaterial = mMaterial;
 	clone.mTransform = mTransform;
 	clone.mCollider = mCollider;
 	std::copy(mLODGroups.begin(), mLODGroups.end(), clone.mLODGroups.begin()); 

@@ -60,6 +60,8 @@ private:
 
 struct LODGroup {
 	Mesh* mMesh{ nullptr };
+	GraphicsShaderBase* mShader{ nullptr };
+	MaterialIndex mMaterial{ 0 };
 	float mDistanceSquared{ std::numeric_limits<float>::max() };
 };
 
@@ -70,8 +72,8 @@ public:
 	LODGameObject(const LODGameObject&);
 	LODGameObject& operator=(const LODGameObject&);
 
-	LODGameObject(LODGameObject&&);
-	LODGameObject& operator=(LODGameObject&&);
+	LODGameObject(LODGameObject&&) noexcept;
+	LODGameObject& operator=(LODGameObject&&) noexcept;
 public:
 	bool GetActiveState() const;
 	bool GetEmpty() const;
@@ -91,10 +93,6 @@ public:
 	LODGameObject Clone();
 public:
 	std::array<LODGroup, 4> mLODGroups{};
-
-	GraphicsShaderBase* mShader{ nullptr };
-	MaterialIndex mMaterial{ 0 };
-
 	Collider mCollider{}; 
 private:
 	ModelContext mModelContext{};

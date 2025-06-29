@@ -53,7 +53,8 @@ FILE Resources/Assets/Tree/LODTree/Tree1_LOD1.glb 1 Tree1_LOD1_Leaves
 
 FILE Resources/Assets/Tree/LODTree/Tree1_LOD2.glb 0 Tree1_LOD2_Stem
 FILE Resources/Assets/Tree/LODTree/Tree1_LOD2.glb 1 Tree1_LOD2_Leaves
- 
+
+FILE Resources/Assets/Tree/LODTree/Tree1_LOD3.glb 0 Tree1_LOD3
 
 # ===== Environment: Rocks =====
 FILE Resources/Assets/Env/Rocks.glb 0 Rock_1

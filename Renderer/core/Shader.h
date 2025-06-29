@@ -1,3 +1,4 @@
+
 #pragma once 
 #include <array>
 #include <string>
@@ -421,4 +422,24 @@ protected:
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
 
 	virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE CreatePrimitiveTopologyType();
+};
+
+class TreeCrossShader : public GraphicsShaderBase {
+public:
+	TreeCrossShader();
+	virtual ~TreeCrossShader() = default;
+		
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+protected:
+	virtual InputLayout CreateInputLayout() override;
+	virtual RootParameters CreateRootParameters() override;
+
+	virtual D3D12_RASTERIZER_DESC CreateRasterizerState() override;
+
+	virtual UINT CreateNumOfRenderTarget() override;
+	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&) override;
+
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
 };
