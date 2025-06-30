@@ -56,6 +56,7 @@ private:
 	DefaultBuffer mPlainMeshPrevWorldMatBuffer{};
 
 	DefaultBuffer mBonedMeshPrevWorldMatBuffer{};
+	DefaultBuffer mAnimationPrevBuffer{};
 
 	DefaultBuffer mPlainMeshBuffer{};
 

@@ -71,7 +71,8 @@ StructuredBuffer<MaterialConstants> materialConstants : register(t1);
 Texture2D textures[1024] : register(t2, space0);
 
 StructuredBuffer<float4x4> boneTransforms : register(t2, space1);
-StructuredBuffer<float4x4> prevWorldMat : register(t3, space1);
+StructuredBuffer<ModelContext> prevModelContexts : register(t3, space1);
+StructuredBuffer<float4x4> prevBoneTransforms : register(t4, space1);
 
 SamplerState pointWrapSampler : register(s0);
 SamplerState pointClampSampler : register(s1);
@@ -82,21 +83,28 @@ SamplerState anisotropicClampSampler : register(s5);
 
 StandardAnimation_PIN StandardAnimation_VS(StandardAnimation_VIN input) {
     ModelContext modelContext = modelContexts[input.instanceID];
+    ModelContext prevModelContext = prevModelContexts[input.instanceID];
 
     StandardAnimation_PIN output;
     
     float4x4 boneTransform = (float4x4)0;
-    
+    float4x4 prevBoneTransform = (float4x4)0;
+
  
     boneTransform += boneTransforms[modelContext.boneStart + input.boneID[0]] * input.boneWeight.x;
     boneTransform += boneTransforms[modelContext.boneStart + input.boneID[1]] * input.boneWeight.y;
     boneTransform += boneTransforms[modelContext.boneStart + input.boneID[2]] * input.boneWeight.z;
     boneTransform += boneTransforms[modelContext.boneStart + input.boneID[3]] * input.boneWeight.w;
     
+    prevBoneTransform += prevBoneTransforms[prevModelContext.boneStart + input.boneID[0]] * input.boneWeight.x;
+    prevBoneTransform += prevBoneTransforms[prevModelContext.boneStart + input.boneID[1]] * input.boneWeight.y;
+    prevBoneTransform += prevBoneTransforms[prevModelContext.boneStart + input.boneID[2]] * input.boneWeight.z;
+    prevBoneTransform += prevBoneTransforms[prevModelContext.boneStart + input.boneID[3]] * input.boneWeight.w;
+    
     output.position = mul(float4(input.position, 1.0f), boneTransform);
         
     output.position = mul(output.position, modelContext.world);
-    output.prevPosition = mul(mul(float4(input.position, 1.0f), prevWorldMat[input.instanceID]), prevViewProj);
+    output.prevPosition = mul(mul(mul(float4(input.position, 1.0f), prevBoneTransform), prevModelContext.world), prevViewProj);
     output.wPosition = output.position.xyz;
     output.position = mul(output.position, viewProjection);
     
@@ -107,6 +115,8 @@ StandardAnimation_PIN StandardAnimation_VS(StandardAnimation_VIN input) {
     output.normal = normalize(mul(input.normal, boneWorldTransform));
     output.texcoord = input.texcoord;
     output.material = modelContext.material;
+    
+   
     
     return output;
 }

@@ -67,7 +67,7 @@ struct Deffered_POUT
 StructuredBuffer<ModelContext> modelContexts : register(t0);
 StructuredBuffer<MaterialConstants> materialConstants : register(t1);
 Texture2D textures[1024] : register(t2, space0);
-StructuredBuffer<float4x4> prevWorldMat : register(t2, space1);
+StructuredBuffer<ModelContext> prevModelContexts : register(t2, space1);
 
 SamplerState pointWrapSampler : register(s0);
 SamplerState pointClampSampler : register(s1);
@@ -81,8 +81,9 @@ Standard_VOUT Standard_VS(Standard_VIN input) {
 
     Standard_VOUT output;
     output.position = mul(float4(input.position, 1.f), modelContext.world);
-    //output.prevPosition = mul(mul(float4(input.position, 1.0f), prevWorldMat[input.instanceID]), prevViewProj);
-    output.prevPosition = mul(output.position, prevViewProj);
+
+    output.prevPosition = mul(mul(float4(input.position, 1.0f), prevModelContexts[input.instanceID].world), prevViewProj);
+    //output.prevPosition = mul(output.position, prevViewProj);
     output.wPosition = output.position.xyz; 
     output.vPosition = mul(output.position, view).xyz; 
     //output.position = mul(output.position, projection);
