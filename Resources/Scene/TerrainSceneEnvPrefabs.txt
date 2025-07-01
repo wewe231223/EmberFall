@@ -41,18 +41,18 @@ StoneHouse StoneHouse
 
 Cliff1 Cliff1_LOD0 
 3
-0 Cliff1_LOD0 StandardNormalShader Cliff1Material 20.0
-1 Cliff1_LOD1 StandardNormalShader Cliff1Material 60.0
+0 Cliff1_LOD0 StandardNormalShader Cliff1Material 60.0
+1 Cliff1_LOD1 StandardNormalShader Cliff1Material 100.0
 2 Cliff1_LOD2 StandardNormalShader Cliff1Material 1000.0
 
 Cliff2 Cliff2_LOD0
 3
-0 Cliff2_LOD0 StandardNormalShader Cliff2Material 20.0
-1 Cliff2_LOD1 StandardNormalShader Cliff2Material 60.0
+0 Cliff2_LOD0 StandardNormalShader Cliff2Material 60.0
+1 Cliff2_LOD1 StandardNormalShader Cliff2Material 100.0
 2 Cliff2_LOD2 StandardNormalShader Cliff2Material 1000.0
 
 Cliff3 Cliff3_LOD0
 2
-0 Cliff3_LOD0 StandardNormalShader Cliff3Material 20.0
+0 Cliff3_LOD0 StandardNormalShader Cliff3Material 60.0
 1 Cliff3_LOD1 StandardNormalShader Cliff3Material 1000.0
 
