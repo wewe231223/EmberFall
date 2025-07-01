@@ -9,7 +9,7 @@
 class TerrainLoader {
     static constexpr int PATCH_LENGTH = 4;
     static constexpr int PATCH_SCALE = 4;
-    static constexpr int TILE_SCALE = 32;
+    static constexpr int TILE_SCALE = 8;
 
 public:
     TerrainLoader() = default;
