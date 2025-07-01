@@ -56,6 +56,18 @@ FILE Resources/Assets/Tree/LODTree/Tree1_LOD2.glb 1 Tree1_LOD2_Leaves
 
 FILE Resources/Assets/Tree/LODTree/Tree1_LOD3.glb 0 Tree1_LOD3
 
+# ===== Environment: Cliffs =====
+FILE Resources/Assets/Cliff/Cliff1_LOD0.glb 0 Cliff1_LOD0
+FILE Resources/Assets/Cliff/Cliff1_LOD1.glb 0 Cliff1_LOD1
+FILE Resources/Assets/Cliff/Cliff1_LOD2.glb 0 Cliff1_LOD2
+
+FILE Resources/Assets/Cliff/Cliff2_LOD0.glb 0 Cliff2_LOD0
+FILE Resources/Assets/Cliff/Cliff2_LOD1.glb 0 Cliff2_LOD1
+FILE Resources/Assets/Cliff/Cliff2_LOD2.glb 0 Cliff2_LOD2
+
+FILE Resources/Assets/Cliff/Cliff3_LOD0.glb 0 Cliff3_LOD0
+FILE Resources/Assets/Cliff/Cliff3_LOD1.glb 0 Cliff3_LOD1
+
 # ===== Environment: Rocks =====
 FILE Resources/Assets/Env/Rocks.glb 0 Rock_1
 FILE Resources/Assets/Env/Rocks.glb 1 Rock_2

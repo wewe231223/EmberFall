@@ -253,6 +253,7 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     isBackFace = step(0, dot((cameraPosition - worldPos.xyz), normal));
     isBackFace = GBuffers[1].Sample(linearWrapSampler, input.texcoord).a;
     shadowFactor = shadowFactor + (1.0f - shadowFactor) * isBackFace;
+    shadowFactor = saturate(shadowFactor); 
    
     float mask = step(depth, 0.0f);
     

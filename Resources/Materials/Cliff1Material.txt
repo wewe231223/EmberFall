@@ -1,0 +1,17 @@
+DiffuseColor: 1.0 1.0 1.0 1.0
+SpecularColor: 0.0 0.0 0.0 0.0
+EmissiveColor: 0.0 0.0 0.0 0.0
+
+DiffuseTextures:
+Massive_Tundra_Rock_Formation_wcrmbiar_High_4K_BaseColor
+
+SpecularTextures:
+
+EmissiveTextures:
+
+MetalicTextures:
+
+NormalTextures:
+Massive_Tundra_Rock_Formation_wcrmbiar_High_4K_Normal
+
+AlphaTextures:

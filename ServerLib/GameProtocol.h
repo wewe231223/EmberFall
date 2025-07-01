@@ -128,6 +128,12 @@ namespace GameProtocol {
         Tree7 = 6, 
         Tree8 = 7,
         SRock1 = 8,
-        Fern1 = 9
+        Fern1 = 9,
+        LogHouse = 10,
+        TimberHouse = 11, 
+        StoneHouse = 12, 
+		Cliff1 = 13,
+        Cliff2 = 14,
+        Cliff3 = 15
     };
 }

@@ -1307,6 +1307,52 @@ void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
 			obj.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
 		}
 		break;
+		case GameProtocol::EnvironmentType1::LogHouse:
+		{
+			auto& house = mEnvironmentObjects.emplace_back(objects["LogHouse"].Clone());
+			house.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
+			house.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
+
+			auto& door = mEnvironmentObjects.emplace_back(objects["LogHouseDoor"].Clone());
+			door.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
+			door.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
+		}
+		break;
+		case GameProtocol::EnvironmentType1::TimberHouse:
+		{
+			auto& house = mEnvironmentObjects.emplace_back(objects["TimberHouse"].Clone());
+			house.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
+			house.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
+		}
+		break;
+		case GameProtocol::EnvironmentType1::StoneHouse:
+		{
+			auto& house = mEnvironmentObjects.emplace_back(objects["StoneHouse"].Clone());
+			house.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
+			house.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
+		}
+		break;
+		case GameProtocol::EnvironmentType1::Cliff1:
+		{
+			auto& cliff = mEnvironmentObjects.emplace_back(objects["Cliff1"].Clone());
+			cliff.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
+			cliff.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
+		}
+		break;
+		case GameProtocol::EnvironmentType1::Cliff2:
+		{
+			auto& cliff = mEnvironmentObjects.emplace_back(objects["Cliff2"].Clone());
+			cliff.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
+			cliff.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
+		}
+		break;
+		case GameProtocol::EnvironmentType1::Cliff3:
+		{
+			auto& cliff = mEnvironmentObjects.emplace_back(objects["Cliff3"].Clone());
+			cliff.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
+			cliff.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
+		}
+		break;
 		default:
 			break;
 		}
