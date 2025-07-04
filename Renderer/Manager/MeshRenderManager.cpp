@@ -23,6 +23,7 @@ MeshRenderManager::MeshRenderManager(ComPtr<ID3D12Device> device) {
 
 
 void MeshRenderManager::AppendPlaneMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, UINT reservedSlot) {
+	
 	if ((0 != (~reservedSlot)) and mReservedSlotCounter <= MeshRenderManager::RESERVED_CONTEXT_SLOT) {
 		mPlainMeshReserved[shader][mesh].emplace_back(world);
 		mReservedSlotCounter++;
@@ -65,18 +66,12 @@ void MeshRenderManager::PreparePrevWorldMat(ComPtr<ID3D12GraphicsCommandList> co
 	for (auto& [shader, meshMap] : mPlainMeshReserved) {
 		for (auto& [mesh, contexts] : meshMap) {
 			for (auto& context : contexts) {
-				context.prevWorld = context.world;
+				//context.prevWorld = context.world;
 			}
 		}
 	}
 	
-	for (auto& [shader, meshMap] : mPlainMeshContexts) {
-		for (auto& [mesh, contexts] : meshMap) {
-			for (auto& context : contexts) {
-				context.prevWorld = context.world;
-			}
-		}
-	}
+	
 	
 	for (auto& [shader, meshMap] : mBonedMeshContexts) {
 		for (auto& [mesh, contexts] : meshMap) {
