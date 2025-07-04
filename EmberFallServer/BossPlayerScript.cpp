@@ -79,7 +79,7 @@ void BossPlayerScript::LateUpdate(const float deltaTime) {
     if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Boss Player Remove");
         auto executionTime = SysClock::now();
-        gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), owner->GetId(), SysClock::now(), TimerEventType::REMOVE_NPC);
+        gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), 0s, IoType::REMOVE_NPC);
         owner->mSpec.active = false;
         return;
     }

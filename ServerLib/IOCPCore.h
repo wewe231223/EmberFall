@@ -13,7 +13,7 @@
 
 class IOCPCore {
 public:
-    IOCPCore(std::shared_ptr<class INetworkCore> coreService);
+    IOCPCore();
     ~IOCPCore();
 
     IOCPCore(const IOCPCore&) = delete;
@@ -27,11 +27,10 @@ public:
     HANDLE GetHandle() const;
 
     void RegisterSocket(SOCKET socket, ULONG_PTR registerKey);
-    void RegisterSocket(const std::shared_ptr<INetworkObject>& networkObject);
+    void RegisterSocket(const IServerEntity* const networkObject);
 
-    void IOWorker(int32_t threadId);
+    void ClientIoThread();
 
 private:
     HANDLE mIocpHandle{ INVALID_HANDLE_VALUE };
-    std::shared_ptr<class INetworkCore> mCoreService{ nullptr };
 };

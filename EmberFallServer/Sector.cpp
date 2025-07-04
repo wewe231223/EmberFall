@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Sector.h"
+#include "ServerFrame.h"
 #include "ObjectManager.h"
 #include "PlayerScript.h"
 #include "GameSession.h"
@@ -575,7 +576,7 @@ void SectorSystem::UpdatePlayerViewList(const std::shared_ptr<GameObject>& playe
         inViewRangePlayers.insert(inViewRangePlayers.end(), players.begin(), players.end());
     }
 
-    auto gameSession = static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(id));
+    auto gameSession = gServerFrame->GetSession(id);
     if (nullptr == gameSession) {
         return;
     }
@@ -618,7 +619,7 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
         }
 
         for (const auto playerId : nearbyPlayers) {
-            auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(static_cast<SessionIdType>(playerId)));
+            auto session = gServerFrame->GetSession(static_cast<SessionIdType>(playerId));
             if (nullptr == session or SESSION_INGAME != session->GetSessionState()) {
                 continue;
             }

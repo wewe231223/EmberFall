@@ -11,8 +11,8 @@
 
 #include "Sector.h"
 
-GameSession::GameSession() 
-    : Session{ NetworkType::SERVER }, mSessionState{ SESSION_CONNECT } { }
+GameSession::GameSession(SOCKET socket) 
+    : Session{ socket }, mSessionState{ SESSION_CONNECT } { }
 
 GameSession::~GameSession() { 
     if (IsClosed()) {
@@ -26,12 +26,11 @@ void GameSession::Close() {
     auto myId = static_cast<SessionIdType>(GetId());
     auto myRoom = GetMyRoomIdx();
 
-    auto executionTime = SysClock::now();
     SessionLobbyInfo info = mLobbyInfo;
-    gServerFrame->AddTimerEvent(myRoom, myId, executionTime, TimerEventType::REMOVE_PLAYER_IN_ROOM, info);
+    gServerFrame->AddTimerEvent(myId, 0s, IoType::REMOVE_PLAYER_IN_ROOM, info);
 
     if (nullptr != mUserObject) {
-        gServerFrame->AddTimerEvent(myRoom, myId, executionTime, TimerEventType::REMOVE_NPC, info);
+        gServerFrame->AddTimerEvent(myId, 0s, IoType::REMOVE_NPC, info);
         mUserObject = nullptr;
     }
 
@@ -55,30 +54,16 @@ void GameSession::OnConnect() {
 }
 
 void GameSession::ProcessRecv(INT32 numOfBytes) {
-    mOverlappedRecv.owner.reset();
-    if (0 >= numOfBytes) {
-        gServerCore->GetSessionManager()->CloseSession(static_cast<SessionIdType>(GetId()));
-        return;
-    }
-
     auto dataBeg = mOverlappedRecv.buffer.begin();
     auto dataEnd = dataBeg + numOfBytes;
     auto remainBegin = ValidatePackets(dataBeg, dataEnd);
     mPrevRemainSize = std::distance(remainBegin, dataEnd);
     auto dataSize = numOfBytes - mPrevRemainSize;
-    
-    // 패킷 처리
-    auto sharedThis = std::static_pointer_cast<GameSession>(shared_from_this());
-    if (nullptr == sharedThis) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Process Recv: Create Shared This Error In GameSession!!!");
-        Crash("");
-        return;
-    }
 
     decltype(auto) dataPtr = reinterpret_cast<const uint8_t* const>(mOverlappedRecv.buffer.data());
-    ProcessPackets(sharedThis, dataPtr, dataSize);
+    ProcessPackets(this, dataPtr, dataSize);
     if (false == IsConnected()) {
-        gServerCore->GetSessionManager()->CloseSession(static_cast<SessionIdType>(GetId()));
+        gServerFrame->CloseSession(static_cast<SessionIdType>(GetId()));
         Crash("");
         return;
     }
@@ -276,10 +261,8 @@ void GameSession::EnterLobby() {
 
     auto myId = static_cast<SessionIdType>(GetId());
     auto myRoom = GetMyRoomIdx();
-
-    auto executionTime = SysClock::now();
     if (nullptr != mUserObject) {
-        gServerFrame->AddTimerEvent(myRoom, myId, executionTime, TimerEventType::REMOVE_NPC);
+        gServerFrame->AddTimerEvent(myId, EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, myRoom);
         mUserObject = nullptr;
     }
 }

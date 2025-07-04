@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "BuffSystem.h"
 #include "BuffHealScript.h"
+#include "ServerFrame.h"
 
 Inventory::Inventory() { }
 
@@ -54,7 +55,7 @@ void Inventory::UseItem(std::shared_ptr<GameObject> obj) {
 
         auto sessionId = static_cast<SessionIdType>(obj->GetId());
         auto packetUse = FbsPacketFactory::UseItemSC(sessionId, itemIdx);
-        gServerCore->Send(sessionId, packetUse);
+        gServerFrame->Send(sessionId, packetUse);
         break;
     }
 

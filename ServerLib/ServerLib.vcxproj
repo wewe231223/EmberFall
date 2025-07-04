@@ -156,7 +156,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Constants.h" />
-    <ClInclude Include="EBR.h" />
     <ClInclude Include="FbsPacketFactory.h" />
     <ClInclude Include="GameMath.h" />
     <ClInclude Include="GameProtocol.h" />
@@ -172,19 +171,15 @@
     <ClInclude Include="PacketHandler.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Protocol.h" />
-    <ClInclude Include="RefCounting.h" />
     <ClInclude Include="SendBuffers.h" />
     <ClInclude Include="Session.h" />
-    <ClInclude Include="SessionManager.h" />
     <ClInclude Include="std_ex.h" />
-    <ClInclude Include="Sync.h" />
     <ClInclude Include="Types.h" />
     <ClInclude Include="NetworkUtils.h" />
     <ClInclude Include="GameUnits.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Constants.cpp" />
-    <ClCompile Include="EBR.cpp" />
     <ClCompile Include="FbsPacketFactory.cpp" />
     <ClCompile Include="GameMath.cpp" />
     <ClCompile Include="GameProtocol.cpp" />
@@ -205,11 +200,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Protocol.cpp" />
-    <ClCompile Include="RefCounting.cpp" />
     <ClCompile Include="SendBuffers.cpp" />
     <ClCompile Include="Session.cpp" />
-    <ClCompile Include="SessionManager.cpp" />
-    <ClCompile Include="Sync.cpp" />
     <ClCompile Include="Types.cpp" />
     <ClCompile Include="NetworkUtils.cpp" />
   </ItemGroup>

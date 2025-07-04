@@ -71,11 +71,11 @@ namespace SimpleMath = DirectX::SimpleMath;
 
 #include "LogConsole.h"
 
+#include "Protocol.h"
 #include "Types.h"
 #include "Constants.h"
 #include "OverlappedEx.h"
 #include "Lock.h"
-#include "Protocol.h"
 #include "NetworkUtils.h"
 
 #include "GameUnits.h"
@@ -87,4 +87,3 @@ using namespace GameUnitLiterals;
 using namespace std::literals;
 
 extern std::shared_ptr<class ClientCore> gClientCore;
-extern std::shared_ptr<class ServerCore> gServerCore;

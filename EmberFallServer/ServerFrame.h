@@ -10,6 +10,9 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "SessionManager.h"
+#include "../ServerLib/Listener.h"
+
 class ServerFrame {
 public:
     ServerFrame();
@@ -18,24 +21,39 @@ public:
 public:
     std::shared_ptr<class InputManager> GetInputManager() const;
 
+    bool StartServer();
     void Run();
     void Done();
 
+    GameSession* GetSession(SessionIdType id);
+    void CheckSessionsHeartBeat(std::vector<SessionIdType>& sessions);
+    void CloseSession(SessionIdType id);
+
+    void Send(SessionIdType to, OverlappedSend* packet);
+
     void PQCS(int32_t transfferedBytes, ULONG_PTR completionKey, OverlappedEx* overlapped);
-    void AddTimerEvent(uint16_t roomIdx, NetworkObjectIdType id, SysClock::time_point executeTime, TimerEventType eventType, ExtraInfo info = { });
+    void AddTimerEvent(NetworkObjectIdType id, SysClock::duration delay, IoType eventType, ExtraInfo info = { });
 
 private:
-    bool IsGameRoomEvent(TimerEventType type) const;
+    bool IsGameRoomEvent(IoType type) const;
+    void IoThread();
     void TimerThread();
+    void DbThread();
 
 private:
     volatile bool mDone{ false };
     
-    Lock::SRWLock mPlayersLock{ };
-    std::unordered_map<SessionIdType, std::shared_ptr<class GameObject>> mPlayers{ };
+    IOCPCore mIocpCore;
+    Listener mListener{ SERVER_PORT };
+    SessionManager mSessionManager{};
 
     std::shared_ptr<class InputManager> mInputManager{ };
 
+    size_t mWorkerThreadNum{ };
+    std::vector<std::thread> mWorkerThreads{ };
+
     std::thread mTimerThread{ };
-    Concurrency::concurrent_priority_queue<TimerEvent> mTimerEvents{ };
+
+    std::mutex mTimerMapLock{ };
+    std::multimap<TimePoint<SysClock>, TimerEvent> mTimerEvents{ };
 };

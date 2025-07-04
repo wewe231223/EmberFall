@@ -58,10 +58,10 @@ uint8_t GameRoom::TryInsertInRoom(SessionIdType sessionId) {
     uint8_t slotIndex;
     if (false == mSessionSlotIndices.try_pop(slotIndex)) {
         gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Slot Index is exhausted!!");
-        ::exit(-1);
+        return 255;
     }
 
-    auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+    auto session = gServerFrame->GetSession(sessionId);
     if (nullptr == session) {
         return GameRoomError::ERROR_SESSION_EXISTS_IN_THIS_ROOM;
     }
@@ -73,8 +73,7 @@ uint8_t GameRoom::TryInsertInRoom(SessionIdType sessionId) {
 
     bool expected = false;
     if (true == mHeartBeat.compare_exchange_strong(expected, true)) {
-        auto executionTime = SysClock::now() + CHECK_SESSION_HEART_BEAT_DELAY;
-        gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, executionTime, TimerEventType::CHECK_SESSION_HEART_BEAT);
+        gServerFrame->AddTimerEvent(INVALID_OBJ_ID, CHECK_SESSION_HEART_BEAT_DELAY, IoType::CHECK_SESSION_HEART_BEAT);
     }
 
     return GameRoomError::SUCCESS_INSERT_SESSION_IN_ROOM;
@@ -129,7 +128,7 @@ bool GameRoom::ChangeRolePlayer(SessionIdType id, Packets::PlayerRole role) {
     }
     mSessionLock.ReadUnlock();
 
-    auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(id));
+    auto session = gServerFrame->GetSession(id);
     if (nullptr == session) {
         return false;
     }
@@ -167,7 +166,7 @@ bool GameRoom::ReadyPlayer(SessionIdType id) {
     }
     mSessionLock.ReadUnlock();
 
-    auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(id));
+    auto session = gServerFrame->GetSession(id);
     if (nullptr == session) {
         return false;
     }
@@ -187,7 +186,7 @@ bool GameRoom::CancelPlayerReady(SessionIdType id) {
         mTransitionInterruptFlag = true;
     }
 
-    auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(id));
+    auto session = gServerFrame->GetSession(id);
     if (nullptr == session) {
         return false;
     }
@@ -204,8 +203,7 @@ void GameRoom::EndGameLoop() {
 #endif
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom[{}]: Register End Game!!!", mRoomIdx);
 
-    auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
-    gServerFrame->AddTimerEvent(mRoomIdx, INVALID_SESSION_ID, excutionTime, TimerEventType::SCENE_TRANSITION_COUNTDOWN);
+    gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN, ExtraInfo{ mRoomIdx });
     mSceneTransitionCounter = SysClock::now();
 
     mStageTransitionTarget = Packets::GameStage_LOBBY;
@@ -232,7 +230,7 @@ bool GameRoom::CheckAndStartGame() {
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Register Start Game!!!");
 
     auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
-    gServerFrame->AddTimerEvent(mRoomIdx, INVALID_SESSION_ID, excutionTime, TimerEventType::SCENE_TRANSITION_COUNTDOWN);
+    gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN);
     mSceneTransitionCounter = SysClock::now();
 
     mStageTransitionTarget = Packets::GameStage_TERRAIN;
@@ -259,10 +257,9 @@ void GameRoom::CheckSessionsHeartBeat() {
     std::vector<SessionIdType> sessionsInGameRoom{ sessionList.begin(), sessionList.end() };
     mSessionLock.ReadUnlock();
 
-    gServerCore->GetSessionManager()->CheckSessionsHeartBeat(sessionsInGameRoom);
+    gServerFrame->CheckSessionsHeartBeat(sessionsInGameRoom);
 
-    auto executionTime = SysClock::now() + CHECK_SESSION_HEART_BEAT_DELAY;
-    gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, executionTime, TimerEventType::CHECK_SESSION_HEART_BEAT);
+    gServerFrame->AddTimerEvent(INVALID_OBJ_ID, CHECK_SESSION_HEART_BEAT_DELAY, IoType::CHECK_SESSION_HEART_BEAT);
 }
 
 void GameRoom::CheckGameEnd() {
@@ -273,8 +270,8 @@ void GameRoom::CheckGameEnd() {
     auto [isEnd, winner] = mIngameCondition.CheckGameEnd();
     if (not isEnd) {
         if (GameRoomState::GAME_ROOM_STATE_INGAME == mGameRoomState) {
-            auto executionTime = SysClock::now() + GameProtocol::Logic::GAME_ROOM_CHECK_GAME_END_DELAY;
-            gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, executionTime, TimerEventType::CHECK_GAME_CONDITION);
+            auto delay = GameProtocol::Logic::GAME_ROOM_CHECK_GAME_END_DELAY;
+            gServerFrame->AddTimerEvent(INVALID_OBJ_ID, delay, IoType::CHECK_GAME_CONDITION, mRoomIdx);
         }
         return;
     }
@@ -292,7 +289,7 @@ void GameRoom::ChangeToLobby() {
     mSessionLock.ReadLock();
     decltype(auto) sessionsInGameRoom = GetSessions();
     for (auto& sessionId : sessionsInGameRoom) {
-        auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+        auto session = gServerFrame->GetSession(sessionId);
         if (nullptr == session) {
             continue;
         }
@@ -319,7 +316,7 @@ void GameRoom::ChangeToStage1() {
 
     mReadyPlayerCount = 0;
     for (auto& sessionId : sessionsInGameRoom) {
-        auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+        auto session = gServerFrame->GetSession(sessionId);
         if (nullptr == session) {
             continue;
         }
@@ -329,8 +326,8 @@ void GameRoom::ChangeToStage1() {
 
     mGameRoomState = GameRoomState::GAME_ROOM_STATE_INGAME;
 
-    auto executionTime = SysClock::now() + GameProtocol::Logic::GAME_ROOM_CHECK_GAME_END_DELAY;
-    gServerFrame->AddTimerEvent(mRoomIdx, INVALID_OBJ_ID, executionTime, TimerEventType::CHECK_GAME_CONDITION);
+    auto delay = GameProtocol::Logic::GAME_ROOM_CHECK_GAME_END_DELAY;
+    gServerFrame->AddTimerEvent(INVALID_OBJ_ID, delay, IoType::CHECK_GAME_CONDITION, mRoomIdx);
 
     auto humanCnt = mPlayerCount - mBossPlayerCount;
     auto gemCnt = humanCnt * 2;
@@ -395,7 +392,7 @@ void GameRoom::BroadCast(SessionIdType sender, OverlappedSend* packet) {
             continue;
         }
 
-        auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+        auto session = gServerFrame->GetSession(sessionId);
         if (nullptr == session or not session->ReadyToRecv()) {
             continue;
         }
@@ -413,7 +410,7 @@ void GameRoom::BroadCast(OverlappedSend* packet) {
     mSessionLock.ReadUnlock();
 
     for (auto& sessionId : sessionsInGameRoom) {
-        auto session = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+        auto session = gServerFrame->GetSession(sessionId);
         if (nullptr == session or not session->ReadyToRecv()) {
             continue;
         }
@@ -447,8 +444,7 @@ void GameRoom::OnSceneCountdownTick() {
     auto sceneTransitionTime = std::chrono::duration_cast<std::chrono::milliseconds>(SysClock::now() - mSceneTransitionCounter).count() / 1000.0f;
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "OnSceneCountdownTick - Remain Time: {}s", std::max(0.0f, SCENE_TRANSITION_COUNT - sceneTransitionTime));
     if (SCENE_TRANSITION_COUNT > sceneTransitionTime) {
-        auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
-        gServerFrame->AddTimerEvent(mRoomIdx, INVALID_SESSION_ID, excutionTime, TimerEventType::SCENE_TRANSITION_COUNTDOWN);
+        gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN, mRoomIdx);
         return;
     }
 

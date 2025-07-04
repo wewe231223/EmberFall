@@ -13,11 +13,14 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "INetworkObject.h"
+#include <variant>
+
+using ExtraInfo = std::variant<int64_t, void*, SessionLobbyInfo>;
 
 struct OverlappedEx : public WSAOVERLAPPED {
     // method
-    OverlappedEx(IOType type);
+    OverlappedEx();
+    OverlappedEx(IoType type);
 
     OverlappedEx(const OverlappedEx&) = delete;
     OverlappedEx(OverlappedEx&&) noexcept = delete;
@@ -30,8 +33,8 @@ struct OverlappedEx : public WSAOVERLAPPED {
 
 public:
     WSABUF wsaBuf;
-    IOType type;
-    std::shared_ptr<INetworkObject> owner;
+    IoType type;
+    ExtraInfo extraInfo;
 };
 
 struct OverlappedAccept : public OverlappedEx {
@@ -42,11 +45,9 @@ struct OverlappedAccept : public OverlappedEx {
     OverlappedAccept& operator=(const OverlappedAccept&) = delete;
     OverlappedAccept& operator=(OverlappedAccept&&) noexcept = delete;  
 
-    std::shared_ptr<class Session> GetSession();
-
 public:
     NetworkBuf<ADDR_BUF_SIZE> buffer;
-    std::shared_ptr<INetworkObject> session;
+    SOCKET connectedSocket;
 };
 
 struct OverlappedConnect : public OverlappedEx {
@@ -86,13 +87,4 @@ struct OverlappedSend : public OverlappedEx {
     OverlappedSend(OverlappedSend&&) noexcept = delete;
     OverlappedSend& operator=(const OverlappedSend&) = delete;
     OverlappedSend& operator=(OverlappedSend&&) noexcept = delete;
-};
-
-struct OverlappedUpdate : public OverlappedEx {
-    OverlappedUpdate();
-
-    OverlappedUpdate(const OverlappedUpdate&) = delete;
-    OverlappedUpdate(OverlappedUpdate&&) noexcept = delete;
-    OverlappedUpdate& operator=(const OverlappedUpdate&) = delete;
-    OverlappedUpdate& operator=(OverlappedUpdate&&) noexcept = delete;
 };

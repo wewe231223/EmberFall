@@ -21,19 +21,21 @@
 //      등록된 함수에서는 멀티 쓰레드와 관련해서 어떤 안전장치도 기대 X
 //      단, 추가와 삭제 그리고 Send 연산은 동시에 일어나지 않는다는 것은 보장됨 (Locking 하고 있으므로)
 // 
+// 06 - 18
+//      더이상 세션을 std::shared_ptr로 관리하지 않도록 수정, 그에 따른 동시성 문제, 삭제문제는
+//      ebr 재사용 적용과 unsafe_erase를 호출하지 않음으로써 해결
+// 
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class Session;
-
-//const std::function<std::shared_ptr<Session>()> DEFAULT_CREATE_SESSION_FN = []() { return std::make_shared<Session>(); };
+#include "GameSession.h"
 
 class SessionManager {
     inline constexpr static size_t MAX_SESSION_VAL = std::numeric_limits<SessionIdType>::max();
     inline constexpr static size_t MAX_CLIENT_SIZE = 10;
 
 public:
-    SessionManager(std::shared_ptr<class ServerCore> coreService);
+    SessionManager();
     ~SessionManager();
 
     SessionManager(const SessionManager&) = delete;
@@ -42,16 +44,12 @@ public:
     SessionManager& operator=(SessionManager&&) noexcept = delete;
 
 public:
-    void RegisterCreateSessionFn(std::function<std::shared_ptr<Session>()>&& fn);
-    std::shared_ptr<Session> CreateSessionObject();
-
-    bool AddSession(std::shared_ptr<Session> session);
+    bool AddSession(OverlappedAccept* acceptInfo);
+    bool AddSession(SOCKET socket);
     void CloseSession(SessionIdType id);
 
-    void ReleaseSessionId(SessionIdType id);
-
-    std::shared_ptr<Session> GetSession(SessionIdType id);
-    Concurrency::concurrent_unordered_map<SessionIdType, std::shared_ptr<Session>>& GetSessionMap();
+    GameSession* GetSession(SessionIdType id);
+    Concurrency::concurrent_unordered_map<SessionIdType, GameSession*>& GetSessionMap();
 
     void Send(SessionIdType to, OverlappedSend* const overlappedSend);
 
@@ -59,13 +57,7 @@ public:
     void CheckSessionsHeartBeat();
 
 private:
-    std::function<std::shared_ptr<Session>()> mCreateSessionFn{ };
-
-    std::shared_ptr<class ServerCore> mCoreService{ nullptr };
-    Lock::SRWLock mSessionsLock{ }; // 01-14 std::mutex -> SRWLock으로 변경
     std::atomic<SessionIdType> mSessionCount{ };
-    Concurrency::concurrent_unordered_map<SessionIdType, std::shared_ptr<Session>> mSessions{ };
-
-    /* 세션에 대한 Id 들을 미리 담아놓기 위한 Queue */
-    Concurrency::concurrent_queue<SessionIdType> mSessionIdMap{ };
+    std::atomic<SessionIdType> mSessionIdCount{ };
+    Concurrency::concurrent_unordered_map<SessionIdType, GameSession*> mSessions{ };
 };

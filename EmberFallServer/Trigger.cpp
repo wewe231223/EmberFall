@@ -34,7 +34,7 @@ void Trigger::Init() {
 
     auto id = owner->GetId();
     auto executeTime = SysClock::now() + std::chrono::milliseconds{ static_cast<long long>(mLifeTime * 1000.0f) };
-    gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), id, executeTime, TimerEventType::REMOVE_TRIGGER);
+    gServerFrame->AddTimerEvent(id, EXECUTE_IMMEDIATE, IoType::REMOVE_TRIGGER, owner->GetMyRoomIdx());
 }
 
 void Trigger::Update(const float deltaTime) { }

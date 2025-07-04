@@ -177,6 +177,7 @@
     <ClCompile Include="PlayerScript.cpp" />
     <ClCompile Include="Resources.cpp" />
     <ClCompile Include="Sector.cpp" />
+    <ClCompile Include="SessionManager.cpp" />
     <ClCompile Include="Stage.cpp" />
     <ClCompile Include="TerrainCollider.cpp" />
     <ClCompile Include="CorruptedGem.cpp" />
@@ -238,6 +239,8 @@
     <ClInclude Include="PlayerScript.h" />
     <ClInclude Include="Resources.h" />
     <ClInclude Include="Sector.h" />
+    <ClInclude Include="SessionEbr.h" />
+    <ClInclude Include="SessionManager.h" />
     <ClInclude Include="Stage.h" />
     <ClInclude Include="TerrainCollider.h" />
     <ClInclude Include="CorruptedGem.h" />
@@ -256,6 +259,7 @@
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Trigger.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="ViewList.h" />
     <ClInclude Include="Weapon.h" />
     <ClInclude Include="WeaponSystem.h" />

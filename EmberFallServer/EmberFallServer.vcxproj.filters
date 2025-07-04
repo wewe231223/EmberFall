@@ -273,6 +273,9 @@
     <ClCompile Include="BuffGuard.cpp">
       <Filter>MultiThreadLoopTest\Script\Buff</Filter>
     </ClCompile>
+    <ClCompile Include="SessionManager.cpp">
+      <Filter>MultiThreadLoopTest\Frame</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BehaviorTreeBase.h">
@@ -439,6 +442,15 @@
     </ClInclude>
     <ClInclude Include="BuffGuard.h">
       <Filter>MultiThreadLoopTest\Script\Buff</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionManager.h">
+      <Filter>MultiThreadLoopTest\Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="SessionEbr.h">
+      <Filter>MultiThreadLoopTest\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>MultiThreadLoopTest\Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

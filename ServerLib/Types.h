@@ -7,8 +7,6 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using ThreadIdType = uint32_t;
-
 using SessionIdType = BYTE;
 using PacketSizeType = BYTE;
 using NetworkObjectIdType = unsigned short;
@@ -23,6 +21,13 @@ enum class ObjectTag : uint8_t {
     TRIGGER,
     ARROW,
     NONE,
+};
+
+struct SessionLobbyInfo {
+    uint8_t roomIdx;
+    bool readyState;
+    uint8_t sessionSlot;
+    Packets::PlayerRole lastRole;
 };
 
 // --------------------------------- Template ---------------------------------

@@ -16,7 +16,4 @@ int main()
 
     gServerFrame->Run();
     //gServerFrame->GameLoop();
-
-    volatile bool loop{ true };
-    while (loop) {};
 }

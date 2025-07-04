@@ -13,7 +13,6 @@
 
 // Server Library
 #include "../ServerLib/pch.h"
-#include "../ServerLib/NetworkCore.h"
 
 #if defined(DEBUG) || defined(_DEBUG)
 #pragma comment(lib, "../out/Debug/ServerLib.lib")
@@ -28,9 +27,10 @@
 
 #include "../ServerLib/GameProtocol.h"
 
+inline constexpr auto EXECUTE_IMMEDIATE = 0s;
+
 // Global Instance
 extern std::unique_ptr<class ServerFrame> gServerFrame;
-
 extern std::unique_ptr<class GameRoomManager> gGameRoomManager;
 
 enum class GameStage : uint8_t {

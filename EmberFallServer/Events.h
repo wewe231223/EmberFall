@@ -96,3 +96,34 @@ inline constexpr auto ConvertEventTypeToEnum() noexcept
         static_assert(false, "Packet Type is not exists!!!");
     }
 }
+
+// casting
+template <typename T>
+struct GetGameEventTag;
+
+template <>
+struct GetGameEventTag<AttackEvent> {
+    static constexpr GameEventType type = GameEventType::ATTACK_EVENT;
+};
+
+template <>
+struct GetGameEventTag<DestroyingGemCancel> {
+    static constexpr GameEventType type = GameEventType::DESTTOY_GEM_CANCEL;
+};
+
+template <>
+struct GetGameEventTag<DestroyingGemEvent> {
+    static constexpr GameEventType type = GameEventType::DESTROY_GEM_EVENT;
+};
+
+template <>
+struct GetGameEventTag<GemDestroyed> {
+    static constexpr GameEventType type = GameEventType::DESTROY_GEM_COMPLETE;
+};
+
+template <typename EventType>
+    requires std::derived_from<EventType, GameEvent>
+inline EventType CastEvent(GameEvent* event) 
+{
+    return event->type == GetGameEventTag<EventType>::type ? static_cast<EventType*>(event) : nullptr;
+}

@@ -28,7 +28,6 @@ void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferC
 	mCurrentSceneType = SceneType::LOADING;
 	mCurrentScene = mScenes[static_cast<size_t>(SceneType::LOADING)].get();
 
-	gClientCore->Init();
 	if (!gClientCore->Start("127.0.0.1", SERVER_PORT)) {
 		DebugBreak();
 		Crash(false);

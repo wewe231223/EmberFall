@@ -17,7 +17,7 @@ inline constexpr uint8_t PLAYER_ROLE_BOSS = 2;
 
 class GameSession : public Session {
 public:
-    GameSession();
+    GameSession(SOCKET socket);
     ~GameSession();
 
 public:
@@ -46,6 +46,9 @@ public:
     virtual void Close() override;
     virtual void OnConnect() override;
     virtual void ProcessRecv(INT32 numOfBytes) override;
+
+public:
+    uint64_t mEpochCounter{ };
 
 private:
     // for lobby
