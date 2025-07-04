@@ -1,19 +1,21 @@
 #include "pch.h"
 #include "ObjectManager.h"
-
 #include "PlayerScript.h"
 #include "MonsterScript.h"
 #include "CorruptedGem.h"
 #include "Trigger.h"
 #include "EventTrigger.h"
 #include "ItemScript.h"
-
 #include "Input.h"
 #include "Sector.h"
-
 #include "Resources.h"
-
 #include "GameRoom.h"
+#include "../MeshLoader/Loader/TerrainLoader.h"
+#ifdef _DEBUG
+#pragma comment(lib,"out/debug/MeshLoader.lib")
+#else 
+#pragma comment(lib,"out/release/MeshLoader.lib")
+#endif
 
 ObjectManager::ObjectManager(uint16_t roomIdx) 
     : mRoomIdx{ roomIdx } { }
@@ -105,6 +107,12 @@ void ObjectManager::Reset() {
 }
 
 void ObjectManager::LoadEnvFromFile(const std::filesystem::path& path) {
+    Client::TerrainCollider terrainCollider{};
+    if (not terrainCollider.LoadFromFile("../Resources/Binarys/Terrain/NTerrain.bin")) {
+		gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Load Terrain Collider Failure - File does not exists");
+    }
+
+
     std::ifstream envs{ path, std::ios::binary };
     if (not envs.is_open()) {
         gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Load Environments Failure - File does not exists");
@@ -114,8 +122,8 @@ void ObjectManager::LoadEnvFromFile(const std::filesystem::path& path) {
     uint32_t numOfEnvs{ };
     envs.read(reinterpret_cast<char*>(&numOfEnvs), sizeof(numOfEnvs));
     struct FileFormat {
-        GameProtocol::EnvironmentType type{ };
-        SimpleMath::Vector3 pos{ };
+        GameProtocol::EnvironmentType1 type{ };
+        SimpleMath::Vector2 pos{ };
         float yaw{ };
     };
 
@@ -127,10 +135,6 @@ void ObjectManager::LoadEnvFromFile(const std::filesystem::path& path) {
     std::vector<FileFormat> envInfos(numOfEnvs);
     envs.read(reinterpret_cast<char*>(envInfos.data()), sizeof(FileFormat) * envInfos.size());
     for (auto& info : envInfos) {
-        if (GameProtocol::EnvironmentType::Fern == info.type or GameProtocol::EnvironmentType::LogHouseDoor == info.type or GameProtocol::EnvironmentType::WindMillBlade == info.type) {
-            continue;
-        }
-
         auto obj = SpawnObject(Packets::EntityType_ENV);
         obj->SetTag(ObjectTag::ENV);
         obj->mSpec.entity = Packets::EntityType_ENV;
@@ -140,9 +144,9 @@ void ObjectManager::LoadEnvFromFile(const std::filesystem::path& path) {
         obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEnvInfo(info.type).bb);
 
         auto objTransform = obj->GetTransform();
-        objTransform->Translate(info.pos);
+        objTransform->Translate(SimpleMath::Vector3{ info.pos.x, terrainCollider.GetHeight(info.pos.x, info.pos.y), info.pos.y });
         objTransform->SetY(0.0f);
-        objTransform->Rotation(SimpleMath::Quaternion::CreateFromYawPitchRoll(SimpleMath::Vector3{ 0.0f, info.yaw, 0.0f }));
+        objTransform->Rotation(SimpleMath::Quaternion::CreateFromYawPitchRoll(SimpleMath::Vector3{ 0.0f, DirectX::XMConvertToRadians(info.yaw), 0.0f}));
         objTransform->Update();
         obj->GetBoundingObject()->Update(objTransform->GetWorld());
 

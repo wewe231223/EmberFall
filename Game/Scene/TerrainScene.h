@@ -128,7 +128,7 @@ private:
 	GameObject mSkyBox{};
 
 	TerrainLoader tLoader{}; 
-	TerrainCollider tCollider{};
+	Client::TerrainCollider tCollider{};
 	TerrainObject mTerrainObject{}; 
 
 	DefaultBuffer mTerrainHeaderBuffer{};

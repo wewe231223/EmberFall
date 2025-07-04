@@ -38,19 +38,18 @@ struct ParticleVertex
 {
     float3 position : POSITION;
     float halfWidth : WIDTH;
-    
-    float3 direction : DIRECTION;
-    float3 velocity : VELOCITY;
-    
-    float totalLifetime : TOTALLIFETIME;
-    float lifetime : LIFETIME;
     float halfHeight : HEIGHT;
     uint material : MATERIAL;
-
+    
     uint spritable : SPRITABLE;
     uint spriteFrameInRow : SPRITEFRAMEINROW;
     uint spriteFrameInCol : SPRITEFRAMEINCOL;
     float spriteDuration : SPRITEDURATION;
+
+    float3 direction : DIRECTION;
+    float3 velocity : VELOCITY;
+    float totalLifetime : TOTALLIFETIME;
+    float lifetime : LIFETIME;
 
     uint type : PARTICLETYPE;
     uint emitType : EMITTYPE;
@@ -251,7 +250,7 @@ void EmberParticleUpdate(inout ParticleVertex v, inout PointStream<ParticleVerte
         ParticleVertex n = v;
 
         ApplyPhysics(n); // 중력 + 공기저항
-        OnTerrain(n); // 지면 충돌 처리
+        // OnTerrain(n); // 지면 충돌 처리
 
         stream.Append(n);
     }

@@ -40,7 +40,7 @@ private:
 private:
 	std::vector<Node> mNodes{};
 	std::vector<SimpleMath::Vector3> mPoints{};
-	TerrainCollider mTerrainCollider{};
+	Client::TerrainCollider mTerrainCollider{};
 };
 
 
@@ -82,7 +82,7 @@ private:
 	ComPtr<ID3D12RootSignature> mRootSignature{};
 	ComPtr<ID3D12PipelineState> mPipelineState{};
 
-	TerrainCollider mTerrainCollider{}; 
+	Client::TerrainCollider mTerrainCollider{}; 
 	std::vector<SimpleMath::Vector3> mGrass{};
 	DefaultBufferCPUIterator mCameraBuffer{}; 
 };

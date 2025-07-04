@@ -482,7 +482,7 @@ std::unique_ptr<GameRoom>& GameRoomManager::GetRoom(uint16_t roomIdx) {
 
 void GameRoomManager::InitGameRooms() {
     for (auto& room : mGameRooms) {
-        room->GetStage().InitObjectManager("../Resources/Binarys/Collider/env1.bin");
+        room->GetStage().InitObjectManager("../Resources/Binarys/Terrain/SceneObjects_Server.bin");
         room->CheckSessionsHeartBeat();
     }
 }

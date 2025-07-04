@@ -45,13 +45,13 @@ FILE Resources/Assets/Tree/pine2/pine4.glb - Pine4
 # Pine4 collider (commented in code):
 # CENTER 0 10.7723713 0 EXTENTS 0.35 10.7723713 0.35
 
-FILE Resources/Assets/Tree/LODTree/Tree1_LOD0.glb 0 Tree1_LOD0_Stem
+FILE Resources/Assets/Tree/LODTree/Tree1_LOD0.glb 0 Tree1_LOD0_Stem 
 FILE Resources/Assets/Tree/LODTree/Tree1_LOD0.glb 1 Tree1_LOD0_Leaves
  
-FILE Resources/Assets/Tree/LODTree/Tree1_LOD1.glb 0 Tree1_LOD1_Stem
+FILE Resources/Assets/Tree/LODTree/Tree1_LOD1.glb 0 Tree1_LOD1_Stem 
 FILE Resources/Assets/Tree/LODTree/Tree1_LOD1.glb 1 Tree1_LOD1_Leaves
 
-FILE Resources/Assets/Tree/LODTree/Tree1_LOD2.glb 0 Tree1_LOD2_Stem
+FILE Resources/Assets/Tree/LODTree/Tree1_LOD2.glb 0 Tree1_LOD2_Stem   
 FILE Resources/Assets/Tree/LODTree/Tree1_LOD2.glb 1 Tree1_LOD2_Leaves
 
 FILE Resources/Assets/Tree/LODTree/Tree1_LOD3.glb 0 Tree1_LOD3

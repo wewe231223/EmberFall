@@ -264,51 +264,54 @@ void TerrainLoader::SmoothMeshData(int iterations) {
     }
 }
 
-bool TerrainCollider::LoadFromFile(const std::filesystem::path& filePath) {
-    std::ifstream file(filePath, std::ios::binary);
 
-    if (!file) {
-        return false;
+namespace Client {
+    bool TerrainCollider::LoadFromFile(const std::filesystem::path& filePath) {
+        std::ifstream file(filePath, std::ios::binary);
+
+        if (!file) {
+            return false;
+        }
+
+        file.read(reinterpret_cast<char*>(&mHeader), sizeof(TerrainHeader));
+
+        mGlobalVertices.resize(mHeader.globalWidth * mHeader.globalHeight);
+        file.read(reinterpret_cast<char*>(mGlobalVertices.data()), mGlobalVertices.size() * sizeof(SimpleMath::Vector3));
+        return true;
     }
 
-    file.read(reinterpret_cast<char*>(&mHeader), sizeof(TerrainHeader));
+    TerrainHeader& TerrainCollider::GetHeader() {
+        return mHeader;
+    }
 
-    mGlobalVertices.resize(mHeader.globalWidth * mHeader.globalHeight);
-    file.read(reinterpret_cast<char*>(mGlobalVertices.data()), mGlobalVertices.size() * sizeof(SimpleMath::Vector3));
-    return true;
-}
+    std::vector<SimpleMath::Vector3>& TerrainCollider::GetData() {
+        return mGlobalVertices;
+    }
 
-TerrainHeader& TerrainCollider::GetHeader() {
-    return mHeader;
-}
+    float TerrainCollider::GetHeight(float x, float z) const {
+        float localX = x - mHeader.minX;
+        float localZ = z - mHeader.minZ;
 
-std::vector<SimpleMath::Vector3>& TerrainCollider::GetData() {
-    return mGlobalVertices;
-}
+        float fcol = localX / mHeader.gridSpacing;
+        float frow = localZ / mHeader.gridSpacing;
 
-float TerrainCollider::GetHeight(float x, float z) const {
-    float localX = x - mHeader.minX;
-    float localZ = z - mHeader.minZ;
+        int col = static_cast<int>(fcol);
+        int row = static_cast<int>(frow);
 
-    float fcol = localX / mHeader.gridSpacing;
-    float frow = localZ / mHeader.gridSpacing;
+        col = std::clamp(col, 0, mHeader.globalWidth - 2);
+        row = std::clamp(row, 0, mHeader.globalHeight - 2);
 
-    int col = static_cast<int>(fcol);
-    int row = static_cast<int>(frow);
+        float t = fcol - col;
+        float u = frow - row;
 
-    col = std::clamp(col, 0, mHeader.globalWidth - 2);
-    row = std::clamp(row, 0, mHeader.globalHeight - 2);
+        const SimpleMath::Vector3& v00 = mGlobalVertices[row * mHeader.globalWidth + col];
+        const SimpleMath::Vector3& v10 = mGlobalVertices[row * mHeader.globalWidth + col + 1];
+        const SimpleMath::Vector3& v01 = mGlobalVertices[(row + 1) * mHeader.globalWidth + col];
+        const SimpleMath::Vector3& v11 = mGlobalVertices[(row + 1) * mHeader.globalWidth + col + 1];
 
-    float t = fcol - col;
-    float u = frow - row;
+        float y0 = v00.y * (1.0f - t) + v10.y * t;
+        float y1 = v01.y * (1.0f - t) + v11.y * t;
 
-    const SimpleMath::Vector3& v00 = mGlobalVertices[row * mHeader.globalWidth + col];
-    const SimpleMath::Vector3& v10 = mGlobalVertices[row * mHeader.globalWidth + col + 1];
-    const SimpleMath::Vector3& v01 = mGlobalVertices[(row + 1) * mHeader.globalWidth + col];
-    const SimpleMath::Vector3& v11 = mGlobalVertices[(row + 1) * mHeader.globalWidth + col + 1];
-
-    float y0 = v00.y * (1.0f - t) + v10.y * t;
-    float y1 = v01.y * (1.0f - t) + v11.y * t;
-
-    return y0 * (1.0f - u) + y1 * u;
+        return y0 * (1.0f - u) + y1 * u;
+    }
 }

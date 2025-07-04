@@ -45,19 +45,18 @@ struct ParticleVertex
 {
     float3 position : POSITION;
     float halfWidth : WIDTH;
-    
-    float3 direction : DIRECTION;
-    float3 velocity : VELOCITY;
-    
-    float totalLifetime : TOTALLIFETIME;
-    float lifetime : LIFETIME;
     float halfHeight : HEIGHT;
     uint material : MATERIAL;
-
+    
     uint spritable : SPRITABLE;
     uint spriteFrameInRow : SPRITEFRAMEINROW;
     uint spriteFrameInCol : SPRITEFRAMEINCOL;
     float spriteDuration : SPRITEDURATION;
+
+    float3 direction : DIRECTION;    
+    float3 velocity : VELOCITY;
+    float totalLifetime : TOTALLIFETIME;
+    float lifetime : LIFETIME;
 
     uint type : PARTICLETYPE;
     uint emitType : EMITTYPE;

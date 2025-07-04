@@ -43,17 +43,20 @@ private:
 };
 
 
-class TerrainCollider {
-public:
-    TerrainCollider() = default;
-    ~TerrainCollider() = default;
-public:
-    bool LoadFromFile(const std::filesystem::path& filePath);
-    float GetHeight(float x, float z) const;
+namespace Client {
 
-    TerrainHeader& GetHeader();
-    std::vector<SimpleMath::Vector3>& GetData();
-private:
-    std::vector<SimpleMath::Vector3> mGlobalVertices;
-    TerrainHeader mHeader{};
-};
+    class TerrainCollider {
+    public:
+        TerrainCollider() = default;
+        ~TerrainCollider() = default;
+    public:
+        bool LoadFromFile(const std::filesystem::path& filePath);
+        float GetHeight(float x, float z) const;
+
+        TerrainHeader& GetHeader();
+        std::vector<SimpleMath::Vector3>& GetData();
+    private:
+        std::vector<SimpleMath::Vector3> mGlobalVertices;
+        TerrainHeader mHeader{};
+    };
+}
