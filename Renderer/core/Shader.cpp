@@ -490,12 +490,9 @@ GraphicsShaderBase::RootParameters StandardShader::CreateRootParameters() {
 	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
 	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.Parameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[4].Descriptor.ShaderRegister = 2;
-	params.Parameters[4].Descriptor.RegisterSpace = 1;
-	params.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	
 
-	params.ParameterCount = 5; 
+	params.ParameterCount = 4; 
 
 	return params;
 }
@@ -580,12 +577,9 @@ GraphicsShaderBase::RootParameters TerrainShader::CreateRootParameters() {
 	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
 	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.Parameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[4].Descriptor.ShaderRegister = 2;
-	params.Parameters[4].Descriptor.RegisterSpace = 1;
-	params.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	
 
-	params.ParameterCount = 5;
+	params.ParameterCount = 4;
 
 	return params;
 }
@@ -708,18 +702,10 @@ GraphicsShaderBase::RootParameters SkinnedShader::CreateRootParameters() {
 	params.Parameters[4].Descriptor.RegisterSpace = 1;
 	params.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.Parameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[5].Descriptor.ShaderRegister = 3;
-	params.Parameters[5].Descriptor.RegisterSpace = 1;
-	params.Parameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
-	params.Parameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[6].Descriptor.ShaderRegister = 4;
-	params.Parameters[6].Descriptor.RegisterSpace = 1;
-	params.Parameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	
 
 
-	params.ParameterCount = 7;
+	params.ParameterCount = 5;
 
 	return params;
 }
@@ -800,12 +786,9 @@ GraphicsShaderBase::RootParameters SkyBoxShader::CreateRootParameters() {
 	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
 	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.Parameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[4].Descriptor.ShaderRegister = 2;
-	params.Parameters[4].Descriptor.RegisterSpace = 1;
-	params.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	
 
-	params.ParameterCount = 5;
+	params.ParameterCount = 4;
 
 	return params;
 }
@@ -1006,12 +989,9 @@ GraphicsShaderBase::RootParameters SkeletonBBShader::CreateRootParameters() {
 	params.Parameters[1].Descriptor.RegisterSpace = 0;
 	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[2].Descriptor.ShaderRegister = 1;
-	params.Parameters[2].Descriptor.RegisterSpace = 0;
-	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	
 
-	params.ParameterCount = 3;
+	params.ParameterCount = 2;
 
 	return params;
 }
@@ -1073,12 +1053,9 @@ GraphicsShaderBase::RootParameters StandardBBShader::CreateRootParameters() {
 	params.Parameters[1].Descriptor.RegisterSpace = 0;
 	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[2].Descriptor.ShaderRegister = 1;
-	params.Parameters[2].Descriptor.RegisterSpace = 0;
-	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	
 
-	params.ParameterCount = 3;
+	params.ParameterCount = 2;
 
 	return params;
 }
@@ -1485,12 +1462,9 @@ GraphicsShaderBase::RootParameters TreeShader::CreateRootParameters() {
 	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
 	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.Parameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[4].Descriptor.ShaderRegister = 2;
-	params.Parameters[4].Descriptor.RegisterSpace = 1;
-	params.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	
 
-	params.ParameterCount = 5;
+	params.ParameterCount = 4;
 
 	return params;
 }
@@ -1779,12 +1753,9 @@ GraphicsShaderBase::RootParameters StandardNormalShader::CreateRootParameters() 
 	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
 	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.Parameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[4].Descriptor.ShaderRegister = 2;
-	params.Parameters[4].Descriptor.RegisterSpace = 1;
-	params.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	
 
-	params.ParameterCount = 5;
+	params.ParameterCount = 4;
 
 	return params;
 }
@@ -1879,18 +1850,10 @@ GraphicsShaderBase::RootParameters SkinnedNormalShader::CreateRootParameters() {
 	params.Parameters[4].Descriptor.RegisterSpace = 1;
 	params.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.Parameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[5].Descriptor.ShaderRegister = 3;
-	params.Parameters[5].Descriptor.RegisterSpace = 1;
-	params.Parameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
-	params.Parameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[6].Descriptor.ShaderRegister = 4;
-	params.Parameters[6].Descriptor.RegisterSpace = 1;
-	params.Parameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	
 
 
-	params.ParameterCount = 7;
+	params.ParameterCount = 5;
 
 	return params;
 }

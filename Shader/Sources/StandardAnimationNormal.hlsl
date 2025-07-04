@@ -14,11 +14,19 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
+    matrix prevWorld;
     matrix world;
     float3 BBCenter; 
     float3 BBExtents;
     uint material;
+    uint prevBoneStart;
     uint boneStart;
+};
+
+struct BoneContext
+{
+    matrix prevBoneTransform;
+    matrix boneTransform;
 };
 
 struct MaterialConstants
@@ -74,9 +82,8 @@ StructuredBuffer<ModelContext> modelContexts : register(t0);
 StructuredBuffer<MaterialConstants> materialConstants : register(t1);
 Texture2D textures[1024] : register(t2, space0);
 
-StructuredBuffer<float4x4> boneTransforms : register(t2, space1);
-StructuredBuffer<ModelContext> prevModelContexts : register(t3, space1);
-StructuredBuffer<float4x4> prevBoneTransforms : register(t4, space1);
+StructuredBuffer<BoneContext> boneTransforms : register(t2, space1);
+
 
 SamplerState pointWrapSampler : register(s0);
 SamplerState pointClampSampler : register(s1);
@@ -87,7 +94,6 @@ SamplerState anisotropicClampSampler : register(s5);
 
 StandardAnimationNormal_PIN StandardAnimationNormal_VS(StandardAnimationNormal_VIN input) {
     ModelContext modelContext = modelContexts[input.instanceID];
-    ModelContext prevModelContext = prevModelContexts[input.instanceID];
 
     StandardAnimationNormal_PIN output;
     
@@ -95,20 +101,21 @@ StandardAnimationNormal_PIN StandardAnimationNormal_VS(StandardAnimationNormal_V
     float4x4 prevBoneTransform = (float4x4) 0;
     
  
-    boneTransform += boneTransforms[modelContext.boneStart + input.boneID[0]] * input.boneWeight.x;
-    boneTransform += boneTransforms[modelContext.boneStart + input.boneID[1]] * input.boneWeight.y;
-    boneTransform += boneTransforms[modelContext.boneStart + input.boneID[2]] * input.boneWeight.z;
-    boneTransform += boneTransforms[modelContext.boneStart + input.boneID[3]] * input.boneWeight.w;
+    boneTransform += boneTransforms[modelContext.boneStart + input.boneID[0]].boneTransform * input.boneWeight.x;
+    boneTransform += boneTransforms[modelContext.boneStart + input.boneID[1]].boneTransform * input.boneWeight.y;
+    boneTransform += boneTransforms[modelContext.boneStart + input.boneID[2]].boneTransform * input.boneWeight.z;
+    boneTransform += boneTransforms[modelContext.boneStart + input.boneID[3]].boneTransform * input.boneWeight.w;
     
-    prevBoneTransform += prevBoneTransforms[prevModelContext.boneStart + input.boneID[0]] * input.boneWeight.x;
-    prevBoneTransform += prevBoneTransforms[prevModelContext.boneStart + input.boneID[1]] * input.boneWeight.y;
-    prevBoneTransform += prevBoneTransforms[prevModelContext.boneStart + input.boneID[2]] * input.boneWeight.z;
-    prevBoneTransform += prevBoneTransforms[prevModelContext.boneStart + input.boneID[3]] * input.boneWeight.w;
+    prevBoneTransform += boneTransforms[modelContext.prevBoneStart + input.boneID[0]].prevBoneTransform * input.boneWeight.x;
+    prevBoneTransform += boneTransforms[modelContext.prevBoneStart + input.boneID[1]].prevBoneTransform * input.boneWeight.y;
+    prevBoneTransform += boneTransforms[modelContext.prevBoneStart + input.boneID[2]].prevBoneTransform * input.boneWeight.z;
+    prevBoneTransform += boneTransforms[modelContext.prevBoneStart + input.boneID[3]].prevBoneTransform * input.boneWeight.w;
     
     output.position = mul(float4(input.position, 1.0f), boneTransform);
         
     output.position = mul(output.position, modelContext.world);
-    output.prevPosition = mul(mul(mul(float4(input.position, 1.0f), prevBoneTransform), prevModelContext.world), prevViewProj);
+    output.prevPosition = mul(mul(mul(float4(input.position, 1.0f), boneTransform), modelContext.prevWorld), prevViewProj);
+    //output.prevPosition = mul(mul(mul(float4(input.position, 1.0f), prevBoneTransform), modelContext.prevWorld), prevViewProj);
     output.wPosition = output.position.xyz;
     output.position = mul(output.position, viewProjection);
     output.curPosition = output.position;
@@ -165,7 +172,7 @@ Deffered_POUT StandardAnimationNormal_PS(StandardAnimationNormal_PIN input) {
     curNDC.xy = curNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
     prevNDC.xy = prevNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
     
-    float2 velocity = (curNDC.xy - prevNDC.xy) * 50.0f;
+    float2 velocity = (curNDC.xy - prevNDC.xy) * 5.0f;
     output.velocity = float4(velocity, 0.0f, 1.0f);
     
     

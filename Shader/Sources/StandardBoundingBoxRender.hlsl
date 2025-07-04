@@ -11,6 +11,7 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
+    matrix prevWorld;
     matrix world;
     float3 BBcenter; 
     float3 BBExtents;
@@ -48,7 +49,6 @@ struct Deffered_POUT
 
 
 StructuredBuffer<ModelContext> modelContexts : register(t0);
-StructuredBuffer<float4x4> prevWorldMat : register(t1);
 
 SamplerState pointWrapSampler : register(s0);
 SamplerState pointClampSampler : register(s1);
