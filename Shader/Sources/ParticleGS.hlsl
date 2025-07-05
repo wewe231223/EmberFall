@@ -77,14 +77,6 @@ struct Particle_PS_IN
     float4 color : Color;
 };
 
-struct Deffered_POUT
-{
-    float4 diffuse : SV_TARGET0;
-    float4 normal : SV_TARGET1;
-    float4 position : SV_TARGET2;
-    float4 emissive : SV_TARGET3;
-};
-
 ParticleVertex ParticleGSPassVS(ParticleVertex input)
 {
     return input;
@@ -171,19 +163,14 @@ void ParticleGSPassGS(point ParticleVertex input[1], inout TriangleStream<Partic
     }
 }
 
-Deffered_POUT ParticleGSPassPS(Particle_PS_IN input)
+float4 ParticleGSPassPS(Particle_PS_IN input) : SV_Target
 {
-    Deffered_POUT output = (Deffered_POUT) 0;
-
     float4 Color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.uv);
 
-    clip(Color.a - 0.0001f);
 
     Color.rgb *= materialConstants[input.material].diffuse.rgb;
     Color.rgb = normalize(Color.rgb);
     Color.a = 1.f;
-
-    output.diffuse = Color;
-    output.normal = float4(0.f, 0.f, 0.f, 5.f);
-    return output;
+    
+    return Color; 
 }

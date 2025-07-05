@@ -269,7 +269,6 @@ protected:
 	virtual RootParameters CreateRootParameters() override;
 
 	virtual D3D12_RASTERIZER_DESC CreateRasterizerState() override;
-	virtual D3D12_BLEND_DESC CreateBlendState() override;
 	virtual D3D12_DEPTH_STENCIL_DESC CreateDepthStencilState() override;
 
 	virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE CreatePrimitiveTopologyType() override;
@@ -278,9 +277,6 @@ protected:
 
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
 	virtual D3D12_SHADER_BYTECODE CreateGeometryShader() override;
-
-	virtual UINT CreateNumOfRenderTarget() override;
-	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&) override;
 
 	virtual D3D12_ROOT_SIGNATURE_FLAGS CreateRootSignatureFlag() override;
 };
@@ -302,9 +298,6 @@ protected:
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
 	virtual D3D12_SHADER_BYTECODE CreateGeometryShader() override;
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
-
-	virtual UINT CreateNumOfRenderTarget() override;
-	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&) override;
 };
 
 

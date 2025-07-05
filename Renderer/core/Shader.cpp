@@ -1209,14 +1209,6 @@ D3D12_RASTERIZER_DESC ParticleSOShader::CreateRasterizerState() {
 	return result;
 }
 
-D3D12_BLEND_DESC ParticleSOShader::CreateBlendState() {
-	D3D12_BLEND_DESC result{}; 
-
-	// Deffered! 
-
-	return result;
-}
-
 D3D12_DEPTH_STENCIL_DESC ParticleSOShader::CreateDepthStencilState() {
 	D3D12_DEPTH_STENCIL_DESC result{};
 
@@ -1285,14 +1277,6 @@ D3D12_SHADER_BYTECODE ParticleSOShader::CreateVertexShader() {
 D3D12_SHADER_BYTECODE ParticleSOShader::CreateGeometryShader() {
 	auto& blob = gShaderManager.GetShaderBlob("ParticleSO", ShaderType::GeometryShader);
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
-}
-
-UINT ParticleSOShader::CreateNumOfRenderTarget() {
-	return 0;
-}
-
-void ParticleSOShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& targets) {
-	targets[0] = DXGI_FORMAT_UNKNOWN;
 }
 
 D3D12_ROOT_SIGNATURE_FLAGS ParticleSOShader::CreateRootSignatureFlag() {
@@ -1375,30 +1359,6 @@ GraphicsShaderBase::RootParameters ParticleGSShader::CreateRootParameters() {
 	return result;
 }
 
-//D3D12_BLEND_DESC ParticleGSShader::CreateBlendState() {
-//	D3D12_BLEND_DESC blendStateDesc;
-//	::ZeroMemory(&blendStateDesc, sizeof(D3D12_BLEND_DESC));
-//
-//	blendStateDesc.AlphaToCoverageEnable = FALSE;
-//	blendStateDesc.IndependentBlendEnable = FALSE;
-//
-//	D3D12_RENDER_TARGET_BLEND_DESC& rt = blendStateDesc.RenderTarget[0];
-//	rt.BlendEnable = TRUE;
-//	rt.LogicOpEnable = FALSE;
-//
-//	rt.SrcBlend = D3D12_BLEND_SRC_ALPHA;
-//	rt.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-//	rt.BlendOp = D3D12_BLEND_OP_ADD;
-//
-//	rt.SrcBlendAlpha = D3D12_BLEND_ONE;
-//	rt.DestBlendAlpha = D3D12_BLEND_ZERO;
-//	rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
-//
-//	rt.LogicOp = D3D12_LOGIC_OP_NOOP;
-//	rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-//
-//	return blendStateDesc;
-//}
 
 D3D12_PRIMITIVE_TOPOLOGY_TYPE ParticleGSShader::CreatePrimitiveTopologyType() {
 	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
@@ -1418,18 +1378,6 @@ D3D12_SHADER_BYTECODE ParticleGSShader::CreatePixelShader() {
 	auto& blob = gShaderManager.GetShaderBlob("ParticleGS", ShaderType::PixelShader);
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }
-
-UINT ParticleGSShader::CreateNumOfRenderTarget() {
-	return 4;
-}
-
-void ParticleGSShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& targets) {
-	targets[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	targets[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	targets[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	targets[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
-}
-
 
 
 

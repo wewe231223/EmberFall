@@ -206,10 +206,6 @@ void Renderer::Render() {
 		mGrassRenderer.Render(commandList6, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
 
-	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Particle) {
-		mRenderManager->GetParticleManager().RenderSO(mCommandList);
-		mRenderManager->GetParticleManager().RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
-	}
 
 	
 
@@ -225,6 +221,23 @@ void Renderer::Render() {
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
 	mDefferedRenderer.Render(mCommandList, mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0), mRenderManager->GetLightingManager().GetLightingBuffer());
+
+
+	// Forward Render Pass 
+
+	mRenderManager->GetTextureManager().Bind(mCommandList);
+
+	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Particle) {
+		mRenderManager->GetParticleManager().RenderSO(mCommandList);
+		mRenderManager->GetParticleManager().RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
+	}
+
+
+
+
+
 
 	// Blurring Pass
 	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Bloom) {

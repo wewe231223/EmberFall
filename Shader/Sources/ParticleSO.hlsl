@@ -188,8 +188,8 @@ void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout Point
     {
         ParticleVertex p = (ParticleVertex) 0;
         p.position = emitter.position;
-        p.halfWidth = emitter.halfWidth;
-        p.halfHeight = emitter.halfHeight;
+        p.halfWidth = 2.f;
+        p.halfHeight = 2.f;
         p.material = emitter.material;
         
         p.spritable = emitter.spritable;
@@ -249,7 +249,7 @@ void EmberParticleUpdate(inout ParticleVertex v, inout PointStream<ParticleVerte
         ParticleVertex n = v;
 
         ApplyPhysics(n); // 중력 + 공기저항
-        // OnTerrain(n); // 지면 충돌 처리
+        OnTerrain(n); // 지면 충돌 처리
 
         stream.Append(n);
     }
