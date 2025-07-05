@@ -1150,7 +1150,7 @@ namespace AnimatorGraph {
 
     void BoneMaskAnimationGraphController::Update(double deltaTime, BoneTransformBuffer& boneTransforms) {
         // EvaluateTransitions();
-        
+
         mAnimator.UpdateBoneTransforms(deltaTime * mStates[mCurrentStateIndex].speed, boneTransforms);
     }
 

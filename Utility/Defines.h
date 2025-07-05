@@ -50,14 +50,10 @@ struct AnimationModelContext {
 	SimpleMath::Vector3 BBCenter{};
 	SimpleMath::Vector3 BBextents{};
 	UINT material;
-	UINT prevBoneIndexStart{ 0 };
 	UINT boneIndexStart{ 0 };
 };
 
-struct BoneContext {
-    SimpleMath::Matrix prevBoneTransform;
-    SimpleMath::Matrix boneTransform;
-};
+
 
 struct ModelContext2D {
     DirectX::XMFLOAT3X3 Transform{
@@ -90,6 +86,7 @@ public:
 using SceneFeatureType = std::tuple<bool, bool, bool>;
 
 struct BoneTransformBuffer {
+	std::array<SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<size_t>> prevBoneTransforms;
 	std::array<SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<size_t>> boneTransforms;
 	UINT boneCount;
 };

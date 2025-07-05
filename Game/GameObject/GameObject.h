@@ -22,6 +22,7 @@ public:
 	void SetEmpty(bool state); 
 
 	std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GetRenderData() const;
+	std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GetAnimationRenderData() const;
 
 	const Transform& GetTransform() const;
 	Transform& GetTransform();

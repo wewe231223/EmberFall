@@ -18,6 +18,10 @@ std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GameObject::GetRenderData()
 	return std::make_tuple(mMesh, mShader, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents() ,mMaterial});
 }
 
+std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GameObject::GetAnimationRenderData() const {
+	return std::make_tuple(mMesh, mShader, ModelContext{ mModelContext.prevWorld.Transpose(), mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents() ,mMaterial });
+}
+
 const Transform& GameObject::GetTransform() const {
 	return mTransform;
 }
@@ -54,6 +58,7 @@ void GameObject::UpdateShaderVariables() {
 }
 
 void GameObject::UpdateShaderVariables(SimpleMath::Matrix& parent) {
+	mModelContext.prevWorld = mModelContext.world;
 
 	mTransform.Update(Time.GetDeltaTime<float>());
 	mTransform.UpdateWorldMatrix(parent);
@@ -66,6 +71,8 @@ void GameObject::UpdateShaderVariables(SimpleMath::Matrix& parent) {
 }
 
 void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer) {
+	mModelContext.prevWorld = mModelContext.world;
+	boneTransformBuffer.prevBoneTransforms = boneTransformBuffer.boneTransforms;
 
 	mTransform.UpdateWorldMatrix();
 

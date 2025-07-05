@@ -702,10 +702,13 @@ GraphicsShaderBase::RootParameters SkinnedShader::CreateRootParameters() {
 	params.Parameters[4].Descriptor.RegisterSpace = 1;
 	params.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	
+	params.Parameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[5].Descriptor.ShaderRegister = 3;
+	params.Parameters[5].Descriptor.RegisterSpace = 1;
+	params.Parameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 
-	params.ParameterCount = 5;
+	params.ParameterCount = 6;
 
 	return params;
 }
@@ -1850,10 +1853,13 @@ GraphicsShaderBase::RootParameters SkinnedNormalShader::CreateRootParameters() {
 	params.Parameters[4].Descriptor.RegisterSpace = 1;
 	params.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	
+	params.Parameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[5].Descriptor.ShaderRegister = 3;
+	params.Parameters[5].Descriptor.RegisterSpace = 1;
+	params.Parameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 
-	params.ParameterCount = 5;
+	params.ParameterCount = 6;
 
 	return params;
 }

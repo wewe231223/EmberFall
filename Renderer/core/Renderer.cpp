@@ -102,9 +102,7 @@ void Renderer::ExecuteLoadCommandList() {
 	mExecute = true; 
 }
 
-void Renderer::UpdatePrevWorldMat() {
-	mRenderManager->GetMeshRenderManager().PreparePrevWorldMat(mCommandList);
-}
+
 
 void Renderer::Update() {
 	// Update... 
@@ -117,7 +115,6 @@ void Renderer::Render() {
 
 	D3D12_VIEWPORT viewport{};
 	D3D12_RECT scissorRect{};
-	mRenderManager->GetMeshRenderManager().PreparePrevWorldMat(mCommandList);
 
 	mMainCameraBuffer.Upload(mCommandList);
 	mRenderManager->GetMeshRenderManager().PrepareRender(mCommandList);
@@ -201,7 +198,6 @@ void Renderer::Render() {
 
 	mRenderManager->GetTextureManager().Bind(mCommandList);
 	mRenderManager->GetMeshRenderManager().RenderGPass(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
-	mRenderManager->GetMeshRenderManager().PreparePrevWorldMat(mCommandList);
 
 	mRenderManager->GetMeshRenderManager().Reset();
 

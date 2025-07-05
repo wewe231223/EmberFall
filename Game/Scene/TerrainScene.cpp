@@ -940,7 +940,7 @@ void TerrainScene::Update() {
 			gameObject.GetTransform().GetPosition().y = tCollider.GetHeight(gameObject.GetTransform().GetPosition().x, gameObject.GetTransform().GetPosition().z);
 			gameObject.UpdateShaderVariables(boneTransformBuffer); 
 
-			auto [mesh, shader, modelContext] = gameObject.GetRenderData();
+			auto [mesh, shader, modelContext] = gameObject.GetAnimationRenderData();
 
 			if (mCamera.FrustumCulling(gameObject.mCollider)) {
 				mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);

@@ -40,7 +40,6 @@ public:
 	void AppendShadowPlaneMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, UINT index);
 	void AppendShadowBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms);
 
-	void PreparePrevWorldMat(ComPtr<ID3D12GraphicsCommandList> commandList);
 	void PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList);
 	
 	void RenderShadowPass(UINT index, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex,D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
@@ -58,7 +57,9 @@ private:
 	DefaultBuffer mPlainMeshBuffer{};
 
 	DefaultBuffer mBonedMeshBuffer{}; 
+
 	DefaultBuffer mAnimationBuffer{};
+	DefaultBuffer mPrevAnimationBuffer{};
 
 	DefaultBuffer mShadowPlainMeshBuffer{};
 
@@ -71,8 +72,10 @@ private:
 
 	std::array<UINT, 2> mShadowMeshCounter{ 0, 0 };
 
-	std::vector<BoneContext> mBoneTransforms{};
-	std::vector<BoneContext> mShadowBoneTransforms{};
+	std::vector<SimpleMath::Matrix> mBoneTransforms{};
+	std::vector<SimpleMath::Matrix> mPrevBoneTransforms{};
+	std::vector<SimpleMath::Matrix> mShadowBoneTransforms{};
+
 	absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<AnimationModelContext>>> mBonedMeshContexts{};
 	absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<AnimationModelContext>>> mShadowBonedMeshContexts{};
 
