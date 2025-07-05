@@ -10,12 +10,6 @@
 #include "Sector.h"
 #include "Resources.h"
 #include "GameRoom.h"
-#include "../MeshLoader/Loader/TerrainLoader.h"
-#ifdef _DEBUG
-#pragma comment(lib,"out/debug/MeshLoader.lib")
-#else 
-#pragma comment(lib,"out/release/MeshLoader.lib")
-#endif
 
 ObjectManager::ObjectManager(uint16_t roomIdx) 
     : mRoomIdx{ roomIdx } { }
@@ -107,12 +101,6 @@ void ObjectManager::Reset() {
 }
 
 void ObjectManager::LoadEnvFromFile(const std::filesystem::path& path) {
-    Client::TerrainCollider terrainCollider{};
-    if (not terrainCollider.LoadFromFile("../Resources/Binarys/Terrain/NTerrain.bin")) {
-		gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Load Terrain Collider Failure - File does not exists");
-    }
-
-
     std::ifstream envs{ path, std::ios::binary };
     if (not envs.is_open()) {
         gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Load Environments Failure - File does not exists");
@@ -144,7 +132,7 @@ void ObjectManager::LoadEnvFromFile(const std::filesystem::path& path) {
         obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEnvInfo(info.type).bb);
 
         auto objTransform = obj->GetTransform();
-        objTransform->Translate(SimpleMath::Vector3{ info.pos.x, terrainCollider.GetHeight(info.pos.x, info.pos.y), info.pos.y });
+        objTransform->Translate(SimpleMath::Vector3{ info.pos.x, 0.f, info.pos.y });
         objTransform->SetY(0.0f);
         objTransform->Rotation(SimpleMath::Quaternion::CreateFromYawPitchRoll(SimpleMath::Vector3{ 0.0f, DirectX::XMConvertToRadians(info.yaw), 0.0f}));
         objTransform->Update();

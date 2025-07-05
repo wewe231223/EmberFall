@@ -90,10 +90,13 @@ ParticleVertex ParticleGSPassVS(ParticleVertex input)
     return input;
 }
 
-uint GetSpriteIndex(float TimeSinceStarted, float SpriteDuration, uint TotalSpriteCount)
+uint GetSpriteIndex(float lifetime, float totalLifetime, float spriteDuration, uint totalSpriteCount)
 {
-    float frame_duration_ms = (1000.0 * SpriteDuration) / TotalSpriteCount;
-    return ((uint) (TimeSinceStarted / frame_duration_ms) % TotalSpriteCount);
+    float elapsed = totalLifetime - lifetime;
+    float frame_duration = spriteDuration / totalSpriteCount;
+
+    uint frameIndex = (uint) (elapsed / frame_duration) % totalSpriteCount;
+    return frameIndex;
 }
 
 void CreateBillBoard(ParticleVertex vertex, inout TriangleStream<Particle_PS_IN> stream)
@@ -112,7 +115,7 @@ void CreateBillBoard(ParticleVertex vertex, inout TriangleStream<Particle_PS_IN>
 
     if (vertex.spritable == 1)
     {
-        uint spriteIndex = GetSpriteIndex(globalTime, vertex.spriteDuration, vertex.spriteFrameInRow * vertex.spriteFrameInCol);
+        uint spriteIndex = GetSpriteIndex(vertex.lifetime, vertex.totalLifetime, vertex.spriteDuration, vertex.spriteFrameInRow * vertex.spriteFrameInCol);
 
         float spriteWidthRatio = 1.f / vertex.spriteFrameInRow;
         float spriteHeightRatio = 1.f / vertex.spriteFrameInCol;
@@ -164,7 +167,7 @@ void ParticleGSPassGS(point ParticleVertex input[1], inout TriangleStream<Partic
     [branch]
     if (input[0].type != ParticleType_emit)
     {
-        CreateBillBoard(input[0], output);
+       CreateBillBoard(input[0], output);
     }
 }
 

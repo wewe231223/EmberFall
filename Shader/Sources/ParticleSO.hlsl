@@ -2,7 +2,7 @@
 #define ParticleType_shell  2
 #define ParticleType_ember  3
 
-#define ember_LifeTime      2.f
+#define ember_LifeTime      5.f
 
 #define RANDOM_BUFFER_SIZE  4096
 #define NULL_INDEX 0xFFFFFFFF
@@ -65,20 +65,19 @@ struct ParticleSO_GS_IN
 {
     float3 position : POSITION;
     float halfWidth : WIDTH;
-    
-    float3 direction : DIRECTION;
-    float3 velocity : VELOCITY;
-    
-    float totalLifetime : TOTALLIFETIME;
-    float lifetime : LIFETIME;
     float halfHeight : HEIGHT;
     uint material : MATERIAL;
-
+    
     uint spritable : SPRITABLE;
     uint spriteFrameInRow : SPRITEFRAMEINROW;
     uint spriteFrameInCol : SPRITEFRAMEINCOL;
     float spriteDuration : SPRITEDURATION;
 
+    float3 direction : DIRECTION;
+    float3 velocity : VELOCITY;
+    float totalLifetime : TOTALLIFETIME;
+    float lifetime : LIFETIME;
+    
     uint type : PARTICLETYPE;
     uint emitType : EMITTYPE;
     uint remainEmit : REMAINEMIT;
@@ -182,7 +181,7 @@ void OnTerrain(inout ParticleVertex v)
 void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
 {
     // 에미터 위치 갱신
-    emitter.position = EmitPosition[emitter.emitIndex].position;
+    // emitter.position = EmitPosition[emitter.emitIndex].position;
 
     // 타이머 만료 시 새로운 입자 생성
     if (emitter.lifetime <= 0.0f && emitter.remainEmit != 0)
@@ -217,8 +216,8 @@ void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout Point
 
         // 수명
         p.totalLifetime = ember_LifeTime;
-        p.lifetime = 1.f;
-        p.spriteDuration = p.totalLifetime;
+        p.lifetime = ember_LifeTime;
+        p.spriteDuration = ember_LifeTime;
         
         // 파티클 타입 설정
         p.type = ParticleType_ember;

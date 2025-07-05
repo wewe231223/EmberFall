@@ -759,7 +759,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 
 
 	ParticleVertex v{};
-	v.position = DirectX::XMFLOAT3(10.f, 10.f, 10.f);
+	v.position = DirectX::XMFLOAT3(10.f, 50.f, 10.f);
 	v.halfheight = 10.f;
 	v.halfWidth = 10.f;
 	v.material = mRenderManager->GetMaterialManager().GetMaterial("SmokeMaterial");
@@ -770,7 +770,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
 	v.velocity = { 0.f, 0.f, 0.f };
 	v.totalLifeTime = 0.3f;
-	v.lifeTime = 0.5f;
+	v.lifeTime = 0.3f;
 	v.type = ParticleType_emit;
 	v.emitType = ParticleType_ember;
 	v.remainEmit = 100000;
