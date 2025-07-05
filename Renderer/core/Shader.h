@@ -291,7 +291,8 @@ protected:
 	virtual InputLayout CreateInputLayout() override;
 	virtual RootParameters CreateRootParameters() override;
 
-	//virtual D3D12_BLEND_DESC CreateBlendState() override;
+	virtual D3D12_BLEND_DESC CreateBlendState() override;
+	virtual D3D12_DEPTH_STENCIL_DESC CreateDepthStencilState() override;
 
 	virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE CreatePrimitiveTopologyType() override;
 

@@ -3,7 +3,7 @@ SpecularColor: 0.0 0.0 0.0 0.0
 EmissiveColor: 0.0 0.0 0.0 0.0
 
 DiffuseTextures:
-smoke_sheet
+Smoke45Frames
 
 SpecularTextures:
 

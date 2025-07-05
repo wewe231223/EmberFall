@@ -765,7 +765,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	v.material = mRenderManager->GetMaterialManager().GetMaterial("SmokeMaterial");
 	v.spritable = true;
 	v.spriteDuration = 1.f;
-	v.spriteFrameInRow = 6;
+	v.spriteFrameInRow = 7;
 	v.spriteFrameInCol = 6;
 	v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
 	v.velocity = { 0.f, 0.f, 0.f };

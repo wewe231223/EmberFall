@@ -171,7 +171,7 @@ void OnTerrain(inout ParticleVertex v)
     float h = GetHeight(v.position.x, v.position.z);
     if (v.position.y < h + v.halfHeight)
     {
-        v.position.y = h + v.halfHeight;
+        v.position.y = h + v.halfHeight * 0.5f;
         v.velocity = float3(0.0f, 0.0f, 0.0f);
     }
 }
@@ -188,8 +188,8 @@ void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout Point
     {
         ParticleVertex p = (ParticleVertex) 0;
         p.position = emitter.position;
-        p.halfWidth = 2.f;
-        p.halfHeight = 2.f;
+        p.halfWidth = 10.f;
+        p.halfHeight = 10.f;
         p.material = emitter.material;
         
         p.spritable = emitter.spritable;

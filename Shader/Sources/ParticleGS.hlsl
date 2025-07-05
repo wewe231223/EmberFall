@@ -167,10 +167,5 @@ float4 ParticleGSPassPS(Particle_PS_IN input) : SV_Target
 {
     float4 Color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.uv);
 
-
-    Color.rgb *= materialConstants[input.material].diffuse.rgb;
-    Color.rgb = normalize(Color.rgb);
-    Color.a = 1.f;
-    
     return Color; 
 }
