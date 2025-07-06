@@ -743,7 +743,9 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 		return true; 
 	});
 	
-
+	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F6, mInputSign, [this]() {
+		mCurrentCameraMode->SetCameraShake(700ms); 
+	});
 
 	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
 	gClientCore->Send(packet);
@@ -777,6 +779,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	v.emitIndex = 0;
 	
 	mParticleMap[gClientCore->GetSessionId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
+
 
 
 }

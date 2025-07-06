@@ -188,8 +188,8 @@ void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout Point
     {
         ParticleVertex p = (ParticleVertex) 0;
         p.position = emitter.position;
-        p.halfWidth = 10.f;
-        p.halfHeight = 10.f;
+        p.halfWidth = GenerateRandomInRange(3.f, 10.f, vertexID);
+        p.halfHeight = GenerateRandomInRange(3.f, 10.f, vertexID);
         p.material = emitter.material;
         
         p.spritable = emitter.spritable;

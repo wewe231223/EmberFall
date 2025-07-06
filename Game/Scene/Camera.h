@@ -1,4 +1,6 @@
 #pragma once 
+#include <chrono> 
+using namespace std::chrono_literals;
 #include "../Renderer/Resource/DefaultBuffer.h"
 #include "../Game/GameObject/Transform.h"
 #include "../Config/Config.h"
@@ -41,6 +43,7 @@ enum class ECameraMode : BYTE {
 	Lobby, 
 };
 
+
 class CameraMode {
 public:
 	CameraMode(Camera* camera); 
@@ -52,6 +55,8 @@ public:
 	virtual void FocusUpdate() PURE;
 
 	virtual ECameraMode GetMode() const PURE; 
+
+	virtual void SetCameraShake(std::chrono::milliseconds duration) PURE; 
 protected:
 	Camera* mCamera{ nullptr };
 	int mInputCallBackSign{ -1 };
@@ -66,8 +71,10 @@ public:
 	virtual void Exit() override;
 	virtual void Update() override;
 	virtual void FocusUpdate() override;
-	
+
 	virtual ECameraMode GetMode() const override { return ECameraMode::Free; }
+
+	virtual void SetCameraShake(std::chrono::milliseconds duration) override;
 };
 
 class TPPCameraMode : public CameraMode {
@@ -81,7 +88,11 @@ public:
 	virtual void FocusUpdate() override;
 
 	virtual ECameraMode GetMode() const;
+
+	virtual void SetCameraShake(std::chrono::milliseconds duration) override;
 private:
 	Transform& mTargetTransform;
 	DirectX::SimpleMath::Vector3 mOffset{ DirectX::SimpleMath::Vector3::Zero };
+
+	std::chrono::milliseconds mShakeDuration{ 0ms };
 };
