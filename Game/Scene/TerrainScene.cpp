@@ -308,7 +308,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					v.spriteFrameInCol = 4;
 					v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
 					v.velocity = { 0.f, 0.f, 0.f };
-					v.totalLifeTime = 0.05f;
+					v.totalLifeTime = 0.1f;
 					v.lifeTime = 0.05f;
 					v.type = ParticleType_emit;
 					v.emitType = ParticleType_ember;

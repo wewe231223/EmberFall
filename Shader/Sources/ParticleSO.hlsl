@@ -7,6 +7,8 @@
 #define RANDOM_BUFFER_SIZE  4096
 #define NULL_INDEX 0xFFFFFFFF
 
+#define MAX_STREAM_SIZE 37
+
 cbuffer GlobalCB : register(b0)
 {
     float globalTime; // 초 단위 
@@ -206,7 +208,7 @@ void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout Point
 
         p.position = emitter.position;
 
-        p.halfWidth = GenerateRandomInRange(0.75f, 1.5f, vertexID);
+        p.halfWidth = GenerateRandomInRange(0.3f, 0.5f, vertexID);
         p.halfHeight = p.halfWidth;
 
         p.material = emitter.material;
@@ -218,16 +220,8 @@ void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout Point
 
         p.opacity = 1.0f;
 
-        float3 dir = GenerateRandomDirection(vertexID);
-        dir.y = 0.0f; 
-        dir = normalize(dir);
-        p.direction = dir;
-
-        float speed = GenerateRandomInRange(1.0f, 2.5f, vertexID + 1) * 2.f;
-        p.velocity = dir * speed;
-
         p.mass = 0.5f;
-        p.drag = float3(0.1f, 10.0f, 0.1f);
+        p.drag = float3(0.01f, 10.0f, 0.01f);
 
         p.totalLifetime = ember_LifeTime;
         p.lifetime = ember_LifeTime;
@@ -237,13 +231,47 @@ void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout Point
         p.remainEmit = 0;
         p.emitIndex = emitter.emitIndex;
 
+        
+        
+        
+        
+        [unroll]
+        for (int i = 0; i < 36; ++i)
+        {
+            float baseAngle = (2.f * 3.141592f * i) / 36.f;
+            float3 baseDir = float3(cos(baseAngle), 0.0f, sin(baseAngle));
+
+            float spinAngle = GenerateRandomInRange(0.0f, 6.28318f, vertexID + i); // 0 ~ 2π
+            float cosA = cos(spinAngle);
+            float sinA = sin(spinAngle);
+
+            float3 rotatedDir;
+            rotatedDir.x = cosA * baseDir.x - sinA * baseDir.z;
+            rotatedDir.z = sinA * baseDir.x + cosA * baseDir.z;
+            rotatedDir.y = GenerateRandomInRange(1.0f, 2.5f, vertexID + i + 10); // 위아래 약간 분산
+
+            rotatedDir = normalize(rotatedDir);
+            p.direction = rotatedDir;
+
+            float speed = GenerateRandomInRange(1.0f, 2.5f, vertexID + i + 100) * 2.f;
+            p.velocity = p.direction * speed;
+            p.velocity.y *= 4.f; 
+
+            OnTerrain(p);
+            stream.Append(p);
+        }
+        
+        
+        
+        
+        
+        
+        
+        
         emitter.lifetime = emitter.totalLifetime;
         if (emitter.remainEmit > 0)
             emitter.remainEmit--;
 
-        OnTerrain(p);
-        
-        stream.Append(p);
     }
 
 
@@ -297,7 +325,7 @@ ParticleSO_GS_IN ParticleSOPassVS(ParticleVertex inV, uint vid : SV_VertexID)
 
 //----------------------------------------------------------[ Stream-Out GS ]----------------------------------------------------------
 
-[maxvertexcount(16)]
+[maxvertexcount(MAX_STREAM_SIZE)]
 void ParticleSOPassGS(point ParticleSO_GS_IN input[1], inout PointStream<ParticleVertex> output)
 {
     ParticleVertex outP = (ParticleVertex) 0;
