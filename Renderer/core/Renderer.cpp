@@ -198,7 +198,7 @@ void Renderer::Render() {
 
 	mRenderManager->GetTextureManager().Bind(mCommandList);
 	mRenderManager->GetMeshRenderManager().RenderGPass(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
-
+	mRenderManager->GetMeshRenderManager().PrepareBoneMatrix();
 	mRenderManager->GetMeshRenderManager().Reset();
 
 	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Grass and mShaderModel6_5Support) {

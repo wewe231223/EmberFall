@@ -66,6 +66,14 @@ void MeshRenderManager::AppendShadowBonedMeshContext(GraphicsShaderBase* shader,
 }
 
 
+void MeshRenderManager::PrepareBoneMatrix() {
+	mPrevBoneTransforms.clear();
+
+	mPrevBoneTransforms.reserve(mBoneTransforms.size());
+	std::copy(mBoneTransforms.begin(), mBoneTransforms.end(), std::back_inserter(mPrevBoneTransforms));
+
+}
+
 void MeshRenderManager::PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	DefaultBufferCPUIterator it{ mPlainMeshBuffer.CPUBegin() };
 
@@ -154,7 +162,7 @@ void MeshRenderManager::Reset(){
 	mReservedSlotCounter = 0;
 	mShadowMeshCounter.fill(0);
 	mBoneTransforms.clear();
-	mPrevBoneTransforms.clear();
+	//mPrevBoneTransforms.clear();
 	mShadowBoneTransforms.clear();
 	mBonedMeshContexts.clear();
 	mPlainMeshReserved.clear();

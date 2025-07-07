@@ -12,7 +12,7 @@ void MotionBlur_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID 
     
     int2 pix = dispatchThreadID.xy;
 
-    float4 baseColor = Input.Load(int3(pix, 0));
+    //float4 baseColor = Input.Load(int3(pix, 0));
     float2 vel = velocity.Load(int3(pix, 0)).xy;
     
     
