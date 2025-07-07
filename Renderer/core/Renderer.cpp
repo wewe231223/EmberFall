@@ -237,6 +237,12 @@ void Renderer::Render() {
 		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	}
 
+	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
+	mComputeProcessors[2]->Dispatch(mDevice, mCommandList, &currentBackBuffer);
+	currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+
+
 	mRenderManager->GetTextureManager().Bind(mCommandList);
 
 	mRenderManager->GetCanvas().Render(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress()); 
@@ -612,6 +618,11 @@ void Renderer::InitComputeProcesser() {
 	processor = std::make_unique<VertBloomProcessor>(mDevice);
 	processor->CreateShader(mDevice);
 	processor->RegisterTexture(mDevice, mComputeProcessors[0]->GetComputeMap());
+	mComputeProcessors.emplace_back(std::move(processor));
+
+	processor = std::make_unique<MotionBlurProcessor>(mDevice);
+	processor->CreateShader(mDevice);
+	processor->RegisterTexture(mDevice, mGBuffers[4]);
 	mComputeProcessors.emplace_back(std::move(processor));
 }
 

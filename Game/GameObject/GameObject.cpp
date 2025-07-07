@@ -72,8 +72,9 @@ void GameObject::UpdateShaderVariables(SimpleMath::Matrix& parent) {
 
 void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer) {
 	mModelContext.prevWorld = mModelContext.world;
-	boneTransformBuffer.prevBoneTransforms = boneTransformBuffer.boneTransforms;
-
+	for (UINT i = 0; i < boneTransformBuffer.boneCount; ++i) {
+		boneTransformBuffer.prevBoneTransforms[i] = boneTransformBuffer.boneTransforms[i];
+	}
 	mTransform.UpdateWorldMatrix();
 
 	if (mCollider.GetActiveState()) {

@@ -140,7 +140,7 @@ Deffered_POUT Standard_PS(Standard_VOUT input) {
     curNDC.xy = curNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
     prevNDC.xy = prevNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
     
-    float2 velocity = (curNDC.xy - prevNDC.xy) * 50.0f;
+    float2 velocity = (curNDC.xy - prevNDC.xy);
     output.velocity = float4(velocity, 0.0f, 1.0f);
     
     return output;

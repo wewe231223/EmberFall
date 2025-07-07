@@ -100,3 +100,35 @@ private:
 	virtual void CreatePSO(ComPtr<ID3D12Device> device) override;
 
 };
+
+class MotionBlurProcessor : public ComputeProcessor {
+public:
+	MotionBlurProcessor() = default;
+	MotionBlurProcessor(ComPtr<ID3D12Device> device);
+	virtual ~MotionBlurProcessor() = default;
+
+	MotionBlurProcessor(const MotionBlurProcessor& other) = default;
+	MotionBlurProcessor& operator=(const MotionBlurProcessor& other) = default;
+
+	MotionBlurProcessor(MotionBlurProcessor&& other) = default;
+	MotionBlurProcessor& operator=(MotionBlurProcessor&& other) = default;
+
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+
+	virtual void RegisterTexture(ComPtr<ID3D12Device> device, Texture& texture) override;
+	virtual void Dispatch(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, Texture* input, Texture* output = nullptr) override;
+
+private:
+	virtual void CreateResource(ComPtr<ID3D12Device> device) override;
+	virtual void CreateHeap(ComPtr<ID3D12Device> device) override;
+	virtual void CreateView(ComPtr<ID3D12Device> device) override;
+	virtual void CompileShader() override;
+	virtual void CreateRootSignature(ComPtr<ID3D12Device> device) override;
+	virtual void CreatePSO(ComPtr<ID3D12Device> device) override;
+
+
+private:
+	Texture mCopyMap{};
+
+};
