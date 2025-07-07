@@ -72,7 +72,7 @@ void GameObject::UpdateShaderVariables(SimpleMath::Matrix& parent) {
 
 void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer) {
 	mModelContext.prevWorld = mModelContext.world;
-	boneTransformBuffer.prevBoneTransforms = boneTransformBuffer.boneTransforms;
+	boneTransformBuffer.prevBoneTransforms = mBoneTransforms;
 
 	mTransform.UpdateWorldMatrix();
 
@@ -88,6 +88,7 @@ void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer)
 	else if (mBoneMaskGraphController.GetActiveState()) {
 		mBoneMaskGraphController.Update(Time.GetDeltaTime(), boneTransformBuffer);
 	}
+	mBoneTransforms = boneTransformBuffer.boneTransforms;
 }
 
 bool GameObject::GetAnimatorState() const {

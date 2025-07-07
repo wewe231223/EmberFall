@@ -51,6 +51,8 @@ public:
 	AnimatorGraph::BoneMaskAnimationGraphController mBoneMaskGraphController{};
 
 	Collider mCollider{};
+
+	std::array<SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<size_t>> mBoneTransforms;
 private:
 	ModelContext mModelContext{};
 

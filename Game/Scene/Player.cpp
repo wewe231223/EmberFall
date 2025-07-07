@@ -99,21 +99,21 @@ void Player::Update(MeshRenderManager& manager) {
 	mModelContext.prevWorld = mModelContext.world;
 
 	static BoneTransformBuffer boneTransformBuffer{};
-
+	boneTransformBuffer.prevBoneTransforms = mBoneTransforms;
 	if (mBoneMaskController.GetActiveState()) {
 		mBoneMaskController.Update(Time.GetDeltaTime(), boneTransformBuffer);
 	}
 	else if (mAnimController.GetActiveState()) {
 		mAnimController.Update(Time.GetDeltaTime(), boneTransformBuffer);
 	}
-
 	mTransform.UpdateWorldMatrix();
 	mModelContext.world = mTransform.GetWorldMatrix();
 
 	mCollider.UpdateBox(mTransform.GetWorldMatrix());
 
 	manager.AppendBonedMeshContext(mShader, mMesh, ModelContext{ mModelContext.prevWorld.Transpose(), mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
-	manager.AppendShadowBonedMeshContext(mShader, mMesh, ModelContext{ mModelContext.prevWorld.Transpose(), mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
+	manager.AppendShadowBonedMeshContext(mShader, mMesh, ModelContext{ mModelContext.prevWorld.Transpose(), mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer, 0);
+	manager.AppendShadowBonedMeshContext(mShader, mMesh, ModelContext{ mModelContext.prevWorld.Transpose(), mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer, 1);
 
 	for (auto& equipment : mEquipments) {
 		if (false == equipment.GetActiveState()) {
@@ -124,6 +124,7 @@ void Player::Update(MeshRenderManager& manager) {
 		manager.AppendPlaneMeshContext(shader, mesh, ModelContext);
 		manager.AppendShadowPlaneMeshContext(shader, mesh, ModelContext, 0);
 	}
+	mBoneTransforms = boneTransformBuffer.boneTransforms;
 
 }
 

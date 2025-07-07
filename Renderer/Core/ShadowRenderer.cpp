@@ -77,7 +77,7 @@ void ShadowRenderer::Update() {
 	mWorldBox.clear();
 
 	mLightMatrix[0] = ComputeLightViewMatrix(cameraParam, invView, cameraParam.nearZ, SHADOWMAPOFFSET[0]);
-	mLightMatrix[1] = ComputeLightViewMatrix(cameraParam, invView, SHADOWMAPOFFSET[0], SHADOWMAPOFFSET[1]);
+	mLightMatrix[1] = ComputeLightViewMatrix(cameraParam, invView, SHADOWMAPOFFSET[0] - 5.0f, SHADOWMAPOFFSET[1]);
 
 	for (SimpleMath::Matrix& lightMatrix : mLightMatrix) {
 		StablizeShadowMatrix(lightMatrix);
@@ -213,7 +213,7 @@ SimpleMath::Matrix ShadowRenderer::ComputeLightViewMatrix(CameraParameter camera
 
 	
 
-	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize + PROJECTIONOFFSET, projectionSize + PROJECTIONOFFSET, farPlane, nearPlane);
+	SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(projectionSize, projectionSize, farPlane, nearPlane);
 
 
 
