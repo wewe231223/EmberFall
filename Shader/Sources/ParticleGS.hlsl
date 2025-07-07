@@ -75,6 +75,7 @@ struct Particle_PS_IN
     uint material : MATERIAL;
     float2 uv : TEXCOORD;
     float4 color : Color;
+    float opacity : OPACITY;
 };
 
 ParticleVertex ParticleGSPassVS(ParticleVertex input)
@@ -140,15 +141,7 @@ void CreateBillBoard(ParticleVertex vertex, inout TriangleStream<Particle_PS_IN>
         outpoint.material = vertex.material;
         outpoint.uv = mul(uvTransform, float3(uvs[i], 1.f)).xy;
 
-        if (vertex.type == ParticleType_ember)
-        {
-            outpoint.color = float4(1.f, 1.f, 1.f, 1.f) * (vertex.lifetime / vertex.totalLifetime);
-        }
-        else
-        {
-            outpoint.color = float4(1.f, 1.f, 1.f, 1.f);
-        }
-
+        outpoint.opacity = vertex.opacity;
         stream.Append(outpoint);
     }
 }
@@ -166,6 +159,9 @@ void ParticleGSPassGS(point ParticleVertex input[1], inout TriangleStream<Partic
 float4 ParticleGSPassPS(Particle_PS_IN input) : SV_Target
 {
     float4 Color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.uv);
-
-    return Color; 
+    Color.a *= input.opacity; 
+    //Color.rgb *= 0.7f; 
+   // Color.rgb *= materialConstants[input.material].diffuse.rgb; 
+    Color.rgb = normalize(Color.rgb);
+    return Color;
 }

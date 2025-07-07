@@ -5,8 +5,8 @@
 #include "../Renderer/Resource/Particle.h"
 
 class ParticleManager {
-	static constexpr size_t MAX_PARTICLE_COUNT = 10'0000;
-	static constexpr size_t EMIT_PARTICLE_COUNT = 100;
+	static constexpr size_t MAX_PARTICLE_COUNT = 50'0000;
+	static constexpr size_t MAX_EMIT_PARTICLE = 100;
 public:
 	ParticleManager() = default;
 	~ParticleManager() = default;
@@ -57,7 +57,7 @@ private:
 
 	UINT32 mParticleCount{ 0 };
 
-	std::array<EmitParticleContext, EMIT_PARTICLE_COUNT> mEmitParticleContexts{};
+	std::array<EmitParticleContext, MAX_EMIT_PARTICLE	> mEmitParticleContexts{};
 	UINT mNextEmitParticleIndex{ 0 };
 
 	inline static std::atomic_bool mParticleAppendFlag{ false };

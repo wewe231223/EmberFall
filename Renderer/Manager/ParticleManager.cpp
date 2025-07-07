@@ -3,6 +3,7 @@
 #include <random>
 #include "../Utility/Exceptions.h"
 #include "../Game/System/Timer.h"
+#include "../Renderer/Core/Console.h"
 
 ParticleManager::ParticleManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	mParticleVertexBuffer = DefaultBuffer(device, sizeof(ParticleVertex), MAX_PARTICLE_COUNT);
@@ -11,7 +12,7 @@ ParticleManager::ParticleManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graph
 	mParticleSOTargetBuffer = DefaultBuffer(device, sizeof(ParticleVertex), MAX_PARTICLE_COUNT);
 	mParticleSOTargetBuffer.TransitionState(commandList, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_STREAM_OUT);
 
-	mEmitParticleBuffer = DefaultBuffer(device, sizeof(EmitParticleContext), EMIT_PARTICLE_COUNT);
+	mEmitParticleBuffer = DefaultBuffer(device, sizeof(EmitParticleContext), MAX_EMIT_PARTICLE);
 
 	mParticleCountBuffer = DefaultBuffer(device, sizeof(UINT64), 1);
 	mParticleCountBuffer.TransitionState(commandList, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_STREAM_OUT);
@@ -77,7 +78,7 @@ void ParticleManager::RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	std::memset(*mParticleCountBuffer.CPUBegin(), 0, sizeof(UINT64));
 	mParticleCountBuffer.Upload(commandList, D3D12_RESOURCE_STATE_STREAM_OUT);
 
-	std::memcpy(*mEmitParticleBuffer.CPUBegin(), mEmitParticleContexts.data(), sizeof(EmitParticleContext) * EMIT_PARTICLE_COUNT);
+	std::memcpy(*mEmitParticleBuffer.CPUBegin(), mEmitParticleContexts.data(), sizeof(EmitParticleContext) * MAX_EMIT_PARTICLE);
 	mEmitParticleBuffer.Upload(commandList);
 
 
@@ -106,14 +107,19 @@ void ParticleManager::RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	commandList->IASetVertexBuffers(0, 1, &mParticleVertexBufferView);
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-	// Resource Set, Draw Call 
 	DirectX::XMFLOAT2 time{ Time.GetTimeSinceStarted<float>(), Time.GetDeltaTime<float>() };
+	if (mParticleCount > MAX_PARTICLE_COUNT - MAX_EMIT_PARTICLE) {
+		time.x = 0.f; 
+	}
 
+	// Resource Set, Draw Call 
 	commandList->SetGraphicsRoot32BitConstants(0, 2, &time, 0);
 	commandList->SetGraphicsRootConstantBufferView(1, *mTerrainHeaderBuffer);
 	commandList->SetGraphicsRootShaderResourceView(2, *mRandomBuffer.GPUBegin());
 	commandList->SetGraphicsRootShaderResourceView(3, *mEmitParticleBuffer.GPUBegin());
 	commandList->SetGraphicsRootShaderResourceView(4, *mTerrainDataBuffer);
+
+
 
 	commandList->DrawInstanced(mParticleCount, 1, 0, 0); 
 
@@ -149,6 +155,7 @@ void ParticleManager::RenderGS(ComPtr<ID3D12GraphicsCommandList> commandList, De
 	commandList->SetGraphicsRootDescriptorTable(3, tex);
 
 	commandList->DrawInstanced(mParticleCount, 1, 0, 0);
+	Console.Log("Particle Count: {}", LogType::Info, mParticleCount);
 }
 
 void ParticleManager::PostRender() {

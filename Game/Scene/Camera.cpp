@@ -164,19 +164,15 @@ void TPPCameraMode::FocusUpdate() {
 	targetPos.y += 0.9f;
 
 	if (mShakeDuration > 0ms) {
-		float shakeIntensity = 1.f;
 
-		// 남은 시간 비율 계산
+		float shakeIntensity = 0.3f;
 		float remainingRatio = std::clamp(
-			static_cast<float>(mShakeDuration.count()) / 1000.0f, // 1000ms = 1초
+			static_cast<float>(mShakeDuration.count()) / 1000.0f,
 			0.0f, 1.0f
 		);
-
-		// 밀리초 기반 시간 사용 (정수 -> 초 단위 변환)
 		float timeMs = Time.GetTimeSinceStarted<float,std::chrono::milliseconds>();
 		float timeSec = timeMs / 1000.0f;
 
-		// 사인 함수 기반의 자연스러운 진동 적용
 		auto shakeOffset = DirectX::SimpleMath::Vector3(
 			std::sin(timeSec * 23.0f) * 0.6f,
 			std::sin(timeSec * 37.0f) * 0.4f,
@@ -185,7 +181,6 @@ void TPPCameraMode::FocusUpdate() {
 
 		targetPos += shakeOffset;
 
-		// 시간 감소
 		mShakeDuration -= std::chrono::milliseconds(Time.GetSmoothDeltaTime<int, std::chrono::milliseconds>());
 	}
 

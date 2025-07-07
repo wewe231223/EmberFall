@@ -2,7 +2,7 @@
 #define ParticleType_shell  2
 #define ParticleType_ember  3
 
-#define ember_LifeTime      5.f
+#define ember_LifeTime      6.f
 
 #define RANDOM_BUFFER_SIZE  4096
 #define NULL_INDEX 0xFFFFFFFF
@@ -150,92 +150,103 @@ float GetHeight(float x, float z)
 
 //----------------------------------------------------------[ Physics Helpers ]----------------------------------------------------------
 
-#define GRAVITY_CONST 9.8f
-
-void ApplyPhysics(inout ParticleVertex v)
+void UpdateParticle(inout ParticleVertex p, float deltaTime)
 {
-    // 중력 가속도 (y축 방향)
-    const float3 gravity = float3(0.0f, -GRAVITY_CONST, 0.0f);
-    // 선형 드래그 가속도: a_drag = -drag * velocity / mass
-    float3 a_drag = -v.drag * v.velocity / v.mass;
-    // 총 가속도
-    float3 accel = gravity + a_drag;
-    // 속도 적분
-    v.velocity += accel * deltaTime;
-    // 위치 적분
-    v.position += v.velocity * deltaTime;
+    // --- 중력 상수: 지구 기준 (m/s²), Y-축 아래로 향함 ---
+    const float3 GRAVITY_ACCEL = float3(0.0f, -9.81f, 0.0f); // 상수로 내장
+
+    // --- 중력 가속도 (F = m * g) ---
+    float3 gravityForce = GRAVITY_ACCEL * p.mass;
+    float3 gravityAccel = gravityForce / max(p.mass, 0.0001f); // 또는 그냥 GRAVITY_ACCEL
+
+    // --- 항력 (drag = -k * velocity) ---
+    float3 dragForce = -p.drag * p.velocity;
+    float3 dragAccel = dragForce / max(p.mass, 0.0001f);
+
+    // --- 전체 가속도 = 중력 + 항력 ---
+    float3 totalAccel = gravityAccel + dragAccel;
+
+    // --- 속도/위치 업데이트 ---
+    p.velocity += totalAccel * deltaTime;
+    p.position += p.velocity * deltaTime;
+
+    // --- 투명도 선형 감소 ---
+    p.opacity = saturate(p.lifetime / p.totalLifetime);
 }
+
 
 void OnTerrain(inout ParticleVertex v)
 {
     float h = GetHeight(v.position.x, v.position.z);
-    if (v.position.y < h + v.halfHeight)
+    if (v.position.y < h + v.halfHeight * 0.5f)
     {
         v.position.y = h + v.halfHeight * 0.5f;
-        v.velocity = float3(0.0f, 0.0f, 0.0f);
     }
 }
 
 //----------------------------------------------------------[ Emit Particle Update ]----------------------------------------------------------
 
 void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
-{
+{    
     // 에미터 위치 갱신
     // emitter.position = EmitPosition[emitter.emitIndex].position;
 
-    // 타이머 만료 시 새로운 입자 생성
+    emitter.lifetime -= deltaTime;
+    stream.Append(emitter);
+    
+    if (globalTime == 0.f)
+    {
+        return;
+    }
+    
+    
     if (emitter.lifetime <= 0.0f && emitter.remainEmit != 0)
     {
         ParticleVertex p = (ParticleVertex) 0;
+
         p.position = emitter.position;
-        p.halfWidth = GenerateRandomInRange(3.f, 10.f, vertexID);
-        p.halfHeight = GenerateRandomInRange(3.f, 10.f, vertexID);
+
+        p.halfWidth = GenerateRandomInRange(0.75f, 1.5f, vertexID);
+        p.halfHeight = p.halfWidth;
+
         p.material = emitter.material;
-        
+
         p.spritable = emitter.spritable;
         p.spriteFrameInRow = emitter.spriteFrameInRow;
         p.spriteFrameInCol = emitter.spriteFrameInCol;
-       
-        
+        p.spriteDuration = ember_LifeTime;
+
         p.opacity = 1.0f;
 
-        // 랜덤 방향 생성 (수평 확산 위주, 약간의 상승 성분만)
         float3 dir = GenerateRandomDirection(vertexID);
-        dir.y = abs(dir.y); // 아래로 떨어지는 방향 제거
-        dir.y *= 0.3f; // 상승 성분 약화
+        dir.y = 0.0f; 
         dir = normalize(dir);
-
         p.direction = dir;
-        // 초기 속도: 1 ~ 2.5 범위의 랜덤
-        float speed = GenerateRandomInRange(1.0f, 2.5f, vertexID + 1);
+
+        float speed = GenerateRandomInRange(1.0f, 2.5f, vertexID + 1) * 2.f;
         p.velocity = dir * speed;
 
-        // 물리 파라미터
-        p.mass = emitter.mass;
-        p.drag = emitter.drag;
+        p.mass = 0.5f;
+        p.drag = float3(0.1f, 10.0f, 0.1f);
 
-        // 수명
         p.totalLifetime = ember_LifeTime;
         p.lifetime = ember_LifeTime;
-        p.spriteDuration = ember_LifeTime;
-        
-        // 파티클 타입 설정
+
         p.type = ParticleType_ember;
         p.emitType = ParticleType_ember;
         p.remainEmit = 0;
         p.emitIndex = emitter.emitIndex;
 
-        // 에미터 리셋
         emitter.lifetime = emitter.totalLifetime;
         if (emitter.remainEmit > 0)
             emitter.remainEmit--;
 
+        OnTerrain(p);
+        
         stream.Append(p);
     }
 
-    // 에미터 라이프 타이머 감소 및 스트림에 다시 추가
-    emitter.lifetime -= deltaTime;
-    stream.Append(emitter);
+
 }
 
 
@@ -248,7 +259,7 @@ void EmberParticleUpdate(inout ParticleVertex v, inout PointStream<ParticleVerte
     {
         ParticleVertex n = v;
 
-        ApplyPhysics(n); // 중력 + 공기저항
+        UpdateParticle(n, deltaTime);
         OnTerrain(n); // 지면 충돌 처리
 
         stream.Append(n);

@@ -31,8 +31,10 @@ void MaterialFileLoader::LoadMaterial(const std::filesystem::path& materialFileP
         {
             std::istringstream iss(line);
             float r, g, b, a;
-            iss >> r >> g >> b >> a;
-            return SimpleMath::Color(r, g, b, a);
+            char comma;
+
+            iss >> r >> comma >> g >> comma >> b >> comma >> a;
+            return DirectX::SimpleMath::Color(r, g, b, a);
         };
 
     while (std::getline(file, line)) {

@@ -1,9 +1,9 @@
-DiffuseColor: 16.0 0.0 14.0 1.0
+DiffuseColor: 1.0, 0.0, 0.875, 1.0
 SpecularColor: 0.0 0.0 0.0 0.0
 EmissiveColor: 0.0 0.0 0.0 0.0
 
 DiffuseTextures:
-Smoke45Frames
+smog
 
 SpecularTextures:
 
