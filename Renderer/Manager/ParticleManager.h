@@ -24,6 +24,8 @@ public:
 
 	Particle CreateEmitParticle(ParticleVertex& newParticle); 
 
+	void UpdateEmitParticle(); 
+
 	void RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList);
 	void RenderGS(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator cameraBuffer, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS material);
 	void PostRender();
@@ -57,7 +59,7 @@ private:
 
 	UINT32 mParticleCount{ 0 };
 
-	std::array<EmitParticleContext, MAX_EMIT_PARTICLE	> mEmitParticleContexts{};
+	std::array<EmitParticleContext, MAX_EMIT_PARTICLE> mEmitParticleContexts{};
 	UINT mNextEmitParticleIndex{ 0 };
 
 	inline static std::atomic_bool mParticleAppendFlag{ false };

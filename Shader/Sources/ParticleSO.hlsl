@@ -1,7 +1,8 @@
 #define ParticleType_emit   1
 #define ParticleType_shell  2
 #define ParticleType_ember  3
-
+#define ParticleType_smoke  4
+ 
 #define ember_LifeTime      6.f
 
 #define RANDOM_BUFFER_SIZE  4096
@@ -188,78 +189,116 @@ void OnTerrain(inout ParticleVertex v)
 
 //----------------------------------------------------------[ Emit Particle Update ]----------------------------------------------------------
 
+void CreateSmokeParticle(ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
+{
+    ParticleVertex p = (ParticleVertex) 0;
+
+    p.position = emitter.position;
+
+    p.halfWidth = GenerateRandomInRange(0.3f, 0.5f, vertexID);
+    p.halfHeight = p.halfWidth;
+
+    p.material = emitter.material;
+
+    p.spritable = emitter.spritable;
+    p.spriteFrameInRow = emitter.spriteFrameInRow;
+    p.spriteFrameInCol = emitter.spriteFrameInCol;
+    p.spriteDuration = ember_LifeTime;
+
+    p.opacity = 1.0f;
+
+    p.mass = 0.5f;
+    p.drag = float3(0.1f, 10.0f, 0.1f);
+
+    p.totalLifetime = ember_LifeTime;
+    p.lifetime = ember_LifeTime;
+
+    p.type = ParticleType_smoke;
+    p.emitType = ParticleType_ember;
+    p.remainEmit = 0;
+    p.emitIndex = emitter.emitIndex;
+
+    float spinAngle = GenerateRandomInRange(0.0f, 6.28318f, vertexID); // 0 ~ 2π
+    
+    static const float3 baseDirs[36] =
+    {
+    float3(1.000000f, 0.0f, 0.000000f),
+    float3(0.984808f, 0.0f, 0.173648f),
+    float3(0.939693f, 0.0f, 0.342020f),
+    float3(0.866025f, 0.0f, 0.500000f),
+    float3(0.766044f, 0.0f, 0.642788f),
+    float3(0.642788f, 0.0f, 0.766044f),
+    float3(0.500000f, 0.0f, 0.866025f),
+    float3(0.342020f, 0.0f, 0.939693f),
+    float3(0.173648f, 0.0f, 0.984808f),
+    float3(0.000000f, 0.0f, 1.000000f),
+    float3(-0.173648f, 0.0f, 0.984808f),
+    float3(-0.342020f, 0.0f, 0.939693f),
+    float3(-0.500000f, 0.0f, 0.866025f),
+    float3(-0.642788f, 0.0f, 0.766044f),
+    float3(-0.766044f, 0.0f, 0.642788f),
+    float3(-0.866025f, 0.0f, 0.500000f),
+    float3(-0.939693f, 0.0f, 0.342020f),
+    float3(-0.984808f, 0.0f, 0.173648f),
+    float3(-1.000000f, 0.0f, 0.000000f),
+    float3(-0.984808f, 0.0f, -0.173648f),
+    float3(-0.939693f, 0.0f, -0.342020f),
+    float3(-0.866025f, 0.0f, -0.500000f),
+    float3(-0.766044f, 0.0f, -0.642788f),
+    float3(-0.642788f, 0.0f, -0.766044f),
+    float3(-0.500000f, 0.0f, -0.866025f),
+    float3(-0.342020f, 0.0f, -0.939693f),
+    float3(-0.173648f, 0.0f, -0.984808f),
+    float3(0.000000f, 0.0f, -1.000000f),
+    float3(0.173648f, 0.0f, -0.984808f),
+    float3(0.342020f, 0.0f, -0.939693f),
+    float3(0.500000f, 0.0f, -0.866025f),
+    float3(0.642788f, 0.0f, -0.766044f),
+    float3(0.766044f, 0.0f, -0.642788f),
+    float3(0.866025f, 0.0f, -0.500000f),
+    float3(0.939693f, 0.0f, -0.342020f),
+    float3(0.984808f, 0.0f, -0.173648f)
+    };
+    
+    
+    [unroll]
+    for (int i = 0; i < 36; ++i)
+    {
+        float baseAngle = (2.f * 3.141592f * i) / 36.f;
+        float3 baseDir = baseDirs[i]; 
+
+        float cosA = cos(spinAngle);
+        float sinA = sin(spinAngle);
+
+        float3 rotatedDir;
+        rotatedDir.x = cosA * baseDir.x - sinA * baseDir.z;
+        rotatedDir.z = sinA * baseDir.x + cosA * baseDir.z;
+        rotatedDir.y = GenerateRandomInRange(1.0f, 2.5f, vertexID + i + 10);
+
+        rotatedDir = normalize(rotatedDir);
+        p.direction = rotatedDir;
+
+        float speed = GenerateRandomInRange(1.5f, 3.f, vertexID + i + 100);
+        p.velocity = p.direction * speed;
+        p.velocity.y *= 4.f;
+
+        OnTerrain(p);
+        stream.Append(p);
+    }
+}
+
+
 void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
 {    
+    ParticleVertex v = emitter;
     // 에미터 위치 갱신
-    // emitter.position = EmitPosition[emitter.emitIndex].position;
-
-    emitter.lifetime -= deltaTime;
-    stream.Append(emitter);
     
-    if (globalTime == 0.f)
+    if (v.lifetime <= 0.0f && v.remainEmit != 0 && globalTime != 0.f)
     {
-        return;
-    }
-    
-    
-    if (emitter.lifetime <= 0.0f && emitter.remainEmit != 0)
-    {
-        ParticleVertex p = (ParticleVertex) 0;
-
-        p.position = emitter.position;
-
-        p.halfWidth = GenerateRandomInRange(0.3f, 0.5f, vertexID);
-        p.halfHeight = p.halfWidth;
-
-        p.material = emitter.material;
-
-        p.spritable = emitter.spritable;
-        p.spriteFrameInRow = emitter.spriteFrameInRow;
-        p.spriteFrameInCol = emitter.spriteFrameInCol;
-        p.spriteDuration = ember_LifeTime;
-
-        p.opacity = 1.0f;
-
-        p.mass = 0.5f;
-        p.drag = float3(0.01f, 10.0f, 0.01f);
-
-        p.totalLifetime = ember_LifeTime;
-        p.lifetime = ember_LifeTime;
-
-        p.type = ParticleType_ember;
-        p.emitType = ParticleType_ember;
-        p.remainEmit = 0;
-        p.emitIndex = emitter.emitIndex;
-
-        
-        
-        
-        
-        [unroll]
-        for (int i = 0; i < 36; ++i)
+        if (v.emitType == ParticleType_smoke)
         {
-            float baseAngle = (2.f * 3.141592f * i) / 36.f;
-            float3 baseDir = float3(cos(baseAngle), 0.0f, sin(baseAngle));
-
-            float spinAngle = GenerateRandomInRange(0.0f, 6.28318f, vertexID + i); // 0 ~ 2π
-            float cosA = cos(spinAngle);
-            float sinA = sin(spinAngle);
-
-            float3 rotatedDir;
-            rotatedDir.x = cosA * baseDir.x - sinA * baseDir.z;
-            rotatedDir.z = sinA * baseDir.x + cosA * baseDir.z;
-            rotatedDir.y = GenerateRandomInRange(1.0f, 2.5f, vertexID + i + 10); // 위아래 약간 분산
-
-            rotatedDir = normalize(rotatedDir);
-            p.direction = rotatedDir;
-
-            float speed = GenerateRandomInRange(1.0f, 2.5f, vertexID + i + 100) * 2.f;
-            p.velocity = p.direction * speed;
-            p.velocity.y *= 4.f; 
-
-            OnTerrain(p);
-            stream.Append(p);
-        }
+            CreateSmokeParticle(v, vertexID, stream);
+        } 
         
         
         
@@ -268,13 +307,13 @@ void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout Point
         
         
         
-        emitter.lifetime = emitter.totalLifetime;
-        if (emitter.remainEmit > 0)
-            emitter.remainEmit--;
+        v.lifetime = v.totalLifetime;
+        if (v.remainEmit > 0)
+            v.remainEmit--;
 
     }
 
-
+    stream.Append(v);
 }
 
 
@@ -351,9 +390,10 @@ void ParticleSOPassGS(point ParticleSO_GS_IN input[1], inout PointStream<Particl
 
     if (outP.type == ParticleType_emit)
     {
+        outP.position = EmitPosition[outP.emitIndex].position;
         EmitParticleUpdate(outP, input[0].vertexID, output);
     }
-    else if (outP.type == ParticleType_ember)
+    else if (outP.type == ParticleType_smoke)
     {
         EmberParticleUpdate(outP, output);
     }

@@ -152,16 +152,18 @@ void ParticleGSPassGS(point ParticleVertex input[1], inout TriangleStream<Partic
     [branch]
     if (input[0].type != ParticleType_emit)
     {
-       CreateBillBoard(input[0], output);
     }
+       CreateBillBoard(input[0], output);
 }
 
 float4 ParticleGSPassPS(Particle_PS_IN input) : SV_Target
 {
     float4 Color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.uv);
-    Color.a *= input.opacity; 
+    Color.a *= input.opacity;
+    
     Color.rgb *= 0.7f; 
     Color.rgb *= materialConstants[input.material].diffuse.rgb; 
-    Color.rgb = normalize(Color.rgb);
+  
+    
     return Color;
 }

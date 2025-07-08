@@ -295,10 +295,9 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 					nextLoc->SetEmpty(false);
 
-
-
 					ParticleVertex v{};
 					v.position = nextLoc->GetTransform().GetPosition(); 
+
 					v.halfheight = 10.f;
 					v.halfWidth = 10.f;
 					v.material = mRenderManager->GetMaterialManager().GetMaterial("SmokeMaterial");
@@ -308,15 +307,15 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					v.spriteFrameInCol = 4;
 					v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
 					v.velocity = { 0.f, 0.f, 0.f };
-					v.totalLifeTime = 0.1f;
-					v.lifeTime = 0.05f;
+					v.totalLifeTime = 0.5f;
+					v.lifeTime = 0.5f;
 					v.type = ParticleType_emit;
-					v.emitType = ParticleType_ember;
+					v.emitType = ParticleType_smoke;
 					v.remainEmit = 100000;
 					v.emitIndex = 0;
 
-					mParticleMap[gClientCore->GetSessionId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
-
+					mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
+					mParticleMap[data->objectId()].Get()->position = v.position;
 				}
 				break;
 				case Packets::EntityType_ITEM_POTION:
@@ -916,18 +915,13 @@ void TerrainScene::Update() {
 	mLatencyBlock->GetText() = std::format(L"Latency : {} ms", TerrainScene::GetAverageLatency<std::chrono::milliseconds>());
 #endif 
 
+	mRenderManager->GetParticleManager().UpdateEmitParticle(); 
+
 	for (auto& item : mItemObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
 		auto& Pos = item.GetTransform().GetPosition();
 		Pos.y = tCollider.GetHeight(Pos.x, Pos.z);
 		Pos.y += 0.5f;
 		item.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(50.f) * Time.GetDeltaTime<float>(), 0.f);
-	}
-
-	for (auto& [id, particle] : mParticleMap) {
-		if (mGameObjectMap.contains(id)) {
-			particle.Get()->position = mGameObjectMap[id]->GetTransform().GetPosition();
-			particle.Get()->position.y += 0.5f; 
-		}
 	}
 
 	mInventoryUI.Update();

@@ -124,6 +124,7 @@ enum : UINT {
 	ParticleType_emit = 1,
 	ParticleType_shell = 2,
 	ParticleType_ember = 3,
+    ParticleType_smoke = 4, 
 };
 
 
@@ -192,10 +193,10 @@ struct Features {
 */
 
 enum class ParticleFlag : UINT {
-    Common      = 0b0000'0000'0000'0000'0000'0000'0000'0000,
-    Deactive    = 0b0000'0000'0000'0000'0000'0000'0000'0010,
-    Delete      = 0b0000'0000'0000'0000'0000'0000'0000'0100,
-    Empty       = 0b1111'1111'1111'1111'1111'1111'1111'1111,
+    Common      = 0,
+    Deactive    = 1,
+    Delete      = 2,
+    Empty       = 3,
 };
 
 struct EmitParticleContext {
