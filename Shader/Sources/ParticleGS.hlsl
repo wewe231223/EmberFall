@@ -152,8 +152,8 @@ void ParticleGSPassGS(point ParticleVertex input[1], inout TriangleStream<Partic
     [branch]
     if (input[0].type != ParticleType_emit)
     {
-    }
        CreateBillBoard(input[0], output);
+    }
 }
 
 float4 ParticleGSPassPS(Particle_PS_IN input) : SV_Target

@@ -196,73 +196,64 @@ float ComputeShadowFactor(float shadowIndex, float4 shadowPosH, float bias, floa
 }
 
 float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
-{
-    // return float4(GBuffers[1].Sample(linearWrapSampler, input.texcoord).rgb, 1.0f);
+{    
     float4 diffuse = GBuffers[0].Sample(linearWrapSampler, input.texcoord);
     float3 normal = normalize(GBuffers[1].Sample(linearWrapSampler, input.texcoord).xyz);
     float4 worldPos = GBuffers[2].Sample(linearWrapSampler, input.texcoord);
     float3 toCamera = normalize(cameraPosition - worldPos.xyz);
     float4 emissive = GBuffers[3].Sample(linearWrapSampler, input.texcoord);
-    float white = 21.0f;
-    
-    
+
     float4 LightingColor = Lighting(normal, toCamera, worldPos.xyz, input.texcoord);
+
     [unroll]
     for (int i = 0; i < step(4.0f, GBuffers[1].Sample(linearWrapSampler, input.texcoord).w); ++i)
     {
         LightingColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
-    
-    
     float validWorld = step(0.000001, abs(worldPos.x));
-
     float4 viewPos = mul(worldPos, view);
-    
     float shadowIndex = step(shadowOffset.x, viewPos.z);
 
     float4 posNear = mul(worldPos, viewProjection);
     float4 posFar = mul(worldPos, middleViewProjection);
-
-
     float4 texPos = lerp(posNear, posFar, shadowIndex);
-    
- 
+
     texPos.x = texPos.x * 0.5f + 0.5f;
     texPos.y = -texPos.y * 0.5f + 0.5f;
+
     float insideX = step(0.0f, texPos.x) * step(texPos.x, 1.0f);
     float insideY = step(0.0f, texPos.y) * step(texPos.y, 1.0f);
     float validTex = insideX * insideY;
     float valid = validWorld * validTex;
-    
-    
-    float bias = 0.003f;
 
-    float depth;
-    
-    
-  
-    depth = GBuffers[4 + shadowIndex].Sample(linearWrapSampler, texPos.xy).r;
-    
-    
-    float isBackFace;
-    
-    float shadowFactor = ComputeShadowFactor(shadowIndex, texPos, bias, texPos.z);
-    //float shadowFactor = 0.5f;
-   
-    isBackFace = step(0, dot((cameraPosition - worldPos.xyz), normal));
+    float bias = 0.003f;
+    float depth = GBuffers[4 + shadowIndex].Sample(linearWrapSampler, texPos.xy).r;
+
+    float isBackFace = step(0, dot((cameraPosition - worldPos.xyz), normal));
     isBackFace = GBuffers[1].Sample(linearWrapSampler, input.texcoord).a;
+
+    float shadowFactor = ComputeShadowFactor(shadowIndex, texPos, bias, texPos.z);
     shadowFactor = shadowFactor + (1.0f - shadowFactor) * isBackFace;
-    shadowFactor = saturate(shadowFactor); 
-   
+    shadowFactor = saturate(shadowFactor);
+
     float mask = step(depth, 0.0f);
-    
     shadowFactor = lerp(shadowFactor, 1.0f, mask);
-  
 
     float shadowApply = step(texPos.z + bias, depth) * valid;
-
     float finalFactor = lerp(1.0f, shadowFactor, shadowApply);
 
-    return diffuse * LightingColor * finalFactor + emissive;
+    float4 litColor = diffuse * LightingColor * finalFactor + emissive;
+
+    // === 안개 효과 시작 ===
+    float distanceToCamera = length(cameraPosition - worldPos.xyz);
+    
+    
+    const float start = 7.0f; 
+    const float end = 15.0f; 
+    float fogFactor = 1.0f - saturate((distanceToCamera - start) / (end - start));
+    litColor.rgb *= fogFactor;
+    // === 안개 효과 끝 ===
+
+    return litColor;
 }

@@ -57,6 +57,7 @@ struct VSOutput
     float4 position : SV_Position;
     float2 uv : TEXCOORD;
     float3 normal : NORMAL;
+    float3 wPosition : POSITION;
     uint texIndex : TEXID;
 };
 
@@ -160,6 +161,7 @@ void mainMS(
     for (int i = 0; i < 8; ++i)
     {
         outVerts[vtxBase + i].position = mul(float4(verts[i], 1.0f), viewProj);
+        outVerts[vtxBase + i].wPosition = verts[i];
         outVerts[vtxBase + i].texIndex = GetIndexFromFloat3(grass);
 
         if (i % 4 == 0)
@@ -185,6 +187,7 @@ struct Deffered_POUT
     float4 diffuse : SV_TARGET0;
     float4 normal : SV_TARGET1;
     float4 position : SV_TARGET2;
+    float4 emissive : SV_TARGET3;
 };
 
 Deffered_POUT mainPS(VSOutput input)
@@ -197,7 +200,7 @@ Deffered_POUT mainPS(VSOutput input)
     Deffered_POUT output = (Deffered_POUT) 0;
     output.diffuse = color;
     output.normal = float4(input.normal, 1.f);
-    output.position = input.position;
+    output.position = float4(input.wPosition, 1.f);
 
     return output;
 }
