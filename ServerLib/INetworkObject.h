@@ -33,7 +33,6 @@ public:
 
     virtual void Close() { }
     virtual HANDLE GetHandle() const { return INVALID_HANDLE_VALUE; }
-    virtual void ProcessOverlapped(struct OverlappedEx* overlapped, int32_t numOfBytes) abstract;
 
 private:
     uint16_t mGameRoomIdx{ };

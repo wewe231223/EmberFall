@@ -82,6 +82,7 @@ uint8_t GameRoom::TryInsertInRoom(SessionIdType sessionId) {
 uint8_t GameRoom::RemovePlayer(SessionIdType id, Packets::PlayerRole lastRole, bool lastReadyState, uint8_t lastSlotIndex) {
     mSessionLock.WriteLock();
     if (not mSessionsInRoom.contains(id)) {
+        mSessionLock.WriteUnlock();
         return GameRoomError::ERROR_SESSION_NOT_EXISTS_IN_THIS_ROOM;
     }
     mSessionsInRoom.erase(id);
@@ -124,6 +125,7 @@ uint8_t GameRoom::RemovePlayer(SessionIdType id, Packets::PlayerRole lastRole, b
 bool GameRoom::ChangeRolePlayer(SessionIdType id, Packets::PlayerRole role) {
     mSessionLock.ReadLock();
     if (not mSessionsInRoom.contains(id)) {
+        mSessionLock.ReadUnlock();
         return false;
     }
     mSessionLock.ReadUnlock();
@@ -162,6 +164,7 @@ bool GameRoom::ChangeRolePlayer(SessionIdType id, Packets::PlayerRole role) {
 bool GameRoom::ReadyPlayer(SessionIdType id) {
     mSessionLock.ReadLock();
     if (not mSessionsInRoom.contains(id)) {
+        mSessionLock.ReadUnlock();
         return false;
     }
     mSessionLock.ReadUnlock();
@@ -178,6 +181,7 @@ bool GameRoom::ReadyPlayer(SessionIdType id) {
 bool GameRoom::CancelPlayerReady(SessionIdType id) {
     mSessionLock.ReadLock();
     if (not mSessionsInRoom.contains(id)) {
+        mSessionLock.ReadUnlock();
         return false;
     }
     mSessionLock.ReadUnlock();
@@ -249,24 +253,17 @@ void GameRoom::CheckSessionsHeartBeat() {
 
         bool expected = true;
         mHeartBeat.compare_exchange_strong(expected, false);
-#if defined(DEBUG) || defined(_DEBUG) || defined(PRINT_DEBUG_LOG)
-        gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Check Failure HeartBeat", mRoomIdx);
-#endif
         return;
     }
     std::vector<SessionIdType> sessionsInGameRoom{ sessionList.begin(), sessionList.end() };
     mSessionLock.ReadUnlock();
 
     gServerFrame->CheckSessionsHeartBeat(sessionsInGameRoom);
-
-    gServerFrame->AddTimerEvent(INVALID_OBJ_ID, CHECK_SESSION_HEART_BEAT_DELAY, IoType::CHECK_SESSION_HEART_BEAT);
+    gGameRoomManager->GetRoom(0);
+    gServerFrame->AddTimerEvent(INVALID_OBJ_ID, CHECK_SESSION_HEART_BEAT_DELAY, IoType::CHECK_SESSION_HEART_BEAT, mRoomIdx);
 }
 
 void GameRoom::CheckGameEnd() {
-#if defined(DEBUG) || defined(_DEBUG) || defined(PRINT_DEBUG_LOG)
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: Check Game End", mRoomIdx);
-    //gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "allocated buffers: {}", SendBufferFactory::mSendBuffDebugger.load());
-#endif
     auto [isEnd, winner] = mIngameCondition.CheckGameEnd();
     if (not isEnd) {
         if (GameRoomState::GAME_ROOM_STATE_INGAME == mGameRoomState) {
@@ -304,9 +301,6 @@ void GameRoom::ChangeToLobby() {
     auto packetToLobby = FbsPacketFactory::ChangeSceneSC(Packets::GameStage_LOBBY);
     BroadCast(packetToLobby);
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Change To Lobby!!!", mRoomIdx);
-#if defined(DEBUG) || defined(_DEBUG) || defined(PRINT_DEBUG_LOG)
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "allocated buffers: {}", SendBufferFactory::mSendBuffDebugger.load());
-#endif
 }
 
 void GameRoom::ChangeToStage1() {
@@ -459,12 +453,7 @@ void GameRoom::OnSceneCountdownTick() {
     }
 }
 
-GameRoomManager::GameRoomManager() {
-    for (uint16_t roomIdx{ 0 }; auto& room : mGameRooms) {
-        room = std::make_unique<GameRoom>(roomIdx);
-        ++roomIdx;
-    }
-}
+GameRoomManager::GameRoomManager() { }
 
 GameRoomManager::~GameRoomManager() { }
 
@@ -477,6 +466,11 @@ std::unique_ptr<GameRoom>& GameRoomManager::GetRoom(uint16_t roomIdx) {
 }
 
 void GameRoomManager::InitGameRooms() {
+    for (uint16_t roomIdx{ 0 }; auto& room : mGameRooms) {
+        room = std::make_unique<GameRoom>(roomIdx);
+        ++roomIdx;
+    }
+
     for (auto& room : mGameRooms) {
         room->GetStage().InitObjectManager("../Resources/Binarys/Collider/env1.bin");
         room->CheckSessionsHeartBeat();

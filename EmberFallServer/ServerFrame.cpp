@@ -29,9 +29,11 @@ bool ServerFrame::StartServer() {
         return false;
     }
 
+    mListener.Init();
     mIocpCore.Init(mWorkerThreadNum);
 
-    mIocpCore.RegisterSocket(mListener.GetListenSocket(), SYSTEM_ID);
+    auto listenSocket = mListener.GetListenSocket();
+    mIocpCore.RegisterSocket(listenSocket, SYSTEM_ID);
     mListener.RegisterAccept();
 
     return true;
@@ -47,8 +49,13 @@ void ServerFrame::Run() {
     mInputManager = std::make_shared<InputManager>();
     gGameRoomManager->InitGameRooms();
 
-    mTimerThread = std::thread{ [this]() { TimerThread(); } };
-    //mDbThread = 
+    mWorkerThreadNum = 0 == mWorkerThreadNum ? std::thread::hardware_concurrency() : mWorkerThreadNum;
+    auto workerThreadNum = mWorkerThreadNum;
+    for (int i = 0; i < workerThreadNum; ++i) {
+        mWorkerThreads.emplace_back(std::thread{ [=]() { IoThread(); } });
+    }
+
+    mTimerThread = std::thread{ [=]() { TimerThread(); } };
 }
 
 void ServerFrame::Done() {
@@ -88,7 +95,7 @@ void ServerFrame::PQCS(int32_t transfferedBytes, ULONG_PTR completionKey, Overla
 }
 
 void ServerFrame::AddTimerEvent(NetworkObjectIdType id, SysClock::duration delay, IoType eventType, ExtraInfo info) {
-    auto insertPair = std::make_pair(delay, TimerEvent{ id, eventType, info });
+    auto insertPair = std::make_pair(SysClock::now() + delay, TimerEvent{ id, eventType, info });
 
     std::lock_guard timerEventGuard{ mTimerMapLock };
     mTimerEvents.insert(insertPair);
@@ -99,6 +106,8 @@ bool ServerFrame::IsGameRoomEvent(IoType type) const {
 }
 
 void ServerFrame::IoThread() {
+    InitTls();
+
 #ifdef DEBUG
     static SessionIdType lastErrorClient{ INVALID_SESSION_ID };
 #endif
@@ -106,8 +115,7 @@ void ServerFrame::IoThread() {
     ULONG_PTR completionKey{ };
     OVERLAPPED* overlapped{ nullptr };
 
-    auto temp = SessionEbr{ };
-    SessionEbrGuard sessionGuard{ temp, 0 };
+    SessionEbrGuard sessionGuard{ gSessionEbr, lThreadId };
     while (true) {
         auto success = ::GetQueuedCompletionStatus(
             mIocpCore.GetHandle(),
@@ -122,20 +130,21 @@ void ServerFrame::IoThread() {
             continue;
         }
 
+        auto ioType = overlappedEx->type;
         SessionIdType clientId = static_cast<SessionIdType>(completionKey);
         if (not success) {
-            if (IoType::ACCEPT == overlappedEx->type) {
+            if (IoType::ACCEPT == ioType) {
                 gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Accept Error!!");
                 gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "{}", NetworkUtil::WSAErrorMessage());
                 Crash("Accept Error");
             }
-            else if (IoType::CONNECT == overlappedEx->type) {
+            else if (IoType::CONNECT == ioType) {
                 gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Connect Error!!");
                 MessageBoxA(nullptr, NetworkUtil::WSAErrorMessage().c_str(), "", MB_OK);
                 Crash("Connect Error");
             }
 
-            if (IoType::SEND == overlappedEx->type) {
+            if (IoType::SEND == ioType) {
                 FbsPacketFactory::ReleasePacketBuf(reinterpret_cast<OverlappedSend*>(overlappedEx));
 #ifdef DEBUG
                 if (lastErrorClient != clientId) {
@@ -146,24 +155,54 @@ void ServerFrame::IoThread() {
 #endif
             }
 
-            mSessionManager.CloseSession(clientId);
-            continue;
-        }
-
-        if (0 >= receivedByte) {
-            if (IoType::SEND == overlappedEx->type) {
-                FbsPacketFactory::ReleasePacketBuf(reinterpret_cast<OverlappedSend*>(overlappedEx));
+            auto reuseTarget = mSessionManager.GetSession(clientId);
+            if (nullptr == reuseTarget) {
+                continue;
             }
 
             mSessionManager.CloseSession(clientId);
+            gSessionEbr.PushPointer(reuseTarget);
             continue;
         }
 
-        switch (overlappedEx->type) {
+        if (IoType::SEND == ioType or IoType::RECV == ioType and 0 >= receivedByte) {
+            if (IoType::SEND == ioType) {
+                FbsPacketFactory::ReleasePacketBuf(reinterpret_cast<OverlappedSend*>(overlappedEx));
+            }
+
+            auto reuseTarget = mSessionManager.GetSession(clientId);
+            if (nullptr == reuseTarget) {
+                continue;
+            }
+
+            mSessionManager.CloseSession(clientId);
+            gSessionEbr.PushPointer(reuseTarget);
+            continue;
+        }
+
+        switch (ioType) {
+        case IoType::RECV:
+        {
+            auto session = mSessionManager.GetSession(clientId);
+            if (nullptr == session) {
+                break;
+            }
+
+            session->ProcessRecv(receivedByte);
+        }
+        break;
+
+        case IoType::SEND:
+        {
+            FbsPacketFactory::ReleasePacketBuf(reinterpret_cast<OverlappedSend*>(overlappedEx));
+        }
+        break;
+
         case IoType::ACCEPT:
         {
             auto overlappedAccept = reinterpret_cast<OverlappedAccept*>(overlappedEx);
-            auto session = new GameSession{ overlappedAccept->connectedSocket };
+            //auto session = new GameSession{ overlappedAccept->connectedSocket };
+            auto sesison = gSessionEbr.PopPointer<GameSession>(overlappedAccept->connectedSocket);
 
             if (false == mSessionManager.AddSession(overlappedAccept)) {
                 gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Client Connect Failure");
@@ -246,9 +285,13 @@ void ServerFrame::IoThread() {
             break;
         }
     }
+
+    ClearTls();
 }
 
 void ServerFrame::TimerThread() {
+    InitTls();
+
     while (not mDone) {
         auto current_time = std::chrono::system_clock::now();
         mTimerMapLock.lock();
@@ -282,4 +325,6 @@ void ServerFrame::TimerThread() {
         }
         std::this_thread::sleep_for(1ms);
     }
+
+    ClearTls();
 }

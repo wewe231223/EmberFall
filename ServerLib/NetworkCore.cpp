@@ -16,6 +16,8 @@ bool ClientCore::Start(const std::string& ip, const UINT16 port) {
         return false;
     }
 
+    mSession = std::make_shared<Session>(NetworkUtil::CreateSocket());
+
     mIocpCore->Init(1);
     mIocpCore->RegisterSocket(mSession.get());
     if (not mSession->Connect(ip, port)) {

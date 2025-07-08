@@ -276,6 +276,9 @@
     <ClCompile Include="SessionManager.cpp">
       <Filter>MultiThreadLoopTest\Frame</Filter>
     </ClCompile>
+    <ClCompile Include="ThreadUtils.cpp">
+      <Filter>MultiThreadLoopTest\Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BehaviorTreeBase.h">
@@ -450,6 +453,9 @@
       <Filter>MultiThreadLoopTest\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Utils.h">
+      <Filter>MultiThreadLoopTest\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadUtils.h">
       <Filter>MultiThreadLoopTest\Utils</Filter>
     </ClInclude>
   </ItemGroup>

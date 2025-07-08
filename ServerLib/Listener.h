@@ -19,9 +19,11 @@ public:
 
 public:
     HANDLE GetHandle() const;
-    void Close();
-    bool IsClosed() const;
     SOCKET GetListenSocket() const;
+    bool IsClosed() const;
+
+    bool Init();
+    void Close();
 
     void ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes);
     void RegisterAccept();

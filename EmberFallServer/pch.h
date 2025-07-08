@@ -51,3 +51,8 @@ namespace std {
         }
     };
 }
+
+#include "SessionEbr.h"
+#include "ThreadUtils.h"
+
+extern SessionEbr gSessionEbr;

@@ -45,7 +45,7 @@ public:
     virtual HANDLE GetHandle() const override;
     virtual bool IsClosed() const override;
 
-    virtual void ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) override;
+    virtual void ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes);
     virtual void Close() override;
 
     void RegisterRecv();

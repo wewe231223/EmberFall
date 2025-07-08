@@ -8,7 +8,7 @@ SessionManager::~SessionManager() {
 }
 
 bool SessionManager::AddSession(OverlappedAccept* acceptInfo) {
-    auto session = new GameSession{ acceptInfo->connectedSocket };
+    auto session = gSessionEbr.PopPointer<GameSession>(acceptInfo->connectedSocket);
     auto id = mSessionIdCount.fetch_add(1);
     if (id == INVALID_SESSION_ID) {
         return false;

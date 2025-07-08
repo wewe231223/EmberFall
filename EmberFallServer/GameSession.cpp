@@ -120,13 +120,15 @@ void GameSession::InitUserObject() {
 }
 
 void GameSession::InitPlayerScript() {
+    const SimpleMath::Vector3 SPAWN_CENTER = SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f };
+
     switch (mLobbyInfo.lastRole) {
     case Packets::PlayerRole_HUMAN_ARCHER:
     {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_ARCHER);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SPAWN_CENTER));
 
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
@@ -140,7 +142,7 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_SHIELD_MAN);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SPAWN_CENTER));
 
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
@@ -154,7 +156,7 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_LONGSWORD_MAN);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SPAWN_CENTER));
 
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
@@ -168,7 +170,7 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_MAGICIAN);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SPAWN_CENTER));
 
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {

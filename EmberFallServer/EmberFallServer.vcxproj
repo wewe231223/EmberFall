@@ -198,6 +198,7 @@
     <ClCompile Include="Script.cpp" />
     <ClCompile Include="ServerFrame.cpp" />
     <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="ThreadUtils.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Trigger.cpp" />
     <ClCompile Include="ViewList.cpp" />
@@ -263,6 +264,7 @@
     <ClInclude Include="ViewList.h" />
     <ClInclude Include="Weapon.h" />
     <ClInclude Include="WeaponSystem.h" />
+    <ClInclude Include="ThreadUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

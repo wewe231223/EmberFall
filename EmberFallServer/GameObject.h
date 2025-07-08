@@ -37,7 +37,7 @@ struct ObjectSpec {
     float hp;                       // 체력
 };
 
-class GameObject : public IServerEntity, public std::enable_shared_from_this<GameObject> {
+class GameObject : public std::enable_shared_from_this<GameObject>, public IServerEntity {
 public:
     GameObject();
     GameObject(uint16_t roomIdx);

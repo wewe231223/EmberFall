@@ -15,5 +15,6 @@ int main()
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Server Project Start");
 
     gServerFrame->Run();
-    //gServerFrame->GameLoop();
+
+    gServerFrame->Done();
 }

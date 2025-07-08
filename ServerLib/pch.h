@@ -87,3 +87,4 @@ using namespace GameUnitLiterals;
 using namespace std::literals;
 
 extern std::shared_ptr<class ClientCore> gClientCore;
+extern std::unique_ptr<LogConsole> gLogConsole;

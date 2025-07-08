@@ -87,7 +87,7 @@ public:
 
         std::destroy_at(ptr);
         //auto ret = cast_ptr<ObjectType>(ptr);
-        return std::construct_at<ObjectType>(reinterpret_cast<ObjectType>(ptr), std::forward<Args>(args)...);
+        return std::construct_at<ObjectType>(reinterpret_cast<ObjectType*>(ptr), std::forward<Args>(args)...);
     }
 
 public:

@@ -5,25 +5,6 @@
 
 Listener::Listener(const UINT16 port)
     : mLocalPort{ port } {
-    mListenSocket = NetworkUtil::CreateSocket();
-    if (INVALID_SOCKET == mListenSocket) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Create Socket Failure: {}", NetworkUtil::WSAErrorMessage());
-        Crash("");
-    }
-
-    sockaddr_in sockAddr{ };
-    NetworkUtil::InitSockAddr(sockAddr, port);
-    NetworkUtil::SetSocketOpt(mListenSocket, SOL_SOCKET, SO_REUSEADDR, 1);
-
-    if (SOCKET_ERROR == ::bind(mListenSocket, reinterpret_cast<sockaddr*>(&sockAddr), sizeof(sockAddr))) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "::bind Error: {}", NetworkUtil::WSAErrorMessage());
-        Crash("");
-    }
-
-    if (SOCKET_ERROR == ::listen(mListenSocket, SOMAXCONN)) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "::listen Error: {}", NetworkUtil::WSAErrorMessage());
-        Crash("");
-    }
 }
 
 Listener::~Listener() {
@@ -32,6 +13,31 @@ Listener::~Listener() {
 
 HANDLE Listener::GetHandle() const {
     return reinterpret_cast<HANDLE>(mListenSocket);
+}
+
+bool Listener::Init() {
+    mListenSocket = NetworkUtil::CreateSocket();
+    if (INVALID_SOCKET == mListenSocket) {
+        return false;
+    }
+
+    sockaddr_in sockAddr{ };
+    NetworkUtil::InitSockAddr(sockAddr, mLocalPort);
+    NetworkUtil::SetSocketOpt(mListenSocket, SOL_SOCKET, SO_REUSEADDR, 1);
+
+    if (SOCKET_ERROR == ::bind(mListenSocket, reinterpret_cast<sockaddr*>(&sockAddr), sizeof(sockAddr))) {
+        auto mess = NetworkUtil::WSAErrorMessage();
+        MessageBoxA(nullptr, mess.c_str(), "SOCKET ERROR", MB_OK);
+        return false;
+    }
+
+    if (SOCKET_ERROR == ::listen(mListenSocket, SOMAXCONN)) {
+        auto mess = NetworkUtil::WSAErrorMessage();
+        MessageBoxA(nullptr, mess.c_str(), "SOCKET ERROR", MB_OK);
+        return false;
+    }
+
+    return true;
 }
 
 void Listener::Close() {
@@ -43,7 +49,7 @@ bool Listener::IsClosed() const {
     return mListenSocket == INVALID_SOCKET;
 }
 
-inline SOCKET Listener::GetListenSocket() const {
+SOCKET Listener::GetListenSocket() const {
     return mListenSocket;
 }
 
@@ -68,6 +74,8 @@ void Listener::RegisterAccept() {
     if (not registSuccess) {
         int errorCode = ::WSAGetLastError();
         if (WSA_IO_PENDING != errorCode) {
+            auto mess = NetworkUtil::WSAErrorMessage();
+            MessageBoxA(nullptr, mess.c_str(), "", MB_OK);
             RegisterAccept();
         }
     }
