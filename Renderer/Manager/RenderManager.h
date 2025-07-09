@@ -7,7 +7,6 @@
 #include "../Renderer/Render/Canvas.h"
 #include "../Renderer/Manager/FeatureManager.h"
 
-
 class RenderManager {
 public:
 	RenderManager() = default;
@@ -31,6 +30,7 @@ public:
 	FeatureManager&			GetFeatureManager();
 	HWND					GetWindowHandle(); 
 
+	float& GetFogRangeStart(); 
 private:
 	HWND mHwnd{ nullptr };
 	LightingManager mLightingManager{};
@@ -41,4 +41,6 @@ private:
 	ShadowRenderer mShadowRenderer{};
 	Canvas mCanvas{}; 
 	FeatureManager mFeatureManager{};
+
+	float mFogRangeStart{ 2000.f };
 };

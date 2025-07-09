@@ -39,9 +39,12 @@ cbuffer Camera : register(b0)
     float3 cameraPosition;
     int isShadow;
     float3 shadowOffset;
-    
-    float fogStart; 
 };
+
+cbuffer Fog : register(b1)
+{
+    float fogRangeStart; 
+}
 
 struct Deffered_VIN
 {
@@ -247,16 +250,14 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
 
     float4 litColor = diffuse * LightingColor * finalFactor + emissive;
 
- 
-    if (fogStart == 0.f)
-    {
-        float distanceToCamera = length(cameraPosition - worldPos.xyz);
+
+    float distanceToCamera = length(cameraPosition - worldPos.xyz);
    
-        const float start = fogStart;
-        const float end = fogStart + 5.f;
-        float fogFactor = 1.0f - saturate((distanceToCamera - start) / (end - start));
-        litColor.rgb *= fogFactor;
-    }
+    const float start = fogRangeStart;
+    const float end = fogRangeStart + 5.f;
+    float fogFactor = 1.0f - saturate((distanceToCamera - start) / (end - start));
+    litColor.rgb *= fogFactor;
+    
 
     return litColor;
 }

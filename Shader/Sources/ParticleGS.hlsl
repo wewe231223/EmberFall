@@ -12,8 +12,6 @@ cbuffer Camera : register(b0)
     float3 cameraPosition;
     int isShadow;
     float3 shadowOffset;
-    
-    float fogStart;
 };
 cbuffer GlobalCB : register(b1)
 {

@@ -47,3 +47,7 @@ FeatureManager& RenderManager::GetFeatureManager() {
 HWND RenderManager::GetWindowHandle() {
 	return mHwnd; 
 }
+
+float& RenderManager::GetFogRangeStart() {
+	return mFogRangeStart; 
+}

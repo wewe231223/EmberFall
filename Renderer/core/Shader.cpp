@@ -928,9 +928,10 @@ GraphicsShaderBase::RootParameters DefferedShader::CreateRootParameters() {
 	params.Parameters[2].Descriptor.RegisterSpace = 1;
 	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	params.Parameters[3].Descriptor.ShaderRegister = 1;
-	params.Parameters[3].Descriptor.RegisterSpace = 0;
+	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	params.Parameters[3].Constants.ShaderRegister = 1;
+	params.Parameters[3].Constants.RegisterSpace = 0;
+	params.Parameters[3].Constants.Num32BitValues = 1;
 	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	params.ParameterCount = 4;

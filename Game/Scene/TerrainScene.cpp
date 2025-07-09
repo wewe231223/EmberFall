@@ -913,6 +913,7 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer, UINT& cnt) {
 
 
 void TerrainScene::Update() {
+	mRenderManager->GetFogRangeStart() = 10.f;
 #ifdef DEV_MODE
 	mLatencyBlock->GetText() = std::format(L"Latency : {} ms", TerrainScene::GetAverageLatency<std::chrono::milliseconds>());
 #endif 
@@ -939,7 +940,6 @@ void TerrainScene::Update() {
 			pos.y = y + 0.5f;
 		}
 
-		mCurrentCameraMode->SetCameraFog(true);
 		mCurrentCameraMode->FocusUpdate();
 	}
 	mCamera.UpdateBuffer();

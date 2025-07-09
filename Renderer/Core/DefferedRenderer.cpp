@@ -50,7 +50,7 @@ void DefferedRenderer::RegisterShadowMap(ComPtr<ID3D12Device> device, std::array
 	}
 }
 
-void DefferedRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator shadowCameraBuffer, DefaultBufferGPUIterator lightingBuffer) {
+void DefferedRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator shadowCameraBuffer, DefaultBufferGPUIterator lightingBuffer, float fogRangeStart) {
 	mDefferedShader.SetGPassShader(commandList);
 
 	commandList->SetDescriptorHeaps(1, mGBufferSRVHeap.GetAddressOf());
@@ -63,6 +63,8 @@ void DefferedRenderer::Render(ComPtr<ID3D12GraphicsCommandList> commandList, Def
 	commandList->SetGraphicsRootConstantBufferView(0, *shadowCameraBuffer);
 	commandList->SetGraphicsRootDescriptorTable(1, mGBufferSRVHeap->GetGPUDescriptorHandleForHeapStart());
 	commandList->SetGraphicsRootShaderResourceView(2, *lightingBuffer);
+	commandList->SetGraphicsRoot32BitConstant(3, static_cast<UINT>(fogRangeStart), 0);
+
 
 	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }

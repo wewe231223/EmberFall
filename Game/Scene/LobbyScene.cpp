@@ -449,7 +449,6 @@ void LobbyScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mRightArrowButton.SetActiveState(false);
 	mReadyButton.SetActiveState(false);
 
-	mCamera.SetFogStart(3000.f);
 }
 
 void LobbyScene::ProcessNetwork() {
@@ -460,6 +459,8 @@ void LobbyScene::ProcessNetwork() {
 }
 
 void LobbyScene::Update() {
+	mRenderManager->GetFogRangeStart() = 1000.f; 
+
 	PlayerRole prevRole = mPlayerRole;
 
 	mLeftArrowButton.Update(); 

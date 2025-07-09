@@ -220,7 +220,7 @@ void Renderer::Render() {
 	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
-	mDefferedRenderer.Render(mCommandList, mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0), mRenderManager->GetLightingManager().GetLightingBuffer());
+	mDefferedRenderer.Render(mCommandList, mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0), mRenderManager->GetLightingManager().GetLightingBuffer(), mRenderManager->GetFogRangeStart());
 
 
 	// Forward Render Pass 
