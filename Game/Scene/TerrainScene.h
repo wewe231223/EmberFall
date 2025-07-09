@@ -104,7 +104,7 @@ private:
 #ifdef DEV_MODE
 	TextBlock* mLatencyBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 50.f, 1920.f, 100.f }, StringColor::BurlyWood, "NotoSansKR") };
 	TextBlock* mPktsBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 70.f, 1920.f, 120.f }, StringColor::BurlyWood, "NotoSansKR") };
-	TextBlock* mPktElapsedBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 90.f, 1920.f, 140.f }, StringColor::BurlyWood, "NotoSansKR") };
+	TextBlock* mPositionBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 90.f, 1920.f, 140.f }, StringColor::Black, "NotoSansKR") };
 #endif 
 
 	absl::flat_hash_map<NetworkObjectIdType, Player*> mPlayerIndexmap{};
