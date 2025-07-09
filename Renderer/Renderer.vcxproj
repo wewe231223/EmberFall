@@ -176,6 +176,7 @@
     <ClCompile Include="core\ComputeProcessor.cpp" />
     <ClCompile Include="Core\Console.cpp" />
     <ClCompile Include="Core\DefferedRenderer.cpp" />
+    <ClCompile Include="core\MotionBlurProcessor.cpp" />
     <ClCompile Include="Core\Renderer.cpp" />
     <ClCompile Include="core\Shader.cpp" />
     <ClCompile Include="Core\ShadowRenderer.cpp" />
@@ -212,6 +213,7 @@
     <ClInclude Include="core\ComputeProcessor.h" />
     <ClInclude Include="Core\Console.h" />
     <ClInclude Include="Core\DefferedRenderer.h" />
+    <ClInclude Include="core\MotionBlurProcessor.h" />
     <ClInclude Include="Core\Renderer.h" />
     <ClInclude Include="core\Shader.h" />
     <ClInclude Include="Core\ShadowRenderer.h" />

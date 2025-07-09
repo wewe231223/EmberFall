@@ -1,47 +1,62 @@
-Texture2D<float4> Input : register(t0);
-Texture2D<float4> velocity : register(t1);
-RWTexture2D<float4> RWOutput : register(u0);
+SamplerState pointWrapSampler : register(s0);
+SamplerState pointClampSampler : register(s1);
+SamplerState linearWrapSampler : register(s2);
+SamplerState linearClampSampler : register(s3);
+SamplerState anisotropicWrapSampler : register(s4);
+SamplerState anisotropicClampSampler : register(s5);
+SamplerComparisonState PCFSampler : register(s6);
 
+Texture2D renderTarget : register(t0);
+Texture2D velocity : register(t1);
 
-[numthreads(16, 16, 1)]
-void MotionBlur_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : SV_DispatchThreadID)
+#define SAMPLE_COUNT 11
+
+struct MotionBlur_VIN
 {
-    float2 ScreenSize = float2(1920.0f, 1080.0f);
-    int SampleCount = 6; 
-    
-    int2 pix = dispatchThreadID.xy;
-    if (pix.x >= ScreenSize.x || pix.y >= ScreenSize.y) 
-        return;
+    float3 position : POSITION;
+    float2 texcoord : TEXCOORD;
+};
 
-    //float4 baseColor = Input.Load(int3(pix, 0));
-    float4 vel = velocity.Load(int3(pix, 0));
-    
-    
-    vel.xy = vel.xy * ScreenSize;
+struct MotionBlur_VOUT
+{
+    float4 position : SV_Position;
+    float2 texcoord : TEXCOORD;
+};
 
-    float4 accum = float4(0, 0, 0, 0);
-    float weightSum = 0;
+MotionBlur_VOUT MotionBlur_VS(MotionBlur_VIN input)
+{
+    MotionBlur_VOUT output;
+    output.position = float4(input.position, 1.f);
+    output.texcoord = input.texcoord;
+    return output;
+}
 
+float4 MotionBlur_PS(MotionBlur_VOUT input) : SV_Target
+{
     
-    [unroll]
-    for (int i = -SampleCount; i <= 0; ++i)
+    
+    float4 color = renderTarget.Sample(linearClampSampler, input.texcoord);
+    float4 velo = velocity.Sample(linearClampSampler, input.texcoord);
+    velo.xy /= -10.0f;
+    int cnt = 1;
+    float2 texCoord = input.texcoord;
+    for (int i = cnt; i < SAMPLE_COUNT; ++i)
     {
-        float t = i / float(SampleCount); 
-        float2 offset = vel * t; 
-
-        int2 coord = pix + int2(offset + 0.5);
-        coord = clamp(coord, int2(0, 0), int2(ScreenSize) - 1);
-
-        float4 sample = Input.Load(int3(coord, 0));
-        float4 base = velocity.Load(int3(coord, 0));
-
-        float w = exp(-t * t * 4.0);
-        if (vel.w < base.w + 0.006f)
+ 
+        float4 currentColor = renderTarget.Sample(linearClampSampler, texCoord + velo.xy * (float)i);
+        float4 currentVelo = velocity.Sample(linearClampSampler, texCoord + velo.xy * (float) i);
+        if (length(currentColor.xyz) == 0)
         {
-        accum += sample * w;
-        weightSum += w;
+            currentColor = renderTarget.Sample(linearClampSampler, input.texcoord);
+
         }
-    }
+        if (abs(velo.a - currentVelo.a) < 0.006f)
+        {
+            ++cnt;
+            color += currentColor;
+        }
+    } 
+    float4 finalColor = color / cnt;
     
-    RWOutput[pix] = accum / weightSum;
+    return finalColor;
 }

@@ -902,12 +902,9 @@ GraphicsShaderBase::RootParameters DefferedShader::CreateRootParameters() {
 	params.Parameters[2].Descriptor.RegisterSpace = 1;
 	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	params.Parameters[3].Descriptor.ShaderRegister = 1;
-	params.Parameters[3].Descriptor.RegisterSpace = 0;
-	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	
 
-	params.ParameterCount = 4;
+	params.ParameterCount = 3;
 
 	return params;
 }
@@ -1883,5 +1880,108 @@ D3D12_SHADER_BYTECODE SkinnedNormalShader::CreateVertexShader() {
 
 D3D12_SHADER_BYTECODE SkinnedNormalShader::CreatePixelShader() {
 	auto& blob = gShaderManager.GetShaderBlob("StandardAnimationNormal", ShaderType::PixelShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+MotionBlurShader::MotionBlurShader() {
+
+}
+
+void MotionBlurShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+}
+
+GraphicsShaderBase::InputLayout MotionBlurShader::CreateInputLayout() {
+	GraphicsShaderBase::InputLayout inputLayout{};
+
+	inputLayout.ElementCount = 2;
+
+	inputLayout.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[1] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	return inputLayout;
+}
+
+GraphicsShaderBase::RootParameters MotionBlurShader::CreateRootParameters() {
+	GraphicsShaderBase::RootParameters params{};
+
+	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	params.Ranges[0].NumDescriptors = 1;
+	params.Ranges[0].BaseShaderRegister = 0;
+
+	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[0].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[0].DescriptorTable.pDescriptorRanges = &params.Ranges[0];
+	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Ranges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	params.Ranges[1].NumDescriptors = 1;
+	params.Ranges[1].BaseShaderRegister = 1;
+
+	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[1].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[1].DescriptorTable.pDescriptorRanges = &params.Ranges[1];
+	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	
+
+	params.ParameterCount = 2;
+
+	return params;
+}
+
+D3D12_DEPTH_STENCIL_DESC MotionBlurShader::CreateDepthStencilState() {
+	D3D12_DEPTH_STENCIL_DESC depthStencilState;
+	::ZeroMemory(&depthStencilState, sizeof(D3D12_DEPTH_STENCIL_DESC));
+
+	depthStencilState.DepthEnable = FALSE;
+	depthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	depthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_NEVER;
+	depthStencilState.StencilEnable = FALSE;
+	depthStencilState.StencilReadMask = 0x00;
+	depthStencilState.StencilWriteMask = 0x00;
+	depthStencilState.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+	depthStencilState.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+
+	return depthStencilState;
+}
+
+DXGI_FORMAT MotionBlurShader::CreateDSVFormat() {
+	return DXGI_FORMAT_UNKNOWN;
+}
+
+D3D12_RASTERIZER_DESC MotionBlurShader::CreateRasterizerState() {
+	D3D12_RASTERIZER_DESC rasterizerDesc;
+	::ZeroMemory(&rasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
+
+	//rasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
+	rasterizerDesc.FrontCounterClockwise = FALSE;
+	rasterizerDesc.DepthBias = 0;
+	rasterizerDesc.DepthBiasClamp = 0.0f;
+	rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+	rasterizerDesc.DepthClipEnable = TRUE;
+	rasterizerDesc.MultisampleEnable = FALSE;
+	rasterizerDesc.AntialiasedLineEnable = FALSE;
+	rasterizerDesc.ForcedSampleCount = 0;
+	rasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	return rasterizerDesc;
+}
+
+D3D12_SHADER_BYTECODE MotionBlurShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("MotionBlur", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE MotionBlurShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("MotionBlur", ShaderType::PixelShader);
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }

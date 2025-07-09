@@ -19,6 +19,7 @@
 #include "../Resource/Mesh.h"
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Renderer/Render/GrassRenderer.h"
+#include "../Renderer/Core/MotionBlurProcessor.h"
 #include "../Renderer/Core/ComputeProcessor.h"
 #include "../Renderer/Render/IMGUIRenderer.h"
 
@@ -84,6 +85,7 @@ private:
 
 	void InitCoreResources(); 
 	void InitDefferedRenderer();
+	void InitMotionBlurProcessor();
 	void InitComputeProcesser();
 	void InitIMGUIRenderer();
 
@@ -134,6 +136,7 @@ private:
 	ComPtr<ID3D12DescriptorHeap> mGBufferHeap{ nullptr };
 
 	DefferedRenderer mDefferedRenderer{};
+	MotionBlurProcessor mMotionBlurProcessor{};
 	std::vector<std::unique_ptr<ComputeProcessor>> mComputeProcessors;
 
 	ComPtr<ID3D12DescriptorHeap> mDSHeap{ nullptr };

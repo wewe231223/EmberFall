@@ -11,3 +11,4 @@ ParticleGS.hlsl { vs vs_5_1 ParticleGSPassVS gs gs_5_1 ParticleGSPassGS ps ps_5_
 UI.hlsl { vs vs_5_1 UI_VS ps ps_5_1 UI_PS }
 StandardNormal.hlsl { vs vs_5_1 StandardNormal_VS ps ps_5_1 StandardNormal_PS }
 StandardAnimationNormal.hlsl { vs vs_5_1 StandardAnimationNormal_VS ps ps_5_1 StandardAnimationNormal_PS } 
+MotionBlur.hlsl {vs vs_5_1 MotionBlur_VS ps ps_5_1 MotionBlur_PS}

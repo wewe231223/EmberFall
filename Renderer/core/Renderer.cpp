@@ -32,6 +32,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	
 	Renderer::InitCameraBuffer(); 
 	Renderer::InitCoreResources(); 
+	Renderer::InitMotionBlurProcessor();
 	Renderer::InitDefferedRenderer();
 	Renderer::InitTerrainBuffer();
 	Renderer::InitParticleManager();
@@ -227,7 +228,21 @@ void Renderer::Render() {
 
 	mDefferedRenderer.Render(mCommandList, mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0), mRenderManager->GetLightingManager().GetLightingBuffer());
 
-	// Blurring Pass
+	//MotionBlur Pass
+
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().MotionBlur) {
+		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
+		mCommandList->CopyResource(mMotionBlurProcessor.GetRTResource().GetResource().Get(), currentBackBuffer.GetResource().Get());
+		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mRTIndex), rtvDescriptorSize };
+		mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
+		mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+
+		mMotionBlurProcessor.Render(mDevice, mCommandList);
+	}
+
+	// Bloom Pass
 	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Bloom) {
 
 		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
@@ -236,12 +251,7 @@ void Renderer::Render() {
 		mComputeProcessors[1]->Dispatch(mDevice, mCommandList, &mComputeProcessors[0]->GetComputeMap(), &currentBackBuffer);
 		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	}
-	if (mRenderManager->GetFeatureManager().GetCurrentFeature().MotionBlur) {
-		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
-		mComputeProcessors[2]->Dispatch(mDevice, mCommandList, &currentBackBuffer);
-		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	}
-
+	
 
 	mRenderManager->GetTextureManager().Bind(mCommandList);
 
@@ -609,6 +619,15 @@ void Renderer::InitDefferedRenderer() {
 
 }
 
+void Renderer::InitMotionBlurProcessor() {
+	mMotionBlurProcessor = MotionBlurProcessor(mDevice, mCommandList);
+
+	mMotionBlurProcessor.CreateSRVHeap(mDevice);
+	mMotionBlurProcessor.RegisterVelocityMap(mDevice, mGBuffers[4]);
+	mMotionBlurProcessor.BuildShader(mDevice);
+	mMotionBlurProcessor.BuildMesh(mDevice, mCommandList);
+}
+
 void Renderer::InitComputeProcesser() {
 	std::unique_ptr<ComputeProcessor> processor = std::make_unique<HorzBloomProcessor>(mDevice);
 	processor->CreateShader(mDevice);
@@ -620,10 +639,7 @@ void Renderer::InitComputeProcesser() {
 	processor->RegisterTexture(mDevice, mComputeProcessors[0]->GetComputeMap());
 	mComputeProcessors.emplace_back(std::move(processor));
 
-	processor = std::make_unique<MotionBlurProcessor>(mDevice);
-	processor->CreateShader(mDevice);
-	processor->RegisterTexture(mDevice, mGBuffers[4]);
-	mComputeProcessors.emplace_back(std::move(processor));
+	
 }
 
 void Renderer::InitIMGUIRenderer() {
