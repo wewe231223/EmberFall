@@ -10,6 +10,7 @@ Camera::Camera(DefaultBufferCPUIterator bufferLocation) : mCameraBufferCPU(buffe
 	DirectX::BoundingFrustum::CreateFromMatrix(mViewFrustum, mCameraConstant.proj.Transpose());
 	mCameraConstant.proj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(CameraParam.fov, CameraParam.aspect, CameraParam.farZ, CameraParam.nearZ).Transpose();
 
+	mCameraConstant.fogStart = 2000.f;
 }
 
 void Camera::UpdateBuffer() {
@@ -17,10 +18,14 @@ void Camera::UpdateBuffer() {
 	mCameraConstant.view = SimpleMath::Matrix::CreateLookAt(mTransform.GetPosition(), mTransform.GetPosition() + mTransform.GetForward(),SimpleMath::Vector3::Up).Transpose();
 	mCameraConstant.viewProj = mCameraConstant.proj * mCameraConstant.view;
 	mCameraConstant.cameraPosition = mTransform.GetPosition();
-
+	
 	mViewFrustum.Transform(mWorldFrustum, SimpleMath::Matrix::CreateLookAt(mTransform.GetPosition(), mTransform.GetPosition() + mTransform.GetForward(), SimpleMath::Vector3::Up).Invert());
 
 	::memcpy(*mCameraBufferCPU, &mCameraConstant, sizeof(CameraConstants));
+}
+
+void Camera::SetFogStart(float start) {
+	mCameraConstant.fogStart = start; 
 }
 
 bool Camera::IsInFrustum(Collider& other) const {
@@ -105,9 +110,12 @@ void FreeCameraMode::FocusUpdate() {
 
 }
 
-void FreeCameraMode::SetCameraShake(std::chrono::milliseconds duration)
-{
+void FreeCameraMode::SetCameraShake(std::chrono::milliseconds duration){
 }
+
+void FreeCameraMode::SetCameraFog(bool state) {
+}
+
 
 TPPCameraMode::TPPCameraMode(Camera* camera, Transform& transform, const DirectX::SimpleMath::Vector3& offset) : CameraMode(camera), mOffset(offset), mTargetTransform(transform) {
 }
@@ -193,4 +201,9 @@ ECameraMode TPPCameraMode::GetMode() const {
 
 void TPPCameraMode::SetCameraShake(std::chrono::milliseconds duration) {
 	mShakeDuration = duration;
+}
+
+void TPPCameraMode::SetCameraFog(bool state) {
+	mFogState = state; 
+	mCamera->SetFogStart(10.f);
 }

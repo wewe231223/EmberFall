@@ -1,12 +1,16 @@
 cbuffer Camera : register(b0)
 {
     float4x4 view;
-    float4x4 proj;
-    float4x4 viewProj;
+    float4x4 projection;
+    float4x4 viewProjection;
     float4x4 middleViewProjection;
+
     float3 cameraPosition;
     int isShadow;
-}
+    float3 shadowOffset;
+    
+    float fogStart;
+};
 
 struct ModelContext
 {
@@ -95,41 +99,41 @@ void BB_GS(point BB_GIN input[1], inout LineStream<BB_PIN> output)
     [unroll(4)]
     for (int i = 0; i < 4; ++i)
     {
-        outpoint.position = mul(float4(TopPoints[i], 1.f), viewProj);
+        outpoint.position = mul(float4(TopPoints[i], 1.f), viewProjection);
         output.Append(outpoint);
     }
     
-    outpoint.position = mul(float4(TopPoints[0], 1.f), viewProj);
+    outpoint.position = mul(float4(TopPoints[0], 1.f), viewProjection);
     output.Append(outpoint);
-    outpoint.position = mul(float4(BottomPoints[0], 1.f), viewProj);
+    outpoint.position = mul(float4(BottomPoints[0], 1.f), viewProjection);
     output.Append(outpoint);
     
     [unroll(4)]
     for (int k = 1; k < 4; ++k)
     {
-        outpoint.position = mul(float4(BottomPoints[k], 1.f), viewProj);
+        outpoint.position = mul(float4(BottomPoints[k], 1.f), viewProjection);
         output.Append(outpoint);
     }
     
-    outpoint.position = mul(float4(BottomPoints[0], 1.f), viewProj);
+    outpoint.position = mul(float4(BottomPoints[0], 1.f), viewProjection);
     output.Append(outpoint);
     
     output.RestartStrip();
-    outpoint.position = mul(float4(TopPoints[1], 1.f), viewProj);
+    outpoint.position = mul(float4(TopPoints[1], 1.f), viewProjection);
     output.Append(outpoint);
-    outpoint.position = mul(float4(BottomPoints[1], 1.f), viewProj);
-    output.Append(outpoint);
-    
-    output.RestartStrip();
-    outpoint.position = mul(float4(TopPoints[3], 1.f), viewProj);
-    output.Append(outpoint);
-    outpoint.position = mul(float4(BottomPoints[3], 1.f), viewProj);
+    outpoint.position = mul(float4(BottomPoints[1], 1.f), viewProjection);
     output.Append(outpoint);
     
     output.RestartStrip();
-    outpoint.position = mul(float4(TopPoints[2], 1.f), viewProj);
+    outpoint.position = mul(float4(TopPoints[3], 1.f), viewProjection);
     output.Append(outpoint);
-    outpoint.position = mul(float4(BottomPoints[2], 1.f), viewProj);
+    outpoint.position = mul(float4(BottomPoints[3], 1.f), viewProjection);
+    output.Append(outpoint);
+    
+    output.RestartStrip();
+    outpoint.position = mul(float4(TopPoints[2], 1.f), viewProjection);
+    output.Append(outpoint);
+    outpoint.position = mul(float4(BottomPoints[2], 1.f), viewProjection);
     output.Append(outpoint);
 }
 

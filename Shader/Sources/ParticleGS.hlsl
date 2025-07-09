@@ -2,16 +2,19 @@
 #define ParticleType_shell 2
 #define ParticleType_ember 3
 
-cbuffer CameraCB : register(b0)
+cbuffer Camera : register(b0)
 {
     float4x4 view;
-    float4x4 proj;
-    float4x4 viewProj;
+    float4x4 projection;
+    float4x4 viewProjection;
     float4x4 middleViewProjection;
+
     float3 cameraPosition;
     int isShadow;
+    float3 shadowOffset;
+    
+    float fogStart;
 };
-
 cbuffer GlobalCB : register(b1)
 {
     uint globalTime; // 밀리초 단위 
@@ -137,7 +140,7 @@ void CreateBillBoard(ParticleVertex vertex, inout TriangleStream<Particle_PS_IN>
     for (uint i = 0; i < 4; i++)
     {
         outpoint.positionV = mul(positions[i], view).xyz;
-        outpoint.positionH = mul(positions[i], viewProj);
+        outpoint.positionH = mul(positions[i], viewProjection);
         outpoint.material = vertex.material;
         outpoint.uv = mul(uvTransform, float3(uvs[i], 1.f)).xy;
 

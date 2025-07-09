@@ -146,6 +146,9 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 				mCurrentCameraMode->Enter();
 
+
+
+
 #ifdef DEV_MODE
 				int sign = NonReplacementSampler::GetInstance().Sample(); 
 
@@ -756,7 +759,6 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 
 
 
-
 }
 
 // 별도 시간 누적 타이머 
@@ -931,12 +933,13 @@ void TerrainScene::Update() {
 	if (mCurrentCameraMode) {
 		mCurrentCameraMode->Update();
 
-		/*auto& pos = mCamera.GetTransform().GetPosition();
+		auto& pos = mCamera.GetTransform().GetPosition();
 		auto y = tCollider.GetHeight(pos.x, pos.z);
 		if (pos.y <= y + 0.5f) {
 			pos.y = y + 0.5f;
-		}*/
+		}
 
+		mCurrentCameraMode->SetCameraFog(true);
 		mCurrentCameraMode->FocusUpdate();
 	}
 	mCamera.UpdateBuffer();

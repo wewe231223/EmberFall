@@ -23,6 +23,9 @@ public:
 	void UpdateBuffer();
 	Transform& GetTransform() { return mTransform; }
 
+	void SetFogStart(float start);
+
+
 	bool IsInFrustum(Collider& other) const; 
 	bool IsInFrustum(DirectX::BoundingBox& other) const;
 public:
@@ -56,7 +59,8 @@ public:
 
 	virtual ECameraMode GetMode() const PURE; 
 
-	virtual void SetCameraShake(std::chrono::milliseconds duration) PURE; 
+	virtual void SetCameraShake(std::chrono::milliseconds duration) PURE;
+	virtual void SetCameraFog(bool state) PURE;
 protected:
 	Camera* mCamera{ nullptr };
 	int mInputCallBackSign{ -1 };
@@ -75,6 +79,7 @@ public:
 	virtual ECameraMode GetMode() const override { return ECameraMode::Free; }
 
 	virtual void SetCameraShake(std::chrono::milliseconds duration) override;
+	virtual void SetCameraFog(bool state) override;
 };
 
 class TPPCameraMode : public CameraMode {
@@ -90,9 +95,11 @@ public:
 	virtual ECameraMode GetMode() const;
 
 	virtual void SetCameraShake(std::chrono::milliseconds duration) override;
+	virtual void SetCameraFog(bool state) override;
 private:
 	Transform& mTargetTransform;
 	DirectX::SimpleMath::Vector3 mOffset{ DirectX::SimpleMath::Vector3::Zero };
 
 	std::chrono::milliseconds mShakeDuration{ 0ms };
+	bool mFogState{ false };
 };

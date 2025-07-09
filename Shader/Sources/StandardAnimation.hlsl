@@ -4,10 +4,12 @@ cbuffer Camera : register(b0)
     float4x4 projection;
     float4x4 viewProjection;
     float4x4 middleViewProjection;
-    // float4x4 farViewProjection;
 
     float3 cameraPosition;
     int isShadow;
+    float3 shadowOffset;
+    
+    float fogStart;
 };
 
 struct ModelContext

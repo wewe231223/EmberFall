@@ -448,6 +448,8 @@ void LobbyScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mLeftArrowButton.SetActiveState(false); 
 	mRightArrowButton.SetActiveState(false);
 	mReadyButton.SetActiveState(false);
+
+	mCamera.SetFogStart(3000.f);
 }
 
 void LobbyScene::ProcessNetwork() {

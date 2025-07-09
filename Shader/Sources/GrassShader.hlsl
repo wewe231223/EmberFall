@@ -1,11 +1,15 @@
-cbuffer CameraCB : register(b0)
+cbuffer Camera : register(b0)
 {
     float4x4 view;
-    float4x4 proj;
-    float4x4 viewProj;
+    float4x4 projection;
+    float4x4 viewProjection;
     float4x4 middleViewProjection;
+
     float3 cameraPosition;
     int isShadow;
+    float3 shadowOffset;
+    
+    float fogStart;
 };
 
 cbuffer Time : register(b1)
@@ -160,7 +164,7 @@ void mainMS(
     [unroll]
     for (int i = 0; i < 8; ++i)
     {
-        outVerts[vtxBase + i].position = mul(float4(verts[i], 1.0f), viewProj);
+        outVerts[vtxBase + i].position = mul(float4(verts[i], 1.0f), viewProjection);
         outVerts[vtxBase + i].wPosition = verts[i];
         outVerts[vtxBase + i].texIndex = GetIndexFromFloat3(grass);
 
