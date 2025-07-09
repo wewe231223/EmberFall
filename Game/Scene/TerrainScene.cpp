@@ -745,6 +745,12 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 		mCurrentCameraMode->SetCameraShake(700ms); 
 	});
 
+	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F7, mInputSign, [this]() {  
+		mIsBlind = not mIsBlind;
+	});
+
+
+
 	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
 	gClientCore->Send(packet);
 
@@ -913,7 +919,12 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer, UINT& cnt) {
 
 
 void TerrainScene::Update() {
-	mRenderManager->GetFogRangeStart() = 10.f;
+	float coefficient{ mIsBlind ? -1.f : 1.f };
+	mRenderManager->GetFogRangeStart() += coefficient * Time.GetDeltaTime<float, std::chrono::seconds>() * 500.f;
+
+	mRenderManager->GetFogRangeStart() = std::clamp(mRenderManager->GetFogRangeStart(), 7.f, 1000.f);
+
+
 #ifdef DEV_MODE
 	mLatencyBlock->GetText() = std::format(L"Latency : {} ms", TerrainScene::GetAverageLatency<std::chrono::milliseconds>());
 #endif 

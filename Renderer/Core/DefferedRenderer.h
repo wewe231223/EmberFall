@@ -21,7 +21,7 @@ public:
 public:
 	void RegisterGBufferTexture(ComPtr<ID3D12Device> device, const std::span<Texture>& textures);
 	void RegisterShadowMap(ComPtr<ID3D12Device> device, std::array<Texture, Config::SHADOWMAP_COUNT<int>>& shadowMap);
-	void Render(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator shadowCameraBuffer, DefaultBufferGPUIterator lightingBuffer, float fogRangeStart);
+	void Render(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator shadowCameraBuffer, DefaultBufferGPUIterator lightingBuffer, float& fogRangeStart);
 private:
 	void BuildShader(ComPtr<ID3D12Device> device);
 	void BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
