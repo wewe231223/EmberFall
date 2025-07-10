@@ -13,6 +13,15 @@ static const int maskWidth = 7;
 //static const float gGaussianBlurMask1D[19] = { 0.0015f, 0.0038f, 0.0087f, 0.0180f, 0.0332f, 0.0548f, 0.0808f, 0.1067f, 0.1260f, 0.1332f, 0.1260f, 0.1067f, 0.0808f, 0.0548f, 0.0332f, 0.0180f, 0.0087f, 0.0038f, 0.0015f };
 //static const int maskWidth = 9;
 
+//static const float gGaussianBlurMask1D[25] =
+//{
+//    0.0001f, 0.0004f, 0.0011f, 0.0028f, 0.0061f,
+//    0.0121f, 0.0216f, 0.0347f, 0.0509f, 0.0689f,
+//    0.0866f, 0.1006f, 0.1065f, 0.1006f, 0.0866f,
+//    0.0689f, 0.0509f, 0.0347f, 0.0216f, 0.0121f,
+//    0.0061f, 0.0028f, 0.0011f, 0.0004f, 0.0001f
+//};
+//static const int maskWidth = 12;
 
 static const int threadGroupSize = 256;
 
@@ -20,7 +29,7 @@ static const int threadGroupSize = 256;
 groupshared float4 gGroupSharedCache[threadGroupSize + 2 * maskWidth];
 
 [numthreads(threadGroupSize, 1, 1)]
-void HorzBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : SV_DispatchThreadID)
+void HorzBloom_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : SV_DispatchThreadID)
 {
     int2 uv = dispatchThreadID.xy;
     
@@ -95,7 +104,7 @@ void HorzBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID :
 }
 
 [numthreads(1, threadGroupSize, 1)]
-void VertBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : SV_DispatchThreadID)
+void VertBloom_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : SV_DispatchThreadID)
 {
     
 

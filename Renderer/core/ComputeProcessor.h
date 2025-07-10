@@ -101,3 +101,60 @@ private:
 
 };
 
+class HorzBlurProcessor : public ComputeProcessor {
+public:
+	HorzBlurProcessor() = default;
+	HorzBlurProcessor(ComPtr<ID3D12Device> device);
+	virtual ~HorzBlurProcessor() = default;
+
+	HorzBlurProcessor(const HorzBlurProcessor& other) = default;
+	HorzBlurProcessor& operator=(const HorzBlurProcessor& other) = default;
+
+	HorzBlurProcessor(HorzBlurProcessor&& other) = default;
+	HorzBlurProcessor& operator=(HorzBlurProcessor&& other) = default;
+
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+
+
+	virtual void RegisterTexture(ComPtr<ID3D12Device> device, Texture& texture) override;
+	virtual void Dispatch(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, Texture* input, Texture* output = nullptr) override;
+
+private:
+	virtual void CreateResource(ComPtr<ID3D12Device> device) override;
+	virtual void CreateHeap(ComPtr<ID3D12Device> device) override;
+	virtual void CreateView(ComPtr<ID3D12Device> device) override;
+	virtual void CompileShader() override;
+	virtual void CreateRootSignature(ComPtr<ID3D12Device> device) override;
+	virtual void CreatePSO(ComPtr<ID3D12Device> device) override;
+
+};
+
+class VertBlurProcessor : public ComputeProcessor {
+public:
+	VertBlurProcessor() = default;
+	VertBlurProcessor(ComPtr<ID3D12Device> device);
+	virtual ~VertBlurProcessor() = default;
+
+	VertBlurProcessor(const VertBlurProcessor& other) = default;
+	VertBlurProcessor& operator=(const VertBlurProcessor& other) = default;
+
+	VertBlurProcessor(VertBlurProcessor&& other) = default;
+	VertBlurProcessor& operator=(VertBlurProcessor&& other) = default;
+
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+
+	virtual void RegisterTexture(ComPtr<ID3D12Device> device, Texture& texture) override;
+	virtual void Dispatch(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, Texture* input, Texture* output = nullptr) override;
+
+private:
+	virtual void CreateResource(ComPtr<ID3D12Device> device) override;
+	virtual void CreateHeap(ComPtr<ID3D12Device> device) override;
+	virtual void CreateView(ComPtr<ID3D12Device> device) override;
+	virtual void CompileShader() override;
+	virtual void CreateRootSignature(ComPtr<ID3D12Device> device) override;
+	virtual void CreatePSO(ComPtr<ID3D12Device> device) override;
+
+};
+

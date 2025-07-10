@@ -20,7 +20,7 @@ void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferC
 	mScenes[static_cast<size_t>(SceneType::LOBBY)] = std::make_shared<LobbyScene>(renderMgr, mainCameraBufferLocation);
 
 	mSceneFeatureType[static_cast<size_t>(SceneType::LOADING)]	= { false, false, false, false, false }; 
-	mSceneFeatureType[static_cast<size_t>(SceneType::LOBBY)]	= { false, false, true, false, true }; 
+	mSceneFeatureType[static_cast<size_t>(SceneType::LOBBY)]	= { false, false, true, false, false }; 
 	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)]	= { true, true, true, true, true }; 
 
 	mCurrentSceneType = SceneType::LOADING;

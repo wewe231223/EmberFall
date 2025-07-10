@@ -148,6 +148,8 @@ Deffered_POUT StandardNormal_PS(StandardNormal_VOUT input) {
     prevNDC.xy = prevNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
     
     float4 velocity = (curNDC - prevNDC);
+    
+    
     output.velocity = float4(velocity.x, velocity.y, 0.0f, input.position.z);
 
     
