@@ -115,6 +115,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					break;
 				case Packets::EntityType_HUMAN_MAGICIAN:
 					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mMageAnimationController);
+					nextLoc->AddEquipment(mEquipments["Staff"].Clone());
 					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Magician"));
 					break;
 				case Packets::EntityType_BOSS:
@@ -212,7 +213,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					break;
 				case Packets::EntityType_HUMAN_MAGICIAN:
 					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mMageAnimationController);
-
+					nextLoc->AddEquipment(mEquipments["Staff"].Clone());
 					break;
 				case Packets::EntityType_BOSS:
 					*nextLoc = Player(mMeshMap["Demon"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial"), mDemonAnimationController);
@@ -669,6 +670,17 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 		mEquipments["Shield"].mEquipJointIndex = 11;
 		mEquipments["Shield"].SetActiveState(true);
 	}
+
+	{
+		mEquipments["Staff"] = EquipmentObject{};
+		mEquipments["Staff"].mMesh = mMeshMap["Staff"].get();
+		mEquipments["Staff"].mShader = mShaderMap["StandardNormalShader"].get();
+		mEquipments["Staff"].mMaterial = mRenderManager->GetMaterialManager().GetMaterial("StaffMaterial");
+		mEquipments["Staff"].mCollider = mColliderMap["Staff"];
+		mEquipments["Staff"].mEquipJointIndex = 36;
+		mEquipments["Staff"].SetActiveState(true);
+	}
+
 
 	{
 		mEquipments["DemonCloth"] = EquipmentObject{};

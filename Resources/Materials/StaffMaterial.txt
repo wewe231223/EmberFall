@@ -1,0 +1,18 @@
+DiffuseColor: 1.0, 1.0, 1.0, 1.0
+SpecularColor: 0.0, 0.0, 0.0, 0.0
+EmissiveColor: 1.0, 1.0, 1.0, 1.0
+
+DiffuseTextures:
+Staff_BaseColor
+
+SpecularTextures:
+
+EmissiveTextures:
+Staff_Emission
+
+MetalicTextures:
+
+NormalTextures:
+Staff_Normal
+
+AlphaTextures:

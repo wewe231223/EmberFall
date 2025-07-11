@@ -613,7 +613,7 @@ void LobbyScene::Exit() {
 
 void LobbyScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	mMeshMap["SkyBox"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::SkyDome, 100);
-
+	mMeshMap["Sphere"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Sphere, 1);
 	mMeshMap["Plane"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Plane, 50);
 
 	MeshLoader Loader{};
@@ -639,6 +639,9 @@ void LobbyScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCom
 
 	data = Loader.Load("Resources/Assets/Weapon/Bow/Arrow.glb");
 	mMeshMap["Arrow"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Weapon/staff/Staff.glb");
+	mMeshMap["Staff"] = std::make_unique<Mesh>(device, commandList, data);
 
 	data = Loader.Load("Resources/Assets/Weapon/Bow/quiver.glb");
 	mMeshMap["Quiver"] = std::make_unique<Mesh>(device, commandList, data);
@@ -714,6 +717,12 @@ void LobbyScene::BuildMaterial() {
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Quiver_baseColor");
 	mRenderManager->GetMaterialManager().CreateMaterial("QuiverMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Staff_BaseColor");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Staff_Normal");
+	mat.mEmissiveTexture[0] = mRenderManager->GetTextureManager().GetTexture("Staff_Emission");
+	mat.mEmissiveColor = SimpleMath::Color(1.0f, 1.0f, 1.0f, 1.0f);
+	mRenderManager->GetMaterialManager().CreateMaterial("StaffMaterial", mat);
 
 	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 1.0f);
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Albedo_Skin_3");
@@ -1013,6 +1022,15 @@ void LobbyScene::BuildEquipmentObject() {
 	}
 
 	{
+		mEquipments["Staff"] = EquipmentObject{};
+		mEquipments["Staff"].mMesh = mMeshMap["Staff"].get();
+		mEquipments["Staff"].mShader = mShaderMap["StandardShader"].get();
+		mEquipments["Staff"].mMaterial = mRenderManager->GetMaterialManager().GetMaterial("StaffMaterial");
+		mEquipments["Staff"].mEquipJointIndex = 36;
+		mEquipments["Staff"].SetActiveState(true);
+	}
+
+	{
 		mEquipments["DemonCloth"] = EquipmentObject{};
 		mEquipments["DemonCloth"].mMesh = mMeshMap["DemonCloth"].get();
 		mEquipments["DemonCloth"].mShader = mShaderMap["StandardNormalShader"].get();
@@ -1046,6 +1064,7 @@ void LobbyScene::BuildPlayerPrefab() {
 	mPlayerPreFabs["Archer"].AddEquipment(mEquipments["Quiver"].Clone());
 
 	mPlayerPreFabs["Mage"] = Player{ mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("HumanMaterial"), mMageAnimationController };
+	mPlayerPreFabs["Mage"].AddEquipment(mEquipments["Staff"].Clone());
 
 	mPlayerPreFabs["Demon"] = Player{ mMeshMap["Demon"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial"), mDemonAnimationController };
 	mPlayerPreFabs["Demon"].AddEquipment(mEquipments["DemonWeapon"].Clone());

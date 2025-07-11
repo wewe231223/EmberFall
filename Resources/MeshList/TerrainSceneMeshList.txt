@@ -26,6 +26,7 @@ FILE Resources/Assets/Weapon/Shield/Shield.glb - Shield
 FILE Resources/Assets/Demon/DemonWeapon.glb - DemonWeapon
 FILE Resources/Assets/Demon/DemonCloth.glb - DemonCloth
 FILE Resources/Assets/CorruptedGem/CorruptedGem.glb - CorruptedGem
+FILE Resources/Assets/Weapon/staff/Staff.glb - Staff
 
 # ===== Environment: Flora =====
 FILE Resources/Assets/Env/Fern.glb - Fern
