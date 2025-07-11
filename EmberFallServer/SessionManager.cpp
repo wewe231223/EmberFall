@@ -7,11 +7,11 @@ SessionManager::~SessionManager() {
     mSessions.clear();
 }
 
-bool SessionManager::AddSession(OverlappedAccept* acceptInfo) {
+std::pair<SessionIdType, GameSession*> SessionManager::AddSession(OverlappedAccept* acceptInfo) {
     auto session = gSessionEbr.PopPointer<GameSession>(acceptInfo->connectedSocket);
     auto id = mSessionIdCount.fetch_add(1);
     if (id == INVALID_SESSION_ID) {
-        return false;
+        return std::make_pair(SYSTEM_ID, nullptr);
     }
 
     session->InitId(id);
@@ -27,23 +27,7 @@ bool SessionManager::AddSession(OverlappedAccept* acceptInfo) {
 
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Client [IP: {}, PORT: {}] Connected", ip, port);
 
-    return true;
-}
-
-bool SessionManager::AddSession(SOCKET socket) {
-    auto session = new GameSession{ socket };
-    auto id = mSessionIdCount.fetch_add(1);
-    if (id == INVALID_SESSION_ID) {
-        return false;
-    }
-
-    session->InitId(id);
-    mSessionCount.fetch_add(1);
-
-    mSessions.insert(std::make_pair(id, session));
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Session[{}]: add in session map", id);
-
-    return true;
+    return std::make_pair(id, session);
 }
 
 void SessionManager::CloseSession(SessionIdType id) {

@@ -165,7 +165,7 @@ void ServerFrame::IoThread() {
             continue;
         }
 
-        if (IoType::SEND == ioType or IoType::RECV == ioType and 0 >= receivedByte) {
+        if ((IoType::SEND == ioType or IoType::RECV == ioType) and 0 >= receivedByte) {
             if (IoType::SEND == ioType) {
                 FbsPacketFactory::ReleasePacketBuf(reinterpret_cast<OverlappedSend*>(overlappedEx));
             }
@@ -204,9 +204,15 @@ void ServerFrame::IoThread() {
             //auto session = new GameSession{ overlappedAccept->connectedSocket };
             auto sesison = gSessionEbr.PopPointer<GameSession>(overlappedAccept->connectedSocket);
 
-            if (false == mSessionManager.AddSession(overlappedAccept)) {
+            auto [id, result] = mSessionManager.AddSession(overlappedAccept);
+            if (SYSTEM_ID == id or nullptr == result) {
                 gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Client Connect Failure");
+                mListener.RegisterAccept();
+                break;
             }
+
+            mIocpCore.RegisterSocket(reinterpret_cast<SOCKET>(result->GetHandle()), result->GetId());
+            //result->RegisterRecv();
 
             mListener.RegisterAccept();
         }

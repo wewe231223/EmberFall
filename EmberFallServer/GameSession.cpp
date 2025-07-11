@@ -30,7 +30,7 @@ void GameSession::Close() {
     gServerFrame->AddTimerEvent(myId, 0s, IoType::REMOVE_PLAYER_IN_ROOM, info);
 
     if (nullptr != mUserObject) {
-        gServerFrame->AddTimerEvent(myId, 0s, IoType::REMOVE_NPC, info);
+        gServerFrame->AddTimerEvent(myId, 0s, IoType::REMOVE_NPC, myRoom);
         mUserObject = nullptr;
     }
 
@@ -54,6 +54,7 @@ void GameSession::OnConnect() {
 }
 
 void GameSession::ProcessRecv(INT32 numOfBytes) {
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "recv thread: {}", test_recv_thread_num.load());
     auto dataBeg = mOverlappedRecv.buffer.begin();
     auto dataEnd = dataBeg + numOfBytes;
     auto remainBegin = ValidatePackets(dataBeg, dataEnd);
@@ -134,8 +135,8 @@ void GameSession::InitPlayerScript() {
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
-        break;
     }
+    break;
 
     case Packets::PlayerRole_HUMAN_SWORD:
     {
@@ -148,8 +149,8 @@ void GameSession::InitPlayerScript() {
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
-        break;
     }
+    break;
 
     case Packets::PlayerRole_HUMAN_LONGSWORD:
     {
@@ -162,8 +163,8 @@ void GameSession::InitPlayerScript() {
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
-        break;
     }
+    break;
 
     case Packets::PlayerRole_HUMAN_MAGICIAN:
     {
@@ -176,8 +177,8 @@ void GameSession::InitPlayerScript() {
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
-        break;
     }
+    break;
 
     case Packets::PlayerRole_BOSS:
     {
@@ -190,8 +191,8 @@ void GameSession::InitPlayerScript() {
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
-        break;
     }
+      break;
 
     default:
         break;

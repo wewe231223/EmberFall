@@ -4,6 +4,8 @@
 #include "../Protocol/PacketProtocol_generated.h"
 #include "SendBuffers.h"
 
+extern std::unique_ptr<class LogConsole> gLogConsole;
+
 inline constexpr size_t FBS_PACKET_CS_START = Packets::PacketTypes_MIN;
 inline constexpr size_t FBS_PACKET_CS_END = Packets::PacketTypes_PT_REQUEST_FIRE_CS;
 inline constexpr size_t FBS_PACKET_SC_START = Packets::PacketTypes_PT_PROTOCOL_VERSION_SC;
@@ -23,6 +25,7 @@ public:
     template <typename PacketType>
     static const PacketType* GetDataPtrCS(const uint8_t* const data) {
         auto header = GetHeaderPtrCS(data);
+        gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Type: {}, Size: {}", Packets::EnumNamePacketTypes(static_cast<Packets::PacketTypes>(header->type)), header->size);
         return flatbuffers::GetRoot<PacketType>(data + sizeof(PacketHeaderCS));
     }
 

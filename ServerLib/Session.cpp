@@ -244,11 +244,6 @@ RecvBuf::iterator Session::ValidatePackets(RecvBuf::iterator iter, RecvBuf::iter
             break;
         }
 
-#if defined(DEBUG) || defined(_DEBUG)
-        if (0 == packetSize) {
-            Crash("asd");
-        }
-#endif
         it += packetSize;
     }
 

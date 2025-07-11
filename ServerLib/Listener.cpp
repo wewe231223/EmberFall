@@ -54,15 +54,13 @@ SOCKET Listener::GetListenSocket() const {
 }
 
 void Listener::RegisterAccept() {
-    mClientSocket = NetworkUtil::CreateSocket();
-
     mOverlappedAccept.ResetOverlapped();
-    mOverlappedAccept.connectedSocket = mClientSocket;
+    mOverlappedAccept.connectedSocket = NetworkUtil::CreateSocket();
     INT addrSize{ sizeof(sockaddr_in) + 16 }; // addrsize는 내부 구현상 사용하는 주소체게 구조체 크기 + 16이 되어야함
     DWORD received{ };
     auto registSuccess = ::AcceptEx(
         mListenSocket,
-        mClientSocket,
+        mOverlappedAccept.connectedSocket,
         mOverlappedAccept.buffer.data(),
         0,
         addrSize,

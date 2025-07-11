@@ -30,7 +30,6 @@ public:
 
 private:
     SOCKET mListenSocket{ INVALID_SOCKET };
-    SOCKET mClientSocket{ INVALID_SOCKET };
     OverlappedAccept mOverlappedAccept{ };
 
     const unsigned short mLocalPort{ };

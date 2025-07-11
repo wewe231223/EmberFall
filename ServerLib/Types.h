@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 using SessionIdType = BYTE;
-using PacketSizeType = BYTE;
+using PacketSizeT = BYTE;
 using NetworkObjectIdType = unsigned short;
 
 enum class ObjectTag : uint8_t {

@@ -8,7 +8,6 @@
 #include "GameRoom.h"
 #include "Sector.h"
 
-// MultiThread Test
 void ProcessPackets(GameSession* session, const uint8_t* const buffer, size_t bufSize) {
     const uint8_t* iter = buffer;
     while (iter < buffer + bufSize) {
@@ -23,106 +22,105 @@ const uint8_t* ProcessPacket(GameSession* session, const uint8_t* buffer) {
     }
 
     Packets::PacketTypes enumType = static_cast<Packets::PacketTypes>(header->type);
-    //gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Process: {}", Packets::EnumNamePacketTypes(enumType));
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Process: {}", Packets::EnumNamePacketTypes(enumType));
     switch (header->type) {
     case Packets::PacketTypes_PT_HEART_BEAT_CS:
     {
         decltype(auto) packetHeartBeat = FbsPacketFactory::GetDataPtrCS<Packets::HeartBeatCS>(buffer);
         ProcessHeartBeatCS(session, packetHeartBeat);
-        break;
     }
+    break;
 
     case Packets::PacketTypes_PT_PLAYER_INPUT_CS:
     {
         decltype(auto) packetInput = FbsPacketFactory::GetDataPtrCS<Packets::PlayerInputCS>(buffer);
         ProcessPlayerInputCS(session, packetInput);
-        break;
     }
+    break;
 
     case Packets::PacketTypes_PT_PLAYER_LOOK_CS:
     {
         decltype(auto) packetLook = FbsPacketFactory::GetDataPtrCS<Packets::PlayerLookCS>(buffer);
         ProcessPlayerLookCS(session, packetLook);
-        break;
     }
+    break;
 
     case Packets::PacketTypes_PT_PLAYER_ENTER_INGAME:
     {
         decltype(auto) packetEnter = FbsPacketFactory::GetDataPtrCS<Packets::PlayerEnterInGame>(buffer);
         ProcessPlayerEnterInGame(session, packetEnter);
-        break;
     }
+    break;
 
     case Packets::PacketTypes_PT_PLAYER_READY_IN_LOBBY_CS:
     {
         decltype(auto) packetReady = FbsPacketFactory::GetDataPtrCS<Packets::PlayerReadyInLobbyCS>(buffer);
         ProcessPlayerReadyInLobby(session, packetReady);
-        break;
     }
+    break;
 
     case Packets::PacketTypes_PT_PLAYER_CANCEL_READY_CS:
     {
         decltype(auto) packetCencelReady = FbsPacketFactory::GetDataPtrCS<Packets::PlayerCancelReadyCS>(buffer);
         ProcessPlayerCancelReady(session, packetCencelReady);
-        break;
     }
+    break;
 
     case Packets::PacketTypes_PT_PLAYER_ENTER_IN_LOBBY_CS:
     {
         decltype(auto) packetEnter = FbsPacketFactory::GetDataPtrCS<Packets::PlayerEnterInLobbyCS>(buffer);
         ProcessPlayerEnterInLobby(session, packetEnter);
-        break;
     }
+    break;
 
     case Packets::PacketTypes_PT_PLAYER_EXIT_CS:
     {
         decltype(auto) packetExit = FbsPacketFactory::GetDataPtrCS<Packets::PlayerExitCS>(buffer);
         ProcessPlayerExitCS(session, packetExit);
-        break;
     }
+    break;
 
     case Packets::PacketTypes_PT_PLAYER_SELECT_ROLE_CS:
     {
         decltype(auto) packetRoll = FbsPacketFactory::GetDataPtrCS<Packets::PlayerSelectRoleCS>(buffer);
         ProcessPlayerSelectRoleCS(session, packetRoll);
-        break;
     }
+    break;
 
     case Packets::PacketTypes_PT_LATENCY_CS:
     {
         decltype(auto) packetLatency = FbsPacketFactory::GetDataPtrCS<Packets::PacketLatencyCS>(buffer);
         ProcessLatencyCS(session, packetLatency);
-        break;
     }
-
+    break;
 
     case Packets::PacketTypes_PT_REQUEST_ATTACK_CS:
     {
         decltype(auto) packetAttack = FbsPacketFactory::GetDataPtrCS<Packets::RequestAttackCS>(buffer);
         ProcessRequestAttackCS(session, packetAttack);
-        break;
     }
+    break;
 
     case Packets::PacketTypes_PT_REQUEST_FIRE_CS:
     {
         decltype(auto) packetRequestFire = FbsPacketFactory::GetDataPtrCS<Packets::RequestFireCS>(buffer);
         ProcessRequestFireProjectileCS(session, packetRequestFire);
-        break;
     }
+    break;
 
     case Packets::PacketTypes_PT_REQUEST_USE_ITEM_CS:
     {
         decltype(auto) packetUseItem = FbsPacketFactory::GetDataPtrCS<Packets::RequestUseItemCS>(buffer);
         ProcessRequestUseItemCS(session, packetUseItem);
-        break;
     }
+    break;
 
     default:
     {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Client Sent Invalid PacketType - Close Session [{}]", session->GetId());
         gServerFrame->CloseSession(static_cast<SessionIdType>(session->GetId()));
-        break;
     }
+    break;
     }
 
     return buffer + header->size;
@@ -158,7 +156,7 @@ void ProcessPlayerEnterInLobby(GameSession* session, const Packets::PlayerEnterI
         }
 
         otherSession->RegisterSend(FbsPacketFactory::ClonePacket(packetEnter));
-        auto oldUserEnter = FbsPacketFactory::PlayerEnterInLobbySC(otherSessionId, otherSession->GetSlotIndex(), 
+        auto oldUserEnter = FbsPacketFactory::PlayerEnterInLobbySC(otherSessionId, otherSession->GetSlotIndex(),
             otherSession->GetReadyState(), otherSession->GetPlayerRole(), otherSession->GetNameView());
 
         session->RegisterSend(oldUserEnter);
@@ -232,8 +230,8 @@ void ProcessPlayerInputCS(GameSession* session, const Packets::PlayerInputCS* co
     }
 
     player->GetInput()->UpdateInput(input->key(), input->down());
-  //  userObject->Update();
-   // userObject->LateUpdate();
+    //  userObject->Update();
+     // userObject->LateUpdate();
 }
 
 void ProcessPlayerLookCS(GameSession* session, const Packets::PlayerLookCS* const look) {

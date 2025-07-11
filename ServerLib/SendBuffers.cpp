@@ -109,7 +109,7 @@ OverlappedSend* SendBufferFactory::GetOverlapped(const PacketHeaderSC* const hea
 }
 
 OverlappedSend* SendBufferFactory::GetOverlapped(const PacketHeaderCS* const header, const uint8_t* const payload, const PacketSizeT payloadSize) {
-    PacketSizeT dataSize = payloadSize + sizeof(PacketHeaderSC);
+    PacketSizeT dataSize = payloadSize + sizeof(PacketHeaderCS);
     if (dataSize > MEM_BLOCK_SIZES[MEM_BLOCK_SIZE_CNT - 1] or 0 == dataSize) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Send buffer DataSize Error Size: {}", dataSize);
         return nullptr;

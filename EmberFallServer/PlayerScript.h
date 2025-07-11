@@ -3,8 +3,8 @@
 #include "Script.h"
 #include "ViewList.h"
 
-class GameObject;
 class Input;
+class GameObject;
 
 class PlayerScript : public Script {
 public:

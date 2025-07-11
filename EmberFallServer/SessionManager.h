@@ -36,8 +36,7 @@ public:
     SessionManager& operator=(SessionManager&&) noexcept = delete;
 
 public:
-    bool AddSession(OverlappedAccept* acceptInfo);
-    bool AddSession(SOCKET socket);
+    std::pair<SessionIdType, GameSession*> AddSession(OverlappedAccept* acceptInfo);
     void CloseSession(SessionIdType id);
 
     GameSession* GetSession(SessionIdType id);
