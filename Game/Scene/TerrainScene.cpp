@@ -585,6 +585,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 		boss.mCollider = mColliderMap["Demon"];
 		boss.SetActiveState(true);
 		boss.SetEmpty(false);
+		boss.mGraphController.Transition(7);
 
 		boss.GetTransform().GetPosition() = { 3.f, tCollider.GetHeight(3.f, 36.f), 36.f };
 	}
@@ -945,14 +946,15 @@ void TerrainScene::Update() {
 			if (mCamera.FrustumCulling(gameObject.mCollider)) {
 				mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
 			}
-			
+			SimpleMath::Vector3 transformedPos = SimpleMath::Vector3::Transform(gameObject.GetTransform().GetPosition(), mCamera.GetCameraConstant().view);
 				
 			// TODO :: 아예 의미가 없는 코드이다. 정석적인 CasCade 구현에서 벗어남. 
-			for (int i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
+			/*for (UINT i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
 				if (mRenderManager->GetShadowRenderer().ShadowMapCulling(i, gameObject.mCollider)) {
 					mRenderManager->GetMeshRenderManager().AppendShadowBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer, i);
+					
 				}
-			}
+			}*/
 		}
 		else {
 			gameObject.UpdateShaderVariables();
@@ -2209,7 +2211,7 @@ void TerrainScene::BuildDemonAnimationController() {
 	AnimatorGraph::AnimationState attackState{};
 	attackState.clip = loader.GetClip(7);
 	attackState.name = "Attack";
-	attackState.loop = false;
+	attackState.loop = true;
 
 	AnimatorGraph::AnimationState interactionState{};
 	interactionState.clip = loader.GetClip(0);

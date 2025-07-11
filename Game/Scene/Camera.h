@@ -20,6 +20,7 @@ public:
 public:
 	void UpdateBuffer();
 	Transform& GetTransform() { return mTransform; }
+	CameraConstants& GetCameraConstant() { return mCameraConstant; }
 	bool FrustumCulling(Collider& other) const; 
 public:
 	CameraParameter CameraParam{};

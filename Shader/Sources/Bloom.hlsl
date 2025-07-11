@@ -7,7 +7,21 @@ RWTexture2D<float4> RWOutput : register(u0);
 //static const float gGaussianBlurMask1D[11] = { 0.05f, 0.05f, 0.1f, 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.05f, 0.05f};
 //static const int maskWidth = 5;
 
-static const float gGaussianBlurMask1D[15] = { 0.01f, 0.015f, 0.03f, 0.05f, 0.10f, 0.10f, 0.10f, 0.20f, 0.10f, 0.10f, 0.10f, 0.05f, 0.03f, 0.015f, 0.01f };
+static const float gGaussianBlurMask1D[15] = {  0.01f,
+                                                0.015f, 
+                                                0.03f, 
+                                                0.05f, 
+                                                0.10f, 
+                                                0.10f, 
+                                                0.10f, 
+                                                0.20f,
+                                                0.10f,
+                                                0.10f,
+                                                0.10f,
+                                                0.05f,
+                                                0.03f,
+                                                0.015f,
+                                                0.01f };
 static const int maskWidth = 7;
 
 //static const float gGaussianBlurMask1D[19] = { 0.0015f, 0.0038f, 0.0087f, 0.0180f, 0.0332f, 0.0548f, 0.0808f, 0.1067f, 0.1260f, 0.1332f, 0.1260f, 0.1067f, 0.0808f, 0.0548f, 0.0332f, 0.0180f, 0.0087f, 0.0038f, 0.0015f };
