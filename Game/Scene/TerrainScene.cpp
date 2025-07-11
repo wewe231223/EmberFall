@@ -1930,7 +1930,6 @@ void TerrainScene::BuildSwordManAnimationController() {
 		attackState.nonMaskedClipIndex = 7;
 		attackState.name = "Attack";
 		attackState.loop = true;
-		attackState.speed = 2.0;
 
 		AnimatorGraph::BoneMaskAnimationState interactionState{};
 		interactionState.maskedClipIndex = 8;

@@ -9,7 +9,7 @@ SamplerComparisonState PCFSampler : register(s6);
 Texture2D renderTarget : register(t0);
 Texture2D velocity : register(t1);
 
-#define SAMPLE_COUNT 17
+#define SAMPLE_COUNT 10
 
 
 struct MotionBlur_VIN
@@ -38,7 +38,8 @@ float4 MotionBlur_PS(MotionBlur_VOUT input) : SV_Target
     
     float4 color = renderTarget.Sample(linearWrapSampler, input.texcoord);
     float4 velo = velocity.Sample(linearWrapSampler, input.texcoord);
-    velo.xy /= (float)SAMPLE_COUNT;
+    velo.xy /= -(float)SAMPLE_COUNT;
+    
     int cnt = 1;
     float2 texCoord = input.texcoord;
     [unroll]
