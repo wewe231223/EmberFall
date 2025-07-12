@@ -98,7 +98,7 @@ StandardAnimationNormal_PIN StandardAnimationNormal_VS(StandardAnimationNormal_V
     StandardAnimationNormal_PIN output;
     
     float4x4 boneTransform = (float4x4)0;
-    float4x4 prevBoneTransform = (float4x4) 0;
+    float4x4 prevBoneTransform = (float4x4)0;
     
  
     boneTransform += boneTransforms[modelContext.boneStart + input.boneID[0]] * input.boneWeight.x;
@@ -172,7 +172,7 @@ Deffered_POUT StandardAnimationNormal_PS(StandardAnimationNormal_PIN input) {
     curNDC.xy = curNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
     prevNDC.xy = prevNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
     
-    float4 velocity = (curNDC - prevNDC) * 4.0f;
+    float4 velocity = (curNDC - prevNDC) * 2.0f;
     
     output.velocity = float4(velocity.x, velocity.y, 0.0f, input.position.z);
 

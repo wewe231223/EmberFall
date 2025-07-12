@@ -232,11 +232,11 @@ void Renderer::Render() {
 
 	if (mRenderManager->GetFeatureManager().GetCurrentFeature().MotionBlur) {
 
-		mGBuffers[4].Transition(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE);
+		/*mGBuffers[4].Transition(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE);
 		mComputeProcessors[2]->Dispatch(mDevice, mCommandList, &mGBuffers[4]);
 
 		mComputeProcessors[3]->Dispatch(mDevice, mCommandList, &mComputeProcessors[2]->GetComputeMap(), &mGBuffers[4]);
-		mGBuffers[4].Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+		mGBuffers[4].Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);*/
 
 		
 

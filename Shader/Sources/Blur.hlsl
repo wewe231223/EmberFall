@@ -37,7 +37,6 @@ void HorzBlur_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : 
     [unroll]
     for (int i = 0; i < 1 * leftEdge; ++i)
     {
-        //gGroupSharedCache[groupThreadID.x] = float4(0.0f, 0.0f, 0.0f, 1.0f);
         gGroupSharedCache[groupThreadID.x] = RWOutput[int2(max(dispatchThreadID.x - maskWidth, 0), dispatchThreadID.y)];
     }
     
@@ -46,7 +45,6 @@ void HorzBlur_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : 
     [unroll]
     for (int i = 0; i < 1 * rightEdge; ++i)
     {
-        //gGroupSharedCache[groupThreadID.x + (2 * maskWidth)] = float4(0.0f, 0.0f, 0.0f, 1.0f);
         gGroupSharedCache[groupThreadID.x + (2 * maskWidth)] = RWOutput[int2(min(dispatchThreadID.x + maskWidth, RWOutput.Length.x - 1), dispatchThreadID.y)];
 
     }
@@ -82,7 +80,6 @@ void VertBlur_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : 
     [unroll]
     for (int i = 0; i < 1 * topEdge; ++i)
     {
-        //gGroupSharedCache[groupThreadID.y] = float4(0.0f,0.0f,0.0f,1.0f);
         gGroupSharedCache[groupThreadID.y] = RWOutput[int2(dispatchThreadID.x, max(dispatchThreadID.y - maskWidth, 0))];
     }
     
@@ -91,7 +88,6 @@ void VertBlur_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : 
     [unroll]
     for (int i = 0; i < 1 * bottomEdge; ++i)
     {
-        //gGroupSharedCache[groupThreadID.y + (2 * maskWidth)] = float4(0.0f,0.0f,0.0f,1.0f);
         gGroupSharedCache[groupThreadID.y + (2 * maskWidth)] = RWOutput[int2(dispatchThreadID.x, min(dispatchThreadID.y + maskWidth, RWOutput.Length.y - 1))];
 
     }
