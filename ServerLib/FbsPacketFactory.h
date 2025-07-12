@@ -25,7 +25,6 @@ public:
     template <typename PacketType>
     static const PacketType* GetDataPtrCS(const uint8_t* const data) {
         auto header = GetHeaderPtrCS(data);
-        gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Type: {}, Size: {}", Packets::EnumNamePacketTypes(static_cast<Packets::PacketTypes>(header->type)), header->size);
         return flatbuffers::GetRoot<PacketType>(data + sizeof(PacketHeaderCS));
     }
 

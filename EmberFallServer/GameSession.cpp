@@ -54,7 +54,6 @@ void GameSession::OnConnect() {
 }
 
 void GameSession::ProcessRecv(INT32 numOfBytes) {
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "recv thread: {}", test_recv_thread_num.load());
     auto dataBeg = mOverlappedRecv.buffer.begin();
     auto dataEnd = dataBeg + numOfBytes;
     auto remainBegin = ValidatePackets(dataBeg, dataEnd);
@@ -64,8 +63,7 @@ void GameSession::ProcessRecv(INT32 numOfBytes) {
     decltype(auto) dataPtr = reinterpret_cast<const uint8_t* const>(mOverlappedRecv.buffer.data());
     ProcessPackets(this, dataPtr, dataSize);
     if (false == IsConnected()) {
-        gServerFrame->CloseSession(static_cast<SessionIdType>(GetId()));
-        Crash("");
+        gServerFrame->CloseSession(GetId());
         return;
     }
 
@@ -147,7 +145,7 @@ void GameSession::InitPlayerScript() {
 
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object - PlayerScript is Null");
         }
     }
     break;

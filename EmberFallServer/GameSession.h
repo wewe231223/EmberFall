@@ -49,7 +49,6 @@ public:
 
 public:
     uint64_t mEpochCounter{ };
-    std::atomic_int32_t test_recv_thread_num{ };
 
 private:
     // for lobby
