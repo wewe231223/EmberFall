@@ -3,33 +3,33 @@
 #include "NetworkCore.h"
 #include "OverlappedEx.h"
 
-INetworkObject::INetworkObject() { }
+IServerEntity::IServerEntity() { }
 
-INetworkObject::INetworkObject(uint16_t gameRoomIdx) 
+IServerEntity::IServerEntity(uint16_t gameRoomIdx) 
     : mGameRoomIdx{ gameRoomIdx } { }
 
-INetworkObject::~INetworkObject() { }
+IServerEntity::~IServerEntity() { }
 
-void INetworkObject::InitId(NetworkObjectIdType id) {
+void IServerEntity::InitId(NetworkObjectIdType id) {
     mId = id;
 }
 
-NetworkObjectIdType INetworkObject::GetId() const {
+NetworkObjectIdType IServerEntity::GetId() const {
     return mId;
 }
 
-uint16_t INetworkObject::GetMyRoomIdx() const {
+uint16_t IServerEntity::GetMyRoomIdx() const {
     return mGameRoomIdx;
 }
 
-void INetworkObject::SetRoomIdx(uint16_t roomIdx) {
+void IServerEntity::SetRoomIdx(uint16_t roomIdx) {
     mGameRoomIdx = roomIdx;
 }
 
-void INetworkObject::StorePacket(OverlappedSend* sendBuf) {
+void IServerEntity::StorePacket(OverlappedSend* sendBuf) {
     mSendBuf.push(sendBuf);
 }
 
-Concurrency::concurrent_queue<OverlappedSend*>& INetworkObject::GetSendBuf() {
+Concurrency::concurrent_queue<OverlappedSend*>& IServerEntity::GetSendBuf() {
     return mSendBuf;
 }

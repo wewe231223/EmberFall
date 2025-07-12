@@ -25,8 +25,8 @@ public:
 public:
     virtual void Init() override;
 
-    virtual void Update(const float deltaTime) override;
-    virtual void LateUpdate(const float deltaTime) override;
+    virtual void Update(const float time) override;
+    virtual void LateUpdate(const float time) override;
 
     virtual void OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse);
     virtual void OnCollisionTerrain(const float height) override;
@@ -39,20 +39,19 @@ public:
     bool IsPlayerInAttackRange() const;
 
     // 행동트리 관련 함수들 return NodeStatus
-    BT::NodeStatus SetRandomTargetLocation(const float deltaTime);
-    BT::NodeStatus MoveTo(const float deltaTime);
+    BT::NodeStatus SetRandomTargetLocation(const float time);
+    BT::NodeStatus MoveTo(const float time);
 
-    BT::NodeStatus DetectPlayerInRange(const float deltaTime);
-    BT::NodeStatus ChaseDetectedPlayer(const float deltaTime);
+    BT::NodeStatus DetectPlayerInRange(const float time);
+    BT::NodeStatus ChaseDetectedPlayer(const float time);
 
-    BT::NodeStatus CheckPlayerInAttackRange(const float deltaTime);
-    BT::NodeStatus Attack(const float deltaTime);
+    BT::NodeStatus CheckPlayerInAttackRange(const float time);
+    BT::NodeStatus Attack(const float time);
 
 private:
     SimpleMath::Vector3 mMoveDir{ SimpleMath::Vector3::Zero };
-    SimpleMath::Vector3 mTargetPos{ SimpleMath::Vector3::Zero }; // TestTargetPos....
+    SimpleMath::Vector3 mTargetPos{ SimpleMath::Vector3::Zero };
 
-    // range to detecting player 
     NetworkObjectIdType mChaseTarget{ INVALID_OBJ_ID };
     GameUnits::GameUnit<GameUnits::Meter> mAttackRange{ 1.0m };
     GameUnits::GameUnit<GameUnits::Meter> mPlayerDetectRange{ 10.0m };

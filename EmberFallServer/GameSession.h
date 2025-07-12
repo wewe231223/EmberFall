@@ -17,7 +17,7 @@ inline constexpr uint8_t PLAYER_ROLE_BOSS = 2;
 
 class GameSession : public Session {
 public:
-    GameSession();
+    GameSession(SOCKET socket);
     ~GameSession();
 
 public:
@@ -41,9 +41,14 @@ public:
     void InitUserObject();
     void InitPlayerScript();
 
+    void UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeNPC, const std::vector<NetworkObjectIdType>& inViewRangePlayer);
+
     virtual void Close() override;
     virtual void OnConnect() override;
     virtual void ProcessRecv(INT32 numOfBytes) override;
+
+public:
+    uint64_t mEpochCounter{ };
 
 private:
     // for lobby
@@ -52,4 +57,7 @@ private:
 
     std::string mName{ };
     std::shared_ptr<GameObject> mUserObject{ nullptr };
+
+    std::shared_mutex mViewListLock{ };
+    std::unordered_set<NetworkObjectIdType> mViewList{ };
 };

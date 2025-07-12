@@ -3,6 +3,7 @@
 #include "GameObject.h"
 #include "BuffSystem.h"
 #include "BuffHealScript.h"
+#include "ServerFrame.h"
 
 Inventory::Inventory() { }
 
@@ -13,16 +14,13 @@ uint8_t Inventory::GetItemCount(ItemTag tag) const {
 }
 
 uint8_t Inventory::AcquireItem(ItemTag tag) {
-    uint8_t retIdx{ 0xFF };
-    for (uint8_t idx{ 0 }; auto& item : mItems) {
-        if (ItemTag::ITEM_NONE == item) {
-            item = tag;
-            retIdx = idx;
-            break;
-        }
-
-        ++idx;
+    auto emptySlot = std::find(mItems.begin(), mItems.end(), ItemTag::ITEM_NONE);
+    if (mItems.end() == emptySlot) {
+        return 0xFF;
     }
+
+    *emptySlot = tag;
+    auto retIdx = std::distance(std::begin(mItems), emptySlot);
 
     return retIdx;
 }
@@ -33,18 +31,17 @@ void Inventory::UseItem(std::shared_ptr<GameObject> obj) {
         return;
     }
 
-    uint8_t itemIdx{ 0xFF };
-    ItemTag item = ItemTag::ITEM_NONE;
-    for (uint8_t idx{ 0 }; auto& tag : mItems) {
-        if (ItemTag::ITEM_NONE != tag) {
-            item = tag;
-            itemIdx = idx;
-            tag = ItemTag::ITEM_NONE;
-            break;
+    auto usableItem = std::find_if(mItems.begin(), mItems.end(), [](const auto& item) {
+        return ItemTag::ITEM_NONE != item;
         }
+    );
 
-        ++idx;
+    if (mItems.end() == usableItem) {
+        return;
     }
+
+    ItemTag item = *usableItem;
+    uint8_t itemIdx = std::distance(mItems.begin(), usableItem);
 
     switch (item) {
     case ItemTag::ITEM_POTION:
@@ -58,7 +55,7 @@ void Inventory::UseItem(std::shared_ptr<GameObject> obj) {
 
         auto sessionId = static_cast<SessionIdType>(obj->GetId());
         auto packetUse = FbsPacketFactory::UseItemSC(sessionId, itemIdx);
-        gServerCore->Send(sessionId, packetUse);
+        gServerFrame->Send(sessionId, packetUse);
         break;
     }
 

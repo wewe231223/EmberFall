@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "BuffHealScript.h"
 #include "GameObject.h"
+#include "ServerFrame.h"
 
 BuffHealScript::BuffHealScript(std::shared_ptr<class GameObject> owner, float delay, float duration, float healpoint) 
     : BuffScript{ owner, duration }, mDelay{ delay }, mHealPoint{ healpoint } { }
@@ -31,7 +32,7 @@ void BuffHealScript::Update(const float deltaTime) {
         mDelayCounter = SysClock::now();
         
         auto packetHeal = FbsPacketFactory::BuffHealSC(owner->mSpec.hp);
-        gServerCore->Send(static_cast<SessionIdType>(owner->GetId()), packetHeal);
+        gServerFrame->Send(static_cast<SessionIdType>(owner->GetId()), packetHeal);
     }
 }
 

@@ -11,20 +11,22 @@
 
 #include "INetworkObject.h"
 
-class Listener : public INetworkObject {
+class Listener {
 public:
     Listener() = delete;
-    Listener(const UINT16 port, std::shared_ptr<class INetworkCore> coreService);
+    Listener(const UINT16 port);
     ~Listener();
 
 public:
-    virtual HANDLE GetHandle() const override;
-    virtual void Close() override;
-    virtual bool IsClosed() const override;
+    HANDLE GetHandle() const;
+    SOCKET GetListenSocket() const;
+    bool IsClosed() const;
 
-    virtual void ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) override;
+    bool Init();
+    void Close();
+
+    void ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes);
     void RegisterAccept();
-    void ProcessAccept();
 
 private:
     SOCKET mListenSocket{ INVALID_SOCKET };

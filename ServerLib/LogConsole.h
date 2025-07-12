@@ -60,7 +60,7 @@ public:
     void Start();
 
     template <typename... Args>
-    void PushLog(DebugLevel level, std::format_string<Args...> format, Args&&... args) {
+    inline void PushLog(DebugLevel level, std::format_string<Args...> format, Args&&... args) {
         const auto log = Log{ level, LOG_HEADERS[static_cast<BYTE>(level)] + std::format(format, std::forward<Args>(args)...) };
         mLogQueue.push(log);
     }
@@ -73,7 +73,6 @@ private:
 private:
     volatile bool mPrintLoop{ true };
     HANDLE mConsoleHandle{ };
-    std::mutex testLock{ };
     std::thread mPrintThread{ };
     Concurrency::concurrent_queue<Log> mLogQueue;
 };

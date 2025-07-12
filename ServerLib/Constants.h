@@ -13,31 +13,37 @@ inline constexpr NetworkObjectIdType INVALID_OBJ_ID = std::numeric_limits<Networ
 
 inline constexpr size_t MAX_KEY_SIZE = 256;
 inline constexpr size_t MAX_BUF_SIZE = std::numeric_limits<unsigned short>::max();
-inline constexpr size_t BUF_NETWORK_RECV_SIZE = 65535;
-inline constexpr NetworkObjectIdType OBJECT_ID_START = INVALID_SESSION_ID + 1;
+inline constexpr size_t BUF_NETWORK_RECV_SIZE = 1024;
+inline constexpr size_t ADDR_BUF_SIZE = (sizeof(sockaddr_in) + 16) * 2;
 
-inline const uint32_t HARDWARE_CONCURRENCY = std::thread::hardware_concurrency();
-inline constexpr size_t CACHE_LINE_SIZE = std::hardware_constructive_interference_size;
-//inline constexpr size_t CACHE_LINE_SIZE = std::hardware_destructive_interference_size;
+inline constexpr NetworkObjectIdType OBJECT_ID_START = INVALID_SESSION_ID + 1;
 
 inline constexpr std::endian NATIVE_ENDIAN = std::endian::native;
 inline constexpr std::endian FBS_ENDIAN = std::endian::little; // flatbuffers 엔디안 형식
 
-enum class IOType : uint32_t {
+enum class IoType : uint32_t {
     SEND,
     RECV,
     CONNECT,
     DISCONNECT,
     ACCEPT,
-    UPDATE, // NPC, ENEMIES AI, PHYSICS ...
 
     // UPDATE 세분화
         // NPC
-    MOVE_NPC,
-    DISPATCH_EVENT,
-        // GAME ROOM
-    CHECK_GAME_END,
-    TRANSITION_STAGE,
+    NPC_MOVE,
+    NPC_DISPATCH_EVENT,
+    REMOVE_NPC,
+    UPDATE_NPC,
+    REMOVE_TRIGGER,
+    PROCESS_GAME_EVETN,
+
+    // GAME ROOM
+    SCENE_TRANSITION_COUNTDOWN,
+    REMOVE_PLAYER_IN_ROOM,
+    CHECK_GAME_CONDITION,
+    CHECK_SESSION_HEART_BEAT,
+    GAMEROOM_CHECK_GAME_END,
+    GAMEROOM_TRANSITION_STAGE,
 };
 
 enum class CollisionState : BYTE {
@@ -46,5 +52,3 @@ enum class CollisionState : BYTE {
     STAY,
     EXIT
 };
-
-extern std::unique_ptr<LogConsole> gLogConsole;

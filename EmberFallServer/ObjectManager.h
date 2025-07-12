@@ -57,7 +57,7 @@ private:
 
     std::array<std::shared_ptr<GameObject>, MAX_NPC> mNPCs{ };
     Concurrency::concurrent_queue<NetworkObjectIdType> mNPCIndices{ };
-    
+
     std::array<std::shared_ptr<GameObject>, MAX_PROJECTILE> mProjectiles{ };
     Concurrency::concurrent_queue<NetworkObjectIdType> mProjectileIndices{ };
 

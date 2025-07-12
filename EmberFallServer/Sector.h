@@ -66,7 +66,6 @@ public:
     void ChangeSector(NetworkObjectIdType id, Short2 prevIdx, Short2 currIdx);
 
     std::vector<NetworkObjectIdType> GetNearbyPlayers(const SimpleMath::Vector3& currPos, const float range);
-
     Short2 UpdateSectorPos(NetworkObjectIdType id, const SimpleMath::Vector3& prevPos, const SimpleMath::Vector3& currPos);
     
     void UpdatePlayerViewList(const std::shared_ptr<GameObject>& player, const SimpleMath::Vector3 pos, const float range);

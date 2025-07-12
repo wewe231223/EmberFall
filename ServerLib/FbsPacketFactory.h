@@ -4,6 +4,8 @@
 #include "../Protocol/PacketProtocol_generated.h"
 #include "SendBuffers.h"
 
+extern std::unique_ptr<class LogConsole> gLogConsole;
+
 inline constexpr size_t FBS_PACKET_CS_START = Packets::PacketTypes_MIN;
 inline constexpr size_t FBS_PACKET_CS_END = Packets::PacketTypes_PT_REQUEST_FIRE_CS;
 inline constexpr size_t FBS_PACKET_SC_START = Packets::PacketTypes_PT_PROTOCOL_VERSION_SC;

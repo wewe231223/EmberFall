@@ -177,6 +177,7 @@
     <ClCompile Include="PlayerScript.cpp" />
     <ClCompile Include="Resources.cpp" />
     <ClCompile Include="Sector.cpp" />
+    <ClCompile Include="SessionManager.cpp" />
     <ClCompile Include="Stage.cpp" />
     <ClCompile Include="TerrainCollider.cpp" />
     <ClCompile Include="CorruptedGem.cpp" />
@@ -197,6 +198,7 @@
     <ClCompile Include="Script.cpp" />
     <ClCompile Include="ServerFrame.cpp" />
     <ClCompile Include="Terrain.cpp" />
+    <ClCompile Include="ThreadUtils.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Trigger.cpp" />
     <ClCompile Include="ViewList.cpp" />
@@ -238,6 +240,8 @@
     <ClInclude Include="PlayerScript.h" />
     <ClInclude Include="Resources.h" />
     <ClInclude Include="Sector.h" />
+    <ClInclude Include="SessionEbr.h" />
+    <ClInclude Include="SessionManager.h" />
     <ClInclude Include="Stage.h" />
     <ClInclude Include="TerrainCollider.h" />
     <ClInclude Include="CorruptedGem.h" />
@@ -256,9 +260,11 @@
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Trigger.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="ViewList.h" />
     <ClInclude Include="Weapon.h" />
     <ClInclude Include="WeaponSystem.h" />
+    <ClInclude Include="ThreadUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

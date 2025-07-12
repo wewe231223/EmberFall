@@ -36,16 +36,16 @@ inline constexpr int32_t MAX_SESSION_HEART_BEAT_CNT = 5;
 
 using RecvBuf = NetworkBuf<BUF_NETWORK_RECV_SIZE>;
 
-class Session : public INetworkObject {
+class Session : public IServerEntity {
 public:
-    Session(NetworkType networkType=NetworkType::CLIENT);
+    Session(SOCKET socket);
     ~Session();
 
 public:
     virtual HANDLE GetHandle() const override;
     virtual bool IsClosed() const override;
 
-    virtual void ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) override;
+    virtual void ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes);
     virtual void Close() override;
 
     void RegisterRecv();
@@ -62,7 +62,7 @@ public:
     virtual void OnConnect();
 
     // 에러 발생으로 인한 연결 종료 처리
-    void HandleSocketError(INT32 errorCore);
+    virtual void HandleSocketError(INT32 errorCore);
 
     // For Client
     bool Connect(const std::string& serverIp, const UINT16 port);
@@ -76,7 +76,6 @@ public:
 private:
     std::string mIP{ };
     UINT16 mPort{ };
-    NetworkType mNetworkType{ NetworkType::CLIENT };
 
     std::atomic_bool mConnected{ false }; // 01-14 클라이언트 연결여부를 atomic_bool로 수정
     SOCKET mSocket{ INVALID_SOCKET };

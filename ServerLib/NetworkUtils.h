@@ -92,9 +92,9 @@ namespace NetworkUtil {
     class Serializer;
 
     template <std::contiguous_iterator Iter> requires std::is_same_v<typename Iter::value_type, char>
-    inline PacketSizeType GetPacketSizeFromIter(Iter iter)
+    inline PacketSizeT GetPacketSizeFromIter(Iter iter)
     {
-        auto size = *(reinterpret_cast<PacketSizeType*>(AddressOf(iter)));
+        auto size = *(reinterpret_cast<PacketSizeT*>(AddressOf(iter)));
         Serializer::Deserialize(&size);
         return size;
     }

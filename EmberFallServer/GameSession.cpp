@@ -11,8 +11,8 @@
 
 #include "Sector.h"
 
-GameSession::GameSession() 
-    : Session{ NetworkType::SERVER }, mSessionState{ SESSION_CONNECT } { }
+GameSession::GameSession(SOCKET socket) 
+    : Session{ socket }, mSessionState{ SESSION_CONNECT } { }
 
 GameSession::~GameSession() { 
     if (IsClosed()) {
@@ -26,12 +26,11 @@ void GameSession::Close() {
     auto myId = static_cast<SessionIdType>(GetId());
     auto myRoom = GetMyRoomIdx();
 
-    auto executionTime = SysClock::now();
     SessionLobbyInfo info = mLobbyInfo;
-    gServerFrame->AddTimerEvent(myRoom, myId, executionTime, TimerEventType::REMOVE_PLAYER_IN_ROOM, info);
+    gServerFrame->AddTimerEvent(myId, 0s, IoType::REMOVE_PLAYER_IN_ROOM, info);
 
     if (nullptr != mUserObject) {
-        gServerFrame->AddTimerEvent(myRoom, myId, executionTime, TimerEventType::REMOVE_NPC, info);
+        gServerFrame->AddTimerEvent(myId, 0s, IoType::REMOVE_NPC, myRoom);
         mUserObject = nullptr;
     }
 
@@ -55,31 +54,16 @@ void GameSession::OnConnect() {
 }
 
 void GameSession::ProcessRecv(INT32 numOfBytes) {
-    mOverlappedRecv.owner.reset();
-    if (0 >= numOfBytes) {
-        gServerCore->GetSessionManager()->CloseSession(static_cast<SessionIdType>(GetId()));
-        return;
-    }
-
     auto dataBeg = mOverlappedRecv.buffer.begin();
     auto dataEnd = dataBeg + numOfBytes;
     auto remainBegin = ValidatePackets(dataBeg, dataEnd);
     mPrevRemainSize = std::distance(remainBegin, dataEnd);
     auto dataSize = numOfBytes - mPrevRemainSize;
-    
-    // 패킷 처리
-    auto sharedThis = std::static_pointer_cast<GameSession>(shared_from_this());
-    if (nullptr == sharedThis) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Process Recv: Create Shared This Error In GameSession!!!");
-        Crash("");
-        return;
-    }
 
     decltype(auto) dataPtr = reinterpret_cast<const uint8_t* const>(mOverlappedRecv.buffer.data());
-    ProcessPackets(sharedThis, dataPtr, dataSize);
+    ProcessPackets(this, dataPtr, dataSize);
     if (false == IsConnected()) {
-        gServerCore->GetSessionManager()->CloseSession(static_cast<SessionIdType>(GetId()));
-        Crash("");
+        gServerFrame->CloseSession(GetId());
         return;
     }
 
@@ -135,74 +119,64 @@ void GameSession::InitUserObject() {
 }
 
 void GameSession::InitPlayerScript() {
+    const SimpleMath::Vector3 SPAWN_CENTER = SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f };
+
     switch (mLobbyInfo.lastRole) {
     case Packets::PlayerRole_HUMAN_ARCHER:
     {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_ARCHER);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SPAWN_CENTER));
 
-        auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
-
-        player->SetOwnerSession(sharedFromThis);
-        break;
     }
+    break;
 
     case Packets::PlayerRole_HUMAN_SWORD:
     {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_SHIELD_MAN);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SPAWN_CENTER));
 
-        auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object - PlayerScript is Null");
         }
-
-        player->SetOwnerSession(sharedFromThis);
-        break;
     }
+    break;
 
     case Packets::PlayerRole_HUMAN_LONGSWORD:
     {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_LONGSWORD_MAN);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SPAWN_CENTER));
 
-        auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
-
-        player->SetOwnerSession(sharedFromThis);
-        break;
     }
+    break;
 
     case Packets::PlayerRole_HUMAN_MAGICIAN:
     {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_MAGICIAN);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f }));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SPAWN_CENTER));
 
-        auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
-
-        player->SetOwnerSession(sharedFromThis);
-        break;
     }
+    break;
 
     case Packets::PlayerRole_BOSS:
     {
@@ -211,19 +185,76 @@ void GameSession::InitPlayerScript() {
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_DEMON);
         mUserObject->GetTransform()->SetPosition(SimpleMath::Vector3{ -200.0f, 0.0f, -200.0f });
 
-        auto sharedFromThis = std::static_pointer_cast<GameSession>(shared_from_this());
         auto player = mUserObject->GetScript<BossPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
-
-        player->SetOwnerSession(sharedFromThis);
-        break;
     }
+      break;
 
     default:
         break;
     }
+}
+
+void GameSession::UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeNPC, const std::vector<NetworkObjectIdType>& inViewRangePlayer) {
+    std::unordered_set<NetworkObjectIdType> oldViewList;
+    {
+        std::shared_lock viewListGuard{ mViewListLock };
+        oldViewList = mViewList;
+    }
+
+    if (SESSION_INGAME != mSessionState) {
+        return;
+    }
+
+    decltype(auto) myRoomStage = gGameRoomManager->GetRoom(GetMyRoomIdx())->GetStage();
+
+    std::unordered_set<NetworkObjectIdType> newViewList{};
+    for (const auto id : inViewRangePlayer) {
+        auto [iter, success] = newViewList.insert(id);
+        if (not success) {
+            continue;
+        }
+    }
+
+    for (const auto id : inViewRangeNPC) {
+        auto [iter, success] = newViewList.insert(id);
+        if (not success) {
+            continue;
+        }
+    }
+
+    auto ownerRoom = GetMyRoomIdx();
+    decltype(auto) roomStage = gGameRoomManager->GetRoom(ownerRoom)->GetStage();
+    for (const auto id : newViewList) {
+        if (oldViewList.contains(id)) {
+            continue;
+        }
+
+        decltype(auto) newObj = roomStage.GetObjectFromId(id);
+        if (nullptr == newObj or false == newObj->mSpec.active) {
+            continue;
+        }
+
+        const ObjectSpec spec = newObj->mSpec;
+        const auto yaw = newObj->GetEulerRotation().y;
+        const auto pos = newObj->GetPosition();
+        const auto anim = newObj->mAnimationStateMachine.GetCurrState();
+
+        decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(id, spec.entity, yaw, anim, spec.hp, pos);
+        RegisterSend(packetAppeared);
+    }
+
+    for (const auto id : oldViewList) {
+        if (not newViewList.contains(id)) {
+            decltype(auto) packetDisappeared = FbsPacketFactory::ObjectDisappearedSC(id);
+            RegisterSend(packetDisappeared);
+        }
+    }
+
+    std::unique_lock viewListGuard{ mViewListLock };
+    mViewList = newViewList;
 }
 
 void GameSession::EnterLobby() {
@@ -231,10 +262,8 @@ void GameSession::EnterLobby() {
 
     auto myId = static_cast<SessionIdType>(GetId());
     auto myRoom = GetMyRoomIdx();
-
-    auto executionTime = SysClock::now();
     if (nullptr != mUserObject) {
-        gServerFrame->AddTimerEvent(myRoom, myId, executionTime, TimerEventType::REMOVE_NPC);
+        gServerFrame->AddTimerEvent(myId, EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, myRoom);
         mUserObject = nullptr;
     }
 }

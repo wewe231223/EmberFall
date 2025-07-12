@@ -19,13 +19,13 @@
 #undef PRINT_DEBUG_LOG
 #endif
 
-#if (defined(DEBUG) || defined(DEV_MODE) || defined(_DEBUG))
-#define DEF_DEBUG_OR_DEV 
-#endif 
+#if defined(DEBUG) || defined(DEV_MODE) || defined(_DEBUG)
+#define DEF_DEBUG_OR_DEV 0
+#endif
 
 #if defined(DEBUG) || defined(PRINT_DEBUG_LOG) || defined(_DEBUG)
-#define DEF_DEBUG_OR_PRINT_LOG 
-#endif 
+#define DEF_DEBUG_OR_PRINT_LOG 0
+#endif
 
 #undef max
 #undef min
@@ -71,11 +71,11 @@ namespace SimpleMath = DirectX::SimpleMath;
 
 #include "LogConsole.h"
 
+#include "Protocol.h"
 #include "Types.h"
 #include "Constants.h"
 #include "OverlappedEx.h"
 #include "Lock.h"
-#include "Protocol.h"
 #include "NetworkUtils.h"
 
 #include "GameUnits.h"
@@ -87,4 +87,4 @@ using namespace GameUnitLiterals;
 using namespace std::literals;
 
 extern std::shared_ptr<class ClientCore> gClientCore;
-extern std::shared_ptr<class ServerCore> gServerCore;
+extern std::unique_ptr<LogConsole> gLogConsole;
