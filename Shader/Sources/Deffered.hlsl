@@ -237,7 +237,7 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     float valid = validWorld * validTex;
 
     float bias = 0.003f;
-    float depth = GBuffers[4 + shadowIndex].Sample(linearWrapSampler, texPos.xy).r;
+    float depth = GBuffers[GBUFFER_COUNT + shadowIndex].Sample(linearWrapSampler, texPos.xy).r;
 
     float isBackFace = step(0, dot((cameraPosition - worldPos.xyz), normal));
     isBackFace = GBuffers[1].Sample(linearWrapSampler, input.texcoord).a;
@@ -250,7 +250,8 @@ float4 Deffered_PS(Deffered_VOUT input) : SV_TARGET
     isBackFace = step(0, dot((cameraPosition - worldPos.xyz), normal));
     isBackFace = GBuffers[1].Sample(linearWrapSampler, input.texcoord).a;
     shadowFactor = shadowFactor + (1.0f - shadowFactor) * isBackFace * planeMask;
-   
+    shadowFactor = saturate(shadowFactor);
+
     float mask = step(depth, 0.0f);
     shadowFactor = lerp(shadowFactor, 1.0f, mask);
 
