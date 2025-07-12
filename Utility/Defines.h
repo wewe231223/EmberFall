@@ -44,6 +44,7 @@ struct ModelContext {
 };
 
 struct TerrainSegmentContext {
+    SimpleMath::Matrix prevWorld;
     SimpleMath::Matrix world;
     SimpleMath::Vector3 BBCenter{};
     SimpleMath::Vector3 BBextents{};
