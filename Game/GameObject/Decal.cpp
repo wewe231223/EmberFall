@@ -25,7 +25,7 @@ void Decal::SetSize(const SimpleMath::Vector3& size) {
 }
 
 void Decal::SetMaterial(UINT mat) {
-	mMaterial = mat;
+	mDecalInfo.material = mat;
 }
 
 void Decal::ComputeMatrix()
@@ -52,5 +52,5 @@ void Decal::ComputeMatrix()
     SimpleMath::Matrix view = SimpleMath::Matrix::CreateLookAt(mPosition, mPosition + dir, up);
     SimpleMath::Matrix proj = SimpleMath::Matrix::CreateOrthographic(mSize.x, mSize.y, 0.0f, mSize.z);
 
-    mViewProjMatrix = proj * view;
+    mDecalInfo.projectionMatrix = proj * view;
 }

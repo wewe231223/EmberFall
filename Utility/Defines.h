@@ -75,6 +75,11 @@ struct ModelContext2D {
     float GreyScale{ 1.f };
 };
 
+struct DecalInfo {
+	SimpleMath::Matrix projectionMatrix;
+    UINT material{};
+};
+
 
 class IScene abstract : public std::enable_shared_from_this<IScene> {
 public:

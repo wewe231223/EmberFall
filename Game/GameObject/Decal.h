@@ -1,4 +1,5 @@
 #pragma once 
+#include "../Utility/Defines.h"
 
 class Decal {
 public:
@@ -26,6 +27,5 @@ private:
     SimpleMath::Vector3 mDirection{};
     SimpleMath::Vector3 mSize{};      // x: width, y: height, z: depth
 
-    UINT mMaterial{ 0 }; 
-    SimpleMath::Matrix mViewProjMatrix{};
+	DecalInfo mDecalInfo{};
 };
