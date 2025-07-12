@@ -151,7 +151,7 @@ void GameObject::RegisterUpdate() {
         return;
     }
 
-    gServerFrame->PQCS(0, GetId(), mOverlapped.get());
+    gServerFrame->AddTimerEvent(GetId(), GameProtocol::Logic::MONSTER_UPDATE_DELAY, IoType::UPDATE_NPC, myRoom);
 }
 
 void GameObject::Update() {

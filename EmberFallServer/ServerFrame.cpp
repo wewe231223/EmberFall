@@ -249,6 +249,8 @@ void ServerFrame::IoThread() {
             }
             
             obj->Update();
+            obj->LateUpdate();
+            obj->RegisterUpdate();
         }
         break;
 
