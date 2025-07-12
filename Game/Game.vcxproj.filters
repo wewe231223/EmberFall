@@ -102,6 +102,15 @@
     <ClCompile Include="UI\NamePlate.cpp">
       <Filter>UI</Filter>
     </ClCompile>
+    <ClCompile Include="GameObject\TerrainObject.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\MaterialLoader.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject\Decal.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -169,6 +178,15 @@
     </ClInclude>
     <ClInclude Include="UI\NamePlate.h">
       <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject\TerrainObject.h">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\MaterialLoader.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject\Decal.h">
+      <Filter>GameObject</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

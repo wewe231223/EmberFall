@@ -1,0 +1,16 @@
+DiffuseColor: 1.0 1.0 1.0 1.0
+SpecularColor: 0.0 0.0 0.0 0.0
+EmissiveColor: 0.0 0.0 0.0 0.0
+
+DiffuseTextures:
+well_albedo
+
+SpecularTextures:
+
+EmissiveTextures:
+
+MetalicTextures:
+
+NormalTextures:
+
+AlphaTextures:

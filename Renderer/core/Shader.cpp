@@ -141,38 +141,80 @@ void ShaderFileManager::ProcessShader(const std::filesystem::path& source, const
 }
 
 void ShaderFileManager::ReCompile(const std::filesystem::path& source, const std::string& type, const std::string& model, const std::string& entry) {
-	Console.Log("Compiling shader : {}", LogType::Info, source.string());
+	Console.Log("Compiling shader (DXC) : {}", LogType::Info, source.string());
 
-	ComPtr<ID3D12Blob> shaderBlob{};
-	ComPtr<ID3D12Blob> errorBlob{};
-	
-	auto hr = ::D3DCompileFromFile(source.c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, entry.c_str(), model.c_str(), 0, 0, &shaderBlob, &errorBlob);
+	// DXC 초기화
+	ComPtr<IDxcUtils> dxcUtils{};
+	ComPtr<IDxcCompiler3> dxcCompiler{};
+	ComPtr<IDxcIncludeHandler> includeHandler{};
 
-	if (FAILED(hr)) {
-		OutputDebugStringA(reinterpret_cast<const char*>(errorBlob->GetBufferPointer()));
+	CheckHR(DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&dxcUtils)));
+	CheckHR(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&dxcCompiler)));
+	CheckHR(dxcUtils->CreateDefaultIncludeHandler(&includeHandler));
+
+	// 소스 파일 로드
+	ComPtr<IDxcBlobEncoding> sourceBlob{};
+	CheckHR(dxcUtils->LoadFile(source.c_str(), nullptr, &sourceBlob));
+
+	DxcBuffer sourceBuffer{};
+	sourceBuffer.Ptr = sourceBlob->GetBufferPointer();
+	sourceBuffer.Size = sourceBlob->GetBufferSize();
+	sourceBuffer.Encoding = DXC_CP_UTF8;
+
+	// DXC 인자 구성
+	std::wstring wEntry(entry.begin(), entry.end());
+	std::wstring wModel(model.begin(), model.end());
+	std::wstring wSource = source.wstring();
+
+#ifdef _DEBUG
+	std::vector<LPCWSTR> arguments = {
+		wSource.c_str(),
+		L"-T", wModel.c_str(),
+		L"-E", wEntry.c_str(),
+		L"-Zi",
+		L"-Qembed_debug",
+		L"-Od",
+	};
+#else
+	std::vector<LPCWSTR> arguments = {
+		wSource.c_str(),
+		L"-T", wModel.c_str(),
+		L"-E", wEntry.c_str(),
+		L"-O3",
+	};
+#endif
+
+	// 컴파일
+	ComPtr<IDxcResult> compileResult{};
+	CheckHR(dxcCompiler->Compile(&sourceBuffer, arguments.data(), (uint32_t)arguments.size(), includeHandler.Get(), IID_PPV_ARGS(&compileResult)));
+
+	// 에러 출력 확인
+	ComPtr<IDxcBlobUtf8> errors{};
+	ComPtr<IDxcBlobUtf16> name{};
+	CheckHR(compileResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&errors), name.GetAddressOf()));
+	if (errors && errors->GetStringLength() > 0) {
+		OutputDebugStringA((char*)errors->GetStringPointer());
+		Console.Log("Shader compile error : {}\nLoad previous version!", LogType::Error, (char*)errors->GetStringPointer());
 	}
 
+	// 바이너리 추출
+	ComPtr<IDxcBlob> shaderBinary{};
+	CheckHR(compileResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBinary), name.GetAddressOf()));
 
+	// DXC Blob -> D3D12 Blob 변환
+	ComPtr<ID3D12Blob> shaderBlob{};
+	CheckHR(shaderBinary->QueryInterface(IID_PPV_ARGS(&shaderBlob)));
+
+	// 바이너리 저장
 	std::string binaryFileName{ source.stem().string() + "_" + type + ".bin" };
 	std::filesystem::path binaryPath{ "Shader/Binarys/" + binaryFileName };
 
-	if (SUCCEEDED(hr)) {
-		std::ofstream binaryFile{ binaryPath, std::ios::binary };
-		CrashExp(binaryFile.is_open(), "Failed to create binary file");
+	std::ofstream binaryFile{ binaryPath, std::ios::binary };
+	CrashExp(binaryFile.is_open(), "Failed to create binary file");
 
-		binaryFile.write(static_cast<char*>(shaderBlob->GetBufferPointer()), shaderBlob->GetBufferSize());
-	}
-	else {
-		Console.Log("Failed to compile shader : {}\nLoad previous version!", LogType::Error, reinterpret_cast<const char*>(errorBlob->GetBufferPointer()));
-		CrashExp(std::filesystem::exists(binaryPath), "Binary file not found");
-		
-		if (shaderBlob) {
-			shaderBlob->Release();
-		}
+	binaryFile.write(static_cast<char*>(shaderBlob->GetBufferPointer()), shaderBlob->GetBufferSize());
 
-		ShaderFileManager::Load(shaderBlob, binaryPath);
-	}
-	
+	// ShaderType 설정
 	ShaderType eType{};
 
 	if (type == "vs") {
@@ -191,9 +233,10 @@ void ShaderFileManager::ReCompile(const std::filesystem::path& source, const std
 		eType = ShaderType::DomainShader;
 	}
 	else {
-		Crash(("Invalid Shaer Type : " + type).c_str());
+		Crash(("Invalid Shader Type : " + type).c_str());
 	}
 
+	// 결과 저장 (ID3D12Blob 기준으로 저장)
 	mShaderBlobs[source.stem().string()][eType] = shaderBlob;
 }
 
@@ -522,58 +565,57 @@ TerrainShader::TerrainShader() {
 void TerrainShader::CreateShader(ComPtr<ID3D12Device> device) {
 	GraphicsShaderBase::CreateShader(device);
 	mAttribute.set(0);
-	mAttribute.set(1);
 	mAttribute.set(2);
 	mAttribute.set(3);
-	mAttribute.set(4);
-	mAttribute.set(5);
 }
 
 GraphicsShaderBase::InputLayout TerrainShader::CreateInputLayout() {
 	GraphicsShaderBase::InputLayout inputLayout{};
 
-	inputLayout.ElementCount = 6;
+	inputLayout.ElementCount = 3;
 
 	inputLayout.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	inputLayout.InputElements[1] = { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	inputLayout.InputElements[2] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	inputLayout.InputElements[3] = { "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 3, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	inputLayout.InputElements[4] = { "TANGENT", 0, DXGI_FORMAT_R32G32_FLOAT, 4, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-	inputLayout.InputElements[5] = { "BITANGENT", 0, DXGI_FORMAT_R32G32_FLOAT, 5, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[1] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[2] = { "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 
 	return inputLayout;
 }
 
 GraphicsShaderBase::RootParameters TerrainShader::CreateRootParameters() {
 	GraphicsShaderBase::RootParameters params{};
-
+	// camera 
 	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	params.Parameters[0].Descriptor.ShaderRegister = 0;
 	params.Parameters[0].Descriptor.RegisterSpace = 0;
 	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	// globalPoints 
 	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
-	params.Parameters[1].Descriptor.ShaderRegister = 0;
+	params.Parameters[1].Descriptor.ShaderRegister = 0;	
 	params.Parameters[1].Descriptor.RegisterSpace = 0;
 	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	// modelContexts 
 	params.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
 	params.Parameters[2].Descriptor.ShaderRegister = 1;
 	params.Parameters[2].Descriptor.RegisterSpace = 0;
 	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-
+	// materials 
+	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[3].Descriptor.ShaderRegister = 2;
+	params.Parameters[3].Descriptor.RegisterSpace = 0;
+	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	// textures 
 	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	params.Ranges[0].NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
-	params.Ranges[0].BaseShaderRegister = 2;
+	params.Ranges[0].BaseShaderRegister = 3;
 	params.Ranges[0].RegisterSpace = 0;
 	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-	params.Parameters[3].DescriptorTable.NumDescriptorRanges = 1;
-	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
-	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	params.Parameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[4].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[4].DescriptorTable.pDescriptorRanges = params.Ranges.data();
+	params.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.ParameterCount = 4;
+	params.ParameterCount = 5;
 
 	return params;
 }
@@ -886,9 +928,10 @@ GraphicsShaderBase::RootParameters DefferedShader::CreateRootParameters() {
 	params.Parameters[2].Descriptor.RegisterSpace = 1;
 	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	params.Parameters[3].Descriptor.ShaderRegister = 1;
-	params.Parameters[3].Descriptor.RegisterSpace = 0;
+	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	params.Parameters[3].Constants.ShaderRegister = 1;
+	params.Parameters[3].Constants.RegisterSpace = 0;
+	params.Parameters[3].Constants.Num32BitValues = 1;
 	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	params.ParameterCount = 4;
@@ -1082,7 +1125,7 @@ void ParticleSOShader::CreateShader(ComPtr<ID3D12Device> device) {
 GraphicsShaderBase::InputLayout ParticleSOShader::CreateInputLayout() {
 	InputLayout result{};
 
-	result.InputElements[0] = { "POSITION",				0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,								D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[0] = { "POSITION",				0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	result.InputElements[1] = { "WIDTH",				0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT,	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	result.InputElements[2] = { "HEIGHT",				0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT,	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	result.InputElements[3] = { "MATERIAL",				0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT,	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
@@ -1167,14 +1210,6 @@ D3D12_RASTERIZER_DESC ParticleSOShader::CreateRasterizerState() {
 	return result;
 }
 
-D3D12_BLEND_DESC ParticleSOShader::CreateBlendState() {
-	D3D12_BLEND_DESC result{}; 
-
-	// Deffered! 
-
-	return result;
-}
-
 D3D12_DEPTH_STENCIL_DESC ParticleSOShader::CreateDepthStencilState() {
 	D3D12_DEPTH_STENCIL_DESC result{};
 
@@ -1245,14 +1280,6 @@ D3D12_SHADER_BYTECODE ParticleSOShader::CreateGeometryShader() {
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }
 
-UINT ParticleSOShader::CreateNumOfRenderTarget() {
-	return 0;
-}
-
-void ParticleSOShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& targets) {
-	targets[0] = DXGI_FORMAT_UNKNOWN;
-}
-
 D3D12_ROOT_SIGNATURE_FLAGS ParticleSOShader::CreateRootSignatureFlag() {
 	return D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | D3D12_ROOT_SIGNATURE_FLAG_ALLOW_STREAM_OUTPUT;
 }
@@ -1269,7 +1296,7 @@ void ParticleGSShader::CreateShader(ComPtr<ID3D12Device> device) {
 GraphicsShaderBase::InputLayout ParticleGSShader::CreateInputLayout() {
 	InputLayout result{};
 
-	result.InputElements[0] =	{ "POSITION",			0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,								D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	result.InputElements[0] =	{ "POSITION",			0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	result.InputElements[1] =	{ "WIDTH",				0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT,	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	result.InputElements[2] =	{ "HEIGHT",				0, DXGI_FORMAT_R32_FLOAT,		0, D3D12_APPEND_ALIGNED_ELEMENT,	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 	result.InputElements[3] =	{ "MATERIAL",			0, DXGI_FORMAT_R32_UINT,		0, D3D12_APPEND_ALIGNED_ELEMENT,	D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
@@ -1333,30 +1360,57 @@ GraphicsShaderBase::RootParameters ParticleGSShader::CreateRootParameters() {
 	return result;
 }
 
-//D3D12_BLEND_DESC ParticleGSShader::CreateBlendState() {
-//	D3D12_BLEND_DESC blendStateDesc;
-//	::ZeroMemory(&blendStateDesc, sizeof(D3D12_BLEND_DESC));
-//
-//	blendStateDesc.AlphaToCoverageEnable = FALSE;
-//	blendStateDesc.IndependentBlendEnable = FALSE;
-//
-//	D3D12_RENDER_TARGET_BLEND_DESC& rt = blendStateDesc.RenderTarget[0];
-//	rt.BlendEnable = TRUE;
-//	rt.LogicOpEnable = FALSE;
-//
-//	rt.SrcBlend = D3D12_BLEND_SRC_ALPHA;
-//	rt.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
-//	rt.BlendOp = D3D12_BLEND_OP_ADD;
-//
-//	rt.SrcBlendAlpha = D3D12_BLEND_ONE;
-//	rt.DestBlendAlpha = D3D12_BLEND_ZERO;
-//	rt.BlendOpAlpha = D3D12_BLEND_OP_ADD;
-//
-//	rt.LogicOp = D3D12_LOGIC_OP_NOOP;
-//	rt.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-//
-//	return blendStateDesc;
-//}
+D3D12_BLEND_DESC ParticleGSShader::CreateBlendState() {
+	D3D12_BLEND_DESC blendStateDesc;
+	::ZeroMemory(&blendStateDesc, sizeof(D3D12_BLEND_DESC));
+
+	blendStateDesc.AlphaToCoverageEnable = FALSE;
+	blendStateDesc.IndependentBlendEnable = FALSE;
+
+	blendStateDesc.RenderTarget[0].BlendEnable = TRUE;
+	blendStateDesc.RenderTarget[0].LogicOpEnable = FALSE;
+
+	blendStateDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
+	blendStateDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
+	blendStateDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+
+	blendStateDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendStateDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendStateDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+
+	blendStateDesc.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
+	blendStateDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	return blendStateDesc;
+}
+
+D3D12_DEPTH_STENCIL_DESC ParticleGSShader::CreateDepthStencilState() {
+	D3D12_DEPTH_STENCIL_DESC depthStencilState;
+	::ZeroMemory(&depthStencilState, sizeof(D3D12_DEPTH_STENCIL_DESC));
+
+	depthStencilState.DepthEnable = TRUE;
+	depthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	depthStencilState.DepthFunc = Config::DEFAULT_REVERSE_Z ? D3D12_COMPARISON_FUNC_GREATER_EQUAL : D3D12_COMPARISON_FUNC_LESS;
+
+	depthStencilState.StencilEnable = FALSE;
+	depthStencilState.StencilReadMask = 0x00;
+	depthStencilState.StencilWriteMask = 0x00;
+
+	depthStencilState.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+
+	depthStencilState.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+
+	return depthStencilState;
+
+}
+
+
 
 D3D12_PRIMITIVE_TOPOLOGY_TYPE ParticleGSShader::CreatePrimitiveTopologyType() {
 	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
@@ -1376,18 +1430,6 @@ D3D12_SHADER_BYTECODE ParticleGSShader::CreatePixelShader() {
 	auto& blob = gShaderManager.GetShaderBlob("ParticleGS", ShaderType::PixelShader);
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }
-
-UINT ParticleGSShader::CreateNumOfRenderTarget() {
-	return 4;
-}
-
-void ParticleGSShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& targets) {
-	targets[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	targets[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	targets[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	targets[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
-}
-
 
 
 
@@ -1848,4 +1890,196 @@ D3D12_SHADER_BYTECODE SkinnedNormalShader::CreateVertexShader() {
 D3D12_SHADER_BYTECODE SkinnedNormalShader::CreatePixelShader() {
 	auto& blob = gShaderManager.GetShaderBlob("StandardAnimationNormal", ShaderType::PixelShader);
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+
+
+GrassShader::GrassShader() {
+
+}
+
+void GrassShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+}
+
+GraphicsShaderBase::InputLayout GrassShader::CreateInputLayout() {
+	GraphicsShaderBase::InputLayout inputLayout{};
+
+	inputLayout.ElementCount = 1;
+	inputLayout.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	return inputLayout;
+}
+
+GraphicsShaderBase::RootParameters GrassShader::CreateRootParameters() {
+	GraphicsShaderBase::RootParameters params{};
+	// b0 : Camera 
+	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	params.Parameters[0].Descriptor.ShaderRegister = 0;
+	params.Parameters[0].Descriptor.RegisterSpace = 0;
+	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	// b1 : Time 
+	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	params.Parameters[1].Constants.Num32BitValues = 1;
+	params.Parameters[1].Constants.ShaderRegister = 1;
+	params.Parameters[1].Constants.RegisterSpace = 0;
+	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	// b2 : Material Index 
+	params.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	params.Parameters[2].Constants.Num32BitValues = 1;
+	params.Parameters[2].Constants.ShaderRegister = 2;
+	params.Parameters[2].Constants.RegisterSpace = 0;
+	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+	// t0 : Material Constants 
+	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[3].Descriptor.ShaderRegister = 0;
+	params.Parameters[3].Descriptor.RegisterSpace = 0;
+	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	// t2 : Textures 
+	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	params.Ranges[0].NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
+	params.Ranges[0].BaseShaderRegister = 1;
+	params.Ranges[0].RegisterSpace = 0;
+	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	params.Parameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[4].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[4].DescriptorTable.pDescriptorRanges = params.Ranges.data();
+	params.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.ParameterCount = 5;
+
+	return params;
+}
+
+UINT GrassShader::CreateNumOfRenderTarget() {
+	return Config::GBUFFER_COUNT<UINT>;
+}
+
+void GrassShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
+	formats[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+}
+
+D3D12_SHADER_BYTECODE GrassShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("GrassShaderV2", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE GrassShader::CreateGeometryShader() {
+	auto& blob = gShaderManager.GetShaderBlob("GrassShaderV2", ShaderType::GeometryShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE GrassShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("GrassShaderV2", ShaderType::PixelShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_PRIMITIVE_TOPOLOGY_TYPE GrassShader::CreatePrimitiveTopologyType() {
+	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+}
+
+
+
+
+
+TreeCrossShader::TreeCrossShader() {
+}
+
+void TreeCrossShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+	mAttribute.set(0);
+	mAttribute.set(1);
+	mAttribute.set(2);
+}
+
+GraphicsShaderBase::InputLayout TreeCrossShader::CreateInputLayout() {
+	GraphicsShaderBase::InputLayout inputLayout{};
+
+	inputLayout.ElementCount = 3;
+
+	inputLayout.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[1] = { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[2] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 2, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	return inputLayout;
+}
+
+GraphicsShaderBase::RootParameters TreeCrossShader::CreateRootParameters() {
+	GraphicsShaderBase::RootParameters params{};
+
+	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	params.Parameters[0].Descriptor.ShaderRegister = 0;
+	params.Parameters[0].Descriptor.RegisterSpace = 0;
+	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[1].Descriptor.ShaderRegister = 0;
+	params.Parameters[1].Descriptor.RegisterSpace = 0;
+	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Parameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[2].Descriptor.ShaderRegister = 1;
+	params.Parameters[2].Descriptor.RegisterSpace = 0;
+	params.Parameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	params.Ranges[0].NumDescriptors = Config::MAX_TEXTURE_COUNT<UINT>;
+	params.Ranges[0].BaseShaderRegister = 2;
+	params.Ranges[0].RegisterSpace = 0;
+	params.Ranges[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	params.Parameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[3].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
+	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.ParameterCount = 4;
+
+	return params;
+}
+
+UINT TreeCrossShader::CreateNumOfRenderTarget() {
+	return Config::GBUFFER_COUNT<UINT>;
+}
+
+void TreeCrossShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
+	formats[0] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+}
+
+D3D12_SHADER_BYTECODE TreeCrossShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("TreeCross", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE TreeCrossShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("TreeCross", ShaderType::PixelShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_RASTERIZER_DESC TreeCrossShader::CreateRasterizerState() {
+	D3D12_RASTERIZER_DESC rasterizerDesc;
+	::ZeroMemory(&rasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
+
+	//	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+	rasterizerDesc.FrontCounterClockwise = FALSE;
+	rasterizerDesc.DepthBias = 0;
+	rasterizerDesc.DepthBiasClamp = 0.0f;
+	rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+	rasterizerDesc.DepthClipEnable = TRUE;
+	rasterizerDesc.MultisampleEnable = FALSE;
+	rasterizerDesc.AntialiasedLineEnable = FALSE;
+	rasterizerDesc.ForcedSampleCount = 0;
+	rasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	return rasterizerDesc;
 }

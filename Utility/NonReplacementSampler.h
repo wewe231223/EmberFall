@@ -21,7 +21,7 @@ public:
 		CrashExp(mCount < TOTAL_SAMPLES, "No more samples to give");
         int number;
         do {
-            number = mDistribution(MersenneTwister);  // 난수 생성
+            number = RandomEngine::GetRandomRange(0, TOTAL_SAMPLES - 1);  // 난수 생성
         } while (mUsed.test(number));  // 이미 선택된 숫자인지 확인
 
         mUsed.set(number);  // 숫자를 선택된 것으로 마크
@@ -35,7 +35,6 @@ public:
     }
 
 private:
-    std::uniform_int_distribution<int> mDistribution{ 0,TOTAL_SAMPLES - 1 };
     std::bitset<TOTAL_SAMPLES> mUsed{};
     int mCount{ 0 };
 };

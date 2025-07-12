@@ -1,17 +1,19 @@
 cbuffer Camera : register(b0)
 {
-    matrix view;
-    matrix proj;
-    matrix viewProj;
-    Matrix middleViewProjection;
+    float4x4 view;
+    float4x4 projection;
+    float4x4 viewProjection;
+    float4x4 middleViewProjection;
+
     float3 cameraPosition;
     int isShadow;
-}
+    float3 shadowOffset;
+};
 
 struct ModelContext
 {
-    matrix world;
-    float3 BBCenter; 
+    float4x4 world;
+    float3 BBCenter;
     float3 BBExtents;
     uint material;
     uint boneStart;
@@ -45,7 +47,6 @@ struct Deffered_POUT
     float4 emissive : SV_TARGET3;
 };
 
-
 StructuredBuffer<ModelContext> modelContexts : register(t0);
 
 SamplerState pointWrapSampler : register(s0);
@@ -64,13 +65,12 @@ BB_GIN BB_VS(BB_VIN input)
     output.right = normalize(context.world[0].xyz);
     output.up = normalize(context.world[1].xyz);
     output.forward = normalize(context.world[2].xyz);
-    output.center = context.BBCenter; 
+    output.center = context.BBCenter;
     
     return output;
 }
 
-#define BoundingBoxColor    float4(1.f, 0.f, 0.f, 1.f)
-
+#define BoundingBoxColor float4(1.f, 0.f, 0.f, 1.f)
 
 [maxvertexcount(16)]
 void BB_GS(point BB_GIN input[1], inout LineStream<BB_PIN> output)
@@ -80,69 +80,60 @@ void BB_GS(point BB_GIN input[1], inout LineStream<BB_PIN> output)
     
     float3 TopPoints[4];
     float3 BottomPoints[4];
-    // Top face (위쪽 면)
-    TopPoints[0] = center + input[0].forward * extents.z - input[0].right * extents.x + input[0].up * extents.y; // 위 앞 왼쪽 
-    TopPoints[1] = center + input[0].forward * extents.z + input[0].right * extents.x + input[0].up * extents.y; // 위 앞 오른쪽
-    TopPoints[2] = center - input[0].forward * extents.z + input[0].right * extents.x + input[0].up * extents.y; // 위 뒤 오른쪽
-    TopPoints[3] = center - input[0].forward * extents.z - input[0].right * extents.x + input[0].up * extents.y; // 위 뒤 왼쪽
-    // Bottom face (아래쪽 면)
-    BottomPoints[0] = center + input[0].forward * extents.z - input[0].right * extents.x - input[0].up * extents.y; // 아래 앞 왼쪽
-    BottomPoints[1] = center + input[0].forward * extents.z + input[0].right * extents.x - input[0].up * extents.y; // 아래 앞 오른쪽
-    BottomPoints[2] = center - input[0].forward * extents.z + input[0].right * extents.x - input[0].up * extents.y; // 아래 뒤 오른쪽
-    BottomPoints[3] = center - input[0].forward * extents.z - input[0].right * extents.x - input[0].up * extents.y; // 아래 뒤 왼쪽
     
+    TopPoints[0] = center + input[0].forward * extents.z - input[0].right * extents.x + input[0].up * extents.y;
+    TopPoints[1] = center + input[0].forward * extents.z + input[0].right * extents.x + input[0].up * extents.y;
+    TopPoints[2] = center - input[0].forward * extents.z + input[0].right * extents.x + input[0].up * extents.y;
+    TopPoints[3] = center - input[0].forward * extents.z - input[0].right * extents.x + input[0].up * extents.y;
+    
+    BottomPoints[0] = center + input[0].forward * extents.z - input[0].right * extents.x - input[0].up * extents.y;
+    BottomPoints[1] = center + input[0].forward * extents.z + input[0].right * extents.x - input[0].up * extents.y;
+    BottomPoints[2] = center - input[0].forward * extents.z + input[0].right * extents.x - input[0].up * extents.y;
+    BottomPoints[3] = center - input[0].forward * extents.z - input[0].right * extents.x - input[0].up * extents.y;
     
     BB_PIN outpoint;
     outpoint.color = BoundingBoxColor;
     
-    // 윗면 엣지들 ( 점 4개 ) 
-    [unroll(4)] 
+    [unroll(4)]
     for (int i = 0; i < 4; ++i)
     {
-        outpoint.position = mul(float4(TopPoints[i], 1.f), viewProj);
+        outpoint.position = mul(float4(TopPoints[i], 1.f), viewProjection);
         output.Append(outpoint);
     }
-    //// 위 앞 왼쪽 - 아래 앞 왼쪽 엣지 ( 점 2개 )   
-    outpoint.position = mul(float4(TopPoints[0], 1.f), viewProj);
+    
+    outpoint.position = mul(float4(TopPoints[0], 1.f), viewProjection);
     output.Append(outpoint);
-    outpoint.position = mul(float4(BottomPoints[0], 1.f), viewProj);
+    outpoint.position = mul(float4(BottomPoints[0], 1.f), viewProjection);
     output.Append(outpoint);
     
-    // 아랫면 엣지들 ( 점 4개 ) 
     [unroll(4)]
     for (int k = 1; k < 4; ++k)
     {
-        outpoint.position = mul(float4(BottomPoints[k], 1.f), viewProj);
+        outpoint.position = mul(float4(BottomPoints[k], 1.f), viewProjection);
         output.Append(outpoint);
     }
-    // 아랫면 닫기 ( 점 1개 ) 
-    outpoint.position = mul(float4(BottomPoints[0], 1.f), viewProj);
+    
+    outpoint.position = mul(float4(BottomPoints[0], 1.f), viewProjection);
     output.Append(outpoint);
     
-    //// 별도 엣지들 ( 점 6개 ) 
-    
-    //// 앞 오른쪽 엣지 
     output.RestartStrip();
-    outpoint.position = mul(float4(TopPoints[1], 1.f), viewProj);
+    outpoint.position = mul(float4(TopPoints[1], 1.f), viewProjection);
     output.Append(outpoint);
-    outpoint.position = mul(float4(BottomPoints[1], 1.f), viewProj);
-    output.Append(outpoint);
-    
-    //// 뒤 왼쪽 엣지
-    output.RestartStrip();
-    outpoint.position = mul(float4(TopPoints[3], 1.f), viewProj);
-    output.Append(outpoint);
-    outpoint.position = mul(float4(BottomPoints[3], 1.f), viewProj);
+    outpoint.position = mul(float4(BottomPoints[1], 1.f), viewProjection);
     output.Append(outpoint);
     
-    //// 뒤 오른쪽 엣지 
     output.RestartStrip();
-    outpoint.position = mul(float4(TopPoints[2], 1.f), viewProj);
+    outpoint.position = mul(float4(TopPoints[3], 1.f), viewProjection);
     output.Append(outpoint);
-    outpoint.position = mul(float4(BottomPoints[2], 1.f), viewProj);
+    outpoint.position = mul(float4(BottomPoints[3], 1.f), viewProjection);
+    output.Append(outpoint);
+    
+    output.RestartStrip();
+    outpoint.position = mul(float4(TopPoints[2], 1.f), viewProjection);
+    output.Append(outpoint);
+    outpoint.position = mul(float4(BottomPoints[2], 1.f), viewProjection);
     output.Append(outpoint);
 }
-
 
 Deffered_POUT BB_PS(BB_PIN input)
 {

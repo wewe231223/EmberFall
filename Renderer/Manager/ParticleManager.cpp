@@ -3,6 +3,7 @@
 #include <random>
 #include "../Utility/Exceptions.h"
 #include "../Game/System/Timer.h"
+#include "../Renderer/Core/Console.h"
 
 ParticleManager::ParticleManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	mParticleVertexBuffer = DefaultBuffer(device, sizeof(ParticleVertex), MAX_PARTICLE_COUNT);
@@ -11,7 +12,7 @@ ParticleManager::ParticleManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graph
 	mParticleSOTargetBuffer = DefaultBuffer(device, sizeof(ParticleVertex), MAX_PARTICLE_COUNT);
 	mParticleSOTargetBuffer.TransitionState(commandList, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_STREAM_OUT);
 
-	mEmitParticleBuffer = DefaultBuffer(device, sizeof(EmitParticleContext), EMIT_PARTICLE_COUNT);
+	mEmitParticleBuffer = DefaultBuffer(device, sizeof(EmitParticleContext), MAX_EMIT_PARTICLE);
 
 	mParticleCountBuffer = DefaultBuffer(device, sizeof(UINT64), 1);
 	mParticleCountBuffer.TransitionState(commandList, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_STREAM_OUT);
@@ -36,6 +37,8 @@ ParticleManager::ParticleManager(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graph
 	mParticleGSShader->CreateShader(device);
 
 	mNewParticleUploadLoc = mParticleVertexBuffer.CPUBegin();
+
+	mNextEmitParticleIndex = 0; 
 }
 
 
@@ -55,16 +58,20 @@ Particle ParticleManager::CreateEmitParticle(ParticleVertex& newParticle) {
 	next.Flags = static_cast<UINT>(ParticleFlag::Common);
 	Particle result{ &next };
 	
-	for (auto& context : mEmitParticleContexts) {
-		if (context.Flags & static_cast<UINT>(ParticleFlag::Empty)) {
-			mNextEmitParticleIndex = static_cast<UINT>(GetIndexFromAddress(mEmitParticleContexts, &context));
+	for (UINT index{ 0 }; auto& context : mEmitParticleContexts) {
+		if (context.Flags == static_cast<UINT>(ParticleFlag::Empty)) {
+			mNextEmitParticleIndex = index;
 			break;
-		}
+		} 
+		index++;
 	}
 
 	mNewParticleCount++;
-
 	return result;
+}
+
+void ParticleManager::UpdateEmitParticle() {
+	std::memcpy(*mEmitParticleBuffer.CPUBegin(), mEmitParticleContexts.data(), sizeof(EmitParticleContext) * MAX_EMIT_PARTICLE);
 }
 
 void ParticleManager::RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList) {
@@ -72,14 +79,18 @@ void ParticleManager::RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	std::memset(*mParticleCountBuffer.CPUBegin(), 0, sizeof(UINT64));
 	mParticleCountBuffer.Upload(commandList, D3D12_RESOURCE_STATE_STREAM_OUT);
 
-	std::memcpy(*mEmitParticleBuffer.CPUBegin(), mEmitParticleContexts.data(), sizeof(EmitParticleContext) * EMIT_PARTICLE_COUNT);
+	ParticleManager::UpdateEmitParticle();
 	mEmitParticleBuffer.Upload(commandList);
+
+
 
 	if (mNewParticleUploadLoc != mParticleVertexBuffer.CPUBegin()) {
 		mParticleVertexBuffer.Upload(commandList, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, mParticleVertexBuffer.CPUBegin(), mNewParticleUploadLoc, mParticleCount * sizeof(ParticleVertex));
 		mParticleCount += mNewParticleCount; 
 		mNewParticleCount = 0; 
+		mNewParticleUploadLoc = mParticleVertexBuffer.CPUBegin();
 	}
+
 
 	mParticleSOShader->SetGPassShader(commandList);
 
@@ -95,14 +106,19 @@ void ParticleManager::RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	commandList->IASetVertexBuffers(0, 1, &mParticleVertexBufferView);
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
 
-	// Resource Set, Draw Call 
 	DirectX::XMFLOAT2 time{ Time.GetTimeSinceStarted<float>(), Time.GetDeltaTime<float>() };
+	if (mParticleCount > MAX_PARTICLE_COUNT - MAX_EMIT_PARTICLE) {
+		time.x = 0.f; 
+	}
 
+	// Resource Set, Draw Call 
 	commandList->SetGraphicsRoot32BitConstants(0, 2, &time, 0);
 	commandList->SetGraphicsRootConstantBufferView(1, *mTerrainHeaderBuffer);
 	commandList->SetGraphicsRootShaderResourceView(2, *mRandomBuffer.GPUBegin());
 	commandList->SetGraphicsRootShaderResourceView(3, *mEmitParticleBuffer.GPUBegin());
 	commandList->SetGraphicsRootShaderResourceView(4, *mTerrainDataBuffer);
+
+
 
 	commandList->DrawInstanced(mParticleCount, 1, 0, 0); 
 
@@ -138,6 +154,7 @@ void ParticleManager::RenderGS(ComPtr<ID3D12GraphicsCommandList> commandList, De
 	commandList->SetGraphicsRootDescriptorTable(3, tex);
 
 	commandList->DrawInstanced(mParticleCount, 1, 0, 0);
+	Console.Log("Particle Count: {}", LogType::Info, mParticleCount);
 }
 
 void ParticleManager::PostRender() {
@@ -149,12 +166,15 @@ void ParticleManager::PostRender() {
 
 void ParticleManager::ValidateParticle() {
 	for (auto& context : mEmitParticleContexts) {
-		if (context.Flags & static_cast<UINT>(ParticleFlag::Delete)) {
-			// 삭제 플래그를 올렸을 때.. 
-			auto index = GetIndexFromAddress(mEmitParticleContexts, &context);
-			mNextEmitParticleIndex = static_cast<UINT>(index);
-			context.Flags = static_cast<UINT>(ParticleFlag::Empty);
+		for (UINT index{ 0 }; auto & context : mEmitParticleContexts) {
+			if (context.Flags == static_cast<UINT>(ParticleFlag::Delete)) {
+				mNextEmitParticleIndex = index;
+				context.Flags = static_cast<UINT>(ParticleFlag::Empty);
+				break;
+			}
+			index++;
 		}
+
 	}
 }
 

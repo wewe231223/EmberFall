@@ -42,6 +42,11 @@ Renderer::Renderer(HWND rendererWindowHandle)
 
 Renderer::~Renderer() {
 	Renderer::FlushCommandQueue(); 
+
+
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 }
 
 std::shared_ptr<RenderManager> Renderer::GetRenderManager() {
@@ -191,7 +196,7 @@ void Renderer::Render() {
 	auto& currentBackBuffer = mRenderTargets[mRTIndex];
 
 	mRenderManager->GetTextureManager().Bind(mCommandList);
-	mRenderManager->GetMeshRenderManager().RenderGPass(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
+	mRenderManager->GetMeshRenderManager().RenderGPass(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin(), mRenderManager->GetFeatureManager().GetCurrentFeature().RenderBB);
 	mRenderManager->GetMeshRenderManager().Reset();
 
 	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Grass and mShaderModel6_5Support) {
@@ -200,10 +205,6 @@ void Renderer::Render() {
 		mGrassRenderer.Render(commandList6, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
 
-	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Grass) {
-		mRenderManager->GetParticleManager().RenderSO(mCommandList);
-		mRenderManager->GetParticleManager().RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
-	}
 
 	
 
@@ -218,7 +219,24 @@ void Renderer::Render() {
 	mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
 	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
 
-	mDefferedRenderer.Render(mCommandList, mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0), mRenderManager->GetLightingManager().GetLightingBuffer());
+	mDefferedRenderer.Render(mCommandList, mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0), mRenderManager->GetLightingManager().GetLightingBuffer(), mRenderManager->GetFogRangeStart());
+
+
+	// Forward Render Pass 
+
+	mRenderManager->GetTextureManager().Bind(mCommandList);
+
+	mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, &dsvHandle);
+
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Particle) {
+		mRenderManager->GetParticleManager().RenderSO(mCommandList);
+		mRenderManager->GetParticleManager().RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
+	}
+
+
+
+
+
 
 	// Blurring Pass
 	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Bloom) {
@@ -560,25 +578,22 @@ void Renderer::InitGrassRenderer() {
 	if (mShaderModel6_5Support) {
 		ComPtr<ID3D12Device10> device10{};
 		CheckHR(mDevice.As(&device10));
-		mGrassRenderer = GrassRenderer(device10, mCommandList, mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
+		mGrassRenderer = GrassRenderer(device10, mCommandList, mMainCameraBuffer.CPUBegin());
 	}
 }
 
 void Renderer::InitTerrainBuffer() {
 	TerrainHeader header{};
 	std::vector<SimpleMath::Vector3> vertices{};
-
-	std::ifstream file("Resources/Binarys/Terrain/TerrainBaked.bin", std::ios::binary);
+	std::ifstream file("Resources/Binarys/Terrain/NTerrain.bin", std::ios::binary);
 
 	file.read(reinterpret_cast<char*>(&header), sizeof(TerrainHeader));
-
 
 	vertices.resize(header.globalWidth * header.globalHeight);
 	file.read(reinterpret_cast<char*>(vertices.data()), vertices.size() * sizeof(SimpleMath::Vector3));
 
-
 	mTerrainHeaderBuffer = DefaultBuffer(mDevice, mCommandList, sizeof(TerrainHeader), 1, &header, true);
-	mTerrainDataBuffer = DefaultBuffer(mDevice, mCommandList, sizeof(SimpleMath::Vector3), header.globalWidth * header.globalHeight,  vertices.data() );
+	mTerrainDataBuffer = DefaultBuffer(mDevice, mCommandList, sizeof(SimpleMath::Vector3), header.globalWidth * header.globalHeight, vertices.data());
 }
 
 void Renderer::InitCoreResources() {

@@ -1,0 +1,17 @@
+DiffuseColor: 1.0 1.0 1.0 1.0
+SpecularColor: 0.0 0.0 0.0 0.0
+EmissiveColor: 0.0 0.0 0.0 0.0
+
+DiffuseTextures:
+T_beech_bark_02_BC
+
+SpecularTextures:
+
+EmissiveTextures:
+
+MetalicTextures:
+
+NormalTextures:
+T_beech_bark_02_N
+
+AlphaTextures:

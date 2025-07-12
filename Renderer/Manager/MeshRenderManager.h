@@ -6,18 +6,20 @@
 #include "../Core/Shader.h"
 #include "../Utility/Defines.h"
 #include "../Config/Config.h"
-
 #include "../External/Include/absl/container/flat_hash_map.h"
 #ifdef max 
 #undef max
 #endif
 
-//#define RENDER_BB 
+#define RENDER_BB 
 
 class MeshRenderManager {
 public:
 	template<typename T>
-	static constexpr T MAX_INSTANCE_COUNT = static_cast<T>(10000);
+	static constexpr T MAX_INSTANCE_COUNT = static_cast<T>(10'0000);
+
+	template<typename T> 
+	static constexpr T MAX_TERRAIN_SEGMENT_COUNT = static_cast<T>(500);
 
 	template<typename T> 
 	static constexpr T MAX_BONE_COUNT = static_cast<T>(MAX_INSTANCE_COUNT<T> * Config::MAX_BONE_COUNT_PER_INSTANCE<T>);
@@ -40,16 +42,21 @@ public:
 	void AppendShadowPlaneMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, UINT reservedSlot = std::numeric_limits<UINT>::max());
 	void AppendShadowBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms);
 
+	void RegisterTerrainCPPointBuffer(DefaultBufferGPUIterator terrainCPPointBuffer);
+	void AppendTerrainMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const TerrainSegmentContext& world);
+	void AppendShadowTerrainMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const TerrainSegmentContext& world, UINT index);
 
 	void PrepareRender(ComPtr<ID3D12GraphicsCommandList> commandList);
 	
 	void RenderShadowPass(UINT index, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex,D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
-	void RenderGPass(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
+	void RenderGPass(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera, bool renderBB = false);
 	void Reset(); 
 private:
+	void RenderShadowPassTerrainMesh(UINT index, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 	void RenderShadowPassPlainMesh(UINT index, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 	void RenderShadowPassBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 
+	void RenderGPassTerrainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 	void RenderGPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 	void RenderGPassBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 private:
@@ -63,11 +70,16 @@ private:
 	DefaultBuffer mShadowBonedMeshBuffer{};
 	DefaultBuffer mShadowAnimationBuffer{};
 
+	DefaultBuffer mTerrainMeshBuffer{}; 
+	DefaultBuffer mShadowTerrainMeshBuffer{};
+	DefaultBufferGPUIterator mTerrainCPPointBuffer{}; 
+
 	UINT mBoneCounter{ 0 };
 	UINT mShadowBoneCounter{ 0 };
 	UINT mReservedSlotCounter{ 0 };
 
 	std::array<UINT, 2> mShadowMeshCounter{ 0, 0 };
+	std::array<UINT, 2> mShadowTerrainMeshCounter{ 0,0 }; 
 
 	std::vector<SimpleMath::Matrix> mBoneTransforms{};
 	std::vector<SimpleMath::Matrix> mShadowBoneTransforms{};
@@ -76,10 +88,13 @@ private:
 
 	absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<ModelContext>>> mPlainMeshReserved{};
 	absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<ModelContext>>> mPlainMeshContexts{};
+	absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<TerrainSegmentContext>>> mTerrainMeshContexts{};
 
 	std::array<absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<ModelContext>>>, 2> mShadowPlainMeshContexts{};
+	std::array<absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<TerrainSegmentContext>>>, 2> mShadowTerrainMeshContexts{};
 
 	std::unique_ptr<GraphicsShaderBase> mSkeletonBoundingboxRenderShader{};
 	std::unique_ptr<GraphicsShaderBase> mStandardBoundingBoxRenderShader{};
 
+	bool mRenderBB{ false };
 };

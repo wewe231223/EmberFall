@@ -1,9 +1,48 @@
 #pragma once 
 #include "../Utility/DirectXInclude.h"
-#include <dxcapi.h>
-#pragma comment(lib, "dxcompiler.lib")
 #include "../Renderer/Resource/DefaultBuffer.h"
 #include "../Utility/Defines.h"
+#include "../Renderer/Core/Shader.h"
+#include "../MeshLoader/Loader/TerrainLoader.h"
+
+class GrassTree {
+	struct Node {
+		SimpleMath::Vector2 point;
+		int axis;
+		union {
+			struct { int left, right; } internal;
+			struct { size_t begin, end; } leaf;
+		};
+	};
+
+	static constexpr size_t LEAF_SIZE = 128;
+
+public:
+	GrassTree() = default;
+	GrassTree(const GrassTree& other) = default;
+
+	GrassTree& operator=(const GrassTree& other) = default;
+	GrassTree(GrassTree&& other) = default;
+
+public:
+	void QueryRange(const SimpleMath::Vector2& center, float radius, std::vector<SimpleMath::Vector3>& result) const;
+	void SaveToFile(const std::string& filename) const;
+	void LoadFromFile(const std::string& filename);
+	void BuildTreeFromFile(const std::string& filename);
+
+	size_t GetSize() const;
+	std::vector<SimpleMath::Vector3>& GetPoints();
+private:
+	int ChooseAxis(size_t begin, size_t end);
+	int Build(size_t begin, size_t end);
+	void QueryRecursive(int nodeIdx, const SimpleMath::Vector2& center, float radius, std::vector<SimpleMath::Vector3>& result) const;
+
+private:
+	std::vector<Node> mNodes{};
+	std::vector<SimpleMath::Vector3> mPoints{};
+	Client::TerrainCollider mTerrainCollider{};
+};
+
 
 class GrassRenderer {
 	template<typename T>
@@ -17,7 +56,7 @@ class GrassRenderer {
 
 public:
 	GrassRenderer() = default;
-	GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator terrainHeader, DefaultBufferGPUIterator terrainData);
+	GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferCPUIterator cameraBuffer);
 	
 	~GrassRenderer() = default;
 
@@ -33,17 +72,19 @@ private:
 	void CreatePipelineState(ComPtr<ID3D12Device10> device);
 	void CreateRootSignature(ComPtr<ID3D12Device10> device);
 private:
-	DefaultBufferGPUIterator mTerrainHeader{};
-	DefaultBufferGPUIterator mTerrainData{};
-
 	DefaultBuffer mGrassPosition{}; 
 
 	D3D12_SHADER_BYTECODE mMeshShader{};
-	D3D12_SHADER_BYTECODE mAmplificationShader{};
 	D3D12_SHADER_BYTECODE mPixelShader{};
 
 	UINT mMaterialIndex{ 0 };
 
 	ComPtr<ID3D12RootSignature> mRootSignature{};
 	ComPtr<ID3D12PipelineState> mPipelineState{};
+
+	Client::TerrainCollider mTerrainCollider{}; 
+	std::vector<SimpleMath::Vector3> mGrass{};
+	DefaultBufferCPUIterator mCameraBuffer{}; 
 };
+
+

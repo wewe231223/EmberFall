@@ -5,8 +5,8 @@
 #include "../Renderer/Resource/Particle.h"
 
 class ParticleManager {
-	static constexpr size_t MAX_PARTICLE_COUNT = 10'0000;
-	static constexpr size_t EMIT_PARTICLE_COUNT = 100;
+	static constexpr size_t MAX_PARTICLE_COUNT = 50'0000;
+	static constexpr size_t MAX_EMIT_PARTICLE = 100;
 public:
 	ParticleManager() = default;
 	~ParticleManager() = default;
@@ -23,6 +23,8 @@ public:
 	void SetTerrain(DefaultBufferGPUIterator terrainHeader, DefaultBufferGPUIterator terrainData); 
 
 	Particle CreateEmitParticle(ParticleVertex& newParticle); 
+
+	void UpdateEmitParticle(); 
 
 	void RenderSO(ComPtr<ID3D12GraphicsCommandList> commandList);
 	void RenderGS(ComPtr<ID3D12GraphicsCommandList> commandList, DefaultBufferGPUIterator cameraBuffer, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS material);
@@ -50,13 +52,15 @@ private:
 	DefaultBuffer mParticleCountBuffer{};
 	DefaultBuffer mRandomBuffer{}; 
 
-	DefaultBufferGPUIterator mTerrainHeaderBuffer{};
+	DefaultBufferGPUIterator mTerrainHeaderBuffer{}; 
 	DefaultBufferGPUIterator mTerrainDataBuffer{};
 
 	ComPtr<ID3D12Resource> mParticleCountReadbackBuffer{};
 
 	UINT32 mParticleCount{ 0 };
 
-	std::array<EmitParticleContext, EMIT_PARTICLE_COUNT> mEmitParticleContexts{};
+	std::array<EmitParticleContext, MAX_EMIT_PARTICLE> mEmitParticleContexts{};
 	UINT mNextEmitParticleIndex{ 0 };
+
+	inline static std::atomic_bool mParticleAppendFlag{ false };
 };

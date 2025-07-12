@@ -21,7 +21,7 @@ struct EntityInfo {
 };
 
 struct EnvironmentsInfo {
-    GameProtocol::EnvironmentType envType;
+    GameProtocol::EnvironmentType1 envType;
     DirectX::BoundingOrientedBox bb;
     SimpleMath::Vector3 pivot;
 };
@@ -55,10 +55,10 @@ public:
 
     static const EntityInfo& GetEntityInfo(const std::string& name);
     static std::shared_ptr<AnimationInfo> GetAnimInfo(const std::string& key);
-    static const EnvironmentsInfo& GetEnvInfo(GameProtocol::EnvironmentType envType);
+    static const EnvironmentsInfo& GetEnvInfo(GameProtocol::EnvironmentType1 envType);
 
 private:
     inline static std::unordered_map<std::string, std::shared_ptr<AnimationInfo>> mAnimInfos;
     inline static std::unordered_map<std::string, EntityInfo> mEntityInfos;
-    inline static std::unordered_map<GameProtocol::EnvironmentType, EnvironmentsInfo> mEnvInfos;
+    inline static std::unordered_map<GameProtocol::EnvironmentType1, EnvironmentsInfo> mEnvInfos;
 };

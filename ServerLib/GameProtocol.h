@@ -1,6 +1,6 @@
 #pragma once
 
-inline constexpr auto CHECK_SESSION_HEART_BEAT_DELAY = 5s;
+inline constexpr auto CHECK_SESSION_HEART_BEAT_DELAY = 1000s;
 
 namespace GameProtocol {
     namespace Unit {
@@ -115,5 +115,25 @@ namespace GameProtocol {
         WindMill = 16,
         WindMillBlade = 17,
         Well = 18,
+    };
+
+
+    enum class EnvironmentType1 : UINT {
+        Tree1 = 0,
+        Tree2 = 1,
+        Tree3 = 2, 
+        Tree4 = 3,
+		Tree5 = 4,
+        Tree6 = 5,
+        Tree7 = 6, 
+        Tree8 = 7,
+        SRock1 = 8,
+        Fern1 = 9,
+        LogHouse = 10,
+        TimberHouse = 11, 
+        StoneHouse = 12, 
+		Cliff1 = 13,
+        Cliff2 = 14,
+        Cliff3 = 15
     };
 }

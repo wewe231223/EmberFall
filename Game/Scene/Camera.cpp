@@ -17,16 +17,20 @@ void Camera::UpdateBuffer() {
 	mCameraConstant.view = SimpleMath::Matrix::CreateLookAt(mTransform.GetPosition(), mTransform.GetPosition() + mTransform.GetForward(),SimpleMath::Vector3::Up).Transpose();
 	mCameraConstant.viewProj = mCameraConstant.proj * mCameraConstant.view;
 	mCameraConstant.cameraPosition = mTransform.GetPosition();
-
+	
 	mViewFrustum.Transform(mWorldFrustum, SimpleMath::Matrix::CreateLookAt(mTransform.GetPosition(), mTransform.GetPosition() + mTransform.GetForward(), SimpleMath::Vector3::Up).Invert());
 
 	::memcpy(*mCameraBufferCPU, &mCameraConstant, sizeof(CameraConstants));
 }
 
-bool Camera::FrustumCulling(Collider& other) const {
+bool Camera::IsInFrustum(Collider& other) const {
 	auto& box = other.GetWorldBox();
 
 	return mWorldFrustum.Intersects(box);
+}
+
+bool Camera::IsInFrustum(DirectX::BoundingBox& other) const {
+	return mWorldFrustum.Intersects(other); 
 }
 
 CameraMode::CameraMode(Camera* camera) : mCamera(camera) {
@@ -35,7 +39,7 @@ CameraMode::CameraMode(Camera* camera) : mCamera(camera) {
 FreeCameraMode::FreeCameraMode(Camera* camera) : CameraMode(camera) {
 }
 
-constexpr float FREE_CAMERA_SPEED = 25.f;
+constexpr float FREE_CAMERA_SPEED = 40.f;
 void FreeCameraMode::Enter() {
 	mInputCallBackSign = NonReplacementSampler::GetInstance().Sample();
 
@@ -101,6 +105,9 @@ void FreeCameraMode::FocusUpdate() {
 
 }
 
+void FreeCameraMode::SetCameraShake(std::chrono::milliseconds duration){
+}
+
 TPPCameraMode::TPPCameraMode(Camera* camera, Transform& transform, const DirectX::SimpleMath::Vector3& offset) : CameraMode(camera), mOffset(offset), mTargetTransform(transform) {
 }
 
@@ -154,9 +161,35 @@ void TPPCameraMode::Update() {
 void TPPCameraMode::FocusUpdate() {
 	auto targetPos = mTargetTransform.GetPosition();
 	targetPos.y += 0.9f;
+
+	if (mShakeDuration > 0ms) {
+
+		float shakeIntensity = 0.3f;
+		float remainingRatio = std::clamp(
+			static_cast<float>(mShakeDuration.count()) / 1000.0f,
+			0.0f, 1.0f
+		);
+		float timeMs = Time.GetTimeSinceStarted<float,std::chrono::milliseconds>();
+		float timeSec = timeMs / 1000.0f;
+
+		auto shakeOffset = DirectX::SimpleMath::Vector3(
+			std::sin(timeSec * 23.0f) * 0.6f,
+			std::sin(timeSec * 37.0f) * 0.4f,
+			std::sin(timeSec * 17.0f) * 0.3f
+		) * (shakeIntensity * remainingRatio);
+
+		targetPos += shakeOffset;
+
+		mShakeDuration -= std::chrono::milliseconds(Time.GetSmoothDeltaTime<int, std::chrono::milliseconds>());
+	}
+
 	mCamera->GetTransform().Look(targetPos);
 }
 
 ECameraMode TPPCameraMode::GetMode() const {
 	return ECameraMode();
+}
+
+void TPPCameraMode::SetCameraShake(std::chrono::milliseconds duration) {
+	mShakeDuration = duration;
 }

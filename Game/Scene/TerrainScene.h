@@ -15,7 +15,9 @@
 #include "../UI/Inventory.h"
 #include "../UI/HealthBar.h"
 #include "../UI/Profile.h"
+#include "../Game/GameObject/TerrainObject.h"
 #include "../External/Include/absl/container/flat_hash_map.h"
+#include "../Game/Scene/MaterialLoader.h"
 
 class TerrainScene : public IScene {
 	using duration = std::chrono::milliseconds; 
@@ -84,13 +86,15 @@ private:
 	std::unordered_map<std::string, AnimationLoader> mAnimationMap{};
 
 	Camera mCamera{};
-	std::unique_ptr<CameraMode> mCameraMode{ nullptr };
+	CameraMode* mCurrentCameraMode{ nullptr };
+	std::unique_ptr<CameraMode> mFreeCameraMode{ nullptr };
+	std::unique_ptr<CameraMode> mTPPCameraMode{ nullptr };
 
 	absl::flat_hash_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
 	std::vector<GameObject> mGameObjects{};
 	std::vector<GameObject> mItemObjects{}; 
 
-	std::vector<GameObject> mEnvironmentObjects{};
+	std::vector<LODGameObject> mEnvironmentObjects{};
 
 	int mNetworkSign{};
 	int mInputSign{}; 
@@ -100,7 +104,7 @@ private:
 #ifdef DEV_MODE
 	TextBlock* mLatencyBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 50.f, 1920.f, 100.f }, StringColor::BurlyWood, "NotoSansKR") };
 	TextBlock* mPktsBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 70.f, 1920.f, 120.f }, StringColor::BurlyWood, "NotoSansKR") };
-	TextBlock* mPktElapsedBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 90.f, 1920.f, 140.f }, StringColor::BurlyWood, "NotoSansKR") };
+	TextBlock* mPositionBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 90.f, 1920.f, 140.f }, StringColor::Black, "NotoSansKR") };
 #endif 
 
 	absl::flat_hash_map<NetworkObjectIdType, Player*> mPlayerIndexmap{};
@@ -124,12 +128,11 @@ private:
 	GameObject mSkyBox{};
 
 	TerrainLoader tLoader{}; 
-	TerrainCollider tCollider{};
+	Client::TerrainCollider tCollider{};
+	TerrainObject mTerrainObject{}; 
 
 	DefaultBuffer mTerrainHeaderBuffer{};
 	DefaultBuffer mTerrainDataBuffer{};
-
-	
 
 	IntervalTimer mIntervalTimer{};
 
@@ -137,9 +140,12 @@ private:
 	HealthBar mHealthBarUI{};
 	Profile mProfileUI{};
 
+	MaterialFileLoader mMaterialLoader{};
+
 	float mAvgLatency{ 0.f };
 
 	bool mInitialized{ false }; 
+	bool mIsBlind{ false };
 
 	size_t mProcessedPacketSize{ 0 };
 };

@@ -12,7 +12,7 @@ Assimp::Importer MeshLoader::mImporter{};
 MeshData MeshLoader::Load(const std::filesystem::path& path, UINT meshIndex) {
 	MeshData meshData{};
 
-	const aiScene* scene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_CalcTangentSpace | aiProcess_ConvertToLeftHanded  );
+	const aiScene* scene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_ConvertToLeftHanded  );
 
 	CrashExp(scene != nullptr, "Failed To Load Model!");
 	CrashExp((!(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)), "Failed To Load Model!");

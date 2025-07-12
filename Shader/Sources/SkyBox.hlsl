@@ -1,16 +1,19 @@
 cbuffer Camera : register(b0)
 {
-    matrix view;
-    matrix projection;
-    matrix viewProjection;
-    float3 cameraPosition;
+    float4x4 view;
+    float4x4 projection;
+    float4x4 viewProjection;
+    float4x4 middleViewProjection;
 
-}
+    float3 cameraPosition;
+    int isShadow;
+    float3 shadowOffset;
+};
 
 struct ModelContext
 {
-    matrix world;
-    float3 BBCenter; 
+    float4x4 world;
+    float3 BBCenter;
     float3 BBExtents;
     uint material;
 };
@@ -51,7 +54,6 @@ struct Deffered_POUT
     float4 emissive : SV_TARGET3;
 };
 
-
 StructuredBuffer<ModelContext> modelContexts : register(t0);
 StructuredBuffer<MaterialConstants> materialConstants : register(t1);
 Texture2D textures[1024] : register(t2);
@@ -63,7 +65,6 @@ SamplerState linearClampSampler : register(s3);
 SamplerState anisotropicWrapSampler : register(s4);
 SamplerState anisotropicClampSampler : register(s5);
 SamplerComparisonState PCFSampler : register(s6);
-
 
 SkyBox_VOUT SkyBox_VS(SkyBox_VIN input)
 {
@@ -81,12 +82,11 @@ SkyBox_VOUT SkyBox_VS(SkyBox_VIN input)
 
 Deffered_POUT SkyBox_PS(SkyBox_VOUT input)
 {
+    Deffered_POUT output = (Deffered_POUT) 0;
     
-    Deffered_POUT output = (Deffered_POUT)0;
-    
-   
     output.diffuse = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearClampSampler, input.texcoord);
     
     output.normal = float4(0.0f, 0.0f, 0.0f, 5.0f);
+    
     return output;
 }

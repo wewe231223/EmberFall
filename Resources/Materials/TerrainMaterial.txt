@@ -1,0 +1,26 @@
+DiffuseColor: 1.0 1.0 1.0 1.0
+SpecularColor: 0.0 0.0 0.0 0.0
+EmissiveColor: 0.0 0.0 0.0 0.0
+
+DiffuseTextures:
+T_YFGM_GrassLeafs02_d
+T_YFGM_SoilGravel01_d
+T_YFGM_MossStones_d
+
+SpecularTextures:
+
+EmissiveTextures:
+TerrainHeightmap_2048
+
+MetalicTextures:
+TerrainNormals
+Terrain_Tangent
+Terrain_Bitangent
+
+NormalTextures:
+T_YFGM_GrassLeafs02_n
+T_YFGM_SoilGravel01_n
+T_YFGM_MossStones_n
+
+AlphaTextures:
+Splatmap_Combined_0

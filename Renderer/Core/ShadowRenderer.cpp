@@ -111,10 +111,14 @@ void ShadowRenderer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList) {
 
 
 
-bool ShadowRenderer::ShadowMapCulling(int index, Collider& other) {
+bool ShadowRenderer::IsInShadowFrustum(int index, Collider& other) {
 	auto& box = other.GetWorldBox();
 
 	return mWorldBox[index].Intersects(box);
+}
+
+bool ShadowRenderer::IsInShadowFrustum(int index, DirectX::BoundingBox& other) {
+	return mWorldBox[index].Intersects(other); 
 }
 
 void ShadowRenderer::TransitionShadowMap(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_RESOURCE_STATES before, D3D12_RESOURCE_STATES after) {

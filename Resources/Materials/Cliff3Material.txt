@@ -1,0 +1,17 @@
+DiffuseColor: 1.0 1.0 1.0 1.0
+SpecularColor: 0.0 0.0 0.0 0.0
+EmissiveColor: 0.0 0.0 0.0 0.0
+
+DiffuseTextures:
+Huge_Nordic_Coastal_Cliff_ve3hahfcb_High_4K_BaseColor
+
+SpecularTextures:
+
+EmissiveTextures:
+
+MetalicTextures:
+
+NormalTextures:
+Huge_Nordic_Coastal_Cliff_ve3hahfcb_High_4K_Normal
+
+AlphaTextures:

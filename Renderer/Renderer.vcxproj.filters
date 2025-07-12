@@ -120,6 +120,9 @@
     <ClCompile Include="Manager\FeatureManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
+    <ClCompile Include="Manager\DecalManager.cpp">
+      <Filter>Manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -215,6 +218,9 @@
     <ClInclude Include="Manager\FeatureManager.h">
       <Filter>Manager</Filter>
     </ClInclude>
+    <ClInclude Include="Manager\DecalManager.h">
+      <Filter>Manager</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shader\Sources\Standard.hlsl">
@@ -260,6 +266,15 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="..\Shader\Sources\StandardNormal.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\Tree.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\GrassShaderV2.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\TreeCross.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>

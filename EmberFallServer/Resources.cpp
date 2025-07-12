@@ -104,7 +104,7 @@ std::shared_ptr<AnimationInfo> ResourceManager::GetAnimInfo(const std::string& k
     return mAnimInfos[key];
 }
 
-const EnvironmentsInfo& ResourceManager::GetEnvInfo(GameProtocol::EnvironmentType envType) {
+const EnvironmentsInfo& ResourceManager::GetEnvInfo(GameProtocol::EnvironmentType1 envType) {
     if (not mEnvInfos.contains(envType)) {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Bad Access - Invalid EnvType: {}", static_cast<int32_t>(envType));
         Crash("");

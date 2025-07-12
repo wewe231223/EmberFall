@@ -22,7 +22,7 @@ std::shared_ptr<class InputManager> ServerFrame::GetInputManager() const {
 }
 
 void ServerFrame::Run() {
-    ResourceManager::LoadEnvFromFile("../Resources/Binarys/Collider/EnvBB.bin");
+    ResourceManager::LoadEnvFromFile("../Resources/Binarys/Collider/ServerEnvironmentBB.bin");
     ResourceManager::LoadEntityFromFile("../Resources/Binarys/Collider/Entitybb.bin");
     ResourceManager::LoadAnimationFromFile("../Resources/Binarys/Collider/AnimationInfo.bin");
 

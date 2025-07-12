@@ -13,6 +13,7 @@ Texture::Texture(ComPtr<ID3D12Device> device, DXGI_FORMAT format, UINT64 width, 
 	D3D12_RESOURCE_DESC desc{ CD3DX12_RESOURCE_DESC::Tex2D(format, width, height, 1, 1, 1, 0, resourceFlag) };
 	D3D12_HEAP_PROPERTIES heapProperties{ CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT) };
 
+
 	if (resourceFlag & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) {
 		D3D12_CLEAR_VALUE clearValue{};
 		clearValue.Format = format;
@@ -132,19 +133,6 @@ Texture::Texture(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> 
 	}
 
 
-}
-
-Texture::Texture(const Texture& other) {
-	mResource = other.mResource;
-	mUploadbuffer = other.mUploadbuffer;
-}
-
-Texture& Texture::operator=(const Texture& other) {
-	if (this != &other) {
-		mResource = other.mResource;
-		mUploadbuffer = other.mUploadbuffer;
-	}
-	return *this;
 }
 
 Texture::Texture(Texture&& other) noexcept {
