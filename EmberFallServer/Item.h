@@ -15,7 +15,9 @@ enum class ItemTag : uint8_t {
     ITEM_POTION,
     ITEM_HOLYWATER,
     ITEM_CROSS,
-    ITEM_TAG_COUNT
+    ITEM_TAG_COUNT,
+
+    ITEM_INVALID = 0xFF
 };
 
 Packets::EntityType ItemTagToEntityType(ItemTag tag);

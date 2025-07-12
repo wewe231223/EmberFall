@@ -12,13 +12,15 @@
 GameObject::GameObject()
     : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mTimer{ std::make_unique<SimpleTimer>() } {
     mPhysics->SetTransform(mTransform);
-    mOverlapped = std::make_unique<OverlappedUpdate>();
+    mOverlapped = std::make_unique<OverlappedEx>();
+    mOverlapped->type = IoType::UPDATE_NPC;
 }
 
 GameObject::GameObject(uint16_t roomIdx) 
-    : INetworkObject{ roomIdx }, mTransform { std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mTimer{ std::make_unique<SimpleTimer>() } {
+    : IServerEntity{ roomIdx }, mTransform { std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mTimer{ std::make_unique<SimpleTimer>() } {
     mPhysics->SetTransform(mTransform);
-    mOverlapped = std::make_unique<OverlappedUpdate>();
+    mOverlapped = std::make_unique<OverlappedEx>();
+    mOverlapped->type = IoType::UPDATE_NPC;
 }
 
 GameObject::~GameObject() { }
@@ -149,25 +151,7 @@ void GameObject::RegisterUpdate() {
         return;
     }
 
-    mOverlapped->owner = shared_from_this();
-    gServerCore->PQCS(0, GetId(), mOverlapped.get());
-}
-
-void GameObject::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
-    if (IOType::UPDATE != overlapped->type) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "GameObject ProcessOverlapped - Is not Overlapped Update");
-        return;
-    }
-
-    if (not mSpec.active) {
-        return;
-    }
-
-    Update();
-    LateUpdate();
-
-    auto nextUpdateTime = SysClock::now() + GameProtocol::Logic::MONSTER_UPDATE_DELAY;
-    gServerFrame->AddTimerEvent(GetMyRoomIdx(), GetId(), nextUpdateTime, TimerEventType::UPDATE_NPC);
+    gServerFrame->PQCS(0, GetId(), mOverlapped.get());
 }
 
 void GameObject::Update() {
@@ -209,7 +193,7 @@ void GameObject::Update() {
     mBoundingObject->Update(mTransform->GetWorld());
 
     auto myRoom = GetMyRoomIdx();
-    decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
+    auto sharedThis = shared_from_this();
     gGameRoomManager->GetRoom(myRoom)->GetStage().UpdateCollision(sharedThis);
 }
 

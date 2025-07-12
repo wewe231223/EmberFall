@@ -2,6 +2,7 @@
 #include "Stage.h"
 #include "GameSession.h"
 #include "HumanPlayerScript.h"
+#include "ServerFrame.h"
 
 Stage::Stage(GameStage stageIdx, uint16_t roomIdx) 
     : mStage{ stageIdx }, mGameRoomIdx{ roomIdx },
@@ -42,7 +43,7 @@ void Stage::RemoveInSector(NetworkObjectIdType id, const SimpleMath::Vector3& po
 
 void Stage::NotifyAllOfGemDestroyed(const std::vector<SessionIdType>& sessions) {
     for (auto sessionId : sessions) {
-        auto gameSession = std::static_pointer_cast<GameSession>(gServerCore->GetSessionManager()->GetSession(sessionId));
+        auto gameSession = gServerFrame->GetSession(sessionId);
         if (nullptr == gameSession or false == gameSession->IsConnected()) {
             continue;
         }

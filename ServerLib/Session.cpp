@@ -2,9 +2,7 @@
 #include "Session.h"
 #include "NetworkCore.h"
 
-Session::Session(NetworkType networkType) 
-    : INetworkObject{ }, mNetworkType{ networkType } {
-    mSocket = NetworkUtil::CreateSocket();
+Session::Session(SOCKET socket) : mSocket{ socket } {
     CrashExp(INVALID_SOCKET != mSocket, "");
 }
 
@@ -14,7 +12,6 @@ Session::~Session() {
     }
 
     auto myId = GetId();
-    gServerCore->GetSessionManager()->ReleaseSessionId(static_cast<SessionIdType>(myId));
     Close();
 }
 
@@ -28,15 +25,15 @@ bool Session::IsClosed() const {
 
 void Session::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
     switch (overlapped->type) {
-    case IOType::SEND:
+    case IoType::SEND:
         ProcessSend(numOfBytes, reinterpret_cast<OverlappedSend*>(overlapped));
         break;
 
-    case IOType::RECV:
+    case IoType::RECV:
         ProcessRecv(numOfBytes);
         break;
 
-    case IOType::CONNECT:
+    case IoType::CONNECT:
         ProcessConnect(numOfBytes, reinterpret_cast<OverlappedConnect*>(overlapped));
         break;
 
@@ -62,7 +59,6 @@ void Session::RegisterRecv() {
     DWORD flag{ };
 
     mOverlappedRecv.ResetOverlapped();
-    mOverlappedRecv.owner = shared_from_this();
     mOverlappedRecv.wsaBuf.buf = mOverlappedRecv.buffer.data() + mPrevRemainSize;
     mOverlappedRecv.wsaBuf.len = static_cast<UINT32>(mOverlappedRecv.buffer.size() - mPrevRemainSize);
     auto result = ::WSARecv(
@@ -93,13 +89,6 @@ void Session::RegisterSend(OverlappedSend* const overlappedSend) {
         return;
     }
 
-    auto sharedThis = shared_from_this();
-    overlappedSend->owner = sharedThis;
-    if (nullptr == overlappedSend->owner) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Overlapped Send's owner is Null");
-        Crash("Overlapped Send's owner is Null");
-    }
-
     DWORD sentBytes{ };
     DWORD dataSize = overlappedSend->wsaBuf.len;
     auto result = ::WSASend(
@@ -126,9 +115,8 @@ void Session::RegisterSend(OverlappedSend* const overlappedSend) {
 }
 
 void Session::ProcessRecv(INT32 numOfBytes) {
-    mOverlappedRecv.owner.reset();
     if (0 >= numOfBytes) {
-        gServerCore->GetSessionManager()->CloseSession(static_cast<SessionIdType>(GetId()));
+        Close();
         return;
     }
 
@@ -152,7 +140,6 @@ void Session::ProcessRecv(INT32 numOfBytes) {
 
 void Session::ProcessSend(INT32 numOfBytes, OverlappedSend* overlappedSend) {
     if (0 >= numOfBytes) {
-        gServerCore->GetSessionManager()->CloseSession(static_cast<SessionIdType>(GetId()));
         return;
     }
 
@@ -213,7 +200,6 @@ bool Session::Connect(const std::string& serverIp, const UINT16 port) {
     DWORD bytes{ };
     auto clientCore = gClientCore;
     auto overlappedConnect = clientCore->GetOverlappedConnect();
-    overlappedConnect->owner = shared_from_this();
     auto result = NetworkUtil::ConnectEx(
         mSocket,
         reinterpret_cast<sockaddr*>(&serverAddr),
@@ -251,23 +237,17 @@ void Session::NotifyingSessionConn() {
 }
 
 RecvBuf::iterator Session::ValidatePackets(RecvBuf::iterator iter, RecvBuf::iterator last) {
-    while (iter != last) {
-        if constexpr (sizeof(PacketSizeT) > sizeof(char)) {
-            if (std::distance(iter, last) < sizeof(PacketSizeT)) {
-                break;
-            }
+    auto it = iter;
+    while (it != last) {
+        auto packetSize = NetworkUtil::GetPacketSizeFromIter(it);
+        if (std::distance(it, last) < packetSize) {
+            break;
         }
 
-        auto packetSize = NetworkUtil::GetPacketSizeFromIter(iter);
-        if (sizeof(PacketHeaderSC) > packetSize) {
-            MessageBoxA(nullptr, std::format("PacketSize is: {}", packetSize).c_str(), "", MB_OK | MB_ICONERROR);
-            exit(-1);
-        }
-
-        iter += packetSize;
+        it += packetSize;
     }
 
-    return iter;
+    return it;
 }
 
 void Session::OnConnect() { 
@@ -282,18 +262,16 @@ void Session::HandleSocketError(INT32 errorCore) {
     switch (errorCore) {
     case WSAECONNRESET: // 소프트웨어로 인해 연결 중단.
     case WSAECONNABORTED: // 피어별 연결 다시 설정. (원격 호스트에서 강제 중단.)
-        if (NetworkType::CLIENT == mNetworkType) {
-            gClientCore->CloseSession();
-            MessageBoxA(nullptr, "Socket Error!", NetworkUtil::WSAErrorMessage().c_str(), MB_OK | MB_ICONERROR);
-        }
-        else {
-            gServerCore->GetSessionManager()->CloseSession(static_cast<SessionIdType>(GetId()));
-            gLogConsole->PushLog(DebugLevel::LEVEL_ERROR, "Socket Error: {}", NetworkUtil::WSAErrorMessage());
-        }
-        break;
+    {
+        gClientCore->CloseSession();
+        MessageBoxA(nullptr, "Socket Error!", NetworkUtil::WSAErrorMessage().c_str(), MB_OK | MB_ICONERROR);
+    }
+    break;
 
     default:
-        gLogConsole->PushLog(DebugLevel::LEVEL_ERROR, "Socket Error: {}", NetworkUtil::WSAErrorMessage());
-        break;
+    {
+        MessageBoxA(nullptr, "Socket Error!", NetworkUtil::WSAErrorMessage().c_str(), MB_OK | MB_ICONERROR);
+    }
+    break;
     }
 }

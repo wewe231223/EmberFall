@@ -27,7 +27,7 @@ OverlappedSend* FbsPacketFactory::CreateDataSC(const flatbuffers::FlatBufferBuil
     const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
 
     PacketSizeT headerSize = sizeof(PacketHeaderSC) + payloadSize;
-    NetworkUtil::Serializer::Serialize(&headerSize);
+    //NetworkUtil::Serializer::Serialize(&headerSize);
     PacketHeaderSC header{ headerSize, type };
     return mSendPacketBuffers->GetOverlapped(&header, payload, payloadSize);
 }
@@ -37,7 +37,7 @@ OverlappedSend* FbsPacketFactory::CreateDataCS(const flatbuffers::FlatBufferBuil
     const PacketSizeT payloadSize = static_cast<PacketSizeT>(builder.GetSize());
 
     PacketSizeT headerSize = sizeof(PacketHeaderCS) + payloadSize;
-    NetworkUtil::Serializer::Serialize(&headerSize);
+    //NetworkUtil::Serializer::Serialize(&headerSize);
     PacketHeaderCS header{ headerSize, type, id };
     return mSendPacketBuffers->GetOverlapped(&header, payload, payloadSize);
 }

@@ -136,6 +136,5 @@ public:
     bool CancelPlayerReady(uint16_t roomIdx, SessionIdType id);
 
 private:
-    Lock::SRWLock mGameRoomLock{ };
     std::array<std::unique_ptr<GameRoom>, MAX_GAME_ROOM> mGameRooms;
 };

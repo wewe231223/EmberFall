@@ -37,7 +37,7 @@ struct ObjectSpec {
     float hp;                       // 체력
 };
 
-class GameObject : public INetworkObject {
+class GameObject : public std::enable_shared_from_this<GameObject>, public IServerEntity {
 public:
     GameObject();
     GameObject(uint16_t roomIdx);
@@ -77,7 +77,6 @@ public:
 
     // Update & Process Event Functions
     void RegisterUpdate();
-    virtual void ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) override;
 
     void Update();
     void LateUpdate();
@@ -114,13 +113,12 @@ private:
     float mDeltaTime{ };
 
     std::unique_ptr<SimpleTimer> mTimer{ };                             // own timer
-    std::unique_ptr<OverlappedUpdate> mOverlapped{ };                   // for update
     std::shared_ptr<Transform> mTransform{ };                           // Transform
     std::shared_ptr<class Physics> mPhysics{ };                         // Physics
     std::shared_ptr<Script> mEntityScript{ };                           // script
     std::shared_ptr<BoundingObject> mBoundingObject{ };                 // boundingObject
     std::shared_ptr<BuffSystem> mBuffSystem{ };
-
+    std::unique_ptr<OverlappedEx> mOverlapped{ };                       // for update
     Concurrency::concurrent_queue<std::shared_ptr<GameEvent>> mGameEvents{ };
 };
 

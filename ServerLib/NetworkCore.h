@@ -14,78 +14,36 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "IOCPCore.h"
-#include "SessionManager.h"
 #include "SendBuffers.h"
 #include "PacketHandler.h"
 
-enum class NetworkType : BYTE {
-    SERVER,
-    CLIENT
-};
-
-class INetworkCore abstract : public std::enable_shared_from_this<INetworkCore> {
-public:
-    INetworkCore(NetworkType type);
-    virtual ~INetworkCore();
-
-public:
-    NetworkType GetType() const;
-    std::shared_ptr<IOCPCore> GetIOCPCore() const;
-    std::shared_ptr<PacketHandler> GetPacketHandler() const;
-
-    virtual void Init();
-    virtual bool Start(const std::string& ip, const UINT16 port) abstract;
-    virtual void End() abstract;
-
-    bool PQCS(INT32 transfferdBytes, ULONG_PTR completionKey, OverlappedEx* overlapped);
-
-private:
-    NetworkType mType{ };
-    std::shared_ptr<IOCPCore> mIocpCore{ nullptr };
-    std::shared_ptr<PacketHandler> mPacketHandler{ nullptr };
-};
-
-class ServerCore : public INetworkCore {
-public:
-    ServerCore(size_t workerThreadNum=HARDWARE_CONCURRENCY);
-    virtual ~ServerCore();
-
-public:
-    bool IsListenerClosed() const;
-    std::shared_ptr<SessionManager> GetSessionManager() const;
-
-    virtual void Init() override;
-    virtual bool Start(const std::string& ip, const UINT16 port) override;
-    virtual void End() override;
-
-    void Send(SessionIdType to, OverlappedSend* overlappedSend);
-
-private:
-    std::shared_ptr<class Listener> mListener{ nullptr };
-    std::shared_ptr<SessionManager> mSessionManager{ nullptr };
-    std::vector<std::thread> mWorkerThreads{ };
-    size_t mWorkerThreadNum{ };
-};
-
-class ClientCore : public INetworkCore {
+class ClientCore {
 public:
     ClientCore();
-    virtual ~ClientCore();
+    ~ClientCore();
 
 public:
-    virtual bool Start(const std::string& ip, const UINT16 port) override;
-    virtual void End() override;
+    bool Start(const std::string& ip, const UINT16 port);
+    void End();
     
     void InitSessionId(SessionIdType id);
+    std::shared_ptr<class Session> GetSession() const;
     SessionIdType GetSessionId() const;
     bool IsClosedSession() const;
+    std::shared_ptr<PacketHandler> GetPacketHandler() const;
+
     OverlappedConnect* GetOverlappedConnect();
     void Send(OverlappedSend* const overlappedSend);
     void CloseSession();
+
+    bool PQCS(INT32 transfferdBytes, ULONG_PTR completionKey, OverlappedEx* overlapped);
 
 private:
     std::thread mWorkerThread{ };
     std::shared_ptr<class Session> mSession{ nullptr };
     OverlappedConnect mOverlappedConnect{ };
     OverlappedDisconnect mOverlappedDisconnect{ };
+
+    std::shared_ptr<IOCPCore> mIocpCore{ nullptr };
+    std::shared_ptr<PacketHandler> mPacketHandler{ nullptr };
 };

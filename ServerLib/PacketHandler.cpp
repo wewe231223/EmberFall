@@ -85,13 +85,13 @@ PacketHandler::PacketHandler() { }
 PacketHandler::~PacketHandler() { }
 
 void PacketHandler::Write(void* data, size_t size) {
-    Lock::SRWLockGuard bufferGuard{ Lock::SRWLockMode::SRW_SHARED, mBufferLock };
+    std::shared_lock bufferGuard{ mBufferLock };
 
     mBuffers[mWriteOnlyIdx].Write(data, size);
 }
 
 void PacketHandler::Swap() {
-    Lock::SRWLockGuard bufferGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mBufferLock };
+    std::unique_lock bufferGuard{ mBufferLock };
 
     std::swap(mWriteOnlyIdx, mReadOnlyIdx);
     mBuffers[mWriteOnlyIdx].Reset();

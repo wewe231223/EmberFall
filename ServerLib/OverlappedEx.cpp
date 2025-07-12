@@ -2,7 +2,12 @@
 #include "OverlappedEx.h"
 #include "Session.h"
 
-OverlappedEx::OverlappedEx(IOType type)
+OverlappedEx::OverlappedEx() 
+    : wsaBuf{ 0, nullptr }, type{ } { 
+    ResetOverlapped();
+}
+
+OverlappedEx::OverlappedEx(IoType type)
     : wsaBuf{ 0, nullptr }, type{ type } {
     ResetOverlapped();
 }
@@ -16,26 +21,19 @@ void OverlappedEx::ResetOverlapped() {
 }
 
 OverlappedAccept::OverlappedAccept()
-    : OverlappedEx{ IOType::ACCEPT }, buffer{ } { }
-
-std::shared_ptr<Session> OverlappedAccept::GetSession() {
-    return std::static_pointer_cast<Session>(session);
-}
+    : OverlappedEx{ IoType::ACCEPT }, buffer{ } { }
 
 OverlappedConnect::OverlappedConnect()
-    : OverlappedEx{ IOType::CONNECT } { }
+    : OverlappedEx{ IoType::CONNECT } { }
 
 OverlappedRecv::OverlappedRecv()
-    :OverlappedEx{ IOType::RECV }, buffer{ } { 
+    :OverlappedEx{ IoType::RECV }, buffer{ } { 
     wsaBuf.buf = buffer.data();
     wsaBuf.len = static_cast<ULONG>(buffer.size());
 }
 
 OverlappedSend::OverlappedSend()
-    : OverlappedEx{ IOType::SEND } { }
+    : OverlappedEx{ IoType::SEND } { }
 
 OverlappedDisconnect::OverlappedDisconnect()
-    : OverlappedEx{ IOType::DISCONNECT } { }
-
-OverlappedUpdate::OverlappedUpdate()
-    : OverlappedEx{ IOType::UPDATE } { }
+    : OverlappedEx{ IoType::DISCONNECT } { }
