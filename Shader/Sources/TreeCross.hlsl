@@ -4,6 +4,7 @@ cbuffer Camera : register(b0)
     float4x4 projection;
     float4x4 viewProjection;
     float4x4 middleViewProjection;
+    float4x4 prevViewProjection;
 
     float3 cameraPosition;
     int isShadow;
@@ -12,6 +13,7 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
+    float4x4 prevWorld;
     float4x4 world;
     float3 BBCenter;
     float3 BBExtents;
@@ -45,6 +47,9 @@ struct TreeCross_VOUT
     float4 position : SV_POSITION;
     float3 wPosition : POSITION1;
     float3 vPosition : POSITION2;
+    float4 curPosition : POSITION3;
+    float4 prevPosition : POSITION4;
+    
     float3 normal : NORMAL;
     float2 texcoord : TEXCOORD;
     uint material : MATERIALID;
@@ -56,6 +61,7 @@ struct Deffered_POUT
     float4 normal : SV_TARGET1;
     float4 position : SV_TARGET2;
     float4 emissive : SV_TARGET3;
+    float4 velocity : SV_TARGET4;
 };
 
 StructuredBuffer<ModelContext> modelContexts : register(t0);
@@ -82,6 +88,9 @@ TreeCross_VOUT TreeCross_VS(TreeCross_VIN input)
     output.normal = mul(input.normal, (float3x3) modelContext.world);
     output.texcoord = input.texcoord;
     output.material = modelContext.material;
+    
+    output.prevPosition = mul(mul(float4(input.position, 1.0f), modelContext.prevWorld), prevViewProjection);
+    output.curPosition = output.position;
     
     return output;
 }
@@ -122,6 +131,16 @@ Deffered_POUT TreeCross_PS(TreeCross_VOUT input)
     {
         output.emissive = float4(emissiveColor.rgb, 1.0f);
     }
+    
+    float4 curNDC = input.curPosition / input.curPosition.w;
+    float4 prevNDC = input.prevPosition / input.prevPosition.w;
+    
+    curNDC.xy = curNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+    prevNDC.xy = prevNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+    
+    float4 velocity = (curNDC - prevNDC);
+   
+    output.velocity = float4(velocity.x, velocity.y, 0.0f, input.position.z);
     
     return output;
 }

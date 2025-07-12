@@ -4,6 +4,7 @@ cbuffer Camera : register(b0)
     float4x4 projection;
     float4x4 viewProjection;
     float4x4 middleViewProjection;
+    float4x4 prevViewProjection;
 
     float3 cameraPosition;
     int isShadow;
@@ -12,6 +13,7 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
+    float4x4 prevWorld;
     float4x4 world;
     float3 BBCenter;
     float3 BBExtents;
@@ -75,7 +77,7 @@ SkyBox_VOUT SkyBox_VS(SkyBox_VIN input)
 
     SkyBox_VOUT output;
     output.position = mul(float4(input.position, 1.f), modelContext.world);
-    output.prevPosition = mul(mul(float4(input.position, 1.f), modelContext.prevWorld), prevViewProj);
+    output.prevPosition = mul(mul(float4(input.position, 1.f), modelContext.prevWorld), prevViewProjection);
 
     output.position = mul(output.position, viewProjection);
     output.curPosition = output.position;

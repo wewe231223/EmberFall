@@ -950,8 +950,6 @@ GraphicsShaderBase::RootParameters DefferedShader::CreateRootParameters() {
 
 	params.ParameterCount = 4;
 
-	params.ParameterCount = 3;
-
 	return params;
 }
 
@@ -2076,6 +2074,26 @@ GraphicsShaderBase::RootParameters TreeCrossShader::CreateRootParameters() {
 	params.ParameterCount = 4;
 
 	return params;
+}
+
+D3D12_RASTERIZER_DESC TreeCrossShader::CreateRasterizerState() {
+	D3D12_RASTERIZER_DESC rasterizerDesc;
+	::ZeroMemory(&rasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
+
+	//	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+	rasterizerDesc.FrontCounterClockwise = FALSE;
+	rasterizerDesc.DepthBias = 0;
+	rasterizerDesc.DepthBiasClamp = 0.0f;
+	rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+	rasterizerDesc.DepthClipEnable = TRUE;
+	rasterizerDesc.MultisampleEnable = FALSE;
+	rasterizerDesc.AntialiasedLineEnable = FALSE;
+	rasterizerDesc.ForcedSampleCount = 0;
+	rasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	return rasterizerDesc;
 }
 
 UINT TreeCrossShader::CreateNumOfRenderTarget() {

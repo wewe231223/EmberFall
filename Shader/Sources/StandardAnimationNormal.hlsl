@@ -4,6 +4,7 @@ cbuffer Camera : register(b0)
     float4x4 projection;
     float4x4 viewProjection;
     float4x4 middleViewProjection;
+    float4x4 prevViewProjection;
 
     float3 cameraPosition;
     int isShadow;
@@ -12,6 +13,7 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
+    float4x4 prevWorld;
     float4x4 world;
     float3 BBCenter;
     float3 BBExtents;
@@ -111,7 +113,7 @@ StandardAnimationNormal_PIN StandardAnimationNormal_VS(StandardAnimationNormal_V
     output.position = mul(float4(input.position, 1.0f), boneTransform);
     output.position = mul(output.position, modelContext.world);
     //output.prevPosition = mul(mul(mul(float4(input.position, 1.0f), boneTransform), modelContext.prevWorld), prevViewProj);
-    output.prevPosition = mul(mul(mul(float4(input.position, 1.0f), prevBoneTransform), modelContext.prevWorld), prevViewProj);
+    output.prevPosition = mul(mul(mul(float4(input.position, 1.0f), prevBoneTransform), modelContext.prevWorld), prevViewProjection);
     output.wPosition = output.position.xyz;
     output.position = mul(output.position, viewProjection);
     output.curPosition = output.position;

@@ -7,6 +7,7 @@ cbuffer Camera : register(b0)
     float4x4 projection;
     float4x4 viewProjection;
     float4x4 middleViewProjection;
+    float4x4 prevViewProjection;
 
     float3 cameraPosition;
     int isShadow;
@@ -215,7 +216,9 @@ Terrain_PIN Terrain_DS(
     o.wPosition = worldPos4.xyz;
     o.vPosition = mul(worldPos4, view).xyz;
     o.material = ctx.material;
-
+    o.curPosition = o.position;
+    o.prevPosition = mul(worldPos4, prevViewProjection);
+    
     o.texcoord1 = lerp(
         lerp(patch[0].texcoord1, patch[4].texcoord1, uv.x),
         lerp(patch[20].texcoord1, patch[24].texcoord1, uv.x),

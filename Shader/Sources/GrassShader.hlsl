@@ -61,7 +61,7 @@ struct VSOutput
     float4 prevPosition : POSITION1;
     float2 uv : TEXCOORD0;
     float3 normal : NORMAL;
-    float3 wPosition : POSITION;
+    float3 wPosition : POSITION2;
     uint texIndex : TEXID;
 };
 
@@ -191,7 +191,6 @@ struct Deffered_POUT
     float4 diffuse : SV_TARGET0;
     float4 normal : SV_TARGET1;
     float4 position : SV_TARGET2;
-    float4 emissive : SV_TARGET3;
     float4 emissive : SV_TARGET3;
     float4 velocity : SV_TARGET4;
 };

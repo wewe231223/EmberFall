@@ -55,7 +55,6 @@ float4 MotionBlur_PS(MotionBlur_VOUT input) : SV_Target
         currentColor = lerp(currentColor, defaultColor, maskZero);
         
         float mask = 1.0f - step(0.002f, abs(velo.a - currentVelo.a));
-        [unroll]
         for (int i = 0; i < mask; ++i)
         {
             ++cnt;

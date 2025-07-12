@@ -189,7 +189,7 @@ void LODGameObject::SetEmpty(bool state) {
 }
 
 std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> LODGameObject::GetRenderData() const {
-	return { mLODGroups[mCurrentLODLevel].mMesh, mLODGroups[mCurrentLODLevel].mShader, ModelContext{mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mLODGroups[mCurrentLODLevel].mMaterial}};
+	return { mLODGroups[mCurrentLODLevel].mMesh, mLODGroups[mCurrentLODLevel].mShader, ModelContext{ mModelContext.prevWorld.Transpose(), mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mLODGroups[mCurrentLODLevel].mMaterial}};
 }
 
 const Transform& LODGameObject::GetTransform() const {
