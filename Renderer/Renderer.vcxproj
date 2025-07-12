@@ -145,12 +145,42 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\External\Include\ImGui\imgui.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\External\Include\ImGui\imgui_demo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\External\Include\ImGui\imgui_draw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\External\Include\ImGui\imgui_impl_dx12.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\External\Include\ImGui\imgui_impl_win32.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\External\Include\ImGui\imgui_tables.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\External\Include\ImGui\imgui_widgets.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="core\BlurComputeProcessor.cpp" />
+    <ClCompile Include="Core\Console.cpp" />
     <ClCompile Include="Core\DefferedRenderer.cpp" />
     <ClCompile Include="Core\Renderer.cpp" />
     <ClCompile Include="core\Shader.cpp" />
     <ClCompile Include="Core\ShadowRenderer.cpp" />
     <ClCompile Include="Core\StringRenderer.cpp" />
+    <ClCompile Include="Manager\FeatureManager.cpp" />
     <ClCompile Include="Manager\LightingManager.cpp" />
     <ClCompile Include="Manager\MeshRenderManager.cpp" />
     <ClCompile Include="Manager\ParticleManager.cpp" />
@@ -162,6 +192,7 @@
     </ClCompile>
     <ClCompile Include="Render\Canvas.cpp" />
     <ClCompile Include="Render\GrassRenderer.cpp" />
+    <ClCompile Include="Render\IMGUIRenderer.cpp" />
     <ClCompile Include="Resource\DefaultBuffer.cpp" />
     <ClCompile Include="Resource\Mesh.cpp" />
     <ClCompile Include="Resource\Particle.cpp" />
@@ -169,12 +200,23 @@
     <ClCompile Include="Resource\UploadBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\External\Include\ImGui\imconfig.h" />
+    <ClInclude Include="..\External\Include\ImGui\imgui.h" />
+    <ClInclude Include="..\External\Include\ImGui\imgui_color.h" />
+    <ClInclude Include="..\External\Include\ImGui\imgui_impl_dx12.h" />
+    <ClInclude Include="..\External\Include\ImGui\imgui_impl_win32.h" />
+    <ClInclude Include="..\External\Include\ImGui\imgui_internal.h" />
+    <ClInclude Include="..\External\Include\ImGui\imstb_rectpack.h" />
+    <ClInclude Include="..\External\Include\ImGui\imstb_textedit.h" />
+    <ClInclude Include="..\External\Include\ImGui\imstb_truetype.h" />
     <ClInclude Include="core\BlurComputeProcessor.h" />
+    <ClInclude Include="Core\Console.h" />
     <ClInclude Include="Core\DefferedRenderer.h" />
     <ClInclude Include="Core\Renderer.h" />
     <ClInclude Include="core\Shader.h" />
     <ClInclude Include="Core\ShadowRenderer.h" />
     <ClInclude Include="Core\StringRenderer.h" />
+    <ClInclude Include="Manager\FeatureManager.h" />
     <ClInclude Include="Manager\LightingManager.h" />
     <ClInclude Include="Manager\MeshRenderManager.h" />
     <ClInclude Include="Manager\ParticleManager.h" />
@@ -183,6 +225,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Render\Canvas.h" />
     <ClInclude Include="Render\GrassRenderer.h" />
+    <ClInclude Include="Render\IMGUIRenderer.h" />
     <ClInclude Include="Resource\DefaultBuffer.h" />
     <ClInclude Include="Resource\Mesh.h" />
     <ClInclude Include="Resource\Particle.h" />

@@ -31,7 +31,8 @@ void HorzBlur_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID :
  
     
  
-    float4 midColor = pow(float4(brightness, brightness, brightness, 1.0f), 4.0f);
+    float4 midColor = pow(float4(emissive, 1.0f), 4.0f);
+    //float4 midColor = pow(float4(brightness, brightness, brightness, 1.0f), 4.0f);
 
     float mask1 = step(0.8f, brightness); 
     float mask0 = step(0.5f, brightness); 

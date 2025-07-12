@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Renderer.h"
-#include "../EditorInterface/Console/Console.h"
+#include "../Renderer/Core/Console.h"
 #include "../Utility/Enumerate.h"
 #include "../Utility/Serializer.h"
 #include "../Utility/Exceptions.h"
@@ -25,6 +25,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitDepthStencilBuffer();
 	Renderer::InitStringRenderer();
 	Renderer::InitBlurComputeProcesser();
+	Renderer::InitIMGUIRenderer();
 
 	Renderer::ResetCommandList();
 
@@ -51,7 +52,7 @@ DefaultBufferCPUIterator Renderer::GetMainCameraBuffer() {
 	return mMainCameraBuffer.CPUBegin();
 }
 
-ComPtr<ID3D12Device10> Renderer::GetDevice() {
+ComPtr<ID3D12Device> Renderer::GetDevice() {
 	return mDevice;
 }
 
@@ -66,17 +67,18 @@ ComPtr<ID3D12GraphicsCommandList> Renderer::GetLoadCommandList() {
 void Renderer::LoadTextures() {
 	mRenderManager->GetTextureManager().LoadAllImages(mDevice, mLoadCommandList); 
 
-	MaterialConstants material{};
+	if (mShaderModel6_5Support) {
+		MaterialConstants material{};
 
-	material.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Grass0");
-	material.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("Grass1");
-	material.mDiffuseTexture[2] = mRenderManager->GetTextureManager().GetTexture("Grass2");
-	material.mDiffuseTexture[3] = mRenderManager->GetTextureManager().GetTexture("Grass3");
+		material.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Grass0");
+		material.mDiffuseTexture[1] = mRenderManager->GetTextureManager().GetTexture("Grass1");
+		material.mDiffuseTexture[2] = mRenderManager->GetTextureManager().GetTexture("Grass2");
+		material.mDiffuseTexture[3] = mRenderManager->GetTextureManager().GetTexture("Grass3");
 
-	mRenderManager->GetMaterialManager().CreateMaterial("GrassMaterial", material);
+		mRenderManager->GetMaterialManager().CreateMaterial("GrassMaterial", material);
 
-	mGrassRenderer.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("GrassMaterial"));
-
+		mGrassRenderer.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("GrassMaterial"));
+	}
 }
 
 void Renderer::UploadResource(){ 
@@ -100,10 +102,6 @@ void Renderer::ExecuteLoadCommandList() {
 	mExecute = true; 
 }
 
-void Renderer::SetFeatureEnabled(SceneFeatureType type) {
-	mFeatureEnabled = type;
-}
-
 void Renderer::Update() {
 	// Update... 
 }
@@ -112,36 +110,44 @@ void Renderer::Update() {
 void Renderer::Render() {
 	Renderer::ResetCommandList();
 	D3D12_VIEWPORT viewport{};
-
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.Width = ShadowRenderer::GetShadowMapSize<float>();
-	viewport.Height = ShadowRenderer::GetShadowMapSize<float>();
-	viewport.MinDepth = 0.f;
-	viewport.MaxDepth = 1.f;
-
 	D3D12_RECT scissorRect{};
-	scissorRect.left = 0;
-	scissorRect.top = 0;
-	scissorRect.right = ShadowRenderer::GetShadowMapSize<LONG>();
-	scissorRect.bottom = ShadowRenderer::GetShadowMapSize<LONG>();
-
-	mCommandList->RSSetViewports(1, &viewport);
-	mCommandList->RSSetScissorRects(1, &scissorRect);
 
 	mMainCameraBuffer.Upload(mCommandList);
-	mRenderManager->GetShadowRenderer().Upload(mCommandList);
 	mRenderManager->GetMeshRenderManager().PrepareRender(mCommandList);
 	mRenderManager->GetTextureManager().Bind(mCommandList);
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Shadow) {
 
+		viewport.TopLeftX = 0;
+		viewport.TopLeftY = 0;
+		viewport.Width = ShadowRenderer::GetShadowMapSize<float>();
+		viewport.Height = ShadowRenderer::GetShadowMapSize<float>();
+		viewport.MinDepth = 0.f;
+		viewport.MaxDepth = 1.f;
+
+		scissorRect.left = 0;
+		scissorRect.top = 0;
+		scissorRect.right = ShadowRenderer::GetShadowMapSize<LONG>();
+		scissorRect.bottom = ShadowRenderer::GetShadowMapSize<LONG>();
+
+		mCommandList->RSSetViewports(1, &viewport);
+		mCommandList->RSSetScissorRects(1, &scissorRect);
+		mRenderManager->GetShadowRenderer().Upload(mCommandList);
+	}
 	mRenderManager->GetShadowRenderer().TransitionShadowMap(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	mRenderManager->GetShadowRenderer().SetShadowDSVRTV(mDevice, mCommandList, 0);
-	mRenderManager->GetMeshRenderManager().RenderShadowPass(0, mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0));
 
-	// mMeshRenderManager->RenderShadowPass(mCommandList, mMaterialManager->GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Shadow) {
+
+		mRenderManager->GetMeshRenderManager().RenderShadowPass(0, mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0));
+	}
 
 	mRenderManager->GetShadowRenderer().SetShadowDSVRTV(mDevice, mCommandList, 1);
-	mRenderManager->GetMeshRenderManager().RenderShadowPass(1, mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(1));
+
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Shadow) {
+
+		mRenderManager->GetMeshRenderManager().RenderShadowPass(1, mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(1));
+	}
+
 
 	//mShadowRenderer->SetShadowDSVRTV(mDevice, mCommandList, 2);
 	//mMeshRenderManager->RenderShadowPass(2, mCommandList, mTextureManager->GetTextureHeapAddress(), mMaterialManager->GetMaterialBufferAddress(), *mShadowRenderer->GetShadowCameraBuffer(2));
@@ -188,11 +194,13 @@ void Renderer::Render() {
 	mRenderManager->GetMeshRenderManager().RenderGPass(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress(), *mMainCameraBuffer.GPUBegin());
 	mRenderManager->GetMeshRenderManager().Reset();
 
-	if (std::get<static_cast<size_t>(RenderFeature::GRASS)>(mFeatureEnabled)) {
-		mGrassRenderer.Render(mCommandList, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Grass and mShaderModel6_5Support) {
+		ComPtr<ID3D12GraphicsCommandList6> commandList6{};
+		CheckHR(mCommandList.As(&commandList6));
+		mGrassRenderer.Render(commandList6, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
 
-	if (std::get<static_cast<size_t>(RenderFeature::PARTICLE)>(mFeatureEnabled)) {
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Grass) {
 		mRenderManager->GetParticleManager().RenderSO(mCommandList);
 		mRenderManager->GetParticleManager().RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
@@ -213,7 +221,7 @@ void Renderer::Render() {
 	mDefferedRenderer.Render(mCommandList, mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0), mRenderManager->GetLightingManager().GetLightingBuffer());
 
 	// Blurring Pass
-	if (std::get<static_cast<size_t>(RenderFeature::BLOOM)>(mFeatureEnabled)) {
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Bloom) {
 
 		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
 		mBlurComputeProcessor.DispatchHorzBlur(mDevice, mCommandList, currentBackBuffer.GetResource());
@@ -226,6 +234,13 @@ void Renderer::Render() {
 	mRenderManager->GetTextureManager().Bind(mCommandList);
 
 	mRenderManager->GetCanvas().Render(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress()); 
+	mIMGUIRenderer.BeginRender();
+
+	// Other IMGUI Renders... 
+	Console.Render(); 
+	mRenderManager->GetFeatureManager().Render(); 
+
+	mIMGUIRenderer.EndRender(mCommandList); 
 }
 
 void Renderer::ExecuteRender() {
@@ -262,7 +277,7 @@ void Renderer::ExecuteRender() {
 
 	mStringRenderer.Render();
 
-	if (std::get<static_cast<size_t>(RenderFeature::PARTICLE)>(mFeatureEnabled)) {
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Particle) {
 		mRenderManager->GetParticleManager().PostRender();
 		mRenderManager->GetParticleManager().ValidateParticle();
 	}
@@ -270,6 +285,8 @@ void Renderer::ExecuteRender() {
 
 	CheckHR(mSwapChain->Present(0, Config::ALLOW_TEARING ? DXGI_PRESENT_ALLOW_TEARING : NULL));
 	mRTIndex = (mRTIndex + 1) % Config::BACKBUFFER_COUNT<UINT>;
+
+	mRenderManager->GetFeatureManager().swap(); 
 #endif
 }
 
@@ -379,23 +396,15 @@ void Renderer::InitDevice() {
 
 	CrashExp(adapter != nullptr, "No suitable GPU found.");
 
-
-	ComPtr<ID3D12Device> base{};
-	auto hr = ::D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&base));
-
-
+	auto hr = ::D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice));
 
 	if (FAILED(hr)) {
 		ComPtr<IDXGIAdapter> warpAdapter{ nullptr };
 		CheckHR(mFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter)));
-		CheckHR(::D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&base)));
+		CheckHR(::D3D12CreateDevice(warpAdapter.Get(), D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&mDevice)));
 	}
 
-
-	CheckHR(base.As(&mDevice));
-
-	// 메시 셰이더 지원됨 
-	// Renderer::CheckMeshShaderSupport(); 
+	mShaderModel6_5Support = CheckMeshShaderSupport();
 }
 
 void Renderer::InitCommandQueue() {
@@ -445,14 +454,8 @@ void Renderer::InitCommandList() {
 
 	CheckHR(mLoadCommandList->Close());
 
-	ComPtr<ID3D12GraphicsCommandList> base{}; 
-
 	CheckHR(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&mAllocator)));
-	CheckHR(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mAllocator.Get(), nullptr, IID_PPV_ARGS(&base)));
-
-
-	CheckHR(base.As(&mCommandList));
-
+	CheckHR(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, mAllocator.Get(), nullptr, IID_PPV_ARGS(&mCommandList)));
 
 	mCommandList->SetName(L"Main Command List");
 	mAllocator->SetName(L"Main Command Allocator");
@@ -554,7 +557,11 @@ void Renderer::InitParticleManager() {
 }
 
 void Renderer::InitGrassRenderer() {
-	mGrassRenderer = GrassRenderer(mDevice, mCommandList, mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
+	if (mShaderModel6_5Support) {
+		ComPtr<ID3D12Device10> device10{};
+		CheckHR(mDevice.As(&device10));
+		mGrassRenderer = GrassRenderer(device10, mCommandList, mTerrainHeaderBuffer.GPUBegin(), mTerrainDataBuffer.GPUBegin());
+	}
 }
 
 void Renderer::InitTerrainBuffer() {
@@ -575,6 +582,7 @@ void Renderer::InitTerrainBuffer() {
 }
 
 void Renderer::InitCoreResources() {
+	gShaderManager.Init(); 
 	mRenderManager = std::make_shared<RenderManager>(mDevice, mCommandList, mRendererWindow, mMainCameraBuffer.CPUBegin()); 
 }
 
@@ -589,6 +597,10 @@ void Renderer::InitDefferedRenderer() {
 void Renderer::InitBlurComputeProcesser() {
 	mBlurComputeProcessor = BlurComputeProcessor(mDevice);
 
+}
+
+void Renderer::InitIMGUIRenderer() {
+	mIMGUIRenderer.Initialize(mRendererWindow, mDevice); 
 }
 
 void Renderer::TransitionGBuffers(D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState) {

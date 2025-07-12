@@ -11,6 +11,7 @@
 #include "../Utility/NonReplacementSampler.h"
 #include "../MeshLoader/Loader/TerrainBaker.h"
 #include "../ServerLib/GameProtocol.h"
+#include "../Renderer/Core/Console.h"
 
 #pragma region PacketProcessFn 
 void TerrainScene::ProcessPacketProtocolVersion(const uint8_t* buffer) {
@@ -544,7 +545,7 @@ TerrainScene::~TerrainScene() {
 
 }
 
-void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	TerrainScene::BuildShader(device);
 	TerrainScene::BuildMesh(device, commandList);
 	TerrainScene::BuildMaterial();
@@ -726,32 +727,57 @@ void TerrainScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComm
 
 		return true; 
 	});
-
+	
 
 
 	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
 	gClientCore->Send(packet);
 
+#ifdef DEV_MODE
+	//Time.AddEvent(1s, [&]() {
+	//	mPktsBlock->GetText() = std::format(L"Packet/s : {}", PacketHandler::mPacketHandlerDebugSize.load());
+	//	PacketHandler::mPacketHandlerDebugSize.store(0); 
+	//	return true; 
+	//	}
+	//);
+#endif 
 }
 
+// 별도 시간 누적 타이머 
 void TerrainScene::ProcessNetwork() {
 	auto packetHandler = gClientCore->GetPacketHandler(); 
 	decltype(auto) buffer = packetHandler->GetBuffer(); 
 
+
+
 	TerrainScene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
-	
 }
 
 void TerrainScene::ProcessPackets(const uint8_t* buffer, size_t size) { 
 	const uint8_t* iter = buffer; 
-	
+#ifdef DEV_MODE 	
+	IntervalTimer timer;
+	UINT cnt{ 0 }; 
+
+	timer.Start();
+	while (iter < buffer + size) {
+		iter = ProcessPacket(iter, cnt);
+	}
+	timer.End(); 
+
+	auto elapsed = timer.Elapsed<std::chrono::nanoseconds>();
+
+	if (elapsed != 0 and cnt != 0) {
+		mPktElapsedBlock->GetText() = std::format(L"Pkt Process : {:.3f}", (static_cast<double>(cnt * UnitsPerSecond<std::chrono::nanoseconds>())) / elapsed );
+	}
+#else 
 	while (iter < buffer + size) {
 		iter = ProcessPacket(iter);
 	}
-
+#endif 
 }
 
-const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
+const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer, UINT& cnt) {
 	decltype(auto) header = FbsPacketFactory::GetHeaderPtrSC(buffer); 
 	
 	switch (header->type) {
@@ -859,13 +885,19 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 		break;
 	}
 
+#ifdef DEV_MODE
+	cnt += header->size;
+#endif 
+
 	return buffer + header->size; 
 }
 
 
 
 void TerrainScene::Update() {
+#ifdef DEV_MODE
 	mLatencyBlock->GetText() = std::format(L"Latency : {} ms", TerrainScene::GetAverageLatency<std::chrono::milliseconds>());
+#endif 
 
 	for (auto& item : mItemObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
 		auto& Pos = item.GetTransform().GetPosition();

@@ -9,9 +9,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "framework.h"
+#include "Renderer/Core/Console.h"
 #include "EmberFall.h"
-#include "EditorInterface/Impl/EditorDevice.h"
-#include "EditorInterface/Console/Console.h"
 #include "Renderer/core/Renderer.h"
 #include "Game/System/Timer.h"
 #include "Game/System/Input.h"
@@ -21,12 +20,10 @@
 #include "Utility/IntervalTimer.h"
 
 #ifdef _DEBUG
-#pragma comment(lib,"out/debug/EditorInterface.lib")
 #pragma comment(lib,"out/debug/Renderer.lib")
 #pragma comment(lib,"out/debug/Game.lib")
 #pragma comment(lib,"out/debug/MeshLoader.lib")
 #else 
-#pragma comment(lib,"out/release/EditorInterface.lib")
 #pragma comment(lib,"out/release/Renderer.lib")
 #pragma comment(lib,"out/release/Game.lib")
 #pragma comment(lib,"out/release/MeshLoader.lib")
@@ -52,14 +49,26 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름�
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK IPDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 SceneManager sceneManager{};
+
+CHAR iPAddr[64]{};
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
+    if (DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, IPDialogProc) == IDOK) {
+        gClientCore->Init(); 
+        if (not gClientCore->Start(iPAddr, 7777)) {
+            CrashExp(true, "Failed to connect");
+            return -1; 
+        }
+    } 
+    
     MSG msg{};
     
     UNREFERENCED_PARAMETER(hPrevInstance);
@@ -78,7 +87,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         return FALSE;
     }
 
-	Console.Log("Application Start!",LogType::Info);
 
     Renderer renderer{ hWnd };
     renderer.UploadResource();
@@ -94,12 +102,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		[&renderer]() { renderer.LoadTextures(); });
 
     int n = NonReplacementSampler::GetInstance().Sample();
+    
     Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::Escape, n, []() {
         PostQuitMessage(0);
-        });
+    });
+    
     Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F2, n, []() {Input.ToggleVirtualMouse(); });
-
     Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F5, n, [&renderer]() { renderer.ToggleFullScreen(); });
+
     size_t frameCount = 0;
     Time.AddEvent(1s, [&frameCount]() {
         std::string title = "FPS : " + std::to_string(frameCount);
@@ -143,7 +153,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 #endif 
             if (sceneManager.CheckLoaded()) {
                 renderer.ExecuteLoadCommandList();
-				renderer.SetFeatureEnabled(sceneManager.GetCurrentSceneFeatureType());
             }
 #ifdef DEV_MODE
             GPUTimer.Start();
@@ -182,6 +191,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+    ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam);
+
     constexpr UINT keyPressedCheckBitMask = 0x60000000;
     constexpr UINT keyPressedAtTime = 0x20000000;
 
@@ -371,8 +382,29 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
 
-  // gDevice.Initialize(hWnd);
-
    return TRUE;
 }
 
+
+INT_PTR IPDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+    constexpr const char* LOCALHOST{ "127.0.0.1" };
+
+    switch (message) {
+    case WM_INITDIALOG:
+        SetDlgItemTextA(hWnd, IDC_IPADDRESS1, LOCALHOST);  // 기본 IP 표시
+        return TRUE;
+
+    case WM_COMMAND:
+        switch (LOWORD(wParam)) {
+        case IDOK:
+            GetDlgItemTextA(hWnd, IDC_IPADDRESS1, iPAddr, sizeof(iPAddr));
+            EndDialog(hWnd, IDOK);
+            return TRUE;
+        case IDCANCEL:
+            EndDialog(hWnd, IDCANCEL);
+            return TRUE;
+        }
+        break;
+    }
+    return FALSE;
+}

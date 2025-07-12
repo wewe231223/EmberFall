@@ -16,6 +16,12 @@ concept HasIndex = requires {
 	{ T::index } -> std::convertible_to<size_t>;
 };
 
+template<typename Duration>
+constexpr int64_t UnitsPerSecond() {
+    using period = typename Duration::period;
+    return period::den / period::num;
+}
+
 struct CameraConstants {
     SimpleMath::Matrix view;
     SimpleMath::Matrix proj;
@@ -66,7 +72,7 @@ struct ModelContext2D {
 class IScene abstract : public std::enable_shared_from_this<IScene> {
 public:
 	virtual ~IScene() = default;
-	virtual void Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) PURE;
+	virtual void Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) PURE;
 	virtual void ProcessNetwork() PURE;
 	virtual void Update() PURE;
 	virtual void SendNetwork() PURE;
@@ -159,6 +165,15 @@ struct ParticleVertex {
     DirectX::XMFLOAT3 drag{ 0.f, 0.f, 0.f };
     float opacity{ 1.f };        
 };
+
+
+struct Features {
+    bool Particle{ false };
+	bool Grass{ false };
+	bool Shadow{ false };
+    bool Bloom{ false };
+};
+
 
 /*
 * Flags!

@@ -373,7 +373,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 }
 
 
-void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+void LobbyScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	LobbyScene::BuildShader(device);
 	LobbyScene::BuildMesh(device, commandList);
 	LobbyScene::BuildMaterial();
@@ -434,11 +434,11 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 
 
 	mLeftArrowButton = Button{};
-	mLeftArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("Left"));
+	mLeftArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("left_arrow"));
 	mLeftArrowButton.SetRect(0.f, 0.f, 100.f, 100.f);
 
 	mRightArrowButton = Button{};
-	mRightArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("Right"));
+	mRightArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("right_arrow"));
 	mRightArrowButton.SetRect(100.f, 0.f, 100.f, 100.f);
 
 	mReadyButton = Button{};
@@ -448,7 +448,6 @@ void LobbyScene::Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsComman
 	mLeftArrowButton.SetActiveState(false); 
 	mRightArrowButton.SetActiveState(false);
 	mReadyButton.SetActiveState(false);
-
 }
 
 void LobbyScene::ProcessNetwork() {
@@ -575,11 +574,15 @@ void LobbyScene::Update() {
 
 
 	mCamera.UpdateBuffer(); 
+	mRenderManager->GetShadowRenderer().Update();
 
 	for (auto& object : mLobbyProps) {
 		object.UpdateShaderVariables();
 		auto [mesh, shader, modelContext] = object.GetRenderData();
 		mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
+		for (int i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
+			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, i);
+		}
 	}
 
 	for (auto& player : mPlayers) {

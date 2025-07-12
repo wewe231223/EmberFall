@@ -15,6 +15,14 @@ constexpr ImVec4 WARNING_COLOR{ F4_WHEAT };
 constexpr ImVec4 ERROR_COLOR{ F4_RED };
 
 ConsoleBase::ConsoleBase() {
+	ConsoleBase::Init(); 
+}
+
+ConsoleBase::~ConsoleBase() {
+
+}
+
+void ConsoleBase::Init() {
 	ConsoleBase::ManageLogFile();
 
 	auto now = std::chrono::system_clock::now();
@@ -22,7 +30,7 @@ ConsoleBase::ConsoleBase() {
 
 
 	std::tm localTime{};
-	localtime_s(&localTime, &in_time_t); 
+	localtime_s(&localTime, &in_time_t);
 
 
 
@@ -40,29 +48,18 @@ ConsoleBase::ConsoleBase() {
 	CrashExp(mLogFile.is_open(), "로그 파일을 생성할 수 없습니다.");
 
 	mLogFile << std::format("Log : {:04}-{:02}-{:02} {:02}:{:02}:{:02}\n",
-			localTime.tm_year + 1900,
-			localTime.tm_mon + 1,
-			localTime.tm_mday,
-			localTime.tm_hour,
-			localTime.tm_min,
-			localTime.tm_sec) << std::endl;
+		localTime.tm_year + 1900,
+		localTime.tm_mon + 1,
+		localTime.tm_mday,
+		localTime.tm_hour,
+		localTime.tm_min,
+		localTime.tm_sec) << std::endl;
 
 	ConsoleBase::Log("{} 에 로그 파일이 생성되었습니다.", LogType::Info, fileName);
 }
 
-ConsoleBase::~ConsoleBase() {
-
-}
-
 void ConsoleBase::Render() {
-
-	// 창의 위치와 크기를 고정
-	ImGui::SetNextWindowPos(ImVec2{ 0, 0 });
-	ImGui::SetNextWindowSize(ImVec2{ Config::EDITOR_WINDOW_WIDTH<>,Config::EDITOR_WINDOW_HEIGHT<> / 2 });
-
-	ImGui::Begin("Console", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
-
-	std::lock_guard lock{ mConsoleLock };
+	ImGui::Begin("Console", nullptr );
 
 	ImGuiListClipper clipper;
 	clipper.Begin(static_cast<int>(mBuffer.Size()));
@@ -75,17 +72,17 @@ void ConsoleBase::Render() {
 			case LogType::Info:
 				ImGui::TextColored(INFO_COLOR, msg.first.c_str());
 				ImGui::SameLine(0.f,10.f);
-				ImGui::TextWrapped(msg.second.c_str());
+				ImGui::Text(msg.second.c_str());
 				break;
 			case LogType::Warning:
 				ImGui::TextColored(WARNING_COLOR, msg.first.c_str());
 				ImGui::SameLine(0.f, 10.f);
-				ImGui::TextWrapped(msg.second.c_str());
+				ImGui::Text(msg.second.c_str());
 				break;
 			case LogType::Error:
 				ImGui::TextColored(ERROR_COLOR, msg.first.c_str());
 				ImGui::SameLine(0.f, 10.f);
-				ImGui::TextWrapped(msg.second.c_str());
+				ImGui::Text(msg.second.c_str());
 				break;
 			default:
 				break;
@@ -94,7 +91,8 @@ void ConsoleBase::Render() {
 		}
 	}
 
-	ImGui::SetScrollHereY(1.0f);
+
+	ImGui::SetScrollHereY(1.f);
 	ImGui::End();
 }
 

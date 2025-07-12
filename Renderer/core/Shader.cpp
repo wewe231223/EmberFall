@@ -12,7 +12,7 @@
 #include "../Config/Config.h"
 #include "../Utility/Exceptions.h"
 #include "../Utility/Crash.h"
-#include "../EditorInterface/Console/Console.h"
+#include "../Renderer/Core/Console.h"
 #include "../Utility/Defines.h"
 
 #undef max 
@@ -20,6 +20,10 @@
 //------------------------------------------------------------------------------------------------[ ShaderManager ]------------------------------------------------------------------------------------------------
 
 ShaderFileManager::ShaderFileManager() {
+
+}
+
+void ShaderFileManager::Init() {
 	std::ifstream metadataFile{ SHADER_METADATA_PATH };
 	CrashExp(metadataFile.is_open(), "File not found");
 
@@ -31,7 +35,7 @@ ShaderFileManager::ShaderFileManager() {
 		if (!std::regex_match(line, match, shaderRegex)) {
 			Console.Log("Invalid shader metadata format : {}", LogType::Error, line);
 			continue;
-		} 
+		}
 
 		std::string	source{ match[1] };
 		std::istringstream shaderInfoStream{ match[2] };
@@ -39,7 +43,7 @@ ShaderFileManager::ShaderFileManager() {
 		std::string type{};
 		std::string	model{};
 		std::string entry{};
-		
+
 		while (shaderInfoStream >> type >> model >> entry) {
 			shaderInfo.emplace_back(type, model, entry);
 		}
@@ -55,7 +59,7 @@ ShaderFileManager::ShaderFileManager() {
 			}
 		}
 
-		ShaderFileManager::ProcessShader( "Shader/Sources/" + source, shaderInfo, includes);
+		ShaderFileManager::ProcessShader("Shader/Sources/" + source, shaderInfo, includes);
 	}
 }
 

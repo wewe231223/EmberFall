@@ -40,6 +40,10 @@ Canvas& RenderManager::GetCanvas() {
 	return mCanvas; 
 }
 
+FeatureManager& RenderManager::GetFeatureManager() {
+	return mFeatureManager; 
+}
+
 HWND RenderManager::GetWindowHandle() {
 	return mHwnd; 
 }

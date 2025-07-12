@@ -3,7 +3,7 @@
 #include "../External/Include/DirectXTK12/DDSTextureLoader12.h"
 #include "../External/Include/DirectXTK12/WICTextureLoader12.h"
 #include "../Utility/Exceptions.h"
-#include "../EditorInterface/Console/Console.h"
+#include "../Renderer/Core/Console.h"
 
 Texture::Texture() {
 

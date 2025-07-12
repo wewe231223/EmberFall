@@ -17,7 +17,7 @@ public:
 	LobbyScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCamLocation);
 	virtual ~LobbyScene();
 public:
-	virtual void Init(ComPtr<ID3D12Device10> device, ComPtr<ID3D12GraphicsCommandList> commandList) override;
+	virtual void Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) override;
 	virtual void ProcessNetwork() override;
 	virtual void Update() override;
 	virtual void SendNetwork() override;

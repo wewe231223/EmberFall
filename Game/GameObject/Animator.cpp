@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Animator.h"
-#include "../EditorInterface/Console/Console.h"
+#include "../Renderer/Core/Console.h"
 #include "../Utility/Defines.h"
 #include <ranges>
 

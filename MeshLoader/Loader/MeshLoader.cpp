@@ -4,7 +4,7 @@
 #include <numeric>
 #include "MeshLoader.h"
 #include "../Utility/Crash.h"
-#include "../EditorInterface/Console/Console.h"
+#include "../Renderer/Core/Console.h"
 
 Assimp::Importer MeshLoader::mImporter{};
 // 파일에 기록하고 읽는 거 만들기. 

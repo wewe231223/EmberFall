@@ -68,6 +68,10 @@ private:
 
 class PacketHandler {
 public:
+#ifdef DEF_DEBUG_OR_DEV
+    inline static std::atomic_uint64_t mPacketHandlerDebugSize{ };
+#endif
+public:
     PacketHandler();
     ~PacketHandler();
 
