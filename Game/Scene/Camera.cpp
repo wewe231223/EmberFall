@@ -14,6 +14,7 @@ Camera::Camera(DefaultBufferCPUIterator bufferLocation) : mCameraBufferCPU(buffe
 
 void Camera::UpdateBuffer() {
 
+	mCameraConstant.prevViewProj = mCameraConstant.viewProj;
 	mCameraConstant.view = SimpleMath::Matrix::CreateLookAt(mTransform.GetPosition(), mTransform.GetPosition() + mTransform.GetForward(),SimpleMath::Vector3::Up).Transpose();
 	mCameraConstant.viewProj = mCameraConstant.proj * mCameraConstant.view;
 	mCameraConstant.cameraPosition = mTransform.GetPosition();

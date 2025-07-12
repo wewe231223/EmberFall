@@ -34,7 +34,7 @@ struct BB_GIN
 
 struct BB_PIN
 {
-    float4 position : SV_POSITION;
+    float4 position : SV_Position;
     float4 color : COLOR;
 };
 
@@ -44,6 +44,7 @@ struct Deffered_POUT
     float4 normal : SV_TARGET1;
     float4 position : SV_TARGET2;
     float4 emissive : SV_TARGET3;
+    float4 velocity : SV_TARGET4;
 };
 
 

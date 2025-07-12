@@ -20,6 +20,7 @@ public:
 	void SetEmpty(bool state); 
 
 	std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GetRenderData() const;
+	std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GetAnimationRenderData() const;
 
 	const Transform& GetTransform() const;
 	Transform& GetTransform();
@@ -48,6 +49,8 @@ public:
 	AnimatorGraph::BoneMaskAnimationGraphController mBoneMaskGraphController{};
 
 	Collider mCollider{};
+
+	std::array<SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<size_t>> mBoneTransforms;
 private:
 	ModelContext mModelContext{};
 

@@ -1,14 +1,20 @@
 cbuffer Camera : register(b0)
 {
-    float4x4 view;
-    float4x4 projection;
-    float4x4 viewProjection;
+    matrix view;
+    matrix projection;
+    matrix viewProjection;
+    matrix middleViewProjection;
+    matrix prevViewProjection;
+
     float3 cameraPosition;
-};
+    int isShadow;
+    float3 shadowOffset;
+}
 
 struct ModelContext
 {
-    float4x4 world;
+    matrix prevWorld;
+    matrix world;
     float3 BBCenter;
     float3 BBExtents;
     uint material;
@@ -35,8 +41,8 @@ struct SkyFog_VIN
 
 struct SkyFog_VOUT
 {
-    float4 position : SV_POSITION;
-    uint material : MATERIAL;
+    float4 position : SV_Position;
+    uint material : MATERIAL; 
 };
 
 struct Deffered_POUT
@@ -45,6 +51,7 @@ struct Deffered_POUT
     float4 normal : SV_TARGET1;
     float4 position : SV_TARGET2;
     float4 emissive : SV_TARGET3;
+    float4 velocity : SV_TARGET4;
 };
 
 StructuredBuffer<ModelContext> modelContexts : register(t0);

@@ -423,6 +423,12 @@ void GrassRenderer::CreatePipelineState(ComPtr<ID3D12Device10> device) {
 
 	stream.Blend.Desc.RenderTarget[2].BlendEnable = FALSE;
 	stream.Blend.Desc.RenderTarget[2].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+	
+	stream.Blend.Desc.RenderTarget[3].BlendEnable = FALSE;
+	stream.Blend.Desc.RenderTarget[3].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	stream.Blend.Desc.RenderTarget[4].BlendEnable = FALSE;
+	stream.Blend.Desc.RenderTarget[4].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 
 	stream.Rasterizer.Type = D3D12_PIPELINE_STATE_SUBOBJECT_TYPE_RASTERIZER;
 	stream.Rasterizer.Desc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);

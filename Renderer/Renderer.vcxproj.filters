@@ -87,7 +87,7 @@
     <ClCompile Include="Manager\RenderManager.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
-    <ClCompile Include="core\BlurComputeProcessor.cpp">
+    <ClCompile Include="core\ComputeProcessor.cpp">
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="Core\Console.cpp">
@@ -122,6 +122,9 @@
     </ClCompile>
     <ClCompile Include="Manager\DecalManager.cpp">
       <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="core\MotionBlurProcessor.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -179,7 +182,7 @@
     <ClInclude Include="Manager\RenderManager.h">
       <Filter>Manager</Filter>
     </ClInclude>
-    <ClInclude Include="core\BlurComputeProcessor.h">
+    <ClInclude Include="core\ComputeProcessor.h">
       <Filter>Core</Filter>
     </ClInclude>
     <ClInclude Include="Core\Console.h">
@@ -221,6 +224,9 @@
     <ClInclude Include="Manager\DecalManager.h">
       <Filter>Manager</Filter>
     </ClInclude>
+    <ClInclude Include="core\MotionBlurProcessor.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shader\Sources\Standard.hlsl">
@@ -259,7 +265,7 @@
     <FxCompile Include="..\Shader\Sources\GrassShader.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
-    <FxCompile Include="..\Shader\Sources\Blur.hlsl">
+    <FxCompile Include="..\Shader\Sources\Bloom.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="..\Shader\Sources\StandardAnimationNormal.hlsl">
@@ -275,6 +281,12 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="..\Shader\Sources\TreeCross.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\MotionBlur.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\Blur.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>

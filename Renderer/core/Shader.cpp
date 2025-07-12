@@ -444,12 +444,13 @@ void GraphicsShaderBase::CreateShader(ComPtr<ID3D12Device> device) {
 
 	CheckHR(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&mPipelineState)));
 
-	psoDesc.NumRenderTargets = 4;
+	psoDesc.NumRenderTargets = 5;
 	std::memset(psoDesc.RTVFormats, DXGI_FORMAT_UNKNOWN, sizeof(DXGI_FORMAT) * 8);
 	psoDesc.RTVFormats[0] = DXGI_FORMAT_R32_FLOAT;
 	psoDesc.RTVFormats[1] = DXGI_FORMAT_R32_FLOAT;
 	psoDesc.RTVFormats[2] = DXGI_FORMAT_R32_FLOAT;
 	psoDesc.RTVFormats[3] = DXGI_FORMAT_R32_FLOAT;
+	psoDesc.RTVFormats[4] = DXGI_FORMAT_R32_FLOAT;
 	psoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	//psoDesc.RasterizerState.DepthBias = 10000;
@@ -532,6 +533,8 @@ GraphicsShaderBase::RootParameters StandardShader::CreateRootParameters() {
 	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
 	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
+	
+
 	params.ParameterCount = 4; 
 
 	return params;
@@ -546,6 +549,7 @@ void StandardShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE StandardShader::CreateVertexShader() {
@@ -649,6 +653,7 @@ void TerrainShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE TerrainShader::CreateVertexShader() {
@@ -737,8 +742,13 @@ GraphicsShaderBase::RootParameters SkinnedShader::CreateRootParameters() {
 	params.Parameters[4].Descriptor.RegisterSpace = 1;
 	params.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
+	params.Parameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[5].Descriptor.ShaderRegister = 3;
+	params.Parameters[5].Descriptor.RegisterSpace = 1;
+	params.Parameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.ParameterCount = 5;
+
+	params.ParameterCount = 6;
 
 	return params;
 }
@@ -752,6 +762,7 @@ void SkinnedShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE SkinnedShader::CreateVertexShader() {
@@ -818,6 +829,8 @@ GraphicsShaderBase::RootParameters SkyBoxShader::CreateRootParameters() {
 	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
 	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
+	
+
 	params.ParameterCount = 4;
 
 	return params;
@@ -874,6 +887,7 @@ void SkyBoxShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE SkyBoxShader::CreateVertexShader() {
@@ -935,6 +949,8 @@ GraphicsShaderBase::RootParameters DefferedShader::CreateRootParameters() {
 	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
 	params.ParameterCount = 4;
+
+	params.ParameterCount = 3;
 
 	return params;
 }
@@ -1019,6 +1035,8 @@ GraphicsShaderBase::RootParameters SkeletonBBShader::CreateRootParameters() {
 	params.Parameters[1].Descriptor.RegisterSpace = 0;
 	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
+	
+
 	params.ParameterCount = 2;
 
 	return params;
@@ -1033,6 +1051,7 @@ void SkeletonBBShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE SkeletonBBShader::CreateVertexShader() {
@@ -1080,6 +1099,8 @@ GraphicsShaderBase::RootParameters StandardBBShader::CreateRootParameters() {
 	params.Parameters[1].Descriptor.RegisterSpace = 0;
 	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
+	
+
 	params.ParameterCount = 2;
 
 	return params;
@@ -1094,6 +1115,7 @@ void StandardBBShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE StandardBBShader::CreateVertexShader() {
@@ -1484,6 +1506,8 @@ GraphicsShaderBase::RootParameters TreeShader::CreateRootParameters() {
 	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
 	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
+	
+
 	params.ParameterCount = 4;
 
 	return params;
@@ -1498,6 +1522,7 @@ void TreeShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE TreeShader::CreateVertexShader() {
@@ -1615,6 +1640,7 @@ void SkyFogShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE SkyFogShader::CreateVertexShader() {
@@ -1771,6 +1797,8 @@ GraphicsShaderBase::RootParameters StandardNormalShader::CreateRootParameters() 
 	params.Parameters[3].DescriptorTable.pDescriptorRanges = params.Ranges.data();
 	params.Parameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
+	
+
 	params.ParameterCount = 4;
 
 	return params;
@@ -1785,6 +1813,7 @@ void StandardNormalShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE StandardNormalShader::CreateVertexShader() {
@@ -1865,8 +1894,13 @@ GraphicsShaderBase::RootParameters SkinnedNormalShader::CreateRootParameters() {
 	params.Parameters[4].Descriptor.RegisterSpace = 1;
 	params.Parameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
+	params.Parameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
+	params.Parameters[5].Descriptor.ShaderRegister = 3;
+	params.Parameters[5].Descriptor.RegisterSpace = 1;
+	params.Parameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
-	params.ParameterCount = 5;
+
+	params.ParameterCount = 6;
 
 	return params;
 }
@@ -1880,6 +1914,7 @@ void SkinnedNormalShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats)
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE SkinnedNormalShader::CreateVertexShader() {
@@ -2064,13 +2099,86 @@ D3D12_SHADER_BYTECODE TreeCrossShader::CreatePixelShader() {
 	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }
 
-D3D12_RASTERIZER_DESC TreeCrossShader::CreateRasterizerState() {
+MotionBlurShader::MotionBlurShader() {
+
+}
+
+void MotionBlurShader::CreateShader(ComPtr<ID3D12Device> device) {
+	GraphicsShaderBase::CreateShader(device);
+}
+
+GraphicsShaderBase::InputLayout MotionBlurShader::CreateInputLayout() {
+	GraphicsShaderBase::InputLayout inputLayout{};
+
+	inputLayout.ElementCount = 2;
+
+	inputLayout.InputElements[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+	inputLayout.InputElements[1] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
+
+	return inputLayout;
+}
+
+GraphicsShaderBase::RootParameters MotionBlurShader::CreateRootParameters() {
+	GraphicsShaderBase::RootParameters params{};
+
+	params.Ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	params.Ranges[0].NumDescriptors = 1;
+	params.Ranges[0].BaseShaderRegister = 0;
+
+	params.Parameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[0].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[0].DescriptorTable.pDescriptorRanges = &params.Ranges[0];
+	params.Parameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	params.Ranges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	params.Ranges[1].NumDescriptors = 1;
+	params.Ranges[1].BaseShaderRegister = 1;
+
+	params.Parameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	params.Parameters[1].DescriptorTable.NumDescriptorRanges = 1;
+	params.Parameters[1].DescriptorTable.pDescriptorRanges = &params.Ranges[1];
+	params.Parameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+	
+
+	params.ParameterCount = 2;
+
+	return params;
+}
+
+D3D12_DEPTH_STENCIL_DESC MotionBlurShader::CreateDepthStencilState() {
+	D3D12_DEPTH_STENCIL_DESC depthStencilState;
+	::ZeroMemory(&depthStencilState, sizeof(D3D12_DEPTH_STENCIL_DESC));
+
+	depthStencilState.DepthEnable = FALSE;
+	depthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	depthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_NEVER;
+	depthStencilState.StencilEnable = FALSE;
+	depthStencilState.StencilReadMask = 0x00;
+	depthStencilState.StencilWriteMask = 0x00;
+	depthStencilState.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.FrontFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+	depthStencilState.BackFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilPassOp = D3D12_STENCIL_OP_KEEP;
+	depthStencilState.BackFace.StencilFunc = D3D12_COMPARISON_FUNC_NEVER;
+
+	return depthStencilState;
+}
+
+DXGI_FORMAT MotionBlurShader::CreateDSVFormat() {
+	return DXGI_FORMAT_UNKNOWN;
+}
+
+D3D12_RASTERIZER_DESC MotionBlurShader::CreateRasterizerState() {
 	D3D12_RASTERIZER_DESC rasterizerDesc;
 	::ZeroMemory(&rasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
 
-	//	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	//rasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
-	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
 	rasterizerDesc.FrontCounterClockwise = FALSE;
 	rasterizerDesc.DepthBias = 0;
 	rasterizerDesc.DepthBiasClamp = 0.0f;
@@ -2082,4 +2190,14 @@ D3D12_RASTERIZER_DESC TreeCrossShader::CreateRasterizerState() {
 	rasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
 
 	return rasterizerDesc;
+}
+
+D3D12_SHADER_BYTECODE MotionBlurShader::CreateVertexShader() {
+	auto& blob = gShaderManager.GetShaderBlob("MotionBlur", ShaderType::VertexShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
+}
+
+D3D12_SHADER_BYTECODE MotionBlurShader::CreatePixelShader() {
+	auto& blob = gShaderManager.GetShaderBlob("MotionBlur", ShaderType::PixelShader);
+	return { blob->GetBufferPointer(), blob->GetBufferSize() };
 }

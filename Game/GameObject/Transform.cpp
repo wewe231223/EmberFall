@@ -25,6 +25,7 @@ const SimpleMath::Vector3& Transform::GetScale() const {
     return mScale; 
 }
 
+
 const SimpleMath::Matrix& Transform::GetWorldMatrix() const {
     return mWorldMatrix; 
 }

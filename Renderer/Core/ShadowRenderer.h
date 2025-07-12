@@ -18,7 +18,7 @@ class ShadowRenderer {
 
 	static constexpr float PROJECTIONOFFSET = 5.0f; // 조명 투영공간의 크기를 조정하기 위한 오프셋값.
 
-	static constexpr std::array<float, Config::SHADOWMAP_COUNT<int>> SHADOWMAPOFFSET = { 20.0f, 90.0f };
+	static constexpr std::array<float, Config::SHADOWMAP_COUNT<int>> SHADOWMAPOFFSET = { 15.0f, 80.0f };
 public:
 	ShadowRenderer() = default;
 	ShadowRenderer(ComPtr<ID3D12Device> device, DefaultBufferCPUIterator mainCameraBufferLoc);

@@ -72,8 +72,10 @@ struct ParticleVertex
 struct Particle_PS_IN
 {
     float4 positionH : SV_Position;
-    float3 positionV : POSITION;
+    float3 positionV : POSITION0;
     uint material : MATERIAL;
+    float4 curPosition : POSITION1;
+    float4 prevPosition : POSITION2;
     float2 uv : TEXCOORD;
     float4 color : Color;
     float opacity : OPACITY;

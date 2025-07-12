@@ -57,7 +57,9 @@ SamplerState anisotropicClampSampler : register(s5);
 struct VSOutput
 {
     float4 position : SV_Position;
-    float2 uv : TEXCOORD;
+    float4 curPosition : POSITION0;
+    float4 prevPosition : POSITION1;
+    float2 uv : TEXCOORD0;
     float3 normal : NORMAL;
     float3 wPosition : POSITION;
     uint texIndex : TEXID;
@@ -190,6 +192,8 @@ struct Deffered_POUT
     float4 normal : SV_TARGET1;
     float4 position : SV_TARGET2;
     float4 emissive : SV_TARGET3;
+    float4 emissive : SV_TARGET3;
+    float4 velocity : SV_TARGET4;
 };
 
 Deffered_POUT mainPS(VSOutput input)

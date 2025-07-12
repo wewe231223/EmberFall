@@ -56,6 +56,9 @@ private:
 	AnimatorGraph::BoneMaskAnimationGraphController mBoneMaskController{};
 	AnimatorGraph::AnimationGraphController mAnimController{}; 
 
+	std::array<SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<size_t>> mBoneTransforms;
+
+
 	ModelContext mModelContext{};
 	Transform mTransform{}; 
 

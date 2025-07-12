@@ -15,7 +15,11 @@ void GameObject::SetEmpty(bool state) {
 }
 
 std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GameObject::GetRenderData() const {
-	return std::make_tuple(mMesh, mShader, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents() ,mMaterial});
+	return std::make_tuple(mMesh, mShader, ModelContext{ mTransform.GetWorldMatrix().Transpose(), mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents() ,mMaterial});
+}
+
+std::tuple<Mesh*, GraphicsShaderBase*, ModelContext> GameObject::GetAnimationRenderData() const {
+	return std::make_tuple(mMesh, mShader, ModelContext{ mModelContext.prevWorld.Transpose(), mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents() ,mMaterial });
 }
 
 const Transform& GameObject::GetTransform() const {
@@ -35,10 +39,14 @@ void GameObject::ToggleActiveState() {
 }
 
 void GameObject::ForwardUpdate() {
+	mModelContext.prevWorld = mModelContext.world;
+
 	mTransform.Update(Time.GetDeltaTime<float>());
 }
 
 void GameObject::UpdateShaderVariables() {
+	mModelContext.prevWorld = mModelContext.world;
+
 	mTransform.Update(Time.GetDeltaTime<float>());
 	mTransform.UpdateWorldMatrix();
 
@@ -50,6 +58,8 @@ void GameObject::UpdateShaderVariables() {
 }
 
 void GameObject::UpdateShaderVariables(SimpleMath::Matrix& parent) {
+	mModelContext.prevWorld = mModelContext.world;
+
 	mTransform.Update(Time.GetDeltaTime<float>());
 	mTransform.UpdateWorldMatrix(parent);
 
@@ -61,6 +71,9 @@ void GameObject::UpdateShaderVariables(SimpleMath::Matrix& parent) {
 }
 
 void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer) {
+	mModelContext.prevWorld = mModelContext.world;
+	boneTransformBuffer.prevBoneTransforms = mBoneTransforms;
+
 	mTransform.UpdateWorldMatrix();
 
 	if (mCollider.GetActiveState()) {
@@ -75,6 +88,7 @@ void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer)
 	else if (mBoneMaskGraphController.GetActiveState()) {
 		mBoneMaskGraphController.Update(Time.GetDeltaTime(), boneTransformBuffer);
 	}
+	mBoneTransforms = boneTransformBuffer.boneTransforms;
 }
 
 bool GameObject::GetAnimatorState() const {

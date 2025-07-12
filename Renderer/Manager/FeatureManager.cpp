@@ -29,6 +29,7 @@ void FeatureManager::Render() {
     drawFeatureCheckbox("Shadow", mNextFeatures.Shadow, mFixedFeatures.Shadow);
     drawFeatureCheckbox("Bloom", mNextFeatures.Bloom, mFixedFeatures.Bloom);
 	drawFeatureCheckbox("BB", mNextFeatures.RenderBB, mFixedFeatures.RenderBB);
+    drawFeatureCheckbox("MotionBlur", mNextFeatures.MotionBlur, mFixedFeatures.MotionBlur);
 
     ImGui::End();
 }

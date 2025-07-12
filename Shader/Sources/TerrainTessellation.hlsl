@@ -14,6 +14,7 @@ cbuffer Camera : register(b0)
 };
 struct ModelContext
 {
+    matrix prevWorld;
     matrix world;
     float3 BBCenter;
     float3 BBExtents;
@@ -62,9 +63,12 @@ struct Terrain_DIN
 
 struct Terrain_PIN
 {
-    float4 position : SV_POSITION;
-    float3 wPosition : POSITION1;
-    float3 vPosition : POSITION2;
+    float4 position : SV_Position;
+    float3 wPosition : POSITION0;
+    float3 vPosition : POSITION1;
+    float4 curPosition : POSITION2;
+    float4 prevPosition : POSITION3;
+    float3 normal : NORMAL;
     float2 texcoord1 : TEXCOORD0;
     float2 texcoord2 : TEXCOORD1;
     uint material : MATERIALID;
@@ -76,6 +80,7 @@ struct Deffered_POUT
     float4 normal : SV_TARGET1;
     float4 position : SV_TARGET2;
     float4 emissive : SV_TARGET3;
+    float4 velocity : SV_TARGET4;
 };
 
 StructuredBuffer<float3> globalPositions : register(t0);
@@ -275,5 +280,15 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
     output.position = float4(input.wPosition, 1);
     output.emissive = float4(0, 0, 0, 0);
 
+    float4 curNDC = input.curPosition / input.curPosition.w;
+    float4 prevNDC = input.prevPosition / input.prevPosition.w;
+    
+    curNDC.xy = curNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+    prevNDC.xy = prevNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+   
+    float4 velocity = (curNDC - prevNDC);
+    
+    output.velocity = float4(velocity.x, velocity.y, 0.0f, input.position.z);
+    
     return output;
 }

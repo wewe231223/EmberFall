@@ -26,6 +26,7 @@ struct CameraConstants {
     SimpleMath::Matrix proj;
     SimpleMath::Matrix viewProj;
     SimpleMath::Matrix middleViewProj;
+    SimpleMath::Matrix prevViewProj{};
 
     SimpleMath::Vector3 cameraPosition;
     int isShadow{ 0 };
@@ -35,6 +36,7 @@ struct CameraConstants {
 using MaterialIndex = UINT;
 
 struct ModelContext {
+    SimpleMath::Matrix prevWorld{};
 	SimpleMath::Matrix world;
     SimpleMath::Vector3 BBCenter{}; 
 	SimpleMath::Vector3 BBextents{};
@@ -51,12 +53,15 @@ struct TerrainSegmentContext {
 };
 
 struct AnimationModelContext {
+    SimpleMath::Matrix prevWorld{};
 	SimpleMath::Matrix world;
 	SimpleMath::Vector3 BBCenter{};
 	SimpleMath::Vector3 BBextents{};
 	UINT material;
 	UINT boneIndexStart{ 0 };
 };
+
+
 
 struct ModelContext2D {
     DirectX::XMFLOAT3X3 Transform{
@@ -94,6 +99,7 @@ public:
 using SceneFeatureType = std::tuple<bool, bool, bool>;
 
 struct BoneTransformBuffer {
+	std::array<SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<size_t>> prevBoneTransforms;
 	std::array<SimpleMath::Matrix, Config::MAX_BONE_COUNT_PER_INSTANCE<size_t>> boneTransforms;
 	UINT boneCount;
 };
@@ -185,6 +191,7 @@ struct Features {
 	bool Grass{ false };
 	bool Shadow{ false };
     bool Bloom{ false };
+    bool MotionBlur{ false };
     bool RenderBB{ false };
 };
 

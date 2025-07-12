@@ -143,10 +143,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             Time.AdvanceTime();
             Input.Update();
 
+
             sceneManager.Update(renderer.GetDevice(), renderer.GetLoadCommandList());
 
 
             renderer.Render();
+
+
 #ifdef DEV_MODE
             CPUTimer.End();
 #endif 
@@ -157,6 +160,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             GPUTimer.Start();
 #endif  
             renderer.ExecuteRender();
+
 #ifdef DEV_MODE
             GPUTimer.End();
             CPUTime->GetText() = std::format(L"CPU Time : {:.2f}us", CPUTimer.Microseconds());

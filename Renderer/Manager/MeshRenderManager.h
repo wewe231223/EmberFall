@@ -39,7 +39,7 @@ public:
 	void AppendPlaneMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, UINT reservedSlot = std::numeric_limits<UINT>::max() );
 	void AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms );
 
-	void AppendShadowPlaneMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, UINT reservedSlot = std::numeric_limits<UINT>::max());
+	void AppendShadowPlaneMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, UINT index);
 	void AppendShadowBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms);
 
 	void RegisterTerrainCPPointBuffer(DefaultBufferGPUIterator terrainCPPointBuffer);
@@ -60,10 +60,14 @@ private:
 	void RenderGPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 	void RenderGPassBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 private:
+	
+
 	DefaultBuffer mPlainMeshBuffer{};
 
 	DefaultBuffer mBonedMeshBuffer{}; 
+
 	DefaultBuffer mAnimationBuffer{};
+	DefaultBuffer mPrevAnimationBuffer{};
 
 	DefaultBuffer mShadowPlainMeshBuffer{};
 
@@ -82,7 +86,9 @@ private:
 	std::array<UINT, 2> mShadowTerrainMeshCounter{ 0,0 }; 
 
 	std::vector<SimpleMath::Matrix> mBoneTransforms{};
+	std::vector<SimpleMath::Matrix> mPrevBoneTransforms{};
 	std::vector<SimpleMath::Matrix> mShadowBoneTransforms{};
+
 	absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<AnimationModelContext>>> mBonedMeshContexts{};
 	absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<AnimationModelContext>>> mShadowBonedMeshContexts{};
 

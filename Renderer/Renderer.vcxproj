@@ -173,9 +173,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="core\BlurComputeProcessor.cpp" />
+    <ClCompile Include="core\ComputeProcessor.cpp" />
     <ClCompile Include="Core\Console.cpp" />
     <ClCompile Include="Core\DefferedRenderer.cpp" />
+    <ClCompile Include="core\MotionBlurProcessor.cpp" />
     <ClCompile Include="Core\Renderer.cpp" />
     <ClCompile Include="core\Shader.cpp" />
     <ClCompile Include="Core\ShadowRenderer.cpp" />
@@ -210,9 +211,10 @@
     <ClInclude Include="..\External\Include\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\External\Include\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\External\Include\ImGui\imstb_truetype.h" />
-    <ClInclude Include="core\BlurComputeProcessor.h" />
+    <ClInclude Include="core\ComputeProcessor.h" />
     <ClInclude Include="Core\Console.h" />
     <ClInclude Include="Core\DefferedRenderer.h" />
+    <ClInclude Include="core\MotionBlurProcessor.h" />
     <ClInclude Include="Core\Renderer.h" />
     <ClInclude Include="core\Shader.h" />
     <ClInclude Include="Core\ShadowRenderer.h" />
@@ -235,6 +237,10 @@
     <ClInclude Include="Resource\UploadBuffer.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="..\Shader\Sources\Bloom.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="..\Shader\Sources\Blur.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -246,6 +252,10 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.5</ShaderModel>
     </FxCompile>
     <FxCompile Include="..\Shader\Sources\GrassShaderV2.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\MotionBlur.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
