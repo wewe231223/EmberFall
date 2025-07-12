@@ -123,14 +123,13 @@ Deffered_POUT Standard_PS(Standard_VOUT input)
 
     float4 emissiveColor = materialConstants[input.material].emissive;
     
-    //float isEmissive = step(1.0f, emissiveColor.a);
-    //[unroll]
-    //for (int i = 0; i < isEmissive; ++i)
-    //{
-    //    output.emissive = textures[materialConstants[input.material].emissiveTexture[0]].Sample(linearWrapSampler, input.texcoord) * 20.f;
-    //}
-    
-    output.emissive = emissiveColor; 
+    float isEmissive = step(1.0f, emissiveColor.a);
+    [unroll]
+    for (int i = 0; i < isEmissive; ++i)
+    {
+        output.emissive = textures[materialConstants[input.material].emissiveTexture[0]].Sample(linearWrapSampler, input.texcoord) * 20.f;
+    }
+
     
     float4 curNDC = input.curPosition / input.curPosition.w;
     float4 prevNDC = input.prevPosition / input.prevPosition.w;

@@ -138,7 +138,7 @@ Deffered_POUT StandardNormal_PS(StandardNormal_VOUT input) {
     [unroll]
     for (int i = 0; i < isEmissive; ++i)
     {
-        output.emissive = float4(emissiveColor.rgb, 1.0f);
+        output.emissive = textures[materialConstants[input.material].emissiveTexture[0]].Sample(anisotropicWrapSampler, input.texcoord);
     }
     
     float4 curNDC = input.curPosition / input.curPosition.w;

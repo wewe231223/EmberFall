@@ -1,6 +1,6 @@
 DiffuseColor: 1.0 1.0 1.0 1.0
 SpecularColor: 0.0 0.0 0.0 0.0
-EmissiveColor: 0.0 0.0 0.0 1.0
+EmissiveColor: 0.0, 0.0, 0.0, 1.0
 
 DiffuseTextures:
 T_Demon_Imp_Monster_Bloody_Albedo_Skin_4
