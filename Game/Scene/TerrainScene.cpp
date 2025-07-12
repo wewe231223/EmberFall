@@ -946,7 +946,6 @@ void TerrainScene::Update() {
 			if (mCamera.FrustumCulling(gameObject.mCollider)) {
 				mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
 			}
-			SimpleMath::Vector3 transformedPos = SimpleMath::Vector3::Transform(gameObject.GetTransform().GetPosition(), mCamera.GetCameraConstant().view);
 				
 			// TODO :: 아예 의미가 없는 코드이다. 정석적인 CasCade 구현에서 벗어남. 
 			/*for (UINT i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
