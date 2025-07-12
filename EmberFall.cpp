@@ -61,9 +61,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
-    if (DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, IPDialogProc) == IDOK) {
-        gClientCore->Init(); 
-        if (not gClientCore->Start(iPAddr, 7777)) {
+    if (DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, IPDialogProc) == IDOK) { 
+        if (not gClientCore->Start(iPAddr, SERVER_PORT)) {
             CrashExp(true, "Failed to connect");
             return -1; 
         }
