@@ -29,7 +29,7 @@ struct ObjectSpec {
     bool animated;                  // 애니메이션
 
     Packets::EntityType entity;     // 외형 정보
-    GameStage stage;                // 스테이지 정보
+    Packets::GameStage stage;                // 스테이지 정보
 
     float defence;                  // 방어력
     float damage;                   // 공격력

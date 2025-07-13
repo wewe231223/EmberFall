@@ -4,7 +4,7 @@
 #include "HumanPlayerScript.h"
 #include "ServerFrame.h"
 
-Stage::Stage(GameStage stageIdx, uint16_t roomIdx) 
+Stage::Stage(Packets::GameStage stageIdx, uint16_t roomIdx) 
     : mStage{ stageIdx }, mGameRoomIdx{ roomIdx },
     mObjectManager{ std::make_shared<ObjectManager>(mGameRoomIdx) }, mCollisionManager{ std::make_shared<CollisionManager>(mGameRoomIdx) } {
     mSectorSystem = std::make_shared<SectorSystem>(mObjectManager);
@@ -17,7 +17,7 @@ bool Stage::GetActiveState() const {
     return mActive;
 }
 
-GameStage Stage::GetStageIdx() const {
+Packets::GameStage Stage::GetStageIdx() const {
     return mStage;
 }
 

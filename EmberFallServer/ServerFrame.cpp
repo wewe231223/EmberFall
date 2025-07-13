@@ -211,6 +211,8 @@ void ServerFrame::IoThread() {
                 break;
             }
 
+            result->InitSessionNetAddress(overlappedAccept->buffer.data());
+
             mIocpCore.RegisterSocket(reinterpret_cast<SOCKET>(result->GetHandle()), result->GetId());
             result->RegisterRecv();
             result->OnConnect();

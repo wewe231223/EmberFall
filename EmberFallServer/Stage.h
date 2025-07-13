@@ -6,12 +6,12 @@
 
 class Stage {
 public:
-    Stage(GameStage stageIdx, uint16_t roomIdx);
+    Stage(Packets::GameStage stageIdx, uint16_t roomIdx);
     ~Stage();
 
 public:
     bool GetActiveState() const;
-    GameStage GetStageIdx() const;
+    Packets::GameStage GetStageIdx() const;
 
     std::shared_ptr<SectorSystem> GetSectorSystem() const;
     std::shared_ptr<ObjectManager> GetObjectManager() const;
@@ -52,7 +52,7 @@ public:
 
 private:
     std::atomic_bool mActive{ false };
-    GameStage mStage{ };
+    Packets::GameStage mStage{ };
     uint16_t mGameRoomIdx{ };
 
     std::shared_ptr<SectorSystem> mSectorSystem{ };

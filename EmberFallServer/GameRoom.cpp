@@ -4,7 +4,7 @@
 #include "HumanPlayerScript.h"
 
 GameRoom::GameRoom(uint16_t roomIdx)
-    : mRoomIdx{ roomIdx }, mGameRoomState{ GameRoomState::GAME_ROOM_STATE_LOBBY }, mStage{ GameStage::STAGE1, roomIdx } { 
+    : mRoomIdx{ roomIdx }, mGameRoomState{ GameRoomState::GAME_ROOM_STATE_LOBBY }, mStage{ Packets::GameStage_LOBBY, roomIdx } { 
     for (uint8_t i = 0; i < MAX_PLAYER_IN_GAME_ROOM; ++i) {
         mSessionSlotIndices.push(i);
     }
