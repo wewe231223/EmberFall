@@ -111,6 +111,9 @@
     <ClCompile Include="GameObject\Decal.cpp">
       <Filter>GameObject</Filter>
     </ClCompile>
+    <ClCompile Include="System\Sound.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -187,6 +190,9 @@
     </ClInclude>
     <ClInclude Include="GameObject\Decal.h">
       <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="System\Sound.h">
+      <Filter>System</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

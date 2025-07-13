@@ -12,6 +12,7 @@
 #include "../MeshLoader/Loader/TerrainBaker.h"
 #include "../ServerLib/GameProtocol.h"
 #include "../Renderer/Core/Console.h"
+#include "../System/Sound.h"
 
 #pragma region PacketProcessFn 
 void TerrainScene::ProcessPacketProtocolVersion(const uint8_t* buffer) {
@@ -85,6 +86,8 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		if (data->objectId() == gClientCore->GetSessionId()) {
 			// 플레이어 인스턴스가 없다면 
 			if (mMyPlayer == nullptr) {
+
+				SoundManager::GetInstance().PlaySound("Test", 100); 
 		
 				auto nextLoc = FindNextPlayerLoc();
 		
@@ -568,6 +571,8 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	TerrainScene::BuildMesh(device, commandList);
 	TerrainScene::BuildMaterial();
 	TerrainScene::BuildAniamtionController();
+
+	TerrainScene::LoadSound(); 
 
 	//SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/terrain.raw", "Resources/Binarys/Terrain/NTerrain.bin");
 	tCollider.LoadFromFile("Resources/Binarys/Terrain/NTerrain.bin");
@@ -1206,6 +1211,10 @@ void TerrainScene::BuildAniamtionController() {
 
 	TerrainScene::BuildMonsterType1AnimationController();
 	TerrainScene::BuildDemonAnimationController(); 
+}
+
+void TerrainScene::LoadSound() {
+	SoundManager::GetInstance().LoadSound("Test", "Resources/Sound/game-start-317318.mp3");
 }
 
 void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {

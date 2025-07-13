@@ -18,7 +18,6 @@
 #include "../Game/GameObject/TerrainObject.h"
 #include "../External/Include/absl/container/flat_hash_map.h"
 #include "../Game/Scene/MaterialLoader.h"
-
 class TerrainScene : public IScene {
 	using duration = std::chrono::milliseconds; 
 public:
@@ -39,6 +38,8 @@ private:
 	void BuildMaterial();
 	void BuildShader(ComPtr<ID3D12Device> device);
 	void BuildAniamtionController(); 
+
+	void LoadSound(); 
 
 	void BuildEnvironment(const std::filesystem::path& envFile);
 
@@ -101,8 +102,6 @@ private:
 
 	std::array<duration, 10> mLatency{}; 
 	UINT mLatencySampleIndex{ 0 };
-
-	
 
 #ifdef DEV_MODE
 	TextBlock* mLatencyBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 50.f, 1920.f, 100.f }, StringColor::BurlyWood, "NotoSansKR") };
