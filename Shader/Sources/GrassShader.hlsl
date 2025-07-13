@@ -168,6 +168,8 @@ void mainMS(
         outVerts[vtxBase + i].position = mul(float4(verts[i], 1.0f), viewProjection);
         outVerts[vtxBase + i].wPosition = verts[i];
         outVerts[vtxBase + i].texIndex = GetIndexFromFloat3(grass);
+        outVerts[vtxBase + i].curPosition = mul(float4(verts[i], 1.0f), viewProjection);
+        outVerts[vtxBase + i].prevPosition = mul(float4(verts[i], 1.0f), prevViewProjection);
 
         if (i % 4 == 0)
             outVerts[vtxBase + i].uv = float2(0, 0);
@@ -208,5 +210,16 @@ Deffered_POUT mainPS(VSOutput input)
     output.normal = float4(input.normal, 1.f);
     output.position = float4(input.wPosition, 1.f);
 
+    float4 curNDC = input.curPosition / input.curPosition.w;
+    float4 prevNDC = input.prevPosition / input.prevPosition.w;
+    
+    curNDC.xy = curNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+    prevNDC.xy = prevNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
+    
+    float4 velocity = (curNDC - prevNDC);
+    
+    
+    output.velocity = float4(velocity.x, velocity.y, 0.0f, input.position.z);
+    
     return output;
 }
