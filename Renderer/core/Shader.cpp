@@ -1995,6 +1995,7 @@ void GrassShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE GrassShader::CreateVertexShader() {
@@ -2105,6 +2106,7 @@ void TreeCrossShader::CreateRTVFormat(const std::span<DXGI_FORMAT>& formats) {
 	formats[1] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[2] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 	formats[3] = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	formats[4] = DXGI_FORMAT_R32G32B32A32_FLOAT;
 }
 
 D3D12_SHADER_BYTECODE TreeCrossShader::CreateVertexShader() {

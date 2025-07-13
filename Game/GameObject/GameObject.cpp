@@ -209,6 +209,7 @@ void LODGameObject::ToggleActiveState() {
 }
 
 void LODGameObject::UpdateLODLevel(const SimpleMath::Vector3& pos) {
+	mModelContext.prevWorld = mModelContext.world;
 	auto distanceSq = (pos - mTransform.GetPosition()).LengthSquared();
 
 	mCurrentLODLevel = 0; 
@@ -223,6 +224,8 @@ void LODGameObject::UpdateLODLevel(const SimpleMath::Vector3& pos) {
 }
 
 void LODGameObject::UpdateShaderVariables() {
+	mModelContext.prevWorld = mModelContext.world;
+
 	mTransform.Update(Time.GetDeltaTime<float>());
 	mTransform.UpdateWorldMatrix();
 

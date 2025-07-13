@@ -4,38 +4,16 @@ RWTexture2D<float4> RWOutput : register(u0);
 
 #define WEIGHTS float3(0.3126, 0.6152, 0.0722)
 
-//static const float gGaussianBlurMask1D[11] = { 0.05f, 0.05f, 0.1f, 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.05f, 0.05f};
-//static const int maskWidth = 5;
+static const float gGaussianBlurMask1D[11] = { 0.05f, 0.05f, 0.1f, 0.1f, 0.1f, 0.2f, 0.1f, 0.1f, 0.1f, 0.05f, 0.05f};
+static const int maskWidth = 5;
 
-static const float gGaussianBlurMask1D[15] = {  0.01f,
-                                                0.015f, 
-                                                0.03f, 
-                                                0.05f, 
-                                                0.10f, 
-                                                0.10f, 
-                                                0.10f, 
-                                                0.20f,
-                                                0.10f,
-                                                0.10f,
-                                                0.10f,
-                                                0.05f,
-                                                0.03f,
-                                                0.015f,
-                                                0.01f };
-static const int maskWidth = 7;
+//static const float gGaussianBlurMask1D[15] = {  0.01f,0.015f, 0.03f, 0.05f, 0.10f, 0.10f, 0.10f, 0.20f,0.10f,0.10f,0.10f,0.05f,0.03f,0.015f,0.01f };
+//static const int maskWidth = 7;
 
 //static const float gGaussianBlurMask1D[19] = { 0.0015f, 0.0038f, 0.0087f, 0.0180f, 0.0332f, 0.0548f, 0.0808f, 0.1067f, 0.1260f, 0.1332f, 0.1260f, 0.1067f, 0.0808f, 0.0548f, 0.0332f, 0.0180f, 0.0087f, 0.0038f, 0.0015f };
 //static const int maskWidth = 9;
 
-//static const float gGaussianBlurMask1D[25] =
-//{
-//    0.0001f, 0.0004f, 0.0011f, 0.0028f, 0.0061f,
-//    0.0121f, 0.0216f, 0.0347f, 0.0509f, 0.0689f,
-//    0.0866f, 0.1006f, 0.1065f, 0.1006f, 0.0866f,
-//    0.0689f, 0.0509f, 0.0347f, 0.0216f, 0.0121f,
-//    0.0061f, 0.0028f, 0.0011f, 0.0004f, 0.0001f
-//};
-//static const int maskWidth = 12;
+
 
 static const int threadGroupSize = 256;
 

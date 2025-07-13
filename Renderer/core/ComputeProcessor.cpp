@@ -96,7 +96,7 @@ void HorzBloomProcessor::Dispatch(ComPtr<ID3D12Device> device, ComPtr<ID3D12Grap
 	commandList->SetComputeRootDescriptorTable(1, gpuHandle); //srv
 	
 
-	UINT numGroupsX = static_cast<UINT>(std::ceilf(Config::WINDOW_WIDTH<UINT> / 256.0f));
+	UINT numGroupsX = static_cast<UINT>((Config::WINDOW_WIDTH<UINT> + 255.0f) / 256.0f);
 
 	commandList->Dispatch(numGroupsX, Config::WINDOW_HEIGHT<UINT>, 1);
 }
@@ -233,7 +233,7 @@ void VertBloomProcessor::Dispatch(ComPtr<ID3D12Device> device, ComPtr<ID3D12Grap
 
 	commandList->SetComputeRootDescriptorTable(1, gpuHandle); //srv
 
-	UINT numGroupsY = static_cast<UINT>(ceilf(Config::WINDOW_HEIGHT<UINT> / 256.0f));
+	UINT numGroupsY = static_cast<UINT>((Config::WINDOW_HEIGHT<UINT> + 255.0f) / 256.0f);
 
 	commandList->Dispatch(Config::WINDOW_WIDTH<UINT>, numGroupsY, 1);
 
@@ -373,7 +373,7 @@ void HorzBlurProcessor::Dispatch(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graph
 	
 
 
-	UINT numGroupsX = static_cast<UINT>(std::ceilf(Config::WINDOW_WIDTH<UINT> / 256.0f));
+	UINT numGroupsX = static_cast<UINT>((Config::WINDOW_WIDTH<UINT>  + 255.0f) / 256.0f);
 
 	commandList->Dispatch(numGroupsX, Config::WINDOW_HEIGHT<UINT>, 1);
 }
@@ -501,7 +501,7 @@ void VertBlurProcessor::Dispatch(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graph
 	commandList->SetComputeRootDescriptorTable(0, gpuHandle); //uav
 	
 
-	UINT numGroupsY = static_cast<UINT>(ceilf(Config::WINDOW_HEIGHT<UINT> / 256.0f));
+	UINT numGroupsY = static_cast<UINT>((Config::WINDOW_HEIGHT<UINT> + 255.0f) / 256.0f);
 
 	commandList->Dispatch(Config::WINDOW_WIDTH<UINT>, numGroupsY, 1);
 

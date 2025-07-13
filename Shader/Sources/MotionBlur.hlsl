@@ -39,7 +39,7 @@ float4 MotionBlur_PS(MotionBlur_VOUT input) : SV_Target
     float4 color = renderTarget.Sample(linearClampSampler, input.texcoord);
     float4 velo = velocity.Sample(linearClampSampler, input.texcoord);
     velo.xy /= (float)SAMPLE_COUNT;
-    //velo.xy *= 1.5f;
+    velo.xy *= 0.7f;
     int cnt = 1;
     float2 texCoord = input.texcoord;
     [unroll]

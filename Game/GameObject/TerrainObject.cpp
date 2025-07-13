@@ -12,6 +12,7 @@ TerrainSegment::TerrainSegment(ComPtr<ID3D12Device> device, ComPtr<ID3D12Graphic
 	mMesh = std::make_unique<Mesh>(device, commandList, data);
 	DirectX::BoundingBox::CreateFromPoints(mBoundingBox, data.position.size(), data.position.data(), sizeof(DirectX::XMFLOAT3));
 
+	mSegmentContext.prevWorld = SimpleMath::Matrix::Identity;
 	mSegmentContext.world = SimpleMath::Matrix::Identity;
 
 	mSegmentContext.BBCenter = mBoundingBox.Center;
