@@ -79,6 +79,7 @@ public:
     void CheckGameEnd();
     void ChangeToLobby();
     void ChangeToStage1();
+    void ChangeToNextStage();
 
     void NotifyDestructedObject(ObjectTag tag);
 

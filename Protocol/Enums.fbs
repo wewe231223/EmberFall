@@ -92,7 +92,9 @@ enum PlayerRole : ubyte {
 enum GameStage : ubyte {
    NONE = 0, 
    LOBBY,
-   TERRAIN
+   TERRAIN,
+   STAGE2,
+   LAST,
 }
 
 enum EntityType : ubyte {

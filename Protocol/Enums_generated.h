@@ -383,31 +383,37 @@ enum GameStage : uint8_t {
   GameStage_NONE = 0,
   GameStage_LOBBY = 1,
   GameStage_TERRAIN = 2,
+  GameStage_STAGE2 = 3,
+  GameStage_LAST = 4,
   GameStage_MIN = GameStage_NONE,
-  GameStage_MAX = GameStage_TERRAIN
+  GameStage_MAX = GameStage_LAST
 };
 
-inline const GameStage (&EnumValuesGameStage())[3] {
+inline const GameStage (&EnumValuesGameStage())[5] {
   static const GameStage values[] = {
     GameStage_NONE,
     GameStage_LOBBY,
-    GameStage_TERRAIN
+    GameStage_TERRAIN,
+    GameStage_STAGE2,
+    GameStage_LAST
   };
   return values;
 }
 
 inline const char * const *EnumNamesGameStage() {
-  static const char * const names[4] = {
+  static const char * const names[6] = {
     "NONE",
     "LOBBY",
     "TERRAIN",
+    "STAGE2",
+    "LAST",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameGameStage(GameStage e) {
-  if (::flatbuffers::IsOutRange(e, GameStage_NONE, GameStage_TERRAIN)) return "";
+  if (::flatbuffers::IsOutRange(e, GameStage_NONE, GameStage_LAST)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesGameStage()[index];
 }

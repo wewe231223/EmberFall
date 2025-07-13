@@ -33,13 +33,6 @@ inline constexpr auto EXECUTE_IMMEDIATE = 0s;
 extern std::unique_ptr<class ServerFrame> gServerFrame;
 extern std::unique_ptr<class GameRoomManager> gGameRoomManager;
 
-enum class GameStage : uint8_t {
-    LOBBY,
-    STAGE1,
-    STAGE2,
-    STAGE3,
-};
-
 // Add std::hash for std::pair
 namespace std {
     template <typename T1, typename T2>

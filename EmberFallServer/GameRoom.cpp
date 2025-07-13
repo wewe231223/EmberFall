@@ -273,10 +273,26 @@ void GameRoom::CheckGameEnd() {
         return;
     }
 
-    auto packetGameEnd = FbsPacketFactory::GameEndSC(winner);
-    BroadCast(packetGameEnd);
+    if (Packets::GameStage_LAST != mStage.GetStageIdx()) {
+        mGameRoomState = GameRoomState::GAME_ROOM_STATE_TRANSITION;
 
-    EndGameLoop();
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Register Start Game!!!");
+
+        auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
+        gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN);
+        mSceneTransitionCounter = SysClock::now();
+
+        mStageTransitionTarget = static_cast<Packets::GameStage>(mStageTransitionTarget + 1);
+
+        auto packetStartTransition = FbsPacketFactory::StartSceneTransition(SCENE_TRANSITION_COUNT);
+        BroadCast(packetStartTransition);
+    }
+    else {
+        auto packetGameEnd = FbsPacketFactory::GameEndSC(winner);
+        BroadCast(packetGameEnd);
+     
+        EndGameLoop();
+    }
 }
 
 void GameRoom::ChangeToLobby() {
@@ -325,6 +341,25 @@ void GameRoom::ChangeToStage1() {
 
     auto humanCnt = mPlayerCount - mBossPlayerCount;
     auto gemCnt = humanCnt * 2;
+    mStage.StartStage(gemCnt);
+    mIngameCondition.InitGameCondition(humanCnt, mBossPlayerCount, gemCnt);
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Start Game!!!", mRoomIdx);
+
+    auto packetSceneTransition = FbsPacketFactory::ChangeSceneSC(mStageTransitionTarget);
+    BroadCast(packetSceneTransition);
+    return;
+}
+
+void GameRoom::ChangeToNextStage() {
+    mGameRoomState = GameRoomState::GAME_ROOM_STATE_INGAME;
+
+    auto delay = GameProtocol::Logic::GAME_ROOM_CHECK_GAME_END_DELAY;
+    gServerFrame->AddTimerEvent(INVALID_OBJ_ID, delay, IoType::CHECK_GAME_CONDITION, mRoomIdx);
+
+    auto humanCnt = mPlayerCount - mBossPlayerCount;
+    auto gemCnt = humanCnt * 2;
+    // TODO
     mStage.StartStage(gemCnt);
     mIngameCondition.InitGameCondition(humanCnt, mBossPlayerCount, gemCnt);
 
@@ -449,6 +484,10 @@ void GameRoom::OnSceneCountdownTick() {
 
     case Packets::GameStage_TERRAIN:
         ChangeToStage1();
+        break;
+
+    default:
+        ChangeToNextStage();
         break;
     }
 }

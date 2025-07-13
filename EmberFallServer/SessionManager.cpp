@@ -20,11 +20,7 @@ std::pair<SessionIdType, GameSession*> SessionManager::AddSession(OverlappedAcce
     mSessions.insert(std::make_pair(id, session));
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Session[{}]: add in session map", id);
 
-    session->InitSessionNetAddress(acceptInfo->buffer.data());
     auto [ip, port] = session->GetAddress();
-
-    session->OnConnect();
-
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Client [IP: {}, PORT: {}] Connected", ip, port);
 
     return std::make_pair(id, session);

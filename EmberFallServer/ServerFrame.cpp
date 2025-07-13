@@ -201,18 +201,19 @@ void ServerFrame::IoThread() {
         case IoType::ACCEPT:
         {
             auto overlappedAccept = reinterpret_cast<OverlappedAccept*>(overlappedEx);
-            //auto session = new GameSession{ overlappedAccept->connectedSocket };
-            auto sesison = gSessionEbr.PopPointer<GameSession>(overlappedAccept->connectedSocket);
-
             auto [id, result] = mSessionManager.AddSession(overlappedAccept);
             if (SYSTEM_ID == id or nullptr == result) {
                 gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Client Connect Failure");
+                ::closesocket(overlappedAccept->connectedSocket);
+                gSessionEbr.PushPointer(result);
+
                 mListener.RegisterAccept();
                 break;
             }
 
             mIocpCore.RegisterSocket(reinterpret_cast<SOCKET>(result->GetHandle()), result->GetId());
-            //result->RegisterRecv();
+            result->RegisterRecv();
+            result->OnConnect();
 
             mListener.RegisterAccept();
         }
