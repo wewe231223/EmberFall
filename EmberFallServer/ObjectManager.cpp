@@ -279,12 +279,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         return obj;
     }
 
-    case Packets::EntityType_BOSS:
-    {
-
-        break;
-    }
-
     case Packets::EntityType_ENV:
     {
         if (false == mEnvironmentsIndices.try_pop(validId)) {

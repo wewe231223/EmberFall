@@ -18,3 +18,5 @@ void ProcessLatencyCS(GameSession* session, const Packets::PacketLatencyCS* cons
 void ProcessRequestAttackCS(GameSession* session, const Packets::RequestAttackCS* const attack);
 void ProcessRequestUseItemCS(GameSession* session, const Packets::RequestUseItemCS* const useItem);
 void ProcessRequestFireProjectileCS(GameSession* session, const Packets::RequestFireCS* const fire);
+
+void ProcessTestChangeToNextSceneCS(GameSession* session);

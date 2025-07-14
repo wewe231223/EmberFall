@@ -120,6 +120,10 @@ void Stage::StartStage(uint8_t gemCount) {
     }
 }
 
+void Stage::StartStage(uint8_t gemCount, Packets::GameStage stage) {
+    mActive.exchange(true);
+}
+
 void Stage::EndStage() {
     mActive.exchange(false);
 

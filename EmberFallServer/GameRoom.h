@@ -36,7 +36,7 @@ public:
     void Reset();
 
     void InitGameCondition(uint8_t humanCount, uint8_t bossCount, uint8_t gemCount);
-    std::pair<bool, Packets::PlayerRole>  CheckGameEnd();
+    std::pair<bool, Packets::PlayerRole> CheckGameEnd(Packets::GameStage stage);
 
 private:
     std::atomic_uint8_t mAliveHumanCount{ };

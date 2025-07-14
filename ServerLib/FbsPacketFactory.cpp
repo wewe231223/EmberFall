@@ -422,6 +422,15 @@ OverlappedSend* FbsPacketFactory::RequestFireCS(SessionIdType id, const SimpleMa
     return CreateDataCS(builder, Packets::PacketTypes_PT_REQUEST_FIRE_CS, id);
 }
 
+OverlappedSend* FbsPacketFactory::ChangeToNextSceneCS(SessionIdType id) {
+    flatbuffers::FlatBufferBuilder builder{ };
+
+    auto offset = Packets::CreateTEST_ChangeToNextSceneCS(builder);
+    builder.Finish(offset);
+
+    return CreateDataCS(builder, Packets::PacketTypes_PT_TEST_CHANGE_TO_NEXT_SCENE_CS, id);
+}
+
 Packets::Vec3 FbsPacketFactory::GetVec3(const SimpleMath::Vector3& vec) {
     return Packets::Vec3{ vec.x, vec.y, vec.z };
 }

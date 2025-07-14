@@ -81,6 +81,9 @@ struct PlayerLookCSBuilder;
 struct PlayerSelectRoleCS;
 struct PlayerSelectRoleCSBuilder;
 
+struct TEST_ChangeToNextSceneCS;
+struct TEST_ChangeToNextSceneCSBuilder;
+
 struct HeartBeatSC;
 struct HeartBeatSCBuilder;
 
@@ -947,6 +950,35 @@ inline ::flatbuffers::Offset<PlayerSelectRoleCS> CreatePlayerSelectRoleCS(
     Packets::PlayerRole role = Packets::PlayerRole_NONE) {
   PlayerSelectRoleCSBuilder builder_(_fbb);
   builder_.add_role(role);
+  return builder_.Finish();
+}
+
+struct TEST_ChangeToNextSceneCS FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef TEST_ChangeToNextSceneCSBuilder Builder;
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           verifier.EndTable();
+  }
+};
+
+struct TEST_ChangeToNextSceneCSBuilder {
+  typedef TEST_ChangeToNextSceneCS Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  explicit TEST_ChangeToNextSceneCSBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<TEST_ChangeToNextSceneCS> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<TEST_ChangeToNextSceneCS>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<TEST_ChangeToNextSceneCS> CreateTEST_ChangeToNextSceneCS(
+    ::flatbuffers::FlatBufferBuilder &_fbb) {
+  TEST_ChangeToNextSceneCSBuilder builder_(_fbb);
   return builder_.Finish();
 }
 

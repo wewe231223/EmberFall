@@ -300,3 +300,11 @@ void ProcessRequestUseItemCS(GameSession* session, const Packets::RequestUseItem
 void ProcessRequestFireProjectileCS(GameSession* session, const Packets::RequestFireCS* const fire) {
 
 }
+
+void ProcessTestChangeToNextSceneCS(GameSession* session) {
+    decltype(auto) room = gGameRoomManager->GetRoom(session->GetMyRoomIdx());
+
+    if (GameRoomState::GAME_ROOM_STATE_TRANSITION != room->GetGameRoomState()) {
+        room->ChangeToNextStage();
+    }
+}

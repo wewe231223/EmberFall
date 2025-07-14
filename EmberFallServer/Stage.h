@@ -25,6 +25,7 @@ public:
     std::shared_ptr<GameObject> GetEnv(NetworkObjectIdType id);
 
     void StartStage(uint8_t gemCount);
+    void StartStage(uint8_t gemCount, Packets::GameStage stage);
     void EndStage();
 
     bool InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2, const float range);

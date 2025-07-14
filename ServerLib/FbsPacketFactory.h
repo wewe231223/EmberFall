@@ -94,6 +94,9 @@ public:
     static OverlappedSend* RequestAttackCS(SessionIdType id, const SimpleMath::Vector3& dir);
     static OverlappedSend* RequestFireCS(SessionIdType id, const SimpleMath::Vector3& dir, Packets::ProjectileTypes projectile);
 
+    // TEST
+    static OverlappedSend* ChangeToNextSceneCS(SessionIdType id);
+
 public:
     static Packets::Vec3 GetVec3(const SimpleMath::Vector3& vec);
     static Packets::Vec2 GetVec2(const SimpleMath::Vector2& vec);

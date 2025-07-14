@@ -29,6 +29,7 @@ enum PacketTypes : uint8_t {
   PacketTypes_PT_REQUEST_USE_ITEM_CS = 10,
   PacketTypes_PT_REQUEST_ATTACK_CS = 11,
   PacketTypes_PT_REQUEST_FIRE_CS = 12,
+  PacketTypes_PT_TEST_CHANGE_TO_NEXT_SCENE_CS = 13,
   PacketTypes_PT_PROTOCOL_VERSION_SC = 128,
   PacketTypes_PT_NOTIFY_ID_SC = 129,
   PacketTypes_PT_PLAYER_EXIT_SC = 130,
@@ -62,7 +63,7 @@ enum PacketTypes : uint8_t {
   PacketTypes_MAX = PacketTypes_PT_BUFF_HEAL_SC
 };
 
-inline const PacketTypes (&EnumValuesPacketTypes())[42] {
+inline const PacketTypes (&EnumValuesPacketTypes())[43] {
   static const PacketTypes values[] = {
     PacketTypes_PT_PLAYER_EXIT_CS,
     PacketTypes_PT_HEART_BEAT_CS,
@@ -77,6 +78,7 @@ inline const PacketTypes (&EnumValuesPacketTypes())[42] {
     PacketTypes_PT_REQUEST_USE_ITEM_CS,
     PacketTypes_PT_REQUEST_ATTACK_CS,
     PacketTypes_PT_REQUEST_FIRE_CS,
+    PacketTypes_PT_TEST_CHANGE_TO_NEXT_SCENE_CS,
     PacketTypes_PT_PROTOCOL_VERSION_SC,
     PacketTypes_PT_NOTIFY_ID_SC,
     PacketTypes_PT_PLAYER_EXIT_SC,
@@ -125,7 +127,7 @@ inline const char * const *EnumNamesPacketTypes() {
     "PT_REQUEST_USE_ITEM_CS",
     "PT_REQUEST_ATTACK_CS",
     "PT_REQUEST_FIRE_CS",
-    "",
+    "PT_TEST_CHANGE_TO_NEXT_SCENE_CS",
     "",
     "",
     "",
@@ -578,6 +580,42 @@ inline const char *EnumNameProjectileTypes(ProjectileTypes e) {
   if (::flatbuffers::IsOutRange(e, ProjectileTypes_ARROW, ProjectileTypes_MAGIC_ARROW)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesProjectileTypes()[index];
+}
+
+enum PlayersSkill : uint8_t {
+  PlayersSkill_BOSS_SKILL_1 = 0,
+  PlayersSkill_BOSS_SKILL_2 = 1,
+  PlayersSkill_BOSS_SKILL_3 = 2,
+  PlayersSkill_BOSS_SKILL_4 = 3,
+  PlayersSkill_MIN = PlayersSkill_BOSS_SKILL_1,
+  PlayersSkill_MAX = PlayersSkill_BOSS_SKILL_4
+};
+
+inline const PlayersSkill (&EnumValuesPlayersSkill())[4] {
+  static const PlayersSkill values[] = {
+    PlayersSkill_BOSS_SKILL_1,
+    PlayersSkill_BOSS_SKILL_2,
+    PlayersSkill_BOSS_SKILL_3,
+    PlayersSkill_BOSS_SKILL_4
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesPlayersSkill() {
+  static const char * const names[5] = {
+    "BOSS_SKILL_1",
+    "BOSS_SKILL_2",
+    "BOSS_SKILL_3",
+    "BOSS_SKILL_4",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNamePlayersSkill(PlayersSkill e) {
+  if (::flatbuffers::IsOutRange(e, PlayersSkill_BOSS_SKILL_1, PlayersSkill_BOSS_SKILL_4)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesPlayersSkill()[index];
 }
 
 }  // namespace Packets

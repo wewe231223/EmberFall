@@ -21,6 +21,9 @@ enum PacketTypes : ubyte {
     PT_REQUEST_ATTACK_CS,
     PT_REQUEST_FIRE_CS,
 
+    // TEST 
+    PT_TEST_CHANGE_TO_NEXT_SCENE_CS,
+
     // Server To Client
     //      Networks&Player Packet (Networks.fbs)
     PT_PROTOCOL_VERSION_SC = 0x80,
@@ -129,4 +132,11 @@ enum ItemType : ubyte {
 enum ProjectileTypes : ubyte {
     ARROW = 0,
     MAGIC_ARROW
+}
+
+enum PlayersSkill : ubyte {
+    BOSS_SKILL_1,
+    BOSS_SKILL_2,
+    BOSS_SKILL_3,
+    BOSS_SKILL_4
 }

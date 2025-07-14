@@ -264,12 +264,20 @@ void GameRoom::CheckSessionsHeartBeat() {
 }
 
 void GameRoom::CheckGameEnd() {
-    auto [isEnd, winner] = mIngameCondition.CheckGameEnd();
+    auto [isEnd, winner] = mIngameCondition.CheckGameEnd(mStage.GetStageIdx());
     if (not isEnd) {
         if (GameRoomState::GAME_ROOM_STATE_INGAME == mGameRoomState) {
             auto delay = GameProtocol::Logic::GAME_ROOM_CHECK_GAME_END_DELAY;
             gServerFrame->AddTimerEvent(INVALID_OBJ_ID, delay, IoType::CHECK_GAME_CONDITION, mRoomIdx);
         }
+        return;
+    }
+
+    if (Packets::PlayerRole_BOSS == winner) {
+        auto packetGameEnd = FbsPacketFactory::GameEndSC(winner);
+        BroadCast(packetGameEnd);
+
+        EndGameLoop();
         return;
     }
 
@@ -352,6 +360,9 @@ void GameRoom::ChangeToStage1() {
 }
 
 void GameRoom::ChangeToNextStage() {
+    mStage.EndStage();
+    mStage.StartStage(0, mStageTransitionTarget);
+
     mGameRoomState = GameRoomState::GAME_ROOM_STATE_INGAME;
 
     auto delay = GameProtocol::Logic::GAME_ROOM_CHECK_GAME_END_DELAY;
@@ -622,15 +633,29 @@ void GameCondition::InitGameCondition(uint8_t humanCount, uint8_t bossCount, uin
     mGemCount = gemCount;
 }
 
-std::pair<bool, Packets::PlayerRole> GameCondition::CheckGameEnd() {
+std::pair<bool, Packets::PlayerRole> GameCondition::CheckGameEnd(Packets::GameStage stage) {
     auto pair = std::make_pair(false, Packets::PlayerRole_HUMAN);
 #ifdef DEV_MODE
-    if (0 == mAliveHumanCount + mBossCount) {
+    if (Packets::GameStage_TERRAIN == stage) {
+        if (0 == mGemCount) {
+            pair.first = true;
+            return pair;
+        }
+    }
+
+    if ((0 == mAliveHumanCount + mBossCount)) {
         pair.first = true;
         return pair;
     }
 
 #else
+    if (Packets::GameStage_TERRAIN == stage) {
+        if (0 == mGemCount) {
+            pair.first = true;
+            return pair;
+        }
+    }
+
     if (0 == mBossCount) {
         pair.first = true;
         return pair;
