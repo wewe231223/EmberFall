@@ -115,6 +115,12 @@ const uint8_t* ProcessPacket(GameSession* session, const uint8_t* buffer) {
     }
     break;
 
+    case Packets::PacketTypes_PT_TEST_CHANGE_TO_NEXT_SCENE_CS:
+    {
+        ProcessTestChangeToNextSceneCS(session);
+    }
+    break;
+
     default:
     {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Client Sent Invalid PacketType - Close Session [{}]", session->GetId());
