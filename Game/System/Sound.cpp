@@ -37,6 +37,15 @@ void SoundManager::Update() {
         mSystem->update();
     }
 
+
+    while (!mDelayedSounds.empty() && mDelayedSounds.top().scheduledTime <= std::chrono::high_resolution_clock::now()) {
+        const DelayedSound& ds = mDelayedSounds.top();
+
+        PlaySound(ds.name, ds.volume, ds.loop);
+
+        mDelayedSounds.pop();
+    }
+
     UpdatePlayLists();
 }
 
@@ -53,6 +62,11 @@ void SoundManager::PlaySound(const std::string& name, float volume, bool loop) {
             mChannels[name] = channel;
         }
     }
+}
+
+void SoundManager::PlaySound(const std::string& name, std::chrono::milliseconds delay, float volume, bool loop) {
+    DelayedSound ds{ name, std::chrono::steady_clock::now() + delay, volume, loop };
+    mDelayedSounds.emplace(std::move(ds));
 }
 
 void SoundManager::PlaySoundList(const std::string& listName, float volumeRate) {

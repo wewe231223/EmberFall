@@ -13,6 +13,7 @@
 #include "../ServerLib/GameProtocol.h"
 #include "../Renderer/Core/Console.h"
 #include "../System/Sound.h"
+#include "../Utility/RandomEngine.h"
 
 #pragma region PacketProcessFn 
 void TerrainScene::ProcessPacketProtocolVersion(const uint8_t* buffer) {
@@ -460,6 +461,13 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 			if (data->objectId() == gClientCore->GetSessionId()) {
 				if (data->animation() == Packets::AnimationState_ATTACK) {
 					mMyPlayer->LockRotate(true); 
+					// UINT id{ RandomEngine::GetRandomRange(0U, 6U) };
+
+					SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, 250ms, 2.f);
+
+				}
+				else if (data->animation() == Packets::AnimationState_DEAD) {
+					mMyPlayer->LockRotate(true);
 				}
 				else {
 					mMyPlayer->LockRotate(false);

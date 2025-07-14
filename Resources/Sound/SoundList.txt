@@ -23,3 +23,5 @@ DirtArea6 Resources/Sound/Footsteps_DirtyGround_Run_06.wav
 DirtArea7 Resources/Sound/Footsteps_DirtyGround_Run_07.wav
 DirtArea8 Resources/Sound/Footsteps_DirtyGround_Run_08.wav
 DirtArea9 Resources/Sound/Footsteps_DirtyGround_Run_09.wav
+
+SwordSlash Resources/Sound/swish.wav

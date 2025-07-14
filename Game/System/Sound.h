@@ -10,6 +10,8 @@
 
 #include <string>
 #include <unordered_map>
+#include <chrono>
+#include <queue>
 #include <vector>
 #include <random>
 
@@ -31,6 +33,17 @@ private:
         FMOD::Channel* currentChannel{};
     };
 
+    struct DelayedSound {
+        std::string name{};
+        std::chrono::steady_clock::time_point scheduledTime{};
+        float volume{};
+        bool loop{};
+
+        bool operator>(const DelayedSound& other) const {
+            return scheduledTime > other.scheduledTime;
+        }
+    };
+
 private:
     SoundManager() = default;
 
@@ -42,6 +55,8 @@ public:
     void Terminate();
 
     void PlaySound(const std::string& name, float volume = 1.f, bool loop = false);
+	void PlaySound(const std::string& name, std::chrono::milliseconds delay, float volume = 1.f, bool loop = false);
+
     void PlaySoundList(const std::string& listName, float volumeRate = 1.f);
 
     void StopSound(const std::string& name);
@@ -57,6 +72,9 @@ private:
 
 private:
     FMOD::System* mSystem{ nullptr };
+
+    std::priority_queue<DelayedSound, std::vector<DelayedSound>, std::greater<>> mDelayedSounds{};
+
     std::unordered_map<std::string, FMOD::Sound*> mSounds{};
     std::unordered_map<std::string, FMOD::Channel*> mChannels{};
     std::unordered_map<std::string, PlayListData> mPlayLists{};
