@@ -86,9 +86,6 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		if (data->objectId() == gClientCore->GetSessionId()) {
 			// 플레이어 인스턴스가 없다면 
 			if (mMyPlayer == nullptr) {
-
-				SoundManager::GetInstance().PlaySound("Test", 100); 
-		
 				auto nextLoc = FindNextPlayerLoc();
 		
 				if (nextLoc == mPlayers.end()) {
@@ -149,9 +146,6 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mCurrentCameraMode = mTPPCameraMode.get(); 
 
 				mCurrentCameraMode->Enter();
-
-
-
 
 #ifdef DEV_MODE
 				int sign = NonReplacementSampler::GetInstance().Sample(); 
@@ -572,7 +566,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	TerrainScene::BuildMaterial();
 	TerrainScene::BuildAniamtionController();
 
-	TerrainScene::LoadSound(); 
+	mLayerIndexMap.LoadFromFile("Resources/Binarys/Terrain/LayerIndex.bin");
 
 	//SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/terrain.raw", "Resources/Binarys/Terrain/NTerrain.bin");
 	tCollider.LoadFromFile("Resources/Binarys/Terrain/NTerrain.bin");
@@ -795,7 +789,79 @@ void TerrainScene::ProcessNetwork() {
 	TerrainScene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
 }
 
-void TerrainScene::ProcessPackets(const uint8_t* buffer, size_t size) { 
+void TerrainScene::UpdateSound() {
+	static UINT lastAreaID{ std::numeric_limits<UINT>::max() };
+
+	// 1. 내 플레이어가 걷는 소리
+	if (mMyPlayer != nullptr) {
+		if (mMyPlayer->GetTransform().GetMovingState()) {  // 움직인다면 
+			if (lastAreaID == std::numeric_limits<UINT>::max()) { // 이전에 멈춘 상태였다면 
+				lastAreaID = mLayerIndexMap.GetLayerIndexAtPosition(mMyPlayer->GetTransform().GetPosition());
+
+				switch (lastAreaID) {
+				case 0: // Grass Area 
+					SoundManager::GetInstance().PlaySoundList("GrassArea");
+					break;
+				case 1: // Load Area 
+				case 2: // Stone Area 
+					SoundManager::GetInstance().PlaySoundList("DirtArea");
+					break;
+				default:
+					break;
+				}
+			}
+			else { // 이전에 움직이고 있었다면 
+				UINT currentAreaID{ mLayerIndexMap.GetLayerIndexAtPosition(mMyPlayer->GetTransform().GetPosition()) };
+
+				if (currentAreaID != lastAreaID) { // Area가 바뀌었다면 
+					// 먼저 이전 Area 사운드를 빼야 한다. 
+					switch (lastAreaID) {
+					case 0: // Grass Area 
+						SoundManager::GetInstance().StopSound("GrassArea");
+						break;
+					case 1: // Load Area 
+					case 2: // Stone Area 
+						SoundManager::GetInstance().StopSound("DirtArea");
+						break;
+					default:
+						break;
+					}
+
+					lastAreaID = currentAreaID;
+
+					switch (lastAreaID) {
+					case 0: // Grass Area 
+						SoundManager::GetInstance().PlaySoundList("GrassArea");
+						break;
+					case 1: // Load Area 
+					case 2: // Stone Area 
+						SoundManager::GetInstance().PlaySoundList("DirtArea");
+						break;
+					default:
+						break;
+					}
+				}
+			}
+		}
+		else { // 아니라면 
+			// 이전 Area 사운드를 빼야 한다. 
+			switch (lastAreaID) {
+			case 0: // Grass Area 
+				SoundManager::GetInstance().StopSound("GrassArea");
+				break;
+			case 1: // Load Area 
+			case 2: // Stone Area 
+				SoundManager::GetInstance().StopSound("DirtArea");
+				break;
+			default:
+				break;
+			}
+			lastAreaID = std::numeric_limits<UINT>::max(); // 초기화
+		}
+	}
+}
+
+void TerrainScene::ProcessPackets(const uint8_t* buffer, size_t size) {
 	const uint8_t* iter = buffer; 
 #ifdef DEV_MODE 	
 	UINT cnt{ 0 }; 
@@ -932,7 +998,6 @@ void TerrainScene::Update() {
 
 	float coefficient{ mIsBlind ? -1.f : 1.f };
 	mRenderManager->GetFogRangeStart() += coefficient * Time.GetDeltaTime<float, std::chrono::seconds>() * 500.f;
-
 	mRenderManager->GetFogRangeStart() = std::clamp(mRenderManager->GetFogRangeStart(), 7.f, 1000.f);
 
 
@@ -1050,6 +1115,9 @@ void TerrainScene::Update() {
 	mSkyBox.UpdateShaderVariables();
 	auto [skyBoxMesh, skyBoxShader, skyBoxModelContext] = mSkyBox.GetRenderData();
 	mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);
+
+
+	TerrainScene::UpdateSound();
 }
 
 void TerrainScene::SendNetwork() {
@@ -1211,10 +1279,6 @@ void TerrainScene::BuildAniamtionController() {
 
 	TerrainScene::BuildMonsterType1AnimationController();
 	TerrainScene::BuildDemonAnimationController(); 
-}
-
-void TerrainScene::LoadSound() {
-	SoundManager::GetInstance().LoadSound("Test", "Resources/Sound/game-start-317318.mp3");
 }
 
 void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
@@ -1529,7 +1593,6 @@ void TerrainScene::BuildSwordManAnimationController() {
 		forwardState.maskedClipIndex = 1;
 		forwardState.nonMaskedClipIndex = 1;
 		forwardState.name = "Forward";
-		forwardState.speed = 1.2;
 
 		AnimatorGraph::BoneMaskAnimationState backwardState{};
 		backwardState.maskedClipIndex = 2;
@@ -1611,7 +1674,6 @@ void TerrainScene::BuildMageAnimationController() {
 		forwardState.maskedClipIndex = 1;
 		forwardState.nonMaskedClipIndex = 1;
 		forwardState.name = "Forward";
-		forwardState.speed = 1.2;
 
 		AnimatorGraph::BoneMaskAnimationState backwardState{};
 		backwardState.maskedClipIndex = 2;
@@ -2186,3 +2248,45 @@ void TerrainScene::BuildDemonAnimationController() {
 
 
 */
+
+bool LayerIndexMap::LoadFromFile(const std::string& filePath) {
+	std::ifstream file(filePath, std::ios::binary);
+	if (!file.is_open()) {
+		return false;
+	} 
+	
+	file.read(reinterpret_cast<char*>(&mXCount), sizeof(int));
+	file.read(reinterpret_cast<char*>(&mZCount), sizeof(int));
+	file.read(reinterpret_cast<char*>(&mSampleInterval), sizeof(float));
+	file.read(reinterpret_cast<char*>(&mTerrainWidth), sizeof(float));
+	file.read(reinterpret_cast<char*>(&mTerrainLength), sizeof(float));
+
+	size_t dataSize = static_cast<size_t>(mXCount) * static_cast<size_t>(mZCount);
+	mData.resize(dataSize);
+	file.read(reinterpret_cast<char*>(mData.data()), dataSize);
+	file.close();
+
+	return true;
+}
+
+UINT LayerIndexMap::GetLayerIndexAtPosition(const DirectX::SimpleMath::Vector3& worldPos) const {
+	float halfWidth = mTerrainWidth * 0.5f;
+	float halfLength = mTerrainLength * 0.5f;
+
+	float relativeX = worldPos.x + halfWidth;
+	float relativeZ = worldPos.z + halfLength;
+
+	if (relativeX < 0 || relativeZ < 0 || relativeX >= mTerrainWidth || relativeZ >= mTerrainLength) {
+		return -1;
+	}
+
+	int xIndex = static_cast<int>(relativeX / mSampleInterval);
+	int zIndex = static_cast<int>(relativeZ / mSampleInterval);
+
+	if (xIndex < 0 || xIndex >= mXCount || zIndex < 0 || zIndex >= mZCount) {
+		return -1;
+	}
+
+	size_t index = static_cast<size_t>(zIndex) * mXCount + xIndex;
+	return static_cast<int>(mData[index]);
+}

@@ -13,6 +13,11 @@ public:
         std::uniform_real_distribution<T> dist(min, max);
         return dist(MersenneTwister);
     }
+
+	static std::mt19937& GetEngine() {
+		return MersenneTwister;
+	}
+
 private:
 	inline static std::random_device rd{};
 	inline static std::mt19937 MersenneTwister{ rd() };

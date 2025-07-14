@@ -159,3 +159,8 @@ void Transform::UpdateWorldMatrix() {
 void Transform::UpdateWorldMatrix(SimpleMath::Matrix& parent) {
 	mWorldMatrix = SimpleMath::Matrix::CreateScale(mScale) * SimpleMath::Matrix::CreateFromQuaternion(mRotation) * SimpleMath::Matrix::CreateTranslation(mPosition) * ( mLocalMatrix * parent );
 }
+
+bool Transform::GetMovingState() const {
+	constexpr float threshold = std::numeric_limits<float>::epsilon();
+	return (mPosition - mPrevPos).LengthSquared() > threshold; 
+}

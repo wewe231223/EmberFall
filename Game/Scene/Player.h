@@ -47,6 +47,8 @@ public:
 
 	void LockRotate(bool state); 
 	bool GetRotateState() const;
+
+	bool GetMovingState() const;
 private:
 	Mesh* mMesh{};
 	GraphicsShaderBase* mShader{};

@@ -6,35 +6,58 @@
 #pragma comment(lib, "External/lib/debug/fmod_vc.lib")
 #else
 #pragma comment(lib, "External/lib/release/fmod_vc.lib")
-#endif // DEBUG
+#endif
 
 #include <string>
 #include <unordered_map>
+#include <vector>
+#include <random>
 
 #ifdef PlaySound
 #undef PlaySound
-#endif 
+#endif
 
 class SoundManager {
+public:
+    enum class PlayMode { Sequential, Shuffle };
+
 private:
-	SoundManager() = default;
+    struct PlayListData {
+        std::vector<FMOD::Sound*> sounds{};
+        PlayMode mode{};
+        size_t currentIndex{ 0 };
+        bool playing{ false };
+        float volume{ 1.f };
+        FMOD::Channel* currentChannel{};
+    };
+
+private:
+    SoundManager() = default;
 
 public:
     static SoundManager& GetInstance();
 
     bool Initialize();
-    void Update(); 
+    void Update();
+    void Terminate();
 
-    void LoadSound(const std::string& name, const std::string& filepath, bool loop = false);
-    void PlaySound(const std::string& name, float volume = 1.0f);
+    void PlaySound(const std::string& name, float volume = 1.f, bool loop = false);
+    void PlaySoundList(const std::string& listName, float volumeRate = 1.f);
+
     void StopSound(const std::string& name);
     void SetVolume(const std::string& name, float volume);
-
     void SetMasterVolume(float volume);
 
-    void Terminate(); 
+    void AddPlayList(const std::string& listName, const std::vector<std::string>& soundNames, PlayMode mode, float volume = 1.0f);
+    void LoadSoundListFromFile(const std::string& filepath);
+    void LoadPlayListFromFile(const std::string& filepath);
+
 private:
-    FMOD::System* mSystem = nullptr;
-    std::unordered_map<std::string, FMOD::Sound*> mSounds;
-    std::unordered_map<std::string, FMOD::Channel*> mChannels;
+    void UpdatePlayLists();
+
+private:
+    FMOD::System* mSystem{ nullptr };
+    std::unordered_map<std::string, FMOD::Sound*> mSounds{};
+    std::unordered_map<std::string, FMOD::Channel*> mChannels{};
+    std::unordered_map<std::string, PlayListData> mPlayLists{};
 };

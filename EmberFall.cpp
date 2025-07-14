@@ -94,6 +94,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     Input.Initialize(hWnd);
     SoundManager::GetInstance().Initialize(); 
+	SoundManager::GetInstance().LoadSoundListFromFile("Resources/Sound/SoundList.txt");
+    SoundManager::GetInstance().LoadPlayListFromFile("Resources/Sound/PlayList.txt");
 
 	sceneManager.Init(
         renderer.GetRenderManager(),

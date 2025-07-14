@@ -1,0 +1,25 @@
+GrassArea1 Resources/Sound/Footsteps_Grass_Run_01.wav
+GrassArea2 Resources/Sound/Footsteps_Grass_Run_02.wav
+GrassArea3 Resources/Sound/Footsteps_Grass_Run_03.wav
+GrassArea4 Resources/Sound/Footsteps_Grass_Run_04.wav
+GrassArea5 Resources/Sound/Footsteps_Grass_Run_05.wav
+GrassArea6 Resources/Sound/Footsteps_Grass_Run_06.wav
+GrassArea7 Resources/Sound/Footsteps_Grass_Run_07.wav
+GrassArea8 Resources/Sound/Footsteps_Grass_Run_08.wav
+GrassArea9 Resources/Sound/Footsteps_Grass_Run_09.wav
+GrassArea10 Resources/Sound/Footsteps_Grass_Run_10.wav
+GrassArea11 Resources/Sound/Footsteps_Grass_Run_11.wav
+GrassArea12 Resources/Sound/Footsteps_Grass_Run_12.wav
+GrassArea13 Resources/Sound/Footsteps_Grass_Run_13.wav
+GrassArea14 Resources/Sound/Footsteps_Grass_Run_14.wav
+GrassArea15 Resources/Sound/Footsteps_Grass_Run_15.wav
+
+DirtArea1 Resources/Sound/Footsteps_DirtyGround_Run_01.wav
+DirtArea2 Resources/Sound/Footsteps_DirtyGround_Run_02.wav
+DirtArea3 Resources/Sound/Footsteps_DirtyGround_Run_03.wav
+DirtArea4 Resources/Sound/Footsteps_DirtyGround_Run_04.wav
+DirtArea5 Resources/Sound/Footsteps_DirtyGround_Run_05.wav
+DirtArea6 Resources/Sound/Footsteps_DirtyGround_Run_06.wav
+DirtArea7 Resources/Sound/Footsteps_DirtyGround_Run_07.wav
+DirtArea8 Resources/Sound/Footsteps_DirtyGround_Run_08.wav
+DirtArea9 Resources/Sound/Footsteps_DirtyGround_Run_09.wav

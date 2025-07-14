@@ -57,6 +57,8 @@ public:
 	void Update(float deltaTime); 
 	void UpdateWorldMatrix();
 	void UpdateWorldMatrix(SimpleMath::Matrix& parent);
+
+	bool GetMovingState() const;
 private:
 	SimpleMath::Vector3 mPosition{ DirectX::SimpleMath::Vector3::Zero };
 	SimpleMath::Quaternion mRotation{ DirectX::SimpleMath::Quaternion::Identity };
