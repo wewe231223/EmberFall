@@ -133,6 +133,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
+				mMyPlayer->SetRole(data->entity());
 
 				mMyPlayer->SetMyPlayer();
 				
@@ -461,9 +462,26 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 			if (data->objectId() == gClientCore->GetSessionId()) {
 				if (data->animation() == Packets::AnimationState_ATTACK) {
 					mMyPlayer->LockRotate(true); 
-					// UINT id{ RandomEngine::GetRandomRange(0U, 6U) };
 
-					SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, 250ms, 2.f);
+					switch (mMyPlayer->GetMyRole()) {
+					case Packets::EntityType_HUMAN_LONGSWORD:
+						SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, 250ms, 2.f);
+						break;
+					case Packets::EntityType_HUMAN_SWORD:
+						SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, 250ms, 2.f);
+						break;
+					case Packets::EntityType_HUMAN_ARCHER:
+						{
+							UINT type = RandomEngine::GetRandomRange(1U, 3U);
+							SoundManager::GetInstance().PlaySound(std::string{ "BowPullAndRelease" } + std::to_string(type), 200ms, 2.f);
+						}
+						break;
+					case Packets::EntityType_HUMAN_MAGICIAN:
+						break;
+					default:
+						break;
+					}
+
 
 				}
 				else if (data->animation() == Packets::AnimationState_DEAD) {

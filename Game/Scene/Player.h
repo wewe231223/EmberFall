@@ -48,7 +48,9 @@ public:
 	void LockRotate(bool state); 
 	bool GetRotateState() const;
 
-	bool GetMovingState() const;
+	void SetRole(Packets::EntityType role);
+	Packets::EntityType GetMyRole() const;
+
 private:
 	Mesh* mMesh{};
 	GraphicsShaderBase* mShader{};
@@ -65,6 +67,8 @@ private:
 	Transform mTransform{}; 
 
 	Collider mCollider{};
+
+	Packets::EntityType mMyRole{ Packets::EntityType::EntityType_MAX };
 
 	bool mActiveState{ false };
 	bool mEmpty{ true };

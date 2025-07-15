@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Button.h"
 #include "../Game/System/Input.h"
+#include "../Game/System/Sound.h"
 
 void Button::Init(Canvas& canvas, InvokeCondition condition, UINT image) {
 	mButton = canvas.CreateCanvasObject();
@@ -39,6 +40,7 @@ void Button::Update() {
 				mPressedLeft = false;
 				std::invoke(mCallback);
 				mButton.SetGreyScale(IDLE_GREYSCALE);
+				SoundManager::GetInstance().PlaySound("ButtonClick");
 			}
 			else if (Input.GetMouseTracker().leftButton == DirectX::Mouse::ButtonStateTracker::ButtonState::PRESSED) {
 				mPressedLeft = true;
@@ -53,6 +55,7 @@ void Button::Update() {
 				mPressedRight = false;
 				std::invoke(mCallback);
 				mButton.SetGreyScale(IDLE_GREYSCALE);
+				SoundManager::GetInstance().PlaySound("ButtonClick");
 			}
 			else if (Input.GetMouseTracker().rightButton == DirectX::Mouse::ButtonStateTracker::ButtonState::PRESSED) {
 				mPressedRight = true;

@@ -25,3 +25,9 @@ DirtArea8 Resources/Sound/Footsteps_DirtyGround_Run_08.wav
 DirtArea9 Resources/Sound/Footsteps_DirtyGround_Run_09.wav
 
 SwordSlash Resources/Sound/swish.wav
+
+ButtonClick Resources/Sound/ButtonClick.wav
+
+BowPullAndRelease1 Resources/Sound/Bow_Pull_and_Release_1.wav
+BowPullAndRelease2 Resources/Sound/Bow_Pull_and_Release_2.wav
+BowPullAndRelease3 Resources/Sound/Bow_Pull_and_Release_3.wav
