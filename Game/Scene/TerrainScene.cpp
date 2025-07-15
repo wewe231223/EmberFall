@@ -526,6 +526,8 @@ void TerrainScene::ProcessUseItem(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::UseItemSC>(buffer);
 
 	mInventoryUI.SetItem(ItemType::Health, static_cast<UINT>(data->itemIdx()), false);
+	
+
 
 }
 
@@ -560,6 +562,7 @@ void TerrainScene::ProcessChangeScene(const uint8_t* buffer) {
 void TerrainScene::ProcessBuffHeal(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::BuffHealSC>(buffer);
 	mHealthBarUI.SetHealth(data->hp()); 
+	SoundManager::GetInstance().PlaySound("HealSound", 2.f);
 }
 
 void TerrainScene::ProcessHeartBeat(const uint8_t* buffer) {
@@ -791,6 +794,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	});
 
 
+	
 
 	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
 	gClientCore->Send(packet);

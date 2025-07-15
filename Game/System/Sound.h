@@ -19,6 +19,17 @@
 #undef PlaySound
 #endif
 
+// 1. 사운드 꺼질때 fade out 
+
+// 추가할 것들 
+// 1. 다른 플레이어 발소리 - 범위 따라서 볼륨 조절 
+// 2. 보스 몬스터 / 잡 몬스터 걷는 소리 ( 인간이랑 같은걸로 ) - 범위 따라서 볼륨 조절 
+// 3. 보스 몬스터 / 잡 몬스터 공격 소리 
+// 4. 보스 몬스터 / 잡 몬스터 피격 소리 
+// 5. 보석 안개 소리 
+// 6. 플레이어 사망 소리 
+
+
 class SoundManager {
 public:
     enum class PlayMode { Sequential, Shuffle };

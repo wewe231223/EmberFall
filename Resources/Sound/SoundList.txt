@@ -54,3 +54,5 @@ Attacked19 Resources/Sound/19._damage_grunt_male.wav
 Attacked20 Resources/Sound/20._damage_grunt_male.wav
 Attacked21 Resources/Sound/21._damage_grunt_male.wav
 Attacked22 Resources/Sound/22._damage_grunt_male.wav
+
+HealSound Resources/Sound/02_Heal_02.wav
