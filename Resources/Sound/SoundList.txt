@@ -31,3 +31,26 @@ ButtonClick Resources/Sound/ButtonClick.wav
 BowPullAndRelease1 Resources/Sound/Bow_Pull_and_Release_1.wav
 BowPullAndRelease2 Resources/Sound/Bow_Pull_and_Release_2.wav
 BowPullAndRelease3 Resources/Sound/Bow_Pull_and_Release_3.wav
+
+Attacked1 Resources/Sound/01._damage_grunt_male.wav
+Attacked2 Resources/Sound/02._damage_grunt_male.wav
+Attacked3 Resources/Sound/03._damage_grunt_male.wav
+Attacked4 Resources/Sound/04._damage_grunt_male.wav
+Attacked5 Resources/Sound/05._damage_grunt_male.wav
+Attacked6 Resources/Sound/06._damage_grunt_male.wav
+Attacked7 Resources/Sound/07._damage_grunt_male.wav
+Attacked8 Resources/Sound/08._damage_grunt_male.wav
+Attacked9 Resources/Sound/09._damage_grunt_male.wav
+Attacked10 Resources/Sound/10._damage_grunt_male.wav
+Attacked11 Resources/Sound/11._damage_grunt_male.wav
+Attacked12 Resources/Sound/12._damage_grunt_male.wav
+Attacked13 Resources/Sound/13._damage_grunt_male.wav
+Attacked14 Resources/Sound/14._damage_grunt_male.wav
+Attacked15 Resources/Sound/15._damage_grunt_male.wav
+Attacked16 Resources/Sound/16._damage_grunt_male.wav
+Attacked17 Resources/Sound/17._damage_grunt_male.wav
+Attacked18 Resources/Sound/18._damage_grunt_male.wav
+Attacked19 Resources/Sound/19._damage_grunt_male.wav
+Attacked20 Resources/Sound/20._damage_grunt_male.wav
+Attacked21 Resources/Sound/21._damage_grunt_male.wav
+Attacked22 Resources/Sound/22._damage_grunt_male.wav

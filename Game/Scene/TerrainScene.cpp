@@ -450,6 +450,9 @@ void TerrainScene::ProcessObjectAttacked(const uint8_t* buffer) {
 			mMyPlayer->LockRotate(true); 
 		}
 
+		UINT type = RandomEngine::GetRandomRange(1U, 22U);
+		SoundManager::GetInstance().PlaySound(std::string{ "Attacked" } + std::to_string(type), 2.f);
+
 	}
 }
 
