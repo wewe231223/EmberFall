@@ -312,6 +312,7 @@ void ProcessTestChangeToNextSceneCS(GameSession* session) {
     decltype(auto) room = gGameRoomManager->GetRoom(session->GetMyRoomIdx());
 
     if (GameRoomState::GAME_ROOM_STATE_TRANSITION != room->GetGameRoomState()) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Process Change Next Scene");
         room->ChangeToNextStage();
     }
 }

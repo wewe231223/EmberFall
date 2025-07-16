@@ -264,6 +264,10 @@ void GameRoom::CheckSessionsHeartBeat() {
 }
 
 void GameRoom::CheckGameEnd() {
+    if (GameRoomState::GAME_ROOM_STATE_INGAME != mGameRoomState) {
+        return;
+    }
+
     auto [isEnd, winner] = mIngameCondition.CheckGameEnd(mStage.GetStageIdx());
     if (not isEnd) {
         if (GameRoomState::GAME_ROOM_STATE_INGAME == mGameRoomState) {
