@@ -10,7 +10,7 @@ inline constexpr uint8_t SESSION_CLOSE = 0b0000'1000;
 inline constexpr uint8_t SESSION_CHANGE_STAGE = 0b0001'0000;
 inline constexpr uint8_t SESSION_STATE_NONE = 0b0010'0000;
 
-inline constexpr uint8_t SESSION_READY_TO_RECV = SESSION_INLOBBY | SESSION_INGAME;
+inline constexpr uint8_t SESSION_READY_TO_RECV = SESSION_INLOBBY | SESSION_INGAME | SESSION_CHANGE_STAGE;
 
 inline constexpr uint8_t PLAYER_ROLE_NONE = 0;
 inline constexpr uint8_t PLAYER_ROLE_PLAYER = 1;
