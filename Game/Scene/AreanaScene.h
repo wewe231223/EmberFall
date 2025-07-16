@@ -19,28 +19,25 @@
 #include "../External/Include/absl/container/flat_hash_map.h"
 #include "../Game/Scene/MaterialLoader.h"
 
-class TerrainScene : public IScene {
-	using duration = std::chrono::milliseconds; 
+class ArenaScene : public IScene {
+	using duration = std::chrono::milliseconds;
 public:
-	TerrainScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCamLocation); 
-	virtual ~TerrainScene();
+	ArenaScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCamLocation); 
+	virtual ~ArenaScene(); 
 
 public:
-	virtual void Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) override; 
+	virtual void Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) override;
 
-	virtual void ProcessNetwork(); 
+	virtual void ProcessNetwork();
 	virtual void Update();
-	virtual void SendNetwork(); 
+	virtual void SendNetwork();
 	virtual void Exit();
 
-	void SendLook(); 
 private:
-	void BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList); 
+	void BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList);
 	void BuildMaterial();
 	void BuildShader(ComPtr<ID3D12Device> device);
-	void BuildAniamtionController(); 
-
-	void BuildEnvironment(const std::filesystem::path& envFile);
+	void BuildAniamtionController();
 
 	void BuildBaseAnimationController();
 	void BuildArcherAnimationController();
@@ -49,17 +46,17 @@ private:
 	void BuildShieldManController();
 
 	void BuildMonsterType1AnimationController();
-	void BuildDemonAnimationController(); 
+	void BuildDemonAnimationController();
 
-	template<typename Tu> 
-	float GetAverageLatency(); 
+	template<typename Tu>
+	float GetAverageLatency();
+
+	void SendLook();
 private:
-	void ProcessPackets(const uint8_t* buffer, size_t size); 
+	void ProcessPackets(const uint8_t* buffer, size_t size);
 	const uint8_t* ProcessPacket(const uint8_t* buffer);
 
-	void ProcessPacketProtocolVersion(const uint8_t* buffer);
-	void ProcessNotifyId(const uint8_t* buffer);
-	void ProcessPlayerExit(const uint8_t* buffer);
+	void ProcessPlayerExit(const uint8_t* buffer); 
 	void ProcessLatency(const uint8_t* buffer);
 	void ProcessObjectAppeared(const uint8_t* buffer);
 	void ProcessObjectDisappeared(const uint8_t* buffer);
@@ -67,16 +64,10 @@ private:
 	void ProcessObjectMove(const uint8_t* buffer);
 	void ProcessObjectAttacked(const uint8_t* buffer);
 	void ProcessPacketAnimation(const uint8_t* buffer);
-	void ProcessGemInteraction(const uint8_t* buffer);
-	void ProcessGemCancelInteraction(const uint8_t* buffer);
-	void ProcessGemDestroyed(const uint8_t* buffer);
-	void ProcessUseItem(const uint8_t* buffer);
-	void ProcessAcquiredItem(const uint8_t* buffer);
 	void ProcessFireProjectile(const uint8_t* buffer);
 	void ProcessProjectileMove(const uint8_t* buffer);
-	void ProcessChangeScene(const uint8_t* buffer);
-	void ProcessBuffHeal(const uint8_t* buffer);
 	void ProcessHeartBeat(const uint8_t* buffer);
+
 private:
 	std::shared_ptr<RenderManager> mRenderManager{};
 
@@ -92,27 +83,15 @@ private:
 
 	absl::flat_hash_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
 	std::vector<GameObject> mGameObjects{};
-	std::vector<GameObject> mItemObjects{}; 
 
-	std::vector<LODGameObject> mEnvironmentObjects{};
+	int mInputSign{};
 
-	int mNetworkSign{};
-	int mInputSign{}; 
-
-	std::array<duration, 10> mLatency{}; 
+	std::array<duration, 10> mLatency{};
 	UINT mLatencySampleIndex{ 0 };
-
-	
-
-#ifdef DEV_MODE
-	TextBlock* mLatencyBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 50.f, 1920.f, 100.f }, StringColor::BurlyWood, "NotoSansKR") };
-	TextBlock* mPktsBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 70.f, 1920.f, 120.f }, StringColor::BurlyWood, "NotoSansKR") };
-	TextBlock* mPositionBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 90.f, 1920.f, 140.f }, StringColor::Black, "NotoSansKR") };
-#endif 
 
 	absl::flat_hash_map<NetworkObjectIdType, Player*> mPlayerIndexmap{};
 	std::array<Player, 5> mPlayers{ Player{}, };
-	
+
 	Player* mMyPlayer{ nullptr };
 
 	absl::flat_hash_map<std::string, EquipmentObject> mEquipments{};
@@ -125,36 +104,27 @@ private:
 	AnimatorGraph::BoneMaskAnimationGraphController mMageAnimationController{};
 	AnimatorGraph::BoneMaskAnimationGraphController mShieldManController{};
 
-	AnimatorGraph::AnimationGraphController mMonsterAnimationController{}; 
+	AnimatorGraph::AnimationGraphController mMonsterAnimationController{};
 	AnimatorGraph::AnimationGraphController mDemonAnimationController{};
 
 	GameObject mSkyBox{};
-
-	TerrainLoader tLoader{}; 
-	Client::TerrainCollider tCollider{};
-	TerrainObject mTerrainObject{}; 
-
-	DefaultBuffer mTerrainHeaderBuffer{};
-	DefaultBuffer mTerrainDataBuffer{};
-
-	IntervalTimer mIntervalTimer{};
 
 	Inventory mInventoryUI{};
 	HealthBar mHealthBarUI{};
 	Profile mProfileUI{};
 
 	MaterialFileLoader mMaterialLoader{};
-
-	float mAvgLatency{ 0.f };
-
-	bool mInitialized{ false }; 
 	bool mIsBlind{ false };
 
-	size_t mProcessedPacketSize{ 0 };
+	float mAvgLatency{}; 
+
+#ifdef DEV_MODE
+	TextBlock* mLatencyBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 50.f, 1920.f, 100.f }, StringColor::BurlyWood, "NotoSansKR") };
+#endif
 };
 
-template<typename Tu> 
-inline float TerrainScene::GetAverageLatency() {
+template<typename Tu>
+inline float ArenaScene::GetAverageLatency() {
 	auto sumofSamples = std::accumulate(mLatency.begin(), mLatency.end(), duration::zero(),
 		[](const duration& a, const duration& b) {
 			if (b.count() <= 0.0)

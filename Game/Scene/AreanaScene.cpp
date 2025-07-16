@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "TerrainScene.h"
+#include "AreanaScene.h"
 #include "../Renderer/Core/Renderer.h"
 #include "../MeshLoader/Loader/MeshLoader.h"
 #include "../MeshLoader/Loader/AnimationLoader.h"
@@ -9,27 +9,12 @@
 #pragma comment(lib,"out/release/MeshLoader.lib")
 #endif
 #include "../Utility/NonReplacementSampler.h"
-#include "../MeshLoader/Loader/TerrainBaker.h"
 #include "../ServerLib/GameProtocol.h"
 #include "../Renderer/Core/Console.h"
 
-#pragma region PacketProcessFn 
-void TerrainScene::ProcessPacketProtocolVersion(const uint8_t* buffer) {
-	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ProtocolVersionSC>(buffer);
-	if (PROTOCOL_VERSION_MAJOR != data->major() or
-		PROTOCOL_VERSION_MINOR != data->minor()) {
-		gClientCore->CloseSession();
-		MessageBox(nullptr, L"ERROR!!!!!\nProtocolVersion Mismatching", L"", MB_OK | MB_ICONERROR);
-		::exit(0);
-	}
-}
 
-void TerrainScene::ProcessNotifyId(const uint8_t* buffer) {
-	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::NotifyIdSC>(buffer);
-	gClientCore->InitSessionId(data->playerId());
-}
 
-void TerrainScene::ProcessPlayerExit(const uint8_t* buffer) {
+void ArenaScene::ProcessPlayerExit(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::PlayerExitSC>(buffer);
 	if (mPlayerIndexmap.contains(data->playerId())) {
 		mPlayerIndexmap[data->playerId()]->SetActiveState(false);
@@ -37,10 +22,10 @@ void TerrainScene::ProcessPlayerExit(const uint8_t* buffer) {
 	}
 }
 
-void TerrainScene::ProcessLatency(const uint8_t* buffer) {
+void ArenaScene::ProcessLatency(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::PacketLatencySC>(buffer);
 
-	auto now = std::chrono::steady_clock::now(); 
+	auto now = std::chrono::steady_clock::now();
 	auto old = std::chrono::time_point<std::chrono::steady_clock>(std::chrono::nanoseconds(data->latency()));
 
 	mLatency[mLatencySampleIndex] = std::chrono::duration_cast<duration>(now - old);
@@ -49,7 +34,7 @@ void TerrainScene::ProcessLatency(const uint8_t* buffer) {
 	mAvgLatency = GetAverageLatency<std::chrono::seconds>();
 }
 
-void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
+void ArenaScene::ProcessObjectAppeared(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAppearedSC>(buffer);
 
 	auto FindNextPlayerLoc = [this]() {
@@ -60,7 +45,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		}
 		return mPlayers.end();
 		};
-		
+
 	auto FindNextObjectLoc = [this]() {
 		for (auto iter = mGameObjects.begin(); iter != mGameObjects.end(); ++iter) {
 			if (iter->GetEmpty()) {
@@ -69,15 +54,6 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		}
 		return mGameObjects.end();
 		};
-		
-	auto FindNextItemLoc = [this]() {
-		for (auto iter = mItemObjects.begin(); iter != mItemObjects.end(); ++iter) {
-			if (iter->GetEmpty()) {
-				return iter;
-			}
-		}
-		return mItemObjects.end();
-	};
 
 	// 플레이어 등장 
 	if (data->objectId() < OBJECT_ID_START) {
@@ -85,9 +61,9 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		if (data->objectId() == gClientCore->GetSessionId()) {
 			// 플레이어 인스턴스가 없다면 
 			if (mMyPlayer == nullptr) {
-		
+
 				auto nextLoc = FindNextPlayerLoc();
-		
+
 				if (nextLoc == mPlayers.end()) {
 					MessageBox(nullptr, L"ERROR!!!!!\nThere is no more space for My Player!!", L"", MB_OK | MB_ICONERROR);
 					Crash("There is no more space for My Player!!");
@@ -122,7 +98,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					*nextLoc = Player(mMeshMap["Demon"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial"), mDemonAnimationController);
 					nextLoc->AddEquipment(mEquipments["DemonWeapon"].Clone());
 					nextLoc->AddEquipment(mEquipments["DemonCloth"].Clone());
-					cameraOffset *= 2.f; 
+					cameraOffset *= 2.f;
 					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Devil"));
 					break;
 				default:
@@ -134,16 +110,16 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mMyPlayer = &(*nextLoc);
 
 				mMyPlayer->SetMyPlayer();
-				
+
 				mMyPlayer->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
 
-				mMyPlayer->SetAnimation(data->animation()); 
+				mMyPlayer->SetAnimation(data->animation());
 
-				mHealthBarUI.SetHealth(data->hp()); 
+				mHealthBarUI.SetHealth(data->hp());
 				mFreeCameraMode = std::make_unique<FreeCameraMode>(&mCamera);
 				mTPPCameraMode = std::make_unique<TPPCameraMode>(&mCamera, mMyPlayer->GetTransform(), cameraOffset);
 
-				mCurrentCameraMode = mTPPCameraMode.get(); 
+				mCurrentCameraMode = mTPPCameraMode.get();
 
 				mCurrentCameraMode->Enter();
 
@@ -151,10 +127,10 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 
 #ifdef DEV_MODE
-				int sign = NonReplacementSampler::GetInstance().Sample(); 
+				int sign = NonReplacementSampler::GetInstance().Sample();
 
 				Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::P, sign, [this]() {
-					mCurrentCameraMode->Exit(); 
+					mCurrentCameraMode->Exit();
 					if (mCurrentCameraMode == mTPPCameraMode.get()) {
 						mCurrentCameraMode = mFreeCameraMode.get();
 					}
@@ -162,8 +138,8 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 						mCurrentCameraMode = mTPPCameraMode.get();
 					}
 
-					mCurrentCameraMode->Enter(); 
-				});
+					mCurrentCameraMode->Enter();
+					});
 #endif 
 
 			}
@@ -173,7 +149,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					player.SetActiveState(true);
 
 					auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-					zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+					zxPos.y = 0.f;
 
 					player.GetTransform().GetPosition() = zxPos;
 					player.SetAnimation(data->animation());
@@ -187,11 +163,11 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 			if (not mPlayerIndexmap.contains(data->objectId())) {
 
 				auto nextLoc = FindNextPlayerLoc();
-				if (nextLoc == mPlayers.end()) { 
+				if (nextLoc == mPlayers.end()) {
 					MessageBox(nullptr, L"ERROR!!!!!\nThere is no more space for Other Player!!", L"", MB_OK | MB_ICONERROR);
-					Crash("There is no more space for Other Player!!"); 
+					Crash("There is no more space for Other Player!!");
 				}
-		
+
 
 				switch (data->entity()) {
 				case Packets::EntityType_HUMAN_LONGSWORD:
@@ -225,7 +201,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					MessageBox(nullptr, L"Something went wrong!!", L"", MB_OK | MB_ICONERROR);
 					break;
 				}
-				
+
 
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 
@@ -239,7 +215,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					player.SetActiveState(true);
 
 					auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-					zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+					zxPos.y = 0.f;
 
 					player.GetTransform().GetPosition() = zxPos;
 					player.SetAnimation(data->animation());
@@ -251,100 +227,78 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 	// 이외 오브젝트 등장 
 	else {
 		if (not mGameObjectMap.contains(data->objectId())) {
-			auto nextItemLoc = FindNextItemLoc();
 			auto nextLoc = FindNextObjectLoc();
 
 			if (nextLoc == mGameObjects.end()) {
 				MessageBox(nullptr, L"ERROR!!!!!\nThere is no more space for Other Object!!", L"", MB_OK | MB_ICONERROR);
 				Crash("There is no more space for Other Object!!");
 			}
-				
-			if (nextItemLoc == mItemObjects.end()) {
-				MessageBox(nullptr, L"ERROR!!!!!\nThere is no more space for Item!!", L"", MB_OK | MB_ICONERROR);
-				Crash("There is no more space for Item!!");
-			}
+
 			switch (data->entity()) {
-				case Packets::EntityType_MONSTER:
-				{
-					*nextLoc = GameObject{};
-					mGameObjectMap[data->objectId()] = &(*nextLoc);
-		
-					nextLoc->mShader = mShaderMap["SkinnedNormalShader"].get();
-					nextLoc->mMesh = mMeshMap["MonsterType1"].get();
-					nextLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("MonsterType1Material");
-					nextLoc->mGraphController = mMonsterAnimationController;
-					nextLoc->mCollider = mColliderMap["MonsterType1"];
-					nextLoc->mAnimated = true;
-					nextLoc->SetActiveState(true);
-		
+			case Packets::EntityType_MONSTER:
+			{
+				*nextLoc = GameObject{};
+				mGameObjectMap[data->objectId()] = &(*nextLoc);
 
-					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
-					nextLoc->mGraphController.Transition(static_cast<size_t>(data->animation()));
+				nextLoc->mShader = mShaderMap["SkinnedNormalShader"].get();
+				nextLoc->mMesh = mMeshMap["MonsterType1"].get();
+				nextLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("MonsterType1Material");
+				nextLoc->mGraphController = mMonsterAnimationController;
+				nextLoc->mCollider = mColliderMap["MonsterType1"];
+				nextLoc->mAnimated = true;
+				nextLoc->SetActiveState(true);
 
-					nextLoc->SetEmpty(false); 
-				}
-					break;
-				case Packets::EntityType_CORRUPTED_GEM:
-				{
-					*nextLoc = GameObject{};
-					mGameObjectMap[data->objectId()] = &(*nextLoc);
-					nextLoc->mShader = mShaderMap["StandardShader"].get();
-					nextLoc->mMesh = mMeshMap["CorruptedGem"].get();
-					nextLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("CorruptedGemMaterial");
-					nextLoc->SetActiveState(true);
-		
-					
-					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
-					nextLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextLoc->GetTransform().GetPosition().x, nextLoc->GetTransform().GetPosition().z);
 
-					nextLoc->SetEmpty(false);
+				nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
+				nextLoc->mGraphController.Transition(static_cast<size_t>(data->animation()));
 
-					ParticleVertex v{};
-					v.position = nextLoc->GetTransform().GetPosition(); 
+				nextLoc->SetEmpty(false);
+			}
+			break;
+			case Packets::EntityType_CORRUPTED_GEM:
+			{
+				*nextLoc = GameObject{};
+				mGameObjectMap[data->objectId()] = &(*nextLoc);
+				nextLoc->mShader = mShaderMap["StandardShader"].get();
+				nextLoc->mMesh = mMeshMap["CorruptedGem"].get();
+				nextLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("CorruptedGemMaterial");
+				nextLoc->SetActiveState(true);
 
-					v.halfheight = 10.f;
-					v.halfWidth = 10.f;
-					v.material = mRenderManager->GetMaterialManager().GetMaterial("SmokeMaterial");
-					v.spritable = true;
-					v.spriteDuration = 1.f;
-					v.spriteFrameInRow = 4;
-					v.spriteFrameInCol = 4;
-					v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
-					v.velocity = { 0.f, 0.f, 0.f };
-					v.totalLifeTime = 0.5f;
-					v.lifeTime = 0.5f;
-					v.type = ParticleType_emit;
-					v.emitType = ParticleType_smoke;
-					v.remainEmit = 100000;
-					v.emitIndex = 0;
 
-					mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
-					mParticleMap[data->objectId()].Get()->position = v.position;
-				}
+				nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
+				nextLoc->GetTransform().GetPosition().y = 0.f;
+
+				nextLoc->SetEmpty(false);
+
+				ParticleVertex v{};
+				v.position = nextLoc->GetTransform().GetPosition();
+
+				v.halfheight = 10.f;
+				v.halfWidth = 10.f;
+				v.material = mRenderManager->GetMaterialManager().GetMaterial("SmokeMaterial");
+				v.spritable = true;
+				v.spriteDuration = 1.f;
+				v.spriteFrameInRow = 4;
+				v.spriteFrameInCol = 4;
+				v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+				v.velocity = { 0.f, 0.f, 0.f };
+				v.totalLifeTime = 0.5f;
+				v.lifeTime = 0.5f;
+				v.type = ParticleType_emit;
+				v.emitType = ParticleType_smoke;
+				v.remainEmit = 100000;
+				v.emitIndex = 0;
+
+				mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
+				mParticleMap[data->objectId()].Get()->position = v.position;
+			}
+			break;
+			case Packets::EntityType_ITEM_POTION:
+			{
+			}
+			break;
+			default:
 				break;
-				case Packets::EntityType_ITEM_POTION:
-				{
-					*nextItemLoc = GameObject{};
-
-					mGameObjectMap[data->objectId()] = &(*nextItemLoc);
-
-					nextItemLoc->mShader = mShaderMap["StandardNormalShader"].get();
-					nextItemLoc->mMesh = mMeshMap["HealthPotion"].get();
-					nextItemLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("HealthPotionMaterial");
-					nextItemLoc->mCollider = mColliderMap["HealthPotion"];
-
-					nextItemLoc->SetActiveState(true);
-
-					nextItemLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
-					nextItemLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextItemLoc->GetTransform().GetPosition().x, nextItemLoc->GetTransform().GetPosition().z);
-					nextItemLoc->GetTransform().GetPosition().y += 0.5f;
-
-
-					nextItemLoc->SetEmpty(false); 
-				}
-				break;
-				default:
-					break;
 			}
 		}
 		else {
@@ -353,27 +307,27 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				object.SetActiveState(true);
 
 				auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-				zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
-				
+				zxPos.y = 0.f; 
+
 				object.GetTransform().GetPosition() = zxPos;
 				object.GetTransform().ResetPrediction();
 
 				if (object.mAnimated) {
 					object.mGraphController.Transition(static_cast<size_t>(data->animation()));
 				}
-					
+
 			}
 		}
-		
+
 	}
 }
 
-void TerrainScene::ProcessObjectDisappeared(const uint8_t* buffer) {
+void ArenaScene::ProcessObjectDisappeared(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectDisappearedSC>(buffer);
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
-			mPlayerIndexmap[data->objectId()]->GetTransform().ResetPrediction(); 
+			mPlayerIndexmap[data->objectId()]->GetTransform().ResetPrediction();
 			mPlayerIndexmap[data->objectId()]->SetActiveState(false);
 		}
 	}
@@ -385,7 +339,7 @@ void TerrainScene::ProcessObjectDisappeared(const uint8_t* buffer) {
 	}
 }
 
-void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
+void ArenaScene::ProcessObjectRemoved(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectRemovedSC>(buffer);
 
 	if (data->objectId() < OBJECT_ID_START) {
@@ -402,15 +356,15 @@ void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
 	}
 }
 
-void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
+void ArenaScene::ProcessObjectMove(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectMoveSC>(buffer);
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
-			float predictDuration = mAvgLatency  + data->duration();
+			float predictDuration = mAvgLatency + data->duration();
 
 			auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-			zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+			zxPos.y = 0.f;
 
 			mPlayerIndexmap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
 
@@ -418,7 +372,7 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 			if (data->objectId() == gClientCore->GetSessionId()) {
 				return;
 			}
-			
+
 			auto euler = mPlayerIndexmap[data->objectId()]->GetTransform().GetRotation().ToEuler();
 			euler.y = data->yaw();
 			mPlayerIndexmap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
@@ -427,48 +381,48 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
 			float predictDuration = mAvgLatency + data->duration();
-			
+
 			auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-			zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+			zxPos.y = 0.f;
 
 			mGameObjectMap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
 
 			auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
 			euler.y = data->yaw();
-			
+
 			mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
 		}
 	}
 }
 
-void TerrainScene::ProcessObjectAttacked(const uint8_t* buffer) {
+void ArenaScene::ProcessObjectAttacked(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAttackedSC>(buffer);
 	// HP 깍기 
 	if (data->objectId() == gClientCore->GetSessionId()) {
 		mHealthBarUI.SetHealth(data->hp());
 
 		if (data->hp() <= MathUtil::EPSILON and mMyPlayer != nullptr) {
-			mMyPlayer->LockRotate(true); 
+			mMyPlayer->LockRotate(true);
 		}
 
 	}
 }
 
-void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
+void ArenaScene::ProcessPacketAnimation(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAnimationChangedSC>(buffer);
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
-			
+
 			if (data->objectId() == gClientCore->GetSessionId()) {
 				if (data->animation() == Packets::AnimationState_ATTACK) {
-					mMyPlayer->LockRotate(true); 
+					mMyPlayer->LockRotate(true);
 				}
 				else {
 					mMyPlayer->LockRotate(false);
 				}
 			}
-			
+
 			mPlayerIndexmap[data->objectId()]->SetAnimation(data->animation());
 
 		}
@@ -478,148 +432,38 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 			mGameObjectMap[data->objectId()]->GetAnimationController().Transition(static_cast<size_t>(data->animation()));
 		}
 	}
-
 }
 
-// 보석 상호작용 전용 패킷 처리 
-void TerrainScene::ProcessGemInteraction(const uint8_t* buffer) {
-	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GemInteractSC>(buffer);
+void ArenaScene::ProcessFireProjectile(const uint8_t* buffer) {
 }
 
-void TerrainScene::ProcessGemCancelInteraction(const uint8_t* buffer) {
-	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GemInteractionCancelSC>(buffer);
+void ArenaScene::ProcessProjectileMove(const uint8_t* buffer) {
 }
 
-void TerrainScene::ProcessGemDestroyed(const uint8_t* buffer) {
-	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GemDestroyedSC>(buffer);
-
-}
-
-// 아이템 
-void TerrainScene::ProcessUseItem(const uint8_t* buffer) {
-	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::UseItemSC>(buffer);
-
-	mInventoryUI.SetItem(ItemType::Health, static_cast<UINT>(data->itemIdx()), false);
-
-}
-
-void TerrainScene::ProcessAcquiredItem(const uint8_t* buffer) {
-	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::AcquiredItemSC>(buffer);
-
-	switch (data->item()) {
-	case Packets::ItemType_POTION:
-		mInventoryUI.SetItem(ItemType::Health, static_cast<UINT>(data->itemIdx()), true); 
-		break; 
-	default:
-		break;
-	}
-
-}
-
-// 원거리
-void TerrainScene::ProcessFireProjectile(const uint8_t* buffer) {
-	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::FireProjectileSC>(buffer);
-
-}
-
-void TerrainScene::ProcessProjectileMove(const uint8_t* buffer) {
-	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ProjectileMoveSC>(buffer);
-}
-
-void TerrainScene::ProcessChangeScene(const uint8_t* buffer) {
-	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ChangeSceneSC>(buffer);
-	PostMessage(mRenderManager->GetWindowHandle(), WM_ADVANCESCENE, data->stage(), 0);
-}
-
-void TerrainScene::ProcessBuffHeal(const uint8_t* buffer) {
-	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::BuffHealSC>(buffer);
-	mHealthBarUI.SetHealth(data->hp()); 
-}
-
-void TerrainScene::ProcessHeartBeat(const uint8_t* buffer) {
+void ArenaScene::ProcessHeartBeat(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::HeartBeatSC>(buffer);
-	decltype(auto) packet = FbsPacketFactory::HeartBeatCS(gClientCore->GetSessionId()); 
+	decltype(auto) packet = FbsPacketFactory::HeartBeatCS(gClientCore->GetSessionId());
 	gClientCore->Send(packet);
 }
 
 
-#pragma endregion 
-
-
-TerrainScene::TerrainScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCamLocation) {
-
+ArenaScene::ArenaScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCamLocation) {
 	mInputSign = NonReplacementSampler::GetInstance().Sample();
-	mNetworkSign = NonReplacementSampler::GetInstance().Sample();
-
-	mRenderManager = renderMgr; 
-
-	mCamera = Camera(mainCamLocation);
-	auto& cameraTransform = mCamera.GetTransform();
-	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
-	cameraTransform.Look({ 0.f,85.f,0.f });
 }
 
-TerrainScene::~TerrainScene() {
+ArenaScene::~ArenaScene() {
 
 }
 
-void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
-	TerrainScene::BuildShader(device);
-	TerrainScene::BuildMesh(device, commandList);
-	TerrainScene::BuildMaterial();
-	TerrainScene::BuildAniamtionController();
-
-	//SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/terrain.raw", "Resources/Binarys/Terrain/NTerrain.bin");
-	tCollider.LoadFromFile("Resources/Binarys/Terrain/NTerrain.bin");
+void ArenaScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+	ArenaScene::BuildShader(device);
+	ArenaScene::BuildMesh(device, commandList);
+	ArenaScene::BuildMaterial(); 
+	ArenaScene::BuildAniamtionController();
 
 	mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
 	mSkyBox.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("SkyBoxMaterial");
-
-	TerrainScene::BuildEnvironment("Resources/Binarys/Terrain/SceneObjects.bin");
-
-	for (auto& environment : mEnvironmentObjects) {
-		environment.UpdateShaderVariables();
-	}
-
-	mTerrainObject = TerrainObject{ device, commandList,"Resources/Binarys/Terrain/terrain.raw" };
-	mTerrainObject.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("TerrainMaterial"));
-	mRenderManager->GetMeshRenderManager().RegisterTerrainCPPointBuffer(mTerrainObject.GetCPPositionBuffer());
-
-
-
-
-#ifdef DEV_MODE
-	{
-		auto& boss = mGameObjects.emplace_back();
-		boss.mShader = mShaderMap["SkinnedNormalShader"].get();
-		boss.mMesh = mMeshMap["Demon"].get();
-		boss.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial");
-		boss.mGraphController = mDemonAnimationController;
-		boss.mAnimated = true;
-		boss.mCollider = mColliderMap["Demon"];
-		boss.SetActiveState(true);
-		boss.SetEmpty(false);
-		boss.mGraphController.Transition(7);
-
-		boss.GetTransform().GetPosition() = { 3.f, tCollider.GetHeight(3.f, 36.f), 36.f };
-	}
-
-	{
-		auto& imp = mGameObjects.emplace_back();
-		imp.mShader = mShaderMap["SkinnedNormalShader"].get();
-		imp.mMesh = mMeshMap["MonsterType1"].get();
-		imp.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("MonsterType1Material");
-		imp.mGraphController = mMonsterAnimationController;
-		imp.mAnimated = true;
-		imp.mCollider = mColliderMap["MonsterType1"];
-		imp.SetActiveState(true);
-		imp.SetEmpty(false);
-
-		imp.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 36.f), 36.f };
-	}
-#endif 
-
 
 	{
 		mEquipments["Sword"] = EquipmentObject{};
@@ -703,250 +547,144 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 		mEquipments["DemonWeapon"].SetActiveState(true);
 	}
 
-
-
-
-	mGameObjects.resize(MeshRenderManager::MAX_INSTANCE_COUNT<size_t>, GameObject{});
-	mItemObjects.resize(1024, GameObject{});
-
-
-
-
-	mInventoryUI.Init(mRenderManager->GetCanvas(),
-		mRenderManager->GetTextureManager().GetTexture("mid_dark_bar"),
-		mRenderManager->GetTextureManager().GetTexture("mid_frame"),
-		mRenderManager->GetTextureManager().GetTexture("Health"),
-		mRenderManager->GetTextureManager().GetTexture("HolyWater"),
-		mRenderManager->GetTextureManager().GetTexture("Cross")
-	);
-
-	mHealthBarUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("health_frame"), mRenderManager->GetTextureManager().GetTexture("health_bar")); 
-
-	mRenderManager->GetLightingManager().ClearLight(commandList);
-	
-	auto& light = mRenderManager->GetLightingManager().GetLight(0);
-	light.mType = LightType::Directional;
-	light.Direction = { -1.f, 3.f, 1.f };
-	light.Diffuse = { 1.f, 1.f, 1.f, 1.f };
-	light.Specular = { 1.f, 1.f, 1.f, 1.f };
-	light.Ambient = { 0.2f, 0.2f, 0.2f, 1.f };
-
-	std::weak_ptr<TerrainScene> sharedThis{ std::static_pointer_cast<TerrainScene>(shared_from_this()) };
+	std::weak_ptr<ArenaScene> sharedThis{ std::static_pointer_cast<ArenaScene>(shared_from_this()) };
 
 	Time.AddEvent(66ms, [sharedThis]() {
 		if (sharedThis.expired()) {
-			return false; 
+			return false;
 		}
 		auto scene = sharedThis.lock();
-		scene->SendLook(); 
-		return true; 
-	}); 
+		scene->SendLook();
+		return true;
+		});
 
 	Time.AddEvent(500ms, [sharedThis]() {
 		if (sharedThis.expired()) {
 			return false;
 		}
 
-		auto time = std::chrono::steady_clock::now(); 
+		auto time = std::chrono::steady_clock::now();
 		auto packet = FbsPacketFactory::LatencyCS(gClientCore->GetSessionId(), time.time_since_epoch().count());
 		gClientCore->Send(packet);
 
-		return true; 
-	});
-	
+		return true;
+		});
+
 	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F6, mInputSign, [this]() {
-		mCurrentCameraMode->SetCameraShake(700ms); 
+		mCurrentCameraMode->SetCameraShake(700ms);
 	});
 
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F7, mInputSign, [this]() {  
+	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F7, mInputSign, [this]() {
 		mIsBlind = not mIsBlind;
-	});
-
-
-	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F8, mInputSign, [this]() {
-		decltype(auto) packet = FbsPacketFactory::ChangeToNextSceneCS(gClientCore->GetSessionId()); 
-		gClientCore->Send(packet);
 	});
 
 
 	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
 	gClientCore->Send(packet);
 
-#ifdef DEV_MODE
-	//Time.AddEvent(1s, [&]() {
-	//	mPktsBlock->GetText() = std::format(L"Packet/s : {}", PacketHandler::mPacketHandlerDebugSize.load());
-	//	PacketHandler::mPacketHandlerDebugSize.store(0); 
-	//	return true; 
-	//	}
-	//);
-#endif 
+}
+
+void ArenaScene::ProcessNetwork() {
+	auto packetHandler = gClientCore->GetPacketHandler();
+	decltype(auto) buffer = packetHandler->GetBuffer();
 
 
+
+	ArenaScene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
+}
+
+void ArenaScene::SendLook() {
 
 }
 
-// 별도 시간 누적 타이머 
-void TerrainScene::ProcessNetwork() {
-	auto packetHandler = gClientCore->GetPacketHandler(); 
-	decltype(auto) buffer = packetHandler->GetBuffer(); 
-
-
-
-	TerrainScene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
-}
-
-void TerrainScene::ProcessPackets(const uint8_t* buffer, size_t size) { 
-	const uint8_t* iter = buffer; 
+void ArenaScene::ProcessPackets(const uint8_t* buffer, size_t size) {
+	const uint8_t* iter = buffer;
 
 	while (iter < buffer + size) {
 		iter = ProcessPacket(iter);
 	}
+ 
 }
 
-const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
-	decltype(auto) header = FbsPacketFactory::GetHeaderPtrSC(buffer); 
-	
+const uint8_t* ArenaScene::ProcessPacket(const uint8_t* buffer) {
+
+	decltype(auto) header = FbsPacketFactory::GetHeaderPtrSC(buffer);
+
 	switch (header->type) {
-	case Packets::PacketTypes_PT_PROTOCOL_VERSION_SC:
-	{
-		TerrainScene::ProcessPacketProtocolVersion(buffer);
-	}
-	break;
-	case Packets::PacketTypes_PT_NOTIFY_ID_SC:
-	{
-		TerrainScene::ProcessNotifyId(buffer);
-	}
-	break; 
 	case Packets::PacketTypes_PT_OBJECT_REMOVED_SC:
 	{
-		TerrainScene::ProcessObjectRemoved(buffer);
+		ArenaScene::ProcessObjectRemoved(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_PLAYER_EXIT_SC:
 	{
-		TerrainScene::ProcessPlayerExit(buffer);
+		ArenaScene::ProcessPlayerExit(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_LATENCT_SC:
 	{
-		TerrainScene::ProcessLatency(buffer);
+		ArenaScene::ProcessLatency(buffer);
 	}
-	break; 
+	break;
 	case Packets::PacketTypes_PT_OBJECT_APPEARED_SC:
 	{
-		TerrainScene::ProcessObjectAppeared(buffer);
+		ArenaScene::ProcessObjectAppeared(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_OBJECT_DISAPPEARED_SC:
 	{
-		TerrainScene::ProcessObjectDisappeared(buffer);
+		ArenaScene::ProcessObjectDisappeared(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_OBJECT_MOVE_SC:
 	{
-		TerrainScene::ProcessObjectMove(buffer);
+		ArenaScene::ProcessObjectMove(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_OBJECT_ATTACKED_SC:
 	{
-		TerrainScene::ProcessObjectAttacked(buffer);
+		ArenaScene::ProcessObjectAttacked(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_OBJECT_ANIMATION_CHANGED_SC:
 	{
-		TerrainScene::ProcessPacketAnimation(buffer);
-	}
-	break;
-	case Packets::PacketTypes_PT_GEM_INTERACT_SC:
-	{
-		TerrainScene::ProcessGemInteraction(buffer);
-	}
-	break;
-	case Packets::PacketTypes_PT_GEM_CANCEL_INTERACTOIN_SC:
-	{
-		TerrainScene::ProcessGemCancelInteraction(buffer);
-	}
-	break;
-	case Packets::PacketTypes_PT_GEM_DESTROYED_SC:
-	{
-		TerrainScene::ProcessGemDestroyed(buffer);
-	}
-	break;
-	case Packets::PacketTypes_PT_USE_ITEM_SC:
-	{
-		TerrainScene::ProcessUseItem(buffer);
-	}
-	break;
-	case Packets::PacketTypes_PT_ACQUIRED_ITEM_SC:
-	{
-		TerrainScene::ProcessAcquiredItem(buffer);
+		ArenaScene::ProcessPacketAnimation(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_FIRE_PROJECTILE_SC:
 	{
-		TerrainScene::ProcessFireProjectile(buffer);
+		ArenaScene::ProcessFireProjectile(buffer);
 	}
 	break;
 	case Packets::PacketTypes_PT_PROJECTILE_MOVE_SC:
 	{
-		TerrainScene::ProcessProjectileMove(buffer);
+		ArenaScene::ProcessProjectileMove(buffer);
 	}
 	break;
-	case Packets::PacketTypes_PT_CHANGE_SCENE_SC:
-	{
-		TerrainScene::ProcessChangeScene(buffer);
-	}
-	break;
-	case Packets::PacketTypes_PT_BUFF_HEAL_SC: 
-	{
-		TerrainScene::ProcessBuffHeal(buffer);
-	}
-	break; 
 	case Packets::PacketTypes_PT_HEART_BEAT_SC:
 	{
-		TerrainScene::ProcessHeartBeat(buffer);
+		ArenaScene::ProcessHeartBeat(buffer);
 	}
 	break;
 	default:
 		break;
 	}
 
-	return buffer + header->size; 
+	return buffer + header->size;
 }
 
-
-
-void TerrainScene::Update() {
-	mPositionBlock->GetText() = std::format(L"Position : ({:.2f}, {:.2f}, {:.2f})", mCamera.GetTransform().GetPosition().x, mCamera.GetTransform().GetPosition().y, mCamera.GetTransform().GetPosition().z);
-
-
-	float coefficient{ mIsBlind ? -1.f : 1.f };
-	mRenderManager->GetFogRangeStart() += coefficient * Time.GetDeltaTime<float, std::chrono::seconds>() * 500.f;
-	mRenderManager->GetFogRangeStart() = std::clamp(mRenderManager->GetFogRangeStart(), 7.f, 1000.f);
-
-
+void ArenaScene::Update() {
 #ifdef DEV_MODE
-	mLatencyBlock->GetText() = std::format(L"Latency : {} ms", TerrainScene::GetAverageLatency<std::chrono::milliseconds>());
+	mLatencyBlock->GetText() = std::format(L"Latency : {} ms", ArenaScene::GetAverageLatency<std::chrono::milliseconds>());
 #endif 
 
-	mRenderManager->GetParticleManager().UpdateEmitParticle(); 
-
-	for (auto& item : mItemObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
-		auto& Pos = item.GetTransform().GetPosition();
-		Pos.y = tCollider.GetHeight(Pos.x, Pos.z);
-		Pos.y += 0.5f;
-		item.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(50.f) * Time.GetDeltaTime<float>(), 0.f);
-	}
-
-	mInventoryUI.Update();
-	mHealthBarUI.Update();
-	mProfileUI.Update();
+	mRenderManager->GetParticleManager().UpdateEmitParticle();
 
 	if (mCurrentCameraMode) {
 		mCurrentCameraMode->Update();
 
 		auto& pos = mCamera.GetTransform().GetPosition();
-		auto y = tCollider.GetHeight(pos.x, pos.z);
+		auto y = 0.f; 
 		if (pos.y <= y + 0.5f) {
 			pos.y = y + 0.5f;
 		}
@@ -956,27 +694,25 @@ void TerrainScene::Update() {
 	mCamera.UpdateBuffer();
 	mRenderManager->GetShadowRenderer().Update();
 
-
-	mTerrainObject.Update(mCamera, mRenderManager); 
-
 	static BoneTransformBuffer boneTransformBuffer{};
 	for (auto& gameObject : mGameObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
 		if (gameObject.mAnimated) {
-			gameObject.ForwardUpdate(); 
-			gameObject.GetTransform().GetPosition().y = tCollider.GetHeight(gameObject.GetTransform().GetPosition().x, gameObject.GetTransform().GetPosition().z);
-			gameObject.UpdateShaderVariables(boneTransformBuffer); 
+			gameObject.ForwardUpdate();
+			gameObject.GetTransform().GetPosition().y = 0.f;
+
+			gameObject.UpdateShaderVariables(boneTransformBuffer);
 
 			auto [mesh, shader, modelContext] = gameObject.GetAnimationRenderData();
 
 			if (mCamera.IsInFrustum(gameObject.mCollider)) {
 				mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
 			}
-				
+
 			// TODO :: 아예 의미가 없는 코드이다. 정석적인 CasCade 구현에서 벗어남. 
 			/*for (UINT i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
 				if (mRenderManager->GetShadowRenderer().ShadowMapCulling(i, gameObject.mCollider)) {
 					mRenderManager->GetMeshRenderManager().AppendShadowBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer, i);
-					
+
 				}
 			}*/
 		}
@@ -990,58 +726,23 @@ void TerrainScene::Update() {
 			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
 
 		}
-		
+
 	}
-
-	for (auto& item : mItemObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
-		item.UpdateShaderVariables();
-
-		auto [mesh, shader, modelContext] = item.GetRenderData();
-
-		if (mCamera.IsInFrustum(item.mCollider)) {
-			mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
-		}
-
-		mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
-		mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
-	}
-
-	for (auto& object : mEnvironmentObjects) {
-		object.UpdateLODLevel(mCamera.GetTransform().GetPosition()); 
-		auto [mesh, shader, modelContext] = object.GetRenderData();
-
-		if (mesh == nullptr) {
-			continue; 
-		}
-
-		if (object.mCollider.GetActiveState()) {
-			for (int i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
-				if (mRenderManager->GetShadowRenderer().IsInShadowFrustum(i, object.mCollider)) {
-					mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, i);
-				}
-			}
-
-			if (mCamera.IsInFrustum(object.mCollider)) {
-				mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
-			}
-		}
-	}
-
 
 	for (auto& player : mPlayers | std::views::filter([](const Player& p) { return p.GetActiveState(); })) {
-		player.ForwardUpdate(); 
-		player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
+		player.ForwardUpdate();
+		player.GetTransform().GetPosition().y = 0.f;
 		player.Update(mRenderManager->GetMeshRenderManager());
 	}
 
 	mSkyBox.GetTransform().GetPosition() = mCamera.GetTransform().GetPosition();
-	
+
 	mSkyBox.UpdateShaderVariables();
 	auto [skyBoxMesh, skyBoxShader, skyBoxModelContext] = mSkyBox.GetRenderData();
 	mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);
 }
 
-void TerrainScene::SendNetwork() {
+void ArenaScene::SendNetwork() {
 	auto id = gClientCore->GetSessionId();
 	auto& keyTracker = Input.GetKeyboardTracker();
 
@@ -1059,10 +760,10 @@ void TerrainScene::SendNetwork() {
 	}
 
 
-	auto& mouseTracker = Input.GetMouseTracker(); 
+	auto& mouseTracker = Input.GetMouseTracker();
 
 	if (mouseTracker.leftButton == DirectX::Mouse::ButtonStateTracker::PRESSED) {
-		
+
 		if (mMyPlayer != nullptr) {
 			auto dir = mMyPlayer->GetTransform().GetForward();
 			dir.y = 0.f;
@@ -1070,27 +771,13 @@ void TerrainScene::SendNetwork() {
 			gClientCore->Send(packet);
 		}
 	}
+}
+
+void ArenaScene::Exit() {
 
 }
 
-void TerrainScene::Exit() {
-	Input.EraseCallBack(mInputSign);
-	mLatencyBlock->SetActiveState(false);
-	mPositionBlock->SetActiveState(false);
-	mPktsBlock->SetActiveState(false);
-
-}
-
-void TerrainScene::SendLook() {
-	auto look = mCamera.GetTransform().GetForward();
-	look.y = 0.f;
-
-	decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(gClientCore->GetSessionId(), look);
-	gClientCore->Send(packetCamera);
-
-}
-
-void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+void ArenaScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	std::ifstream file("Resources/MeshList/TerrainSceneMeshList.txt");
 	std::string line;
 
@@ -1150,12 +837,12 @@ void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 	}
 }
 
-void TerrainScene::BuildMaterial() {
+void ArenaScene::BuildMaterial() {
 	mMaterialLoader = MaterialFileLoader{ mRenderManager };
-	mMaterialLoader.Load(); 
-} 
+	mMaterialLoader.Load();
+}
 
-void TerrainScene::BuildShader(ComPtr<ID3D12Device> device) {
+void ArenaScene::BuildShader(ComPtr<ID3D12Device> device) {
 	std::unique_ptr<GraphicsShaderBase> shader = std::make_unique<StandardShader>();
 	shader->CreateShader(device);
 	mShaderMap["StandardShader"] = std::move(shader);
@@ -1188,171 +875,24 @@ void TerrainScene::BuildShader(ComPtr<ID3D12Device> device) {
 	shader->CreateShader(device);
 	mShaderMap["SkinnedNormalShader"] = std::move(shader);
 
-	shader = std::make_unique<TreeCrossShader>(); 
+	shader = std::make_unique<TreeCrossShader>();
 	shader->CreateShader(device);
 	mShaderMap["TreeCrossShader"] = std::move(shader);
 }
 
+void ArenaScene::BuildAniamtionController() {
+	ArenaScene::BuildBaseAnimationController();
 
-void TerrainScene::BuildAniamtionController() {
-	TerrainScene::BuildBaseAnimationController();
+	ArenaScene::BuildSwordManAnimationController();
+	ArenaScene::BuildArcherAnimationController();
+	ArenaScene::BuildMageAnimationController();
+	ArenaScene::BuildShieldManController();
 
-	TerrainScene::BuildSwordManAnimationController(); 
-	TerrainScene::BuildArcherAnimationController();
-	TerrainScene::BuildMageAnimationController(); 
-	TerrainScene::BuildShieldManController(); 
-
-	TerrainScene::BuildMonsterType1AnimationController();
-	TerrainScene::BuildDemonAnimationController(); 
+	ArenaScene::BuildMonsterType1AnimationController();
+	ArenaScene::BuildDemonAnimationController();
 }
 
-void TerrainScene::BuildEnvironment(const std::filesystem::path& envFile) {
-	std::unordered_map<std::string, LODGameObject> objects{}; 
-
-	std::ifstream file("Resources/Scene/TerrainSceneEnvPrefabs.txt");
-	std::string line;
-
-	while (std::getline(file, line)) {
-		if (line.empty() || line.starts_with('#'))
-			continue;
-
-		std::istringstream iss(line);
-		std::string objectName, colliderName;
-		iss >> objectName >> colliderName;
-
-		auto& obj = objects[objectName];
-		obj.mCollider = mColliderMap[colliderName];
-		obj.SetActiveState(true);
-		obj.SetEmpty(false);
-
-		std::getline(file, line);
-		if (line.empty() || line.starts_with('#'))
-			continue;
-
-		int lodCount = std::stoi(line);
-		for (int i = 0; i < lodCount; ++i) {
-			std::getline(file, line);
-			std::istringstream lodIss(line);
-
-			int lodIndex;
-			std::string meshName, lodShaderName, lodMaterialName;
-			float distance;
-
-			lodIss >> lodIndex >> meshName >> lodShaderName >> lodMaterialName >> distance;
-
-			auto& lodGroup = obj.mLODGroups[lodIndex];
-			lodGroup.mMesh = mMeshMap[meshName].get();
-			lodGroup.mShader = mShaderMap[lodShaderName].get();
-			lodGroup.mMaterial = mRenderManager->GetMaterialManager().GetMaterial(lodMaterialName);
-			lodGroup.mDistanceSquared = std::powf(distance, 2.f);
-		}
-	}
-
-	mEnvironmentObjects.reserve(10'0000);
-
-	std::ifstream efile{ envFile, std::ios::binary };
-
-	UINT objectCount;
-	efile.read(reinterpret_cast<char*>(&objectCount), sizeof(UINT));
-
-	struct Data {
-		GameProtocol::EnvironmentType1 type;
-		SimpleMath::Vector2 xzPosition;
-		float yaw; 
-	};
-
-
-	std::vector<Data> envData{}; 
-	envData.resize(objectCount);
-
-	efile.read(reinterpret_cast<char*>(envData.data()), sizeof(Data)* objectCount);
-
-	for (auto& data : envData) {
-		switch (data.type) {
-		case GameProtocol::EnvironmentType1::Tree1:
-		case GameProtocol::EnvironmentType1::Tree2:
-		case GameProtocol::EnvironmentType1::Tree3:
-		case GameProtocol::EnvironmentType1::Tree4:
-		case GameProtocol::EnvironmentType1::Tree5:
-		case GameProtocol::EnvironmentType1::Tree6:
-		case GameProtocol::EnvironmentType1::Tree7:
-		case GameProtocol::EnvironmentType1::Tree8:
-		{
-			auto& stem = mEnvironmentObjects.emplace_back(objects["Tree1_stem"].Clone());
-			stem.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
-
-			auto& leaves = mEnvironmentObjects.emplace_back(objects["Tree1_leaves"].Clone());
-			leaves.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
-		}
-		break; 
-		case GameProtocol::EnvironmentType1::SRock1:
-		{
-			auto& obj = mEnvironmentObjects.emplace_back(objects["SRock1"].Clone());
-			obj.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
-			obj.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
-		}
-		break; 
-		case GameProtocol::EnvironmentType1::Fern1:
-		{
-			auto& obj = mEnvironmentObjects.emplace_back(objects["Fern1"].Clone());
-			obj.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
-			obj.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
-		}
-		break;
-		case GameProtocol::EnvironmentType1::LogHouse:
-		{
-			auto& house = mEnvironmentObjects.emplace_back(objects["LogHouse"].Clone());
-			house.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
-			house.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
-
-			auto& door = mEnvironmentObjects.emplace_back(objects["LogHouseDoor"].Clone());
-			door.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
-			door.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
-		}
-		break;
-		case GameProtocol::EnvironmentType1::TimberHouse:
-		{
-			auto& house = mEnvironmentObjects.emplace_back(objects["TimberHouse"].Clone());
-			house.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
-			house.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
-		}
-		break;
-		case GameProtocol::EnvironmentType1::StoneHouse:
-		{
-			auto& house = mEnvironmentObjects.emplace_back(objects["StoneHouse"].Clone());
-			house.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
-			house.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
-		}
-		break;
-		case GameProtocol::EnvironmentType1::Cliff1:
-		{
-			auto& cliff = mEnvironmentObjects.emplace_back(objects["Cliff1"].Clone());
-			cliff.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
-			cliff.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
-		}
-		break;
-		case GameProtocol::EnvironmentType1::Cliff2:
-		{
-			auto& cliff = mEnvironmentObjects.emplace_back(objects["Cliff2"].Clone());
-			cliff.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
-			cliff.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
-		}
-		break;
-		case GameProtocol::EnvironmentType1::Cliff3:
-		{
-			auto& cliff = mEnvironmentObjects.emplace_back(objects["Cliff3"].Clone());
-			cliff.GetTransform().GetPosition() = { data.xzPosition.x, tCollider.GetHeight(data.xzPosition.x, data.xzPosition.y), data.xzPosition.y };
-			cliff.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
-		}
-		break;
-		default:
-			break;
-		}
-	}
-
-}
-
-void TerrainScene::BuildBaseAnimationController() {
+void ArenaScene::BuildBaseAnimationController() {
 	// Base Anim 
 	{
 		mAnimationMap["HumanBase"].Load("Resources/Assets/Knight/BaseAnim/BaseAnim.gltf");
@@ -1402,7 +942,7 @@ void TerrainScene::BuildBaseAnimationController() {
 	}
 }
 
-void TerrainScene::BuildArcherAnimationController() {
+void ArenaScene::BuildArcherAnimationController() {
 	{
 		mAnimationMap["Archer"].Load("Resources/Assets/Knight/Archer/Archer.glb");
 		auto& loader = mAnimationMap["Archer"];
@@ -1487,7 +1027,7 @@ void TerrainScene::BuildArcherAnimationController() {
 	}
 }
 
-void TerrainScene::BuildSwordManAnimationController() {
+void ArenaScene::BuildSwordManAnimationController() {
 	// LongSword
 	{
 		mAnimationMap["LongSword"].Load("Resources/Assets/Knight/LongSword/SwordMan.glb");
@@ -1546,7 +1086,7 @@ void TerrainScene::BuildSwordManAnimationController() {
 		attackedState.nonMaskedClipIndex = 6;
 		attackedState.name = "Attacked";
 		attackedState.loop = false;
-		
+
 		AnimatorGraph::BoneMaskAnimationState attackState{};
 		attackState.maskedClipIndex = 7;
 		attackState.nonMaskedClipIndex = 7;
@@ -1570,7 +1110,7 @@ void TerrainScene::BuildSwordManAnimationController() {
 	}
 }
 
-void TerrainScene::BuildMageAnimationController() {
+void ArenaScene::BuildMageAnimationController() {
 	{
 		mAnimationMap["Magician"].Load("Resources/Assets/Knight/Mage/Magician.glb");
 		auto& loader = mAnimationMap["Magician"];
@@ -1652,7 +1192,7 @@ void TerrainScene::BuildMageAnimationController() {
 	}
 }
 
-void TerrainScene::BuildShieldManController() {
+void ArenaScene::BuildShieldManController() {
 	mAnimationMap["ShieldMan"].Load("Resources/Assets/Knight/ShieldMan/ShieldMan.glb");
 	auto& loader = mAnimationMap["ShieldMan"];
 
@@ -1732,7 +1272,7 @@ void TerrainScene::BuildShieldManController() {
 	mShieldManController = AnimatorGraph::BoneMaskAnimationGraphController(clips, boneMask, states);
 }
 
-void TerrainScene::BuildMonsterType1AnimationController() {
+void ArenaScene::BuildMonsterType1AnimationController() {
 	mAnimationMap["MonsterType1"].Load("Resources/Assets/imp/imp.glb");
 	auto& loader = mAnimationMap["MonsterType1"];
 
@@ -1789,7 +1329,7 @@ void TerrainScene::BuildMonsterType1AnimationController() {
 	mMonsterAnimationController = AnimatorGraph::AnimationGraphController({ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState });
 }
 
-void TerrainScene::BuildDemonAnimationController() {
+void ArenaScene::BuildDemonAnimationController() {
 	mAnimationMap["Demon"].Load("Resources/Assets/Demon/Demon.glb");
 	auto& loader = mAnimationMap["Demon"];
 
@@ -1846,332 +1386,3 @@ void TerrainScene::BuildDemonAnimationController() {
 	mDemonAnimationController = AnimatorGraph::AnimationGraphController({ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState });
 }
 
-
-
-/*
--- Code Archive -- 
-
-
-	struct EnvData {
-		GameProtocol::EnvironmentType envType;
-		SimpleMath::Vector3 position;
-		float rotation;
-	};
-
-	// 모든 원형 GameObject를 free-store 공간에 할당
-	auto stem = std::make_unique<GameObject>();
-	auto leaves = std::make_unique<GameObject>();
-
-	stem->mShader = mShaderMap["TreeShader"].get();
-	stem->mMesh = mMeshMap["Pine3_Stem"].get();
-	stem->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine3StemMaterial");
-	stem->SetActiveState(true);
-	stem->GetTransform().GetPosition() = { 20.f, tCollider.GetHeight(20.f, 20.f), 20.f };
-	stem->mCollider = mColliderMap["Pine3_Stem"];
-
-	leaves->mShader = mShaderMap["TreeShader"].get();
-	leaves->mMesh = mMeshMap["Pine3_Leaves"].get();
-	leaves->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine3LeavesMaterial");
-	leaves->SetActiveState(true);
-	leaves->GetTransform().GetPosition() = { 20.f, tCollider.GetHeight(20.f, 20.f), 20.f };
-	leaves->mCollider = mColliderMap["Pine3_Leaves"];
-
-	auto pinetree = std::make_unique<GameObject>();
-	pinetree->mShader = mShaderMap["TreeShader"].get();
-	pinetree->mMesh = mMeshMap["Pine2"].get();
-	pinetree->SetActiveState(true);
-	pinetree->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine2Material");
-	pinetree->mCollider = mColliderMap["Pine2"];
-
-	auto pinetree2 = std::make_unique<GameObject>();
-	pinetree2->mShader = mShaderMap["TreeShader"].get();
-	pinetree2->mMesh = mMeshMap["Pine4"].get();
-	pinetree2->SetActiveState(true);
-	pinetree2->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Pine2Material");
-	pinetree2->mCollider = mColliderMap["Pine4"];
-
-	auto rock1 = std::make_unique<GameObject>();
-	rock1->mShader = mShaderMap["StandardNormalShader"].get();
-	rock1->mMesh = mMeshMap["Rock_1"].get();
-	rock1->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_1_Material");
-	rock1->SetActiveState(true);
-	rock1->mCollider = mColliderMap["Rock_1"];
-
-	auto rock2 = std::make_unique<GameObject>();
-	rock2->mShader = mShaderMap["StandardNormalShader"].get();
-	rock2->mMesh = mMeshMap["Rock_2"].get();
-	rock2->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_2_Material");
-	rock2->SetActiveState(true);
-	rock2->mCollider = mColliderMap["Rock_2"];
-
-	auto rock3 = std::make_unique<GameObject>();
-	rock3->mShader = mShaderMap["StandardNormalShader"].get();
-	rock3->mMesh = mMeshMap["Rock_3"].get();
-	rock3->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_3_Material");
-	rock3->SetActiveState(true);
-	rock3->mCollider = mColliderMap["Rock_3"];
-
-	auto rock4 = std::make_unique<GameObject>();
-	rock4->mShader = mShaderMap["StandardNormalShader"].get();
-	rock4->mMesh = mMeshMap["Rock_4"].get();
-	rock4->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Rock_4_Material");
-	rock4->SetActiveState(true);
-	rock4->mCollider = mColliderMap["Rock_4"];
-
-	auto bigrock1 = std::make_unique<GameObject>();
-	bigrock1->mShader = mShaderMap["StandardNormalShader"].get();
-	bigrock1->mMesh = mMeshMap["LargeRock1"].get();
-	bigrock1->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LargeRock1_Material");
-	bigrock1->SetActiveState(true);
-	bigrock1->mCollider = mColliderMap["LargeRock1"];
-
-	auto bigrock2 = std::make_unique<GameObject>();
-	bigrock2->mShader = mShaderMap["StandardNormalShader"].get();
-	bigrock2->mMesh = mMeshMap["LargeRock2"].get();
-	bigrock2->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LargeRock2_Material");
-	bigrock2->SetActiveState(true);
-	bigrock2->mCollider = mColliderMap["LargeRock2"];
-
-	auto fern = std::make_unique<GameObject>();
-	fern->mShader = mShaderMap["TreeShader"].get();
-	fern->mMesh = mMeshMap["Fern"].get();
-	fern->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("FernMaterial");
-	fern->SetActiveState(true);
-
-	auto baseMountain = std::make_unique<GameObject>();
-	baseMountain->mShader = mShaderMap["StandardShader"].get();
-	baseMountain->mMesh = mMeshMap["Mountain"].get();
-	baseMountain->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("MountainMaterial");
-	baseMountain->mCollider = mColliderMap["Mountain"];
-
-	auto baseMountain1 = std::make_unique<GameObject>();
-	baseMountain1->mShader = mShaderMap["StandardShader"].get();
-	baseMountain1->mMesh = mMeshMap["Mountain1"].get();
-	baseMountain1->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Mountain1Material");
-	baseMountain1->mCollider = mColliderMap["Mountain1"];
-
-	auto baseMountain2 = std::make_unique<GameObject>();
-	baseMountain2->mShader = mShaderMap["StandardShader"].get();
-	baseMountain2->mMesh = mMeshMap["Mountain3"].get();
-	baseMountain2->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Mountain3Material");
-	baseMountain2->mCollider = mColliderMap["Mountain3"];
-
-	auto baseTimberHouse = std::make_unique<GameObject>();
-	baseTimberHouse->mShader = mShaderMap["StandardNormalShader"].get();
-	baseTimberHouse->mMesh = mMeshMap["TimberHouse"].get();
-	baseTimberHouse->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("TimberHouseMaterial");
-	baseTimberHouse->mCollider = mColliderMap["TimberHouse"];
-
-	auto baseStoneHouse = std::make_unique<GameObject>(*baseTimberHouse);
-	baseStoneHouse->mMesh = mMeshMap["StoneHouse"].get();
-	baseStoneHouse->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("StoneHouseMaterial");
-	baseStoneHouse->mCollider = mColliderMap["StoneHouse"];
-
-	auto baseLogHouse = std::make_unique<GameObject>(*baseTimberHouse);
-	baseLogHouse->mMesh = mMeshMap["LogHouse"].get();
-	baseLogHouse->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LogHouseMaterial");
-	baseLogHouse->mCollider = mColliderMap["LogHouse"];
-
-	auto baseLogHouseDoor = std::make_unique<GameObject>(*baseLogHouse);
-	baseLogHouseDoor->mMesh = mMeshMap["LogHouseDoor"].get();
-	baseLogHouseDoor->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("LogHouseDoorMaterial");
-	baseLogHouseDoor->mCollider = mColliderMap["LogHouse"];
-
-	auto baseWindMill = std::make_unique<GameObject>();
-	baseWindMill->mShader = mShaderMap["StandardShader"].get();
-	baseWindMill->mMesh = mMeshMap["WindMill"].get();
-	baseWindMill->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("WindMillMaterial");
-	baseWindMill->mCollider = mColliderMap["WindMill"];
-
-	auto baseWindMillBlade = std::make_unique<GameObject>(*baseWindMill);
-	baseWindMillBlade->mShader = mShaderMap["TreeShader"].get();
-	baseWindMillBlade->mMesh = mMeshMap["WindMillBlade"].get();
-	baseWindMillBlade->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("WindMillBladeMaterial");
-	baseWindMillBlade->mCollider = mColliderMap["WindMill"];
-
-
-	auto baseWell = std::make_unique<GameObject>();
-	baseWell->mShader = mShaderMap["StandardShader"].get();
-	baseWell->mMesh = mMeshMap["Well"].get();
-	baseWell->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("WellMaterial");
-	baseWell->mCollider = mColliderMap["Well"];
-
-
-
-	std::ifstream ifs(envFile, std::ios::binary);
-	if (!ifs) {
-		return;
-	}
-
-	UINT envCount{};
-	ifs.read(reinterpret_cast<char*>(&envCount), sizeof(UINT));
-
-	std::vector<EnvData> envPoses(envCount);
-	ifs.read(reinterpret_cast<char*>(envPoses.data()), sizeof(EnvData) * envCount);
-
-
-
-
-	//
-	// 이후 나무 객체를 생성하는 부분 (stem, leaves 복제)
-	std::vector<GameObject> envObjects{};
-	for (auto& envData : envPoses) {
-		switch (envData.envType) {
-		case GameProtocol::EnvironmentType::Tree1:
-		{
-			{
-				auto& object = envObjects.emplace_back();
-				object = stem->Clone();
-				object.GetTransform().SetPosition(envData.position);
-			}
-			{
-				auto& object = envObjects.emplace_back();
-				object = leaves->Clone();
-				object.GetTransform().SetPosition(envData.position);
-			}
-		}
-		break;
-		case GameProtocol::EnvironmentType::Tree2:
-		{
-			auto& object = envObjects.emplace_back();
-			object = pinetree->Clone();
-			object.GetTransform().SetPosition(envData.position);
-		}
-		break;
-		case GameProtocol::EnvironmentType::Tree3:
-		{
-			auto& object = envObjects.emplace_back();
-			object = pinetree2->Clone();
-			object.GetTransform().SetPosition(envData.position);
-		}
-		break;
-		case GameProtocol::EnvironmentType::Rock1:
-		{
-			auto& object = envObjects.emplace_back();
-			object = rock1->Clone();
-			object.GetTransform().SetPosition(envData.position);
-		}
-		break;
-		case GameProtocol::EnvironmentType::Rock2:
-		{
-			auto& object = envObjects.emplace_back();
-			object = rock2->Clone();
-			object.GetTransform().SetPosition(envData.position);
-		}
-		break;
-		case GameProtocol::EnvironmentType::Rock3:
-		{
-			auto& object = envObjects.emplace_back();
-			object = rock3->Clone();
-			object.GetTransform().SetPosition(envData.position);
-		}
-		break;
-		case GameProtocol::EnvironmentType::Rock4:
-		{
-			auto& object = envObjects.emplace_back();
-			object = rock4->Clone();
-			object.GetTransform().SetPosition(envData.position);
-		}
-		break;
-		case GameProtocol::EnvironmentType::LargeRock1:
-		{
-			auto& object = envObjects.emplace_back();
-			object = bigrock1->Clone();
-			object.GetTransform().SetPosition(envData.position);
-		}
-		break;
-		case GameProtocol::EnvironmentType::LargeRock2:
-		{
-			auto& object = envObjects.emplace_back();
-			object = bigrock2->Clone();
-			object.GetTransform().SetPosition(envData.position);
-		}
-		break;
-		case GameProtocol::EnvironmentType::Fern:
-		{
-			auto& object = envObjects.emplace_back();
-			object = fern->Clone();
-			object.GetTransform().SetPosition(envData.position);
-		}
-		break;
-		case GameProtocol::EnvironmentType::Mountain1:
-		{
-			auto& object = envObjects.emplace_back();
-			object = baseMountain->Clone();
-			object.GetTransform().SetPosition(envData.position);
-			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
-		}
-		break;
-		case GameProtocol::EnvironmentType::Mountain2:
-		{
-			auto& object = envObjects.emplace_back();
-			object = baseMountain1->Clone();
-			object.GetTransform().SetPosition(envData.position);
-			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
-		}
-		break;
-		case GameProtocol::EnvironmentType::TimberHouse:
-		{
-			auto& object = envObjects.emplace_back();
-			object = baseTimberHouse->Clone();
-			object.GetTransform().SetPosition(envData.position);
-			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
-		}
-		break;
-		case GameProtocol::EnvironmentType::StoneHouse:
-		{
-			auto& object = envObjects.emplace_back();
-			object = baseStoneHouse->Clone();
-			object.GetTransform().SetPosition(envData.position);
-			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
-		}
-		break;
-		case GameProtocol::EnvironmentType::LogHouse:
-		{
-			auto& object = envObjects.emplace_back();
-			object = baseLogHouse->Clone();
-			object.GetTransform().SetPosition(envData.position);
-			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
-		}
-		break;
-		case GameProtocol::EnvironmentType::LogHouseDoor:
-		{
-			auto& object = envObjects.emplace_back();
-			object = baseLogHouseDoor->Clone();
-			object.GetTransform().SetPosition(envData.position);
-			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
-		}
-		break;
-		case GameProtocol::EnvironmentType::WindMill:
-		{
-			auto& object = envObjects.emplace_back();
-			object = baseWindMill->Clone();
-			object.GetTransform().SetPosition(envData.position);
-			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
-		}
-		break;
-		case GameProtocol::EnvironmentType::WindMillBlade:
-		{
-			auto& object = envObjects.emplace_back();
-			object = baseWindMillBlade->Clone();
-			object.GetTransform().SetPosition(envData.position);
-			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
-		}
-		break;
-		case GameProtocol::EnvironmentType::Well:
-		{
-			auto& object = envObjects.emplace_back();
-			object = baseWell->Clone();
-			object.GetTransform().SetPosition(envData.position);
-			object.GetTransform().Rotate(0.f, envData.rotation, 0.f);
-		}
-		break;
-		default:
-			break;
-		}
-	}
-
-	std::move(envObjects.begin(), envObjects.end(), std::back_inserter(mEnvironmentObjects));
-
-
-*/

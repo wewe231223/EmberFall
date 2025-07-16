@@ -34,6 +34,9 @@
     <Filter Include="LobbyScene">
       <UniqueIdentifier>{5123c4fc-c89a-44b1-86fe-65a36242f930}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ArenaScene">
+      <UniqueIdentifier>{4ce4674b-6b02-40cb-bc38-7f3ab5efc7df}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -111,6 +114,9 @@
     <ClCompile Include="GameObject\Decal.cpp">
       <Filter>GameObject</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\AreanaScene.cpp">
+      <Filter>ArenaScene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -187,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="GameObject\Decal.h">
       <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\AreanaScene.h">
+      <Filter>ArenaScene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

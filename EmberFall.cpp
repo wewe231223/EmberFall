@@ -212,6 +212,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case Packets::GameStage::GameStage_TERRAIN:
 			sceneManager.ChangeSceneTo(SceneType::TERRAIN);
 			break;
+        case Packets::GameStage::GameStage_STAGE2:
+            sceneManager.ChangeSceneTo(SceneType::FINAL);
+            break;
         default:
             break;
         }

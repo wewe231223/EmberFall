@@ -154,7 +154,6 @@ void ParticleManager::RenderGS(ComPtr<ID3D12GraphicsCommandList> commandList, De
 	commandList->SetGraphicsRootDescriptorTable(3, tex);
 
 	commandList->DrawInstanced(mParticleCount, 1, 0, 0);
-	Console.Log("Particle Count: {}", LogType::Info, mParticleCount);
 }
 
 void ParticleManager::PostRender() {

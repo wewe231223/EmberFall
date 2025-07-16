@@ -3,8 +3,10 @@
 #include "../Scene/LoadingScene.h"
 #include "../Scene/TerrainScene.h"
 #include "../Scene/LobbyScene.h"
+#include "../Scene/AreanaScene.h"
 #include "../resource.h"
 #include "../Renderer/Core/Console.h"
+
 
 SceneManager::SceneManager() {}
 
@@ -18,10 +20,12 @@ void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferC
 	mScenes[static_cast<size_t>(SceneType::TERRAIN)] = std::make_shared<TerrainScene>(renderMgr, mainCameraBufferLocation);
 	mScenes[static_cast<size_t>(SceneType::LOADING)] = std::make_shared<LoadingScene>(renderMgr);
 	mScenes[static_cast<size_t>(SceneType::LOBBY)] = std::make_shared<LobbyScene>(renderMgr, mainCameraBufferLocation);
+	mScenes[static_cast<size_t>(SceneType::FINAL)] = std::make_shared<ArenaScene>(renderMgr, mainCameraBufferLocation);
 
 	mSceneFeatureType[static_cast<size_t>(SceneType::LOADING)]	= { false, false, false, false, false, false }; 
 	mSceneFeatureType[static_cast<size_t>(SceneType::LOBBY)]	= { false, false, true, false, false, false}; 
 	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)]	= { true, true, true, true, false, false }; 
+	mSceneFeatureType[static_cast<size_t>(SceneType::FINAL)] = { true, true, true, true, false, false };
 
 	mCurrentSceneType = SceneType::LOADING;
 	mCurrentScene = mScenes[static_cast<size_t>(SceneType::LOADING)].get();
@@ -43,6 +47,28 @@ void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferC
 void SceneManager::ChangeSceneTo(SceneType nextScene) {
 	mAdvance = true;
 	mNextSceneType = nextScene;
+
+	switch (mNextSceneType) {
+	case SceneType::TITLE:
+		break;
+	case SceneType::LOBBY:
+		Console.Log("Lobby Scene 으로 변경합니다.", LogType::Warning);
+		break;
+	case SceneType::TERRAIN:
+		Console.Log("Terrain Scene 으로 변경합니다.", LogType::Warning);
+		break;
+	case SceneType::FINAL:
+		Console.Log("Arena Scene 으로 변경합니다.", LogType::Warning);
+		break;
+	case SceneType::FINISH:
+		break;
+	case SceneType::LOADING:
+		Console.Log("Loading Scene 으로 변경합니다.", LogType::Warning);
+		break;
+	default:
+		break;
+	}
+
 }
 
 bool SceneManager::CheckLoaded() {
@@ -78,6 +104,8 @@ void SceneManager::Update(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComm
 			Console.Log("Terrain Scene 이 로드되었습니다.", LogType::Warning);
 			break;
 		case SceneType::FINAL:
+			mScenes[static_cast<size_t>(SceneType::FINAL)] = std::make_unique<ArenaScene>(mRenderManager, mMainCameraBufferLocation);
+			Console.Log("Arena Scene 이 로드되었습니다.", LogType::Warning);
 			break;
 		case SceneType::FINISH:
 			break;
