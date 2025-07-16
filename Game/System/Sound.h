@@ -30,31 +30,102 @@
 // 6. 플레이어 사망 소리 
 
 
-class SoundManager {
-public:
-    enum class PlayMode { Sequential, Shuffle };
+enum SoundOption : unsigned int {
+    NONE = 0,
+	Shuffle = 1 << 0,
+	Loop = 1 << 1,
+};
 
-private:
-    struct PlayListData {
-        std::vector<FMOD::Sound*> sounds{};
-        PlayMode mode{};
-        size_t currentIndex{ 0 };
-        bool playing{ false };
-        float volume{ 1.f };
-        FMOD::Channel* currentChannel{};
+class Sound abstract {
+public:
+	virtual ~Sound() = default;
+    
+    virtual void Update(float deltaTime) PURE; 
+
+    virtual void SetVolume(float volume) PURE;
+    virtual void Pause() PURE; 
+    virtual void Play() PURE; 
+    virtual void Stop() PURE;
+	virtual void SetOption(SoundOption option) PURE;
+	virtual void Terminate() PURE;
+};
+
+
+namespace Internal {
+    class StandardSound : public Sound {
+    public:
+        StandardSound(FMOD::Channel* channel);
+        StandardSound(FMOD::Channel* channel, float volume, SoundOption option);
+		StandardSound(FMOD::Channel* channel, float volume, SoundOption option, std::chrono::milliseconds fadeTime);
+
+		~StandardSound() override;
+
+    public:
+		void Update(float deltaTime) override;
+
+		void SetVolume(float volume) override;
+		void Pause() override;
+		void Play() override;
+		void Stop() override;
+		void SetOption(SoundOption option) override;
+		void Terminate() override;
+
+	private:
+		FMOD::Channel* mChannel{ nullptr };
+        SoundOption mOption{ SoundOption::NONE }; 
+
+		bool mPlayState{ false };
+        float mVolume{ 1.f }; 
+
+		std::chrono::milliseconds mFadeTime{ 0ms };
+        float mFadeVariable{ -1.f };
     };
 
+    class PlayListSound : public Sound {
+    public:
+        PlayListSound(const std::vector<FMOD::Sound*>& sounds, float volume, SoundOption option);
+        PlayListSound(const std::vector<FMOD::Sound*>& sounds, float volume, SoundOption option, std::chrono::milliseconds fadeTime);
+
+        ~PlayListSound() override;
+    public:
+		void Update(float deltaTime) override;
+
+        void SetVolume(float volume) override;
+		void Pause() override;
+        void Play() override;
+        void Stop() override;
+        void SetOption(SoundOption option) override;
+        void Terminate() override;
+
+    private:
+        const std::vector<FMOD::Sound*>& mSounds;
+        SoundOption mOption{ SoundOption::NONE };
+
+        bool mPlayState{ false };
+        float mVolume{ 1.f };
+
+        size_t mCurrentIndex{ 0 };
+        FMOD::Channel* mCurrentChannel{ nullptr };
+
+        std::chrono::milliseconds mFadeTime{ 0ms };
+        float mFadeVariable{ -1.f };
+    }; 
+}
+
+
+
+class SoundManager {
     struct DelayedSound {
         std::string name{};
         std::chrono::steady_clock::time_point scheduledTime{};
         float volume{};
-        bool loop{};
+		SoundOption option{ SoundOption::NONE };
+		std::chrono::milliseconds fadeTime{ 0ms };
 
         bool operator>(const DelayedSound& other) const {
             return scheduledTime > other.scheduledTime;
         }
     };
-
 private:
     SoundManager() = default;
 
@@ -64,29 +135,27 @@ public:
     bool Initialize();
     void Update();
     void Terminate();
+   
+    void PlaySound(const std::string& name, float volume = 1.f, USHORT id, bool loop = false);
+	void PlaySound(const std::string& name, std::chrono::milliseconds delay, float volume = 1.f, USHORT id = std::numeric_limits<USHORT>::max(), bool loop = false);
 
-    void PlaySound(const std::string& name, float volume = 1.f, bool loop = false);
-	void PlaySound(const std::string& name, std::chrono::milliseconds delay, float volume = 1.f, bool loop = false);
+    void PlaySoundList(const std::string& listName, float volumeRate = 1.f, USHORT id = std::numeric_limits<USHORT>::max());
 
-    void PlaySoundList(const std::string& listName, float volumeRate = 1.f);
+    Sound* PlaySound(const std::string& name, float volume = 1.f, SoundOption option = SoundOption::NONE, std::chrono::milliseconds fadeTime = std::chrono::milliseconds(0)); 
 
-    void StopSound(const std::string& name);
-    void SetVolume(const std::string& name, float volume);
     void SetMasterVolume(float volume);
 
-    void AddPlayList(const std::string& listName, const std::vector<std::string>& soundNames, PlayMode mode, float volume = 1.0f);
     void LoadSoundListFromFile(const std::string& filepath);
     void LoadPlayListFromFile(const std::string& filepath);
-
 private:
-    void UpdatePlayLists();
-
+    void AddPlayList(const std::string& name, const std::vector<std::string>& soundNames); 
 private:
     FMOD::System* mSystem{ nullptr };
 
     std::priority_queue<DelayedSound, std::vector<DelayedSound>, std::greater<>> mDelayedSounds{};
 
     std::unordered_map<std::string, FMOD::Sound*> mSounds{};
-    std::unordered_map<std::string, FMOD::Channel*> mChannels{};
-    std::unordered_map<std::string, PlayListData> mPlayLists{};
+    std::unordered_map<std::string, std::vector<FMOD::Sound*>> mPlayLists{};
+
+    std::vector<std::unique_ptr<Sound>> mSoundList{};
 };

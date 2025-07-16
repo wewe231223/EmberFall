@@ -164,3 +164,7 @@ bool Transform::GetMovingState() const {
 	constexpr float threshold = std::numeric_limits<float>::epsilon();
 	return (mPosition - mPrevPos).LengthSquared() > threshold; 
 }
+
+UINT& Transform::GetLastAreaID() {
+	return mLastAreaID; 
+}

@@ -59,6 +59,8 @@ public:
 	void UpdateWorldMatrix(SimpleMath::Matrix& parent);
 
 	bool GetMovingState() const;
+
+	UINT& GetLastAreaID();
 private:
 	SimpleMath::Vector3 mPosition{ DirectX::SimpleMath::Vector3::Zero };
 	SimpleMath::Quaternion mRotation{ DirectX::SimpleMath::Quaternion::Identity };
@@ -74,4 +76,6 @@ private:
 	SimpleMath::Vector3 mTargetPos{ DirectX::SimpleMath::Vector3::Zero };
 	float mPredictTime{ 0.f };
 	float mCumulateTime{ 0.f };
+
+	UINT mLastAreaID{ std::numeric_limits<UINT>::max() };
 };

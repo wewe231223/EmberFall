@@ -892,6 +892,27 @@ void TerrainScene::UpdateSound() {
 			lastAreaID = std::numeric_limits<UINT>::max(); // 초기화
 		}
 	}
+
+	for (auto& [id, player] : mPlayerIndexmap) {
+		if (not player->GetActiveState()) {
+			continue; 
+		}
+
+		// 볼륨 100 
+		if (id == gClientCore->GetSessionId()) {
+
+		}
+
+
+
+	}
+
+	for (auto& object : mGameObjects | std::views::filter([](const GameObject& obj) { return obj.GetActiveState(); })) {
+
+	}
+
+
+
 }
 
 void TerrainScene::ProcessPackets(const uint8_t* buffer, size_t size) {

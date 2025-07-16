@@ -2,6 +2,7 @@
 #include "Sound.h"
 #include "../Utility/Crash.h"
 #include "../Utility/RandomEngine.h"
+#include "../Game/System/Timer.h"
 #include <Windows.h>
 
 void LogFMODError(FMOD_RESULT result, const char* context) {
@@ -38,96 +39,50 @@ void SoundManager::Update() {
     }
 
 
-    while (!mDelayedSounds.empty() && mDelayedSounds.top().scheduledTime <= std::chrono::high_resolution_clock::now()) {
-        const DelayedSound& ds = mDelayedSounds.top();
-
-        PlaySound(ds.name, ds.volume, ds.loop);
-
-        mDelayedSounds.pop();
-    }
-
-    UpdatePlayLists();
-}
-
-void SoundManager::PlaySound(const std::string& name, float volume, bool loop) {
-    auto it = mSounds.find(name);
-    if (it != mSounds.end()) {
-        FMOD::Channel* channel = nullptr;
-        FMOD_RESULT result = mSystem->playSound(it->second, nullptr, false, &channel);
-        LogFMODError(result, name.c_str());
-
-        if (result == FMOD_OK && channel) {
-            channel->setVolume(volume);
-            channel->setMode(loop ? FMOD_LOOP_NORMAL : FMOD_LOOP_OFF);
-            mChannels[name] = channel;
+    for (auto& sound : mSoundList) {
+        if (sound) {
+            sound->Update(Time.GetDeltaTime<float>());
         }
     }
+
 }
 
-void SoundManager::PlaySound(const std::string& name, std::chrono::milliseconds delay, float volume, bool loop) {
+void SoundManager::PlaySound(const std::string& name, std::chrono::milliseconds delay, float volume, USHORT id, bool loop) {
     DelayedSound ds{ name, std::chrono::steady_clock::now() + delay, volume, loop };
     mDelayedSounds.emplace(std::move(ds));
 }
 
-void SoundManager::PlaySoundList(const std::string& listName, float volumeRate) {
-    auto pit = mPlayLists.find(listName);
-    if (pit != mPlayLists.end()) {
-        PlayListData& list = pit->second;
-        list.playing = true;
-        list.currentIndex = 0;
+Sound* SoundManager::PlaySound(const std::string& name, float volume, SoundOption option, std::chrono::milliseconds fadeTime) {
+    auto pIt = mSounds.find(name); 
 
+	if (pIt != mSounds.end()) {
+		FMOD::Sound* sound = pIt->second;
 
-        if (list.mode == PlayMode::Shuffle) {
-            std::shuffle(list.sounds.begin(), list.sounds.end(), RandomEngine::GetEngine());
-        }
+		FMOD::Channel* channel = nullptr;
+		FMOD_RESULT res = mSystem->playSound(sound, nullptr, false, &channel);
+		LogFMODError(res, name.c_str());
 
-        FMOD::Channel* channel = nullptr;
-        FMOD_RESULT result = mSystem->playSound(list.sounds[0], nullptr, false, &channel);
-        LogFMODError(result, ("PlayList: " + listName).c_str());
+		return mSoundList.emplace_back(std::make_unique<Internal::StandardSound>(channel, sound, volume, option, fadeTime)).get();
+	}
 
-        if (result == FMOD_OK && channel) {
-            channel->setVolume(list.volume * volumeRate);
-            list.currentChannel = channel;
-        }
-    }
-}
+	auto plIt = mPlayLists.find(name);
+   
+	if (plIt != mPlayLists.end()) {
+		auto& list = plIt->second;
 
-void SoundManager::StopSound(const std::string& name) {
-    auto it = mChannels.find(name);
-    if (it != mChannels.end()) {
-        if (it->second) {
-            it->second->stop();
-        }
-        it->second = nullptr;
-    }
+		if (list.empty()) {
+			OutputDebugStringA("[FMOD ERROR] PlayList is empty.\n");
+			return nullptr;
+		}
 
-    auto pit = mPlayLists.find(name);
-    if (pit != mPlayLists.end()) {
-        PlayListData& list = pit->second;
-        list.playing = false;
+		FMOD::Channel* channel = nullptr;
+		FMOD_RESULT result = mSystem->playSound(list[0], nullptr, false, &channel);
+		LogFMODError(result, ("PlayList: " + name).c_str());
 
-        if (list.currentChannel) {
-            list.currentChannel->stop();
-            list.currentChannel = nullptr;
-        }
-    }
-}
+		return mSoundList.emplace_back(std::make_unique<Internal::PlayListSound>(channel, list, volume, option, fadeTime)).get();
+	}
 
-void SoundManager::SetVolume(const std::string& name, float volume) {
-    auto it = mChannels.find(name);
-    if (it != mChannels.end()) {
-        if (it->second) {
-            it->second->setVolume(volume);
-        }
-    }
-
-    auto pit = mPlayLists.find(name);
-    if (pit != mPlayLists.end()) {
-        if (pit->second.currentChannel) {
-            pit->second.currentChannel->setVolume(volume);
-            pit->second.volume = volume;
-        }
-    }
+    return nullptr;
 }
 
 void SoundManager::SetMasterVolume(float volume) {
@@ -142,57 +97,6 @@ void SoundManager::SetMasterVolume(float volume) {
     }
 }
 
-void SoundManager::AddPlayList(const std::string& listName, const std::vector<std::string>& soundNames, PlayMode mode, float volume) {
-    PlayListData data;
-    data.mode = mode;
-    data.volume = volume;
-
-    for (const auto& name : soundNames) {
-        auto it = mSounds.find(name);
-        if (it != mSounds.end()) {
-            data.sounds.push_back(it->second);
-        }
-    }
-
-    if (!data.sounds.empty()) {
-        mPlayLists[listName] = std::move(data);
-    }
-}
-
-void SoundManager::UpdatePlayLists() {
-    for (auto& [name, list] : mPlayLists) {
-        if (!list.playing || list.sounds.empty()) {
-            continue;
-        }
-
-        bool isPlaying = false;
-        if (list.currentChannel) {
-            list.currentChannel->isPlaying(&isPlaying);
-        }
-
-        if (!isPlaying) {
-            list.currentIndex++;
-
-            if (list.currentIndex >= list.sounds.size()) {
-                list.currentIndex = 0;
-
-                if (list.mode == PlayMode::Shuffle) {
-                    std::shuffle(list.sounds.begin(), list.sounds.end(), RandomEngine::GetEngine());
-                }
-            }
-
-            FMOD::Channel* nextChannel = nullptr;
-            FMOD_RESULT result = mSystem->playSound(list.sounds[list.currentIndex], nullptr, false, &nextChannel);
-            LogFMODError(result, ("PlayList Next: " + name).c_str());
-
-            if (result == FMOD_OK && nextChannel) {
-                nextChannel->setVolume(list.volume);
-                list.currentChannel = nextChannel;
-            }
-        }
-    }
-}
-
 void SoundManager::Terminate() {
     for (auto& [name, sound] : mSounds) {
         if (sound) {
@@ -201,7 +105,6 @@ void SoundManager::Terminate() {
     }
 
     mSounds.clear();
-    mChannels.clear();
     mPlayLists.clear();
 
     if (mSystem) {
@@ -257,14 +160,23 @@ void SoundManager::LoadPlayListFromFile(const std::string& filepath) {
             continue;
         }
 
-        PlayMode mode = (modeStr == "Shuffle") ? PlayMode::Shuffle : PlayMode::Sequential;
-
         std::vector<std::string> soundNames;
         std::string soundName;
         while (iss >> soundName) {
             soundNames.push_back(soundName);
         }
 
-        AddPlayList(listName, soundNames, mode, volume);
+        AddPlayList(listName, soundNames);
     }
+}
+
+void SoundManager::AddPlayList(const std::string& name, const std::vector<std::string>& soundNames) {
+	auto& list = mPlayLists[name];
+
+	for (const auto& soundName : soundNames) {
+		auto it = mSounds.find(soundName);
+		if (it != mSounds.end()) {
+			list.emplace_back(it->second);
+		}
+	}
 }
