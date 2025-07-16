@@ -177,6 +177,10 @@ void ParticleManager::ValidateParticle() {
 	}
 }
 
+void ParticleManager::Reset() {
+
+}
+
 void ParticleManager::BuildRandomBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	std::random_device rd;
 	std::default_random_engine engine(rd());

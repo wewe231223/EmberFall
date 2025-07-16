@@ -449,6 +449,13 @@ void ArenaScene::ProcessHeartBeat(const uint8_t* buffer) {
 
 ArenaScene::ArenaScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCamLocation) {
 	mInputSign = NonReplacementSampler::GetInstance().Sample();
+	mRenderManager = renderMgr;
+
+
+	mCamera = Camera(mainCamLocation);
+	auto& cameraTransform = mCamera.GetTransform();
+	cameraTransform.GetPosition() = { 100.f, 100.f, 100.f };
+	cameraTransform.Look({ 0.f,85.f,0.f });
 }
 
 ArenaScene::~ArenaScene() {
@@ -774,7 +781,8 @@ void ArenaScene::SendNetwork() {
 }
 
 void ArenaScene::Exit() {
-
+	Input.EraseCallBack(mInputSign);
+	mLatencyBlock->SetActiveState(false); 
 }
 
 void ArenaScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
