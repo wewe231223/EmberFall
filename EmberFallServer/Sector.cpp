@@ -301,7 +301,7 @@ SectorSystem::SectorSystem(std::shared_ptr<class ObjectManager> objManager)
     const auto cols = static_cast<uint8_t>(mapWidth / Sector::DEFAULT_SECTOR_WIDTH);
     mSectorWidth = rows;
     mSectorHeight = cols;
-
+    
     mSectors.reserve(rows * cols);
     for (uint8_t sectorRow = 0; sectorRow < rows; ++sectorRow) {
         for (uint8_t sectorCol = 0; sectorCol < cols; ++sectorCol) {

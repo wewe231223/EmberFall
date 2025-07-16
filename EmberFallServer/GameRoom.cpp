@@ -376,14 +376,25 @@ void GameRoom::ChangeToNextStage() {
 
     mGameRoomState = GameRoomState::GAME_ROOM_STATE_INGAME;
 
+    mSessionLock.ReadLock();
+    std::unordered_set<SessionIdType> sessionsInGameRoom = GetSessions();
+    mSessionLock.ReadUnlock();
+
+    mReadyPlayerCount = 0;
+    for (auto& sessionId : sessionsInGameRoom) {
+        auto session = gServerFrame->GetSession(sessionId);
+        if (nullptr == session) {
+            continue;
+        }
+
+        session->ChangeStage();
+    }
+
     auto delay = GameProtocol::Logic::GAME_ROOM_CHECK_GAME_END_DELAY;
     gServerFrame->AddTimerEvent(INVALID_OBJ_ID, delay, IoType::CHECK_GAME_CONDITION, mRoomIdx);
 
     auto humanCnt = mPlayerCount - mBossPlayerCount;
-    auto gemCnt = humanCnt * 2;
-    // TODO
-    mStage.StartStage(gemCnt);
-    mIngameCondition.InitGameCondition(humanCnt, mBossPlayerCount, gemCnt);
+    mIngameCondition.InitGameCondition(humanCnt, mBossPlayerCount, 0);
 
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Start Game!!!, Stage: {}", mRoomIdx, Packets::EnumNameGameStage(mStageTransitionTarget));
 

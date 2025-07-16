@@ -7,7 +7,8 @@ inline constexpr uint8_t SESSION_CONNECT = 0b0000'0001;
 inline constexpr uint8_t SESSION_INLOBBY = 0b0000'0010;
 inline constexpr uint8_t SESSION_INGAME = 0b0000'0100;
 inline constexpr uint8_t SESSION_CLOSE = 0b0000'1000;
-inline constexpr uint8_t SESSION_STATE_NONE = 0b0001'0000;
+inline constexpr uint8_t SESSION_CHANGE_STAGE = 0b0001'0000;
+inline constexpr uint8_t SESSION_STATE_NONE = 0b0010'0000;
 
 inline constexpr uint8_t SESSION_READY_TO_RECV = SESSION_INLOBBY | SESSION_INGAME;
 
@@ -37,7 +38,8 @@ public:
     bool Ready();
     bool CancelReady();
     void EnterLobby();
-    void EnterInGame();
+    void EnterInGame(Packets::GameStage stage);
+    void ChangeStage();
     void InitUserObject();
     void InitPlayerScript();
 

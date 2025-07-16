@@ -216,7 +216,8 @@ void ProcessPlayerExitCS(GameSession* session, const Packets::PlayerExitCS* cons
 
 void ProcessPlayerEnterInGame(GameSession* session, const Packets::PlayerEnterInGame* const enter) {
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Player [{}] Enter In Game!", session->GetId());
-    session->EnterInGame();
+    auto stage = gGameRoomManager->GetRoom(session->GetMyRoomIdx())->GetStage().GetStageIdx();
+    session->EnterInGame(stage);
 }
 
 void ProcessPlayerInputCS(GameSession* session, const Packets::PlayerInputCS* const input) {
