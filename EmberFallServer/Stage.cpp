@@ -111,6 +111,8 @@ void Stage::StartStage(uint8_t gemCount) {
     mObjectManager->Start(gemCount);
 #endif
 
+    mStage = Packets::GameStage_TERRAIN;
+
     for (int i = 0; i < 200; ++i) {
         auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
     }
@@ -122,6 +124,7 @@ void Stage::StartStage(uint8_t gemCount) {
 
 void Stage::StartStage(uint8_t gemCount, Packets::GameStage stage) {
     mActive.exchange(true);
+    mStage = stage;
 }
 
 void Stage::EndStage() {

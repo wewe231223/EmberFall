@@ -57,6 +57,8 @@ namespace GameProtocol {
         inline constexpr float LONGSWORD_KNOCK_BACK_POWER = (5000.0N).Count();
         inline constexpr float SWORD_KNOCK_BACK_POWER = (3000.0N).Count();
         inline constexpr float BOSS_SWORD_KNOCK_BACK_POWER = (10000.0N).Count();
+
+        inline const SimpleMath::Vector3 PLAYER_TRIGGER_SIZE{ 1.0f, 3.0f, 1.0f };
        
         // Spawn
         inline const std::pair<SimpleMath::Vector3, SimpleMath::Vector3> PLAYER_SPAWN_AREA{

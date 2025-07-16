@@ -487,14 +487,9 @@ void SectorSystem::ChangeSector(NetworkObjectIdType id, Short2 prevIdx, Short2 c
     if (nullptr == object) {
         return;
     }
-    auto tag = object->GetTag();
-    if (tag == ObjectTag::PLAYER) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Change Sector From: {}, {}, To: {}, {}", prevIdx.x, prevIdx.y, currIdx.x, currIdx.y);
-    }
 
     decltype(auto) prevSector = GetSector(prevIdx);
     decltype(auto) currSector = GetSector(currIdx);
-
     {
         // Locking
         Lock::ScopedSRWLock sectorGuard{

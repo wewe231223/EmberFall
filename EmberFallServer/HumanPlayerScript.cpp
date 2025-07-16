@@ -45,7 +45,7 @@ void HumanPlayerScript::Init() {
     const auto look = owner->GetTransform()->Forward();
     auto ownerRoom = owner->GetMyRoomIdx();
     mInteractionTrigger = gGameRoomManager->GetRoom(ownerRoom)->GetStage().SpawnTrigger(
-        pos, SimpleMath::Vector3{ 1.0f, 3.0f, 1.0f }, look, std::numeric_limits<float>::max());
+        pos, GameProtocol::Logic::PLAYER_TRIGGER_SIZE, look, std::numeric_limits<float>::max());
 }
 
 void HumanPlayerScript::Update(const float deltaTime) {

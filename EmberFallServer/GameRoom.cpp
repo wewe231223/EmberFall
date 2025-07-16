@@ -281,6 +281,17 @@ void GameRoom::CheckGameEnd() {
         return;
     }
 
+    mSessionLock.ReadLock();
+    decltype(auto) sessionsInGameRoom = GetSessions();
+    mSessionLock.ReadUnlock();
+    if (0 == sessionsInGameRoom.size()) {
+        auto packetGameEnd = FbsPacketFactory::GameEndSC(winner);
+        BroadCast(packetGameEnd);
+
+        EndGameLoop();
+        return;
+    }
+
     if (Packets::GameStage_LAST != mStage.GetStageIdx()) {
         mGameRoomState = GameRoomState::GAME_ROOM_STATE_TRANSITION;
 
@@ -374,7 +385,7 @@ void GameRoom::ChangeToNextStage() {
     mStage.StartStage(gemCnt);
     mIngameCondition.InitGameCondition(humanCnt, mBossPlayerCount, gemCnt);
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Start Game!!!", mRoomIdx);
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom [{}]: Start Game!!!, Stage: {}", mRoomIdx, Packets::EnumNameGameStage(mStageTransitionTarget));
 
     auto packetSceneTransition = FbsPacketFactory::ChangeSceneSC(mStageTransitionTarget);
     BroadCast(packetSceneTransition);

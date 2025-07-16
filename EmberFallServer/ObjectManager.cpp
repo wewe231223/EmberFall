@@ -365,6 +365,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnTrigger(const SimpleMath::Vector
 
     obj->GetBoundingObject()->Update(obj->GetTransform()->GetWorld());
     sector->AddInSector(validId, obj->GetPosition());
+    obj->RegisterUpdate();
 
     return obj;
 }
