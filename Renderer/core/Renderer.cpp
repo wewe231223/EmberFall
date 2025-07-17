@@ -24,7 +24,6 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitRenderTargets();
 	Renderer::InitDepthStencilBuffer();
 	Renderer::InitStringRenderer();
-	Renderer::InitComputeProcesser();
 	Renderer::InitIMGUIRenderer();
 
 	Renderer::ResetCommandList();
@@ -32,6 +31,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	
 	Renderer::InitCameraBuffer(); 
 	Renderer::InitCoreResources(); 
+	Renderer::InitComputeProcesser();
 	Renderer::InitMotionBlurProcessor();
 	Renderer::InitDefferedRenderer();
 	Renderer::InitTerrainBuffer();
@@ -241,7 +241,14 @@ void Renderer::Render() {
 	}
 
 
+	//Volumetric Fog Pass
 
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Fog) {
+		mComputeProcessors[4]->DispatchFogProcessor(mDevice, mCommandList, *mRenderManager->GetLightingManager().GetLightingBuffer(), *mMainCameraBuffer.GPUBegin());
+		
+
+		mComputeProcessors[5]->Dispatch(mDevice, mCommandList, nullptr );
+	}
 
 
 
@@ -668,6 +675,16 @@ void Renderer::InitComputeProcesser() {
 
 	processor = std::make_unique<VertBlurProcessor>(mDevice);
 	processor->CreateShader(mDevice);
+	mComputeProcessors.emplace_back(std::move(processor));
+
+	auto fogProcessor = std::make_unique<FogComputeProcessor>(mDevice);
+	fogProcessor->CreateShader(mDevice);
+	fogProcessor->RegisterShadowMap(mDevice, mRenderManager->GetShadowRenderer().GetShadowMap(0), mRenderManager->GetShadowRenderer().GetShadowMap(1));
+	mComputeProcessors.emplace_back(std::move(fogProcessor));
+
+	processor = std::make_unique<FogAccumulateProcessor>(mDevice);
+	processor->CreateShader(mDevice);
+	processor->RegisterTexture(mDevice, mComputeProcessors[4]->GetComputeMap());
 	mComputeProcessors.emplace_back(std::move(processor));
 
 	

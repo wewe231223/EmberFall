@@ -27,6 +27,9 @@ struct CameraConstants {
     SimpleMath::Matrix viewProj;
     SimpleMath::Matrix middleViewProj;
     SimpleMath::Matrix prevViewProj{};
+    SimpleMath::Matrix invView;
+    SimpleMath::Matrix invProj;
+
 
     SimpleMath::Vector3 cameraPosition;
     int isShadow{ 0 };
@@ -194,6 +197,7 @@ struct Features {
     bool Bloom{ false };
     bool MotionBlur{ false };
     bool RenderBB{ false };
+    bool Fog{ false };
 };
 
 

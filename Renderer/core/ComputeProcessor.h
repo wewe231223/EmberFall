@@ -21,6 +21,7 @@ public:
 
 	virtual void RegisterTexture(ComPtr<ID3D12Device> device, Texture& texture);
 	virtual void Dispatch(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, Texture* input, Texture* output = nullptr);
+	virtual void DispatchFogProcessor(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_VIRTUAL_ADDRESS light, D3D12_GPU_VIRTUAL_ADDRESS camera);
 
 	virtual Texture& GetComputeMap();
 
@@ -158,3 +159,58 @@ private:
 
 };
 
+
+class FogComputeProcessor : public ComputeProcessor {
+public:
+	FogComputeProcessor() = default;
+	FogComputeProcessor(ComPtr<ID3D12Device> device);
+	virtual ~FogComputeProcessor() = default;
+
+	FogComputeProcessor(const FogComputeProcessor& other) = default;
+	FogComputeProcessor& operator=(const FogComputeProcessor& other) = default;
+
+	FogComputeProcessor(FogComputeProcessor&& other) = default;
+	FogComputeProcessor& operator=(FogComputeProcessor&& other) = default;
+
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+
+	void RegisterShadowMap(ComPtr<ID3D12Device> device, Texture& texture1, Texture& texture2);
+	virtual void DispatchFogProcessor(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_VIRTUAL_ADDRESS light, D3D12_GPU_VIRTUAL_ADDRESS camera) override;
+
+private:
+	virtual void CreateResource(ComPtr<ID3D12Device> device) override;
+	virtual void CreateHeap(ComPtr<ID3D12Device> device) override;
+	virtual void CreateView(ComPtr<ID3D12Device> device) override;
+	virtual void CompileShader() override;
+	virtual void CreateRootSignature(ComPtr<ID3D12Device> device) override;
+	virtual void CreatePSO(ComPtr<ID3D12Device> device) override;
+};
+
+
+class FogAccumulateProcessor : public ComputeProcessor {
+public:
+	FogAccumulateProcessor() = default;
+	FogAccumulateProcessor(ComPtr<ID3D12Device> device);
+	virtual ~FogAccumulateProcessor() = default;
+
+	FogAccumulateProcessor(const FogAccumulateProcessor& other) = default;
+	FogAccumulateProcessor& operator=(const FogAccumulateProcessor& other) = default;
+
+	FogAccumulateProcessor(FogAccumulateProcessor&& other) = default;
+	FogAccumulateProcessor& operator=(FogAccumulateProcessor&& other) = default;
+
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+
+	virtual void RegisterTexture(ComPtr<ID3D12Device> device, Texture& texture) override;
+	virtual void Dispatch(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, Texture* input, Texture* output = nullptr) override;
+
+private:
+	virtual void CreateResource(ComPtr<ID3D12Device> device) override;
+	virtual void CreateHeap(ComPtr<ID3D12Device> device) override;
+	virtual void CreateView(ComPtr<ID3D12Device> device) override;
+	virtual void CompileShader() override;
+	virtual void CreateRootSignature(ComPtr<ID3D12Device> device) override;
+	virtual void CreatePSO(ComPtr<ID3D12Device> device) override;
+};

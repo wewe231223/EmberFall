@@ -49,7 +49,7 @@ void HorzBloom_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID 
     [unroll]
     for (int i = 0; i < useEmissiveMap; ++i)
     {
-        RWOutput[uv] = float4(emissive, 1.0f);
+       RWOutput[uv] = float4(emissive, 1.0f);
 
     }
     
