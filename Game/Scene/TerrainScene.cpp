@@ -843,11 +843,11 @@ void TerrainScene::UpdateSound() {
 
 					switch (mSoundMap[pair.first].first) {
 					case 0: // Grass Area 
-						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassArea", PrimaryVolume, SoundOption::Shuffle);
+						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassArea", PrimaryVolume, SoundOption::Shuffle, 100ms);
 						break;
 					case 1: // Load Area
 					case 2: // Stone Area 
-						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtArea", PrimaryVolume, SoundOption::Shuffle);
+						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtArea", PrimaryVolume, SoundOption::Shuffle, 100ms);
 						break;
 					default:
 						break;
