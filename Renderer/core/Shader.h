@@ -457,3 +457,21 @@ protected:
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
 };
+
+
+class ArenaGroundShader : public GraphicsShaderBase {
+public:
+	ArenaGroundShader();
+	virtual ~ArenaGroundShader() = default;
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+public:
+	virtual InputLayout CreateInputLayout() override;
+	virtual RootParameters CreateRootParameters() override;
+
+	virtual UINT CreateNumOfRenderTarget() override;
+	virtual void CreateRTVFormat(const std::span<DXGI_FORMAT>&) override;
+
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
+};

@@ -606,7 +606,7 @@ void ArenaScene::ProcessNetwork() {
 }
 
 void ArenaScene::SendLook() {
-		auto look = mCamera.GetTransform().GetForward();
+	auto look = mCamera.GetTransform().GetForward();
 	look.y = 0.f;
 
 	decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(gClientCore->GetSessionId(), look);
@@ -693,17 +693,21 @@ void ArenaScene::Update() {
 #ifdef DEV_MODE
 	mLatencyBlock->GetText() = std::format(L"Latency : {} ms", ArenaScene::GetAverageLatency<std::chrono::milliseconds>());
 #endif 
+	float coefficient{ mIsBlind ? -1.f : 1.f };
+	mRenderManager->GetFogRangeStart() += coefficient * Time.GetDeltaTime<float, std::chrono::seconds>() * 500.f;
+	mRenderManager->GetFogRangeStart() = std::clamp(mRenderManager->GetFogRangeStart(), 7.f, 1000.f);
+
 
 	mRenderManager->GetParticleManager().UpdateEmitParticle();
 
 	if (mCurrentCameraMode) {
 		mCurrentCameraMode->Update();
 
-		auto& pos = mCamera.GetTransform().GetPosition();
+		/*auto& pos = mCamera.GetTransform().GetPosition();
 		auto y = 0.f; 
 		if (pos.y <= y + 0.5f) {
 			pos.y = y + 0.5f;
-		}
+		}*/
 
 		mCurrentCameraMode->FocusUpdate();
 	}
@@ -769,7 +773,7 @@ void ArenaScene::Update() {
 			if (mCamera.IsInFrustum(object.mCollider)) {
 				mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
 			}
-		}
+		} 
 	}
 
 	mSkyBox.GetTransform().GetPosition() = mCamera.GetTransform().GetPosition();
@@ -871,6 +875,7 @@ void ArenaScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCom
 			}
 
 			mMeshMap[name] = std::make_unique<Mesh>(device, commandList, it->second, param);
+			
 		}
 	}
 }
@@ -916,6 +921,10 @@ void ArenaScene::BuildShader(ComPtr<ID3D12Device> device) {
 	shader = std::make_unique<TreeCrossShader>();
 	shader->CreateShader(device);
 	mShaderMap["TreeCrossShader"] = std::move(shader);
+
+	shader = std::make_unique<ArenaGroundShader>();
+	shader->CreateShader(device);
+	mShaderMap["ArenaGroundShader"] = std::move(shader);
 }
 
 void ArenaScene::BuildAniamtionController() {
@@ -1033,6 +1042,8 @@ void ArenaScene::BuildEnvironment(const std::filesystem::path& envFile) {
 		}
 	}
 
+	auto& obj = mEnvironmentObjects.emplace_back(objects["Ground"].Clone());
+	obj.GetTransform().GetPosition() = { 0.f, 0.f, 0.f };
 
 }
 

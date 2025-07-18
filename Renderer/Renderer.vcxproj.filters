@@ -289,6 +289,9 @@
     <FxCompile Include="..\Shader\Sources\Blur.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
+    <FxCompile Include="..\Shader\Sources\ArenaGround.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\Shader\ShaderMetadata.txt">

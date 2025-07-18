@@ -11,6 +11,7 @@ FILE Resources/Assets/Arena/DoorR.glb - DoorR
 FILE Resources/Assets/Arena/Tower.glb - Tower 
 FILE Resources/Assets/Arena/Wall.glb - Wall
 FILE Resources/Assets/Arena/Wall1.glb - Wall1
+FILE Resources/Assets/Arena/Plane.glb - ArenaGround 
 
 # ===== Weapons =====
 FILE Resources/Assets/Weapon/sword/LongSword.glb - Sword

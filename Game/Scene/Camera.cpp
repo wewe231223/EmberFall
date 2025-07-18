@@ -40,7 +40,7 @@ CameraMode::CameraMode(Camera* camera) : mCamera(camera) {
 FreeCameraMode::FreeCameraMode(Camera* camera) : CameraMode(camera) {
 }
 
-constexpr float FREE_CAMERA_SPEED = 40.f;
+constexpr float FREE_CAMERA_SPEED = 10.f;
 void FreeCameraMode::Enter() {
 	mInputCallBackSign = NonReplacementSampler::GetInstance().Sample();
 

@@ -1,10 +1,10 @@
 DoorL DoorL 
 1
-0 DoorL StandardNormalShader DoorLMaterial 1000.0
+0 DoorL StandardNormalShader DoorMaterial 1000.0
 
 DoorR DoorR 
 1
-0 DoorR StandardNormalShader DoorRMaterial 1000.0
+0 DoorR StandardNormalShader DoorMaterial 1000.0
 
 Tower Tower
 1
@@ -18,3 +18,6 @@ Wall1 Wall1
 1
 0 Wall1 StandardNormalShader Wall1Material 1000.0 
 
+Ground ArenaGround
+1
+0 ArenaGround ArenaGroundShader ArenaGroundMaterial 1000.0

@@ -150,9 +150,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mCurrentCameraMode->Enter();
 
 #ifdef DEV_MODE
-				int sign = NonReplacementSampler::GetInstance().Sample(); 
-
-				Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::P, sign, [this]() {
+				Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::P, mInputSign, [this]() {
 					mCurrentCameraMode->Exit(); 
 					if (mCurrentCameraMode == mTPPCameraMode.get()) {
 						mCurrentCameraMode = mFreeCameraMode.get();
