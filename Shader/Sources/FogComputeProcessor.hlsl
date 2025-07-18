@@ -1,3 +1,12 @@
+SamplerState pointWrapSampler : register(s0);
+SamplerState pointClampSampler : register(s1);
+SamplerState linearWrapSampler : register(s2);
+SamplerState linearClampSampler : register(s3);
+SamplerState anisotropicWrapSampler : register(s4);
+SamplerState anisotropicClampSampler : register(s5);
+SamplerComparisonState PCFSampler : register(s6);
+
+
 cbuffer Camera : register(b0)
 {
     float4x4 view;
@@ -19,15 +28,15 @@ cbuffer Camera : register(b0)
 #define LightType_Spot          3
 
 
-static float density = 0.1f;
+static float density = 5.0f;
 
    
-static float4 HemisphereColor = float4(0.9f, 0.9f, 0.9f, 0.5f);
+static float4 HemisphereColor = float4(0.015f, 0.07f, 0.095f, 1.0f);
 
 static float Intensity = 1.0f;
 
-static float fogBegin = 100.0f;
-static float fogEnd = 500.0f;
+static float fogBegin = 50.0f;
+static float fogEnd = 200.0f;
 
 struct Light
 {
@@ -51,20 +60,23 @@ float3 ComputeWorldPosition(int3 dispatchThreadID, int3 volumePixel)
 {
     float3 ndc = dispatchThreadID;
     ndc += 0.5f;
-    ndc *= float3(2.f / volumePixel.x, -2.f / volumePixel.y, 1.f / volumePixel.z);
-    ndc += float3(-1.f, 1.f, 0.f);
+    ndc *= float3(2.0f / volumePixel.x, -2.0f / volumePixel.y, 1.0f / volumePixel.z);
+    ndc += float3(-1.0f, 1.0f, 0.0f);
     
     float depth = pow(ndc.z, 2.0f) * (fogEnd - fogBegin) + fogBegin;
     
-    float4 viewRay = mul(float4(ndc, 1.f), invProjection);
+    float4 viewRay = mul(float4(ndc, 1.0f), invProjection);
     viewRay /= viewRay.w;
     viewRay /= viewRay.z; 
 
 	
-    float4 worldPosition = mul(float4(viewRay.xyz * depth, 1.f), invView);
+    float4 worldPosition = mul(float4(viewRay.xyz * depth, 1.0f), invView);
 
     return worldPosition.xyz;
 }
+
+
+
 
 
 [numthreads(8, 8, 8)]
@@ -99,8 +111,8 @@ void FogComputeProcessor_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatch
             
             
             float cosTheta = dot(lightDir, toCamera);
-            float g2 = 0.8f * 0.8f;
-            float denom = pow(1.f + g2 - 2.f * 0.8f * cosTheta, 3.f / 2.f);
+            float g2 = 0.7f * 0.7f;
+            float denom = pow(1.f + g2 - 2.f * 0.7f * cosTheta, 3.f / 2.f);
             float phaseFuntion = (1.f / (4.f * 3.14f)) * ((1.f - g2) / max(denom, 1.19209e-7));
             
             hemisphereLight += visibility * gLight[i].Diffuse.rgb * gLight[i].Diffuse.a * phaseFuntion;

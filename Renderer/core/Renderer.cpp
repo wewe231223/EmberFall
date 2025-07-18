@@ -251,20 +251,6 @@ void Renderer::Render() {
 		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	}
 
-	//Volumetric Fog Pass
-
-	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Fog) {
-		mComputeProcessors[4]->DispatchFogProcessor(mDevice, mCommandList, *mRenderManager->GetLightingManager().GetLightingBuffer(), *mMainCameraBuffer.GPUBegin());
-		
-		auto uavBarrier = CD3DX12_RESOURCE_BARRIER::UAV(mComputeProcessors[4]->GetComputeMap().GetResource().Get());
-		mCommandList->ResourceBarrier(1, &uavBarrier);
-
-		mComputeProcessors[5]->Dispatch(mDevice, mCommandList, nullptr );
-
-		mCommandList->ResourceBarrier(1, &uavBarrier);
-
-		mVolumetricFogProcessor.Render(mDevice, mCommandList, *mMainCameraBuffer.GPUBegin());
-	}
 
 
 
@@ -292,6 +278,21 @@ void Renderer::Render() {
 	}
 
 	
+	//Volumetric Fog Pass
+
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Fog) {
+		mComputeProcessors[4]->DispatchFogProcessor(mDevice, mCommandList, *mRenderManager->GetLightingManager().GetLightingBuffer(), *mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0));
+		
+		auto uavBarrier = CD3DX12_RESOURCE_BARRIER::UAV(mComputeProcessors[4]->GetComputeMap().GetResource().Get());
+		mCommandList->ResourceBarrier(1, &uavBarrier);
+
+		mComputeProcessors[5]->Dispatch(mDevice, mCommandList, nullptr );
+
+		uavBarrier = CD3DX12_RESOURCE_BARRIER::UAV(mComputeProcessors[5]->GetComputeMap().GetResource().Get());
+		mCommandList->ResourceBarrier(1, &uavBarrier);
+
+		mVolumetricFogProcessor.Render(mDevice, mCommandList, *mMainCameraBuffer.GPUBegin());
+	}
 
 	mRenderManager->GetTextureManager().Bind(mCommandList);
 
@@ -667,7 +668,7 @@ void Renderer::InitMotionBlurProcessor() {
 
 void Renderer::InitVolumetricFogProcessor() {
 	mVolumetricFogProcessor = VolumetricFogProcessor();
-	mVolumetricFogProcessor.CreateSRVHeap(mDevice, mComputeProcessors[4]->GetComputeMap());
+	mVolumetricFogProcessor.CreateSRVHeap(mDevice, mComputeProcessors[5]->GetComputeMap());
 	mVolumetricFogProcessor.RegisterVelocityMap(mDevice, mGBuffers[4]);
 	mVolumetricFogProcessor.BuildShader(mDevice);
 	mVolumetricFogProcessor.BuildMesh(mDevice, mCommandList);

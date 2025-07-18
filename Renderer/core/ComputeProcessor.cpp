@@ -792,7 +792,7 @@ void FogAccumulateProcessor::RegisterTexture(ComPtr<ID3D12Device> device, Textur
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
 	srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	srvDesc.Texture3D.MostDetailedMip = 0;
-	srvDesc.Texture3D.MipLevels = -1;
+	srvDesc.Texture3D.MipLevels = 1;
 	srvDesc.Texture3D.ResourceMinLODClamp = 0;
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE handle(mHeap->GetCPUDescriptorHandleForHeapStart());
@@ -846,7 +846,7 @@ void FogAccumulateProcessor::CreateView(ComPtr<ID3D12Device> device) {
 	uavDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	uavDesc.Texture3D.MipSlice = 0;
 	uavDesc.Texture3D.FirstWSlice = 0;
-	uavDesc.Texture3D.WSize = -1;
+	uavDesc.Texture3D.WSize = mComputeMap.GetResource()->GetDesc().DepthOrArraySize;
 	device->CreateUnorderedAccessView(mComputeMap.GetResource().Get(), nullptr, &uavDesc, handle);
 }
 

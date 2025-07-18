@@ -25,8 +25,8 @@ cbuffer Camera : register(b0)
 Texture3D fogVolume : register(t0);
 Texture2D velocity : register(t1);
 
-static float fogBegin = 100.0f;
-static float fogEnd = 500.0f;
+static float fogBegin = 50.0f;
+static float fogEnd = 200.0f;
 
 struct VS_INPUT
 {
@@ -45,7 +45,7 @@ struct VS_OUTPUT
 
 float3 HDR(float3 l)
 {
-    //l = l * VolumetricFogParam.Exposure;
+    l = l * 0.4f;
     l.r = l.r < 1.413f ? pow(abs(l.r * 0.38317f), 1.f / 2.2f) : 1.f - exp(-l.r);
     l.g = l.g < 1.413f ? pow(abs(l.g * 0.38317f), 1.f / 2.2f) : 1.f - exp(-l.g);
     l.b = l.b < 1.413f ? pow(abs(l.b * 0.38317f), 1.f / 2.2f) : 1.f - exp(-l.b);
@@ -77,7 +77,7 @@ VS_OUTPUT VolumetricFog_VS(VS_INPUT input)
 
 float4 VolumetricFog_PS(VS_OUTPUT input) : SV_Target
 {
-    float viewSpaceDistance = velocity.Sample(linearClampSampler, input.texcoord).z;
+    float viewSpaceDistance = velocity.Sample(linearWrapSampler, input.texcoord).z;
     if (viewSpaceDistance <= 0.f)
     {
         viewSpaceDistance = fogEnd;
@@ -93,9 +93,8 @@ float4 VolumetricFog_PS(VS_OUTPUT input) : SV_Target
     float linearDepth = pow(viewPosition.z, 2) * (fogEnd - fogBegin) + fogBegin;
     float normZ = saturate((linearDepth - fogBegin) / (fogEnd - fogBegin));
 
-// 2) uv 구성
     float3 uv = float3(input.texcoord, normZ);
-    float4 scatteringColorAndTransmittance = fogVolume.Sample(linearClampSampler, uv);
+    float4 scatteringColorAndTransmittance = fogVolume.Sample(linearWrapSampler, uv);
     float3 scatteringColor = HDR(scatteringColorAndTransmittance.rgb);
 
     return float4(scatteringColor, scatteringColorAndTransmittance.a);
