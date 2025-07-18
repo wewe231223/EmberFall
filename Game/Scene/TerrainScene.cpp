@@ -560,10 +560,6 @@ void TerrainScene::ProcessChangeScene(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ChangeSceneSC>(buffer);
 	Console.Log("Scene 을 변경합니다.", LogType::Info);
 
-	if (data->stage() == Packets::GameStage::GameStage_TERRAIN) {
-		return; 
-	}
-
 	PostMessage(mRenderManager->GetWindowHandle(), WM_ADVANCESCENE, data->stage(), 0);
 }
 
@@ -1312,7 +1308,8 @@ void TerrainScene::Exit() {
 	mLatencyBlock->SetActiveState(false);
 	mPositionBlock->SetActiveState(false);
 	mPktsBlock->SetActiveState(false);
-
+	
+	SoundManager::GetInstance().Reset(); 
 }
 
 void TerrainScene::SendLook() {

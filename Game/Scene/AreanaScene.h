@@ -39,6 +39,8 @@ private:
 	void BuildShader(ComPtr<ID3D12Device> device);
 	void BuildAniamtionController();
 
+	void BuildEnvironment(const std::filesystem::path& envFile);
+
 	void BuildBaseAnimationController();
 	void BuildArcherAnimationController();
 	void BuildSwordManAnimationController();
@@ -83,6 +85,9 @@ private:
 
 	absl::flat_hash_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
 	std::vector<GameObject> mGameObjects{};
+
+
+	std::vector<LODGameObject> mEnvironmentObjects{};
 
 	int mInputSign{};
 

@@ -136,6 +136,12 @@ namespace GameProtocol {
         StoneHouse = 12, 
 		Cliff1 = 13,
         Cliff2 = 14,
-        Cliff3 = 15
+        Cliff3 = 15,
+		Tower = 16,
+        Wall = 17,
+		Wall1 = 18,
+		DoorR = 19,
+        DoorL = 20, 
+
     };
 }

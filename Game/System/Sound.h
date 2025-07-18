@@ -151,6 +151,8 @@ public:
 
     void LoadSoundListFromFile(const std::string& filepath);
     void LoadPlayListFromFile(const std::string& filepath);
+
+    void Reset(); 
 private:
     void AddPlayList(const std::string& name, const std::vector<std::string>& soundNames); 
 private:

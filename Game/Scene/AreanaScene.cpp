@@ -468,6 +468,12 @@ void ArenaScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	ArenaScene::BuildMaterial(); 
 	ArenaScene::BuildAniamtionController();
 
+	ArenaScene::BuildEnvironment("Resources/Binarys/Terrain/ArenaSceneObjects.bin");
+
+	for (auto& obj : mEnvironmentObjects) {
+		obj.UpdateShaderVariables(); 
+	}
+
 	mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
 	mSkyBox.mMesh = mMeshMap["SkyBox"].get();
 	mSkyBox.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("SkyBoxMaterial");
@@ -585,7 +591,6 @@ void ArenaScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 		mIsBlind = not mIsBlind;
 	});
 
-
 	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
 	gClientCore->Send(packet);
 
@@ -601,7 +606,11 @@ void ArenaScene::ProcessNetwork() {
 }
 
 void ArenaScene::SendLook() {
+		auto look = mCamera.GetTransform().GetForward();
+	look.y = 0.f;
 
+	decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(gClientCore->GetSessionId(), look);
+	gClientCore->Send(packetCamera);
 }
 
 void ArenaScene::ProcessPackets(const uint8_t* buffer, size_t size) {
@@ -742,6 +751,27 @@ void ArenaScene::Update() {
 		player.Update(mRenderManager->GetMeshRenderManager());
 	}
 
+	for (auto& object : mEnvironmentObjects) {
+		object.UpdateLODLevel(mCamera.GetTransform().GetPosition());
+		auto [mesh, shader, modelContext] = object.GetRenderData();
+
+		if (mesh == nullptr) {
+			continue;
+		}
+
+		if (object.mCollider.GetActiveState()) {
+			for (int i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
+				if (mRenderManager->GetShadowRenderer().IsInShadowFrustum(i, object.mCollider)) {
+					mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, i);
+				}
+			}
+
+			if (mCamera.IsInFrustum(object.mCollider)) {
+				mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
+			}
+		}
+	}
+
 	mSkyBox.GetTransform().GetPosition() = mCamera.GetTransform().GetPosition();
 
 	mSkyBox.UpdateShaderVariables();
@@ -786,7 +816,7 @@ void ArenaScene::Exit() {
 }
 
 void ArenaScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
-	std::ifstream file("Resources/MeshList/TerrainSceneMeshList.txt");
+	std::ifstream file("Resources/MeshList/ArenaSceneMeshList.txt");
 	std::string line;
 
 	MeshLoader loader{};
@@ -898,6 +928,112 @@ void ArenaScene::BuildAniamtionController() {
 
 	ArenaScene::BuildMonsterType1AnimationController();
 	ArenaScene::BuildDemonAnimationController();
+}
+
+void ArenaScene::BuildEnvironment(const std::filesystem::path& envFile) {
+	std::unordered_map<std::string, LODGameObject> objects{};
+
+	std::ifstream file("Resources/Scene/ArenaSceneEnvPrefabs.txt");
+	std::string line;
+
+	while (std::getline(file, line)) {
+		if (line.empty() || line.starts_with('#'))
+			continue;
+
+		std::istringstream iss(line);
+		std::string objectName, colliderName;
+		iss >> objectName >> colliderName;
+
+		auto& obj = objects[objectName];
+		obj.mCollider = mColliderMap[colliderName];
+		obj.SetActiveState(true);
+		obj.SetEmpty(false);
+
+		std::getline(file, line);
+		if (line.empty() || line.starts_with('#'))
+			continue;
+
+		int lodCount = std::stoi(line);
+		for (int i = 0; i < lodCount; ++i) {
+			std::getline(file, line);
+			std::istringstream lodIss(line);
+
+			int lodIndex;
+			std::string meshName, lodShaderName, lodMaterialName;
+			float distance;
+
+			lodIss >> lodIndex >> meshName >> lodShaderName >> lodMaterialName >> distance;
+
+			auto& lodGroup = obj.mLODGroups[lodIndex];
+			lodGroup.mMesh = mMeshMap[meshName].get();
+			lodGroup.mShader = mShaderMap[lodShaderName].get();
+			lodGroup.mMaterial = mRenderManager->GetMaterialManager().GetMaterial(lodMaterialName);
+			lodGroup.mDistanceSquared = std::powf(distance, 2.f);
+		}
+	}
+
+	mEnvironmentObjects.reserve(1000);
+
+	std::ifstream efile{ envFile, std::ios::binary };
+
+	UINT objectCount;
+	efile.read(reinterpret_cast<char*>(&objectCount), sizeof(UINT));
+
+	struct Data {
+		GameProtocol::EnvironmentType1 type;
+		SimpleMath::Vector2 xzPosition;
+		float yaw;
+	};
+
+
+	std::vector<Data> envData{};
+	envData.resize(objectCount);
+
+	efile.read(reinterpret_cast<char*>(envData.data()), sizeof(Data) * objectCount);
+
+	for (auto& data : envData) {
+		switch (data.type) {
+			case GameProtocol::EnvironmentType1::Tower:
+			{
+				auto& obj = mEnvironmentObjects.emplace_back(objects["Tower"].Clone());
+				obj.GetTransform().GetPosition() = { data.xzPosition.x, 0.f, data.xzPosition.y };
+				obj.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
+			}
+			break;
+			case GameProtocol::EnvironmentType1::Wall:
+			{
+				auto& obj = mEnvironmentObjects.emplace_back(objects["Wall"].Clone());
+				obj.GetTransform().GetPosition() = { data.xzPosition.x, 0.f, data.xzPosition.y };
+				obj.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
+			}
+			break;
+			case GameProtocol::EnvironmentType1::Wall1:
+			{
+				auto& obj = mEnvironmentObjects.emplace_back(objects["Wall1"].Clone());
+				obj.GetTransform().GetPosition() = { data.xzPosition.x, 0.f, data.xzPosition.y };
+				obj.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
+			}
+			break;
+			case GameProtocol::EnvironmentType1::DoorL:
+			{
+				auto& obj = mEnvironmentObjects.emplace_back(objects["DoorL"].Clone());
+				obj.GetTransform().GetPosition() = { data.xzPosition.x, 0.f, data.xzPosition.y };
+				obj.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
+			}
+			break;
+			case GameProtocol::EnvironmentType1::DoorR:
+			{
+				auto& obj = mEnvironmentObjects.emplace_back(objects["DoorR"].Clone());
+				obj.GetTransform().GetPosition() = { data.xzPosition.x, 0.f, data.xzPosition.y };
+				obj.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(data.yaw), 0.f);
+			}
+			break;
+			default:
+				break; 
+		}
+	}
+
+
 }
 
 void ArenaScene::BuildBaseAnimationController() {

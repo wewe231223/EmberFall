@@ -198,6 +198,20 @@ void SoundManager::LoadPlayListFromFile(const std::string& filepath) {
     }
 }
 
+void SoundManager::Reset() {
+	for (auto& sound : mSoundList) {
+		if (sound) {
+            sound->Stop(); 
+		}
+	}
+
+	mSoundList.clear();
+	while (!mDelayedSounds.empty()) {
+		mDelayedSounds.pop();
+	}
+
+}
+
 void SoundManager::AddPlayList(const std::string& name, const std::vector<std::string>& soundNames) {
 	auto& list = mPlayLists[name];
 
@@ -233,6 +247,9 @@ Internal::StandardSound::~StandardSound() {
 }
 
 void Internal::StandardSound::Update(float deltaTime) {
+	if (mExpired) {
+		return;
+	}
 
     if (mFadeTime > std::chrono::milliseconds::zero()) {
         float fadeDuration = static_cast<float>(mFadeTime.count()) * 0.001f;
@@ -313,6 +330,10 @@ Internal::PlayListSound::~PlayListSound() {
 }
 
 void Internal::PlayListSound::Update(float deltaTime) {
+	if (mExpired) {
+		return;
+	}
+
 	if (mFadeTime > std::chrono::milliseconds::zero()) {
 		float fadeDuration = static_cast<float>(mFadeTime.count()) * 0.001f;
 		float fadeSpeed = 1.0f / fadeDuration;

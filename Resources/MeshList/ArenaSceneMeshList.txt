@@ -1,0 +1,34 @@
+EMBEDDED Plane - Plane 60
+
+# ===== Embedded Mesh =====
+EMBEDDED Cube - Cube 1
+EMBEDDED SkyDome - SkyBox 100
+EMBEDDED - SkyFog 50 40 20
+
+
+FILE Resources/Assets/Arena/DoorL.glb - DoorL
+FILE Resources/Assets/Arena/DoorR.glb - DoorR
+FILE Resources/Assets/Arena/Tower.glb - Tower 
+FILE Resources/Assets/Arena/Wall.glb - Wall
+FILE Resources/Assets/Arena/Wall1.glb - Wall1
+
+# ===== Weapons =====
+FILE Resources/Assets/Weapon/sword/LongSword.glb - Sword
+FILE Resources/Assets/Weapon/great_sword/Sword.glb - GreatSword
+FILE Resources/Assets/Weapon/Bow/Bow.glb - Bow
+FILE Resources/Assets/Weapon/Bow/Arrow.glb - Arrow
+FILE Resources/Assets/Weapon/Bow/quiver.glb - Quiver
+FILE Resources/Assets/Weapon/Shield/Shield.glb - Shield
+FILE Resources/Assets/Demon/DemonWeapon.glb - DemonWeapon
+FILE Resources/Assets/Demon/DemonCloth.glb - DemonCloth
+FILE Resources/Assets/CorruptedGem/CorruptedGem.glb - CorruptedGem
+FILE Resources/Assets/Weapon/staff/Staff.glb - Staff
+
+
+# ===== Characters =====
+FILE Resources/Assets/Knight/BaseAnim/BaseAnim.gltf - HumanBaseAnim
+FILE Resources/Assets/Knight/LongSword/SwordMan.glb - SwordMan
+FILE Resources/Assets/Demon/Demon.glb - Demon
+# Collider size not set in code
+
+FILE Resources/Assets/imp/imp.glb - MonsterType1 CENTER 0 0.65 0 EXTENTS 0.3 0.65 0.3
