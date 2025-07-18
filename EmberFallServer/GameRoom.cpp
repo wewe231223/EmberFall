@@ -407,6 +407,31 @@ void GameRoom::ChangeToNextStage() {
     return;
 }
 
+void GameRoom::DebugChangeToNextStage() {
+    auto winner = Packets::PlayerRole_HUMAN;
+
+    if (Packets::GameStage_LAST != mStage.GetStageIdx()) {
+        mGameRoomState = GameRoomState::GAME_ROOM_STATE_TRANSITION;
+
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Register Start Game!!!");
+
+        auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
+        gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN);
+        mSceneTransitionCounter = SysClock::now();
+
+        mStageTransitionTarget = static_cast<Packets::GameStage>(mStageTransitionTarget + 1);
+
+        auto packetStartTransition = FbsPacketFactory::StartSceneTransition(SCENE_TRANSITION_COUNT);
+        BroadCast(packetStartTransition);
+    }
+    else {
+        auto packetGameEnd = FbsPacketFactory::GameEndSC(winner);
+        BroadCast(packetGameEnd);
+
+        EndGameLoop();
+    }
+}
+
 void GameRoom::NotifyDestructedObject(ObjectTag tag) {
     if (GameRoomState::GAME_ROOM_STATE_INGAME != mGameRoomState) {
         return;

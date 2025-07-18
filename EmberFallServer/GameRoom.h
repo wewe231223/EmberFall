@@ -80,6 +80,7 @@ public:
     void ChangeToLobby();
     void ChangeToStage1();
     void ChangeToNextStage();
+    void DebugChangeToNextStage();
 
     void NotifyDestructedObject(ObjectTag tag);
 

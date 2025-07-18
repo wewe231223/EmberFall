@@ -267,7 +267,7 @@ void GameSession::EnterInGame(Packets::GameStage stage) {
     mSessionState = SESSION_INGAME;
     InitUserObject();
 
-    if (Packets::GameStage::GameStage_LAST == stage) {
+    if (Packets::GameStage_LAST == stage) {
         mUserObject->GetTransform()->SetPosition(SimpleMath::Vector3::Zero);
     }
 }
