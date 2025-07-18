@@ -38,6 +38,18 @@ void SoundManager::Update() {
         mSystem->update();
     }
 
+    while (!mDelayedSounds.empty() && mDelayedSounds.top().scheduledTime <= std::chrono::high_resolution_clock::now()) {
+        const DelayedSound& ds = mDelayedSounds.top();
+
+        ds.sound->Play(); 
+
+        mDelayedSounds.pop();
+    }
+
+    std::erase_if(mSoundList, [](const std::unique_ptr<Sound>& sound) {
+        return sound->Expired();
+        }
+    );
 
     for (auto& sound : mSoundList) {
         if (sound) {
@@ -45,15 +57,27 @@ void SoundManager::Update() {
         }
     }
 
+
 }
 
-void SoundManager::PlaySound(const std::string& name, std::chrono::milliseconds delay, float volume, USHORT id, bool loop) {
-    DelayedSound ds{ name, std::chrono::steady_clock::now() + delay, volume, loop };
-    mDelayedSounds.emplace(std::move(ds));
-}
-
-Sound* SoundManager::PlaySound(const std::string& name, float volume, SoundOption option, std::chrono::milliseconds fadeTime) {
+Sound* SoundManager::PlaySound(const std::string& name, float volume, SoundOption option, std::chrono::milliseconds fadeTime, std::chrono::milliseconds delay) {
     auto pIt = mSounds.find(name); 
+
+    if (delay > std::chrono::milliseconds::zero()) {
+        FMOD::Sound* sound = pIt->second;
+
+        FMOD::Channel* channel = nullptr;
+        FMOD_RESULT res = mSystem->playSound(sound, nullptr, true, &channel);
+        LogFMODError(res, name.c_str());
+
+        channel->setVolume(volume); 
+
+        auto ptr =  mSoundList.emplace_back(std::make_unique<Internal::StandardSound>(channel, volume, option, fadeTime)).get();
+
+		mDelayedSounds.push({ ptr, std::chrono::high_resolution_clock::now() + delay });
+
+        return ptr; 
+    }
 
 	if (pIt != mSounds.end()) {
 		FMOD::Sound* sound = pIt->second;
@@ -62,7 +86,9 @@ Sound* SoundManager::PlaySound(const std::string& name, float volume, SoundOptio
 		FMOD_RESULT res = mSystem->playSound(sound, nullptr, false, &channel);
 		LogFMODError(res, name.c_str());
 
-		return mSoundList.emplace_back(std::make_unique<Internal::StandardSound>(channel, sound, volume, option, fadeTime)).get();
+        channel->setVolume(volume);
+
+		return mSoundList.emplace_back(std::make_unique<Internal::StandardSound>(channel, volume, option, fadeTime)).get();
 	}
 
 	auto plIt = mPlayLists.find(name);
@@ -79,7 +105,9 @@ Sound* SoundManager::PlaySound(const std::string& name, float volume, SoundOptio
 		FMOD_RESULT result = mSystem->playSound(list[0], nullptr, false, &channel);
 		LogFMODError(result, ("PlayList: " + name).c_str());
 
-		return mSoundList.emplace_back(std::make_unique<Internal::PlayListSound>(channel, list, volume, option, fadeTime)).get();
+        channel->setVolume(volume); 
+
+		return mSoundList.emplace_back(std::make_unique<Internal::PlayListSound>(mSystem, list, channel, volume, option, fadeTime)).get();
 	}
 
     return nullptr;
@@ -179,4 +207,189 @@ void SoundManager::AddPlayList(const std::string& name, const std::vector<std::s
 			list.emplace_back(it->second);
 		}
 	}
+}
+
+Internal::StandardSound::StandardSound(FMOD::Channel* channel) {
+	mChannel = channel;
+}
+
+Internal::StandardSound::StandardSound(FMOD::Channel* channel, float volume, SoundOption option) {
+	mChannel = channel;
+	mVolume = volume;
+	mOption = option;
+}
+
+Internal::StandardSound::StandardSound(FMOD::Channel* channel, float volume, SoundOption option, std::chrono::milliseconds fadeTime) {
+	mChannel = channel;
+	mVolume = volume;
+	mOption = option;
+	mFadeTime = fadeTime;
+	if (mFadeTime > std::chrono::milliseconds::zero()) {
+        mFadeVariable = 0.f; 
+	}
+}
+
+Internal::StandardSound::~StandardSound() {
+}
+
+void Internal::StandardSound::Update(float deltaTime) {
+
+    if (mFadeTime > std::chrono::milliseconds::zero()) {
+        float fadeDuration = static_cast<float>(mFadeTime.count()) * 0.001f;
+        float fadeSpeed = 1.0f / fadeDuration;
+
+        mFadeVariable += fadeSpeed * deltaTime;
+        mFadeVariable = std::clamp(mFadeVariable, 0.0f, 1.0f);
+    }
+
+	mChannel->setVolume(mVolume * mFadeVariable);
+
+
+    bool isPlaying{};
+	mChannel->isPlaying(&isPlaying);
+
+	if (mPlayState and not isPlaying) {
+		mExpired = true;
+	}
+}
+
+void Internal::StandardSound::SetVolume(float volume) {
+	mVolume = volume;
+}
+
+void Internal::StandardSound::Pause() {
+    mPlayState = false;
+
+	FMOD_RESULT result = mChannel->setPaused(true);
+	LogFMODError(result, "StandardSound::Pause");
+}
+
+void Internal::StandardSound::Play() {
+	mPlayState = true;
+
+	FMOD_RESULT result = mChannel->setPaused(false);
+	LogFMODError(result, "StandardSound::Play");
+}
+
+void Internal::StandardSound::Stop() {
+    FMOD_RESULT result = mChannel->setPaused(true);
+    LogFMODError(result, "StandardSound::Stop");
+
+    mExpired = true; 
+}
+
+void Internal::StandardSound::SetOption(SoundOption option) {
+	mOption = option;
+}
+
+void Internal::StandardSound::Terminate() {
+
+}
+
+bool Internal::StandardSound::Expired() const {
+    return mExpired;
+}
+
+Internal::PlayListSound::PlayListSound(FMOD::System* system, std::vector<FMOD::Sound*> sounds, FMOD::Channel* channel, float volume, SoundOption option) : mSounds(sounds) {
+	mSystem = system;
+	mCurrentChannel = channel;
+	mVolume = volume;
+	mOption = option;
+}
+
+Internal::PlayListSound::PlayListSound(FMOD::System* system, std::vector<FMOD::Sound*> sounds, FMOD::Channel* channel, float volume, SoundOption option, std::chrono::milliseconds fadeTime) : mSounds(sounds) {
+	mSystem = system;
+	mCurrentChannel = channel;
+	mVolume = volume;
+	mOption = option;
+	mFadeTime = fadeTime;
+	if (mFadeTime > std::chrono::milliseconds::zero()) {
+		mFadeVariable = 0.f;
+	}
+}
+
+Internal::PlayListSound::~PlayListSound() {
+
+}
+
+void Internal::PlayListSound::Update(float deltaTime) {
+	if (mFadeTime > std::chrono::milliseconds::zero()) {
+		float fadeDuration = static_cast<float>(mFadeTime.count()) * 0.001f;
+		float fadeSpeed = 1.0f / fadeDuration;
+
+		mFadeVariable += fadeSpeed * deltaTime;
+		mFadeVariable = std::clamp(mFadeVariable, 0.0f, 1.0f);
+	}
+
+    if (mFadeTime > std::chrono::milliseconds::zero()) {
+        mCurrentChannel->setVolume(mVolume * mFadeVariable);
+    }
+	bool isPlaying{};
+	mCurrentChannel->isPlaying(&isPlaying);
+    
+	if (isPlaying) {
+		return; 
+	}
+
+    if (mOption & SoundOption::Shuffle) {
+		std::shuffle(mSounds.begin(), mSounds.end(), RandomEngine::GetEngine());
+    }
+
+	mCurrentIndex = (mCurrentIndex + 1) % mSounds.size();
+
+	FMOD::Sound* nextSound = mSounds[mCurrentIndex];
+	FMOD_RESULT result = mSystem->playSound(nextSound, nullptr, false, &mCurrentChannel);
+	LogFMODError(result, "PlayListSound::Update");
+
+	if (result == FMOD_OK) {
+
+		if (mFadeTime > std::chrono::milliseconds::zero()) {
+            mCurrentChannel->setVolume(mVolume * mFadeVariable);
+        }
+        else {
+		    mCurrentChannel->setVolume(mVolume);
+        }
+
+		mPlayState = true;
+	}
+	
+
+}
+
+void Internal::PlayListSound::SetVolume(float volume) {
+    mVolume = volume;
+}
+
+void Internal::PlayListSound::Pause() {
+	mPlayState = false;
+
+	FMOD_RESULT result = mCurrentChannel->setPaused(true);
+	LogFMODError(result, "PlayListSound::Pause");
+}
+
+void Internal::PlayListSound::Play() {
+	mPlayState = true;
+
+	FMOD_RESULT result = mCurrentChannel->setPaused(false);
+	LogFMODError(result, "PlayListSound::Play");
+}
+
+void Internal::PlayListSound::Stop() {
+	FMOD_RESULT result = mCurrentChannel->setPaused(true);
+	LogFMODError(result, "PlayListSound::Stop");
+
+	mExpired = true;
+	mCurrentIndex = 0;
+	mCurrentChannel = nullptr;
+}
+
+void Internal::PlayListSound::SetOption(SoundOption option) {
+	mOption = option;
+}
+
+void Internal::PlayListSound::Terminate() {
+}
+
+bool Internal::PlayListSound::Expired() const {
+    return mExpired;
 }

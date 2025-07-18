@@ -18,6 +18,7 @@
 #include "../Game/GameObject/TerrainObject.h"
 #include "../External/Include/absl/container/flat_hash_map.h"
 #include "../Game/Scene/MaterialLoader.h"
+#include "../System/Sound.h"
 
 class LayerIndexMap {
 public:
@@ -112,6 +113,8 @@ private:
 	std::unique_ptr<CameraMode> mTPPCameraMode{ nullptr };
 
 	absl::flat_hash_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
+	absl::flat_hash_map<NetworkObjectIdType, std::pair<UINT, Sound*>> mSoundMap{};
+
 	std::vector<GameObject> mGameObjects{};
 	std::vector<GameObject> mItemObjects{}; 
 

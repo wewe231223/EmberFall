@@ -48,6 +48,8 @@ public:
     virtual void Stop() PURE;
 	virtual void SetOption(SoundOption option) PURE;
 	virtual void Terminate() PURE;
+
+    virtual bool Expired() const PURE; 
 };
 
 
@@ -70,6 +72,7 @@ namespace Internal {
 		void SetOption(SoundOption option) override;
 		void Terminate() override;
 
+        bool Expired() const override; 
 	private:
 		FMOD::Channel* mChannel{ nullptr };
         SoundOption mOption{ SoundOption::NONE }; 
@@ -79,12 +82,14 @@ namespace Internal {
 
 		std::chrono::milliseconds mFadeTime{ 0ms };
         float mFadeVariable{ -1.f };
+
+		bool mExpired{ false };
     };
 
     class PlayListSound : public Sound {
     public:
-        PlayListSound(const std::vector<FMOD::Sound*>& sounds, float volume, SoundOption option);
-        PlayListSound(const std::vector<FMOD::Sound*>& sounds, float volume, SoundOption option, std::chrono::milliseconds fadeTime);
+        PlayListSound(FMOD::System* system, std::vector<FMOD::Sound*> sounds, FMOD::Channel* channel, float volume, SoundOption option);
+        PlayListSound(FMOD::System* system, std::vector<FMOD::Sound*> sounds, FMOD::Channel* channel, float volume, SoundOption option, std::chrono::milliseconds fadeTime);
 
         ~PlayListSound() override;
     public:
@@ -97,8 +102,11 @@ namespace Internal {
         void SetOption(SoundOption option) override;
         void Terminate() override;
 
+		bool Expired() const override;
     private:
-        const std::vector<FMOD::Sound*>& mSounds;
+		FMOD::System* mSystem{ nullptr };
+
+        std::vector<FMOD::Sound*> mSounds;
         SoundOption mOption{ SoundOption::NONE };
 
         bool mPlayState{ false };
@@ -109,18 +117,18 @@ namespace Internal {
 
         std::chrono::milliseconds mFadeTime{ 0ms };
         float mFadeVariable{ -1.f };
+
+        bool mExpired{ false }; 
     }; 
 }
 
 
 
 class SoundManager {
-    struct DelayedSound {
-        std::string name{};
-        std::chrono::steady_clock::time_point scheduledTime{};
-        float volume{};
-		SoundOption option{ SoundOption::NONE };
-		std::chrono::milliseconds fadeTime{ 0ms };
+    struct DelayedSound { 
+		Sound* sound{ nullptr }; 
+
+		std::chrono::high_resolution_clock::time_point scheduledTime;
 
         bool operator>(const DelayedSound& other) const {
             return scheduledTime > other.scheduledTime;
@@ -135,13 +143,9 @@ public:
     bool Initialize();
     void Update();
     void Terminate();
-   
-    void PlaySound(const std::string& name, float volume = 1.f, USHORT id, bool loop = false);
-	void PlaySound(const std::string& name, std::chrono::milliseconds delay, float volume = 1.f, USHORT id = std::numeric_limits<USHORT>::max(), bool loop = false);
 
-    void PlaySoundList(const std::string& listName, float volumeRate = 1.f, USHORT id = std::numeric_limits<USHORT>::max());
-
-    Sound* PlaySound(const std::string& name, float volume = 1.f, SoundOption option = SoundOption::NONE, std::chrono::milliseconds fadeTime = std::chrono::milliseconds(0)); 
+    [[maybe_unused]]
+    Sound* PlaySound(const std::string& name, float volume = 1.f, SoundOption option = SoundOption::NONE, std::chrono::milliseconds fadeTime = 0ms, std::chrono::milliseconds delay = 0ms); 
 
     void SetMasterVolume(float volume);
 
