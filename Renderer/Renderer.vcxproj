@@ -181,6 +181,7 @@
     <ClCompile Include="core\Shader.cpp" />
     <ClCompile Include="Core\ShadowRenderer.cpp" />
     <ClCompile Include="Core\StringRenderer.cpp" />
+    <ClCompile Include="core\VolumetricFogProcessor.cpp" />
     <ClCompile Include="Manager\DecalManager.cpp" />
     <ClCompile Include="Manager\FeatureManager.cpp" />
     <ClCompile Include="Manager\LightingManager.cpp" />
@@ -219,6 +220,7 @@
     <ClInclude Include="core\Shader.h" />
     <ClInclude Include="Core\ShadowRenderer.h" />
     <ClInclude Include="Core\StringRenderer.h" />
+    <ClInclude Include="core\VolumetricFogProcessor.h" />
     <ClInclude Include="Manager\DecalManager.h" />
     <ClInclude Include="Manager\FeatureManager.h" />
     <ClInclude Include="Manager\LightingManager.h" />
@@ -326,6 +328,10 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\Shader\Sources\UI.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\VolumetricFog.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>

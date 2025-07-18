@@ -48,6 +48,7 @@ struct SkyBox_VOUT
     float4 position : SV_Position;
     float4 curPosition : POSITION0;
     float4 prevPosition : POSITION1;
+    float3 vPosition : POSITION2;
     float2 texcoord : TEXCOORD;
     uint material : MATERIALID;
 };
@@ -81,6 +82,7 @@ SkyBox_VOUT SkyBox_VS(SkyBox_VIN input)
     output.position = mul(float4(input.position, 1.f), modelContext.world);
     output.prevPosition = mul(mul(float4(input.position, 1.f), modelContext.prevWorld), prevViewProjection);
 
+    output.vPosition = mul(output.position, view).xyz;
     output.position = mul(output.position, viewProjection);
     output.curPosition = output.position;
     
@@ -109,7 +111,7 @@ Deffered_POUT SkyBox_PS(SkyBox_VOUT input)
     
     float4 velocity = (curNDC - prevNDC);
    
-    output.velocity = float4(velocity.x, velocity.y, 0.0f, input.position.z);
+    output.velocity = float4(velocity.x, velocity.y, input.vPosition.z, input.position.z);
 
     return output;
 }

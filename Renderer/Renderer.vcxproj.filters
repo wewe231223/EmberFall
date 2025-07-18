@@ -126,6 +126,9 @@
     <ClCompile Include="core\MotionBlurProcessor.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="core\VolumetricFogProcessor.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -227,6 +230,9 @@
     <ClInclude Include="core\MotionBlurProcessor.h">
       <Filter>Core</Filter>
     </ClInclude>
+    <ClInclude Include="core\VolumetricFogProcessor.h">
+      <Filter>Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shader\Sources\Standard.hlsl">
@@ -293,6 +299,9 @@
       <Filter>Shader</Filter>
     </FxCompile>
     <FxCompile Include="..\Shader\Sources\FogAccumulateProcessor.hlsl">
+      <Filter>Shader</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shader\Sources\VolumetricFog.hlsl">
       <Filter>Shader</Filter>
     </FxCompile>
   </ItemGroup>

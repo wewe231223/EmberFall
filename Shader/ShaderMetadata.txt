@@ -14,3 +14,4 @@ StandardAnimationNormal.hlsl { vs vs_6_0 StandardAnimationNormal_VS ps ps_6_0 St
 GrassShaderV2.hlsl { vs vs_6_0 Grass_VS gs gs_6_0 Grass_GS ps ps_6_0 Grass_PS }
 TreeCross.hlsl { vs vs_6_0 TreeCross_VS ps ps_6_0 TreeCross_PS }
 MotionBlur.hlsl { vs vs_6_0 MotionBlur_VS ps ps_6_0 MotionBlur_PS }
+VolumetricFog.hlsl { vs vs_6_0 VolumetricFog_VS ps ps_6_0 VolumetricFog_PS }

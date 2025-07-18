@@ -785,15 +785,21 @@ void FogAccumulateProcessor::CreateShader(ComPtr<ID3D12Device> device) {
 }
 
 void FogAccumulateProcessor::RegisterTexture(ComPtr<ID3D12Device> device, Texture& texture) {
-	CD3DX12_CPU_DESCRIPTOR_HANDLE handle(mHeap->GetCPUDescriptorHandleForHeapStart());
 
-	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
-	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
-	uavDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-	uavDesc.Texture3D.MipSlice = 0;
-	uavDesc.Texture3D.FirstWSlice = 0;
-	uavDesc.Texture3D.WSize = -1;
-	device->CreateUnorderedAccessView(texture.GetResource().Get(), nullptr, &uavDesc, handle);
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
+	srvDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	srvDesc.Texture3D.MostDetailedMip = 0;
+	srvDesc.Texture3D.MipLevels = -1;
+	srvDesc.Texture3D.ResourceMinLODClamp = 0;
+
+	CD3DX12_CPU_DESCRIPTOR_HANDLE handle(mHeap->GetCPUDescriptorHandleForHeapStart());
+	handle.Offset(1, device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+
+	device->CreateShaderResourceView(texture.GetResource().Get(), &srvDesc, handle);
+	
 }
 
 void FogAccumulateProcessor::Dispatch(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, Texture* input, Texture* output) {
@@ -806,6 +812,9 @@ void FogAccumulateProcessor::Dispatch(ComPtr<ID3D12Device> device, ComPtr<ID3D12
 	CD3DX12_GPU_DESCRIPTOR_HANDLE gpuHandle(mHeap->GetGPUDescriptorHandleForHeapStart());
 	commandList->SetComputeRootDescriptorTable(0, gpuHandle); //uav
 	
+	gpuHandle.Offset(1, device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV));
+
+	commandList->SetComputeRootDescriptorTable(1, gpuHandle); //srv
 
 	UINT numGroupsX = static_cast<UINT>((Config::WINDOW_WIDTH<UINT> / 8 + 7.0f) / 8.0f);
 	UINT numGroupsY = static_cast<UINT>((Config::WINDOW_HEIGHT<UINT> / 8 + 7.0f) / 8.0f);
@@ -816,20 +825,29 @@ void FogAccumulateProcessor::Dispatch(ComPtr<ID3D12Device> device, ComPtr<ID3D12
 
 
 void FogAccumulateProcessor::CreateResource(ComPtr<ID3D12Device> device) {
-
+	mComputeMap = Texture(device, DXGI_FORMAT_R16G16B16A16_FLOAT, Config::WINDOW_WIDTH<UINT64> / 8, Config::WINDOW_HEIGHT<UINT> / 8, 64,
+		D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 }
 
 void FogAccumulateProcessor::CreateHeap(ComPtr<ID3D12Device> device) {
 	D3D12_DESCRIPTOR_HEAP_DESC fogAccumulateDesc{};
 	fogAccumulateDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	fogAccumulateDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	fogAccumulateDesc.NumDescriptors = 1;
+	fogAccumulateDesc.NumDescriptors = 2;
 	fogAccumulateDesc.NodeMask = 0;
 	device->CreateDescriptorHeap(&fogAccumulateDesc, IID_PPV_ARGS(mHeap.GetAddressOf()));
 }
 
 void FogAccumulateProcessor::CreateView(ComPtr<ID3D12Device> device) {
+	CD3DX12_CPU_DESCRIPTOR_HANDLE handle(mHeap->GetCPUDescriptorHandleForHeapStart());
 
+	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
+	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
+	uavDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+	uavDesc.Texture3D.MipSlice = 0;
+	uavDesc.Texture3D.FirstWSlice = 0;
+	uavDesc.Texture3D.WSize = -1;
+	device->CreateUnorderedAccessView(mComputeMap.GetResource().Get(), nullptr, &uavDesc, handle);
 }
 
 void FogAccumulateProcessor::CompileShader() {
@@ -864,13 +882,15 @@ void FogAccumulateProcessor::CreateRootSignature(ComPtr<ID3D12Device> device) {
 	CD3DX12_DESCRIPTOR_RANGE uavTable;
 	uavTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);
 
+	CD3DX12_DESCRIPTOR_RANGE srvTable;
+	srvTable.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
 
-
-	CD3DX12_ROOT_PARAMETER rootParameter[1];
+	CD3DX12_ROOT_PARAMETER rootParameter[2];
 
 	rootParameter[0].InitAsDescriptorTable(1, &uavTable);
+	rootParameter[1].InitAsDescriptorTable(1, &srvTable);
 
-	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(1, rootParameter, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+	CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc(2, rootParameter, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	ComPtr<ID3DBlob> serializedRootSignature{ nullptr };
 	ComPtr<ID3DBlob> errorBlob{ nullptr };

@@ -293,7 +293,7 @@ Deffered_POUT Terrain_PS(Terrain_PIN input)
    
     float4 velocity = (curNDC - prevNDC);
     
-    output.velocity = float4(velocity.x, velocity.y, 0.0f, input.position.z);
+    output.velocity = float4(velocity.x, velocity.y, input.vPosition.z, input.position.z);
     
     return output;
 }

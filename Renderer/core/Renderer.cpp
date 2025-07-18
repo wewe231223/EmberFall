@@ -33,6 +33,7 @@ Renderer::Renderer(HWND rendererWindowHandle)
 	Renderer::InitCoreResources(); 
 	Renderer::InitComputeProcesser();
 	Renderer::InitMotionBlurProcessor();
+	Renderer::InitVolumetricFogProcessor();
 	Renderer::InitDefferedRenderer();
 	Renderer::InitTerrainBuffer();
 	Renderer::InitParticleManager();
@@ -240,14 +241,29 @@ void Renderer::Render() {
 		mRenderManager->GetParticleManager().RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
 
+	// Bloom Pass
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Bloom) {
+
+		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
+		mComputeProcessors[0]->Dispatch(mDevice, mCommandList, &currentBackBuffer);
+
+		mComputeProcessors[1]->Dispatch(mDevice, mCommandList, &mComputeProcessors[0]->GetComputeMap(), &currentBackBuffer);
+		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	}
 
 	//Volumetric Fog Pass
 
 	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Fog) {
 		mComputeProcessors[4]->DispatchFogProcessor(mDevice, mCommandList, *mRenderManager->GetLightingManager().GetLightingBuffer(), *mMainCameraBuffer.GPUBegin());
 		
+		auto uavBarrier = CD3DX12_RESOURCE_BARRIER::UAV(mComputeProcessors[4]->GetComputeMap().GetResource().Get());
+		mCommandList->ResourceBarrier(1, &uavBarrier);
 
 		mComputeProcessors[5]->Dispatch(mDevice, mCommandList, nullptr );
+
+		mCommandList->ResourceBarrier(1, &uavBarrier);
+
+		mVolumetricFogProcessor.Render(mDevice, mCommandList, *mMainCameraBuffer.GPUBegin());
 	}
 
 
@@ -275,15 +291,6 @@ void Renderer::Render() {
 		mMotionBlurProcessor.Render(mDevice, mCommandList);
 	}
 
-	// Bloom Pass
-	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Bloom) {
-
-		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
-		mComputeProcessors[0]->Dispatch(mDevice, mCommandList, &currentBackBuffer);
-
-		mComputeProcessors[1]->Dispatch(mDevice, mCommandList, &mComputeProcessors[0]->GetComputeMap(), &currentBackBuffer);
-		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	}
 	
 
 	mRenderManager->GetTextureManager().Bind(mCommandList);
@@ -656,6 +663,14 @@ void Renderer::InitMotionBlurProcessor() {
 	mMotionBlurProcessor.RegisterVelocityMap(mDevice, mGBuffers[4]);
 	mMotionBlurProcessor.BuildShader(mDevice);
 	mMotionBlurProcessor.BuildMesh(mDevice, mCommandList);
+}
+
+void Renderer::InitVolumetricFogProcessor() {
+	mVolumetricFogProcessor = VolumetricFogProcessor();
+	mVolumetricFogProcessor.CreateSRVHeap(mDevice, mComputeProcessors[4]->GetComputeMap());
+	mVolumetricFogProcessor.RegisterVelocityMap(mDevice, mGBuffers[4]);
+	mVolumetricFogProcessor.BuildShader(mDevice);
+	mVolumetricFogProcessor.BuildMesh(mDevice, mCommandList);
 }
 
 void Renderer::InitComputeProcesser() {

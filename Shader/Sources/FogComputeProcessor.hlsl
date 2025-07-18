@@ -19,15 +19,15 @@ cbuffer Camera : register(b0)
 #define LightType_Spot          3
 
 
-static float density = 0.02f;
+static float density = 0.1f;
 
    
-static float4 HemisphereColor = float4(0.6f, 0.7f, 0.8f, 0.5f);
+static float4 HemisphereColor = float4(0.9f, 0.9f, 0.9f, 0.5f);
 
 static float Intensity = 1.0f;
 
-static float fogBegin = 10.0f;
-static float fogEnd = 300.0f;
+static float fogBegin = 100.0f;
+static float fogEnd = 500.0f;
 
 struct Light
 {
