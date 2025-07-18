@@ -14,6 +14,7 @@
 #include "Renderer/core/Renderer.h"
 #include "Game/System/Timer.h"
 #include "Game/System/Input.h"
+#include "Game/System/Sound.h"
 #include "Game/Scene/SceneManager.h"
 #include "Utility/NonReplacementSampler.h"
 #include "MeshLoader/Loader/MeshLoader.h"
@@ -92,6 +93,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	renderer.ResetLoadCommandList();
 
     Input.Initialize(hWnd);
+    SoundManager::GetInstance().Initialize(); 
+	SoundManager::GetInstance().LoadSoundListFromFile("Resources/Sound/SoundList.txt");
+    SoundManager::GetInstance().LoadPlayListFromFile("Resources/Sound/PlayList.txt");
 
 	sceneManager.Init(
         renderer.GetRenderManager(),
@@ -142,6 +146,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 #endif
             Time.AdvanceTime();
             Input.Update();
+			SoundManager::GetInstance().Update();
 
 
             sceneManager.Update(renderer.GetDevice(), renderer.GetLoadCommandList());
@@ -179,7 +184,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     gClientCore->End();
 
-
+    SoundManager::GetInstance().Terminate(); 
 
 
     return (int) msg.wParam;

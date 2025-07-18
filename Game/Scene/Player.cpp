@@ -195,3 +195,11 @@ void Player::LockRotate(bool state) {
 bool Player::GetRotateState() const {
 	return mRotateLock;
 }
+
+void Player::SetRole(Packets::EntityType role) {
+	mMyRole = role;
+}
+
+Packets::EntityType Player::GetMyRole() const {
+	return mMyRole; 
+}

@@ -18,6 +18,26 @@
 #include "../Game/GameObject/TerrainObject.h"
 #include "../External/Include/absl/container/flat_hash_map.h"
 #include "../Game/Scene/MaterialLoader.h"
+#include "../System/Sound.h"
+
+class LayerIndexMap {
+public:
+	LayerIndexMap() = default; 
+	~LayerIndexMap() = default;
+
+public:
+	bool LoadFromFile(const std::string& filePath);
+	UINT GetLayerIndexAtPosition(const DirectX::SimpleMath::Vector3& worldPos) const;
+
+private:
+	std::vector<uint8_t> mData;
+	int mXCount = 0;
+	int mZCount = 0;
+	float mSampleInterval = 0.1f;
+	float mTerrainWidth = 0.f;
+	float mTerrainLength = 0.f;
+};
+
 
 class TerrainScene : public IScene {
 	using duration = std::chrono::milliseconds; 
@@ -53,6 +73,8 @@ private:
 
 	template<typename Tu> 
 	float GetAverageLatency(); 
+
+	void UpdateSound(); 
 private:
 	void ProcessPackets(const uint8_t* buffer, size_t size); 
 	const uint8_t* ProcessPacket(const uint8_t* buffer);
@@ -91,6 +113,8 @@ private:
 	std::unique_ptr<CameraMode> mTPPCameraMode{ nullptr };
 
 	absl::flat_hash_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
+	absl::flat_hash_map<NetworkObjectIdType, std::pair<UINT, Sound*>> mSoundMap{};
+
 	std::vector<GameObject> mGameObjects{};
 	std::vector<GameObject> mItemObjects{}; 
 
@@ -102,7 +126,7 @@ private:
 	std::array<duration, 10> mLatency{}; 
 	UINT mLatencySampleIndex{ 0 };
 
-	
+	LayerIndexMap mLayerIndexMap{};
 
 #ifdef DEV_MODE
 	TextBlock* mLatencyBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 50.f, 1920.f, 100.f }, StringColor::BurlyWood, "NotoSansKR") };

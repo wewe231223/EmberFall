@@ -1,0 +1,7 @@
+EMBEDDED Plane - Plane 60
+
+FILE Resources/Assets/Arena/DoorL.glb - DoorL
+FILE Resources/Assets/Arena/DoorR.glb - DoorR
+FILE Resources/Assets/Arena/Tower.glb - Tower 
+FILE Resources/Assets/Arena/Wall.glb - Wall
+FILE Resources/Assets/Arena/Wall1.glb - Wall1

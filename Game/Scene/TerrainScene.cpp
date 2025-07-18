@@ -13,6 +13,8 @@
 #include "../ServerLib/GameProtocol.h"
 #include "../Renderer/Core/Console.h"
 
+#include "../Utility/RandomEngine.h"
+
 #pragma region PacketProcessFn 
 void TerrainScene::ProcessPacketProtocolVersion(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ProtocolVersionSC>(buffer);
@@ -85,7 +87,6 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		if (data->objectId() == gClientCore->GetSessionId()) {
 			// 플레이어 인스턴스가 없다면 
 			if (mMyPlayer == nullptr) {
-		
 				auto nextLoc = FindNextPlayerLoc();
 		
 				if (nextLoc == mPlayers.end()) {
@@ -132,6 +133,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
+				mMyPlayer->SetRole(data->entity());
 
 				mMyPlayer->SetMyPlayer();
 				
@@ -146,9 +148,6 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mCurrentCameraMode = mTPPCameraMode.get(); 
 
 				mCurrentCameraMode->Enter();
-
-
-
 
 #ifdef DEV_MODE
 				int sign = NonReplacementSampler::GetInstance().Sample(); 
@@ -253,6 +252,8 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		if (not mGameObjectMap.contains(data->objectId())) {
 			auto nextItemLoc = FindNextItemLoc();
 			auto nextLoc = FindNextObjectLoc();
+
+			mSoundMap[data->objectId()] = std::make_pair(std::numeric_limits<UINT>::max(), nullptr);
 
 			if (nextLoc == mGameObjects.end()) {
 				MessageBox(nullptr, L"ERROR!!!!!\nThere is no more space for Other Object!!", L"", MB_OK | MB_ICONERROR);
@@ -451,6 +452,9 @@ void TerrainScene::ProcessObjectAttacked(const uint8_t* buffer) {
 			mMyPlayer->LockRotate(true); 
 		}
 
+		UINT type = RandomEngine::GetRandomRange(1U, 22U);
+		SoundManager::GetInstance().PlaySound(std::string{ "Attacked" } + std::to_string(type), 2.f);
+
 	}
 }
 
@@ -463,6 +467,30 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 			if (data->objectId() == gClientCore->GetSessionId()) {
 				if (data->animation() == Packets::AnimationState_ATTACK) {
 					mMyPlayer->LockRotate(true); 
+
+					switch (mMyPlayer->GetMyRole()) {
+					case Packets::EntityType_HUMAN_LONGSWORD:
+						SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, 2.f, SoundOption::NONE, 0ms, 250ms);
+						break;
+					case Packets::EntityType_HUMAN_SWORD:
+						SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, 2.f, SoundOption::NONE, 0ms, 250ms);
+						break;
+					case Packets::EntityType_HUMAN_ARCHER:
+						{
+							UINT type = RandomEngine::GetRandomRange(1U, 3U);
+							SoundManager::GetInstance().PlaySound(std::string{ "BowPullAndRelease" } + std::to_string(type), 2.f, SoundOption::NONE, 0ms, 200ms);
+						}
+						break;
+					case Packets::EntityType_HUMAN_MAGICIAN:
+						break;
+					default:
+						break;
+					}
+
+
+				}
+				else if (data->animation() == Packets::AnimationState_DEAD) {
+					mMyPlayer->LockRotate(true);
 				}
 				else {
 					mMyPlayer->LockRotate(false);
@@ -500,6 +528,8 @@ void TerrainScene::ProcessUseItem(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::UseItemSC>(buffer);
 
 	mInventoryUI.SetItem(ItemType::Health, static_cast<UINT>(data->itemIdx()), false);
+	
+
 
 }
 
@@ -540,6 +570,7 @@ void TerrainScene::ProcessChangeScene(const uint8_t* buffer) {
 void TerrainScene::ProcessBuffHeal(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::BuffHealSC>(buffer);
 	mHealthBarUI.SetHealth(data->hp()); 
+	SoundManager::GetInstance().PlaySound("HealSound", 2.f);
 }
 
 void TerrainScene::ProcessHeartBeat(const uint8_t* buffer) {
@@ -574,6 +605,8 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	TerrainScene::BuildMesh(device, commandList);
 	TerrainScene::BuildMaterial();
 	TerrainScene::BuildAniamtionController();
+
+	mLayerIndexMap.LoadFromFile("Resources/Binarys/Terrain/LayerIndex.bin");
 
 	//SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/terrain.raw", "Resources/Binarys/Terrain/NTerrain.bin");
 	tCollider.LoadFromFile("Resources/Binarys/Terrain/NTerrain.bin");
@@ -801,7 +834,199 @@ void TerrainScene::ProcessNetwork() {
 	TerrainScene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
 }
 
-void TerrainScene::ProcessPackets(const uint8_t* buffer, size_t size) { 
+void TerrainScene::UpdateSound() {
+	const float footprintDistance = 10.f; // 발자국 소리 들리는 거리 
+	const float PrimaryVolume = 5.f;
+
+	// 1. 발자국 소리 ( 플레이어 ) 
+	for (auto& pair : mPlayerIndexmap) {
+		if (pair.second == nullptr) {
+			continue;
+		}
+		// 나의 경우 
+		if (pair.first == gClientCore->GetSessionId()) {
+			// 움직이는 상태라면
+			if (pair.second->GetTransform().GetMovingState()) {
+				// 이전에 멈춘 상태였다면
+				if (mSoundMap[pair.first].second == nullptr) {
+					mSoundMap[pair.first].first = mLayerIndexMap.GetLayerIndexAtPosition(pair.second->GetTransform().GetPosition());
+
+					switch (mSoundMap[pair.first].first) {
+					case 0: // Grass Area 
+						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassArea", PrimaryVolume, SoundOption::Shuffle, 100ms);
+						break;
+					case 1: // Load Area
+					case 2: // Stone Area 
+						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtArea", PrimaryVolume, SoundOption::Shuffle, 100ms);
+						break;
+					default:
+						break;
+					}
+
+				}
+				else { // 이전에 움직이고 있던 상태였다면
+					UINT currentAreaID{ mLayerIndexMap.GetLayerIndexAtPosition(pair.second->GetTransform().GetPosition()) };
+					
+
+					if (currentAreaID != mSoundMap[pair.first].first) { // Area가 바뀌었다면 
+						// 먼저 이전 Area 사운드를 빼야 한다. 
+						mSoundMap[pair.first].second->Stop(); 
+
+						mSoundMap[pair.first].first = currentAreaID;
+
+						switch (mSoundMap[pair.first].first) {
+						case 0: // Grass Area 
+							mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassArea", PrimaryVolume, SoundOption::Shuffle);
+							break;
+						case 1: // Load Area
+						case 2: // Stone Area 
+							mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtArea", PrimaryVolume, SoundOption::Shuffle);
+							break;
+						default:
+							break;
+						}
+					}
+					
+				}
+		}
+			else { // 멈춘 상태라면 
+				if (mSoundMap[pair.first].second != nullptr) {
+					mSoundMap[pair.first].second->Stop();
+					mSoundMap[pair.first].second = nullptr;
+				}
+			}
+
+
+		}
+		// 다른 플레이어의 경우 
+		else {
+			auto distanceSq = SimpleMath::Vector3::DistanceSquared(mMyPlayer->GetTransform().GetPosition(), pair.second->GetTransform().GetPosition());
+			if (distanceSq > footprintDistance * footprintDistance) {
+				continue;
+			}
+
+			// 움직인다면 
+			if (pair.second->GetTransform().GetMovingState()) {
+				// 이전에 멈춘 상태였다면
+				if (mSoundMap[pair.first].second == nullptr) {
+					mSoundMap[pair.first].first = mLayerIndexMap.GetLayerIndexAtPosition(pair.second->GetTransform().GetPosition());
+
+					float volume = 1.0f - std::clamp(std::sqrtf(distanceSq) / footprintDistance, 0.0f, 1.0f);
+
+					switch (mSoundMap[pair.first].first) {
+					case 0: // Grass Area 
+						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassArea", PrimaryVolume * volume, SoundOption::Shuffle);
+						break;
+					case 1: // Load Area
+					case 2: // Stone Area 
+						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtArea", PrimaryVolume * volume, SoundOption::Shuffle);
+						break;
+					default:
+						break;
+					}
+
+				}
+				else { // 이전에 움직이고 있던 상태였다면
+					UINT currentAreaID{ mLayerIndexMap.GetLayerIndexAtPosition(pair.second->GetTransform().GetPosition()) };
+					float volume = 1.0f - std::clamp(std::sqrtf(distanceSq) / footprintDistance, 0.0f, 1.0f);
+
+					mSoundMap[pair.first].second->SetVolume(PrimaryVolume * volume);
+
+					if (currentAreaID != mSoundMap[pair.first].first) { // Area가 바뀌었다면 
+						// 먼저 이전 Area 사운드를 빼야 한다. 
+						mSoundMap[pair.first].second->Stop();
+
+						mSoundMap[pair.first].first = currentAreaID;
+
+						switch (mSoundMap[pair.first].first) {
+						case 0: // Grass Area 
+							mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassArea", PrimaryVolume * volume, SoundOption::Shuffle);
+							break;
+						case 1: // Load Area
+						case 2: // Stone Area 
+							mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtArea", PrimaryVolume * volume, SoundOption::Shuffle);
+							break;
+						default:
+							break;
+						}
+					}
+
+				}
+			}
+			else { // 멈춘 상태라면 
+				if (mSoundMap[pair.first].second != nullptr) {
+					mSoundMap[pair.first].second->Stop();
+					mSoundMap[pair.first].second = nullptr;
+				}
+			}
+		}
+	}
+
+	// 2. 발자국 소리 ( 오브젝트 ) 
+	for (auto& pair : mGameObjectMap) {
+		auto distanceSq = SimpleMath::Vector3::DistanceSquared(mMyPlayer->GetTransform().GetPosition(), pair.second->GetTransform().GetPosition());
+		if (distanceSq > footprintDistance * footprintDistance) {
+			continue; 
+		}
+
+		// 움직인다면 
+		if (pair.second->GetTransform().GetMovingState()) {
+			// 이전에 멈춘 상태였다면
+			if (mSoundMap[pair.first].second == nullptr) {
+				mSoundMap[pair.first].first = mLayerIndexMap.GetLayerIndexAtPosition(pair.second->GetTransform().GetPosition());
+
+				float volume = 1.0f - std::clamp(std::sqrtf(distanceSq) / footprintDistance, 0.0f, 1.0f);
+
+				switch (mSoundMap[pair.first].first) {
+				case 0: // Grass Area 
+					mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassAreaWalk", PrimaryVolume * volume, SoundOption::Shuffle);
+					break;
+				case 1: // Load Area
+				case 2: // Stone Area 
+					mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtAreaWalk", PrimaryVolume * volume, SoundOption::Shuffle);
+					break;
+				default:
+					break;
+				}
+
+			}
+			else { // 이전에 움직이고 있던 상태였다면
+				UINT currentAreaID{ mLayerIndexMap.GetLayerIndexAtPosition(pair.second->GetTransform().GetPosition()) };
+				float volume = 1.0f - std::clamp(std::sqrtf(distanceSq) / footprintDistance, 0.0f, 1.0f);
+
+				mSoundMap[pair.first].second->SetVolume(PrimaryVolume * volume); 
+
+				if (currentAreaID != mSoundMap[pair.first].first) { // Area가 바뀌었다면 
+					// 먼저 이전 Area 사운드를 빼야 한다. 
+					mSoundMap[pair.first].second->Stop(); 
+
+					mSoundMap[pair.first].first = currentAreaID;
+
+					switch (mSoundMap[pair.first].first) {
+					case 0: // Grass Area 
+						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassAreaWalk", PrimaryVolume * volume, SoundOption::Shuffle);
+						break;
+					case 1: // Load Area
+					case 2: // Stone Area 
+						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtAreaWalk", PrimaryVolume * volume, SoundOption::Shuffle);
+						break;
+					default:
+						break;
+					}
+				}
+					
+			}
+		}
+		else { // 멈춘 상태라면 
+			if (mSoundMap[pair.first].second != nullptr) {
+				mSoundMap[pair.first].second->Stop();
+				mSoundMap[pair.first].second = nullptr;
+			}
+		}
+	}
+}
+
+void TerrainScene::ProcessPackets(const uint8_t* buffer, size_t size) {
 	const uint8_t* iter = buffer; 
 
 	while (iter < buffer + size) {
@@ -1045,6 +1270,9 @@ void TerrainScene::Update() {
 	mSkyBox.UpdateShaderVariables();
 	auto [skyBoxMesh, skyBoxShader, skyBoxModelContext] = mSkyBox.GetRenderData();
 	mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);
+
+
+	TerrainScene::UpdateSound();
 }
 
 void TerrainScene::SendNetwork() {
@@ -1524,7 +1752,6 @@ void TerrainScene::BuildSwordManAnimationController() {
 		forwardState.maskedClipIndex = 1;
 		forwardState.nonMaskedClipIndex = 1;
 		forwardState.name = "Forward";
-		forwardState.speed = 1.2;
 
 		AnimatorGraph::BoneMaskAnimationState backwardState{};
 		backwardState.maskedClipIndex = 2;
@@ -1606,7 +1833,6 @@ void TerrainScene::BuildMageAnimationController() {
 		forwardState.maskedClipIndex = 1;
 		forwardState.nonMaskedClipIndex = 1;
 		forwardState.name = "Forward";
-		forwardState.speed = 1.2;
 
 		AnimatorGraph::BoneMaskAnimationState backwardState{};
 		backwardState.maskedClipIndex = 2;
@@ -2181,3 +2407,45 @@ void TerrainScene::BuildDemonAnimationController() {
 
 
 */
+
+bool LayerIndexMap::LoadFromFile(const std::string& filePath) {
+	std::ifstream file(filePath, std::ios::binary);
+	if (!file.is_open()) {
+		return false;
+	} 
+	
+	file.read(reinterpret_cast<char*>(&mXCount), sizeof(int));
+	file.read(reinterpret_cast<char*>(&mZCount), sizeof(int));
+	file.read(reinterpret_cast<char*>(&mSampleInterval), sizeof(float));
+	file.read(reinterpret_cast<char*>(&mTerrainWidth), sizeof(float));
+	file.read(reinterpret_cast<char*>(&mTerrainLength), sizeof(float));
+
+	size_t dataSize = static_cast<size_t>(mXCount) * static_cast<size_t>(mZCount);
+	mData.resize(dataSize);
+	file.read(reinterpret_cast<char*>(mData.data()), dataSize);
+	file.close();
+
+	return true;
+}
+
+UINT LayerIndexMap::GetLayerIndexAtPosition(const DirectX::SimpleMath::Vector3& worldPos) const {
+	float halfWidth = mTerrainWidth * 0.5f;
+	float halfLength = mTerrainLength * 0.5f;
+
+	float relativeX = worldPos.x + halfWidth;
+	float relativeZ = worldPos.z + halfLength;
+
+	if (relativeX < 0 || relativeZ < 0 || relativeX >= mTerrainWidth || relativeZ >= mTerrainLength) {
+		return -1;
+	}
+
+	int xIndex = static_cast<int>(relativeX / mSampleInterval);
+	int zIndex = static_cast<int>(relativeZ / mSampleInterval);
+
+	if (xIndex < 0 || xIndex >= mXCount || zIndex < 0 || zIndex >= mZCount) {
+		return -1;
+	}
+
+	size_t index = static_cast<size_t>(zIndex) * mXCount + xIndex;
+	return static_cast<int>(mData[index]);
+}

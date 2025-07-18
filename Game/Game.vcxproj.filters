@@ -117,6 +117,9 @@
     <ClCompile Include="Scene\AreanaScene.cpp">
       <Filter>ArenaScene</Filter>
     </ClCompile>
+    <ClCompile Include="System\Sound.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -193,6 +196,9 @@
     </ClInclude>
     <ClInclude Include="GameObject\Decal.h">
       <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="System\Sound.h">
+      <Filter>System</Filter>
     </ClInclude>
     <ClInclude Include="Scene\AreanaScene.h">
       <Filter>ArenaScene</Filter>
