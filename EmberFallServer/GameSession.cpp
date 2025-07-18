@@ -77,11 +77,6 @@ void GameSession::ProcessRecv(INT32 numOfBytes) {
 void GameSession::InitUserObject() {
     static auto TestPos = SimpleMath::Vector3::Zero;
     const static auto PosInc = SimpleMath::Vector3::Left * 2.0f;
-
-    if (nullptr != mUserObject) {
-        return;
-    }
-
     auto myRoom = GetMyRoomIdx();
     auto myId = GetId();
 
@@ -92,7 +87,7 @@ void GameSession::InitUserObject() {
     mUserObject->mSpec.active = true;
     mUserObject->mSpec.entity = static_cast<Packets::EntityType>(mLobbyInfo.lastRole);
     mUserObject->mSpec.hp = GameProtocol::Logic::MAX_HP;
-    
+
     mUserObject->GetTransform()->Translate(TestPos);
     mUserObject->GetTransform()->SetY(0.0f);
     mUserObject->Init();
@@ -105,7 +100,7 @@ void GameSession::InitUserObject() {
 
     decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(myId, spec.entity, yaw, anim, spec.hp, pos);
     RegisterSend(packetAppeared);
-    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Send Appeared My Player: {}", myId);
+    gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Send Appeared My Player: {}, entity: {}", myId, Packets::EnumNameEntityType(spec.entity));
 
     auto script = mUserObject->GetScript<PlayerScript>();
     if (nullptr == script) {
@@ -278,6 +273,17 @@ void GameSession::EnterInGame(Packets::GameStage stage) {
 }
 
 void GameSession::ChangeStage() {
+    const auto pos = mUserObject->GetPosition();
+    const auto myRoom = GetMyRoomIdx();
+    auto script = mUserObject->GetScript<PlayerScript>();
+    if (nullptr == script) {
+        return;
+    }
+
+    const float range = script->GetViewList().mViewRange.Count();
+    gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->RemoveInSector(mUserObject->GetId(), pos);
+    gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->UpdatePlayerViewList(mUserObject, pos, range);
+
     mSessionState = SESSION_CHANGE_STAGE;
 }
 
