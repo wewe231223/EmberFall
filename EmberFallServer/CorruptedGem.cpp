@@ -67,6 +67,10 @@ void CorruptedGemScript::OnDestroy(DestroyingGemEvent* event) {
         return;
     }
 
+    if (false == owner->mSpec.active) {
+        return;
+    }
+
     mDestroyingTime += event->elapsedTime;
     if (mDestroyingTime > DESTROYING_TIME) {
         auto ownerRoom = owner->GetMyRoomIdx();
