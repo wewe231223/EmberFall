@@ -195,6 +195,7 @@ GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12Graphic
 	}
 
 	mGrassPosition = DefaultBuffer(device, commandList, sizeof(SimpleMath::Vector3), count, mGrass.data());
+	mUploaded = true; 
 	
 	ComPtr<IDxcUtils> dxcUtils{};
 	ComPtr<IDxcCompiler3> dxcCompiler{};
@@ -282,10 +283,6 @@ GrassRenderer::GrassRenderer(ComPtr<ID3D12Device10> device, ComPtr<ID3D12Graphic
 
 	GrassRenderer::CreateRootSignature(device);
 	GrassRenderer::CreatePipelineState(device);
-
-
-
-
 }
 
 void GrassRenderer::SetMaterial(UINT materialIndex) {
@@ -293,7 +290,14 @@ void GrassRenderer::SetMaterial(UINT materialIndex) {
 }
 
 void GrassRenderer::Render(ComPtr<ID3D12GraphicsCommandList6> commandList, DefaultBufferGPUIterator cameraBuffer, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS material) {
-	
+
+	if (not mUploaded) {
+		std::memcpy(*mGrassPosition.CPUBegin(), mGrass.data(), mGrass.size() * sizeof(SimpleMath::Vector3));
+		mGrassPosition.Upload(commandList, mGrassPosition.CPUBegin(), mGrassPosition.CPUBegin() + mGrass.size());	
+
+		mUploaded = true;
+	}
+
 	CameraConstants cameraConstants{};
 	std::memcpy(&cameraConstants, *mCameraBuffer, sizeof(CameraConstants));
 
@@ -353,6 +357,52 @@ void GrassRenderer::Render(ComPtr<ID3D12GraphicsCommandList6> commandList, Defau
 			remaining -= batch;
 		}
 	}
+}
+
+void GrassRenderer::SetTerrainSceneGrass() {
+	mGrass.clear(); 
+
+	const std::filesystem::path grassPath{ "Resources/Binarys/Terrain/GrassXZ.bin" };
+
+	std::ifstream in{ grassPath, std::ios::binary };
+
+	size_t count{};
+	in.read(reinterpret_cast<char*>(&count), sizeof(size_t));
+
+	std::vector<SimpleMath::Vector2> xzPoints{};
+
+	xzPoints.resize(count);
+	in.read(reinterpret_cast<char*>(xzPoints.data()), count * sizeof(SimpleMath::Vector2));
+
+	for (const auto& [i, point] : Enumerate(xzPoints)) {
+		float y = mTerrainCollider.GetHeight(point.x, point.y);
+		mGrass.emplace_back(SimpleMath::Vector3(point.x, y, point.y));
+	}
+
+	mUploaded = false; 
+}
+
+void GrassRenderer::SetArenaSceneGrass() {
+	mGrass.clear();
+
+	const std::filesystem::path grassPath{ "Resources/Binarys/Terrain/GrassXZ_Arena.bin" };
+
+	std::ifstream in{ grassPath, std::ios::binary };
+
+	size_t count{};
+	in.read(reinterpret_cast<char*>(&count), sizeof(size_t));
+
+	std::vector<SimpleMath::Vector2> xzPoints{};
+
+	xzPoints.resize(count);
+	in.read(reinterpret_cast<char*>(xzPoints.data()), count * sizeof(SimpleMath::Vector2));
+
+	for (const auto& [i, point] : Enumerate(xzPoints)) {
+		float y = 0.f;
+		mGrass.emplace_back(SimpleMath::Vector3(point.x, y, point.y));
+	}
+
+	mUploaded = false;
 }
 
 

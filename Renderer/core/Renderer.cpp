@@ -358,6 +358,25 @@ void Renderer::SetFullScreenState(bool state)
 	mIsFullScreen = state;
 }
 
+void Renderer::SetStageData(UINT stageIndex) {
+	if (stageIndex == mCurrentSceneIndex) {
+		return;
+	}
+
+	switch (stageIndex) {
+	case 0: // TerrainScene 
+		mGrassRenderer.SetTerrainSceneGrass(); 
+		mCurrentSceneIndex = stageIndex; 
+		break; 
+	case 1: // ArenaScene 
+		mGrassRenderer.SetArenaSceneGrass();
+		mCurrentSceneIndex = stageIndex;
+		break;
+	default:
+		break;
+	}
+}
+
 void Renderer::InitFactory() {
 	CheckHR(CreateDXGIFactory1(IID_PPV_ARGS(&mFactory)));
 #ifdef _DEBUG

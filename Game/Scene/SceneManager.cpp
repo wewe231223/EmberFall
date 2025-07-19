@@ -1,3 +1,4 @@
+#include "SceneManager.h"
 #include "pch.h"
 #include "SceneManager.h"
 #include "../Scene/LoadingScene.h"
@@ -69,6 +70,36 @@ void SceneManager::ChangeSceneTo(SceneType nextScene) {
 		break;
 	}
 
+}
+
+UINT SceneManager::GetCurrentSceneIndex() const {
+	switch (mCurrentSceneType) {
+	case SceneType::TITLE:
+		return 3; 
+		break;
+	case SceneType::LOBBY:
+		return 3;
+		break;
+	case SceneType::TERRAIN:
+		return 0;
+		break;
+	case SceneType::FINAL:
+		return 1;
+		break;
+	case SceneType::FINISH:
+		return 3;
+		break;
+	case SceneType::LOADING:
+		return 3;
+		break;
+	case SceneType::END:
+		return 3;
+		break;
+	default:
+		return 3;
+		break;
+	}
+	return 3;
 }
 
 bool SceneManager::CheckLoaded() {

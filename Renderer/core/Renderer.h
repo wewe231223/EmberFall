@@ -61,6 +61,8 @@ public:
 
 	void ToggleFullScreen();
 	void SetFullScreenState(bool state); 
+
+	void SetStageData(UINT stageIndex); 
 private:
 	void InitFactory();
 	
@@ -155,4 +157,6 @@ private:
 
 	bool mIsFullScreen{ false };
 	bool mShaderModel6_5Support{ false };
+
+	UINT mCurrentSceneIndex{ 0 };
 };

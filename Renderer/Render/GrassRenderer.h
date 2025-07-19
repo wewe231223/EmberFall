@@ -68,6 +68,9 @@ public:
 public:
 	void SetMaterial(UINT materialIndex);
 	void Render(ComPtr<ID3D12GraphicsCommandList6> commandList, DefaultBufferGPUIterator cameraBuffer, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS material);
+
+	void SetTerrainSceneGrass(); 
+	void SetArenaSceneGrass(); 
 private:
 	void CreatePipelineState(ComPtr<ID3D12Device10> device);
 	void CreateRootSignature(ComPtr<ID3D12Device10> device);
@@ -84,7 +87,10 @@ private:
 
 	Client::TerrainCollider mTerrainCollider{}; 
 	std::vector<SimpleMath::Vector3> mGrass{};
+
 	DefaultBufferCPUIterator mCameraBuffer{}; 
+
+	bool mUploaded{ false };
 };
 
 

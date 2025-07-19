@@ -148,7 +148,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             Input.Update();
 			SoundManager::GetInstance().Update();
 
-
+			renderer.SetStageData(sceneManager.GetCurrentSceneIndex());
             sceneManager.Update(renderer.GetDevice(), renderer.GetLoadCommandList());
 
 

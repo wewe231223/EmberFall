@@ -25,6 +25,10 @@ public:
 	void Update(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList);
 
 	void ChangeSceneTo(SceneType nextScene);
+
+	// For Renderer!  
+	UINT GetCurrentSceneIndex() const;
+
 private:
 	std::array<std::shared_ptr<IScene>, static_cast<size_t>(SceneType::END)> mScenes{};
 	std::array<Features, static_cast<size_t>(SceneType::END)> mSceneFeatureType{};
