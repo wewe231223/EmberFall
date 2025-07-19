@@ -100,6 +100,12 @@ void ObjectManager::Reset() {
     }
 }
 
+void ObjectManager::ResetEnv() {
+    for (auto& env : mEnvironments) {
+        env->Reset();
+    }
+}
+
 void ObjectManager::LoadEnvFromFile(const std::filesystem::path& path) {
     std::ifstream envs{ path, std::ios::binary };
     if (not envs.is_open()) {
@@ -365,7 +371,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnTrigger(const SimpleMath::Vector
 
     obj->GetBoundingObject()->Update(obj->GetTransform()->GetWorld());
     sector->AddInSector(validId, obj->GetPosition());
-    obj->RegisterUpdate();
+    obj->RegisterUpdate(100ms);
 
     return obj;
 }
@@ -395,7 +401,8 @@ std::shared_ptr<GameObject> ObjectManager::SpawnEventTrigger(const SimpleMath::V
     obj->Init();
 
     obj->GetBoundingObject()->Update(obj->GetTransform()->GetWorld());
-    obj->RegisterUpdate();
+    sector->AddInSector(validId, pos);
+    obj->RegisterUpdate(50ms);
 
     return obj;
 }

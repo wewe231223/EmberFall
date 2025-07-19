@@ -31,6 +31,8 @@ public:
     void Start(uint8_t corruptedGemCount=DEFAULT_CORRUPTED_GEM_COUNT);
     void Reset();
 
+    void ResetEnv();
+
     void LoadEnvFromFile(const std::filesystem::path& path);
     std::shared_ptr<GameObject> GetObjectFromId(NetworkObjectIdType id) const;
     std::shared_ptr<GameObject> GetPlayer(NetworkObjectIdType id) const;

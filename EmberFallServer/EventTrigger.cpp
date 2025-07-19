@@ -23,8 +23,8 @@ void EventTrigger::Update(const float deltaTime) { }
 void EventTrigger::LateUpdate(const float deltaTime) { }
 
 void EventTrigger::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
-    auto tag = opponent->GetTag();
-    if (ObjectTag::TRIGGER == tag or ObjectTag::ITEM == tag) {
+    auto opponentTag = opponent->GetTag();
+    if (ObjectTag::TRIGGER == opponentTag or ObjectTag::ENV == opponentTag or ObjectTag::NONE == opponentTag or ObjectTag::ITEM == opponentTag) {
         return;
     }
 
@@ -39,10 +39,6 @@ void EventTrigger::OnCollision(const std::shared_ptr<GameObject>& opponent, cons
     }
 
     auto ownerRoom = owner->GetMyRoomIdx();
-    auto opponentTag = opponent->GetTag();
-    if (ObjectTag::TRIGGER == opponentTag or ObjectTag::ENV == opponentTag or ObjectTag::NONE == opponentTag) {
-        return;
-    }
 
     if (not mProducedEventCounter.contains(opponentId)) {
         mProducedEventCounter.try_emplace(opponentId, 0.0f, 1);

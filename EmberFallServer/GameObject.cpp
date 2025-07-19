@@ -144,14 +144,14 @@ void GameObject::Init() {
     }
 }
 
-void GameObject::RegisterUpdate() {
+void GameObject::RegisterUpdate(SysClock::duration delay) {
     auto myRoom = GetMyRoomIdx();
     auto roomStageState = gGameRoomManager->GetRoom(myRoom)->GetStage().GetActiveState();
     if (false == roomStageState) {
         return;
     }
 
-    gServerFrame->AddTimerEvent(GetId(), GameProtocol::Logic::MONSTER_UPDATE_DELAY, IoType::UPDATE_NPC, myRoom);
+    gServerFrame->AddTimerEvent(GetId(), delay, IoType::UPDATE_NPC, myRoom);
 }
 
 void GameObject::Update() {

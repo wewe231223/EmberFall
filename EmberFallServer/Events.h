@@ -72,7 +72,11 @@ struct DestroyingGemCancel : public GameEvent {
 };
 
 struct GemDestroyed : public GameEvent { 
-    using GameEvent::GameEvent;
+    SimpleMath::Vector3 pos;
+
+    GemDestroyed() = default;
+    GemDestroyed(GameEventType type, NetworkObjectIdType sender, NetworkObjectIdType receiver, const SimpleMath::Vector3& pos)
+        : GameEvent{ type, sender, receiver }, pos{ pos } { }
 };
 
 // 초기화를 편하게 하기 위해 만든 함수

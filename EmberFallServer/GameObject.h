@@ -76,7 +76,7 @@ public:
     void Init();
 
     // Update & Process Event Functions
-    void RegisterUpdate();
+    void RegisterUpdate(SysClock::duration delay = GameProtocol::Logic::MONSTER_UPDATE_DELAY);
 
     void Update();
     void LateUpdate();

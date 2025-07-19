@@ -132,6 +132,9 @@ void Stage::EndStage() {
 
     mObjectManager->Reset();
     mCollisionManager->Reset();
+    if (Packets::GameStage_LAST == mStage) {
+        mObjectManager->ResetEnv();
+    }
 
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: End GameLoop", mGameRoomIdx);
 }

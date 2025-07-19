@@ -174,6 +174,10 @@ void HumanPlayerScript::DispatchGameEvent(GameEvent* event) {
 
     case GameEventType::DESTROY_GEM_COMPLETE:
     {
+        auto destroyEvent = reinterpret_cast<GemDestroyed*>(event);
+        auto packetDesyroy = FbsPacketFactory::GemDestroyedSC(destroyEvent->sender, destroyEvent->pos);
+        owner->StorePacket(packetDesyroy);
+
         SuccessInteraction();
         break;
     }

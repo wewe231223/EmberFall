@@ -70,7 +70,7 @@ void CorruptedGemScript::OnDestroy(DestroyingGemEvent* event) {
     mDestroyingTime += event->elapsedTime;
     if (mDestroyingTime > DESTROYING_TIME) {
         auto ownerRoom = owner->GetMyRoomIdx();
-        auto eventDestroyed = GameEventFactory::GetEvent<GemDestroyed>(owner->GetId(), event->sender);
+        auto eventDestroyed = GameEventFactory::GetEvent<GemDestroyed>(owner->GetId(), event->sender, owner->GetPosition());
         auto obj = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetObjectFromId(event->sender);
         if (nullptr != obj) {
             obj->DispatchGameEvent(eventDestroyed);
