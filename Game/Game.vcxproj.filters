@@ -120,6 +120,9 @@
     <ClCompile Include="System\Sound.cpp">
       <Filter>System</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\LayerIndexMap.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -202,6 +205,9 @@
     </ClInclude>
     <ClInclude Include="Scene\AreanaScene.h">
       <Filter>ArenaScene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\LayerIndexMap.h">
+      <Filter>Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -468,6 +468,8 @@ void ArenaScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	ArenaScene::BuildMaterial(); 
 	ArenaScene::BuildAniamtionController();
 
+	mLayerIndexMap.LoadFromFile("Resources/Binarys/Terrain/LayerIndex_Arena.bin");
+
 	ArenaScene::BuildEnvironment("Resources/Binarys/Terrain/ArenaSceneObjects.bin");
 
 	for (auto& obj : mEnvironmentObjects) {
@@ -612,6 +614,198 @@ void ArenaScene::SendLook() {
 
 		decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(gClientCore->GetSessionId(), look);
 		gClientCore->Send(packetCamera);
+	}
+}
+
+void ArenaScene::UpdateSound() {
+	const float footprintDistance = 10.f; // 발자국 소리 들리는 거리 
+	const float PrimaryVolume = 5.f;
+
+	// 1. 발자국 소리 ( 플레이어 ) 
+	for (auto& pair : mPlayerIndexmap) {
+		if (pair.second == nullptr) {
+			continue;
+		}
+		// 나의 경우 
+		if (pair.first == gClientCore->GetSessionId()) {
+			// 움직이는 상태라면
+			if (pair.second->GetTransform().GetMovingState()) {
+				// 이전에 멈춘 상태였다면
+				if (mSoundMap[pair.first].second == nullptr) {
+					mSoundMap[pair.first].first = mLayerIndexMap.GetLayerIndexAtPosition(pair.second->GetTransform().GetPosition());
+
+					switch (mSoundMap[pair.first].first) {
+					case 0: // Grass Area 
+						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassArea", PrimaryVolume, SoundOption::Shuffle, 100ms);
+						break;
+					case 1: // Load Area
+					case 2: // Stone Area 
+						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtArea", PrimaryVolume, SoundOption::Shuffle, 100ms);
+						break;
+					default:
+						break;
+					}
+
+				}
+				else { // 이전에 움직이고 있던 상태였다면
+					UINT currentAreaID{ mLayerIndexMap.GetLayerIndexAtPosition(pair.second->GetTransform().GetPosition()) };
+
+
+					if (currentAreaID != mSoundMap[pair.first].first) { // Area가 바뀌었다면 
+						// 먼저 이전 Area 사운드를 빼야 한다. 
+						mSoundMap[pair.first].second->Stop();
+
+						mSoundMap[pair.first].first = currentAreaID;
+
+						switch (mSoundMap[pair.first].first) {
+						case 0: // Grass Area 
+							mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassArea", PrimaryVolume, SoundOption::Shuffle);
+							break;
+						case 1: // Load Area
+						case 2: // Stone Area 
+							mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtArea", PrimaryVolume, SoundOption::Shuffle);
+							break;
+						default:
+							break;
+						}
+					}
+
+				}
+			}
+			else { // 멈춘 상태라면 
+				if (mSoundMap[pair.first].second != nullptr) {
+					mSoundMap[pair.first].second->Stop();
+					mSoundMap[pair.first].second = nullptr;
+				}
+			}
+
+
+		}
+		// 다른 플레이어의 경우 
+		else {
+			auto distanceSq = SimpleMath::Vector3::DistanceSquared(mMyPlayer->GetTransform().GetPosition(), pair.second->GetTransform().GetPosition());
+			if (distanceSq > footprintDistance * footprintDistance) {
+				continue;
+			}
+
+			// 움직인다면 
+			if (pair.second->GetTransform().GetMovingState()) {
+				// 이전에 멈춘 상태였다면
+				if (mSoundMap[pair.first].second == nullptr) {
+					mSoundMap[pair.first].first = mLayerIndexMap.GetLayerIndexAtPosition(pair.second->GetTransform().GetPosition());
+
+					float volume = 1.0f - std::clamp(std::sqrtf(distanceSq) / footprintDistance, 0.0f, 1.0f);
+
+					switch (mSoundMap[pair.first].first) {
+					case 0: // Grass Area 
+						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassArea", PrimaryVolume * volume, SoundOption::Shuffle);
+						break;
+					case 1: // Load Area
+					case 2: // Stone Area 
+						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtArea", PrimaryVolume * volume, SoundOption::Shuffle);
+						break;
+					default:
+						break;
+					}
+
+				}
+				else { // 이전에 움직이고 있던 상태였다면
+					UINT currentAreaID{ mLayerIndexMap.GetLayerIndexAtPosition(pair.second->GetTransform().GetPosition()) };
+					float volume = 1.0f - std::clamp(std::sqrtf(distanceSq) / footprintDistance, 0.0f, 1.0f);
+
+					mSoundMap[pair.first].second->SetVolume(PrimaryVolume * volume);
+
+					if (currentAreaID != mSoundMap[pair.first].first) { // Area가 바뀌었다면 
+						// 먼저 이전 Area 사운드를 빼야 한다. 
+						mSoundMap[pair.first].second->Stop();
+
+						mSoundMap[pair.first].first = currentAreaID;
+
+						switch (mSoundMap[pair.first].first) {
+						case 0: // Grass Area 
+							mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassArea", PrimaryVolume * volume, SoundOption::Shuffle);
+							break;
+						case 1: // Load Area
+						case 2: // Stone Area 
+							mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtArea", PrimaryVolume * volume, SoundOption::Shuffle);
+							break;
+						default:
+							break;
+						}
+					}
+
+				}
+			}
+			else { // 멈춘 상태라면 
+				if (mSoundMap[pair.first].second != nullptr) {
+					mSoundMap[pair.first].second->Stop();
+					mSoundMap[pair.first].second = nullptr;
+				}
+			}
+		}
+	}
+
+	// 2. 발자국 소리 ( 오브젝트 ) 
+	for (auto& pair : mGameObjectMap) {
+		auto distanceSq = SimpleMath::Vector3::DistanceSquared(mMyPlayer->GetTransform().GetPosition(), pair.second->GetTransform().GetPosition());
+		if (distanceSq > footprintDistance * footprintDistance) {
+			continue;
+		}
+
+		// 움직인다면 
+		if (pair.second->GetTransform().GetMovingState()) {
+			// 이전에 멈춘 상태였다면
+			if (mSoundMap[pair.first].second == nullptr) {
+				mSoundMap[pair.first].first = mLayerIndexMap.GetLayerIndexAtPosition(pair.second->GetTransform().GetPosition());
+
+				float volume = 1.0f - std::clamp(std::sqrtf(distanceSq) / footprintDistance, 0.0f, 1.0f);
+
+				switch (mSoundMap[pair.first].first) {
+				case 0: // Grass Area 
+					mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassAreaWalk", PrimaryVolume * volume, SoundOption::Shuffle);
+					break;
+				case 1: // Load Area
+				case 2: // Stone Area 
+					mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtAreaWalk", PrimaryVolume * volume, SoundOption::Shuffle);
+					break;
+				default:
+					break;
+				}
+
+			}
+			else { // 이전에 움직이고 있던 상태였다면
+				UINT currentAreaID{ mLayerIndexMap.GetLayerIndexAtPosition(pair.second->GetTransform().GetPosition()) };
+				float volume = 1.0f - std::clamp(std::sqrtf(distanceSq) / footprintDistance, 0.0f, 1.0f);
+
+				mSoundMap[pair.first].second->SetVolume(PrimaryVolume * volume);
+
+				if (currentAreaID != mSoundMap[pair.first].first) { // Area가 바뀌었다면 
+					// 먼저 이전 Area 사운드를 빼야 한다. 
+					mSoundMap[pair.first].second->Stop();
+
+					mSoundMap[pair.first].first = currentAreaID;
+
+					switch (mSoundMap[pair.first].first) {
+					case 0: // Grass Area 
+						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassAreaWalk", PrimaryVolume * volume, SoundOption::Shuffle);
+						break;
+					case 1: // Load Area
+					case 2: // Stone Area 
+						mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtAreaWalk", PrimaryVolume * volume, SoundOption::Shuffle);
+						break;
+					default:
+						break;
+					}
+				}
+
+			}
+		}
+		else { // 멈춘 상태라면 
+			if (mSoundMap[pair.first].second != nullptr) {
+				mSoundMap[pair.first].second->Stop();
+				mSoundMap[pair.first].second = nullptr;
+			}
+		}
 	}
 }
 
@@ -783,6 +977,8 @@ void ArenaScene::Update() {
 	mSkyBox.UpdateShaderVariables();
 	auto [skyBoxMesh, skyBoxShader, skyBoxModelContext] = mSkyBox.GetRenderData();
 	mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);
+
+	ArenaScene::UpdateSound();
 }
 
 void ArenaScene::SendNetwork() {

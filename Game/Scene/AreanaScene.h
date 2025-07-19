@@ -4,6 +4,7 @@
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Game/System/Input.h"
 #include "../Game/System/Timer.h"
+#include "../System/Sound.h"
 #include "../Game/GameObject/GameObject.h"
 #include "../Game/Scene/Camera.h"
 #include "../Game/GameObject/Animator.h"
@@ -18,6 +19,8 @@
 #include "../Game/GameObject/TerrainObject.h"
 #include "../External/Include/absl/container/flat_hash_map.h"
 #include "../Game/Scene/MaterialLoader.h"
+#include "../Game/Scene/LayerIndexMap.h"
+
 
 class ArenaScene : public IScene {
 	using duration = std::chrono::milliseconds;
@@ -54,6 +57,7 @@ private:
 	float GetAverageLatency();
 
 	void SendLook();
+	void UpdateSound();
 private:
 	void ProcessPackets(const uint8_t* buffer, size_t size);
 	const uint8_t* ProcessPacket(const uint8_t* buffer);
@@ -84,6 +88,10 @@ private:
 	std::unique_ptr<CameraMode> mTPPCameraMode{ nullptr };
 
 	absl::flat_hash_map<NetworkObjectIdType, GameObject*> mGameObjectMap{};
+
+	LayerIndexMap mLayerIndexMap{};
+	absl::flat_hash_map<NetworkObjectIdType, std::pair<UINT, Sound*>> mSoundMap{};
+
 	std::vector<GameObject> mGameObjects{};
 
 

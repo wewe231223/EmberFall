@@ -19,25 +19,7 @@
 #include "../External/Include/absl/container/flat_hash_map.h"
 #include "../Game/Scene/MaterialLoader.h"
 #include "../System/Sound.h"
-
-class LayerIndexMap {
-public:
-	LayerIndexMap() = default; 
-	~LayerIndexMap() = default;
-
-public:
-	bool LoadFromFile(const std::string& filePath);
-	UINT GetLayerIndexAtPosition(const DirectX::SimpleMath::Vector3& worldPos) const;
-
-private:
-	std::vector<uint8_t> mData;
-	int mXCount = 0;
-	int mZCount = 0;
-	float mSampleInterval = 0.1f;
-	float mTerrainWidth = 0.f;
-	float mTerrainLength = 0.f;
-};
-
+#include "../Game/Scene/LayerIndexMap.h"
 
 class TerrainScene : public IScene {
 	using duration = std::chrono::milliseconds; 

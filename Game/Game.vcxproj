@@ -160,6 +160,7 @@
     </ClCompile>
     <ClCompile Include="Scene\AreanaScene.cpp" />
     <ClCompile Include="Scene\Camera.cpp" />
+    <ClCompile Include="Scene\LayerIndexMap.cpp" />
     <ClCompile Include="Scene\LoadingScene.cpp" />
     <ClCompile Include="Scene\LobbyPlayer.cpp" />
     <ClCompile Include="Scene\LobbyScene.cpp" />
@@ -189,6 +190,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Scene\AreanaScene.h" />
     <ClInclude Include="Scene\Camera.h" />
+    <ClInclude Include="Scene\LayerIndexMap.h" />
     <ClInclude Include="Scene\LoadingScene.h" />
     <ClInclude Include="Scene\LobbyPlayer.h" />
     <ClInclude Include="Scene\LobbyScene.h" />
