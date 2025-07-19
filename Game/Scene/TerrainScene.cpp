@@ -520,36 +520,32 @@ void TerrainScene::ProcessGemDestroyed(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GemDestroyedSC>(buffer);
 	
 
-	static int c = 1; 
 
-	Console.Log("보석이 파괴되었습니다.", LogType::Info);
+	ParticleVertex v{};
+	v.position = mGameObjectMap[data->objectId()]->GetTransform().GetPosition();
+	v.position.y += 1.5f;
 
-	if (c == 1) {
-		ParticleVertex v{};
-		v.position = mGameObjectMap[data->objectId()]->GetTransform().GetPosition();
-		v.position.y += 1.5f;
+	v.halfheight = 10.f;
+	v.halfWidth = 10.f;
+	v.material = mRenderManager->GetMaterialManager().GetMaterial("ExplodeMaterial");
+	v.spritable = true;
+	v.spriteDuration = 1.f;
+	v.spriteFrameInRow = 8;
+	v.spriteFrameInCol = 8;
+	v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+	v.velocity = { 0.f, 0.f, 0.f };
+	v.totalLifeTime = 0.001f;
+	v.lifeTime = 0.001f;
+	v.type = ParticleType_emit;
+	v.emitType = ParticleType_explode;
+	v.remainEmit = 500;
+	v.emitIndex = 0;
 
-		v.halfheight = 10.f;
-		v.halfWidth = 10.f;
-		v.material = mRenderManager->GetMaterialManager().GetMaterial("ExplodeMaterial");
-		v.spritable = true;
-		v.spriteDuration = 1.f;
-		v.spriteFrameInRow = 8;
-		v.spriteFrameInCol = 8;
-		v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
-		v.velocity = { 0.f, 0.f, 0.f };
-		v.totalLifeTime = 0.001f;
-		v.lifeTime = 0.001f;
-		v.type = ParticleType_emit;
-		v.emitType = ParticleType_explode;
-		v.remainEmit = 1;
-		v.emitIndex = 0;
+	mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
+	mParticleMap[data->objectId()].Get()->position = v.position;
 
-		mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
-		mParticleMap[data->objectId()].Get()->position = v.position;
 
-		c -= 1; 
-	}
+	
 }
 
 // 아이템 

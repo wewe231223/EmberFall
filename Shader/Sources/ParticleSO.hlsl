@@ -322,7 +322,7 @@ uint CreateExplodeParticle(ParticleVertex emitter, uint vertexID, inout PointStr
   
     
      [unroll]
-    for (int i = 0; i < 36; ++i)
+    for (int i = 0; i < 10; ++i)
     {
         p.direction = GenerateRandomDirection(vertexID + i);
         p.direction.y = abs(p.direction.y);
@@ -334,7 +334,7 @@ uint CreateExplodeParticle(ParticleVertex emitter, uint vertexID, inout PointStr
         stream.Append(p);
     } 
     
-    return 36; 
+    return 10; 
 }
 
 void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
