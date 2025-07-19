@@ -295,9 +295,11 @@ uint CreateExplodeParticle(ParticleVertex emitter, uint vertexID, inout PointStr
 {
     ParticleVertex p = (ParticleVertex) 0;
 
+    const float lifeTime = 1.5f; 
+    
     p.position = emitter.position;
 
-    p.halfWidth = GenerateRandomInRange(0.3f, 0.5f, vertexID);
+    p.halfWidth = GenerateRandomInRange(0.5f, 1.f, vertexID);
     p.halfHeight = p.halfWidth;
 
     p.material = emitter.material;
@@ -305,15 +307,15 @@ uint CreateExplodeParticle(ParticleVertex emitter, uint vertexID, inout PointStr
     p.spritable = emitter.spritable;
     p.spriteFrameInRow = emitter.spriteFrameInRow;
     p.spriteFrameInCol = emitter.spriteFrameInCol;
-    p.spriteDuration = 1.f;
+    p.spriteDuration = lifeTime;
 
     p.opacity = 1.0f;
 
     p.mass = 0.5f;
     p.drag = float3(0.1f, 0.1f, 0.1f);
 
-    p.totalLifetime = 1.f;
-    p.lifetime = 1.f;
+    p.totalLifetime = lifeTime;
+    p.lifetime = lifeTime;
 
     p.type = ParticleType_smoke;
     p.emitType = ParticleType_ember;
@@ -322,25 +324,26 @@ uint CreateExplodeParticle(ParticleVertex emitter, uint vertexID, inout PointStr
   
     
      [unroll]
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 25; ++i)
     {
         p.direction = GenerateRandomDirection(vertexID + i);
-        p.direction.y = abs(p.direction.y);
+        
 
-        float speed = GenerateRandomInRange(1.5f, 3.f, vertexID + i + 100);
+        float speed = GenerateRandomInRange(3.f, 5.5f, vertexID + i + 100);
         p.velocity = p.direction * speed;
 
         OnTerrain(p);
         stream.Append(p);
     } 
     
-    return 10; 
+    return 25; 
 }
 
 void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
 {    
     ParticleVertex v = emitter;
     // 에미터 위치 갱신
+    int remain = v.remainEmit;
     
     if (v.lifetime <= 0.0f && v.remainEmit > 0 && globalTime != 0.f)
     {        
@@ -361,16 +364,17 @@ void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout Point
         
         
         v.lifetime = v.totalLifetime;
-        v.remainEmit -= emitCount;
+        remain -= emitCount;
 
     }
 
     
-    if (v.remainEmit < 0)
+    if (remain < 0)
     {
         return; 
     }
     
+    v.remainEmit = remain;
     stream.Append(v);
 }
 
