@@ -2,6 +2,7 @@
 #define ParticleType_shell  2
 #define ParticleType_ember  3
 #define ParticleType_smoke  4
+#define ParticleType_explode 5 
  
 #define ember_LifeTime      6.f
 
@@ -189,7 +190,7 @@ void OnTerrain(inout ParticleVertex v)
 
 //----------------------------------------------------------[ Emit Particle Update ]----------------------------------------------------------
 
-void CreateSmokeParticle(ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
+uint CreateSmokeParticle(ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
 {
     ParticleVertex p = (ParticleVertex) 0;
 
@@ -285,34 +286,91 @@ void CreateSmokeParticle(ParticleVertex emitter, uint vertexID, inout PointStrea
         OnTerrain(p);
         stream.Append(p);
     }
+    
+    return 36; 
 }
 
+
+uint CreateExplodeParticle(ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
+{
+    ParticleVertex p = (ParticleVertex) 0;
+
+    p.position = emitter.position;
+
+    p.halfWidth = GenerateRandomInRange(0.3f, 0.5f, vertexID);
+    p.halfHeight = p.halfWidth;
+
+    p.material = emitter.material;
+
+    p.spritable = emitter.spritable;
+    p.spriteFrameInRow = emitter.spriteFrameInRow;
+    p.spriteFrameInCol = emitter.spriteFrameInCol;
+    p.spriteDuration = 1.f;
+
+    p.opacity = 1.0f;
+
+    p.mass = 0.5f;
+    p.drag = float3(0.1f, 0.1f, 0.1f);
+
+    p.totalLifetime = 1.f;
+    p.lifetime = 1.f;
+
+    p.type = ParticleType_smoke;
+    p.emitType = ParticleType_ember;
+    p.remainEmit = 0;
+    p.emitIndex = emitter.emitIndex;
+  
+    
+     [unroll]
+    for (int i = 0; i < 36; ++i)
+    {
+        p.direction = GenerateRandomDirection(vertexID + i);
+        p.direction.y = abs(p.direction.y);
+
+        float speed = GenerateRandomInRange(1.5f, 3.f, vertexID + i + 100);
+        p.velocity = p.direction * speed;
+
+        OnTerrain(p);
+        stream.Append(p);
+    } 
+    
+    return 36; 
+}
 
 void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
 {    
     ParticleVertex v = emitter;
     // 에미터 위치 갱신
     
-    if (v.lifetime <= 0.0f && v.remainEmit != 0 && globalTime != 0.f)
-    {
-        if (v.emitType == ParticleType_smoke)
+    if (v.lifetime <= 0.0f && v.remainEmit > 0 && globalTime != 0.f)
+    {        
+        uint emitCount = 0;
+        
+        switch (v.emitType)
         {
-            CreateSmokeParticle(v, vertexID, stream);
-        } 
-        
-        
-        
-        
+            case ParticleType_smoke:
+                emitCount = CreateSmokeParticle(v, vertexID, stream);
+                break;
+            case ParticleType_explode:
+                emitCount = CreateExplodeParticle(v, vertexID, stream);
+                break;
+
+        }
         
         
         
         
         v.lifetime = v.totalLifetime;
-        if (v.remainEmit > 0)
-            v.remainEmit--;
+        v.remainEmit -= emitCount;
 
     }
 
+    
+    if (v.remainEmit < 0)
+    {
+        return; 
+    }
+    
     stream.Append(v);
 }
 
