@@ -6,238 +6,271 @@
 #include "../Utility/Crash.h"
 #include "../Renderer/Core/Console.h"
 
+#ifndef EXCLUDE_ASSIMP
 Assimp::Importer MeshLoader::mImporter{};
-// 파일에 기록하고 읽는 거 만들기. 
+#endif 
 
 MeshData MeshLoader::Load(const std::filesystem::path& path, UINT meshIndex) {
-	MeshData meshData{};
+    std::string baseName = path.stem().string();
+    std::string cacheName = baseName + std::to_string(meshIndex) + ".bin";
+    std::filesystem::path cachePath = BinaryDirectory / (cacheName + ".bin");
 
-	const aiScene* scene = mImporter.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_ConvertToLeftHanded  );
+    MeshData meshData{};
+    if (std::filesystem::exists(cachePath)) {
+        if (LoadFromBinary(cachePath, meshData)) {
+            return meshData;
+        }
+    }
 
-	CrashExp(scene != nullptr, "Failed To Load Model!");
-	CrashExp((!(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE)), "Failed To Load Model!");
-	CrashExp((scene->mRootNode != nullptr), "Failed To Load Model!");
+#ifndef EXCLUDE_ASSIMP
+    const aiScene* scene = mImporter.ReadFile(
+        path.string(),
+        aiProcess_Triangulate |
+        aiProcess_CalcTangentSpace |
+        aiProcess_ConvertToLeftHanded
+    );
 
-	if (!scene or scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE or !scene->mRootNode) {
-		Console.Log("ModelLoad Failed : {}",LogType::Error, mImporter.GetErrorString());
-		Crash("ModelLoad Failed");
-	}
+    CrashExp(scene && !(scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE) && scene->mRootNode, "Failed To Load Model!");
 
-	if (meshIndex < scene->mNumMeshes) {
-		aiMesh* mesh = scene->mMeshes[meshIndex];
+    if (meshIndex < scene->mNumMeshes) {
+        aiMesh* mesh = scene->mMeshes[meshIndex];
 
-		if (mesh->HasPositions()) {
-			//meshData.position.reserve(meshData.position.size() + mesh->mNumVertices);
-			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
-				meshData.position.emplace_back(mesh->mVertices[vertex].x, mesh->mVertices[vertex].y, mesh->mVertices[vertex].z);
-			}
-			meshData.vertexAttribute.set(0);
-		}
+        if (mesh->HasPositions()) {
+            for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
+                meshData.position.emplace_back(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z);
+            }
+            meshData.vertexAttribute.set(0);
+        }
 
-		if (mesh->HasNormals()) {
-			meshData.normal.reserve(meshData.normal.size() + mesh->mNumVertices);
-			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
-				meshData.normal.emplace_back(mesh->mNormals[vertex].x, mesh->mNormals[vertex].y, mesh->mNormals[vertex].z);
-			}
-			meshData.vertexAttribute.set(1);
-		}
+        if (mesh->HasNormals()) {
+            meshData.normal.reserve(meshData.normal.size() + mesh->mNumVertices);
+            for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
+                meshData.normal.emplace_back(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z);
+            }
+            meshData.vertexAttribute.set(1);
+        }
 
-		if (mesh->HasTextureCoords(0)) {
-			meshData.texCoord1.reserve(meshData.texCoord1.size() + mesh->mNumVertices);
-			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
-				meshData.texCoord1.emplace_back(mesh->mTextureCoords[0][vertex].x, mesh->mTextureCoords[0][vertex].y);
-			}
-			meshData.vertexAttribute.set(2);
-		}
+        if (mesh->HasTextureCoords(0)) {
+            meshData.texCoord1.reserve(meshData.texCoord1.size() + mesh->mNumVertices);
+            for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
+                meshData.texCoord1.emplace_back(mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y);
+            }
+            meshData.vertexAttribute.set(2);
+        }
 
-		if (mesh->HasTextureCoords(1)) {
-			meshData.texCoord2.reserve(meshData.texCoord2.size() + mesh->mNumVertices);
-			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
-				meshData.texCoord2.emplace_back(mesh->mTextureCoords[1][vertex].x, mesh->mTextureCoords[1][vertex].y);
-			}
-			meshData.vertexAttribute.set(3);
-		}
+        if (mesh->HasTextureCoords(1)) {
+            meshData.texCoord2.reserve(meshData.texCoord2.size() + mesh->mNumVertices);
+            for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
+                meshData.texCoord2.emplace_back(mesh->mTextureCoords[1][v].x, mesh->mTextureCoords[1][v].y);
+            }
+            meshData.vertexAttribute.set(3);
+        }
 
-		if (mesh->HasTangentsAndBitangents()) {
-			meshData.tangent.reserve(meshData.tangent.size() + mesh->mNumVertices);
-			meshData.bitangent.reserve(meshData.bitangent.size() + mesh->mNumVertices);
-			for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
-				meshData.tangent.emplace_back(mesh->mTangents[vertex].x, mesh->mTangents[vertex].y, mesh->mTangents[vertex].z);
-				meshData.bitangent.emplace_back(mesh->mBitangents[vertex].x, mesh->mBitangents[vertex].y, mesh->mBitangents[vertex].z);
-			}
-			meshData.vertexAttribute.set(4);
-			meshData.vertexAttribute.set(5);
-		}
+        if (mesh->HasTangentsAndBitangents()) {
+            meshData.tangent.reserve(meshData.tangent.size() + mesh->mNumVertices);
+            meshData.bitangent.reserve(meshData.bitangent.size() + mesh->mNumVertices);
+            for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
+                meshData.tangent.emplace_back(mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z);
+                meshData.bitangent.emplace_back(mesh->mBitangents[v].x, mesh->mBitangents[v].y, mesh->mBitangents[v].z);
+            }
+            meshData.vertexAttribute.set(4);
+            meshData.vertexAttribute.set(5);
+        }
 
-		if (mesh->HasFaces()) {
+        if (mesh->HasFaces()) {
+            for (unsigned int f = 0; f < mesh->mNumFaces; ++f) {
+                meshData.index.emplace_back(mesh->mFaces[f].mIndices[0]);
+                meshData.index.emplace_back(mesh->mFaces[f].mIndices[1]);
+                meshData.index.emplace_back(mesh->mFaces[f].mIndices[2]);
+            }
+            meshData.indexed = true;
+            meshData.unitCount = static_cast<unsigned int>(meshData.index.size());
+        }
+        else {
+            meshData.indexed = false;
+            meshData.unitCount = mesh->mNumVertices;
+        }
 
-			for (unsigned int face = 0; face < mesh->mNumFaces; ++face) {
-				meshData.index.emplace_back(mesh->mFaces[face].mIndices[0]);
-				meshData.index.emplace_back(mesh->mFaces[face].mIndices[1]);
-				meshData.index.emplace_back(mesh->mFaces[face].mIndices[2]);
-			}
+        if (mesh->HasBones()) {
+            meshData.boneID.resize(meshData.boneID.size() + mesh->mNumVertices);
+            meshData.boneWeight.resize(meshData.boneWeight.size() + mesh->mNumVertices);
+            std::unordered_map<std::string, UINT> boneMap;
+            UINT boneCount = 0;
+            for (UINT b = 0; b < mesh->mNumBones; ++b) {
+                std::string bn = mesh->mBones[b]->mName.C_Str();
+                UINT bi = boneMap.count(bn) ? boneMap[bn] : (boneMap[bn] = boneCount++);
+                for (UINT w = 0; w < mesh->mBones[b]->mNumWeights; ++w) {
+                    int vid = mesh->mBones[b]->mWeights[w].mVertexId;
+                    float wght = mesh->mBones[b]->mWeights[w].mWeight;
+                    for (int k = 0; k < 4; ++k) {
+                        if (meshData.boneWeight[vid][k] == 0.f) {
+                            meshData.boneID[vid][k] = bi;
+                            meshData.boneWeight[vid][k] = wght;
+                            break;
+                        }
+                    }
+                }
+            }
+            meshData.vertexAttribute.set(6);
+            meshData.vertexAttribute.set(7);
+        }
+    }
+    else {
+        UINT vertexOffset = 0;
+        for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
+            aiMesh* mesh = scene->mMeshes[i];
 
-			meshData.indexed = true;
-			meshData.unitCount = static_cast<unsigned int>(meshData.index.size());
-		}
-		else {
-			meshData.indexed = false;
-			meshData.unitCount = mesh->mNumVertices;
-		}
+            if (mesh->HasPositions()) {
+                for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
+                    meshData.position.emplace_back(mesh->mVertices[v].x, mesh->mVertices[v].y, mesh->mVertices[v].z);
+                }
+                meshData.vertexAttribute.set(0);
+            }
 
-		if (mesh->HasBones()) {
-			meshData.boneID.resize(meshData.boneID.size() + mesh->mNumVertices);
-			meshData.boneWeight.resize(meshData.boneWeight.size() + mesh->mNumVertices);
+            if (mesh->HasNormals()) {
+                meshData.normal.reserve(meshData.normal.size() + mesh->mNumVertices);
+                for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
+                    meshData.normal.emplace_back(mesh->mNormals[v].x, mesh->mNormals[v].y, mesh->mNormals[v].z);
+                }
+                meshData.vertexAttribute.set(1);
+            }
 
-			std::unordered_map<std::string, UINT> boneMap{};
+            if (mesh->HasTextureCoords(0)) {
+                meshData.texCoord1.reserve(meshData.texCoord1.size() + mesh->mNumVertices);
+                for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
+                    meshData.texCoord1.emplace_back(mesh->mTextureCoords[0][v].x, mesh->mTextureCoords[0][v].y);
+                }
+                meshData.vertexAttribute.set(2);
+            }
 
-			UINT boneNumbers{ 0 };
+            if (mesh->HasTextureCoords(1)) {
+                meshData.texCoord2.reserve(meshData.texCoord2.size() + mesh->mNumVertices);
+                for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
+                    meshData.texCoord2.emplace_back(mesh->mTextureCoords[1][v].x, mesh->mTextureCoords[1][v].y);
+                }
+                meshData.vertexAttribute.set(3);
+            }
 
-			for (UINT b = 0; b < mesh->mNumBones; ++b) {
-				UINT boneIndex{ 0 };
-				std::string boneName = mesh->mBones[b]->mName.C_Str();
+            if (mesh->HasTangentsAndBitangents()) {
+                meshData.tangent.reserve(meshData.tangent.size() + mesh->mNumVertices);
+                meshData.bitangent.reserve(meshData.bitangent.size() + mesh->mNumVertices);
+                for (unsigned int v = 0; v < mesh->mNumVertices; ++v) {
+                    meshData.tangent.emplace_back(mesh->mTangents[v].x, mesh->mTangents[v].y, mesh->mTangents[v].z);
+                    meshData.bitangent.emplace_back(mesh->mBitangents[v].x, mesh->mBitangents[v].y, mesh->mBitangents[v].z);
+                }
+                meshData.vertexAttribute.set(4);
+                meshData.vertexAttribute.set(5);
+            }
 
-				if (boneMap.find(boneName) == boneMap.end()) {
-					boneIndex = boneNumbers;
-					boneNumbers++;
-					boneMap[boneName] = boneIndex;
-				}
-				else {
-					boneIndex = boneMap[boneName];
-				}
+            if (mesh->HasFaces()) {
+                for (unsigned int f = 0; f < mesh->mNumFaces; ++f) {
+                    meshData.index.emplace_back(vertexOffset + mesh->mFaces[f].mIndices[0]);
+                    meshData.index.emplace_back(vertexOffset + mesh->mFaces[f].mIndices[1]);
+                    meshData.index.emplace_back(vertexOffset + mesh->mFaces[f].mIndices[2]);
+                }
+                vertexOffset += mesh->mNumVertices;
+                meshData.indexed = true;
+                meshData.unitCount = static_cast<unsigned int>(meshData.index.size());
+            }
+            else {
+                meshData.indexed = false;
+                meshData.unitCount = mesh->mNumVertices;
+            }
 
+            if (mesh->HasBones()) {
+                meshData.boneID.resize(meshData.boneID.size() + mesh->mNumVertices);
+                meshData.boneWeight.resize(meshData.boneWeight.size() + mesh->mNumVertices);
+                std::unordered_map<std::string, UINT> boneMap;
+                UINT boneCount = 0;
+                for (UINT b = 0; b < mesh->mNumBones; ++b) {
+                    std::string bn = mesh->mBones[b]->mName.C_Str();
+                    UINT bi = boneMap.count(bn) ? boneMap[bn] : (boneMap[bn] = boneCount++);
+                    for (UINT w = 0; w < mesh->mBones[b]->mNumWeights; ++w) {
+                        int vid = mesh->mBones[b]->mWeights[w].mVertexId;
+                        float wght = mesh->mBones[b]->mWeights[w].mWeight;
+                        for (int k = 0; k < 4; ++k) {
+                            if (meshData.boneWeight[vid][k] == 0.f) {
+                                meshData.boneID[vid][k] = bi;
+                                meshData.boneWeight[vid][k] = wght;
+                                break;
+                            }
+                        }
+                    }
+                }
+                meshData.vertexAttribute.set(6);
+                meshData.vertexAttribute.set(7);
+            }
+        }
+    }
 
-				for (UINT j = 0; j < mesh->mBones[b]->mNumWeights; ++j) {
-					int vertexID = static_cast<int>(mesh->mBones[b]->mWeights[j].mVertexId);
-					float weight = mesh->mBones[b]->mWeights[j].mWeight;
+    SaveToBinary(meshData, cachePath);
+#else 
+    CrashExp(false, "Assimp is excluded from the build! Cannot load mesh data from file");
+#endif 
 
-					for (auto k = 0; k < 4; ++k) {
-						if (meshData.boneWeight[vertexID][k] == 0.0f) {
-							meshData.boneID[vertexID][k] = boneIndex;
-							meshData.boneWeight[vertexID][k] = weight;
-							break;
-						}
-					}
+    return meshData;
+}
 
-				}
+bool MeshLoader::SaveToBinary(const MeshData& meshData, const std::filesystem::path& binaryPath) {
+    std::ofstream ofs(binaryPath, std::ios::binary);
+    CrashExp(ofs.is_open(), "Failed to open binary file for writing!");
 
-			}
+    ofs.write(reinterpret_cast<const char*>(&meshData.indexed), sizeof(meshData.indexed));
+    ofs.write(reinterpret_cast<const char*>(&meshData.unitCount), sizeof(meshData.unitCount));
 
-			meshData.vertexAttribute.set(6);
-			meshData.vertexAttribute.set(7);
-		}
+    uint32_t attrMask = static_cast<uint32_t>(meshData.vertexAttribute.to_ulong());
+    ofs.write(reinterpret_cast<const char*>(&attrMask), sizeof(attrMask));
 
-	} else {
-		UINT vertexOffset{ 0 };
+    auto writeVector = [&ofs](const auto& vec) {
+        uint64_t count = vec.size();
+        ofs.write(reinterpret_cast<const char*>(&count), sizeof(count));
+        if (count) {
+            ofs.write(reinterpret_cast<const char*>(vec.data()), sizeof(vec[0]) * count);
+        }
+        };
 
-		for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
-			aiMesh* mesh = scene->mMeshes[i];
+    writeVector(meshData.position);
+    writeVector(meshData.normal);
+    writeVector(meshData.texCoord1);
+    writeVector(meshData.texCoord2);
+    writeVector(meshData.tangent);
+    writeVector(meshData.bitangent);
+    writeVector(meshData.boneID);
+    writeVector(meshData.boneWeight);
+    writeVector(meshData.index);
 
-			if (mesh->HasPositions()) {
-				//meshData.position.reserve(meshData.position.size() + mesh->mNumVertices);
-				for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
-					meshData.position.emplace_back(mesh->mVertices[vertex].x, mesh->mVertices[vertex].y, mesh->mVertices[vertex].z);
-				}
-				meshData.vertexAttribute.set(0);
-			}
+    return true;
+}
 
-			if (mesh->HasNormals()) {
-				meshData.normal.reserve(meshData.normal.size() + mesh->mNumVertices);
-				for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
-					meshData.normal.emplace_back(mesh->mNormals[vertex].x, mesh->mNormals[vertex].y, mesh->mNormals[vertex].z);
-				}
-				meshData.vertexAttribute.set(1);
-			}
+bool MeshLoader::LoadFromBinary(const std::filesystem::path& binaryPath, MeshData& outMeshData) {
+    std::ifstream ifs(binaryPath, std::ios::binary);
+    CrashExp(ifs.is_open(), "Failed to open binary file for reading!");
 
-			if (mesh->HasTextureCoords(0)) {
-				meshData.texCoord1.reserve(meshData.texCoord1.size() + mesh->mNumVertices);
-				for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
-					meshData.texCoord1.emplace_back(mesh->mTextureCoords[0][vertex].x, mesh->mTextureCoords[0][vertex].y);
-				}
-				meshData.vertexAttribute.set(2);
-			}
+    ifs.read(reinterpret_cast<char*>(&outMeshData.indexed), sizeof(outMeshData.indexed));
+    ifs.read(reinterpret_cast<char*>(&outMeshData.unitCount), sizeof(outMeshData.unitCount));
 
-			if (mesh->HasTextureCoords(1)) {
-				meshData.texCoord2.reserve(meshData.texCoord2.size() + mesh->mNumVertices);
-				for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
-					meshData.texCoord2.emplace_back(mesh->mTextureCoords[1][vertex].x, mesh->mTextureCoords[1][vertex].y);
-				}
-				meshData.vertexAttribute.set(3);
-			}
+    uint32_t attrMask = 0;
+    ifs.read(reinterpret_cast<char*>(&attrMask), sizeof(attrMask));
+    outMeshData.vertexAttribute = decltype(outMeshData.vertexAttribute)(attrMask);
 
-			if (mesh->HasTangentsAndBitangents()) {
-				meshData.tangent.reserve(meshData.tangent.size() + mesh->mNumVertices);
-				meshData.bitangent.reserve(meshData.bitangent.size() + mesh->mNumVertices);
-				for (unsigned int vertex = 0; vertex < mesh->mNumVertices; ++vertex) {
-					meshData.tangent.emplace_back(mesh->mTangents[vertex].x, mesh->mTangents[vertex].y, mesh->mTangents[vertex].z);
-					meshData.bitangent.emplace_back(mesh->mBitangents[vertex].x, mesh->mBitangents[vertex].y, mesh->mBitangents[vertex].z);
-				}
-				meshData.vertexAttribute.set(4);
-				meshData.vertexAttribute.set(5);
-			}
+    auto readVector = [&ifs](auto& vec) {
+        uint64_t count = 0;
+        ifs.read(reinterpret_cast<char*>(&count), sizeof(count));
+        vec.resize(count);
+        if (count) {
+            ifs.read(reinterpret_cast<char*>(vec.data()), sizeof(vec[0]) * count);
+        }
+        };
 
-			if (mesh->HasFaces()) {
+    readVector(outMeshData.position);
+    readVector(outMeshData.normal);
+    readVector(outMeshData.texCoord1);
+    readVector(outMeshData.texCoord2);
+    readVector(outMeshData.tangent);
+    readVector(outMeshData.bitangent);
+    readVector(outMeshData.boneID);
+    readVector(outMeshData.boneWeight);
+    readVector(outMeshData.index);
 
-				for (unsigned int face = 0; face < mesh->mNumFaces; ++face) {
-					meshData.index.emplace_back(vertexOffset + mesh->mFaces[face].mIndices[0]);
-					meshData.index.emplace_back(vertexOffset + mesh->mFaces[face].mIndices[1]);
-					meshData.index.emplace_back(vertexOffset + mesh->mFaces[face].mIndices[2]);
-				}
-
-				vertexOffset += mesh->mNumVertices;
-
-				meshData.indexed = true;
-				meshData.unitCount = static_cast<unsigned int>(meshData.index.size());
-			}
-			else {
-				meshData.indexed = false;
-				meshData.unitCount = mesh->mNumVertices;
-			}
-
-			if (mesh->HasBones()) {
-				meshData.boneID.resize(meshData.boneID.size() + mesh->mNumVertices);
-				meshData.boneWeight.resize(meshData.boneWeight.size() + mesh->mNumVertices);
-
-				std::unordered_map<std::string, UINT> boneMap{};
-
-				UINT boneNumbers{ 0 };
-
-				for (UINT b = 0; b < mesh->mNumBones; ++b) {
-					UINT boneIndex{ 0 };
-					std::string boneName = mesh->mBones[b]->mName.C_Str();
-
-					if (boneMap.find(boneName) == boneMap.end()) {
-						boneIndex = boneNumbers;
-						boneNumbers++;
-						boneMap[boneName] = boneIndex;
-					}
-					else {
-						boneIndex = boneMap[boneName];
-					}
-
-
-					for (UINT j = 0; j < mesh->mBones[b]->mNumWeights; ++j) {
-						int vertexID = static_cast<int>(mesh->mBones[b]->mWeights[j].mVertexId);
-						float weight = mesh->mBones[b]->mWeights[j].mWeight;
-
-						for (auto k = 0; k < 4; ++k) {
-							if (meshData.boneWeight[vertexID][k] == 0.0f) {
-								meshData.boneID[vertexID][k] = boneIndex;
-								meshData.boneWeight[vertexID][k] = weight;
-								break;
-							}
-						}
-
-					}
-
-				}
-
-				meshData.vertexAttribute.set(6);
-				meshData.vertexAttribute.set(7);
-			}
-
-		}
-	}
-
-	return meshData;
+    return true;
 }

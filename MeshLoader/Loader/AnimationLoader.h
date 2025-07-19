@@ -2,6 +2,8 @@
 #include <filesystem>
 #include <fstream>
 #include "../MeshLoader/Base/MeshData.h"
+
+#ifndef EXCLUDE_ASSIMP
 #ifdef _DEBUG
 #pragma comment(lib, "External/lib/debug/assimp-vc143-mtd.lib")
 #else
@@ -10,24 +12,9 @@
 #include "../External/Include/assimp/Importer.hpp"
 #include "../External/Include/assimp/scene.h"
 #include "../External/Include/assimp/postprocess.h"
+#endif 
+
 #include "../MeshLoader/Base/AnimationData.h"
-
-
-namespace Legacy {
-	class AnimationLoader {
-	public:
-		AnimationLoader() = default;
-		~AnimationLoader() = default;
-	public:
-		AnimationClip Load(const std::filesystem::path& path, UINT animIndex = 0);
-	private:
-		std::shared_ptr<BoneNode> buildHierarchy(const aiNode* node);
-	private:
-		Assimp::Importer mImporter{};
-	};
-}
-
-
 
 class AnimationLoader {
 	static constexpr const char* BINARY_PATH = "Resources/Assets/Binarys";
@@ -43,17 +30,20 @@ public:
 	UINT GetBoneIndex(const std::string& name);
 private:
 	bool CheckBinary(const std::filesystem::path& path);
-
+#ifndef EXCLUDE_ASSIMP
 	AnimationClip LoadClip(UINT animIndex = 0);
 
 	std::shared_ptr<BoneNode> BuildNode(const aiNode* node, const std::unordered_map<std::string, UINT>& boneMap);
+#endif 
 private:
 	std::vector<AnimationClip> mClips{};
 
 	std::unordered_map<std::string, UINT> mBoneIndexMap{}; 
 
+#ifndef EXCLUDE_ASSIMP
 	Assimp::Importer mImporter{};
-	const aiScene* mScene{}; 
+	const aiScene* mScene{};
+#endif 
 };
 
 
