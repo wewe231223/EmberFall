@@ -26,6 +26,11 @@ cbuffer GrassMeta : register(b3)
     uint totalGrassCount;
 };
 
+cbuffer Base : register(b4)
+{
+    uint baseIndex; 
+}
+
 struct MaterialConstants
 {
     float4 diffuse;
@@ -98,7 +103,7 @@ void mainMS(
     out vertices VSOutput outVerts[MAX_VERTEX_COUNT])
 {
     const uint localId = groupThreadId.x;
-    const uint grassIndex = groupId.x * GRASS_PER_DISPATCH + localId;
+    const uint grassIndex = baseIndex + groupId.x * GRASS_PER_DISPATCH + localId;
 
     bool isValid = grassIndex < totalGrassCount;
 

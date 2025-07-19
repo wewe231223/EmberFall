@@ -336,8 +336,22 @@ void GrassRenderer::Render(ComPtr<ID3D12GraphicsCommandList6> commandList, Defau
 
 	// Console.Log("Grass Count : {}, Total Grass Count : {}, Dispatch : {}", LogType::Info, mGrass.size(), mGrassTree.GetSize(), dispatchCount);
 
-	if (dispatchCount != 0) {
-		commandList->DispatchMesh(dispatchCount, 1, 1);
+	constexpr UINT MAX_DISPATCH = 65535;
+
+	if (dispatchCount > 0) {
+		UINT remaining = dispatchCount;
+		UINT offset = 0;
+
+		while (remaining > 0) {
+			UINT batch = (remaining > MAX_DISPATCH) ? MAX_DISPATCH : remaining;
+
+			commandList->SetGraphicsRoot32BitConstants(7, 1, &offset, 0);
+
+			commandList->DispatchMesh(batch, 1, 1);
+
+			offset += batch;
+			remaining -= batch;
+		}
 	}
 }
 
@@ -485,7 +499,7 @@ void GrassRenderer::CreateRootSignature(ComPtr<ID3D12Device10> device) {
 	// 4. grass position
 	// 5. material 
 	// 6. textures 
-	D3D12_ROOT_PARAMETER rootParameters[7]{};
+	D3D12_ROOT_PARAMETER rootParameters[8]{};
 	
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
 	rootParameters[0].Descriptor.ShaderRegister = 0;
@@ -524,6 +538,13 @@ void GrassRenderer::CreateRootSignature(ComPtr<ID3D12Device10> device) {
 	rootParameters[6].DescriptorTable.NumDescriptorRanges = 1;
 	rootParameters[6].DescriptorTable.pDescriptorRanges = &descriptorRange;
 	rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+	rootParameters[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+	rootParameters[7].Constants.ShaderRegister = 4;
+	rootParameters[7].Constants.RegisterSpace = 0;
+	rootParameters[7].Constants.Num32BitValues = 1;
+	rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
 
 
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
