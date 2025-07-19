@@ -172,6 +172,7 @@ private:
 	float mAvgLatency{ 0.f };
 
 	bool mInitialized{ false }; 
+	bool mExpired{ false };
 	bool mIsBlind{ false };
 
 	size_t mProcessedPacketSize{ 0 };

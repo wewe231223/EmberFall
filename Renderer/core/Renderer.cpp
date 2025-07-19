@@ -727,7 +727,7 @@ void Renderer::SetWindowFullScreen() {
 }
 
 void Renderer::SetWindowedMode() {
-	DWORD style = WS_OVERLAPPEDWINDOW;
+	DWORD style = WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME;
 	DWORD exStyle = WS_EX_OVERLAPPEDWINDOW;
 
 	SetWindowLong(mRendererWindow, GWL_STYLE, style);

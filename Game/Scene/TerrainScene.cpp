@@ -1306,17 +1306,20 @@ void TerrainScene::Exit() {
 	mLatencyBlock->SetActiveState(false);
 	mPositionBlock->SetActiveState(false);
 	mPktsBlock->SetActiveState(false);
+
+	mExpired = true; 
 	
 	SoundManager::GetInstance().Reset(); 
 }
 
 void TerrainScene::SendLook() {
-	auto look = mCamera.GetTransform().GetForward();
-	look.y = 0.f;
+	if (not mExpired) {
+		auto look = mCamera.GetTransform().GetForward();
+		look.y = 0.f;
 
-	decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(gClientCore->GetSessionId(), look);
-	gClientCore->Send(packetCamera);
-
+		decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(gClientCore->GetSessionId(), look);
+		gClientCore->Send(packetCamera);
+	}
 }
 
 void TerrainScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {

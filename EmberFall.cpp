@@ -348,7 +348,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 
    if constexpr (Config::WINDOWED) {
-       DWORD style = WS_OVERLAPPEDWINDOW;
+       DWORD style = WS_OVERLAPPEDWINDOW & ~WS_THICKFRAME;
        DWORD exStyle = WS_EX_OVERLAPPEDWINDOW;
 
        int posX = (GetSystemMetrics(SM_CXSCREEN) / 2) - (Config::WINDOW_WIDTH<> / 2 + Config::EDITOR_WINDOW_WIDTH<> / 2);

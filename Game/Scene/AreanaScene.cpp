@@ -606,11 +606,13 @@ void ArenaScene::ProcessNetwork() {
 }
 
 void ArenaScene::SendLook() {
-	auto look = mCamera.GetTransform().GetForward();
-	look.y = 0.f;
+	if (not mExpired) {
+		auto look = mCamera.GetTransform().GetForward();
+		look.y = 0.f;
 
-	decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(gClientCore->GetSessionId(), look);
-	gClientCore->Send(packetCamera);
+		decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(gClientCore->GetSessionId(), look);
+		gClientCore->Send(packetCamera);
+	}
 }
 
 void ArenaScene::ProcessPackets(const uint8_t* buffer, size_t size) {
@@ -817,6 +819,8 @@ void ArenaScene::SendNetwork() {
 void ArenaScene::Exit() {
 	Input.EraseCallBack(mInputSign);
 	mLatencyBlock->SetActiveState(false); 
+
+	mExpired = true; 
 }
 
 void ArenaScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {

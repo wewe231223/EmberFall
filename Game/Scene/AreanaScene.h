@@ -120,6 +120,7 @@ private:
 
 	MaterialFileLoader mMaterialLoader{};
 	bool mIsBlind{ false };
+	bool mExpired{ false };
 
 	float mAvgLatency{}; 
 
