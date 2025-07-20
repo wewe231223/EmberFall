@@ -142,7 +142,7 @@ Deffered_POUT TreeCross_PS(TreeCross_VOUT input)
     
     float4 velocity = (curNDC - prevNDC);
    
-    output.velocity = float4(velocity.x, velocity.y, input.vPosition.z, input.position.z);
+    output.velocity = float4(velocity.x, velocity.y, length(input.vPosition), input.position.z);
     
     return output;
 }

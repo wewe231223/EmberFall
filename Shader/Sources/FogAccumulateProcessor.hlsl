@@ -3,18 +3,18 @@ RWTexture3D<float4> RWOutput : register(u0);
 
 
 
-static const float DensityScale = 0.1f;
+static const float DensityScale = 0.3f;
 static float fogBegin = 0.0f;
-static float fogEnd = 100.0f;
+static float fogEnd = 150.0f;
 
 float SliceTickness(float ndcZ, uint pixelZ)
 {
     
     
 
-    float result = pow(ndcZ + 1.f / float(pixelZ), 2) * (fogEnd - fogBegin) + fogBegin;
+    float result = pow(ndcZ + 1.f / float(pixelZ), 2.0f) * (fogEnd - fogBegin) + fogBegin;
     
-    float result2 = pow(ndcZ, 2) * (fogEnd - fogBegin) + fogBegin;
+    float result2 = pow(ndcZ, 2.0f) * (fogEnd - fogBegin) + fogBegin;
     
     return result - result2;
 }
@@ -49,7 +49,6 @@ void FogAccumulateProcessor_CS(uint3 dispatchThreadID : SV_DispatchThreadID)
         {
             pos.z = z;
             float4 slice = Input[pos];
-            float sliceThickness = (fogEnd - fogBegin) / volumPixel.z;
             float tickness = SliceTickness((float) z / volumPixel.z, volumPixel.z);
 
             accum = ScatterStep(accum.rgb, accum.a, slice.rgb, slice.a, tickness);

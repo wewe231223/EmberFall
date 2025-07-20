@@ -26,7 +26,7 @@ Texture3D fogVolume : register(t0);
 Texture2D velocity : register(t1);
 
 static float fogBegin = 0.0f;
-static float fogEnd = 100.0f;
+static float fogEnd = 150.0f;
 
 struct VS_INPUT
 {
@@ -77,7 +77,8 @@ VS_OUTPUT VolumetricFog_VS(VS_INPUT input)
 
 float4 VolumetricFog_PS(VS_OUTPUT input) : SV_Target
 {
-    float viewSpaceDistance = velocity.Sample(linearWrapSampler, input.texcoord).z;
+    float viewSpaceDistance = velocity.Sample(linearClampSampler, input.texcoord).z;
+    
     if (viewSpaceDistance <= 0.f || viewSpaceDistance >= fogEnd)
     {
         viewSpaceDistance = fogEnd;
@@ -88,18 +89,18 @@ float4 VolumetricFog_PS(VS_OUTPUT input) : SV_Target
     
     
     
-    float ndcZ = pow(saturate((viewPosition.z - fogBegin) / (fogEnd - fogBegin)), 0.5f);
-    
-    float k = 0.05f;
-    float fogFactor = 1.0f - exp(-viewSpaceDistance * k);
-    //float ndcZ = saturate(fogFactor);
-    //float3 uv = float3(input.texcoord, clamp(ndcZ, 0, 1));
+    float ndcZ = pow(saturate((length(viewPosition) - fogBegin) / (fogEnd - fogBegin)),  0.5f);
+    //float ndcZ = pow(saturate((viewPosition.z - fogBegin) / (fogEnd - fogBegin)),  0.5f);
 
     
-    float3 uv = float3(input.texcoord, 1.0f - ndcZ);
-    float4 scatteringColorAndTransmittance = fogVolume.Sample(linearWrapSampler, uv);
+    float3 uv = float3(input.texcoord, 1.0 - ndcZ);
+    float4 scatteringColorAndTransmittance = fogVolume.Sample(linearClampSampler, uv);
     float3 scatteringColor = HDR(scatteringColorAndTransmittance.rgb);
 
+    //scatteringColor *= mask;
+    //scatteringColorAndTransmittance.a *= mask;
+    
+    
     return float4(scatteringColor, scatteringColorAndTransmittance.a );
 
 }
