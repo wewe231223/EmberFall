@@ -361,7 +361,7 @@ void ArenaScene::ProcessObjectMove(const uint8_t* buffer) {
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
-			float predictDuration = mAvgLatency + data->duration();
+			float predictDuration = mAvgLatency + data->duration() + 0.3f;
 
 			auto zxPos = FbsPacketFactory::GetVector3(data->pos());
 			zxPos.y = 0.f;

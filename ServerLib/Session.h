@@ -36,9 +36,14 @@ inline constexpr int32_t MAX_SESSION_HEART_BEAT_CNT = 5;
 
 using RecvBuf = NetworkBuf<BUF_NETWORK_RECV_SIZE>;
 
+enum SessionNetType {
+    CLIENT,
+    SERVER
+};
+
 class Session : public IServerEntity {
 public:
-    Session(SOCKET socket);
+    Session(SOCKET socket, SessionNetType type = CLIENT);
     ~Session();
 
 public:
@@ -72,6 +77,7 @@ public:
     
 public:
     std::atomic_int32_t mHeartBeat{ };
+    const SessionNetType mNetType{ };
 
 private:
     std::string mIP{ };

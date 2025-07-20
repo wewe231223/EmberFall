@@ -12,7 +12,7 @@
 #include "Sector.h"
 
 GameSession::GameSession(SOCKET socket) 
-    : Session{ socket }, mSessionState{ SESSION_CONNECT } { }
+    : Session{ socket, SessionNetType::SERVER }, mSessionState{SESSION_CONNECT} { }
 
 GameSession::~GameSession() { 
     if (IsClosed()) {
@@ -71,7 +71,10 @@ void GameSession::ProcessRecv(INT32 numOfBytes) {
         std::move(remainBegin, dataEnd, dataBeg);
     }
 
-    RegisterRecv();
+    auto registerSuccess = RegisterRecv();
+    if (false == registerSuccess) {
+        gServerFrame->CloseSession(GetId());
+    }
 }
 
 void GameSession::InitUserObject() {
@@ -99,7 +102,11 @@ void GameSession::InitUserObject() {
     const auto anim = mUserObject->mAnimationStateMachine.GetCurrState();
 
     decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(myId, spec.entity, yaw, anim, spec.hp, pos);
-    RegisterSend(packetAppeared);
+    if (false == RegisterSend(packetAppeared)) {
+        gServerFrame->CloseSession(GetId());
+        return;
+    }
+
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Send Appeared My Player: {}, entity: {}", myId, Packets::EnumNameEntityType(spec.entity));
 
     auto script = mUserObject->GetScript<PlayerScript>();
@@ -238,13 +245,19 @@ void GameSession::UpdateViewList(const std::vector<NetworkObjectIdType>& inViewR
         const auto anim = newObj->mAnimationStateMachine.GetCurrState();
 
         decltype(auto) packetAppeared = FbsPacketFactory::ObjectAppearedSC(id, spec.entity, yaw, anim, spec.hp, pos);
-        RegisterSend(packetAppeared);
+        if (false == RegisterSend(packetAppeared)) {
+            gServerFrame->CloseSession(GetId());
+            return;
+        }
     }
 
     for (const auto id : oldViewList) {
         if (not newViewList.contains(id)) {
             decltype(auto) packetDisappeared = FbsPacketFactory::ObjectDisappearedSC(id);
-            RegisterSend(packetDisappeared);
+            if (false == RegisterSend(packetDisappeared)) {
+                gServerFrame->CloseSession(GetId());
+                return;
+            }
         }
     }
 

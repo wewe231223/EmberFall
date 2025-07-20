@@ -46,30 +46,32 @@ uint8_t GameRoom::TryInsertInRoom(SessionIdType sessionId) {
         return GameRoomError::ERROR_ROOM_STATE_IS_INGAME;
     }
 
-    Lock::SRWLockGuard sessionGaurd{ Lock::SRWLockMode::SRW_EXCLUSIVE, mSessionLock };
-    if (mSessionsInRoom.contains(sessionId)) {
-        return GameRoomError::ERROR_ROOM_STATE_IS_INGAME;
-    }
+    {
+        Lock::SRWLockGuard sessionGaurd{ Lock::SRWLockMode::SRW_EXCLUSIVE, mSessionLock };
+        if (mSessionsInRoom.contains(sessionId)) {
+            return GameRoomError::ERROR_ROOM_STATE_IS_INGAME;
+        }
 
-    if (mSessionsInRoom.size() >= MAX_PLAYER_IN_GAME_ROOM) {
-        return GameRoomError::ERROR_MAX_SESSION_IN_ONE_ROOM;
-    }
+        if (mSessionsInRoom.size() >= MAX_PLAYER_IN_GAME_ROOM) {
+            return GameRoomError::ERROR_MAX_SESSION_IN_ONE_ROOM;
+        }
 
-    uint8_t slotIndex;
-    if (false == mSessionSlotIndices.try_pop(slotIndex)) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Slot Index is exhausted!!");
-        return 255;
-    }
+        uint8_t slotIndex;
+        if (false == mSessionSlotIndices.try_pop(slotIndex)) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Slot Index is exhausted!!");
+            return 255;
+        }
 
-    auto session = gServerFrame->GetSession(sessionId);
-    if (nullptr == session) {
-        return GameRoomError::ERROR_SESSION_EXISTS_IN_THIS_ROOM;
-    }
+        auto session = gServerFrame->GetSession(sessionId);
+        if (nullptr == session) {
+            return GameRoomError::ERROR_SESSION_EXISTS_IN_THIS_ROOM;
+        }
 
-    ++mPlayerCount;
-    session->SetSlotIndex(slotIndex);
-    session->SetName(std::format("PID {}", slotIndex));
-    mSessionsInRoom.insert(sessionId);
+        ++mPlayerCount;
+        session->SetSlotIndex(slotIndex);
+        session->SetName(std::format("PID {}", slotIndex));
+        mSessionsInRoom.insert(sessionId);
+    }
 
     bool expected = false;
     if (true == mHeartBeat.compare_exchange_strong(expected, true)) {
@@ -80,14 +82,14 @@ uint8_t GameRoom::TryInsertInRoom(SessionIdType sessionId) {
 }
 
 uint8_t GameRoom::RemovePlayer(SessionIdType id, Packets::PlayerRole lastRole, bool lastReadyState, uint8_t lastSlotIndex) {
-    mSessionLock.WriteLock();
-    if (not mSessionsInRoom.contains(id)) {
-        mSessionLock.WriteUnlock();
-        return GameRoomError::ERROR_SESSION_NOT_EXISTS_IN_THIS_ROOM;
+    {
+        Lock::SRWLockGuard sesseionGuard{ Lock::SRWLockMode::SRW_EXCLUSIVE, mSessionLock };
+        if (not mSessionsInRoom.contains(id)) {
+            return GameRoomError::ERROR_SESSION_NOT_EXISTS_IN_THIS_ROOM;
+        }
+        mSessionsInRoom.erase(id);
+        mSessionSlotIndices.push(lastSlotIndex);
     }
-    mSessionsInRoom.erase(id);
-    mSessionSlotIndices.push(lastSlotIndex);
-    mSessionLock.WriteUnlock();
 
     if (mGameRoomState == GameRoomState::GAME_ROOM_STATE_TRANSITION) {
         mTransitionInterruptFlag = true;

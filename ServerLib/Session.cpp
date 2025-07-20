@@ -2,7 +2,7 @@
 #include "Session.h"
 #include "NetworkCore.h"
 
-Session::Session(SOCKET socket) : mSocket{ socket } {
+Session::Session(SOCKET socket, SessionNetType type) : mSocket{ socket }, mNetType{ type } {
     CrashExp(INVALID_SOCKET != mSocket, "");
 }
 
@@ -20,7 +20,7 @@ HANDLE Session::GetHandle() const {
 }
 
 bool Session::IsClosed() const {
-    return INVALID_SOCKET == mSocket;
+    return false == mConnected;
 }
 
 void Session::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
@@ -43,16 +43,19 @@ void Session::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
 }
 
 void Session::Close() {
-    mConnected.exchange(false);
+    bool expected = true;
+    if (false == mConnected.compare_exchange_strong(expected, false)) {
+        return;
+    }
 
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "Close Session Success");
     ::closesocket(mSocket);
     mSocket = INVALID_SOCKET;
 }
 
-void Session::RegisterRecv() {
+bool Session::RegisterRecv() {
     if (false == mConnected.load()) {
-        return;
+        return false;
     }
 
     DWORD receivedBytes{ };
@@ -71,22 +74,31 @@ void Session::RegisterRecv() {
         nullptr
     );
 
-    if (SOCKET_ERROR == result) {
-        auto errorCode = ::WSAGetLastError();
-        if (WSA_IO_PENDING != errorCode) {
+    if (SOCKET_ERROR != result) {
+        return true;
+    }
+
+    auto errorCode = ::WSAGetLastError();
+    if (WSA_IO_PENDING != errorCode) {
+        if (SessionNetType::CLIENT == mNetType) {
             HandleSocketError(errorCode);
         }
+        else {
+            return false;
+        }
     }
+
+    return true;
 }
 
-void Session::RegisterSend(OverlappedSend* const overlappedSend) {
+bool Session::RegisterSend(OverlappedSend* const overlappedSend) {
     if (false == mConnected.load()) {
-        return;
+        return false;
     }
 
     if (nullptr == overlappedSend) {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Get Overlapped Send Failure");
-        return;
+        return false;
     }
 
     DWORD sentBytes{ };
@@ -101,17 +113,22 @@ void Session::RegisterSend(OverlappedSend* const overlappedSend) {
         nullptr
     );
 
-    if (SOCKET_ERROR == result) {
-        auto errorCode = ::WSAGetLastError();
-        if (WSA_IO_PENDING != errorCode) {
-            FbsPacketFactory::ReleasePacketBuf(overlappedSend);
+    if (SOCKET_ERROR != result) {
+        return true;
+    }
+
+    auto errorCode = ::WSAGetLastError();
+    if (WSA_IO_PENDING != errorCode) {
+        FbsPacketFactory::ReleasePacketBuf(overlappedSend);
+        if (SessionNetType::CLIENT == mNetType) {
             HandleSocketError(errorCode);
+        }
+        else {
+            return false;
         }
     }
 
-    if (sentBytes != dataSize) {
-        Crash(true);
-    }
+    return true;
 }
 
 void Session::ProcessRecv(INT32 numOfBytes) {
@@ -261,7 +278,9 @@ void Session::HandleSocketError(INT32 errorCore) {
     case WSAECONNRESET: // 소프트웨어로 인해 연결 중단.
     case WSAECONNABORTED: // 피어별 연결 다시 설정. (원격 호스트에서 강제 중단.)
     {
-        gClientCore->CloseSession();
+        if (SessionNetType::CLIENT == mNetType) {
+            gClientCore->CloseSession();
+        }
         MessageBoxA(nullptr, "Socket Error!", NetworkUtil::WSAErrorMessage().c_str(), MB_OK | MB_ICONERROR);
     }
     break;

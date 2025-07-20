@@ -22,6 +22,7 @@ const uint8_t* ProcessPacket(GameSession* session, const uint8_t* buffer) {
     }
 
     Packets::PacketTypes enumType = static_cast<Packets::PacketTypes>(header->type);
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Process: {}", Packets::EnumNamePacketTypes(enumType));
     switch (header->type) {
     case Packets::PacketTypes_PT_HEART_BEAT_CS:
     {
