@@ -473,7 +473,8 @@ void TerrainScene::ProcessObjectAttacked(const uint8_t* buffer) {
 void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAnimationChangedSC>(buffer);
 
-	const float PrimaryVolume = 2.f; 
+	const float PrimaryVolume = 5.f; 
+	const float SoundDistance = 10.f; 
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
@@ -492,7 +493,7 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 					case Packets::EntityType_HUMAN_ARCHER:
 						{
 							UINT type = RandomEngine::GetRandomRange(1U, 3U);
-							SoundManager::GetInstance().PlaySound(std::string{ "BowPullAndRelease" } + std::to_string(type), 2.f, SoundOption::NONE, 0ms, 200ms);
+							SoundManager::GetInstance().PlaySound(std::string{ "BowPullAndRelease" } + std::to_string(type), PrimaryVolume, SoundOption::NONE, 0ms, 200ms);
 						}
 						break;
 					case Packets::EntityType_HUMAN_MAGICIAN:
@@ -511,7 +512,7 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 					case Packets::EntityType_HUMAN_MAGICIAN:
 					{
 						UINT type = RandomEngine::GetRandomRange(1U, 2U);
-						SoundManager::GetInstance().PlaySound(std::string{ "Death" } + std::to_string(type), 2.f, SoundOption::NONE, 0ms, 0ms);
+						SoundManager::GetInstance().PlaySound(std::string{ "Death" } + std::to_string(type), PrimaryVolume, SoundOption::NONE, 0ms, 0ms);
 					}
 					break;
 					default:
@@ -524,9 +525,51 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 					mMyPlayer->LockRotate(false);
 				}
 			}
-			
-			mPlayerIndexmap[data->objectId()]->SetAnimation(data->animation());
+			else {
+				auto distanceSq = SimpleMath::Vector3::DistanceSquared(mMyPlayer->GetTransform().GetPosition(), mPlayerIndexmap[data->objectId()]->GetTransform().GetPosition());
+				if (distanceSq <= SoundDistance * SoundDistance) {
+					float volume = 1.0f - std::clamp(std::sqrtf(distanceSq) / SoundDistance, 0.0f, 1.0f);
+					if (data->animation() == Packets::AnimationState_ATTACK) {
 
+						switch (mMyPlayer->GetMyRole()) {
+						case Packets::EntityType_HUMAN_LONGSWORD:
+							SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, PrimaryVolume * volume, SoundOption::NONE, 0ms, 250ms);
+							break;
+						case Packets::EntityType_HUMAN_SWORD:
+							SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, PrimaryVolume * volume, SoundOption::NONE, 0ms, 250ms);
+							break;
+						case Packets::EntityType_HUMAN_ARCHER:
+						{
+							UINT type = RandomEngine::GetRandomRange(1U, 3U);
+							SoundManager::GetInstance().PlaySound(std::string{ "BowPullAndRelease" } + std::to_string(type), PrimaryVolume * volume, SoundOption::NONE, 0ms, 200ms);
+						}
+						break;
+						case Packets::EntityType_HUMAN_MAGICIAN:
+							break;
+						default:
+							break;
+						}
+					}
+					else if (data->animation() == Packets::AnimationState_DEAD) {
+						switch (mMyPlayer->GetMyRole()) {
+						case Packets::EntityType_HUMAN_LONGSWORD:
+						case Packets::EntityType_HUMAN_ARCHER:
+						case Packets::EntityType_HUMAN_SWORD:
+						case Packets::EntityType_HUMAN_MAGICIAN:
+						{
+							UINT type = RandomEngine::GetRandomRange(1U, 2U);
+							SoundManager::GetInstance().PlaySound(std::string{ "Death" } + std::to_string(type), PrimaryVolume * volume, SoundOption::NONE, 0ms, 0ms);
+						}
+						break;
+						default:
+							break;
+						}
+
+
+					}
+				}
+			}
+			mPlayerIndexmap[data->objectId()]->SetAnimation(data->animation());
 		}
 	}
 	else {
@@ -955,7 +998,6 @@ void TerrainScene::UpdateSound() {
 			if (distanceSq > footprintDistance * footprintDistance) {
 				continue;
 			}
-
 			// 움직인다면 
 			if (pair.second->GetTransform().GetMovingState()) {
 				// 이전에 멈춘 상태였다면

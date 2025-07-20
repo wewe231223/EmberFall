@@ -89,7 +89,7 @@ uint GetIndexFromFloat3(float3 v)
     return (uint) (hash * 4.0);
 }
 
-#define MAX_SCALE_DIST 20.f
+#define MAX_SCALE_DIST 10.f
 
 #define WIND_STRENGTH 0.2f   
 #define WIND_FREQ     0.002f 

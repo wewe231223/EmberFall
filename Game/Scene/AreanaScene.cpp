@@ -411,6 +411,9 @@ void ArenaScene::ProcessObjectAttacked(const uint8_t* buffer) {
 void ArenaScene::ProcessPacketAnimation(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAnimationChangedSC>(buffer);
 
+	const float PrimaryVolume = 5.f;
+	const float SoundDistance = 10.f;
+
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
 
@@ -420,15 +423,15 @@ void ArenaScene::ProcessPacketAnimation(const uint8_t* buffer) {
 
 					switch (mMyPlayer->GetMyRole()) {
 					case Packets::EntityType_HUMAN_LONGSWORD:
-						SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, 2.f, SoundOption::NONE, 0ms, 250ms);
+						SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, PrimaryVolume, SoundOption::NONE, 0ms, 250ms);
 						break;
 					case Packets::EntityType_HUMAN_SWORD:
-						SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, 2.f, SoundOption::NONE, 0ms, 250ms);
+						SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, PrimaryVolume, SoundOption::NONE, 0ms, 250ms);
 						break;
 					case Packets::EntityType_HUMAN_ARCHER:
 					{
 						UINT type = RandomEngine::GetRandomRange(1U, 3U);
-						SoundManager::GetInstance().PlaySound(std::string{ "BowPullAndRelease" } + std::to_string(type), 2.f, SoundOption::NONE, 0ms, 200ms);
+						SoundManager::GetInstance().PlaySound(std::string{ "BowPullAndRelease" } + std::to_string(type), PrimaryVolume, SoundOption::NONE, 0ms, 200ms);
 					}
 					break;
 					case Packets::EntityType_HUMAN_MAGICIAN:
@@ -436,19 +439,75 @@ void ArenaScene::ProcessPacketAnimation(const uint8_t* buffer) {
 					default:
 						break;
 					}
-
-
 				}
 				else if (data->animation() == Packets::AnimationState_DEAD) {
 					mMyPlayer->LockRotate(true);
+
+					switch (mMyPlayer->GetMyRole()) {
+					case Packets::EntityType_HUMAN_LONGSWORD:
+					case Packets::EntityType_HUMAN_ARCHER:
+					case Packets::EntityType_HUMAN_SWORD:
+					case Packets::EntityType_HUMAN_MAGICIAN:
+					{
+						UINT type = RandomEngine::GetRandomRange(1U, 2U);
+						SoundManager::GetInstance().PlaySound(std::string{ "Death" } + std::to_string(type), PrimaryVolume, SoundOption::NONE, 0ms, 0ms);
+					}
+					break;
+					default:
+						break;
+					}
+
+
 				}
 				else {
 					mMyPlayer->LockRotate(false);
 				}
 			}
+			else {
+				auto distanceSq = SimpleMath::Vector3::DistanceSquared(mMyPlayer->GetTransform().GetPosition(), mPlayerIndexmap[data->objectId()]->GetTransform().GetPosition());
+				if (distanceSq <= SoundDistance * SoundDistance) {
+					float volume = 1.0f - std::clamp(std::sqrtf(distanceSq) / SoundDistance, 0.0f, 1.0f);
+					if (data->animation() == Packets::AnimationState_ATTACK) {
 
+						switch (mMyPlayer->GetMyRole()) {
+						case Packets::EntityType_HUMAN_LONGSWORD:
+							SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, PrimaryVolume * volume, SoundOption::NONE, 0ms, 250ms);
+							break;
+						case Packets::EntityType_HUMAN_SWORD:
+							SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, PrimaryVolume * volume, SoundOption::NONE, 0ms, 250ms);
+							break;
+						case Packets::EntityType_HUMAN_ARCHER:
+						{
+							UINT type = RandomEngine::GetRandomRange(1U, 3U);
+							SoundManager::GetInstance().PlaySound(std::string{ "BowPullAndRelease" } + std::to_string(type), PrimaryVolume * volume, SoundOption::NONE, 0ms, 200ms);
+						}
+						break;
+						case Packets::EntityType_HUMAN_MAGICIAN:
+							break;
+						default:
+							break;
+						}
+					}
+					else if (data->animation() == Packets::AnimationState_DEAD) {
+						switch (mMyPlayer->GetMyRole()) {
+						case Packets::EntityType_HUMAN_LONGSWORD:
+						case Packets::EntityType_HUMAN_ARCHER:
+						case Packets::EntityType_HUMAN_SWORD:
+						case Packets::EntityType_HUMAN_MAGICIAN:
+						{
+							UINT type = RandomEngine::GetRandomRange(1U, 2U);
+							SoundManager::GetInstance().PlaySound(std::string{ "Death" } + std::to_string(type), PrimaryVolume * volume, SoundOption::NONE, 0ms, 0ms);
+						}
+						break;
+						default:
+							break;
+						}
+
+
+					}
+				}
+			}
 			mPlayerIndexmap[data->objectId()]->SetAnimation(data->animation());
-
 		}
 	}
 	else {
@@ -456,6 +515,7 @@ void ArenaScene::ProcessPacketAnimation(const uint8_t* buffer) {
 			mGameObjectMap[data->objectId()]->GetAnimationController().Transition(static_cast<size_t>(data->animation()));
 		}
 	}
+
 }
 
 void ArenaScene::ProcessFireProjectile(const uint8_t* buffer) {
