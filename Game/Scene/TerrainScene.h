@@ -164,7 +164,7 @@ template<typename Tu>
 inline float TerrainScene::GetAverageLatency() {
 	auto sumofSamples = std::accumulate(mLatency.begin(), mLatency.end(), duration::zero(),
 		[](const duration& a, const duration& b) {
-			if (b.count() <= 0.0)
+			if (b.count() <= 0)
 				return a;
 			return a + b;
 		});

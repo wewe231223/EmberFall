@@ -417,6 +417,30 @@ void ArenaScene::ProcessPacketAnimation(const uint8_t* buffer) {
 			if (data->objectId() == gClientCore->GetSessionId()) {
 				if (data->animation() == Packets::AnimationState_ATTACK) {
 					mMyPlayer->LockRotate(true);
+
+					switch (mMyPlayer->GetMyRole()) {
+					case Packets::EntityType_HUMAN_LONGSWORD:
+						SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, 2.f, SoundOption::NONE, 0ms, 250ms);
+						break;
+					case Packets::EntityType_HUMAN_SWORD:
+						SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, 2.f, SoundOption::NONE, 0ms, 250ms);
+						break;
+					case Packets::EntityType_HUMAN_ARCHER:
+					{
+						UINT type = RandomEngine::GetRandomRange(1U, 3U);
+						SoundManager::GetInstance().PlaySound(std::string{ "BowPullAndRelease" } + std::to_string(type), 2.f, SoundOption::NONE, 0ms, 200ms);
+					}
+					break;
+					case Packets::EntityType_HUMAN_MAGICIAN:
+						break;
+					default:
+						break;
+					}
+
+
+				}
+				else if (data->animation() == Packets::AnimationState_DEAD) {
+					mMyPlayer->LockRotate(true);
 				}
 				else {
 					mMyPlayer->LockRotate(false);
@@ -1017,6 +1041,8 @@ void ArenaScene::Exit() {
 	mLatencyBlock->SetActiveState(false); 
 
 	mExpired = true; 
+
+	SoundManager::GetInstance().Reset();
 }
 
 void ArenaScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {

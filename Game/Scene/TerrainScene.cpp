@@ -449,15 +449,17 @@ void TerrainScene::ProcessObjectAttacked(const uint8_t* buffer) {
 		if (data->hp() <= MathUtil::EPSILON and mMyPlayer != nullptr) {
 			mMyPlayer->LockRotate(true); 
 		}
-
-		UINT type = RandomEngine::GetRandomRange(1U, 22U);
-		SoundManager::GetInstance().PlaySound(std::string{ "Attacked" } + std::to_string(type), 2.f);
-
 	}
+
+
+
+
 }
 
 void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAnimationChangedSC>(buffer);
+
+	const float PrimaryVolume = 2.f; 
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
@@ -468,10 +470,10 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 
 					switch (mMyPlayer->GetMyRole()) {
 					case Packets::EntityType_HUMAN_LONGSWORD:
-						SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, 2.f, SoundOption::NONE, 0ms, 250ms);
+						SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, PrimaryVolume, SoundOption::NONE, 0ms, 250ms);
 						break;
 					case Packets::EntityType_HUMAN_SWORD:
-						SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, 2.f, SoundOption::NONE, 0ms, 250ms);
+						SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, PrimaryVolume, SoundOption::NONE, 0ms, 250ms);
 						break;
 					case Packets::EntityType_HUMAN_ARCHER:
 						{
@@ -484,11 +486,25 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 					default:
 						break;
 					}
-
-
 				}
 				else if (data->animation() == Packets::AnimationState_DEAD) {
 					mMyPlayer->LockRotate(true);
+
+					switch (mMyPlayer->GetMyRole()) {
+					case Packets::EntityType_HUMAN_LONGSWORD:
+					case Packets::EntityType_HUMAN_ARCHER:
+					case Packets::EntityType_HUMAN_SWORD:
+					case Packets::EntityType_HUMAN_MAGICIAN:
+					{
+						UINT type = RandomEngine::GetRandomRange(1U, 2U);
+						SoundManager::GetInstance().PlaySound(std::string{ "Death" } + std::to_string(type), 2.f, SoundOption::NONE, 0ms, 0ms);
+					}
+					break;
+					default:
+						break;
+					}
+
+
 				}
 				else {
 					mMyPlayer->LockRotate(false);
