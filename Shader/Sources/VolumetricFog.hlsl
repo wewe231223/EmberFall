@@ -25,8 +25,8 @@ cbuffer Camera : register(b0)
 Texture3D fogVolume : register(t0);
 Texture2D velocity : register(t1);
 
-static float fogBegin = 50.0f;
-static float fogEnd = 200.0f;
+static float fogBegin = 0.0f;
+static float fogEnd = 100.0f;
 
 struct VS_INPUT
 {
@@ -88,14 +88,18 @@ float4 VolumetricFog_PS(VS_OUTPUT input) : SV_Target
     
     
     
+    float ndcZ = pow(saturate((viewPosition.z - fogBegin) / (fogEnd - fogBegin)), 0.5f);
     
-    //float3 uv = float3(input.texcoord, pow(viewPosition.z, 2) * (fogEnd - fogBegin) + fogBegin);
-    float linearDepth = pow(viewPosition.z, 2) * (fogEnd - fogBegin) + fogBegin;
-    float normZ = saturate((linearDepth - fogBegin) / (fogEnd - fogBegin));
+    float k = 0.05f;
+    float fogFactor = 1.0f - exp(-viewSpaceDistance * k);
+    //float ndcZ = saturate(fogFactor);
+    //float3 uv = float3(input.texcoord, clamp(ndcZ, 0, 1));
 
-    float3 uv = float3(input.texcoord, normZ);
+    
+    float3 uv = float3(input.texcoord, 1.0f - ndcZ);
     float4 scatteringColorAndTransmittance = fogVolume.Sample(linearWrapSampler, uv);
     float3 scatteringColor = HDR(scatteringColorAndTransmittance.rgb);
 
-    return float4(scatteringColor, scatteringColorAndTransmittance.a);
+    return float4(scatteringColor, scatteringColorAndTransmittance.a );
+
 }

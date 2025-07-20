@@ -240,7 +240,28 @@ void Renderer::Render() {
 		mRenderManager->GetParticleManager().RenderSO(mCommandList);
 		mRenderManager->GetParticleManager().RenderGS(mCommandList, mMainCameraBuffer.GPUBegin(), mRenderManager->GetTextureManager().GetTextureHeapAddress(), mRenderManager->GetMaterialManager().GetMaterialBufferAddress());
 	}
+	//MotionBlur Pass
 
+	if (mRenderManager->GetFeatureManager().GetCurrentFeature().MotionBlur) {
+
+		/*mGBuffers[4].Transition(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE);
+		mComputeProcessors[2]->Dispatch(mDevice, mCommandList, &mGBuffers[4]);
+
+		mComputeProcessors[3]->Dispatch(mDevice, mCommandList, &mComputeProcessors[2]->GetComputeMap(), &mGBuffers[4]);
+		mGBuffers[4].Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);*/
+
+
+
+		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
+		mCommandList->CopyResource(mMotionBlurProcessor.GetRTResource().GetResource().Get(), currentBackBuffer.GetResource().Get());
+		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mRTIndex), rtvDescriptorSize };
+		mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
+		mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
+
+		mMotionBlurProcessor.Render(mDevice, mCommandList);
+	}
 	// Bloom Pass
 	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Bloom) {
 
@@ -254,45 +275,27 @@ void Renderer::Render() {
 
 
 
-	//MotionBlur Pass
-
-	if (mRenderManager->GetFeatureManager().GetCurrentFeature().MotionBlur) {
-
-		/*mGBuffers[4].Transition(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COPY_SOURCE);
-		mComputeProcessors[2]->Dispatch(mDevice, mCommandList, &mGBuffers[4]);
-
-		mComputeProcessors[3]->Dispatch(mDevice, mCommandList, &mComputeProcessors[2]->GetComputeMap(), &mGBuffers[4]);
-		mGBuffers[4].Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);*/
-
-		
-
-		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
-		mCommandList->CopyResource(mMotionBlurProcessor.GetRTResource().GetResource().Get(), currentBackBuffer.GetResource().Get());
-		currentBackBuffer.Transition(mCommandList, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle{ mRTVHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<INT>(mRTIndex), rtvDescriptorSize };
-		mCommandList->ClearRenderTargetView(rtvHandle, DirectX::Colors::Black, 0, nullptr);
-		mCommandList->OMSetRenderTargets(1, &rtvHandle, FALSE, nullptr);
-
-		mMotionBlurProcessor.Render(mDevice, mCommandList);
-	}
-
-	
 	//Volumetric Fog Pass
 
 	if (mRenderManager->GetFeatureManager().GetCurrentFeature().Fog) {
-		mComputeProcessors[4]->DispatchFogProcessor(mDevice, mCommandList, *mRenderManager->GetLightingManager().GetLightingBuffer(), *mRenderManager->GetShadowRenderer().GetShadowCameraBuffer(0));
-		
-		auto uavBarrier = CD3DX12_RESOURCE_BARRIER::UAV(mComputeProcessors[4]->GetComputeMap().GetResource().Get());
-		mCommandList->ResourceBarrier(1, &uavBarrier);
 
+		mComputeProcessors[4]->GetComputeMap().Transition(mCommandList, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		mComputeProcessors[4]->DispatchFogProcessor(mDevice, mCommandList, *mRenderManager->GetLightingManager().GetLightingBuffer(), *mMainCameraBuffer.GPUBegin());
+		mComputeProcessors[4]->GetComputeMap().Transition(mCommandList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
+
+		mComputeProcessors[5]->GetComputeMap().Transition(mCommandList, D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		mComputeProcessors[5]->Dispatch(mDevice, mCommandList, nullptr );
+		mComputeProcessors[5]->GetComputeMap().Transition(mCommandList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE);
 
-		uavBarrier = CD3DX12_RESOURCE_BARRIER::UAV(mComputeProcessors[5]->GetComputeMap().GetResource().Get());
-		mCommandList->ResourceBarrier(1, &uavBarrier);
 
 		mVolumetricFogProcessor.Render(mDevice, mCommandList, *mMainCameraBuffer.GPUBegin());
+		mComputeProcessors[4]->GetComputeMap().Transition(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COMMON);
+		mComputeProcessors[5]->GetComputeMap().Transition(mCommandList, D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COMMON);
+
 	}
+	
+
+	
 
 	mRenderManager->GetTextureManager().Bind(mCommandList);
 

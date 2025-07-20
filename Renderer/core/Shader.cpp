@@ -390,7 +390,7 @@ void GraphicsShaderBase::CreateShader(ComPtr<ID3D12Device> device) {
 	staticSamplers[4] = { 4, D3D12_FILTER_ANISOTROPIC, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, 0.0f, 16, D3D12_COMPARISON_FUNC_GREATER_EQUAL };
 	staticSamplers[5] = { 5, D3D12_FILTER_ANISOTROPIC, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, 0.0f, 16, D3D12_COMPARISON_FUNC_GREATER_EQUAL };
 	staticSamplers[6] = { 6, D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0.0f, 16, D3D12_COMPARISON_FUNC_GREATER_EQUAL };
-	
+
 	
 
 	D3D12_ROOT_SIGNATURE_DESC rootsignatureDesc{};
@@ -2312,7 +2312,7 @@ D3D12_BLEND_DESC VolumetricFogShader::CreateBlendState() {
 	blendStateDesc.IndependentBlendEnable = FALSE;
 	blendStateDesc.RenderTarget[0].BlendEnable = TRUE;
 	blendStateDesc.RenderTarget[0].LogicOpEnable = FALSE;
-	blendStateDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;     
+	blendStateDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_SRC_ALPHA;
 	blendStateDesc.RenderTarget[0].DestBlend = D3D12_BLEND_INV_SRC_ALPHA;
 	blendStateDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
 	blendStateDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
