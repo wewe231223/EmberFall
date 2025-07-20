@@ -53,8 +53,8 @@ public:
     virtual void ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes);
     virtual void Close() override;
 
-    void RegisterRecv();
-    void RegisterSend(OverlappedSend* const overlapped);
+    bool RegisterRecv();
+    bool RegisterSend(OverlappedSend* const overlapped);
     virtual void ProcessRecv(INT32 numOfBytes);
     void ProcessSend(INT32 numOfBytes, OverlappedSend* overlappedSend);
 
