@@ -343,7 +343,21 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				}
 				break;
 				default:
-					break;
+				{
+					*nextLoc = GameObject{};
+					mGameObjectMap[data->objectId()] = &(*nextLoc);
+					nextLoc->mShader = mShaderMap["StandardShader"].get();
+					nextLoc->mMesh = mMeshMap["Cube"].get();
+					nextLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("CorruptedGemMaterial");
+					nextLoc->SetActiveState(true);
+
+
+					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
+					nextLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextLoc->GetTransform().GetPosition().x, nextLoc->GetTransform().GetPosition().z);
+
+					nextLoc->SetEmpty(false);
+				}
+				break;
 			}
 		}
 		else {
@@ -1337,8 +1351,10 @@ void TerrainScene::SendNetwork() {
 		if (mMyPlayer != nullptr) {
 			auto dir = mMyPlayer->GetTransform().GetForward();
 			dir.y = 0.f;
+			
 			decltype(auto) packet = FbsPacketFactory::RequestAttackCS(gClientCore->GetSessionId(), dir);
 			gClientCore->Send(packet);
+
 		}
 	}
 
