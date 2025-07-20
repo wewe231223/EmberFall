@@ -78,7 +78,7 @@ VS_OUTPUT VolumetricFog_VS(VS_INPUT input)
 float4 VolumetricFog_PS(VS_OUTPUT input) : SV_Target
 {
     float viewSpaceDistance = velocity.Sample(linearWrapSampler, input.texcoord).z;
-    if (viewSpaceDistance <= 0.f)
+    if (viewSpaceDistance <= 0.f || viewSpaceDistance >= fogEnd)
     {
         viewSpaceDistance = fogEnd;
     }

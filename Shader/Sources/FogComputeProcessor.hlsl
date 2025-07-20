@@ -63,7 +63,7 @@ float3 ComputeWorldPosition(int3 dispatchThreadID, int3 volumePixel)
     ndc *= float3(2.0f / volumePixel.x, -2.0f / volumePixel.y, 1.0f / volumePixel.z);
     ndc += float3(-1.0f, 1.0f, 0.0f);
     
-    float depth = ndc.z * (fogEnd - fogBegin) + fogBegin;
+    float depth = pow(ndc.z, 2.0f) * (fogEnd - fogBegin) + fogBegin;
     
     float4 viewRay = mul(float4(ndc, 1.0f), invProjection);
     viewRay /= viewRay.w;
