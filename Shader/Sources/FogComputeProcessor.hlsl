@@ -31,12 +31,12 @@ cbuffer Camera : register(b0)
 static float density = 7.0f;
 
    
-static float4 HemisphereColor = float4(0.015f, 0.07f, 0.01f, 1.0f);
+static float4 HemisphereColor = float4(0.015f, 0.05f, 0.01f, 1.0f);
 
 static float Intensity = 1.0f;
 
 static float fogBegin = 0.0f;
-static float fogEnd = 150.0f;
+static float fogEnd = 600.0f;
 
 struct Light
 {
@@ -117,11 +117,19 @@ void FogComputeProcessor_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatch
             
             
             float cosTheta = dot(lightDir, toCamera);
-            float g2 = 0.2f * 0.2f;
-            float denom = pow(1.f + g2 - 2.f * 0.2f * cosTheta, 3.f / 2.f);
+            float g2 = 0.5f * 0.5f;
+            float denom = pow(1.f + g2 - 2.f * 0.5f * cosTheta, 3.f / 2.f);
             float phaseFuntion = (1.f / (4.f * 3.14f)) * ((1.f - g2) / denom );
             
             hemisphereLight += visibility * gLight[i].Diffuse.rgb * gLight[i].Diffuse.a * phaseFuntion;
+            
+            //float3 ndc = dispatchThreadID;
+            //ndc += 0.5f;
+            //ndc *= float3(2.0f / volumePixel.x, -2.0f / volumePixel.y, 1.0f / volumePixel.z);
+            //ndc += float3(-1.0f, 1.0f, 0.0f);
+            //ndc.y += 1.0f;
+            //ndc.y /= 2.0f;
+            //hemisphereLight *= (1.1f - ndc.y);
 
         }
         RWOutput[dispatchThreadID] = float4(hemisphereLight * Intensity * density, density);

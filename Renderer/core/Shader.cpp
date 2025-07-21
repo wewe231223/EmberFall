@@ -2284,7 +2284,7 @@ D3D12_DEPTH_STENCIL_DESC VolumetricFogShader::CreateDepthStencilState() {
 
 	depthStencilState.DepthEnable = FALSE;
 	depthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
-	depthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+	depthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
 	depthStencilState.StencilEnable = FALSE;
 	depthStencilState.StencilReadMask = 0x00;
 	depthStencilState.StencilWriteMask = 0x00;

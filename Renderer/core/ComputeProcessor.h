@@ -41,6 +41,7 @@ protected:
 	ComPtr<ID3DBlob> mError{ nullptr };
 	ComPtr<ID3D12RootSignature> mRootSignature{ nullptr };
 	ComPtr<ID3D12PipelineState> mPSO{ nullptr };
+	UINT mResourceOffset{ 8 };
 
 };
 

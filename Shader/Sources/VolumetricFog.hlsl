@@ -26,7 +26,7 @@ Texture3D fogVolume : register(t0);
 Texture2D velocity : register(t1);
 
 static float fogBegin = 0.0f;
-static float fogEnd = 150.0f;
+static float fogEnd = 600.0f;
 
 struct VS_INPUT
 {
@@ -79,9 +79,14 @@ float4 VolumetricFog_PS(VS_OUTPUT input) : SV_Target
 {
     float viewSpaceDistance = velocity.Sample(linearClampSampler, input.texcoord).z;
     
-    if (viewSpaceDistance <= 0.f || viewSpaceDistance >= fogEnd)
+    if (viewSpaceDistance >= fogEnd)
     {
-        viewSpaceDistance = fogEnd;
+        //viewSpaceDistance = fogEnd;
+    }
+    if (viewSpaceDistance <= fogBegin)
+    {
+        //viewSpaceDistance = fogBegin;
+
     }
 
     float3 viewPosition = normalize(input.viewRay) * viewSpaceDistance;
@@ -97,8 +102,7 @@ float4 VolumetricFog_PS(VS_OUTPUT input) : SV_Target
     float4 scatteringColorAndTransmittance = fogVolume.Sample(linearClampSampler, uv);
     float3 scatteringColor = HDR(scatteringColorAndTransmittance.rgb);
 
-    //scatteringColor *= mask;
-    //scatteringColorAndTransmittance.a *= mask;
+
     
     
     return float4(scatteringColor, scatteringColorAndTransmittance.a );

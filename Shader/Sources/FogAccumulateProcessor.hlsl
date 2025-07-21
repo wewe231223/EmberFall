@@ -3,9 +3,9 @@ RWTexture3D<float4> RWOutput : register(u0);
 
 
 
-static const float DensityScale = 0.3f;
+static const float DensityScale = 0.001f;
 static float fogBegin = 0.0f;
-static float fogEnd = 150.0f;
+static float fogEnd = 600.0f;
 
 float SliceTickness(float ndcZ, uint pixelZ)
 {
