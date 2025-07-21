@@ -853,6 +853,13 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 		mRenderManager->GetTextureManager().GetTexture("Cross")
 	);
 
+	mEntryUI.Init(
+		mRenderManager->GetCanvas(),
+		mRenderManager->GetTextureManager().GetTexture("mid_dark_bar"),
+		mRenderManager->GetTextureManager().GetTexture("Carrot"),
+		500.f, 500.f, 500.f, 100.f
+	);
+
 	mHealthBarUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("health_frame"), mRenderManager->GetTextureManager().GetTexture("health_bar")); 
 
 	mRenderManager->GetLightingManager().ClearLight(commandList);
@@ -1265,6 +1272,8 @@ void TerrainScene::Update() {
 	mInventoryUI.Update();
 	mHealthBarUI.Update();
 	mProfileUI.Update();
+	
+	mEntryUI.Update();
 
 	if (mCurrentCameraMode) {
 		mCurrentCameraMode->Update();

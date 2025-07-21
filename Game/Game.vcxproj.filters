@@ -37,6 +37,9 @@
     <Filter Include="ArenaScene">
       <UniqueIdentifier>{4ce4674b-6b02-40cb-bc38-7f3ab5efc7df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="LogInScene">
+      <UniqueIdentifier>{84b3db0b-5b78-496d-b361-690ed904181d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -123,6 +126,12 @@
     <ClCompile Include="Scene\LayerIndexMap.cpp">
       <Filter>Scene</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\LogInScene.cpp">
+      <Filter>LogInScene</Filter>
+    </ClCompile>
+    <ClCompile Include="UI\Entry.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -208,6 +217,12 @@
     </ClInclude>
     <ClInclude Include="Scene\LayerIndexMap.h">
       <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\LogInScene.h">
+      <Filter>LogInScene</Filter>
+    </ClInclude>
+    <ClInclude Include="UI\Entry.h">
+      <Filter>UI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

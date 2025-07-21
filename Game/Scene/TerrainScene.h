@@ -20,6 +20,7 @@
 #include "../Game/Scene/MaterialLoader.h"
 #include "../System/Sound.h"
 #include "../Game/Scene/LayerIndexMap.h"
+#include "../Game/UI/Entry.h"
 
 class TerrainScene : public IScene {
 	using duration = std::chrono::milliseconds; 
@@ -158,6 +159,8 @@ private:
 	bool mIsBlind{ false };
 
 	size_t mProcessedPacketSize{ 0 };
+
+	Entry mEntryUI{};
 };
 
 template<typename Tu> 

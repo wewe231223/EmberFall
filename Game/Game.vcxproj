@@ -164,6 +164,7 @@
     <ClCompile Include="Scene\LoadingScene.cpp" />
     <ClCompile Include="Scene\LobbyPlayer.cpp" />
     <ClCompile Include="Scene\LobbyScene.cpp" />
+    <ClCompile Include="Scene\LogInScene.cpp" />
     <ClCompile Include="Scene\MaterialLoader.cpp" />
     <ClCompile Include="Scene\Player.cpp" />
     <ClCompile Include="Scene\SceneManager.cpp" />
@@ -172,6 +173,7 @@
     <ClCompile Include="System\Sound.cpp" />
     <ClCompile Include="System\Timer.cpp" />
     <ClCompile Include="UI\Button.cpp" />
+    <ClCompile Include="UI\Entry.cpp" />
     <ClCompile Include="UI\HealthBar.cpp" />
     <ClCompile Include="UI\Image.cpp" />
     <ClCompile Include="UI\Inventory.cpp" />
@@ -194,6 +196,7 @@
     <ClInclude Include="Scene\LoadingScene.h" />
     <ClInclude Include="Scene\LobbyPlayer.h" />
     <ClInclude Include="Scene\LobbyScene.h" />
+    <ClInclude Include="Scene\LogInScene.h" />
     <ClInclude Include="Scene\MaterialLoader.h" />
     <ClInclude Include="Scene\Player.h" />
     <ClInclude Include="Scene\SceneManager.h" />
@@ -202,6 +205,7 @@
     <ClInclude Include="System\Sound.h" />
     <ClInclude Include="System\Timer.h" />
     <ClInclude Include="UI\Button.h" />
+    <ClInclude Include="UI\Entry.h" />
     <ClInclude Include="UI\HealthBar.h" />
     <ClInclude Include="UI\Image.h" />
     <ClInclude Include="UI\Inventory.h" />

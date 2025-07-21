@@ -30,13 +30,18 @@ public:
 	D2D1_RECT_F& GetRect();
 	StringColor& GetColor();
 	IDWriteTextFormat* GetFont() const;
+	IDWriteTextLayout* GetTextLayout() const;
 
 	// 일반적인 상황에서 호출하지 말 것. 
 	void LoadFont(); 
 
+	void UpdateLayout(); 
+
 	void ChangeFont(const std::string& fontName);
 private:
 	StringRenderer* mStringRenderer{ nullptr };
+	ComPtr<IDWriteTextLayout> mTextLayout{ nullptr };
+
 	std::wstring mText{};
 
 	D2D1_RECT_F mRect{};
@@ -87,6 +92,8 @@ public:
 	void LoadSystemFont(const std::string& fontName, const std::wstring& fontFamilyName, const std::wstring& locale, DWRITE_FONT_WEIGHT weight = DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE style = DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH stretch = DWRITE_FONT_STRETCH_NORMAL, float size = 20.f, DWRITE_TEXT_ALIGNMENT alignment = DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT paragraphAlignment = DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
 
 	IDWriteTextFormat* GetFont(const std::string& fontName);
+
+	IDWriteFactory7* GetWriteFactory() const;
 
 	void Render();
 private:

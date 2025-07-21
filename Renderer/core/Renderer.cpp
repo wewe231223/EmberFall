@@ -616,6 +616,7 @@ void Renderer::InitStringRenderer() {
 
 void Renderer::InitFonts() {
 	mStringRenderer.LoadExternalFont("NotoSansKR", "Resources/Font/NotoSansKR-Regular-Hestia.otf", L"Noto Sans KR", L"ko-kr");
+	mStringRenderer.LoadExternalFont("NotoSansKR_Big", "Resources/Font/NotoSansKR-Regular-Hestia.otf", L"Noto Sans KR", L"ko-kr", DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 50.f, DWRITE_TEXT_ALIGNMENT_LEADING);
 }
 
 void Renderer::InitCameraBuffer() {

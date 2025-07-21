@@ -68,6 +68,7 @@ void StringRenderer::Initialize(ComPtr<ID3D12Device> device, ComPtr<ID3D12Comman
 	}
 
 	InitBrush();
+
 }
 
 void StringRenderer::LoadExternalFont(const std::string& fontName, const std::filesystem::path& path, const std::wstring& fontFamilyName, const std::wstring& locale, DWRITE_FONT_WEIGHT weight, DWRITE_FONT_STYLE style, DWRITE_FONT_STRETCH stretch, float size, DWRITE_TEXT_ALIGNMENT alignment, DWRITE_PARAGRAPH_ALIGNMENT paragraphAlignment) {
@@ -127,6 +128,10 @@ void StringRenderer::LoadSystemFont(const std::string& fontName, const std::wstr
 
 IDWriteTextFormat* StringRenderer::GetFont(const std::string& fontName) {
 	return mFonts[fontName].Get();
+}
+
+IDWriteFactory7* StringRenderer::GetWriteFactory() const {
+    return mWriteFactory.Get();
 }
 
 void StringRenderer::Render() {
@@ -1230,10 +1235,25 @@ IDWriteTextFormat* TextBlock::GetFont() const {
     return mFont;
 }
 
+IDWriteTextLayout* TextBlock::GetTextLayout() const {
+    return mTextLayout.Get();
+}
+
 void TextBlock::LoadFont() {
     if (mFont == nullptr) {
         mFont = mStringRenderer->GetFont(mInitialFontName);
     }
+}
+
+void TextBlock::UpdateLayout() {
+    CheckHR(mStringRenderer->GetWriteFactory()->CreateTextLayout(
+        mText.c_str(),                    
+        static_cast<UINT32>(mText.size()),
+        mFont,  
+        mRect.right - mRect.left,                    
+        mRect.bottom - mRect.top,                   
+        &mTextLayout
+    ));
 }
 
 void TextBlock::ChangeFont(const std::string& fontName) {
