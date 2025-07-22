@@ -364,14 +364,14 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextProjLoc->mCollider = mColliderMap["Arrow"];
 					nextProjLoc->SetActiveState(true);
 
-					nextProjLoc->GetTransform().Scaling({ 2.f,2.f,2.f });
+					nextProjLoc->GetTransform().Scaling({ 8.f,8.f,8.f });
 
 					nextProjLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
 
 	
 					if (mMyPlayer != nullptr) {
 						float yaw = mMyPlayer->GetTransform().GetRotation().ToEuler().y;
-						nextProjLoc->GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(yaw));
+						nextProjLoc->GetTransform().Rotate(0.f, yaw);
 					}
 
 
@@ -482,10 +482,10 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 
 			mGameObjectMap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
 
-			auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
-			euler.y = data->yaw();
-			
-			mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
+			//auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
+			//euler.y = data->yaw();
+			//
+			//mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
 		}
 	}
 }
