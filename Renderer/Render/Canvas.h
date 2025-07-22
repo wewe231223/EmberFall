@@ -25,6 +25,8 @@ public:
 
 	virtual ~CanvasObject() = default;
 public:
+	void InitTime(); 
+
 	void Update();
 
 	void ChangeImage(UINT imageIndex);
@@ -54,6 +56,8 @@ private:
 
 	DirectX::XMFLOAT3X3 mTransform{ 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f };
 	DirectX::XMFLOAT3X3 mScreenTransform{ 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 1.f };
+
+	std::chrono::time_point<std::chrono::high_resolution_clock> mBirthTime{ std::chrono::high_resolution_clock::now() };
 
 #pragma region UISpritable
 	bool mSpritable{ false };

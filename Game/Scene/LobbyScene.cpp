@@ -432,7 +432,6 @@ void LobbyScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	auto packet = FbsPacketFactory::PlayerEnterInLobbyCS(gClientCore->GetSessionId()); 
 	gClientCore->Send(packet); 
 
-
 	mLeftArrowButton = Button{};
 	mLeftArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("left_arrow"));
 	mLeftArrowButton.SetRect(0.f, 0.f, 100.f, 100.f);

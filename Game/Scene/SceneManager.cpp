@@ -2,12 +2,12 @@
 #include "pch.h"
 #include "SceneManager.h"
 #include "../Scene/LoadingScene.h"
+#include "../Scene/LogInScene.h"
 #include "../Scene/TerrainScene.h"
 #include "../Scene/LobbyScene.h"
 #include "../Scene/AreanaScene.h"
 #include "../resource.h"
 #include "../Renderer/Core/Console.h"
-
 
 SceneManager::SceneManager() {}
 
@@ -18,22 +18,28 @@ SceneManager::~SceneManager() {
 }
 
 void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCameraBufferLocation, ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> loadCommandList, std::function<void()> initLoadFunc) {
+	mScenes[static_cast<size_t>(SceneType::TITLE)] = std::make_shared<LogInScene>(renderMgr, mainCameraBufferLocation);
 	mScenes[static_cast<size_t>(SceneType::TERRAIN)] = std::make_shared<TerrainScene>(renderMgr, mainCameraBufferLocation);
 	mScenes[static_cast<size_t>(SceneType::LOADING)] = std::make_shared<LoadingScene>(renderMgr);
 	mScenes[static_cast<size_t>(SceneType::LOBBY)] = std::make_shared<LobbyScene>(renderMgr, mainCameraBufferLocation);
 	mScenes[static_cast<size_t>(SceneType::FINAL)] = std::make_shared<ArenaScene>(renderMgr, mainCameraBufferLocation);
 
+	mSceneFeatureType[static_cast<size_t>(SceneType::TITLE)] = { false, false, false, false, false, false, false };
 	mSceneFeatureType[static_cast<size_t>(SceneType::LOADING)]	= { false, false, false, false, false, false, false }; 
 	mSceneFeatureType[static_cast<size_t>(SceneType::LOBBY)]	= { false, false, true, false, false, false, false }; 
-	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)]	= { true, true, true, true, true, false, true }; 
+	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)]	= { true, true, true, true, true, false, false }; 
 	mSceneFeatureType[static_cast<size_t>(SceneType::FINAL)]	= { true, true, true, true, true, false, false };
 
 	mCurrentSceneType = SceneType::LOADING;
 	mCurrentScene = mScenes[static_cast<size_t>(SceneType::LOADING)].get();
 
-
+#ifdef START_WITH_TITLE
+	mNextSceneType = SceneType::TITLE;
+	mNextScene = mScenes[static_cast<size_t>(SceneType::TITLE)].get();
+#else 
 	mNextSceneType = SceneType::LOBBY;
 	mNextScene = mScenes[static_cast<size_t>(SceneType::LOBBY)].get();
+#endif 
 
 	mRenderManager = renderMgr;
 	mMainCameraBufferLocation = mainCameraBufferLocation;
@@ -51,6 +57,7 @@ void SceneManager::ChangeSceneTo(SceneType nextScene) {
 
 	switch (mNextSceneType) {
 	case SceneType::TITLE:
+		Console.Log("Title Scene 으로 변경합니다.", LogType::Warning);
 		break;
 	case SceneType::LOBBY:
 		Console.Log("Lobby Scene 으로 변경합니다.", LogType::Warning);

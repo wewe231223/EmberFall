@@ -121,7 +121,7 @@ void CreateBillBoard(ParticleVertex vertex, inout TriangleStream<Particle_PS_IN>
 
         uvTransform = float3x3(
             spriteWidthRatio, 0.f, (spriteIndex % vertex.spriteFrameInRow) * spriteWidthRatio,
-            0.f, spriteHeightRatio, (spriteIndex / vertex.spriteFrameInCol) * spriteHeightRatio,
+            0.f, spriteHeightRatio, (spriteIndex / vertex.spriteFrameInRow) * spriteHeightRatio,
             0.f, 0.f, 1.f
         );
     }

@@ -7,7 +7,7 @@ void SpriteImage::Init(Canvas& canvas, UINT img, UINT frameinRow, UINT frameinCo
 	mObject.ChangeImage(img, frameinRow, frameinCol, duration);
 	mObject.SetActive(true);
 
-
+	mObject.InitTime(); 
 }
 
 CanvasRect& SpriteImage::GetRect() {

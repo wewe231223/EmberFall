@@ -80,6 +80,10 @@ CanvasObject::CanvasObject(Canvas* canvas) {
 	};
 }
 
+void CanvasObject::InitTime() {
+	mBirthTime = std::chrono::high_resolution_clock::now();
+}
+
 void CanvasObject::Update() {
 	if (mCanvas == nullptr) {
 		return; 
@@ -103,10 +107,11 @@ void CanvasObject::Update() {
 
 			mContext.UVTransform = DirectX::XMFLOAT3X3{
 				spriteWidth,	0.f,				(spriteIndex % mSpriteFrameInRow) * spriteWidth,
-				0.f,			spriteHeight,		(spriteIndex / mSpriteFrameInCol) * spriteHeight,
+				0.f,			spriteHeight,		(spriteIndex / mSpriteFrameInRow) * spriteHeight,
 				0.f,			0.f,				1.f
 			};
 
+			//mContext.UVTransform = Transpose(mContext.UVTransform);
 		}
 
 		mContext.Transform = Transpose(Multifly(mTransform, mScreenTransform));
@@ -172,9 +177,10 @@ DirectX::XMFLOAT3X3 CanvasObject::Transpose(const DirectX::XMFLOAT3X3& mat) cons
 }
 
 UINT CanvasObject::GetSpriteIndex() {
+	auto elapsed = std::chrono::high_resolution_clock::now() - mBirthTime;
+	float frameDuration = mSpriteDuration / static_cast<float>(mSpriteFrameInRow * mSpriteFrameInCol);
 
-	UINT ms = Time.GetTimeSinceStarted<UINT ,std::chrono::milliseconds>();
+	UINT FrameIndex = static_cast<UINT>(std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count() / (frameDuration * 1000.f));
 
-	float framedurationMS = (1000.f * mSpriteDuration) / (mSpriteFrameInRow * mSpriteFrameInCol);
-	return static_cast<UINT>(Time.GetTimeSinceStarted<UINT, std::chrono::milliseconds>() / framedurationMS) % (mSpriteFrameInCol * mSpriteFrameInRow); 
+	return FrameIndex % (mSpriteFrameInRow * mSpriteFrameInCol);
 }

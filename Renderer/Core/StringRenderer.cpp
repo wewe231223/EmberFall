@@ -147,19 +147,19 @@ void StringRenderer::Render() {
 	auto begin = TextBlockManager::GetInstance().begin();
 	auto end = TextBlockManager::GetInstance().end();
 
-    for (auto it = begin; it != end; ++it) {
-        auto& text = *it;
-        if (!text.GetActiveState()) continue;
+    //for (auto it = begin; it != end; ++it) {
+    //    auto& text = *it;
+    //    if (!text.GetActiveState()) continue;
 
-        auto& rect = text.GetRect();
-        mD2DDeviceContext->DrawText(
-            text.GetText().c_str(),
-            static_cast<UINT32>(text.GetText().size()),
-            text.GetFont(),
-            &rect,
-            mBrushes[static_cast<size_t>(text.GetColor())].Get()
-        );
-    }
+    //    auto& rect = text.GetRect();
+    //    mD2DDeviceContext->DrawText(
+    //        text.GetText().c_str(),
+    //        static_cast<UINT32>(text.GetText().size()),
+    //        text.GetFont(),
+    //        &rect,
+    //        mBrushes[static_cast<size_t>(text.GetColor())].Get()
+    //    );
+    //}
 
     lock.unlock(); 
 

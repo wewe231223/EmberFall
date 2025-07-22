@@ -34,6 +34,7 @@ public:
 	virtual void SendNetwork();
 	virtual void Exit();
 private:
+	std::shared_ptr<RenderManager> mRenderManager{ nullptr };
 
 	Entry mIDEntry{};
 	Entry mPWEntry{}; 
