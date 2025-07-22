@@ -20,6 +20,7 @@
 #include "../Renderer/Core/StringRenderer.h"
 #include "../Renderer/Render/GrassRenderer.h"
 #include "../Renderer/Core/MotionBlurProcessor.h"
+#include "../Renderer/Core/VolumetricFogProcessor.h"
 #include "../Renderer/Core/ComputeProcessor.h"
 #include "../Renderer/Render/IMGUIRenderer.h"
 
@@ -88,6 +89,7 @@ private:
 	void InitCoreResources(); 
 	void InitDefferedRenderer();
 	void InitMotionBlurProcessor();
+	void InitVolumetricFogProcessor();
 	void InitComputeProcesser();
 	void InitIMGUIRenderer();
 
@@ -139,6 +141,7 @@ private:
 
 	DefferedRenderer mDefferedRenderer{};
 	MotionBlurProcessor mMotionBlurProcessor{};
+	VolumetricFogProcessor mVolumetricFogProcessor{};
 	std::vector<std::unique_ptr<ComputeProcessor>> mComputeProcessors;
 
 	ComPtr<ID3D12DescriptorHeap> mDSHeap{ nullptr };

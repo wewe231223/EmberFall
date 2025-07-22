@@ -1,0 +1,145 @@
+SamplerState pointWrapSampler : register(s0);
+SamplerState pointClampSampler : register(s1);
+SamplerState linearWrapSampler : register(s2);
+SamplerState linearClampSampler : register(s3);
+SamplerState anisotropicWrapSampler : register(s4);
+SamplerState anisotropicClampSampler : register(s5);
+SamplerComparisonState PCFSampler : register(s6);
+
+
+cbuffer Camera : register(b0)
+{
+    float4x4 view;
+    float4x4 projection;
+    float4x4 viewProjection;
+    float4x4 middleViewProjection;
+    float4x4 prevViewProjection;
+    float4x4 invView;
+    float4x4 invProjection;
+
+    float3 cameraPosition;
+    int isShadow;
+    float3 shadowOffset;
+};
+
+#define MAX_LIGHT_COUNT 8 
+#define LightType_Directional   1 
+#define LightType_Point         2
+#define LightType_Spot          3
+
+
+static float density = 7.0f;
+
+   
+static float4 SphereColor = float4(0.015f, 0.05f, 0.01f, 1.0f);
+
+static float Intensity = 1.0f;
+
+static float fogBegin = 0.0f;
+static float fogEnd = 700.0f;
+
+static float groundHeight = 0.0f;
+static float maxFogHeight = 30.0f;
+static float heightFalloff = 10.0f;
+
+struct Light
+{
+    uint lightType;
+    float4 Diffuse;
+    float4 Ambient;
+    float4 Specular;
+    float3 Position;
+    float3 Direction;
+    float3 Attenuation;
+    float InnerAngle;
+    float OuterAngle;
+    float Range;
+    
+};
+RWTexture3D<float4> RWOutput : register(u0);
+Texture2D shadowMaps[2] : register(t0);
+StructuredBuffer<Light> gLight : register(t2);
+
+float3 ComputeWorldPosition(int3 dispatchThreadID, int3 volumePixel)
+{
+    float3 ndc = dispatchThreadID;
+    ndc += 0.5f;
+    ndc *= float3(2.0f, -2.0f, 1.0f);
+    ndc /= volumePixel;
+    ndc += float3(-1.0f, 1.0f, 0.0f);
+    
+    float depth = pow(ndc.z, 2) * (fogEnd - fogBegin) + fogBegin;
+    
+    float4 viewRay = mul(float4(ndc, 1.0f), invProjection);
+    viewRay /= viewRay.w;
+    viewRay /= viewRay.z; 
+
+	
+    float4 worldPosition = mul(float4(viewRay.xyz * depth, 1.0f), invView);
+
+    return worldPosition.xyz;
+}
+
+
+
+
+
+[numthreads(8, 8, 8)]
+void FogComputeProcessor_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID : SV_DispatchThreadID)
+{
+    int3 volumePixel;
+    
+    RWOutput.GetDimensions(volumePixel.x, volumePixel.y, volumePixel.z);
+    
+    if (all(dispatchThreadID < volumePixel))
+    {
+        float3 sphereLight =SphereColor.rgb * SphereColor.a;
+        
+        float3 worldPos = ComputeWorldPosition(dispatchThreadID, volumePixel);
+        float3 toCamera = normalize(cameraPosition - worldPos);
+        
+        float hf = saturate((worldPos.y - groundHeight) / maxFogHeight);
+        float heightWeight = exp(-hf * heightFalloff);
+            
+        
+        [unroll]
+        for (int i = 0; i < MAX_LIGHT_COUNT; ++i)
+        {
+            float3 lightDir;
+            float3 toLight;
+            
+            if (gLight[i].lightType == LightType_Directional)
+            {
+                lightDir = -normalize(gLight[i].Direction); 
+                toLight = -lightDir;
+
+
+            }
+            else if (gLight[i].lightType == LightType_Point || gLight[i].lightType == LightType_Spot)
+            {
+                lightDir = normalize(worldPos - gLight[i].Position);
+                toLight = -lightDir;
+
+
+            }
+            
+            
+            
+            float dotLightCamera = dot(lightDir, toCamera);
+            float powG = 0.5f * 0.5f;
+            float temp = pow(1.0f + powG - 2.0f * 0.5f * dotLightCamera, 3.0f / 2.0f);
+            float result = (1.0f / (4.0f * 3.14f)) * ((1.0f - powG) / temp);
+            
+            sphereLight += gLight[i].Diffuse.rgb * result;
+            
+           
+
+        }
+        float localDensity = density * heightWeight;
+        float3 finalLight = sphereLight * Intensity * localDensity;
+        
+        RWOutput[dispatchThreadID] = float4(finalLight, density);
+
+    }
+
+}

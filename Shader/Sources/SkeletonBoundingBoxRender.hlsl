@@ -4,6 +4,9 @@ cbuffer Camera : register(b0)
     float4x4 projection;
     float4x4 viewProjection;
     float4x4 middleViewProjection;
+    float4x4 prevViewProjection;
+    float4x4 invView;
+    float4x4 invProjection;
 
     float3 cameraPosition;
     int isShadow;

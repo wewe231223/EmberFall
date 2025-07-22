@@ -475,3 +475,24 @@ public:
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
 };
+
+
+class VolumetricFogShader : public GraphicsShaderBase {
+public:
+	VolumetricFogShader();
+	virtual ~VolumetricFogShader() = default;
+public:
+	virtual void CreateShader(ComPtr<ID3D12Device> device) override;
+protected:
+	virtual InputLayout CreateInputLayout() override;
+	virtual RootParameters CreateRootParameters() override;
+
+	virtual D3D12_DEPTH_STENCIL_DESC CreateDepthStencilState() override;
+	virtual DXGI_FORMAT CreateDSVFormat() override;
+	virtual D3D12_BLEND_DESC CreateBlendState() override;
+	virtual D3D12_RASTERIZER_DESC CreateRasterizerState() override;
+
+
+	virtual D3D12_SHADER_BYTECODE CreateVertexShader() override;
+	virtual D3D12_SHADER_BYTECODE CreatePixelShader() override;
+};

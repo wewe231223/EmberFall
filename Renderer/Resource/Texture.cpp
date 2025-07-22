@@ -65,6 +65,61 @@ Texture::Texture(ComPtr<ID3D12Device> device, DXGI_FORMAT format, UINT64 width, 
 	mResource->SetName(L"Non Image Texture - Default");
 }
 
+Texture::Texture(ComPtr<ID3D12Device> device, DXGI_FORMAT format, UINT64 width, UINT height, UINT depth, D3D12_HEAP_FLAGS heapFlag, D3D12_RESOURCE_FLAGS resourceFlag, D3D12_RESOURCE_STATES resourceState) {
+	D3D12_RESOURCE_DESC desc{ CD3DX12_RESOURCE_DESC::Tex3D(format, width, height, depth, 1, resourceFlag) };
+	D3D12_HEAP_PROPERTIES heapProperties{ CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT) };
+
+	if (resourceFlag & D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET) {
+		D3D12_CLEAR_VALUE clearValue{};
+		clearValue.Format = format;
+		clearValue.Color[0] = 0.0f;
+		clearValue.Color[1] = 0.0f;
+		clearValue.Color[2] = 0.0f;
+		clearValue.Color[3] = 1.0f;
+
+		CheckHR(device->CreateCommittedResource(
+			&heapProperties,
+			heapFlag,
+			&desc,
+			resourceState,
+			&clearValue,
+			IID_PPV_ARGS(mResource.GetAddressOf())
+		));
+
+	}
+	else if (resourceFlag & D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL) {
+		D3D12_CLEAR_VALUE clearValue{};
+		clearValue.Format = format;
+		clearValue.DepthStencil.Depth = 0.0f;
+		clearValue.DepthStencil.Stencil = 0;
+
+		CheckHR(device->CreateCommittedResource(
+			&heapProperties,
+			heapFlag,
+			&desc,
+			resourceState,
+			&clearValue,
+			IID_PPV_ARGS(mResource.GetAddressOf())
+		));
+
+	}
+	else {
+		CheckHR(device->CreateCommittedResource(
+			&heapProperties,
+			heapFlag,
+			&desc,
+			resourceState,
+			nullptr,
+			IID_PPV_ARGS(mResource.GetAddressOf())
+		));
+
+	}
+
+
+
+	mResource->SetName(L"Non Image Texture - Default");
+}
+
 
 
 Texture::Texture(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList, const std::filesystem::path& filePath) {

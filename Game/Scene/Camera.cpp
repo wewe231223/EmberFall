@@ -9,7 +9,7 @@ Camera::Camera(DefaultBufferCPUIterator bufferLocation) : mCameraBufferCPU(buffe
 	mCameraConstant.proj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(CameraParam.fov, CameraParam.aspect, CameraParam.nearZ, CameraParam.farZ).Transpose();
 	DirectX::BoundingFrustum::CreateFromMatrix(mViewFrustum, mCameraConstant.proj.Transpose());
 	mCameraConstant.proj = SimpleMath::Matrix::CreatePerspectiveFieldOfView(CameraParam.fov, CameraParam.aspect, CameraParam.farZ, CameraParam.nearZ).Transpose();
-
+	mCameraConstant.invProj = mCameraConstant.proj.Invert();
 }
 
 void Camera::UpdateBuffer() {
@@ -18,7 +18,8 @@ void Camera::UpdateBuffer() {
 	mCameraConstant.view = SimpleMath::Matrix::CreateLookAt(mTransform.GetPosition(), mTransform.GetPosition() + mTransform.GetForward(),SimpleMath::Vector3::Up).Transpose();
 	mCameraConstant.viewProj = mCameraConstant.proj * mCameraConstant.view;
 	mCameraConstant.cameraPosition = mTransform.GetPosition();
-	
+	mCameraConstant.invView = mCameraConstant.view.Invert();
+
 	mViewFrustum.Transform(mWorldFrustum, SimpleMath::Matrix::CreateLookAt(mTransform.GetPosition(), mTransform.GetPosition() + mTransform.GetForward(), SimpleMath::Vector3::Up).Invert());
 
 	::memcpy(*mCameraBufferCPU, &mCameraConstant, sizeof(CameraConstants));

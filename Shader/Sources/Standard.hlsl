@@ -5,6 +5,8 @@ cbuffer Camera : register(b0)
     float4x4 viewProjection;
     float4x4 middleViewProjection;
     float4x4 prevViewProjection;
+    float4x4 invView;
+    float4x4 invProjection;
 
     float3 cameraPosition;
     int isShadow;
@@ -139,7 +141,7 @@ Deffered_POUT Standard_PS(Standard_VOUT input)
     
     float4 velocity = (curNDC - prevNDC);
    
-    output.velocity = float4(velocity.x, velocity.y, 0.0f, input.position.z);
+    output.velocity = float4(velocity.x, velocity.y, length(input.vPosition), input.position.z);
 
     
     return output;

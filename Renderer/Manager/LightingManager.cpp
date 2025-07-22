@@ -28,7 +28,6 @@ void LightingManager::CreateDirectionalLight(ComPtr<ID3D12GraphicsCommandList> c
 	directionalLight.Direction = direction;
 	directionalLight.Diffuse = diffuse;
 	directionalLight.mType = LightType::Directional;
-
 }
 
 Light& LightingManager::GetLight(int index) {

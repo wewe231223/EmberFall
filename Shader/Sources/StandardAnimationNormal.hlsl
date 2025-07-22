@@ -5,6 +5,8 @@ cbuffer Camera : register(b0)
     float4x4 viewProjection;
     float4x4 middleViewProjection;
     float4x4 prevViewProjection;
+    float4x4 invView;
+    float4x4 invProjection;
 
     float3 cameraPosition;
     int isShadow;
@@ -59,6 +61,7 @@ struct StandardAnimationNormal_PIN
     float3 wPosition : POSITION0;
     float4 curPosition : POSITION1;
     float4 prevPosition : POSITION2;
+    float3 vPosition : POSITION3;
     float3 normal : NORMAL;
     float2 texcoord : TEXCOORD;
     float3 tangent : TANGENT;
@@ -112,6 +115,7 @@ StandardAnimationNormal_PIN StandardAnimationNormal_VS(StandardAnimationNormal_V
     
     output.position = mul(float4(input.position, 1.0f), boneTransform);
     output.position = mul(output.position, modelContext.world);
+    output.vPosition = mul(output.position, view).xyz;
     //output.prevPosition = mul(mul(mul(float4(input.position, 1.0f), boneTransform), modelContext.prevWorld), prevViewProj);
     output.prevPosition = mul(mul(mul(float4(input.position, 1.0f), prevBoneTransform), modelContext.prevWorld), prevViewProjection);
     output.wPosition = output.position.xyz;
@@ -171,9 +175,9 @@ Deffered_POUT StandardAnimationNormal_PS(StandardAnimationNormal_PIN input)
     curNDC.xy = curNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
     prevNDC.xy = prevNDC.xy * float2(0.5f, -0.5f) + float2(0.5f, 0.5f);
     
-    float4 velocity = (curNDC - prevNDC) * 3.0f;
+    float4 velocity = (curNDC - prevNDC) * 2.0f;
     
-    output.velocity = float4(velocity.x, velocity.y, 0.0f, input.position.z);
+    output.velocity = float4(velocity.x, velocity.y, length(input.vPosition), input.position.z);
 
     
     
