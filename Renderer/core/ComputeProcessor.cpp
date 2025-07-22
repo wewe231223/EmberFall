@@ -657,7 +657,7 @@ void FogComputeProcessor::DispatchFogProcessor(ComPtr<ID3D12Device> device, ComP
 
 	UINT numGroupsX = static_cast<UINT>((Config::WINDOW_WIDTH<UINT> / mResourceOffset +7.0f) / 8.0f);
 	UINT numGroupsY = static_cast<UINT>((Config::WINDOW_HEIGHT<UINT> / mResourceOffset +7.0f) / 8.0f);
-	UINT numGroupsZ = static_cast<UINT>((64 +7.0f) / 8.0f);
+	UINT numGroupsZ = static_cast<UINT>((32 +7.0f) / 8.0f);
 
 	commandList->Dispatch(numGroupsX, numGroupsY, numGroupsZ);
 }
@@ -665,7 +665,7 @@ void FogComputeProcessor::DispatchFogProcessor(ComPtr<ID3D12Device> device, ComP
 
 
 void FogComputeProcessor::CreateResource(ComPtr<ID3D12Device> device) {
-	mComputeMap = Texture(device, DXGI_FORMAT_R16G16B16A16_FLOAT, Config::WINDOW_WIDTH<UINT64> / mResourceOffset, Config::WINDOW_HEIGHT<UINT> / mResourceOffset, 64,
+	mComputeMap = Texture(device, DXGI_FORMAT_R16G16B16A16_FLOAT, Config::WINDOW_WIDTH<UINT64> / mResourceOffset, Config::WINDOW_HEIGHT<UINT> / mResourceOffset, 32,
 		D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 
 }
@@ -818,14 +818,14 @@ void FogAccumulateProcessor::Dispatch(ComPtr<ID3D12Device> device, ComPtr<ID3D12
 
 	UINT numGroupsX = static_cast<UINT>((Config::WINDOW_WIDTH<UINT> / mResourceOffset + 7.0f) / 8.0f);
 	UINT numGroupsY = static_cast<UINT>((Config::WINDOW_HEIGHT<UINT> / mResourceOffset + 7.0f) / 8.0f);
-	UINT numGroupsZ = 64;
+	UINT numGroupsZ = 32;
 
 	commandList->Dispatch(numGroupsX, numGroupsY, numGroupsZ);
 }
 
 
 void FogAccumulateProcessor::CreateResource(ComPtr<ID3D12Device> device) {
-	mComputeMap = Texture(device, DXGI_FORMAT_R16G16B16A16_FLOAT, Config::WINDOW_WIDTH<UINT64> / mResourceOffset, Config::WINDOW_HEIGHT<UINT> / mResourceOffset, 64,
+	mComputeMap = Texture(device, DXGI_FORMAT_R16G16B16A16_FLOAT, Config::WINDOW_WIDTH<UINT64> / mResourceOffset, Config::WINDOW_HEIGHT<UINT> / mResourceOffset, 32,
 		D3D12_HEAP_FLAG_NONE, D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
 }
 
