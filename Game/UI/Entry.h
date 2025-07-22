@@ -34,7 +34,7 @@ private:
 
 	TextBlock* mText{}; 
 
-	size_t maxLength{ 0 };
+	size_t mMaxLength{ 0 };
 
 	bool mInputActive{ false };
 };

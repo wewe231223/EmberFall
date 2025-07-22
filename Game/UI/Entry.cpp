@@ -16,6 +16,8 @@ void Entry::Init(Canvas& cancvas, UINT frame, UINT carrot, float LTx, float LTy,
 	mText = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ LTx + width * 0.05f, LTy + height * 0.1f, LTx + width * 0.95f, LTy + height * 0.8f }, StringColor::Black, "NotoSansKR_Big");
 
 	mInputActive = false;
+
+	mMaxLength = max; 
 }
 
 void Entry::SetActiveState(bool state) {
@@ -69,17 +71,17 @@ void Entry::Update() {
 		if (mCarrotCount == 0) {
 			if (mCarrot.GetActive()) {
 				mCarrot.SetActive(false);
-				mCarrotCount = 100; 
+				mCarrotCount = 60; 
 			}
 			else {
 				mCarrot.SetActive(true);
-				mCarrotCount = 100;
+				mCarrotCount = 60;
 			}
 		}
 	}
 	else {
 		mCarrot.SetActive(false);
-		mCarrotCount = 100; 
+		mCarrotCount = 60; 
 	}
 
 	if (mInputActive) {
@@ -90,15 +92,9 @@ void Entry::Update() {
 		}
 
 		auto newInput = ConvertUtf8ToWstring(GetPressedText().c_str());
-
-		
-		std::wstring& currentText = mText->GetText();
-		size_t remaining = maxLength > currentText.length() ? maxLength - currentText.length() : 0;
-		if (newInput.length() > remaining) {
-			newInput = newInput.substr(0, remaining);
-		}
-
 		mText->GetText() += newInput;
+
+		mText->GetText() =  mText->GetText().substr(0, mMaxLength);
 
 		mText->UpdateLayout();
 

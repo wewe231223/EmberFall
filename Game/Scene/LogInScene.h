@@ -19,7 +19,7 @@
 #include "../Game/GameObject/TerrainObject.h"
 #include "../External/Include/absl/container/flat_hash_map.h"
 #include "../Game/Scene/MaterialLoader.h"
-#include "../Game/Scene/LayerIndexMap.h"
+#include "../Game/UI/Entry.h"
 
 class LogInScene : public IScene {
 public:
@@ -34,5 +34,8 @@ public:
 	virtual void SendNetwork();
 	virtual void Exit();
 private:
+
+	Entry mIDEntry{};
+	Entry mPWEntry{}; 
 
 };
