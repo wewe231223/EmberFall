@@ -14,6 +14,7 @@ void Button::Init(Canvas& canvas, InvokeCondition condition, UINT image) {
 	mCallback = []() {};
 
 	mCanvas = &canvas;
+	mCondition = condition;
 }
 
 void Button::Update() {

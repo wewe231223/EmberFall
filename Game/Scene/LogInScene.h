@@ -21,6 +21,7 @@
 #include "../Game/Scene/MaterialLoader.h"
 #include "../Game/UI/Entry.h"
 #include "../Game/UI/Image.h"
+#include "../Game/UI/Button.h"
 
 class LogInScene : public IScene {
 public:
@@ -41,6 +42,8 @@ private:
 	Entry mPWEntry{}; 
 
 	Image mBackgroundImage{};
+
+	Button mLoginButton{};
 
 	TextBlock* mID{};
 	TextBlock* mPW{};
