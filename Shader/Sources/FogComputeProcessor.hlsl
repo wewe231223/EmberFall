@@ -40,7 +40,7 @@ static float fogEnd = 700.0f;
 
 static float groundHeight = 0.0f;
 static float maxFogHeight = 30.0f;
-static float heightFalloff = 12.0f;
+static float heightFalloff = 10.0f;
 
 struct Light
 {

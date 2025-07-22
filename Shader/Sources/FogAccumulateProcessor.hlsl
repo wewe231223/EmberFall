@@ -3,7 +3,7 @@ RWTexture3D<float4> RWOutput : register(u0);
 
 
 
-static const float DensityOffset = 0.0008f;
+static const float DensityOffset = 0.0006f;
 static float fogBegin = 0.0f;
 static float fogEnd = 700.0f;
 
