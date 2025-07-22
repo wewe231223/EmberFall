@@ -29,11 +29,13 @@ public:
     std::vector<NetworkObjectIdType> GetNPCsInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager) const;
     std::vector<NetworkObjectIdType> GetPlayersInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager) const;
     std::vector<NetworkObjectIdType> GetEnvInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objManager) const;
+    std::vector<NetworkObjectIdType> GetProjectileInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objectManager) const;
 
     std::vector<NetworkObjectIdType> GetTriggers(SimpleMath::Vector3 pos, const std::shared_ptr<ObjectManager>& objManager) const;
     std::vector<NetworkObjectIdType> GetNPCs(SimpleMath::Vector3 pos, const std::shared_ptr<ObjectManager>& objManager) const;
     std::vector<NetworkObjectIdType> GetPlayers(SimpleMath::Vector3 pos, const std::shared_ptr<ObjectManager>& objManager) const;
     std::vector<NetworkObjectIdType> GetEnv(SimpleMath::Vector3 pos, const std::shared_ptr<ObjectManager>& objManager) const;
+    std::vector<NetworkObjectIdType> GetProjectile(SimpleMath::Vector3 pos, const std::shared_ptr<ObjectManager>& objManager) const;
 
 private:
     Short2 mIndex{ };

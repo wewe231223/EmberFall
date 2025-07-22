@@ -27,10 +27,10 @@ void GameSession::Close() {
     auto myRoom = GetMyRoomIdx();
 
     SessionLobbyInfo info = mLobbyInfo;
-    gServerFrame->AddTimerEvent(myId, 0s, IoType::REMOVE_PLAYER_IN_ROOM, info);
+    gServerFrame->AddTimerEvent(myId, EXECUTE_IMMEDIATE, IoType::REMOVE_PLAYER_IN_ROOM, info);
 
     if (nullptr != mUserObject) {
-        gServerFrame->AddTimerEvent(myId, 0s, IoType::REMOVE_NPC, myRoom);
+        gServerFrame->AddTimerEvent(myId, EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, myRoom);
         mUserObject = nullptr;
     }
 
@@ -199,7 +199,7 @@ void GameSession::InitPlayerScript() {
     }
 }
 
-void GameSession::UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeNPC, const std::vector<NetworkObjectIdType>& inViewRangePlayer) {
+void GameSession::UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeObjects) {
     std::unordered_set<NetworkObjectIdType> oldViewList;
     {
         std::shared_lock viewListGuard{ mViewListLock };
@@ -213,14 +213,7 @@ void GameSession::UpdateViewList(const std::vector<NetworkObjectIdType>& inViewR
     decltype(auto) myRoomStage = gGameRoomManager->GetRoom(GetMyRoomIdx())->GetStage();
 
     std::unordered_set<NetworkObjectIdType> newViewList{};
-    for (const auto id : inViewRangePlayer) {
-        auto [iter, success] = newViewList.insert(id);
-        if (not success) {
-            continue;
-        }
-    }
-
-    for (const auto id : inViewRangeNPC) {
+    for (const auto id : inViewRangeObjects) {
         auto [iter, success] = newViewList.insert(id);
         if (not success) {
             continue;

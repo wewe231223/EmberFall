@@ -38,6 +38,7 @@ public:
     std::shared_ptr<GameObject> GetPlayer(NetworkObjectIdType id) const;
     std::shared_ptr<GameObject> GetNPC(NetworkObjectIdType id) const;
     std::shared_ptr<GameObject> GetTrigger(NetworkObjectIdType id) const;
+    std::shared_ptr<GameObject> GetProjectile(NetworkObjectIdType id) const;
     std::shared_ptr<GameObject> GetEnv(NetworkObjectIdType id) const;
     //std::shared_ptr<GameObject> GetOther(NetworkObjectIdType id) const;
 
@@ -47,6 +48,8 @@ public:
     std::shared_ptr<GameObject> SpawnTrigger(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& ext, const SimpleMath::Vector3& dir, float lifeTime);
     std::shared_ptr<GameObject> SpawnEventTrigger(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& ext, const SimpleMath::Vector3& dir,
         float lifeTime, std::shared_ptr<GameEvent> event, float delay, int32_t count);
+    std::shared_ptr<GameObject> SpawnProjectile(Packets::ProjectileTypes projectileType, 
+        const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir, float lifeTime=std::numeric_limits<float>::max());
 
     void StartUpdateNPCs();
 

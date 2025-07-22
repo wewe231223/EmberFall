@@ -43,7 +43,7 @@ public:
     void InitUserObject();
     void InitPlayerScript();
 
-    void UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeNPC, const std::vector<NetworkObjectIdType>& inViewRangePlayer);
+    void UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeObjects);
 
     virtual void Close() override;
     virtual void OnConnect() override;

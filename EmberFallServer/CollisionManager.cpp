@@ -61,11 +61,13 @@ void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj, c
         decltype(auto) collisionCheckMonsters = std::move(sectorSystem->GetSector(sector).GetNPCs(pos, objManager));
         decltype(auto) collisionCheckEnvs = std::move(sectorSystem->GetSector(sector).GetEnv(pos, objManager));
         decltype(auto) collisionCheckTriggers = std::move(sectorSystem->GetSector(sector).GetTriggers(pos, objManager));
+        decltype(auto) collisionCheckProjectiles = std::move(sectorSystem->GetSector(sector).GetProjectile(pos, objManager));
 
         UpdateCollisionMonster(obj, objManager, collisionCheckMonsters);
         UpdateCollisionPlayer(obj, objManager, collisionCheckPlayers);
         UpdateCollisionEnv(obj, objManager, collisionCheckEnvs);
         UpdateCollisionTrigger(obj, objManager,  collisionCheckTriggers);
+        UpdateCollisionProjectile(obj, objManager, collisionCheckProjectiles);
     }
 }
 
@@ -190,5 +192,36 @@ void CollisionManager::UpdateCollisionTrigger(const std::shared_ptr<GameObject>&
         }
 
         PopCollisionPair(triggerId, objId);
+    }
+}
+
+void CollisionManager::UpdateCollisionProjectile(const std::shared_ptr<GameObject>& obj, const std::shared_ptr<ObjectManager>& objManager, const std::vector<NetworkObjectIdType>& collisionCheckProjectiles) {
+    auto objId = obj->GetId();
+    for (const auto projectileId : collisionCheckProjectiles) {
+        if (objId == projectileId) {
+            continue;
+        }
+
+        auto result = PushCollisionPair(projectileId, objId);
+        if (false == result) {
+            continue;
+        }
+
+        // Todo Collision Check And Resolve
+        auto projectile = objManager->GetProjectile(projectileId);
+        if (nullptr == projectile or false == projectile->mSpec.active) {
+            PopCollisionPair(projectileId, objId);
+            continue;
+        }
+
+        const auto boundingObj1 = projectile->GetBoundingObject();
+        const auto boundingObj2 = obj->GetBoundingObject();
+
+        auto [intersects, penetration] = boundingObj2->IsColliding(boundingObj1);
+        if (intersects) {
+            obj->OnCollision(projectile, penetration);
+        }
+
+        PopCollisionPair(projectileId, objId);
     }
 }

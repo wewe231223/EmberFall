@@ -124,6 +124,7 @@ bool Session::RegisterSend(OverlappedSend* const overlappedSend) {
             HandleSocketError(errorCode);
         }
         else {
+            gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Socket Error, Send!");
             return false;
         }
     }

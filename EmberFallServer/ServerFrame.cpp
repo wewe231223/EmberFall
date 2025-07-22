@@ -278,6 +278,9 @@ void ServerFrame::IoThread() {
                 break;
             }
 
+            if (Packets::EntityType_PROJECTILE == obj->mSpec.entity) {
+                gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Erase Projectile from world");
+            }
             obj->Reset();
         }
         break;

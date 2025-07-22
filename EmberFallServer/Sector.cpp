@@ -5,7 +5,7 @@
 #include "PlayerScript.h"
 #include "GameSession.h"
 
-Sector::Sector(uint8_t row, uint8_t col) 
+Sector::Sector(uint8_t row, uint8_t col)
     : mIndex{ col, row } {
 }
 
@@ -14,12 +14,12 @@ Sector::~Sector() {
     mPlayers.clear();
 }
 
-Sector::Sector(Sector&& other) noexcept 
+Sector::Sector(Sector&& other) noexcept
     : mPlayers{ std::move(other.mPlayers) }, mNPCs{ std::move(other.mNPCs) } {
 }
 
 Sector& Sector::operator=(Sector&& other) noexcept {
-    mPlayers = std::move(other.mPlayers); 
+    mPlayers = std::move(other.mPlayers);
     mNPCs = std::move(other.mNPCs);
     return *this;
 }
@@ -66,28 +66,34 @@ void Sector::TryInsert(NetworkObjectIdType id, const std::shared_ptr<ObjectManag
     case ObjectTag::BOSSPLAYER:
     {
         mPlayers.insert(id);
-        break;
     }
+    break;
 
     case ObjectTag::MONSTER:
     case ObjectTag::CORRUPTED_GEM:
     case ObjectTag::ITEM:
     {
         mNPCs.insert(id);
-        break;
     }
+    break;
 
     case ObjectTag::ENV:
     {
         mEnvs.insert(id);
-        break;
     }
+    break;
 
     case ObjectTag::TRIGGER:
     {
         mTriggers.insert(id);
-        break;
     }
+    break;
+
+    case ObjectTag::ARROW:
+    {
+        mProjectiles.insert(id);
+    }
+    break;
 
     default:
         break;
@@ -106,8 +112,8 @@ void Sector::RemoveObject(NetworkObjectIdType id, const std::shared_ptr<ObjectMa
         }
 
         mPlayers.erase(id);
-        break;
     }
+    break;
 
     case ObjectTag::MONSTER:
     case ObjectTag::CORRUPTED_GEM:
@@ -118,18 +124,18 @@ void Sector::RemoveObject(NetworkObjectIdType id, const std::shared_ptr<ObjectMa
         }
 
         mNPCs.erase(id);
-        break;
     }
+    break;
 
-    case ObjectTag::ENV: 
+    case ObjectTag::ENV:
     {
         if (false == mEnvs.contains(id)) {
             return;
         }
 
         mEnvs.erase(id);
-        break;
     }
+    break;
 
     case ObjectTag::TRIGGER:
     {
@@ -138,8 +144,18 @@ void Sector::RemoveObject(NetworkObjectIdType id, const std::shared_ptr<ObjectMa
         }
 
         mTriggers.erase(id);
-        break;
     }
+    break;
+
+    case ObjectTag::ARROW:
+    {
+        if (false == mProjectiles.contains(id)) {
+            return;
+        }
+
+        mProjectiles.erase(id);
+    }
+    break;
 
     default:
         break;
@@ -229,6 +245,27 @@ std::vector<NetworkObjectIdType> Sector::GetEnvInRange(SimpleMath::Vector3 pos, 
     return inRangeEnv;
 }
 
+std::vector<NetworkObjectIdType> Sector::GetProjectileInRange(SimpleMath::Vector3 pos, const float range, const std::shared_ptr<ObjectManager>& objectManager) const {
+    Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
+    std::vector<NetworkObjectIdType> inRangeProjectile{ };
+    for (const auto projectileId : mProjectiles) {
+        auto projectile = objectManager->GetProjectile(projectileId);
+        if (nullptr == projectile) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Projectile {} is null", projectileId);
+            continue;
+        }
+
+        decltype(auto) projectilePos = projectile->GetPosition();
+
+        auto dist = SimpleMath::Vector3::DistanceSquared(pos, projectilePos);
+        if (dist <= MathUtil::Square(range)) {
+            inRangeProjectile.emplace_back(projectileId);
+        }
+    }
+
+    return inRangeProjectile;
+}
+
 std::vector<NetworkObjectIdType> Sector::GetTriggers(SimpleMath::Vector3 pos, const std::shared_ptr<ObjectManager>& objManager) const {
     Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
     std::vector<NetworkObjectIdType> inRangeTriggers{ };
@@ -292,7 +329,23 @@ std::vector<NetworkObjectIdType> Sector::GetEnv(SimpleMath::Vector3 pos, const s
     return inRangeEnv;
 }
 
-SectorSystem::SectorSystem(std::shared_ptr<class ObjectManager> objManager) 
+std::vector<NetworkObjectIdType> Sector::GetProjectile(SimpleMath::Vector3 pos, const std::shared_ptr<ObjectManager>& objManager) const {
+    Lock::SRWLockGuard guard{ Lock::SRWLockMode::SRW_SHARED, mSectorLock };
+    std::vector<NetworkObjectIdType> inRangeProjectile{ };
+    for (const auto projectileId : mProjectiles) {
+        auto projectile = objManager->GetProjectile(projectileId);
+        if (nullptr == projectile) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "ENV {} is null", projectileId);
+            continue;
+        }
+
+        inRangeProjectile.emplace_back(projectileId);
+    }
+
+    return inRangeProjectile;
+}
+
+SectorSystem::SectorSystem(std::shared_ptr<class ObjectManager> objManager)
     : mObjManager{ objManager } {
     auto mapHeight = 2000.0f;
     auto mapWidth = 2000.0f;
@@ -301,7 +354,7 @@ SectorSystem::SectorSystem(std::shared_ptr<class ObjectManager> objManager)
     const auto cols = static_cast<uint8_t>(mapWidth / Sector::DEFAULT_SECTOR_WIDTH);
     mSectorWidth = rows;
     mSectorHeight = cols;
-    
+
     mSectors.reserve(rows * cols);
     for (uint8_t sectorRow = 0; sectorRow < rows; ++sectorRow) {
         for (uint8_t sectorCol = 0; sectorCol < cols; ++sectorCol) {
@@ -310,7 +363,7 @@ SectorSystem::SectorSystem(std::shared_ptr<class ObjectManager> objManager)
     }
 }
 
-SectorSystem::~SectorSystem() { }
+SectorSystem::~SectorSystem() {}
 
 Sector& SectorSystem::GetSector(Short2 idx) {
     if (idx.x < 0 or idx.y < 0 or
@@ -323,7 +376,7 @@ Sector& SectorSystem::GetSector(Short2 idx) {
 }
 
 Sector& SectorSystem::GetSectorFromPos(const SimpleMath::Vector3& pos) {
-    const Short2 idx = { 
+    const Short2 idx = {
         static_cast<int16_t>((pos.x + 1000.0f) / Sector::DEFAULT_SECTOR_WIDTH),
         static_cast<int16_t>((pos.z + 1000.0f) / Sector::DEFAULT_SECTOR_HEIGHT)
     };
@@ -331,7 +384,7 @@ Sector& SectorSystem::GetSectorFromPos(const SimpleMath::Vector3& pos) {
 }
 
 Short2 SectorSystem::GetSectorIdxFromPos(const SimpleMath::Vector3& pos) const {
-    const Short2 idx = { 
+    const Short2 idx = {
         static_cast<int16_t>((pos.x + 1000.0f) / Sector::DEFAULT_SECTOR_WIDTH),
         static_cast<int16_t>((pos.z + 1000.0f) / Sector::DEFAULT_SECTOR_HEIGHT)
     };
@@ -419,11 +472,11 @@ std::vector<Short2> SectorSystem::GetMustCheckSectors(const SimpleMath::Vector3&
     if (backward and right) {
         checkSector.emplace_back(checkIdx.x + 1, checkIdx.y + 1);
     }
-    
+
     return checkSector;
 }
 
-void SectorSystem::AddInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos) { 
+void SectorSystem::AddInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos) {
     auto objManager = mObjManager.lock();
     if (nullptr == objManager) {
         return;
@@ -439,7 +492,7 @@ void SectorSystem::AddInSector(NetworkObjectIdType id, const SimpleMath::Vector3
     sector.TryInsert(id, objManager);
 }
 
-void SectorSystem::RemoveInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos) { 
+void SectorSystem::RemoveInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos) {
     auto objManager = mObjManager.lock();
     if (nullptr == objManager) {
         return;
@@ -559,23 +612,24 @@ void SectorSystem::UpdatePlayerViewList(const std::shared_ptr<GameObject>& playe
     const auto currIdx = UpdateSectorPos(id, prevPos, currPos);
 
     std::vector<Short2> checkSectors = std::move(GetMustCheckSectors(pos, range));
-    std::vector<NetworkObjectIdType> inViewRangeMonsters{ };
-    std::vector<NetworkObjectIdType> inViewRangePlayers{ };
+    std::vector<NetworkObjectIdType> inViewRangeObjects{ };
     for (const auto idx : checkSectors) {
         decltype(auto) sector = GetSector(idx);
 
         const std::vector<NetworkObjectIdType> monsters = std::move(sector.GetNPCsInRange(pos, range, objManager));
         const std::vector<NetworkObjectIdType> players = std::move(sector.GetPlayersInRange(pos, range, objManager));
+        const std::vector<NetworkObjectIdType> projectiles = std::move(sector.GetProjectileInRange(pos, range, objManager));
 
-        inViewRangeMonsters.insert(inViewRangeMonsters.end(), monsters.begin(), monsters.end());
-        inViewRangePlayers.insert(inViewRangePlayers.end(), players.begin(), players.end());
+        inViewRangeObjects.insert(inViewRangeObjects.end(), monsters.begin(), monsters.end());
+        inViewRangeObjects.insert(inViewRangeObjects.end(), players.begin(), players.end());
+        inViewRangeObjects.insert(inViewRangeObjects.end(), projectiles.begin(), projectiles.end());
     }
 
     auto gameSession = gServerFrame->GetSession(id);
     if (nullptr == gameSession) {
         return;
     }
-    gameSession->UpdateViewList(inViewRangeMonsters, inViewRangePlayers);
+    gameSession->UpdateViewList(inViewRangeObjects);
 }
 
 void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {

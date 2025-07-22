@@ -57,9 +57,6 @@ namespace Weapons {
     
     public:
         virtual void Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) override;
-    
-    private:
-        GameUnits::GameUnit<GameUnits::StandardSpeed> mArrowSpeed{ };
     };
 
     class LongSword : public IWeapon {

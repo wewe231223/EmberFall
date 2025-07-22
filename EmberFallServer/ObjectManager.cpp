@@ -1,15 +1,18 @@
 #include "pch.h"
 #include "ObjectManager.h"
-#include "PlayerScript.h"
-#include "MonsterScript.h"
-#include "CorruptedGem.h"
-#include "Trigger.h"
-#include "EventTrigger.h"
-#include "ItemScript.h"
+
 #include "Input.h"
 #include "Sector.h"
 #include "Resources.h"
 #include "GameRoom.h"
+
+#include "CorruptedGem.h"
+#include "PlayerScript.h"
+#include "MonsterScript.h"
+#include "Trigger.h"
+#include "EventTrigger.h"
+#include "ItemScript.h"
+#include "ArrowScript.h"
 
 ObjectManager::ObjectManager(uint16_t roomIdx) 
     : mRoomIdx{ roomIdx } { }
@@ -197,6 +200,15 @@ std::shared_ptr<GameObject> ObjectManager::GetTrigger(NetworkObjectIdType id) co
     return mTriggers[id - TRIGGER_ID_START];
 }
 
+std::shared_ptr<GameObject> ObjectManager::GetProjectile(NetworkObjectIdType id) const {
+    if (id >= TRIGGER_ID_START or id < PROJECTILE_ID_START) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Bad Trigger Object Array Access - Access Id: [{}]", id);
+        return nullptr;
+    }
+
+    return mProjectiles[id - PROJECTILE_ID_START];
+}
+
 std::shared_ptr<GameObject> ObjectManager::GetEnv(NetworkObjectIdType id) const {
     if (id >= INVALID_OBJ_ID or id < ENV_ID_START) {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Bad ENV Object Array Access - Access Id: [{}]", id);
@@ -255,11 +267,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->RegisterUpdate();
 
         return obj;
-    }
-
-    case Packets::EntityType_PROJECTILE:
-    {
-        break;
     }
 
     case Packets::EntityType_CORRUPTED_GEM:
@@ -405,6 +412,56 @@ std::shared_ptr<GameObject> ObjectManager::SpawnEventTrigger(const SimpleMath::V
     obj->RegisterUpdate(50ms);
 
     return obj;
+}
+
+std::shared_ptr<GameObject> ObjectManager::SpawnProjectile(Packets::ProjectileTypes projectileType, 
+    const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir, float lifeTime) {
+    auto sector = mSector.lock();
+    if (nullptr == sector) {
+        return nullptr;
+    }
+
+    NetworkObjectIdType validId{ };
+    if (false == mProjectileIndices.try_pop(validId)) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Max Proejctile");
+        return nullptr;
+    }
+
+    switch (projectileType) {
+    case Packets::ProjectileTypes_ARROW:
+    {
+        auto obj = GetObjectFromId(validId);
+        obj->mSpec.active = true;
+        obj->CreateScript<ArrowScript>(obj, pos, dir);
+        obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb);
+
+        obj->Init();
+
+        obj->GetTransform()->SetPosition(pos);
+        obj->GetTransform()->SetY(0.0f);
+
+        obj->GetBoundingObject()->Update(obj->GetTransform()->GetWorld());
+        sector->AddInSector(validId, obj->GetPosition());
+
+        obj->RegisterUpdate(10ms);
+        return obj;
+    }
+    break;
+
+    case Packets::ProjectileTypes_MAGIC_ARROW:
+    {
+        return nullptr;
+    }
+        break;
+
+    default:
+    {
+        return nullptr;
+    }
+        break;
+    }
+
+    return nullptr;
 }
 
 void ObjectManager::StartUpdateNPCs() {

@@ -25,6 +25,7 @@ public:
     void UpdateCollisionPlayer(const std::shared_ptr<GameObject>& obj, const std::shared_ptr<ObjectManager>& objManager, const std::vector<NetworkObjectIdType>& collisionCheckPlayers);
     void UpdateCollisionEnv(const std::shared_ptr<GameObject>& obj, const std::shared_ptr<ObjectManager>& objManager, const std::vector<NetworkObjectIdType>& collisionCheckEnvs);
     void UpdateCollisionTrigger(const std::shared_ptr<GameObject>& obj, const std::shared_ptr<ObjectManager>& objManager, const std::vector<NetworkObjectIdType>& collisionCheckTriggers);
+    void UpdateCollisionProjectile(const std::shared_ptr<GameObject>& obj, const std::shared_ptr<ObjectManager>& objManager, const std::vector<NetworkObjectIdType>& collisionCheckProjectiles);
 
 public:
     uint16_t mRoomIdx{ };
