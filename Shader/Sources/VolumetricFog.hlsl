@@ -26,7 +26,7 @@ Texture3D fogVolume : register(t0);
 Texture2D velocity : register(t1);
 
 static float fogBegin = 0.0f;
-static float fogEnd = 600.0f;
+static float fogEnd = 700.0f;
 
 struct VS_INPUT
 {
@@ -39,72 +39,63 @@ struct VS_OUTPUT
     float4 position : SV_Position;
     float3 worldPosition : POSITION0;
     float3 viewRay : POSITION1;
-    float3 worldRay : POSITION2;
     float2 texcoord : TEXCOORD;
 };
 
-float3 HDR(float3 l)
+float3 ApplyToneMap(float3 color)
 {
-    l = l * 0.4f;
-    l.r = l.r < 1.413f ? pow(abs(l.r * 0.38317f), 1.f / 2.2f) : 1.f - exp(-l.r);
-    l.g = l.g < 1.413f ? pow(abs(l.g * 0.38317f), 1.f / 2.2f) : 1.f - exp(-l.g);
-    l.b = l.b < 1.413f ? pow(abs(l.b * 0.38317f), 1.f / 2.2f) : 1.f - exp(-l.b);
-    return l;
+    
+    color *= 0.4f;
+    float3 low = pow(abs(color * 0.38317f), 0.455f);
+    float3 high = 1.0f - exp(-color);
+
+    float3 mask = step(color, 1.413f);
+    
+
+    return lerp(high, low, mask);
 }
 
 
 VS_OUTPUT VolumetricFog_VS(VS_INPUT input)
 {
-    VS_OUTPUT output = (VS_OUTPUT) 0;
+    VS_OUTPUT output;
 
     output.texcoord = input.texcoord;
     output.position = float4(input.position, 1.0f);
 
 
-    float4 worldPosition = mul(mul(float4(output.position.xy, 0.0f, 1.0f), invProjection), invView);
-    output.worldPosition = worldPosition.xyz / worldPosition.w;
+    
 
     float4 viewRay = mul(float4(output.position.xy, 1.0f, 1.0f), invProjection);
     viewRay /= viewRay.w;
     output.viewRay = viewRay.xyz;
 
-    float4 worldRay = mul(mul(float4(output.position.xy, 1.0f, 1.0f), invProjection), invView);
-    worldRay /= worldRay.w;
-    output.worldRay = worldRay.xyz;
 
     return output;
 }
 
 float4 VolumetricFog_PS(VS_OUTPUT input) : SV_Target
 {
-    float viewSpaceDistance = velocity.Sample(linearClampSampler, input.texcoord).z;
+    float viewSpaceLength = velocity.Sample(linearClampSampler, input.texcoord).z;
     
-    if (viewSpaceDistance >= fogEnd)
-    {
-        //viewSpaceDistance = fogEnd;
-    }
-    if (viewSpaceDistance <= fogBegin)
-    {
-        //viewSpaceDistance = fogBegin;
+    viewSpaceLength = clamp(viewSpaceLength, fogBegin, fogEnd);
 
-    }
 
-    float3 viewPosition = normalize(input.viewRay) * viewSpaceDistance;
+    float3 viewPosition = normalize(input.viewRay) * viewSpaceLength;
 
     
     
     
     float ndcZ = pow(saturate((length(viewPosition) - fogBegin) / (fogEnd - fogBegin)),  0.5f);
-    //float ndcZ = pow(saturate((viewPosition.z - fogBegin) / (fogEnd - fogBegin)),  0.5f);
 
     
     float3 uv = float3(input.texcoord, 1.0 - ndcZ);
-    float4 scatteringColorAndTransmittance = fogVolume.Sample(linearClampSampler, uv);
-    float3 scatteringColor = HDR(scatteringColorAndTransmittance.rgb);
+    float4 scatteringFog = fogVolume.Sample(linearClampSampler, uv);
+    float3 scatteringColor = ApplyToneMap(scatteringFog.rgb);
 
 
     
     
-    return float4(scatteringColor, scatteringColorAndTransmittance.a );
+    return float4(scatteringColor, scatteringFog.a);
 
 }

@@ -28,8 +28,9 @@ void HorzBloom_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID 
     
    
     float3 emissive = RWOutput[uv].rgb;
+    //AllMemoryBarrierWithGroupSync();
     float brightness = dot(emissive, WEIGHTS);
- 
+
     
  
     float4 midColor = pow(float4(emissive, 1.0f), 4.0f);
@@ -43,6 +44,7 @@ void HorzBloom_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID 
     result = lerp(result, RWOutput[uv], mask1);
 
     RWOutput[uv] = result;
+    AllMemoryBarrierWithGroupSync();
 
     emissive = Input[uv].rgb;
     float useEmissiveMap = step(0.00001f, length(emissive));
@@ -60,6 +62,7 @@ void HorzBloom_CS( int3 groupThreadID : SV_GroupThreadID, int3 dispatchThreadID 
     [unroll]
     for (int i = 0; i < 1 * leftEdge; ++i)
     {
+        
         gGroupSharedCache[groupThreadID.x] = RWOutput[int2(max(dispatchThreadID.x - maskWidth, 0), dispatchThreadID.y)];
     }
     

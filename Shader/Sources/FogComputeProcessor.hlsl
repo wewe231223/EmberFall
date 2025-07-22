@@ -31,12 +31,16 @@ cbuffer Camera : register(b0)
 static float density = 7.0f;
 
    
-static float4 HemisphereColor = float4(0.015f, 0.05f, 0.01f, 1.0f);
+static float4 SphereColor = float4(0.015f, 0.05f, 0.01f, 1.0f);
 
 static float Intensity = 1.0f;
 
 static float fogBegin = 0.0f;
-static float fogEnd = 600.0f;
+static float fogEnd = 700.0f;
+
+static float groundHeight = 0.0f;
+static float maxFogHeight = 30.0f;
+static float heightFalloff = 12.0f;
 
 struct Light
 {
@@ -60,7 +64,8 @@ float3 ComputeWorldPosition(int3 dispatchThreadID, int3 volumePixel)
 {
     float3 ndc = dispatchThreadID;
     ndc += 0.5f;
-    ndc *= float3(2.0f / volumePixel.x, -2.0f / volumePixel.y, 1.0f / volumePixel.z);
+    ndc *= float3(2.0f, -2.0f, 1.0f);
+    ndc /= volumePixel;
     ndc += float3(-1.0f, 1.0f, 0.0f);
     
     float depth = pow(ndc.z, 2) * (fogEnd - fogBegin) + fogBegin;
@@ -88,16 +93,21 @@ void FogComputeProcessor_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatch
     
     if (all(dispatchThreadID < volumePixel))
     {
+        float3 sphereLight =SphereColor.rgb * SphereColor.a;
+        
         float3 worldPos = ComputeWorldPosition(dispatchThreadID, volumePixel);
         float3 toCamera = normalize(cameraPosition - worldPos);
         
-        float3 hemisphereLight = HemisphereColor.rgb * HemisphereColor.a;
+        float hf = saturate((worldPos.y - groundHeight) / maxFogHeight);
+        float heightWeight = exp(-hf * heightFalloff);
+            
         
         [unroll]
         for (int i = 0; i < MAX_LIGHT_COUNT; ++i)
         {
             float3 lightDir;
             float3 toLight;
+            
             if (gLight[i].lightType == LightType_Directional)
             {
                 lightDir = -normalize(gLight[i].Direction); 
@@ -113,26 +123,22 @@ void FogComputeProcessor_CS(int3 groupThreadID : SV_GroupThreadID, int3 dispatch
 
             }
             
-            float visibility = 1.0f;
             
             
-            float cosTheta = dot(lightDir, toCamera);
-            float g2 = 0.5f * 0.5f;
-            float denom = pow(1.f + g2 - 2.f * 0.5f * cosTheta, 3.f / 2.f);
-            float phaseFuntion = (1.f / (4.f * 3.14f)) * ((1.f - g2) / denom );
+            float dotLightCamera = dot(lightDir, toCamera);
+            float powG = 0.5f * 0.5f;
+            float temp = pow(1.0f + powG - 2.0f * 0.5f * dotLightCamera, 3.0f / 2.0f);
+            float result = (1.0f / (4.0f * 3.14f)) * ((1.0f - powG) / temp);
             
-            hemisphereLight += visibility * gLight[i].Diffuse.rgb * gLight[i].Diffuse.a * phaseFuntion;
+            sphereLight += gLight[i].Diffuse.rgb * result;
             
-            //float3 ndc = dispatchThreadID;
-            //ndc += 0.5f;
-            //ndc *= float3(2.0f / volumePixel.x, -2.0f / volumePixel.y, 1.0f / volumePixel.z);
-            //ndc += float3(-1.0f, 1.0f, 0.0f);
-            //ndc.y += 1.0f;
-            //ndc.y /= 2.0f;
-            //hemisphereLight *= (1.1f - ndc.y);
+           
 
         }
-        RWOutput[dispatchThreadID] = float4(hemisphereLight * Intensity * density, density);
+        float localDensity = density * heightWeight;
+        float3 finalLight = sphereLight * Intensity * localDensity;
+        
+        RWOutput[dispatchThreadID] = float4(finalLight, density);
 
     }
 

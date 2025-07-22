@@ -3,34 +3,34 @@ RWTexture3D<float4> RWOutput : register(u0);
 
 
 
-static const float DensityScale = 0.001f;
+static const float DensityOffset = 0.0008f;
 static float fogBegin = 0.0f;
-static float fogEnd = 600.0f;
+static float fogEnd = 700.0f;
 
-float SliceTickness(float ndcZ, uint pixelZ)
+float ComputeSliceDepthDelta(float ndcZ, uint pixelZ)
 {
     
     
 
-    float result = pow(ndcZ + 1.f / float(pixelZ), 2.0f) * (fogEnd - fogBegin) + fogBegin;
+    float result = pow(ndcZ + 1.0f / float(pixelZ), 2.0f) * (fogEnd - fogBegin) + fogBegin;
     
     float result2 = pow(ndcZ, 2.0f) * (fogEnd - fogBegin) + fogBegin;
     
     return result - result2;
 }
 
-float4 ScatterStep(float3 light, float transmittance, float3 sliceLight, float sliceDensity, float tickness)
+float4 AccumulateScattering(float3 accumLight, float accumTransmittance, float3 sliceLight, float sliceDensity, float thickness)
 {
     sliceDensity = max(sliceDensity, 0.000001f);
-    sliceDensity *= DensityScale;
-    float sliceTransmittance = exp(-sliceDensity * tickness);
+    sliceDensity *= DensityOffset;
+    float sliceTransmittance = exp(-sliceDensity * thickness);
 
-    float3 sliceLightIntegral = sliceLight * (1.f - sliceTransmittance) / sliceDensity;
+    sliceLight = sliceLight * (1.0f - sliceTransmittance) / sliceDensity;
 
-    light += sliceLightIntegral * transmittance;
-    transmittance *= sliceTransmittance;
+    accumLight += sliceLight * accumTransmittance;
+    accumTransmittance *= sliceTransmittance;
 
-    return float4(light, transmittance);
+    return float4(accumLight, accumTransmittance);
 }
 
 [numthreads(8, 8, 1)]
@@ -41,18 +41,18 @@ void FogAccumulateProcessor_CS(uint3 dispatchThreadID : SV_DispatchThreadID)
 
     if (all(dispatchThreadID < volumPixel))
     {
-        float4 accum = float4(0.f, 0.f, 0.f, 1.f);
         uint3 pos = uint3(dispatchThreadID.xy, 0);
+        float4 accumulationLight = float4(0.0f, 0.0f, 0.0f, 1.0f);
 
 		
         for (uint z = 0; z < volumPixel.z; ++z)
         {
             pos.z = z;
-            float4 slice = Input[pos];
-            float tickness = SliceTickness((float) z / volumPixel.z, volumPixel.z);
+            float4 slicePixel = Input[pos];
+            float thickness = ComputeSliceDepthDelta((float) z / volumPixel.z, volumPixel.z);
 
-            accum = ScatterStep(accum.rgb, accum.a, slice.rgb, slice.a, tickness);
-            RWOutput[pos] = accum;
+            accumulationLight = AccumulateScattering(accumulationLight.rgb, accumulationLight.a, slicePixel.rgb, slicePixel.a, thickness);
+            RWOutput[pos] = accumulationLight;
         }
     }
 }
