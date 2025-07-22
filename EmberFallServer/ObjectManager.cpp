@@ -438,6 +438,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnProjectile(Packets::ProjectileTy
         obj->Init();
 
         obj->GetTransform()->SetPosition(pos);
+        obj->GetTransform()->SetLook(dir);
         obj->GetTransform()->SetY(0.0f);
 
         obj->GetBoundingObject()->Update(obj->GetTransform()->GetWorld());
