@@ -116,6 +116,14 @@ AnimatorGraph::AnimationGraphController& GameObject::GetAnimationController() {
 	return mGraphController; 
 }
 
+Packets::EntityType GameObject::GetEntityType() const {
+	return mEntityType;
+}
+
+void GameObject::SetEntityType(Packets::EntityType type) {
+	mEntityType = type;
+}
+
 LODGameObject::LODGameObject(const LODGameObject& other) {
 	mTransform = other.mTransform;
 	mCollider = other.mCollider;

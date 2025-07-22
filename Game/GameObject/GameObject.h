@@ -39,6 +39,9 @@ public:
 	GameObject Clone(); 
 
 	AnimatorGraph::AnimationGraphController& GetAnimationController();
+
+	Packets::EntityType GetEntityType() const;
+	void SetEntityType(Packets::EntityType type);
 public:
 	Mesh* mMesh{ nullptr };
 	GraphicsShaderBase* mShader{ nullptr };
@@ -55,6 +58,8 @@ private:
 	ModelContext mModelContext{};
 
 	Transform mTransform{};
+
+	Packets::EntityType mEntityType{ Packets::EntityType::EntityType_MAX };
 
 	bool mActiveState{ false };
 	bool mEmpty{ true }; 

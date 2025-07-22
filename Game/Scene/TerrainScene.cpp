@@ -368,12 +368,8 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 					nextProjLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
 
-	
-					if (mMyPlayer != nullptr) {
-						float yaw = mMyPlayer->GetTransform().GetRotation().ToEuler().y;
-						nextProjLoc->GetTransform().Rotate(0.f, yaw);
-					}
 
+					nextProjLoc->SetEntityType(data->entity()); 
 
 					nextProjLoc->SetEmpty(false);
 				}	
@@ -453,7 +449,7 @@ void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
 
 void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectMoveSC>(buffer);
-
+	
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
 			float predictDuration = mAvgLatency + data->duration();
@@ -478,14 +474,17 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 			float predictDuration = mAvgLatency + data->duration();
 			
 			auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-			zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+			
+			if (mGameObjectMap[data->objectId()]->GetEntityType() != Packets::EntityType_PROJECTILE) {
+				zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+			}
 
 			mGameObjectMap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
 
-			//auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
-			//euler.y = data->yaw();
-			//
-			//mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
+			auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
+			euler.y = data->yaw();
+			
+			mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
 		}
 	}
 }
@@ -1305,16 +1304,16 @@ void TerrainScene::Update() {
 		item.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(50.f) * Time.GetDeltaTime<float>(), 0.f);
 	}
 
-	for (auto& proj : mProjectileObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
-		auto& pos = proj.GetTransform().GetPosition();
-		float y = tCollider.GetHeight(pos.x, pos.z);
+	//for (auto& proj : mProjectileObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
+	//	auto& pos = proj.GetTransform().GetPosition();
+	//	float y = tCollider.GetHeight(pos.x, pos.z);
 
-		pos.y = y + 0.5f; 
+	//	pos.y = y + 0.5f; 
 
-		if (pos.y <= y) {
-			pos.y = y;
-		}
-	}
+	//	if (pos.y <= y) {
+	//		pos.y = y;
+	//	}
+	//}
 
 
 	mInventoryUI.Update();

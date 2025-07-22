@@ -44,7 +44,6 @@ private:
 
 
 namespace Client {
-
     class TerrainCollider {
     public:
         TerrainCollider() = default;
