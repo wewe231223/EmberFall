@@ -100,6 +100,7 @@ private:
 
 	std::vector<GameObject> mGameObjects{};
 	std::vector<GameObject> mItemObjects{}; 
+	std::vector<GameObject> mProjectileObjects{}; 
 
 	std::vector<LODGameObject> mEnvironmentObjects{};
 

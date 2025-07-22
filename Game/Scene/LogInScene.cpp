@@ -1,30 +1,30 @@
 #include "pch.h"
 #include "LogInScene.h"
 
-LogInScene::LogInScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCamLocation)
-{
+LogInScene::LogInScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCamLocation) {
+
 }
 
-LogInScene::~LogInScene()
-{
+LogInScene::~LogInScene() {
+
 }
 
-void LogInScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList)
-{
+void LogInScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
+
 }
 
-void LogInScene::ProcessNetwork()
-{
+void LogInScene::ProcessNetwork() {
+
 }
 
-void LogInScene::Update()
-{
+void LogInScene::Update() {
+
 }
 
-void LogInScene::SendNetwork()
-{
+void LogInScene::SendNetwork() {
+
 }
 
-void LogInScene::Exit()
-{
+void LogInScene::Exit() {
+
 }

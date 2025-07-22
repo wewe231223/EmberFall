@@ -81,6 +81,17 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		return mItemObjects.end();
 	};
 
+	auto FindNextProjLoc = [this]() {
+		for (auto iter = mProjectileObjects.begin(); iter != mProjectileObjects.end(); ++iter) {
+			if (iter->GetEmpty()) {
+				return iter;
+			}
+		}
+		return mProjectileObjects.end();
+	};
+
+
+
 	// 플레이어 등장 
 	if (data->objectId() < OBJECT_ID_START) {
 		// 내 플레이어 등장 
@@ -250,6 +261,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		if (not mGameObjectMap.contains(data->objectId())) {
 			auto nextItemLoc = FindNextItemLoc();
 			auto nextLoc = FindNextObjectLoc();
+			auto nextProjLoc = FindNextProjLoc(); 
 
 			mSoundMap[data->objectId()] = std::make_pair(std::numeric_limits<UINT>::max(), nullptr);
 
@@ -341,6 +353,30 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 					nextItemLoc->SetEmpty(false); 
 				}
+				break;
+				case Packets::EntityType_PROJECTILE:
+				{
+					*nextProjLoc = GameObject{};
+					mGameObjectMap[data->objectId()] = &(*nextProjLoc);
+					nextProjLoc->mShader = mShaderMap["StandardShader"].get();
+					nextProjLoc->mMesh = mMeshMap["Arrow"].get();
+					nextProjLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("ArrowMaterial");
+					nextProjLoc->mCollider = mColliderMap["Arrow"];
+					nextProjLoc->SetActiveState(true);
+
+					nextProjLoc->GetTransform().Scaling({ 2.f,2.f,2.f });
+
+					nextProjLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
+
+	
+					if (mMyPlayer != nullptr) {
+						float yaw = mMyPlayer->GetTransform().GetRotation().ToEuler().y;
+						nextProjLoc->GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(yaw));
+					}
+
+
+					nextProjLoc->SetEmpty(false);
+				}	
 				break;
 				default:
 				{
@@ -842,7 +878,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	mGameObjects.resize(MeshRenderManager::MAX_INSTANCE_COUNT<size_t>, GameObject{});
 	mItemObjects.resize(1024, GameObject{});
 
-
+	mProjectileObjects.resize(1024, GameObject{});
 
 
 	mInventoryUI.Init(mRenderManager->GetCanvas(),
@@ -987,7 +1023,6 @@ void TerrainScene::UpdateSound() {
 							break;
 						}
 					}
-					
 				}
 		}
 			else { // 멈춘 상태라면 
@@ -1005,6 +1040,7 @@ void TerrainScene::UpdateSound() {
 			if (distanceSq > footprintDistance * footprintDistance) {
 				continue;
 			}
+
 			// 움직인다면 
 			if (pair.second->GetTransform().GetMovingState()) {
 				// 이전에 멈춘 상태였다면
@@ -1269,6 +1305,18 @@ void TerrainScene::Update() {
 		item.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(50.f) * Time.GetDeltaTime<float>(), 0.f);
 	}
 
+	for (auto& proj : mProjectileObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
+		auto& pos = proj.GetTransform().GetPosition();
+		float y = tCollider.GetHeight(pos.x, pos.z);
+
+		pos.y = y + 0.5f; 
+
+		if (pos.y <= y) {
+			pos.y = y;
+		}
+	}
+
+
 	mInventoryUI.Update();
 	mHealthBarUI.Update();
 	mProfileUI.Update();
@@ -1338,6 +1386,20 @@ void TerrainScene::Update() {
 		mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
 		mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
 	}
+
+	for (auto& proj : mProjectileObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
+		proj.UpdateShaderVariables(); 
+
+		auto [mesh, shader, modelContext] = proj.GetRenderData();
+
+		if (mCamera.IsInFrustum(proj.mCollider)) {
+			mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
+		}
+
+		mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
+		mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
+	}
+
 
 	for (auto& object : mEnvironmentObjects) {
 		object.UpdateLODLevel(mCamera.GetTransform().GetPosition()); 
