@@ -20,6 +20,7 @@
 #include "../External/Include/absl/container/flat_hash_map.h"
 #include "../Game/Scene/MaterialLoader.h"
 #include "../Game/UI/Entry.h"
+#include "../Game/UI/Image.h"
 
 class LogInScene : public IScene {
 public:
@@ -39,4 +40,8 @@ private:
 	Entry mIDEntry{};
 	Entry mPWEntry{}; 
 
+	Image mBackgroundImage{};
+
+	TextBlock* mID{};
+	TextBlock* mPW{};
 };
