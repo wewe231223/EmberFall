@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "LobbyScene.h"
 #include "../MeshLoader/Loader/MeshLoader.h"
+#include "../Utility/RandomEngine.h"
 
 // 역할군 전환 버튼 ( 키 ) 를 통해 역할군을 전환 가능 
 // 순서는 : 대검 -> 방해 -> 활 -> 마법사 순서로 전환
@@ -377,13 +378,13 @@ void LobbyScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	LobbyScene::BuildShader(device);
 	LobbyScene::BuildMesh(device, commandList);
 	LobbyScene::BuildMaterial();
-	LobbyScene::BuildLobbyObject(); 
 	LobbyScene::BuildBaseMan(); 
 	LobbyScene::BuildSwordMan();
 	LobbyScene::BuildArcher();
 	LobbyScene::BuildMage();
 	LobbyScene::BuildShieldMan();
 	LobbyScene::BuildDemon();
+	LobbyScene::BuildLobbyObject(); 
 	LobbyScene::BuildEquipmentObject();
 	LobbyScene::BuildPlayerPrefab();
 	LobbyScene::BuildPlayerNameTextBlock(); 
@@ -578,12 +579,27 @@ void LobbyScene::Update() {
 	mCamera.UpdateBuffer(); 
 	mRenderManager->GetShadowRenderer().Update();
 
-	for (auto& object : mLobbyProps) {
-		object.UpdateShaderVariables();
-		auto [mesh, shader, modelContext] = object.GetRenderData();
-		mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
-		for (int i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
-			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, i);
+	static BoneTransformBuffer boneTransformBuffer{};
+	for (auto& gameObject : mLobbyProps | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
+		if (gameObject.mAnimated) {
+			gameObject.ForwardUpdate();
+			gameObject.UpdateShaderVariables(boneTransformBuffer);
+
+			auto [mesh, shader, modelContext] = gameObject.GetAnimationRenderData();
+
+
+			mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
+
+		}
+		else {
+			gameObject.UpdateShaderVariables();
+
+			auto [mesh, shader, modelContext] = gameObject.GetRenderData();
+
+			mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(shader, mesh, modelContext);
+			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 0);
+			mRenderManager->GetMeshRenderManager().AppendShadowPlaneMeshContext(shader, mesh, modelContext, 1);
+
 		}
 	}
 
@@ -622,6 +638,12 @@ void LobbyScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCom
 	MeshLoader Loader{};
 	MeshData data{};
 
+	data = Loader.Load("Resources/Assets/Tree/LODTree/Tree1_LOD0.glb", 0);
+	mMeshMap["Tree1Stem"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Tree/LODTree/Tree1_LOD0.glb", 1);
+	mMeshMap["Tree1Leaves"] = std::make_unique<Mesh>(device, commandList, data);
+
 	data = Loader.Load("Resources/Assets/Knight/LongSword/SwordMan.glb");
 	mMeshMap["SwordMan"] = std::make_unique<Mesh>(device, commandList, data);
 
@@ -630,6 +652,9 @@ void LobbyScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCom
 
 	data = Loader.Load("Resources/Assets/Demon/Demon.glb");
 	mMeshMap["Demon"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/imp/imp.glb");
+	mMeshMap["Monster"] = std::make_unique<Mesh>(device, commandList, data);
 
 	data = Loader.Load("Resources/Assets/Weapon/sword/LongSword.glb");
 	mMeshMap["Sword"] = std::make_unique<Mesh>(device, commandList, data);
@@ -700,6 +725,14 @@ void LobbyScene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_EquiRect_flat");
 	mRenderManager->GetMaterialManager().CreateMaterial("SkyBoxMaterial", mat);
 
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_beech_atlas_BC v2");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("TreeLeaves");
+	mRenderManager->GetMaterialManager().CreateMaterial("TreeLeavesMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_beech_bark_02_BC");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_beech_bark_02_N");
+	mRenderManager->GetMaterialManager().CreateMaterial("TreeStemMaterial", mat);
+
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("dirt_2");
 	mRenderManager->GetMaterialManager().CreateMaterial("GroundMaterial", mat);
 
@@ -732,6 +765,13 @@ void LobbyScene::BuildMaterial() {
 	mat.mEmissiveTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Emissive");
 	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Body_Normal");
 	mRenderManager->GetMaterialManager().CreateMaterial("DemonMaterial", mat);
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
+
+	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 1.0f);
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_Demon_Imp_Monster_Bloody_Albedo_Skin_4");
+	mat.mEmissiveTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_Demon_Imp_Monster_Emissive");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_Demon_Imp_Monster_Bloody_Normal");
+	mRenderManager->GetMaterialManager().CreateMaterial("MonsterMaterial", mat);
 	mat.mEmissiveColor = SimpleMath::Color(0.0f, 0.0f, 0.0f, 0.0f);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_BigDemonWarrior_Axe_Albedo_Skin_1");
@@ -803,6 +843,59 @@ void LobbyScene::BuildLobbyObject() {
 
 		object.SetActiveState(true);
 	}
+
+	{
+		auto stem = GameObject{}; 
+		stem.mShader = mShaderMap["StandardNormalShader"].get();
+		stem.mMesh = mMeshMap["Tree1Stem"].get();
+		stem.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("TreeStemMaterial");
+
+		auto leaves = GameObject{};
+		leaves.mShader = mShaderMap["StandardNormalShader"].get();
+		leaves.mMesh = mMeshMap["Tree1Leaves"].get();
+		leaves.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("TreeLeavesMaterial");
+
+
+
+
+		for (auto i = 0; i < 500; ++i) {
+			float x = RandomEngine::GetRandomRange(-50.f, 50.f); 
+			float z = RandomEngine::GetRandomRange(-20.f, -12.f);
+			
+			auto& stemClone = mLobbyProps.emplace_back(stem.Clone());
+			stemClone.GetTransform().GetPosition() = { x, 0.f, z };
+			stemClone.SetActiveState(true);
+
+			auto& leavesClone = mLobbyProps.emplace_back(leaves.Clone());
+			leavesClone.GetTransform().GetPosition() = { x, 0.f, z };
+			leavesClone.SetActiveState(true);
+		}
+
+
+	}
+
+
+
+	{
+		auto monster = GameObject{};
+		monster.mShader = mShaderMap["SkinnedNormalShader"].get();
+		monster.mMesh = mMeshMap["Monster"].get();
+		monster.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("MonsterMaterial");
+		monster.mGraphController = mMonsterAnimationController;
+		monster.mAnimated = true;
+
+		auto& clone = mLobbyProps.emplace_back(monster.Clone());
+		clone.GetTransform().GetPosition() = { 4.f, 0.f, -10.f };
+		clone.GetTransform().Rotate(0.f, 110.f, 0.f);
+		clone.SetActiveState(true); 
+
+		auto& clone1 = mLobbyProps.emplace_back(monster.Clone());
+		clone1.GetTransform().GetPosition() = { -4.f, 0.f, -10.f };
+		clone1.GetTransform().Rotate(0.f, 110.f, 0.f);
+		clone1.SetActiveState(true);
+
+	}
+
 
 	const SimpleMath::Vector3 castlePosition{ 0.f, 0.f, 45.f }; 
 
@@ -975,6 +1068,17 @@ void LobbyScene::BuildDemon() {
 	idle.name = "Idle";
 
 	mDemonAnimationController = AnimatorGraph::AnimationGraphController({ idle });
+
+	mAnimationMap["MonsterType1"].Load("Resources/Assets/imp/imp.glb");
+	auto& demonLoader = mAnimationMap["MonsterType1"];
+
+	AnimatorGraph::AnimationState demonIdle{};
+
+	demonIdle.clip = demonLoader.GetClip(0);
+	demonIdle.loop = true;
+	demonIdle.name = "Idle";
+
+	mMonsterAnimationController = AnimatorGraph::AnimationGraphController({ demonIdle });
 }
 
 void LobbyScene::BuildEquipmentObject() {

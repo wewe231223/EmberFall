@@ -86,6 +86,7 @@ private:
 	AnimatorGraph::AnimationGraphController mShieldManAnimationController{};
 
 	AnimatorGraph::AnimationGraphController mDemonAnimationController{};
+	AnimatorGraph::AnimationGraphController mMonsterAnimationController{};
 
 	bool mIsReady{ false }; 
 
