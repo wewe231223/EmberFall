@@ -160,8 +160,6 @@ private:
 	bool mIsBlind{ false };
 
 	size_t mProcessedPacketSize{ 0 };
-
-	Entry mEntryUI{};
 };
 
 template<typename Tu> 

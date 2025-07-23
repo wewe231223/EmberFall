@@ -888,13 +888,6 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 		mRenderManager->GetTextureManager().GetTexture("Cross")
 	);
 
-	mEntryUI.Init(
-		mRenderManager->GetCanvas(),
-		mRenderManager->GetTextureManager().GetTexture("mid_dark_bar"),
-		mRenderManager->GetTextureManager().GetTexture("Carrot"),
-		500.f, 500.f, 500.f, 100.f
-	);
-
 	mHealthBarUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("health_frame"), mRenderManager->GetTextureManager().GetTexture("health_bar")); 
 
 	mRenderManager->GetLightingManager().ClearLight(commandList);
@@ -1320,8 +1313,6 @@ void TerrainScene::Update() {
 	mHealthBarUI.Update();
 	mProfileUI.Update();
 	
-	mEntryUI.Update();
-
 	if (mCurrentCameraMode) {
 		mCurrentCameraMode->Update();
 
@@ -1343,7 +1334,7 @@ void TerrainScene::Update() {
 	for (auto& gameObject : mGameObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
 		if (gameObject.mAnimated) {
 			gameObject.ForwardUpdate(); 
-			gameObject.GetTransform().GetPosition().y = tCollider.GetHeight(gameObject.GetTransform().GetPosition().x, gameObject.GetTransform().GetPosition().z);
+			// gameObject.GetTransform().GetPosition().y = tCollider.GetHeight(gameObject.GetTransform().GetPosition().x, gameObject.GetTransform().GetPosition().z);
 			gameObject.UpdateShaderVariables(boneTransformBuffer); 
 
 			auto [mesh, shader, modelContext] = gameObject.GetAnimationRenderData();
@@ -1424,7 +1415,7 @@ void TerrainScene::Update() {
 
 	for (auto& player : mPlayers | std::views::filter([](const Player& p) { return p.GetActiveState(); })) {
 		player.ForwardUpdate(); 
-		player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
+		// player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
 		player.Update(mRenderManager->GetMeshRenderManager());
 	}
 
