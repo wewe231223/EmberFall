@@ -283,7 +283,7 @@ namespace AnimatorGraph {
 
     Animator::Animator(const std::vector<const AnimationClip*>& clips) : mClips(clips) {}
 
-    void Animator::UpdateBoneTransform(double deltaTime, BoneTransformBuffer& boneTransforms) {
+    void Animator::UpdateBoneTransform(double deltaTime, BoneTransformBuffer& boneTransforms, float& norm) {
         const AnimationClip* clip = mClips[mCurrentClipIndex];
 
         if (mTransitioning) {
@@ -308,10 +308,14 @@ namespace AnimatorGraph {
 
             double tick = mCurrentTime * clip->ticksPerSecond;
             double normTime = std::fmod(tick / clip->duration, 1.0);
-            
 			if (not mLoop and tick >= clip->duration) {
                 normTime = 1.0;
 			}
+            if (mCurrentClipIndex == 9) {
+                norm = normTime;
+
+            }
+            
 
             double animationTime = normTime * clip->duration;
             
@@ -610,9 +614,11 @@ namespace AnimatorGraph {
         return mActiveState;
     }
 
-    void AnimationGraphController::Update(double deltaTime, BoneTransformBuffer& boneTransforms) {
+    void AnimationGraphController::Update(double deltaTime, BoneTransformBuffer& boneTransforms, float& dissolveOffset) {
         // EvaluateTransitions();
-        mAnimator.UpdateBoneTransform(deltaTime * mStates[mCurrentStateIndex].speed, boneTransforms);
+        float norm{};
+        mAnimator.UpdateBoneTransform(deltaTime * mStates[mCurrentStateIndex].speed, boneTransforms, norm);
+        dissolveOffset = norm;
     }
 
     void AnimationGraphController::AddParameter(const std::string& name, ParameterType type) {

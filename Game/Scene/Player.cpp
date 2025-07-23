@@ -104,14 +104,14 @@ void Player::Update(MeshRenderManager& manager) {
 		mBoneMaskController.Update(Time.GetDeltaTime(), boneTransformBuffer);
 	}
 	else if (mAnimController.GetActiveState()) {
-		mAnimController.Update(Time.GetDeltaTime(), boneTransformBuffer);
+		mAnimController.Update(Time.GetDeltaTime(), boneTransformBuffer, mDissolveOffset);
 	}
 	mTransform.UpdateWorldMatrix();
 	mModelContext.world = mTransform.GetWorldMatrix();
 
 	mCollider.UpdateBox(mTransform.GetWorldMatrix());
 
-	manager.AppendBonedMeshContext(mShader, mMesh, ModelContext{ mModelContext.prevWorld.Transpose(), mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
+	manager.AppendBonedMeshContext(mShader, mMesh, ModelContext{ mModelContext.prevWorld.Transpose(), mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer, mDissolveOffset);
 	manager.AppendShadowBonedMeshContext(mShader, mMesh, ModelContext{ mModelContext.prevWorld.Transpose(), mTransform.GetWorldMatrix().Transpose(), mCollider.GetCenter(), mCollider.GetExtents(), mMaterial}, boneTransformBuffer);
 
 	for (auto& equipment : mEquipments) {

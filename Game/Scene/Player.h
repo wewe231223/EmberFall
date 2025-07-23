@@ -75,4 +75,6 @@ private:
 
 	bool mMyPlayer{ false };
 	bool mRotateLock{ false };
+
+	float mDissolveOffset{ 0.0f };
 };

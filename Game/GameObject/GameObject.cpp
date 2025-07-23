@@ -83,7 +83,7 @@ void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer)
 	mModelContext.world = mTransform.GetWorldMatrix();
 
 	if (mGraphController.GetActiveState()) {
-		mGraphController.Update(Time.GetDeltaTime(), boneTransformBuffer);
+		mGraphController.Update(Time.GetDeltaTime(), boneTransformBuffer, mDissolveOffset);
 	}
 	else if (mBoneMaskGraphController.GetActiveState()) {
 		mBoneMaskGraphController.Update(Time.GetDeltaTime(), boneTransformBuffer);
@@ -93,6 +93,10 @@ void GameObject::UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer)
 
 bool GameObject::GetAnimatorState() const {
 	return mAnimated; 
+}
+
+float GameObject::GetDissolveOffset() const {
+	return mDissolveOffset;
 }
 
 GameObject GameObject::Clone() {

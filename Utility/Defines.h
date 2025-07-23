@@ -62,6 +62,7 @@ struct AnimationModelContext {
 	SimpleMath::Vector3 BBCenter{};
 	SimpleMath::Vector3 BBextents{};
 	UINT material;
+    float dissolveOffset;
 	UINT boneIndexStart{ 0 };
 };
 

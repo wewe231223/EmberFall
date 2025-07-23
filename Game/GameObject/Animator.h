@@ -124,7 +124,7 @@ namespace AnimatorGraph {
         ~Animator() = default;
 
     public:
-        void UpdateBoneTransform(double deltaTime, BoneTransformBuffer& boneTransforms);
+        void UpdateBoneTransform(double deltaTime, BoneTransformBuffer& boneTransforms, float& norm);
         void TransitionToClip(size_t clipIndex);
         void SetTransitionDuration(double duration = 0.09);
 		void SetLoop(bool loop);    
@@ -182,7 +182,7 @@ namespace AnimatorGraph {
     public:
         bool GetActiveState() const; 
 
-        void Update(double deltaTime, BoneTransformBuffer& boneTransforms);
+        void Update(double deltaTime, BoneTransformBuffer& boneTransforms, float& dissolveOffset);
 
         void AddParameter(const std::string& name, ParameterType type);
 

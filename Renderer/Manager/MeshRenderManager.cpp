@@ -36,9 +36,9 @@ void MeshRenderManager::AppendPlaneMeshContext(GraphicsShaderBase* shader, Mesh*
 	}
 }
 
-void MeshRenderManager::AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms) {
+void MeshRenderManager::AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms, float dissolveOffset) {
 
-	AnimationModelContext context{ world.prevWorld, world.world, world.BBCenter, world.BBextents, world.material, mBoneCounter };
+	AnimationModelContext context{ world.prevWorld, world.world, world.BBCenter, world.BBextents, world.material, dissolveOffset, mBoneCounter };
 	mBonedMeshContexts[shader][mesh].emplace_back(context);
 	mBoneCounter += boneTransforms.boneCount;
 

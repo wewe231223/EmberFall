@@ -733,7 +733,6 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 		boss.mCollider = mColliderMap["Demon"];
 		boss.SetActiveState(true);
 		boss.SetEmpty(false);
-		boss.mGraphController.Transition(7);
 
 		boss.GetTransform().GetPosition() = { 3.f, tCollider.GetHeight(3.f, 36.f), 36.f };
 	}
@@ -1300,9 +1299,9 @@ void TerrainScene::Update() {
 			gameObject.UpdateShaderVariables(boneTransformBuffer); 
 
 			auto [mesh, shader, modelContext] = gameObject.GetAnimationRenderData();
-
+			float dissolveOffset = gameObject.GetDissolveOffset();
 			if (mCamera.IsInFrustum(gameObject.mCollider)) {
-				mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
+				mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer, dissolveOffset);
 			}
 				
 			// TODO :: 아예 의미가 없는 코드이다. 정석적인 CasCade 구현에서 벗어남. 

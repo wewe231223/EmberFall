@@ -20,6 +20,7 @@ struct ModelContext
     float3 BBCenter;
     float3 BBExtents;
     uint material;
+    float dissolveOffset;
     uint boneStart;
 };
 
@@ -63,10 +64,11 @@ struct StandardAnimationNormal_PIN
     float4 prevPosition : POSITION2;
     float3 vPosition : POSITION3;
     float3 normal : NORMAL;
-    float2 texcoord : TEXCOORD;
+    float2 texcoord : TEXCOORD0;
     float3 tangent : TANGENT;
     float3 bitangent : BITANGENT;
     uint material : MATERIALID;
+    float dissolveOffset : TEXCOORD1;
 };
 
 struct Deffered_POUT
@@ -131,7 +133,7 @@ StandardAnimationNormal_PIN StandardAnimationNormal_VS(StandardAnimationNormal_V
     output.texcoord = input.texcoord;
     output.material = modelContext.material;
     
-    
+    output.dissolveOffset = modelContext.dissolveOffset;
     
     return output;
 }
@@ -139,6 +141,8 @@ StandardAnimationNormal_PIN StandardAnimationNormal_VS(StandardAnimationNormal_V
 Deffered_POUT StandardAnimationNormal_PS(StandardAnimationNormal_PIN input)
 {
     Deffered_POUT output = (Deffered_POUT) 0;
+    
+    
     
     [unroll]
     for (int i = 0; i < isShadow; ++i)
@@ -148,7 +152,21 @@ Deffered_POUT StandardAnimationNormal_PS(StandardAnimationNormal_PIN input)
         return output;
     }
     
+
+    float noiseVal = textures[materialConstants[input.material].specularTexture[0]].Sample(linearWrapSampler, input.texcoord).r;
+    if (noiseVal < input.dissolveOffset && materialConstants[input.material].specular.a > 0.0f)
+    {
+        discard;
+    }
+ 
+    float edge = saturate(1.0f - (noiseVal - input.dissolveOffset) / 0.05f);
+
+    float3 burnColor = float3(1.0f, 0.5f, 0.05f);
+    
     output.diffuse = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord);
+
+    output.diffuse.rgb = lerp(output.diffuse.rgb, burnColor, edge);
+
     
     float3 normal = textures[materialConstants[input.material].normalTexture[0]].Sample(anisotropicWrapSampler, input.texcoord).rgb;
     normal = 2.0f * normal - 1.0f;
