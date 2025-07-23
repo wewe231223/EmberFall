@@ -9,7 +9,7 @@ SamplerComparisonState PCFSampler : register(s6);
 Texture2D renderTarget : register(t0);
 Texture2D velocity : register(t1);
 
-#define SAMPLE_COUNT 25
+#define SAMPLE_COUNT 15
 
 
 struct MotionBlur_VIN

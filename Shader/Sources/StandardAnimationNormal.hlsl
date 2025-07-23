@@ -142,41 +142,30 @@ Deffered_POUT StandardAnimationNormal_PS(StandardAnimationNormal_PIN input)
 {
     Deffered_POUT output = (Deffered_POUT) 0;
     
-    float noiseVal;
-    float edge;
-    float3 burnColor;
-    bool isDissolve = false;
     
-    for (int i = 0; i < 1 - isShadow; ++i)
-    {
-        noiseVal = textures[materialConstants[input.material].specularTexture[0]].Sample(linearWrapSampler, input.texcoord).r;
-        if (noiseVal < input.dissolveOffset && materialConstants[input.material].specular.a > 0.0f)
-        {
-            isDissolve = true;
-        }
- 
-        edge = saturate(1.0f - (noiseVal - input.dissolveOffset) / 0.05f);
-
-        burnColor = float3(1.0f, 0.5f, 0.05f);
-    }
+    
+   
+    
     
     [unroll]
     for (int i = 0; i < isShadow; ++i)
     {
-        if (isDissolve)
-        {
-            discard;
-        }
+        
         float depth = input.position.z;
         output.diffuse = float4(depth, depth, depth, 1.0f);
         return output;
     }
     
-    if (isDissolve)
+    
+    float noiseVal = textures[materialConstants[input.material].specularTexture[0]].Sample(linearWrapSampler, input.texcoord).r;
+    if (noiseVal < input.dissolveOffset && materialConstants[input.material].specular.a > 0.0f)
     {
         discard;
     }
-    
+ 
+    float edge = saturate(1.0f - (noiseVal - input.dissolveOffset) / 0.08f);
+
+    float3 burnColor = float3(1.0f, 0.5f, 0.05f);
     
     output.diffuse = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.texcoord);
 
