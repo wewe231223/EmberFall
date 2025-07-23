@@ -51,9 +51,9 @@ void Physics::SetGravityActive(bool state) {
 void Physics::SetOnGround(bool state) {
     mOnGround = state;
 
-    //if (true == state) {
-    //    mVelocity.y = 0.0f;
-    //}
+    if (true == state) {
+        mVelocity.y = 0.0f;
+    }
 }
 
 void Physics::SetOnOtherObject(bool state) {
@@ -121,9 +121,9 @@ void Physics::Update(const float time) {
     float speed = mVelocity.Length();
     SimpleMath::Vector3 moveDir = mVelocity;
     moveDir.Normalize();
-    //if (mGravityActive) {
+    if (mGravityActive) {
         UpdateGravity(time, moveDir, speed);   // 중력 적용
-    //}
+    }
     ExternalForceDecay(time);
     UpdateFriction(time, moveDir, speed);
 
@@ -185,7 +185,6 @@ void Physics::UpdateGravity(const float time, const SimpleMath::Vector3& moveDir
     SimpleMath::Vector3 dragForce = SimpleMath::Vector3::Up * mFactor.dragCoeffi * speed * speed;
     SimpleMath::Vector3 dragAcceleration = dragForce / mFactor.mass.Count();
 
-    // 최종 가속도 = 중력 + 공기 저항
     SimpleMath::Vector3 acceleration = SimpleMath::Vector3::Down * GRAVITY_ACCELERATION.Count() + dragAcceleration;
     mVelocity += acceleration * time;
 }

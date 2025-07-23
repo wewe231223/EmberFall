@@ -430,8 +430,8 @@ std::shared_ptr<GameObject> ObjectManager::SpawnProjectile(Packets::ProjectileTy
     {
         auto obj = GetObjectFromId(validId);
         obj->mSpec.active = true;
-        auto firePos = pos + SimpleMath::Vector3{ 0.0f, 50.0f, 0.0f };
-        obj->CreateScript<ArrowScript>(obj, pos, dir);
+        auto firePos = pos + SimpleMath::Vector3{ 0.0f, 1.5f, 0.0f };
+        obj->CreateScript<ArrowScript>(obj, firePos, dir);
         obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb);
 
         obj->Init();
@@ -451,13 +451,13 @@ std::shared_ptr<GameObject> ObjectManager::SpawnProjectile(Packets::ProjectileTy
     {
         return nullptr;
     }
-        break;
+    break;
 
     default:
     {
         return nullptr;
     }
-        break;
+    break;
     }
 
     return nullptr;

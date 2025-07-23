@@ -62,7 +62,6 @@ bool Terrain::Contains(const std::shared_ptr<BoundingObject>& collider, float& h
     }
 
     switch (collider->GetType()) {
-
     case ColliderType::SPHERE:
     {
         //auto sphereCollider = std::static_pointer_cast<SphereCollider>(collider);
@@ -78,7 +77,7 @@ bool Terrain::Contains(const std::shared_ptr<BoundingObject>& collider, float& h
         auto center = orientedBoxCollider->GetBoundingBox().Center;
         auto extents = orientedBoxCollider->GetBoundingBox().Extents;
         height = GetHeight(center);
-        return (extents.y - center.y) < height + MathUtil::EPSILON;
+        return (center.y - extents.y) < (height + MathUtil::EPSILON);
     }
 
     default:

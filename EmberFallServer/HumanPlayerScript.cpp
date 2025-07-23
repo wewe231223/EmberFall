@@ -83,11 +83,11 @@ void HumanPlayerScript::Update(const float deltaTime) {
         return;
     }
 
-    CheckAndJump(deltaTime);
+    //CheckAndJump(deltaTime);
     CheckAndMove(deltaTime);
 
     mInput->Update();
-
+    
     auto ownerRoom = owner->GetMyRoomIdx();
     gGameRoomManager->GetRoom(ownerRoom)->GetStage().UpdatePlayerViewList(owner, owner->GetPosition(), GetViewList().mViewRange.Count());
 }

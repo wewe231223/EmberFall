@@ -175,6 +175,15 @@ void GameObject::Update() {
     mPhysics->Update(mDeltaTime);
     mTransform->Update();
 
+    if (nullptr == mBoundingObject) {
+        return;
+    }
+    mBoundingObject->Update(mTransform->GetWorld());
+
+    auto myRoom = GetMyRoomIdx();
+    auto sharedThis = shared_from_this();
+    gGameRoomManager->GetRoom(myRoom)->GetStage().UpdateCollision(sharedThis);
+
     if (true == mSpec.moveable) {
         auto currPos = mTransform->GetPosition();
         auto movePacket = FbsPacketFactory::ObjectMoveSC(
@@ -185,15 +194,6 @@ void GameObject::Update() {
         );
         StorePacket(movePacket);
     }
-
-    if (nullptr == mBoundingObject) {
-        return;
-    }
-    mBoundingObject->Update(mTransform->GetWorld());
-
-    auto myRoom = GetMyRoomIdx();
-    auto sharedThis = shared_from_this();
-    gGameRoomManager->GetRoom(myRoom)->GetStage().UpdateCollision(sharedThis);
 }
 
 void GameObject::LateUpdate() {

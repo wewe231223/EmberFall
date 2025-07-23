@@ -9,6 +9,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "Transform.h"
+
 inline static auto GRAVITY_ACCELERATION = 1.0G;
 inline static auto DEFAULT_ACCELERATION = 40.0mps2;
 inline static auto DEFAULT_MASS = 70.0kg;       // kg
@@ -74,7 +75,7 @@ public:
 
 private:
     bool mActive{ true };
-    bool mGravityActive{ false };
+    bool mGravityActive{ true };
     bool mOnGround{ true };
     bool mOnOtherObject{ true };
 
