@@ -9,15 +9,7 @@ static const float gGaussianBlurMask1D[15] = { 0.01f, 0.015f, 0.03f, 0.05f, 0.10
                                              0.10f, 0.10f, 0.10f, 0.05f, 0.03f, 0.015f, 0.01f };
 static const int maskWidth = 7;
 
-//static const float gGaussianBlurMask1D[25] =
-//{
-//    0.0473f, 0.0472f, 0.0467f, 0.0459f, 0.0448f,
-//    0.0434f, 0.0418f, 0.0399f, 0.0379f, 0.0357f,
-//    0.0335f, 0.0311f, 0.0287f, 0.0311f, 0.0335f,
-//    0.0357f, 0.0379f, 0.0399f, 0.0418f, 0.0434f,
-//    0.0448f, 0.0459f, 0.0467f, 0.0472f, 0.0473f
-//};
-//static const int maskWidth = 12;
+
 
 static const int threadGroupSize = 256;
 

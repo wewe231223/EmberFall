@@ -28,7 +28,7 @@ cbuffer Camera : register(b0)
 #define LightType_Spot          3
 
 
-static float density = 7.0f;
+static float density = 10.0f;
 
    
 static float4 SphereColor = float4(0.015f, 0.05f, 0.01f, 1.0f);
@@ -36,7 +36,7 @@ static float4 SphereColor = float4(0.015f, 0.05f, 0.01f, 1.0f);
 static float Intensity = 1.0f;
 
 static float fogBegin = 0.0f;
-static float fogEnd = 700.0f;
+static float fogEnd = 600.0f;
 
 static float groundHeight = 0.0f;
 static float maxFogHeight = 30.0f;
