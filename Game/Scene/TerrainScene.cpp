@@ -747,6 +747,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 		imp.mCollider = mColliderMap["MonsterType1"];
 		imp.SetActiveState(true);
 		imp.SetEmpty(false);
+		imp.mGraphController.Transition(9);
 
 		imp.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 36.f), 36.f };
 	}
@@ -2123,7 +2124,7 @@ void TerrainScene::BuildMonsterType1AnimationController() {
 	AnimatorGraph::AnimationState deathState{};
 	deathState.clip = loader.GetClip(8);
 	deathState.name = "Death";
-	deathState.loop = false;
+	deathState.loop = true;
 
 	mMonsterAnimationController = AnimatorGraph::AnimationGraphController({ idleState, forwardState, backwardState, leftState, rightState, jumpState, attackedState, attackState, interactionState, deathState });
 }
