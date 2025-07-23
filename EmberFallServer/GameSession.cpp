@@ -92,7 +92,7 @@ void GameSession::InitUserObject() {
     mUserObject->mSpec.hp = GameProtocol::Logic::MAX_HP;
 
     mUserObject->GetTransform()->Translate(TestPos);
-    mUserObject->GetTransform()->SetY(0.0f);
+    //mUserObject->GetTransform()->SetY(0.0f);
     mUserObject->Init();
     mUserObject->mWeaponSystem.SetWeapon(mUserObject->mSpec.entity, mUserObject->mSpec.damage);
 

@@ -41,7 +41,8 @@ void CollisionManager::PopCollisionPair(NetworkObjectIdType id1, NetworkObjectId
     mCollisionPairs.erase(collisionPair);
 }
 
-void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj, const std::shared_ptr<SectorSystem>& sectorSystem, const std::shared_ptr<ObjectManager>& objManager) {
+void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj, const std::shared_ptr<SectorSystem>& sectorSystem, 
+    const std::shared_ptr<ObjectManager>& objManager, TerrainCollider& terrain) {
     if (nullptr == obj) {
         gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Error In CollisionManager: target Object is Null");
         return;
@@ -69,6 +70,8 @@ void CollisionManager::UpdateCollision(const std::shared_ptr<GameObject>& obj, c
         UpdateCollisionTrigger(obj, objManager,  collisionCheckTriggers);
         UpdateCollisionProjectile(obj, objManager, collisionCheckProjectiles);
     }
+
+    UpdateTerrainCollision(obj, terrain);
 }
 
 void CollisionManager::UpdateCollisionMonster(const std::shared_ptr<GameObject>& obj, const std::shared_ptr<ObjectManager>& objManager, const std::vector<NetworkObjectIdType>& collisionCheckMonsters) {
@@ -224,4 +227,8 @@ void CollisionManager::UpdateCollisionProjectile(const std::shared_ptr<GameObjec
 
         PopCollisionPair(projectileId, objId);
     }
+}
+
+void CollisionManager::UpdateTerrainCollision(const std::shared_ptr<GameObject>& obj, TerrainCollider& terrain) {
+    terrain.HandleTerrainCollision(obj);
 }

@@ -3,6 +3,10 @@
 #include "Sector.h"
 #include "ObjectManager.h"
 #include "CollisionManager.h"
+#include "TerrainCollider.h"
+
+extern const std::shared_ptr<Terrain> gBaseTerrain;
+extern const std::shared_ptr<Terrain> gPlainTerrain;
 
 class Stage {
 public:
@@ -13,6 +17,7 @@ public:
     bool GetActiveState() const;
     Packets::GameStage GetStageIdx() const;
 
+    TerrainCollider& GetTerrainCollider();
     std::shared_ptr<SectorSystem> GetSectorSystem() const;
     std::shared_ptr<ObjectManager> GetObjectManager() const;
     std::shared_ptr<CollisionManager> GetCollisionManager() const;
@@ -56,6 +61,7 @@ private:
     Packets::GameStage mStage{ };
     uint16_t mGameRoomIdx{ };
 
+    TerrainCollider mTerrainCollider{ };
     std::shared_ptr<SectorSystem> mSectorSystem{ };
     const std::shared_ptr<ObjectManager> mObjectManager{ };
     const std::shared_ptr<CollisionManager> mCollisionManager{ };

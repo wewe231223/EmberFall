@@ -15,16 +15,20 @@
 using PixelType = BYTE;
 
 class Terrain {
+    struct TerrainHeader {
+        int globalWidth;
+        int globalHeight;
+        float gridSpacing;
+        float minX;
+        float minZ;
+    };
+
 public:
     Terrain(const std::filesystem::path& path);
     ~Terrain();
 
-    //Terrain(const Terrain& other);
-    //Terrain(Terrain&& other) noexcept;
-    //Terrain& operator=(const Terrain& other);
-    //Terrain& operator=(Terrain&& other) noexcept;
-
 public:
+    TerrainHeader& GetHeader();
     SimpleMath::Vector2 GetMapSize() const;
     SimpleMath::Vector2 GetMapLeftBottom() const;
 
@@ -41,10 +45,6 @@ private:
 private:
     SimpleMath::Vector2 mMapSize{ GameProtocol::Map::STAGE1_MAP_WIDTH.Count() , GameProtocol::Map::STAGE1_MAP_HEIGHT.Count()};
 
+    TerrainHeader mHeader{};
     std::vector<SimpleMath::Vector3> mGlobalVertices;
-    int32_t  mGlobalWidth{ };
-    int32_t  mGlobalHeight{ };
-    float mGridSpacing{ };
-    float mMinX{ };
-    float mMinZ{ };
 };

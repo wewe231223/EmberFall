@@ -4,6 +4,9 @@
 #include "HumanPlayerScript.h"
 #include "ServerFrame.h"
 
+const std::shared_ptr<Terrain> gBaseTerrain = std::make_shared<Terrain>(GameProtocol::Map::BASE_TERRAIN_PATH);
+const std::shared_ptr<Terrain> gPlainTerrain = std::make_shared<Terrain>(GameProtocol::Map::LAST_STAGE_TERRAIN_PATH);
+
 Stage::Stage(Packets::GameStage stageIdx, uint16_t roomIdx) 
     : mStage{ stageIdx }, mGameRoomIdx{ roomIdx },
     mObjectManager{ std::make_shared<ObjectManager>(mGameRoomIdx) }, mCollisionManager{ std::make_shared<CollisionManager>(mGameRoomIdx) } {
@@ -19,6 +22,10 @@ bool Stage::GetActiveState() const {
 
 Packets::GameStage Stage::GetStageIdx() const {
     return mStage;
+}
+
+TerrainCollider& Stage::GetTerrainCollider() {
+    return mTerrainCollider;
 }
 
 std::shared_ptr<SectorSystem> Stage::GetSectorSystem() const {
@@ -63,7 +70,7 @@ void Stage::NotifyAllOfGemDestroyed(const std::vector<SessionIdType>& sessions) 
 }
 
 void Stage::UpdateCollision(const std::shared_ptr<GameObject>& obj) {
-    mCollisionManager->UpdateCollision(obj, mSectorSystem, mObjectManager);
+    mCollisionManager->UpdateCollision(obj, mSectorSystem, mObjectManager, mTerrainCollider);
 }
 
 bool Stage::InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2, const float range) {
@@ -112,12 +119,13 @@ void Stage::StartStage(uint8_t gemCount) {
 #endif
 
     mStage = Packets::GameStage_TERRAIN;
+    mTerrainCollider.SetTerrain(gBaseTerrain);
 
-    for (int i = 0; i < 200; ++i) {
+    for (int i = 0; i < GameProtocol::Logic::MONSTER_SPAWN_COUNT; ++i) {
         auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
     }
 
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < GameProtocol::Logic::TEST_ITEM_SPAWN_COUNT; ++i) {
         auto item = mObjectManager->SpawnObject(Packets::EntityType_ITEM_POTION);
     }
 }
@@ -125,6 +133,15 @@ void Stage::StartStage(uint8_t gemCount) {
 void Stage::StartStage(uint8_t gemCount, Packets::GameStage stage) {
     mActive.exchange(true);
     mStage = stage;
+    mTerrainCollider.SetTerrain(gBaseTerrain);
+
+    for (int i = 0; i < GameProtocol::Logic::MONSTER_SPAWN_COUNT; ++i) {
+        auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+    }
+
+    //if (Packets::GameStage_LAST == stage) {
+    //    mTerrainCollider.SetTerrain(GameProtocol::Map:::LAST_STAGE_TERRAIN_PATH);
+    //}
 }
 
 void Stage::EndStage() {

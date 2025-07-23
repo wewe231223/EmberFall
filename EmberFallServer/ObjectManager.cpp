@@ -142,7 +142,9 @@ void ObjectManager::LoadEnvFromFile(const std::filesystem::path& path) {
 
         auto objTransform = obj->GetTransform();
         objTransform->Translate(SimpleMath::Vector3{ info.pos.x, 0.f, info.pos.y });
-        objTransform->SetY(0.0f);
+
+        auto y = gBaseTerrain->GetHeight(info.pos.x, info.pos.y);
+        objTransform->SetY(y);
         objTransform->Rotation(SimpleMath::Quaternion::CreateFromYawPitchRoll(SimpleMath::Vector3{ 0.0f, DirectX::XMConvertToRadians(info.yaw), 0.0f}));
         objTransform->Update();
         obj->GetBoundingObject()->Update(objTransform->GetWorld());
@@ -258,7 +260,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_IMP).bb);
         obj->Init();
 
-        obj->GetTransform()->SetY(0.0f);
         auto [min, max] = GameProtocol::Logic::MONSTER_SPAWN_AREA;
         obj->GetTransform()->Translate(Random::GetRandomVec3(min, max));
         
@@ -282,7 +283,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         obj->Init();
 
-        obj->GetTransform()->SetY(0.0f);
         auto [min, max] = GameProtocol::Logic::GEM_SPAWN_AREA;
         obj->GetTransform()->Translate(Random::GetRandomVec3(min, max));
 
@@ -316,7 +316,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         obj->Init();
 
-        obj->GetTransform()->SetY(0.0f);
         auto [min, max] = GameProtocol::Logic::ITEM_SPAWN_AREA;
         obj->GetTransform()->Translate(Random::GetRandomVec3(min, max));
 
@@ -338,8 +337,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         obj->Init();
 
-        obj->GetTransform()->SetY(0.0f);
-        obj->GetTransform()->Translate(Random::GetRandomVec3(SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f }, SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f }));
+        obj->GetTransform()->Translate(Random::GetRandomVec3(GameProtocol::Logic::ITEM_SPAWN_AREA));
 
         sector->AddInSector(validId, obj->GetPosition());
         obj->RegisterUpdate();
@@ -432,14 +430,14 @@ std::shared_ptr<GameObject> ObjectManager::SpawnProjectile(Packets::ProjectileTy
     {
         auto obj = GetObjectFromId(validId);
         obj->mSpec.active = true;
+        auto firePos = pos + SimpleMath::Vector3{ 0.0f, 50.0f, 0.0f };
         obj->CreateScript<ArrowScript>(obj, pos, dir);
         obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb);
 
         obj->Init();
 
-        obj->GetTransform()->SetPosition(pos);
+        obj->GetTransform()->SetPosition(firePos);
         obj->GetTransform()->SetLook(dir);
-        obj->GetTransform()->SetY(0.0f);
 
         obj->GetBoundingObject()->Update(obj->GetTransform()->GetWorld());
         sector->AddInSector(validId, obj->GetPosition());

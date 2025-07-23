@@ -13,6 +13,7 @@ void BT::BT_MonsterRandomMove::Build(const std::shared_ptr<Script>& ownerScript)
     auto sequenceMoveRandomLoc = std::make_unique<SequenceNode>();
     sequenceMoveRandomLoc->AddChild<ActionNode>(std::bind_front(&MonsterScript::SetRandomTargetLocation, owner.get()));
     sequenceMoveRandomLoc->AddChild<ActionNode>(std::bind_front(&MonsterScript::MoveTo, owner.get()));
+    sequenceMoveRandomLoc->AddChild<ActionNode>(std::bind_front(&MonsterScript::Wait, owner.get()));
 
     SetRoot(std::move(sequenceMoveRandomLoc));
 }

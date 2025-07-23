@@ -12,8 +12,9 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "Terrain.h"
+
 class GameObject;
-class Terrain;
 
 class TerrainCollider {
 public:
@@ -27,7 +28,8 @@ public:
 
 public:
     void SetTerrain(std::shared_ptr<Terrain> terrain);
-    void HandleTerrainCollision(std::shared_ptr<GameObject>& obj);
+    void SetTerrain(const std::filesystem::path& filePath);
+    void HandleTerrainCollision(const std::shared_ptr<GameObject>& obj);
 
 private:
     std::shared_ptr<Terrain> mTerrain{ };

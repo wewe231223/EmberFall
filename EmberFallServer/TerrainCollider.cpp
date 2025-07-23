@@ -13,13 +13,23 @@ void TerrainCollider::SetTerrain(std::shared_ptr<Terrain> terrain) {
     mTerrain = terrain;
 }
 
-void TerrainCollider::HandleTerrainCollision(std::shared_ptr<GameObject>& obj) {
+void TerrainCollider::SetTerrain(const std::filesystem::path& filePath) {
+    mTerrain = std::make_shared<Terrain>(filePath);
+}
+
+void TerrainCollider::HandleTerrainCollision(const std::shared_ptr<GameObject>& obj) {
     float terrainHeight{ };
     bool onGround{ false };
 
     obj->GetPhysics()->mFactor.friction = 0.0f;
     auto boundingObj = obj->GetBoundingObject();
     if (nullptr == boundingObj) {
+        return;
+    }
+
+    if (nullptr == mTerrain) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "terrain is null");
+        obj->OnCollisionTerrain(0.0f);
         return;
     }
 

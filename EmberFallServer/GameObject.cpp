@@ -173,7 +173,6 @@ void GameObject::Update() {
     }
 
     mPhysics->Update(mDeltaTime);
-    mTransform->SetY(0.0f);
     mTransform->Update();
 
     if (true == mSpec.moveable) {

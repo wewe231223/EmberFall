@@ -12,7 +12,7 @@ namespace GameProtocol {
         inline decltype(auto) BOSS_PLAYER_RUN_SPEED = 7.0mps;
 
         inline decltype(auto) DEFAULT_PROJECTILE_SPEED = 33.3mps;
-        inline decltype(auto) ARROW_SPEED = 10.0mps;
+        inline decltype(auto) ARROW_SPEED = 33.0mps;
     }
 
     namespace Key {
@@ -33,10 +33,6 @@ namespace GameProtocol {
             std::pair<char, SimpleMath::Vector3>{ KEY_MOVE_BACKWARD, { SimpleMath::Vector3::Backward } },
             std::pair<char, SimpleMath::Vector3>{ KEY_MOVE_RIGHT, { SimpleMath::Vector3::Left } },
         };
-    }
-
-    namespace Spec {
-        
     }
 
     namespace Logic {
@@ -61,6 +57,9 @@ namespace GameProtocol {
         inline const SimpleMath::Vector3 PLAYER_TRIGGER_SIZE{ 1.0f, 3.0f, 1.0f };
        
         // Spawn
+        inline constexpr auto MONSTER_SPAWN_COUNT = 200;
+        inline constexpr auto TEST_ITEM_SPAWN_COUNT = 10;
+
         inline const std::pair<SimpleMath::Vector3, SimpleMath::Vector3> PLAYER_SPAWN_AREA{
             SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f },
             SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f }
@@ -82,8 +81,8 @@ namespace GameProtocol {
         };
 
         inline const std::pair<SimpleMath::Vector3, SimpleMath::Vector3> MONSTER_PATROL_AREA{
-            SimpleMath::Vector3{ -5.0f, 0.0f, -5.0f },
-            SimpleMath::Vector3{ 5.0f, 0.0f, 5.0f }
+            SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f },
+            SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f }
         };
     }
 
@@ -95,6 +94,9 @@ namespace GameProtocol {
         inline decltype(auto) STAGE2_MAP_HEIGHT = 500.0m;
 
         inline decltype(auto) STAGE3_MAP_DIAMETER = 500.0m;
+
+        inline constexpr const char* BASE_TERRAIN_PATH = "../Resources/Binarys/Terrain/NTerrain.bin";
+        inline constexpr const char* LAST_STAGE_TERRAIN_PATH = "";
     }
 
     enum EnvironmentType : UINT {

@@ -13,34 +13,34 @@ SimpleMath::Vector2 Terrain::GetMapSize() const {
 }
 
 SimpleMath::Vector2 Terrain::GetMapLeftBottom() const {
-    return -mMapSize / 2.0f;
+    return -mMapSize * 0.5f;
 }
 
 float Terrain::GetHeight(float x, float z, float offset) const {
-    float localX = x - mMinX;
-    float localZ = z - mMinZ;
+    float localX = x - mHeader.minX;
+    float localZ = z - mHeader.minZ;
 
-    float fcol = localX / mGridSpacing;
-    float frow = localZ / mGridSpacing;
+    float fcol = localX / mHeader.gridSpacing;
+    float frow = localZ / mHeader.gridSpacing;
 
     int col = static_cast<int>(fcol);
     int row = static_cast<int>(frow);
 
-    col = std::clamp(col, 0, mGlobalWidth - 2);
-    row = std::clamp(row, 0, mGlobalHeight - 2);
+    col = std::clamp(col, 0, mHeader.globalWidth - 2);
+    row = std::clamp(row, 0, mHeader.globalHeight - 2);
 
     float t = fcol - col;
     float u = frow - row;
 
-    decltype(auto) v00 = mGlobalVertices[row * mGlobalWidth + col];
-    decltype(auto) v10 = mGlobalVertices[row * mGlobalWidth + col + 1];
-    decltype(auto) v01 = mGlobalVertices[(row + 1) * mGlobalWidth + col];
-    decltype(auto) v11 = mGlobalVertices[(row + 1) * mGlobalWidth + col + 1];
+    const SimpleMath::Vector3& v00 = mGlobalVertices[row * mHeader.globalWidth + col];
+    const SimpleMath::Vector3& v10 = mGlobalVertices[row * mHeader.globalWidth + col + 1];
+    const SimpleMath::Vector3& v01 = mGlobalVertices[(row + 1) * mHeader.globalWidth + col];
+    const SimpleMath::Vector3& v11 = mGlobalVertices[(row + 1) * mHeader.globalWidth + col + 1];
 
     float y0 = v00.y * (1.0f - t) + v10.y * t;
     float y1 = v01.y * (1.0f - t) + v11.y * t;
 
-    return (y0 * (1.0f - u) + y1 * u) + offset;
+    return y0 * (1.0f - u) + y1 * u + offset;
 }
 
 float Terrain::GetHeight(const SimpleMath::Vector2& pos, float offset) const {
@@ -89,18 +89,13 @@ bool Terrain::Contains(const std::shared_ptr<BoundingObject>& collider, float& h
 bool Terrain::LoadFromFile(const std::filesystem::path& path) {
     std::ifstream file{ path, std::ios::binary };
 
-    if (!file) {
+    if (not file) {
         return false;
     }
 
-    file.read(reinterpret_cast<char*>(&mGlobalWidth), sizeof(mGlobalWidth));
-    file.read(reinterpret_cast<char*>(&mGlobalHeight), sizeof(mGlobalHeight));
-    file.read(reinterpret_cast<char*>(&mGridSpacing), sizeof(mGridSpacing));
-    file.read(reinterpret_cast<char*>(&mMinX), sizeof(mMinX));
-    file.read(reinterpret_cast<char*>(&mMinZ), sizeof(mMinZ));
+    file.read(reinterpret_cast<char*>(&mHeader), sizeof(TerrainHeader));
 
-    mGlobalVertices.resize(mGlobalWidth * mGlobalHeight);
+    mGlobalVertices.resize(mHeader.globalWidth * mHeader.globalHeight);
     file.read(reinterpret_cast<char*>(mGlobalVertices.data()), mGlobalVertices.size() * sizeof(SimpleMath::Vector3));
-
     return true;
 }

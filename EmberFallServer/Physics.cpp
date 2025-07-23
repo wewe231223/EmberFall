@@ -44,12 +44,16 @@ bool Physics::IsOnOtherObject() const {
     return mOnOtherObject;
 }
 
+void Physics::SetGravityActive(bool state) {
+    mGravityActive = state;
+}
+
 void Physics::SetOnGround(bool state) {
     mOnGround = state;
 
-    if (true == state) {
-        mVelocity.y = 0.0f;
-    }
+    //if (true == state) {
+    //    mVelocity.y = 0.0f;
+    //}
 }
 
 void Physics::SetOnOtherObject(bool state) {
@@ -114,11 +118,12 @@ void Physics::Update(const float time) {
         return;
     }
 
-    mVelocity.y = 0.0f;
     float speed = mVelocity.Length();
     SimpleMath::Vector3 moveDir = mVelocity;
     moveDir.Normalize();
-    //UpdateGravity(time, moveDir, speed);   // 중력 적용
+    //if (mGravityActive) {
+        UpdateGravity(time, moveDir, speed);   // 중력 적용
+    //}
     ExternalForceDecay(time);
     UpdateFriction(time, moveDir, speed);
 
@@ -133,7 +138,7 @@ void Physics::SolvePenetration(const SimpleMath::Vector3& penetrationVec) {
 }
 
 void Physics::ExternalForceDecay(const float time) {
-    float decayRate = 5.0f;  // 외력 감쇠율 (튜닝 가능)
+    float decayRate = 5.0f;
     mExternalVelocity *= std::exp(-decayRate * time);
 
     if (mExternalVelocity.LengthSquared() < 1e-4f) {
@@ -150,7 +155,6 @@ void Physics::ClampVelocity() {
         velocityXZ = velocityXZ * mFactor.maxMoveSpeed.Count();
         mVelocity.x = velocityXZ.x;
         mVelocity.z = velocityXZ.z;
-        mVelocity.y = 0.0f;
     }
 }
 

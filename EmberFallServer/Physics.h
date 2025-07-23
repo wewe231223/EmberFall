@@ -34,6 +34,7 @@ public:
     ~Physics();
 
 public:
+    void SetGravityActive(bool state);
     void SetOnGround(bool state);
     void SetOnOtherObject(bool state);
     void SetTransform(const std::shared_ptr<Transform>& transform);
@@ -73,6 +74,7 @@ public:
 
 private:
     bool mActive{ true };
+    bool mGravityActive{ false };
     bool mOnGround{ true };
     bool mOnOtherObject{ true };
 

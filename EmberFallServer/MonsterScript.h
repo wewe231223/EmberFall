@@ -36,6 +36,7 @@ public:
     // 행동트리 관련 함수들 return NodeStatus
     BT::NodeStatus SetRandomTargetLocation(const float time);
     BT::NodeStatus MoveTo(const float time);
+    BT::NodeStatus Wait(const float time);
 
     BT::NodeStatus DetectPlayerInRange(const float time);
     BT::NodeStatus ChaseDetectedPlayer(const float time);
@@ -44,6 +45,9 @@ public:
     BT::NodeStatus Attack(const float time);
 
 private:
+    float mWaitTime{ };
+    float mWaitTimeCounter{ };
+
     SimpleMath::Vector3 mMoveDir{ SimpleMath::Vector3::Zero };
     SimpleMath::Vector3 mTargetPos{ SimpleMath::Vector3::Zero };
 

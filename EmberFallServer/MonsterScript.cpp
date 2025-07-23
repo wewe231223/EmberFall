@@ -164,6 +164,7 @@ BT::NodeStatus MonsterScript::SetRandomTargetLocation(const float deltaTime) {
 
     owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE);
     mTargetPos = Random::GetRandVecInArea(GameProtocol::Logic::MONSTER_PATROL_AREA, owner->GetPosition());
+    mTargetPos.y = 0.0f;
     return BT::NodeStatus::SUCCESS;
 }
 
@@ -183,12 +184,27 @@ BT::NodeStatus MonsterScript::MoveTo(const float deltaTime) {
 
     auto compareXZ = owner->GetPosition();
     compareXZ.y = 0.0f;
-    if (SimpleMath::Vector3::DistanceSquared(mTargetPos, compareXZ) < 0.5f * 0.5f) {
+    if (SimpleMath::Vector3::DistanceSquared(mTargetPos, compareXZ) < 1.0f * 1.0f) {
         return BT::NodeStatus::SUCCESS;
     }
 
     owner->GetTransform()->SetLook(moveDir);
     owner->GetPhysics()->Accelerate(moveDir, owner->GetDeltaTime());
+    return BT::NodeStatus::RUNNING;
+}
+
+BT::NodeStatus MonsterScript::Wait(const float time) {
+    if (MathUtil::IsZero(mWaitTime)) {
+        mWaitTime = Random::GetRandom(1.0f, 2.0f);
+    }
+
+    mWaitTimeCounter += time;
+    if (mWaitTime >= mWaitTimeCounter) {
+        mWaitTime = 0.0f;
+        mWaitTimeCounter = 0.0f;
+        return BT::NodeStatus::SUCCESS;
+    }
+
     return BT::NodeStatus::RUNNING;
 }
 
