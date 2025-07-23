@@ -270,7 +270,10 @@ namespace Client {
         std::ifstream file(filePath, std::ios::binary);
 
         if (!file) {
-            return false;
+			mHeader.globalWidth = 0;
+			mHeader.globalHeight = 0;
+
+            return true; 
         }
 
         file.read(reinterpret_cast<char*>(&mHeader), sizeof(TerrainHeader));
@@ -289,6 +292,11 @@ namespace Client {
     }
 
     float TerrainCollider::GetHeight(float x, float z) const {
+        if (mHeader.minX == 0 and mHeader.minZ == 0) {
+            return 0.f; 
+        }
+
+
         float localX = x - mHeader.minX;
         float localZ = z - mHeader.minZ;
 
