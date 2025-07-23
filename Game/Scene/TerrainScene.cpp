@@ -181,7 +181,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					player.SetActiveState(true);
 
 					auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-					// zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+					zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
 
 					player.GetTransform().GetPosition() = zxPos;
 					player.SetAnimation(data->animation());
@@ -247,7 +247,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					player.SetActiveState(true);
 
 					auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-					// zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+					zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
 
 					player.GetTransform().GetPosition() = zxPos;
 					player.SetAnimation(data->animation());
@@ -1415,7 +1415,7 @@ void TerrainScene::Update() {
 
 	for (auto& player : mPlayers | std::views::filter([](const Player& p) { return p.GetActiveState(); })) {
 		player.ForwardUpdate(); 
-		// player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
+		player.GetTransform().GetPosition().y = tCollider.GetHeight(player.GetTransform().GetPosition().x, player.GetTransform().GetPosition().z);
 		player.Update(mRenderManager->GetMeshRenderManager());
 	}
 
