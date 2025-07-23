@@ -181,7 +181,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					player.SetActiveState(true);
 
 					auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-					zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+					// zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
 
 					player.GetTransform().GetPosition() = zxPos;
 					player.SetAnimation(data->animation());
@@ -247,7 +247,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					player.SetActiveState(true);
 
 					auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-					zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+					// zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
 
 					player.GetTransform().GetPosition() = zxPos;
 					player.SetAnimation(data->animation());
@@ -306,7 +306,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		
 					
 					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
-					nextLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextLoc->GetTransform().GetPosition().x, nextLoc->GetTransform().GetPosition().z);
+					// nextLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextLoc->GetTransform().GetPosition().x, nextLoc->GetTransform().GetPosition().z);
 
 					nextLoc->SetEmpty(false);
 
@@ -347,7 +347,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextItemLoc->SetActiveState(true);
 
 					nextItemLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
-					nextItemLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextItemLoc->GetTransform().GetPosition().x, nextItemLoc->GetTransform().GetPosition().z);
+					// nextItemLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextItemLoc->GetTransform().GetPosition().x, nextItemLoc->GetTransform().GetPosition().z);
 					nextItemLoc->GetTransform().GetPosition().y += 0.5f;
 
 
@@ -385,7 +385,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 
 					nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
-					nextLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextLoc->GetTransform().GetPosition().x, nextLoc->GetTransform().GetPosition().z);
+					// nextLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextLoc->GetTransform().GetPosition().x, nextLoc->GetTransform().GetPosition().z);
 
 					nextLoc->SetEmpty(false);
 				}
@@ -398,7 +398,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				object.SetActiveState(true);
 
 				auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-				zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+				// zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
 				
 				object.GetTransform().GetPosition() = zxPos;
 				object.GetTransform().ResetPrediction();
@@ -455,7 +455,7 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 			float predictDuration = mAvgLatency + data->duration();
 
 			auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-			zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+			// zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
 
 			mPlayerIndexmap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
 
@@ -476,7 +476,7 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 			auto zxPos = FbsPacketFactory::GetVector3(data->pos());
 			
 			if (mGameObjectMap[data->objectId()]->GetEntityType() != Packets::EntityType_PROJECTILE) {
-				zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+				// zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
 			}
 
 			mGameObjectMap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
@@ -1299,8 +1299,8 @@ void TerrainScene::Update() {
 
 	for (auto& item : mItemObjects | std::views::filter([](const GameObject& object) { return object.GetActiveState(); })) {
 		auto& Pos = item.GetTransform().GetPosition();
-		Pos.y = tCollider.GetHeight(Pos.x, Pos.z);
-		Pos.y += 0.5f;
+		/*Pos.y = tCollider.GetHeight(Pos.x, Pos.z);
+		Pos.y += 0.5f;*/
 		item.GetTransform().Rotate(0.f, DirectX::XMConvertToRadians(50.f) * Time.GetDeltaTime<float>(), 0.f);
 	}
 
