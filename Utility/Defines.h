@@ -139,7 +139,8 @@ enum : UINT {
 	ParticleType_shell = 2,
 	ParticleType_ember = 3,
     ParticleType_smoke = 4, 
-    ParticleType_explode = 5
+    ParticleType_explode = 5,
+    ParticleType_path = 6
 };
 
 

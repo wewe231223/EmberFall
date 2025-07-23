@@ -372,6 +372,28 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextProjLoc->SetEntityType(data->entity()); 
 
 					nextProjLoc->SetEmpty(false);
+
+					ParticleVertex v{};
+					v.position = nextProjLoc->GetTransform().GetPosition();
+
+					v.halfheight = 10.f;
+					v.halfWidth = 10.f;
+					v.material = mRenderManager->GetMaterialManager().GetMaterial("SmokeMaterial");
+					v.spritable = true;
+					v.spriteDuration = 1.f;
+					v.spriteFrameInRow = 4;
+					v.spriteFrameInCol = 4;
+					v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+					v.velocity = { 0.f, 0.f, 0.f };
+					v.totalLifeTime = 0.1f;
+					v.lifeTime = 0.1f;
+					v.type = ParticleType_emit;
+					v.emitType = ParticleType_path;
+					v.remainEmit = 1000;
+					v.emitIndex = 0;
+
+					mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
+					mParticleMap[data->objectId()].Get()->position = v.position;
 				}	
 				break;
 				default:
@@ -1424,6 +1446,12 @@ void TerrainScene::Update() {
 	mSkyBox.UpdateShaderVariables();
 	auto [skyBoxMesh, skyBoxShader, skyBoxModelContext] = mSkyBox.GetRenderData();
 	mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);
+
+
+
+	for (auto& [id, particle] : mParticleMap) {
+		particle.Get()->position = mGameObjectMap[id]->GetTransform().GetPosition();
+	}
 
 
 	TerrainScene::UpdateSound();

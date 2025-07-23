@@ -646,6 +646,8 @@ void ArenaScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 		mEquipments["DemonWeapon"].SetActiveState(true);
 	}
 
+	mGameObjects.resize(10000, GameObject{});
+
 	std::weak_ptr<ArenaScene> sharedThis{ std::static_pointer_cast<ArenaScene>(shared_from_this()) };
 
 	Time.AddEvent(66ms, [sharedThis]() {
