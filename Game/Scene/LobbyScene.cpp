@@ -633,10 +633,16 @@ void LobbyScene::Exit() {
 void LobbyScene::BuildMesh(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandList> commandList) {
 	mMeshMap["SkyBox"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::SkyDome, 100);
 	mMeshMap["Sphere"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Sphere, 1);
-	mMeshMap["Plane"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Plane, 50);
+	mMeshMap["Plane"] = std::make_unique<Mesh>(device, commandList, EmbeddedMeshType::Plane, 100);
 
 	MeshLoader Loader{};
 	MeshData data{};
+
+	data = Loader.Load("Resources/Assets/Cliff/Cliff2_LOD1.glb");
+	mMeshMap["Cliff1"] = std::make_unique<Mesh>(device, commandList, data);
+
+	data = Loader.Load("Resources/Assets/Cliff/Cliff1_LOD1.glb");
+	mMeshMap["Cliff2"] = std::make_unique<Mesh>(device, commandList, data);
 
 	data = Loader.Load("Resources/Assets/Tree/LODTree/Tree1_LOD0.glb", 0);
 	mMeshMap["Tree1Stem"] = std::make_unique<Mesh>(device, commandList, data);
@@ -724,6 +730,14 @@ void LobbyScene::BuildMaterial() {
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Epic_BlueSunset_EquiRect_flat");
 	mRenderManager->GetMaterialManager().CreateMaterial("SkyBoxMaterial", mat);
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Large_Tundra_Rock_Formation_wdysbfoga_High_4K_BaseColor");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Large_Tundra_Rock_Formation_wdysbfoga_High_4K_Normal");
+	mRenderManager->GetMaterialManager().CreateMaterial("Cliff1Material", mat);
+
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Massive_Tundra_Rock_Formation_wcrmbiar_High_4K_BaseColor");
+	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Massive_Tundra_Rock_Formation_wcrmbiar_High_4K_Normal");
+	mRenderManager->GetMaterialManager().CreateMaterial("Cliff2Material", mat);
 
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("T_beech_atlas_BC v2");
 	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("TreeLeaves");
@@ -858,8 +872,8 @@ void LobbyScene::BuildLobbyObject() {
 
 
 
-		for (auto i = 0; i < 500; ++i) {
-			float x = RandomEngine::GetRandomRange(-50.f, 50.f); 
+		for (auto i = 0; i < 200; ++i) {
+			float x = RandomEngine::GetRandomRange(-30.f, 30.f); 
 			float z = RandomEngine::GetRandomRange(-20.f, -12.f);
 			
 			auto& stemClone = mLobbyProps.emplace_back(stem.Clone());
@@ -870,10 +884,62 @@ void LobbyScene::BuildLobbyObject() {
 			leavesClone.GetTransform().GetPosition() = { x, 0.f, z };
 			leavesClone.SetActiveState(true);
 		}
+	}
 
+	{
+		auto cliff = GameObject{};
+		cliff.mShader = mShaderMap["StandardNormalShader"].get();
+		cliff.mMesh = mMeshMap["Cliff1"].get();
+		cliff.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Cliff1Material");
+
+		auto& clone = mLobbyProps.emplace_back(cliff.Clone());
+		clone.GetTransform().GetPosition() = { 0.f, 0.f, -30.f };
+		clone.GetTransform().GetScale() = { 0.3f, 0.3f, 0.3f };
+		clone.SetActiveState(true);
+
+		auto& clone1 = mLobbyProps.emplace_back(cliff.Clone());
+		clone1.GetTransform().GetPosition() = { -30.f, 0.f, -30.f };
+		clone1.GetTransform().GetScale() = { 0.3f, 0.3f, 0.3f };
+		clone1.SetActiveState(true);
+
+		auto& clone2 = mLobbyProps.emplace_back(cliff.Clone());
+		clone2.GetTransform().GetPosition() = { 30.f, 0.f, -30.f };
+		clone2.GetTransform().GetScale() = { 0.3f, 0.3f, 0.3f };
+		clone2.SetActiveState(true);
 
 	}
 
+
+	{
+		auto cliff = GameObject{};
+		cliff.mShader = mShaderMap["StandardNormalShader"].get();
+		cliff.mMesh = mMeshMap["Cliff2"].get();
+		cliff.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("Cliff2Material");
+
+		auto& clone = mLobbyProps.emplace_back(cliff.Clone());
+		clone.GetTransform().GetPosition() = { 50.f, 0.f, -30.f };
+		clone.GetTransform().GetScale() = { 0.3f, 0.3f, 0.3f };
+		clone.GetTransform().Rotate(0.f, -90.f, 0.f);
+		clone.SetActiveState(true);
+
+		auto& clone1 = mLobbyProps.emplace_back(cliff.Clone());
+		clone1.GetTransform().GetPosition() = { 50.f, 0.f, 10.f };
+		clone1.GetTransform().GetScale() = { 0.3f, 0.3f, 0.3f };
+		clone1.GetTransform().Rotate(0.f, -90.f, 0.f);
+		clone1.SetActiveState(true);
+
+		auto& clone2 = mLobbyProps.emplace_back(cliff.Clone());
+		clone2.GetTransform().GetPosition() = { -50.f, 0.f, -30.f };
+		clone2.GetTransform().GetScale() = { 0.3f, 0.3f, 0.3f };
+		clone2.GetTransform().Rotate(0.f, 90.f, 0.f);
+		clone2.SetActiveState(true);
+
+		auto& clone3 = mLobbyProps.emplace_back(cliff.Clone());
+		clone3.GetTransform().GetPosition() = { -50.f, 0.f, 10.f };
+		clone3.GetTransform().GetScale() = { 0.3f, 0.3f, 0.3f };
+		clone3.GetTransform().Rotate(0.f, 90.f, 0.f);
+		clone3.SetActiveState(true);
+	}
 
 
 	{
