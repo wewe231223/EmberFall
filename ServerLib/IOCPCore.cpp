@@ -83,4 +83,6 @@ void IOCPCore::ClientIoThread() {
 
         session->ProcessOverlapped(overlappedEx, receivedByte);
     }
+
+    //MessageBoxA(nullptr, "NetworkThread Is Done", "NetworkThread", MB_OK);
 }

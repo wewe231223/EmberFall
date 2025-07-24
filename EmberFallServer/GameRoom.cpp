@@ -575,7 +575,7 @@ void GameRoomManager::InitGameRooms() {
     }
 
     for (auto& room : mGameRooms) {
-        room->GetStage().InitObjectManager("../Resources/Binarys/Terrain/SceneObjects_Server.bin");
+        room->GetStage().InitObjectManager();
         room->CheckSessionsHeartBeat();
     }
 }
