@@ -588,7 +588,7 @@ void LobbyScene::Update() {
 			auto [mesh, shader, modelContext] = gameObject.GetAnimationRenderData();
 
 
-			mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer);
+			mRenderManager->GetMeshRenderManager().AppendBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer, gameObject.GetDissolveOffset());
 
 		}
 		else {
