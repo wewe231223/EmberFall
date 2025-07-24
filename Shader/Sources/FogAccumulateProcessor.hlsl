@@ -5,7 +5,7 @@ RWTexture3D<float4> RWOutput : register(u0);
 
 static const float DensityOffset = 0.0006f;
 static float fogBegin = 0.0f;
-static float fogEnd = 700.0f;
+static float fogEnd = 600.0f;
 
 float ComputeSliceDepthDelta(float ndcZ, uint pixelZ)
 {

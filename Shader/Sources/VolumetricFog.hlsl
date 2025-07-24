@@ -26,7 +26,7 @@ Texture3D fogVolume : register(t0);
 Texture2D velocity : register(t1);
 
 static float fogBegin = 0.0f;
-static float fogEnd = 700.0f;
+static float fogEnd = 600.0f;
 
 struct VS_INPUT
 {

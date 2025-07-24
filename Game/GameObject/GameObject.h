@@ -35,7 +35,7 @@ public:
 	void UpdateShaderVariables(BoneTransformBuffer& boneTransformBuffer);
 
 	bool GetAnimatorState() const;
-
+	float GetDissolveOffset() const;
 	GameObject Clone(); 
 
 	AnimatorGraph::AnimationGraphController& GetAnimationController();
@@ -63,6 +63,9 @@ private:
 
 	bool mActiveState{ false };
 	bool mEmpty{ true }; 
+
+	float mDissolveOffset{ 0.0f };
+
 };
 
 
@@ -111,6 +114,7 @@ private:
 
 	bool mActiveState{ false };
 	bool mEmpty{ true };
+
 };
 
 
