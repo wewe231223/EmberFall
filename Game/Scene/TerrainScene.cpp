@@ -450,6 +450,7 @@ void TerrainScene::ProcessObjectDisappeared(const uint8_t* buffer) {
 			if (mGameObjectMap[data->objectId()]->GetEntityType() == Packets::EntityType_PROJECTILE) {
 				Console.Log("{} 번 화살 삭제.", LogType::Info, data->objectId());
 				mParticleMap[data->objectId()].Get()->Flags = static_cast<UINT>(ParticleFlag::Delete);
+				mParticleMap.erase(data->objectId());
 			}
 		}
 	}
