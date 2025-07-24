@@ -1207,6 +1207,8 @@ void TerrainScene::ProcessPackets(const uint8_t* buffer, size_t size) {
 		MessageBox(nullptr, L"세션의 연결이 끊겼습니다.", L"연결 끊김", MB_OK | MB_ICONERROR);
 	}
 	
+	Console.Log("현재 프레임이 처리하는 버퍼 : {}", LogType::Info, size); 
+
 	const uint8_t* iter = buffer; 
 
 	while (iter < buffer + size) {
