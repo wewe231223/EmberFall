@@ -70,6 +70,15 @@ Particle ParticleManager::CreateEmitParticle(ParticleVertex& newParticle) {
 	return result;
 }
 
+void ParticleManager::CreateFreeEmitParticle(ParticleVertex& particle) {
+	particle.emitIndex = std::numeric_limits<UINT>::max();
+
+	std::memcpy(*mNewParticleUploadLoc, &particle, sizeof(ParticleVertex));
+	
+	mNewParticleUploadLoc++;
+	mNewParticleCount++;
+}
+
 void ParticleManager::UpdateEmitParticle() {
 	std::memcpy(*mEmitParticleBuffer.CPUBegin(), mEmitParticleContexts.data(), sizeof(EmitParticleContext) * MAX_EMIT_PARTICLE);
 }

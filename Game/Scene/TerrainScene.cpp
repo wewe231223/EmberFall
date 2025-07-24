@@ -447,6 +447,7 @@ void TerrainScene::ProcessObjectDisappeared(const uint8_t* buffer) {
 			mGameObjectMap[data->objectId()]->GetTransform().ResetPrediction();
 			mGameObjectMap[data->objectId()]->SetActiveState(false);
 
+			// 화살은 remove 로 처리
 			if (mGameObjectMap[data->objectId()]->GetEntityType() == Packets::EntityType_PROJECTILE) {
 				Console.Log("{} 번 화살 삭제.", LogType::Info, data->objectId());
 				mParticleMap[data->objectId()].Get()->Flags = static_cast<UINT>(ParticleFlag::Delete);
@@ -474,6 +475,7 @@ void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
 			if (mGameObjectMap[data->objectId()]->GetEntityType() == Packets::EntityType_PROJECTILE) {
 				Console.Log("{} 번 화살 삭제.", LogType::Info, data->objectId());
 				mParticleMap[data->objectId()].Get()->Flags = static_cast<UINT>(ParticleFlag::Delete);
+				mParticleMap.erase(data->objectId());
 			}
 
 
@@ -652,6 +654,60 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 		if (mGameObjectMap.contains(data->objectId())) {
 			mGameObjectMap[data->objectId()]->GetAnimationController().Transition(static_cast<size_t>(data->animation()));
 		}
+	}
+
+	// 장소 불문 누군가 공격당하면 
+	if (data->animation() == Packets::AnimationState_ATTACKED) {
+		auto id = data->objectId();
+
+		if (id < OBJECT_ID_START) {
+			ParticleVertex v{};
+			v.position = mPlayerIndexmap[id]->GetTransform().GetPosition();
+			v.position.y += 1.f;
+
+			v.halfheight = 10.f;
+			v.halfWidth = 10.f;
+			v.material = mRenderManager->GetMaterialManager().GetMaterial("BloodMaterial");
+			v.spritable = true;
+			v.spriteDuration = 1.f;
+			v.spriteFrameInRow = 4;
+			v.spriteFrameInCol = 4;
+			v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+			v.velocity = { 0.f, 0.f, 0.f };
+			v.totalLifeTime = 0.01f;
+			v.lifeTime = 0.01f;
+			v.type = ParticleType_emit;
+			v.emitType = ParticleType_blood;
+			v.remainEmit = 300;
+			v.emitIndex = 0;
+
+			mRenderManager->GetParticleManager().CreateFreeEmitParticle(v);
+
+		}
+		else {
+			ParticleVertex v{};
+			v.position = mGameObjectMap[id]->GetTransform().GetPosition();
+			v.position.y += 0.5f;
+
+			v.halfheight = 10.f;
+			v.halfWidth = 10.f;
+			v.material = mRenderManager->GetMaterialManager().GetMaterial("BloodMaterial");
+			v.spritable = true;
+			v.spriteDuration = 1.f;
+			v.spriteFrameInRow = 4;
+			v.spriteFrameInCol = 4;
+			v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+			v.velocity = { 0.f, 0.f, 0.f };
+			v.totalLifeTime = 0.01f;
+			v.lifeTime = 0.01f;
+			v.type = ParticleType_emit;
+			v.emitType = ParticleType_blood;
+			v.remainEmit = 300;
+			v.emitIndex = 0;
+
+			mRenderManager->GetParticleManager().CreateFreeEmitParticle(v);
+		}
+
 	}
 
 }

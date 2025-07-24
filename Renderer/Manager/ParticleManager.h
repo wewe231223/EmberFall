@@ -23,6 +23,7 @@ public:
 	void SetTerrain(DefaultBufferGPUIterator terrainHeader, DefaultBufferGPUIterator terrainData); 
 
 	Particle CreateEmitParticle(ParticleVertex& newParticle); 
+	void CreateFreeEmitParticle(ParticleVertex& particle);
 
 	void UpdateEmitParticle(); 
 

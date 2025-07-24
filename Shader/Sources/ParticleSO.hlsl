@@ -4,6 +4,7 @@
 #define ParticleType_smoke  4
 #define ParticleType_explode 5 
 #define ParticleType_path 6 
+#define ParticleType_blood 7
  
 #define ember_LifeTime      6.f
 
@@ -390,11 +391,62 @@ uint CreatePathParticle(ParticleVertex emitter, uint vertexID, inout PointStream
     return 10;
 }
 
+uint CreateBloodParticle(ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
+{
+    ParticleVertex p = (ParticleVertex) 0;
+
+    const float lifeTime = 1.5f;
+    
+    p.position = emitter.position;
+
+    p.halfWidth = GenerateRandomInRange(0.1f, 0.3f, vertexID);
+    p.halfHeight = p.halfWidth;
+
+    p.material = emitter.material;
+
+    p.spritable = emitter.spritable;
+    p.spriteFrameInRow = emitter.spriteFrameInRow;
+    p.spriteFrameInCol = emitter.spriteFrameInCol;
+    p.spriteDuration = lifeTime;
+
+    p.opacity = 1.0f;
+
+    p.mass = 0.5f;
+    p.drag = float3(0.1f, 0.1f, 0.1f);
+
+    p.totalLifetime = lifeTime;
+    p.lifetime = lifeTime;
+
+    p.type = ParticleType_smoke;
+    p.emitType = ParticleType_ember;
+    p.remainEmit = 0;
+    p.emitIndex = emitter.emitIndex;
+  
+    
+     [unroll]
+    for (int i = 0; i < 36; ++i)
+    {
+        p.direction = GenerateRandomDirection(vertexID + i);
+        
+
+        float speed = GenerateRandomInRange(2.f, 3.5f, vertexID + i + 100);
+        p.velocity = p.direction * speed;
+
+        OnTerrain(p);
+        stream.Append(p);
+    }
+    
+    return 36;
+}
+
 void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
 {    
-    if (EmitPosition[emitter.emitIndex].flag == ParticleFlag_Delete)
+    if (emitter.emitIndex != NULL_INDEX)
     {
-        return; 
+        if (EmitPosition[emitter.emitIndex].flag == ParticleFlag_Delete)
+        {
+            return; 
+        }
     }
     
     ParticleVertex v = emitter;
@@ -415,6 +467,9 @@ void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout Point
                 break;
             case ParticleType_path:
                 emitCount = CreatePathParticle(v, vertexID, stream); 
+                break;
+            case ParticleType_blood:
+                emitCount = CreateBloodParticle(v, vertexID, stream);
                 break;
             
 
@@ -512,7 +567,10 @@ void ParticleSOPassGS(point ParticleSO_GS_IN input[1], inout PointStream<Particl
 
     if (outP.type == ParticleType_emit)
     {
-        outP.position = EmitPosition[outP.emitIndex].position;
+        if (outP.emitIndex != NULL_INDEX)
+        {
+            outP.position = EmitPosition[outP.emitIndex].position;
+        }
         EmitParticleUpdate(outP, input[0].vertexID, output);
     }
     else {

@@ -136,12 +136,13 @@ bool IsSubSet(const std::bitset<N>& a, const std::bitset<N>& b) {
 }
 
 enum : UINT {
-	ParticleType_emit = 1,
-	ParticleType_shell = 2,
-	ParticleType_ember = 3,
-    ParticleType_smoke = 4, 
+    ParticleType_emit = 1,
+    ParticleType_shell = 2,
+    ParticleType_ember = 3,
+    ParticleType_smoke = 4,
     ParticleType_explode = 5,
-    ParticleType_path = 6
+    ParticleType_path = 6,
+    ParticleType_blood = 7,
 };
 
 
