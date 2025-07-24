@@ -12,8 +12,9 @@
 #include "../MeshLoader/Loader/TerrainBaker.h"
 #include "../ServerLib/GameProtocol.h"
 #include "../Renderer/Core/Console.h"
-
 #include "../Utility/RandomEngine.h"
+#include "../ServerLib/Session.h"
+
 
 #pragma region PacketProcessFn 
 void TerrainScene::ProcessPacketProtocolVersion(const uint8_t* buffer) {
@@ -1201,6 +1202,11 @@ void TerrainScene::UpdateSound() {
 }
 
 void TerrainScene::ProcessPackets(const uint8_t* buffer, size_t size) {
+	
+	if (not gClientCore->GetSession()->IsConnected()) {
+		MessageBox(nullptr, L"세션의 연결이 끊겼습니다.", L"연결 끊김", MB_OK | MB_ICONERROR);
+	}
+	
 	const uint8_t* iter = buffer; 
 
 	while (iter < buffer + size) {
