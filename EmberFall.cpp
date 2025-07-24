@@ -177,15 +177,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     }
 
-    ::DestroyWindow(hWnd);
 
     decltype(auto) packet = FbsPacketFactory::PlayerExitCS(gClientCore->GetSessionId());
     gClientCore->Send(packet);
 
     gClientCore->End();
+    MessageBox(nullptr, L"END", L"", MB_OK);
 
     SoundManager::GetInstance().Terminate(); 
 
+    ::DestroyWindow(hWnd);
 
     return (int) msg.wParam;
 }
