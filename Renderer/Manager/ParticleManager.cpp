@@ -59,7 +59,7 @@ Particle ParticleManager::CreateEmitParticle(ParticleVertex& newParticle) {
 	Particle result{ &next };
 	
 	for (UINT index{ 0 }; auto& context : mEmitParticleContexts) {
-		if (context.Flags == static_cast<UINT>(ParticleFlag::Empty)) {
+		if (context.Flags == static_cast<UINT>(ParticleFlag::Empty) or context.Flags == static_cast<UINT>(ParticleFlag::Delete)) {
 			mNextEmitParticleIndex = index;
 			break;
 		} 
@@ -164,17 +164,17 @@ void ParticleManager::PostRender() {
 }
 
 void ParticleManager::ValidateParticle() {
-	for (auto& context : mEmitParticleContexts) {
-		for (UINT index{ 0 }; auto & context : mEmitParticleContexts) {
-			if (context.Flags == static_cast<UINT>(ParticleFlag::Delete)) {
-				mNextEmitParticleIndex = index;
-				context.Flags = static_cast<UINT>(ParticleFlag::Empty);
-				break;
-			}
-			index++;
-		}
+	//for (auto& context : mEmitParticleContexts) {
+	//	for (UINT index{ 0 }; auto & context : mEmitParticleContexts) {
+	//		if (context.Flags == static_cast<UINT>(ParticleFlag::Delete)) {
+	//			mNextEmitParticleIndex = index;
+	//			context.Flags = static_cast<UINT>(ParticleFlag::Empty);
+	//			break;
+	//		}
+	//		index++;
+	//	}
 
-	}
+	//}
 }
 
 void ParticleManager::Reset() {

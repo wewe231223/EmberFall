@@ -364,8 +364,6 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextProjLoc->mCollider = mColliderMap["Arrow"];
 					nextProjLoc->SetActiveState(true);
 
-					nextProjLoc->GetTransform().Scaling({ 8.f,8.f,8.f });
-
 					nextProjLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
 
 
@@ -448,6 +446,11 @@ void TerrainScene::ProcessObjectDisappeared(const uint8_t* buffer) {
 		if (mGameObjectMap.contains(data->objectId())) {
 			mGameObjectMap[data->objectId()]->GetTransform().ResetPrediction();
 			mGameObjectMap[data->objectId()]->SetActiveState(false);
+
+			if (mGameObjectMap[data->objectId()]->GetEntityType() == Packets::EntityType_PROJECTILE) {
+				Console.Log("{} 번 화살 삭제.", LogType::Info, data->objectId());
+				mParticleMap[data->objectId()].Get()->Flags = static_cast<UINT>(ParticleFlag::Delete);
+			}
 		}
 	}
 }
@@ -465,6 +468,14 @@ void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
 		if (mGameObjectMap.contains(data->objectId())) {
 			mGameObjectMap[data->objectId()]->SetActiveState(false);
 			mGameObjectMap[data->objectId()]->SetEmpty(true);
+
+
+			if (mGameObjectMap[data->objectId()]->GetEntityType() == Packets::EntityType_PROJECTILE) {
+				Console.Log("{} 번 화살 삭제.", LogType::Info, data->objectId());
+				mParticleMap[data->objectId()].Get()->Flags = static_cast<UINT>(ParticleFlag::Delete);
+			}
+
+
 		}
 	}
 }

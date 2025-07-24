@@ -7,6 +7,8 @@
  
 #define ember_LifeTime      6.f
 
+#define ParticleFlag_Delete 2
+
 #define RANDOM_BUFFER_SIZE  4096
 #define NULL_INDEX 0xFFFFFFFF
 
@@ -360,8 +362,8 @@ uint CreatePathParticle(ParticleVertex emitter, uint vertexID, inout PointStream
 
     p.opacity = 1.0f;
 
-    p.mass = 0.5f;
-    p.drag = float3(0.01f, 0.01f, 0.01f);
+    p.mass = 0.3f;
+    p.drag = float3(0.001f, 0.001f, 0.001f);
 
     p.totalLifetime = lifeTime;
     p.lifetime = lifeTime;
@@ -390,6 +392,11 @@ uint CreatePathParticle(ParticleVertex emitter, uint vertexID, inout PointStream
 
 void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
 {    
+    if (EmitPosition[emitter.emitIndex].flag == ParticleFlag_Delete)
+    {
+        return; 
+    }
+    
     ParticleVertex v = emitter;
     // 에미터 위치 갱신
     int remain = v.remainEmit;

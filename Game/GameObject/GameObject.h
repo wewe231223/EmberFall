@@ -59,7 +59,7 @@ private:
 
 	Transform mTransform{};
 
-	Packets::EntityType mEntityType{ Packets::EntityType::EntityType_MAX };
+	Packets::EntityType mEntityType{ Packets::EntityType::EntityType_ENV };
 
 	bool mActiveState{ false };
 	bool mEmpty{ true }; 
