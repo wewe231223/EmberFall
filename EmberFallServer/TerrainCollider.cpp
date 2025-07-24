@@ -29,6 +29,8 @@ void TerrainCollider::HandleTerrainCollision(const std::shared_ptr<GameObject>& 
 
     if (nullptr == mTerrain) {
         obj->OnCollisionTerrain(0.0f);
+        obj->GetPhysics()->mFactor.friction = 1.0f;
+        obj->GetPhysics()->SetOnGround(onGround);
         return;
     }
 
