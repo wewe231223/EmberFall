@@ -40,7 +40,7 @@ public:
 	void AppendBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms, float dissolveOffset );
 
 	void AppendShadowPlaneMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, UINT index);
-	void AppendShadowBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms);
+	void AppendShadowBonedMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const ModelContext& world, BoneTransformBuffer& boneTransforms, UINT index);
 
 	void RegisterTerrainCPPointBuffer(DefaultBufferGPUIterator terrainCPPointBuffer);
 	void AppendTerrainMeshContext(GraphicsShaderBase* shader, Mesh* mesh, const TerrainSegmentContext& world);
@@ -54,7 +54,7 @@ public:
 private:
 	void RenderShadowPassTerrainMesh(UINT index, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 	void RenderShadowPassPlainMesh(UINT index, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
-	void RenderShadowPassBonedMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
+	void RenderShadowPassBonedMesh(UINT index, ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 
 	void RenderGPassTerrainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
 	void RenderGPassPlainMesh(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_GPU_DESCRIPTOR_HANDLE tex, D3D12_GPU_VIRTUAL_ADDRESS mat, D3D12_GPU_VIRTUAL_ADDRESS camera);
@@ -71,15 +71,15 @@ private:
 
 	DefaultBuffer mShadowPlainMeshBuffer{};
 
-	DefaultBuffer mShadowBonedMeshBuffer{};
-	DefaultBuffer mShadowAnimationBuffer{};
+	std::array<DefaultBuffer, 2> mShadowBonedMeshBuffer{};
+	std::array<DefaultBuffer, 2> mShadowAnimationBuffer{};
 
 	DefaultBuffer mTerrainMeshBuffer{}; 
 	DefaultBuffer mShadowTerrainMeshBuffer{};
 	DefaultBufferGPUIterator mTerrainCPPointBuffer{}; 
 
 	UINT mBoneCounter{ 0 };
-	UINT mShadowBoneCounter{ 0 };
+	std::array<UINT, 2> mShadowBoneCounter{ 0 };
 	UINT mReservedSlotCounter{ 0 };
 
 	std::array<UINT, 2> mShadowMeshCounter{ 0, 0 };
@@ -87,10 +87,10 @@ private:
 
 	std::vector<SimpleMath::Matrix> mBoneTransforms{};
 	std::vector<SimpleMath::Matrix> mPrevBoneTransforms{};
-	std::vector<SimpleMath::Matrix> mShadowBoneTransforms{};
+	std::array<std::vector<SimpleMath::Matrix>, 2> mShadowBoneTransforms{};
 
 	absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<AnimationModelContext>>> mBonedMeshContexts{};
-	absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<AnimationModelContext>>> mShadowBonedMeshContexts{};
+	std::array<absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<AnimationModelContext>>>, 2> mShadowBonedMeshContexts{};
 
 	absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<ModelContext>>> mPlainMeshReserved{};
 	absl::flat_hash_map<GraphicsShaderBase*, absl::flat_hash_map<Mesh*, std::vector<ModelContext>>> mPlainMeshContexts{};

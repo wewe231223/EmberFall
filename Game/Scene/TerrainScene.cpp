@@ -1306,12 +1306,12 @@ void TerrainScene::Update() {
 			}
 				
 			// TODO :: 아예 의미가 없는 코드이다. 정석적인 CasCade 구현에서 벗어남. 
-			/*for (UINT i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
-				if (mRenderManager->GetShadowRenderer().ShadowMapCulling(i, gameObject.mCollider)) {
+			for (UINT i = 0; i < Config::SHADOWMAP_COUNT<int>; ++i) {
+				if (mRenderManager->GetShadowRenderer().IsInShadowFrustum(i, gameObject.mCollider)) {
 					mRenderManager->GetMeshRenderManager().AppendShadowBonedMeshContext(shader, mesh, modelContext, boneTransformBuffer, i);
 					
 				}
-			}*/
+			}
 		}
 		else {
 			gameObject.UpdateShaderVariables();
