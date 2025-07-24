@@ -40,6 +40,7 @@ public:
 
 	void SetPrediction(const SimpleMath::Vector3& target, const float time);
 	void ResetPrediction(); 
+	void LockPrediction(bool state); 
 
 	void Scaling(const SimpleMath::Vector3&);
 	void Scaling(float x = 1.f, float y = 1.f, float z = 1.f);

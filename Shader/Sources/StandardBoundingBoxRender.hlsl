@@ -15,8 +15,9 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
+    float4x4 prevWorld;
     float4x4 world;
-    float3 BBcenter; 
+    float3 BBCenter;
     float3 BBExtents;
     uint material;
 };
@@ -69,7 +70,7 @@ BB_GIN BB_VS(BB_VIN input)
     output.right = normalize(context.world[0].xyz);
     output.up = normalize(context.world[1].xyz);
     output.forward = normalize(context.world[2].xyz);
-    output.center = context.BBcenter; 
+    output.center = context.BBCenter; 
     
     return output;
 }

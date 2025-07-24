@@ -642,8 +642,6 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 						default:
 							break;
 						}
-
-
 					}
 				}
 			}
@@ -653,6 +651,25 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
 			mGameObjectMap[data->objectId()]->GetAnimationController().Transition(static_cast<size_t>(data->animation()));
+
+
+			if (data->animation() == Packets::AnimationState_ATTACK) {
+				// 몬스터 공격 소리 재생 
+
+			}
+			else if (data->animation() == Packets::AnimationState_DEAD) {
+				// 몬스터 죽음 소리 재생 
+				
+
+				// 몬스터 죽을 때 높이 높여
+				mGameObjectMap[data->objectId()]->GetTransform().GetPosition().y += 0.2f;
+				mGameObjectMap[data->objectId()]->GetTransform().ResetPrediction(); 
+				mGameObjectMap[data->objectId()]->GetTransform().LockPrediction(true); 
+			}
+
+
+
+
 		}
 	}
 

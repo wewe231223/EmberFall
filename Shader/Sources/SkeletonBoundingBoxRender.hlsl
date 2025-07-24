@@ -15,11 +15,12 @@ cbuffer Camera : register(b0)
 
 struct ModelContext
 {
+    float4x4 prevWorld;
     float4x4 world;
     float3 BBCenter;
     float3 BBExtents;
     uint material;
-    uint prevBoneStart;
+    float dissolveOffset;
     uint boneStart;
 };
 

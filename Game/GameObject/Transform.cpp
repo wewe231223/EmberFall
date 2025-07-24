@@ -76,6 +76,10 @@ void Transform::SetPosition(const SimpleMath::Vector3& pos) {
 }
 
 void Transform::SetPrediction(const SimpleMath::Vector3& target, const float time) {
+	if (mPredictTime == -1.f) {
+		return;
+	}
+
 	mPrevPos = mPosition; 
 	mTargetPos = target; 
 
@@ -89,6 +93,10 @@ void Transform::ResetPrediction() {
 	mTargetPos = mPosition;
 	mPredictTime = 0.f;
 	mCumulateTime = 0.f;
+}
+
+void Transform::LockPrediction(bool state) {
+	state ? mPredictTime = -1.f : mPredictTime = 0.f; 
 }
 
 void Transform::Scaling(const SimpleMath::Vector3& scale) {
@@ -142,7 +150,7 @@ void Transform::SetLocalTransform(const SimpleMath::Matrix& localMatrix) {
 }
 
 void Transform::Update(float deltaTime) {
-	if (mPredictTime == 0.f) {
+	if (mPredictTime <= 0.f) {
 		return;
 	}
 
