@@ -459,7 +459,7 @@ void LobbyScene::ProcessNetwork() {
 }
 
 void LobbyScene::Update() {
-	mRenderManager->GetFogRangeStart() = 1000.f; 
+	mRenderManager->GetFogRangeStart() = 2000.f; 
 
 	PlayerRole prevRole = mPlayerRole;
 

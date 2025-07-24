@@ -182,7 +182,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     gClientCore->Send(packet);
 
     gClientCore->End();
-    MessageBox(nullptr, L"END", L"", MB_OK);
 
     SoundManager::GetInstance().Terminate(); 
 
