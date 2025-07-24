@@ -1303,7 +1303,7 @@ void TerrainScene::Update() {
 
 	float coefficient{ mIsBlind ? -1.f : 1.f };
 	mRenderManager->GetFogRangeStart() += coefficient * Time.GetDeltaTime<float, std::chrono::seconds>() * 500.f;
-	mRenderManager->GetFogRangeStart() = std::clamp(mRenderManager->GetFogRangeStart(), 7.f, 1000.f);
+	mRenderManager->GetFogRangeStart() = std::clamp(mRenderManager->GetFogRangeStart(), 7.f, 2000.f);
 
 
 #ifdef DEV_MODE

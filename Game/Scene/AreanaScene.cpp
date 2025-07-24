@@ -738,6 +738,11 @@ void ArenaScene::UpdateSound() {
 
 
 					if (currentAreaID != mSoundMap[pair.first].first) { // Area가 바뀌었다면 
+						if (mSoundMap[pair.first].second == nullptr) {
+							return; 
+						}
+
+
 						// 먼저 이전 Area 사운드를 빼야 한다. 
 						mSoundMap[pair.first].second->Stop();
 
@@ -802,6 +807,11 @@ void ArenaScene::UpdateSound() {
 					mSoundMap[pair.first].second->SetVolume(PrimaryVolume * volume);
 
 					if (currentAreaID != mSoundMap[pair.first].first) { // Area가 바뀌었다면 
+
+						if (mSoundMap[pair.first].second == nullptr) {
+							return;
+						}
+
 						// 먼저 이전 Area 사운드를 빼야 한다. 
 						mSoundMap[pair.first].second->Stop();
 
@@ -977,7 +987,7 @@ void ArenaScene::Update() {
 #endif 
 	float coefficient{ mIsBlind ? -1.f : 1.f };
 	mRenderManager->GetFogRangeStart() += coefficient * Time.GetDeltaTime<float, std::chrono::seconds>() * 500.f;
-	mRenderManager->GetFogRangeStart() = std::clamp(mRenderManager->GetFogRangeStart(), 7.f, 1000.f);
+	mRenderManager->GetFogRangeStart() = std::clamp(mRenderManager->GetFogRangeStart(), 7.f, 2000.f);
 
 
 	mRenderManager->GetParticleManager().UpdateEmitParticle();
