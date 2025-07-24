@@ -204,28 +204,28 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 				switch (data->entity()) {
 				case Packets::EntityType_HUMAN_LONGSWORD:
-					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mSwordManAnimationController);
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mSwordManAnimationController);
 					nextLoc->AddEquipment(mEquipments["GreatSword"].Clone());
 
 					break;
 				case Packets::EntityType_HUMAN_SWORD:
-					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mShieldManController);
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mShieldManController);
 					nextLoc->AddEquipment(mEquipments["Sword"].Clone());
 					nextLoc->AddEquipment(mEquipments["Shield"].Clone());
 
 					break;
 				case Packets::EntityType_HUMAN_ARCHER:
-					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mArcherAnimationController);
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mArcherAnimationController);
 					nextLoc->AddEquipment(mEquipments["Bow"].Clone());
 					nextLoc->AddEquipment(mEquipments["Quiver"].Clone());
 
 					break;
 				case Packets::EntityType_HUMAN_MAGICIAN:
-					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mMageAnimationController);
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mMageAnimationController);
 					nextLoc->AddEquipment(mEquipments["Staff"].Clone());
 					break;
 				case Packets::EntityType_BOSS:
-					*nextLoc = Player(mMeshMap["Demon"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial"), mDemonAnimationController);
+					*nextLoc = Player(mMeshMap["Demon"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial"), mDemonAnimationController);
 					nextLoc->AddEquipment(mEquipments["DemonWeapon"].Clone());
 					nextLoc->AddEquipment(mEquipments["DemonCloth"].Clone());
 
