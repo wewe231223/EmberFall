@@ -481,44 +481,51 @@ void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
 }
 
 void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
-	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectMoveSC>(buffer);
-	
-	if (data->objectId() < OBJECT_ID_START) {
-		if (mPlayerIndexmap.contains(data->objectId())) {
-			float predictDuration = mAvgLatency + data->duration();
+	try {
 
-			auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-			// zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+		decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectMoveSC>(buffer);
 
-			mPlayerIndexmap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
+		if (data->objectId() < OBJECT_ID_START) {
+			if (mPlayerIndexmap.contains(data->objectId())) {
+				float predictDuration = mAvgLatency + data->duration();
 
-
-			if (data->objectId() == gClientCore->GetSessionId()) {
-				return;
-			}
-			
-			auto euler = mPlayerIndexmap[data->objectId()]->GetTransform().GetRotation().ToEuler();
-			euler.y = data->yaw();
-			mPlayerIndexmap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
-		}
-	}
-	else {
-		if (mGameObjectMap.contains(data->objectId())) {
-			float predictDuration = mAvgLatency + data->duration();
-			
-			auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-			
-			if (mGameObjectMap[data->objectId()]->GetEntityType() != Packets::EntityType_PROJECTILE) {
+				auto zxPos = FbsPacketFactory::GetVector3(data->pos());
 				// zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+
+				mPlayerIndexmap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
+
+
+				if (data->objectId() == gClientCore->GetSessionId()) {
+					return;
+				}
+
+				auto euler = mPlayerIndexmap[data->objectId()]->GetTransform().GetRotation().ToEuler();
+				euler.y = data->yaw();
+				mPlayerIndexmap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
 			}
-
-			mGameObjectMap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
-
-			auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
-			euler.y = data->yaw();
-			
-			mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
 		}
+		else {
+			if (mGameObjectMap.contains(data->objectId())) {
+				float predictDuration = mAvgLatency + data->duration();
+
+				auto zxPos = FbsPacketFactory::GetVector3(data->pos());
+
+				if (mGameObjectMap[data->objectId()]->GetEntityType() != Packets::EntityType_PROJECTILE) {
+					// zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+				}
+
+				mGameObjectMap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
+
+				auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
+				euler.y = data->yaw();
+
+				mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
+			}
+		}
+
+	}
+	catch (std::exception e) {
+		Console.Log("ProcessObjectMove Exception: {}", LogType::Error, e.what());
 	}
 }
 
