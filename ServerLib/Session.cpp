@@ -75,6 +75,7 @@ bool Session::RegisterRecv() {
     );
 
     if (SOCKET_ERROR != result) {
+        std::cout << "register recv" << std::endl;
         return true;
     }
 
@@ -82,12 +83,14 @@ bool Session::RegisterRecv() {
     if (WSA_IO_PENDING != errorCode) {
         if (SessionNetType::CLIENT == mNetType) {
             HandleSocketError(errorCode);
+            return false;
         }
         else {
             return false;
         }
     }
 
+    std::cout << "register recv" << std::endl;
     return true;
 }
 
@@ -122,6 +125,7 @@ bool Session::RegisterSend(OverlappedSend* const overlappedSend) {
         FbsPacketFactory::ReleasePacketBuf(overlappedSend);
         if (SessionNetType::CLIENT == mNetType) {
             HandleSocketError(errorCode);
+            return false;
         }
         else {
             gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Socket Error, Send!");
@@ -150,11 +154,13 @@ void Session::ProcessRecv(INT32 numOfBytes) {
     if (0 == mPrevRemainSize) {
         coreService->GetPacketHandler()->Write(mOverlappedRecv.buffer.data(), dataSize);
         RegisterRecv();
+        std::cout << "process recv" << std::endl;
         return;
     }
 
     std::move(remainBegin, dataEnd, dataBeg);
     RegisterRecv();
+    std::cout << "process recv" << std::endl;
 }
 
 void Session::ProcessSend(INT32 numOfBytes, OverlappedSend* overlappedSend) {
