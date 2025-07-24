@@ -361,7 +361,7 @@ uint CreatePathParticle(ParticleVertex emitter, uint vertexID, inout PointStream
     p.opacity = 1.0f;
 
     p.mass = 0.5f;
-    p.drag = float3(0.1f, 0.1f, 0.1f);
+    p.drag = float3(0.01f, 0.01f, 0.01f);
 
     p.totalLifetime = lifeTime;
     p.lifetime = lifeTime;
@@ -373,7 +373,7 @@ uint CreatePathParticle(ParticleVertex emitter, uint vertexID, inout PointStream
   
     
      [unroll]
-    for (int i = 0; i < 25; ++i)
+    for (int i = 0; i < 10; ++i)
     {
         p.direction = GenerateRandomDirection(vertexID + i);
         
@@ -385,7 +385,7 @@ uint CreatePathParticle(ParticleVertex emitter, uint vertexID, inout PointStream
         stream.Append(p);
     }
     
-    return 25;
+    return 10;
 }
 
 void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)

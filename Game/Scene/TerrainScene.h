@@ -82,6 +82,8 @@ private:
 	void ProcessChangeScene(const uint8_t* buffer);
 	void ProcessBuffHeal(const uint8_t* buffer);
 	void ProcessHeartBeat(const uint8_t* buffer);
+	void ProcessGameEnd(const uint8_t* buffer);
+	
 private:
 	std::shared_ptr<RenderManager> mRenderManager{};
 

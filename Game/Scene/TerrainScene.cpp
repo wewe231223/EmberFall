@@ -730,6 +730,19 @@ void TerrainScene::ProcessHeartBeat(const uint8_t* buffer) {
 	gClientCore->Send(packet);
 }
 
+void TerrainScene::ProcessGameEnd(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GameEndSC>(buffer);
+
+	// 인간 승 
+	if (data->winner() == Packets::PlayerRole_HUMAN) {
+
+	}
+	// 보스 승 
+	else {
+
+	}
+}
+
 
 #pragma endregion 
 
@@ -1288,6 +1301,10 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 		TerrainScene::ProcessHeartBeat(buffer);
 	}
 	break;
+	case Packets::PacketTypes_PT_GAME_END_SC:
+	{
+
+	}
 	default:
 		break;
 	}
