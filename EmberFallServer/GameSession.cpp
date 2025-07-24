@@ -78,8 +78,6 @@ void GameSession::ProcessRecv(INT32 numOfBytes) {
 }
 
 void GameSession::InitUserObject() {
-    static auto TestPos = SimpleMath::Vector3::Zero;
-    const static auto PosInc = SimpleMath::Vector3::Left * 2.0f;
     auto myRoom = GetMyRoomIdx();
     auto myId = GetId();
 
@@ -91,8 +89,6 @@ void GameSession::InitUserObject() {
     mUserObject->mSpec.entity = static_cast<Packets::EntityType>(mLobbyInfo.lastRole);
     mUserObject->mSpec.hp = GameProtocol::Logic::MAX_HP;
 
-    mUserObject->GetTransform()->Translate(TestPos);
-    //mUserObject->GetTransform()->SetY(0.0f);
     mUserObject->Init();
     mUserObject->mWeaponSystem.SetWeapon(mUserObject->mSpec.entity, mUserObject->mSpec.damage);
 
@@ -121,7 +117,11 @@ void GameSession::InitUserObject() {
 }
 
 void GameSession::InitPlayerScript() {
-    const SimpleMath::Vector3 SPAWN_CENTER = SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f };
+    auto stage = gGameRoomManager->GetRoom(GetMyRoomIdx())->GetStage().GetStageIdx();
+    SimpleMath::Vector3 SPAWN_CENTER = SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f };
+    if (Packets::GameStage_LAST == stage) {
+        SPAWN_CENTER = SimpleMath::Vector3::Zero;
+    }
 
     switch (mLobbyInfo.lastRole) {
     case Packets::PlayerRole_HUMAN_ARCHER:
@@ -160,6 +160,8 @@ void GameSession::InitPlayerScript() {
         mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SPAWN_CENTER));
 
         auto player = mUserObject->GetScript<HumanPlayerScript>();
+        auto pos = mUserObject->GetPosition();
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Pos: {}, {}, {}", pos.x, pos.y, pos.z);
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
@@ -192,7 +194,7 @@ void GameSession::InitPlayerScript() {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
     }
-      break;
+    break;
 
     default:
         break;

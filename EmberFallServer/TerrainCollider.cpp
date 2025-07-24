@@ -28,7 +28,6 @@ void TerrainCollider::HandleTerrainCollision(const std::shared_ptr<GameObject>& 
     }
 
     if (nullptr == mTerrain) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "terrain is null");
         obj->OnCollisionTerrain(0.0f);
         return;
     }

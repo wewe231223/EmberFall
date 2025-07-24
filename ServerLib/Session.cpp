@@ -134,6 +134,7 @@ bool Session::RegisterSend(OverlappedSend* const overlappedSend) {
 
 void Session::ProcessRecv(INT32 numOfBytes) {
     if (0 >= numOfBytes) {
+        MessageBoxA(nullptr, "Received Bytes less than equal 0\n", "Session Closed", MB_OK | MB_ICONERROR);
         Close();
         return;
     }
@@ -280,9 +281,12 @@ void Session::HandleSocketError(INT32 errorCore) {
     case WSAECONNABORTED: // 피어별 연결 다시 설정. (원격 호스트에서 강제 중단.)
     {
         if (SessionNetType::CLIENT == mNetType) {
+            MessageBoxA(nullptr, "Socket Error!", NetworkUtil::WSAErrorMessage().c_str(), MB_OK | MB_ICONERROR);
             gClientCore->CloseSession();
         }
-        MessageBoxA(nullptr, "Socket Error!", NetworkUtil::WSAErrorMessage().c_str(), MB_OK | MB_ICONERROR);
+        else {
+            return;
+        }
     }
     break;
 

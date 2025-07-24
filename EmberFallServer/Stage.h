@@ -35,7 +35,7 @@ public:
 
     bool InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2, const float range);
 
-    void InitObjectManager(const std::filesystem::path& path);
+    void InitObjectManager();
 
     void AddInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos);
     void RemoveInSector(NetworkObjectIdType id, const SimpleMath::Vector3& pos);

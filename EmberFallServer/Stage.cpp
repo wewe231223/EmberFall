@@ -77,9 +77,8 @@ bool Stage::InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2, const 
     return mObjectManager->InViewRange(id1, id2, range);
 }
 
-void Stage::InitObjectManager(const std::filesystem::path& path) {
+void Stage::InitObjectManager() {
     mObjectManager->Init(mGameRoomIdx);
-    mObjectManager->LoadEnvFromFile(path);
 }
 
 std::vector<NetworkObjectIdType> Stage::GetNearbyPlayers(const SimpleMath::Vector3& currPos, const float range) {
@@ -118,6 +117,8 @@ void Stage::StartStage(uint8_t gemCount) {
     mObjectManager->Start(gemCount);
 #endif
 
+    mObjectManager->LoadEnvFromFile("../Resources/Binarys/Terrain/SceneObjects_Server.bin");
+
     mStage = Packets::GameStage_TERRAIN;
     mTerrainCollider.SetTerrain(gBaseTerrain);
 
@@ -135,13 +136,15 @@ void Stage::StartStage(uint8_t gemCount, Packets::GameStage stage) {
     mStage = stage;
     mTerrainCollider.SetTerrain(gBaseTerrain);
 
-    for (int i = 0; i < GameProtocol::Logic::MONSTER_SPAWN_COUNT; ++i) {
-        auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+    if (Packets::GameStage_LAST == stage) {
+        mTerrainCollider.SetTerrain(nullptr);
+        mObjectManager->ResetEnv();
     }
-
-    //if (Packets::GameStage_LAST == stage) {
-    //    mTerrainCollider.SetTerrain(GameProtocol::Map:::LAST_STAGE_TERRAIN_PATH);
-    //}
+    else {
+        for (int i = 0; i < GameProtocol::Logic::MONSTER_SPAWN_COUNT; ++i) {
+            auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
+        }
+    }
 }
 
 void Stage::EndStage() {

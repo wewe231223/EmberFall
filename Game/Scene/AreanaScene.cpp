@@ -737,24 +737,24 @@ void ArenaScene::UpdateSound() {
 					UINT currentAreaID{ mLayerIndexMap.GetLayerIndexAtPosition(pair.second->GetTransform().GetPosition()) };
 
 
-					if (currentAreaID != mSoundMap[pair.first].first) { // Area가 바뀌었다면 
-						// 먼저 이전 Area 사운드를 빼야 한다. 
-						mSoundMap[pair.first].second->Stop();
+					//if (currentAreaID != mSoundMap[pair.first].first) { // Area가 바뀌었다면 
+					//	// 먼저 이전 Area 사운드를 빼야 한다. 
+					//	mSoundMap[pair.first].second->Stop();
 
-						mSoundMap[pair.first].first = currentAreaID;
+					//	mSoundMap[pair.first].first = currentAreaID;
 
-						switch (mSoundMap[pair.first].first) {
-						case 0: // Grass Area 
-							mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassArea", PrimaryVolume, SoundOption::Shuffle);
-							break;
-						case 1: // Load Area
-						case 2: // Stone Area 
-							mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtArea", PrimaryVolume, SoundOption::Shuffle);
-							break;
-						default:
-							break;
-						}
-					}
+					//	switch (mSoundMap[pair.first].first) {
+					//	case 0: // Grass Area 
+					//		mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("GrassArea", PrimaryVolume, SoundOption::Shuffle);
+					//		break;
+					//	case 1: // Load Area
+					//	case 2: // Stone Area 
+					//		mSoundMap[pair.first].second = SoundManager::GetInstance().PlaySound("DirtArea", PrimaryVolume, SoundOption::Shuffle);
+					//		break;
+					//	default:
+					//		break;
+					//	}
+					//}
 
 				}
 			}
