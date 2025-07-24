@@ -95,12 +95,23 @@ namespace GameProtocol {
 
         inline decltype(auto) STAGE3_MAP_DIAMETER = 500.0m;
 
-        inline std::pair<SimpleMath::Vector3, SimpleMath::Vector3> STAGE1_MAP_SIZE{ { -240.f, 0.f, -240.f }, {240.f, 0.f, 240.f} };
-        inline std::pair<SimpleMath::Vector3, SimpleMath::Vector3> STAGE2_MAP_SIZE{ { -240.f, 0.f, -240.f }, {240.f, 0.f, 240.f} };
-        inline std::pair<SimpleMath::Vector3, SimpleMath::Vector3> STAGE3_MAP_SIZE{ { -25.f, 0.f, -25.f }, {25.f, 0.f, 25.f} };
+        inline std::array<std::pair<SimpleMath::Vector3, SimpleMath::Vector3>, Packets::GameStage_MAX - 1> STAGE_MAP_SIZE{
+            std::pair<SimpleMath::Vector3, SimpleMath::Vector3>{ { -240.f, 0.f, -240.f }, {240.f, 0.f, 240.f} },
+            std::pair<SimpleMath::Vector3, SimpleMath::Vector3>{ { -240.f, 0.f, -240.f }, {240.f, 0.f, 240.f} },
+            std::pair<SimpleMath::Vector3, SimpleMath::Vector3>{ { -25.f, 0.f, -25.f }, {25.f, 0.f, 25.f} }
+        }; 
 
         inline constexpr const char* BASE_TERRAIN_PATH = "../Resources/Binarys/Terrain/NTerrain.bin";
         inline constexpr const char* LAST_STAGE_TERRAIN_PATH = "";
+
+        inline const std::pair<SimpleMath::Vector3, SimpleMath::Vector3>& GetStageMapSize(Packets::GameStage stage)
+        {
+            if (Packets::GameStage_NONE > stage or Packets::GameStage_MAX < stage) {
+                return { };
+            }
+
+            return STAGE_MAP_SIZE.at(static_cast<size_t>(stage) - 1);
+        }
     }
 
     enum EnvironmentType : UINT {

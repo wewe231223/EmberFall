@@ -166,6 +166,16 @@ namespace MathUtil {
         return slidingVec;
     }
 
+    inline void ClampVector3(const SimpleMath::Vector3& minV, const SimpleMath::Vector3& maxV, SimpleMath::Vector3& v) 
+    {
+        v.Clamp(minV, maxV);
+    }
+
+    inline void ClampVector3(const std::pair<SimpleMath::Vector3, SimpleMath::Vector3>& minmaxV, SimpleMath::Vector3& v)
+    {
+        v.Clamp(minmaxV.first, minmaxV.second);
+    }
+
     inline float GetAngle(const SimpleMath::Vector3& v1, const SimpleMath::Vector3& v2)
     {
         return DirectX::XMVectorGetX(DirectX::XMVector3AngleBetweenNormals(v1, v2));

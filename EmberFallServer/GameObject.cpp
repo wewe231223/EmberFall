@@ -186,6 +186,11 @@ void GameObject::Update() {
 
     if (true == mSpec.moveable) {
         auto currPos = mTransform->GetPosition();
+        auto stage = gGameRoomManager->GetRoom(myRoom)->GetStage().GetStageIdx();
+        MathUtil::ClampVector3(GameProtocol::Map::GetStageMapSize(stage), currPos);
+
+        mTransform->SetPosition(currPos);
+
         auto movePacket = FbsPacketFactory::ObjectMoveSC(
             GetId(),
             GetTransform()->GetEulerRotation().y,

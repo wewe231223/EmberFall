@@ -105,6 +105,7 @@ void BossPlayerScript::OnCollisionTerrain(const float height) {
         return;
     }
 
+    owner->GetPhysics()->mFactor.friction = 1.5f;
     if (Packets::AnimationState_JUMP == owner->mAnimationStateMachine.GetCurrState()) {
         owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE);
     }
