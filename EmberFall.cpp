@@ -31,6 +31,7 @@
 #endif
 
 #include "Config/Config.h"
+#include "ServerLib/LibConsole.h"
 
 
 #ifdef _DEBUG 
@@ -62,6 +63,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
+    gLibConsole.Init(); 
+
     if (DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, IPDialogProc) == IDOK) { 
         if (not gClientCore->Start(iPAddr, SERVER_PORT)) {
             CrashExp(true, "Failed to connect");
@@ -69,6 +72,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     } 
     
+
     MSG msg{};
     
     UNREFERENCED_PARAMETER(hPrevInstance);
@@ -185,7 +189,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     SoundManager::GetInstance().Terminate(); 
 
+
+    gLibConsole.Terminate(); 
+
     ::DestroyWindow(hWnd);
+
+
 
     return (int) msg.wParam;
 }

@@ -15,7 +15,6 @@
 #include "../Utility/RandomEngine.h"
 #include "../ServerLib/Session.h"
 
-
 #pragma region PacketProcessFn 
 void TerrainScene::ProcessPacketProtocolVersion(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ProtocolVersionSC>(buffer);

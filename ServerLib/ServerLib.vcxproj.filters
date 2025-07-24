@@ -100,6 +100,9 @@
     <ClCompile Include="Lock.cpp">
       <Filter>Concurrency</Filter>
     </ClCompile>
+    <ClCompile Include="LibConsole.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NetworkUtils.h">
@@ -166,6 +169,9 @@
       <Filter>Concurrency</Filter>
     </ClInclude>
     <ClInclude Include="std_ex.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="LibConsole.h">
       <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>

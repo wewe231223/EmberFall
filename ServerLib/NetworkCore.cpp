@@ -26,6 +26,8 @@ bool ClientCore::Start(const std::string& ip, const UINT16 port) {
 
     mWorkerThread = std::thread{ [=]() { mIocpCore->ClientIoThread(); } };
 
+    std::cout << "test" << std::endl; 
+
     return true; 
 }
 
