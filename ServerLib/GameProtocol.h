@@ -96,9 +96,9 @@ namespace GameProtocol {
         inline decltype(auto) STAGE3_MAP_DIAMETER = 500.0m;
 
         inline std::array<std::pair<SimpleMath::Vector3, SimpleMath::Vector3>, Packets::GameStage_MAX - 1> STAGE_MAP_SIZE{
-            std::pair<SimpleMath::Vector3, SimpleMath::Vector3>{ { -240.f, 0.f, -240.f }, {240.f, 0.f, 240.f} },
-            std::pair<SimpleMath::Vector3, SimpleMath::Vector3>{ { -240.f, 0.f, -240.f }, {240.f, 0.f, 240.f} },
-            std::pair<SimpleMath::Vector3, SimpleMath::Vector3>{ { -25.f, 0.f, -25.f }, {25.f, 0.f, 25.f} }
+            std::pair<SimpleMath::Vector3, SimpleMath::Vector3>{ { -240.f, -1000.0f, -240.f }, {240.f, 1000.0f, 240.f} },
+            std::pair<SimpleMath::Vector3, SimpleMath::Vector3>{ { -240.f, -1000.0f, -240.f }, {240.f, 1000.0f, 240.f} },
+            std::pair<SimpleMath::Vector3, SimpleMath::Vector3>{ { -25.f, -1000.0f, -25.f }, {25.f, 1000.0f, 25.f} }
         }; 
 
         inline constexpr const char* BASE_TERRAIN_PATH = "../Resources/Binarys/Terrain/NTerrain.bin";
