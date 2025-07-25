@@ -365,12 +365,10 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextProjLoc->SetActiveState(true);
 
 					nextProjLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
-
-
 					nextProjLoc->SetEntityType(data->entity()); 
-
 					nextProjLoc->SetEmpty(false);
-					nextProjLoc->SetActiveState(true); 
+
+					nextProjLoc->GetTransform().Rotate(0.f, data->yaw());
 
 					ParticleVertex v{};
 					v.position = nextProjLoc->GetTransform().GetPosition();
@@ -384,8 +382,8 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					v.spriteFrameInCol = 4;
 					v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
 					v.velocity = { 0.f, 0.f, 0.f };
-					v.totalLifeTime = 0.05f;
-					v.lifeTime = 0.05f;
+					v.totalLifeTime = 0.1f;
+					v.lifeTime = 0.1f;
 					v.type = ParticleType_emit;
 					v.emitType = ParticleType_path;
 					v.remainEmit = 10000;
@@ -1275,11 +1273,6 @@ void TerrainScene::UpdateSound() {
 }
 
 void TerrainScene::ProcessPackets(const uint8_t* buffer, size_t size) {
-	
-	if (not gClientCore->GetSession()->IsConnected()) {
-		MessageBox(nullptr, L"세션의 연결이 끊겼습니다.", L"연결 끊김", MB_OK | MB_ICONERROR);
-	}
-	
 	Console.Log("현재 프레임이 처리하는 버퍼 : {}", LogType::Info, size); 
 
 	const uint8_t* iter = buffer; 
