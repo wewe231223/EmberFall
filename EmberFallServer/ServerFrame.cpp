@@ -105,6 +105,97 @@ bool ServerFrame::IsGameRoomEvent(IoType type) const {
     return static_cast<uint8_t>(type) & GAME_ROOM_EVENT;
 }
 
+void ServerFrame::ProcessIoEvent(OverlappedEx* overlappedEx, ULONG_PTR completionKey) {
+    auto ioType = overlappedEx->type;
+    switch (ioType) {
+    case IoType::SCENE_TRANSITION_COUNTDOWN:
+    {
+        auto roomIdx = std::get<int64_t>(overlappedEx->extraInfo);
+        gGameRoomManager->GetRoom(roomIdx)->OnSceneCountdownTick();
+    }
+    break;
+
+    case IoType::CHECK_GAME_CONDITION:
+    {
+        auto roomIdx = std::get<int64_t>(overlappedEx->extraInfo);
+        gGameRoomManager->GetRoom(roomIdx)->CheckGameEnd();
+    }
+    break;
+
+    case IoType::CHECK_SESSION_HEART_BEAT:
+    {
+        auto roomIdx = std::get<int64_t>(overlappedEx->extraInfo);
+        gGameRoomManager->GetRoom(roomIdx)->CheckSessionsHeartBeat();
+    }
+    break;
+
+    case IoType::UPDATE_NPC:
+    {
+        auto objId = static_cast<NetworkObjectIdType>(completionKey);
+        auto roomId = std::get<int64_t>(overlappedEx->extraInfo);
+        auto obj = gGameRoomManager->GetRoom(roomId)->GetStage().GetObjectManager()->GetObjectFromId(objId);
+        if (nullptr == obj) {
+            break;
+        }
+
+        obj->Update();
+        obj->LateUpdate();
+        obj->RegisterUpdate();
+    }
+    break;
+
+    case IoType::REMOVE_PLAYER_IN_ROOM:
+    {
+        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Remove Player!!!!");
+        auto lobbyInfo = std::get<SessionLobbyInfo>(overlappedEx->extraInfo);
+        decltype(auto) gameRoom = gGameRoomManager->GetRoom(lobbyInfo.roomIdx);
+        gameRoom->RemovePlayer(static_cast<SessionIdType>(completionKey), lobbyInfo.lastRole, lobbyInfo.readyState, lobbyInfo.sessionSlot);
+    }
+    break;
+
+    case IoType::REMOVE_NPC:
+    {
+        auto objId = static_cast<NetworkObjectIdType>(completionKey);
+        auto roomId = std::get<int64_t>(overlappedEx->extraInfo);
+        auto obj = gGameRoomManager->GetRoom(roomId)->GetStage().GetObjectManager()->GetObjectFromId(objId);
+        if (nullptr == obj) {
+            break;
+        }
+
+        if (Packets::EntityType_PROJECTILE == obj->mSpec.entity) {
+            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Erase Projectile from world");
+        }
+        obj->Reset();
+    }
+    break;
+
+    case IoType::REMOVE_TRIGGER:
+    {
+        auto objId = static_cast<NetworkObjectIdType>(completionKey);
+        auto roomId = std::get<int64_t>(overlappedEx->extraInfo);
+        auto obj = gGameRoomManager->GetRoom(roomId)->GetStage().GetObjectManager()->GetObjectFromId(objId);
+        if (nullptr == obj) {
+            break;
+        }
+
+        obj->Reset();
+    }
+    break;
+
+    case IoType::SPAWN_ITEM:
+    {
+        auto roomId = std::get<int64_t>(overlappedEx->extraInfo);
+        gGameRoomManager->GetRoom(roomId)->SpawnItem();
+    }
+    break;
+
+    default:
+        break;
+    }
+
+    delete overlappedEx;
+}
+
 void ServerFrame::IoThread() {
     InitTls();
 
@@ -224,82 +315,11 @@ void ServerFrame::IoThread() {
         }
         break;
 
-        case IoType::SCENE_TRANSITION_COUNTDOWN:
-        {
-            auto roomIdx = std::get<int64_t>(overlappedEx->extraInfo);
-            gGameRoomManager->GetRoom(roomIdx)->OnSceneCountdownTick();
-        }
-        break;
-
-        case IoType::CHECK_GAME_CONDITION:
-        {
-            auto roomIdx = std::get<int64_t>(overlappedEx->extraInfo);
-            gGameRoomManager->GetRoom(roomIdx)->CheckGameEnd();
-        }
-        break;
-
-        case IoType::CHECK_SESSION_HEART_BEAT:
-        {
-            auto roomIdx = std::get<int64_t>(overlappedEx->extraInfo);
-            gGameRoomManager->GetRoom(roomIdx)->CheckSessionsHeartBeat();
-        }
-        break;
-
-        case IoType::UPDATE_NPC:
-        {
-            auto objId = static_cast<NetworkObjectIdType>(completionKey);
-            auto roomId = std::get<int64_t>(overlappedEx->extraInfo);
-            auto obj = gGameRoomManager->GetRoom(roomId)->GetStage().GetObjectManager()->GetObjectFromId(objId);
-            if (nullptr == obj) {
-                break;
-            }
-            
-            obj->Update();
-            obj->LateUpdate();
-            obj->RegisterUpdate();
-        }
-        break;
-
-        case IoType::REMOVE_PLAYER_IN_ROOM:
-        {
-            gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "Remove Player!!!!");
-            auto lobbyInfo = std::get<SessionLobbyInfo>(overlappedEx->extraInfo);
-            decltype(auto) gameRoom = gGameRoomManager->GetRoom(lobbyInfo.roomIdx);
-            gameRoom->RemovePlayer(static_cast<SessionIdType>(completionKey), lobbyInfo.lastRole, lobbyInfo.readyState, lobbyInfo.sessionSlot);
-        }
-        break;
-
-        case IoType::REMOVE_NPC:
-        {
-            auto objId = static_cast<NetworkObjectIdType>(completionKey);
-            auto roomId = std::get<int64_t>(overlappedEx->extraInfo);
-            auto obj = gGameRoomManager->GetRoom(roomId)->GetStage().GetObjectManager()->GetObjectFromId(objId);
-            if (nullptr == obj) {
-                break;
-            }
-
-            if (Packets::EntityType_PROJECTILE == obj->mSpec.entity) {
-                gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Erase Projectile from world");
-            }
-            obj->Reset();
-        }
-        break;
-
-        case IoType::REMOVE_TRIGGER:
-        {
-            auto objId = static_cast<NetworkObjectIdType>(completionKey);
-            auto roomId = std::get<int64_t>(overlappedEx->extraInfo);
-            auto obj = gGameRoomManager->GetRoom(roomId)->GetStage().GetObjectManager()->GetObjectFromId(objId);
-            if (nullptr == obj) {
-                break;
-            }
-
-            obj->Reset();
-        }
-        break;
-
         default:
-            break;
+        {
+            ProcessIoEvent(overlappedEx, completionKey);
+        }
+        break;
         }
     }
 
@@ -335,7 +355,7 @@ void ServerFrame::TimerThread() {
         mTimerMapLock.unlock(); // 더이상의 보호는 불필요
 
         for (auto& ev : eventList) { // 실행할 수 있는건 모두 실행
-            OverlappedEx* ov = new OverlappedEx;
+            OverlappedEx* ov = new OverlappedEx; // delete -> IOThread
             ov->type = ev.eventType;
             ov->extraInfo = ev.extraInfo;
             ::PostQueuedCompletionStatus(mIocpCore.GetHandle(), 1, ev.id, ov->GetRawPtr());

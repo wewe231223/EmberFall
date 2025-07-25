@@ -61,7 +61,7 @@ bool Session::RegisterRecv() {
     DWORD receivedBytes{ };
     DWORD flag{ };
 
-    mOverlappedRecv.ResetOverlapped();
+    //mOverlappedRecv.ResetOverlapped();
     mOverlappedRecv.wsaBuf.buf = mOverlappedRecv.buffer.data() + mPrevRemainSize;
     mOverlappedRecv.wsaBuf.len = static_cast<UINT32>(mOverlappedRecv.buffer.size() - mPrevRemainSize);
     auto result = ::WSARecv(
@@ -75,7 +75,6 @@ bool Session::RegisterRecv() {
     );
 
     if (SOCKET_ERROR != result) {
-        std::cout << "register recv" << std::endl;
         return true;
     }
 
@@ -90,7 +89,6 @@ bool Session::RegisterRecv() {
         }
     }
 
-    std::cout << "register recv" << std::endl;
     return true;
 }
 
@@ -128,7 +126,7 @@ bool Session::RegisterSend(OverlappedSend* const overlappedSend) {
             return false;
         }
         else {
-            gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Socket Error, Send!");
+            gLogConsole->PushLog(DebugLevel::LEVEL_FATAL, "Socket Error, Send!: ", NetworkUtil::WSAErrorMessage());
             return false;
         }
     }
@@ -153,14 +151,16 @@ void Session::ProcessRecv(INT32 numOfBytes) {
     auto coreService = gClientCore;
     if (0 == mPrevRemainSize) {
         coreService->GetPacketHandler()->Write(mOverlappedRecv.buffer.data(), dataSize);
-        RegisterRecv();
-        std::cout << "process recv" << std::endl;
+        if (false == RegisterRecv()) {
+            gClientCore->CloseSession();
+        }
         return;
     }
 
     std::move(remainBegin, dataEnd, dataBeg);
-    RegisterRecv();
-    std::cout << "process recv" << std::endl;
+    if (false == RegisterRecv()) {
+        gClientCore->CloseSession();
+    }
 }
 
 void Session::ProcessSend(INT32 numOfBytes, OverlappedSend* overlappedSend) {

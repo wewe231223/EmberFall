@@ -36,6 +36,7 @@ enum class IoType : uint32_t {
     UPDATE_NPC,
     REMOVE_TRIGGER,
     PROCESS_GAME_EVETN,
+    SPAWN_ITEM,
 
     // GAME ROOM
     SCENE_TRANSITION_COUNTDOWN,

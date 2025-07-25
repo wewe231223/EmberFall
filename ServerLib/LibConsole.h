@@ -1,4 +1,5 @@
 #pragma once
+
 #include <windows.h>
 #include <iostream>
 #include <fstream>
@@ -12,6 +13,7 @@ public:
     void Init(); 
 
     void Terminate(); 
+
 private:
     FILE* mOldStdOut = nullptr;
     FILE* mOldStdIn = nullptr;

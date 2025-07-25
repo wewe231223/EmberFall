@@ -679,7 +679,10 @@ void SectorSystem::UpdateEntityMove(const std::shared_ptr<GameObject>& object) {
             }
 
             auto packet = FbsPacketFactory::ClonePacket(sendPacket);
-            session->RegisterSend(packet);
+            if (false == session->RegisterSend(packet)) {
+                gServerFrame->CloseSession(playerId);
+                continue;
+            }
         }
 
         FbsPacketFactory::ReleasePacketBuf(sendPacket);

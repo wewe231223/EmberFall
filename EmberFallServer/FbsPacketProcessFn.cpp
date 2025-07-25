@@ -161,14 +161,25 @@ void ProcessPlayerEnterInLobby(GameSession* session, const Packets::PlayerEnterI
             continue;
         }
 
-        otherSession->RegisterSend(FbsPacketFactory::ClonePacket(packetEnter));
+        if (false == otherSession->RegisterSend(FbsPacketFactory::ClonePacket(packetEnter))) {
+            gServerFrame->CloseSession(otherSessionId);
+            continue;
+        }
+
         auto oldUserEnter = FbsPacketFactory::PlayerEnterInLobbySC(otherSessionId, otherSession->GetSlotIndex(),
             otherSession->GetReadyState(), otherSession->GetPlayerRole(), otherSession->GetNameView());
 
-        session->RegisterSend(oldUserEnter);
+        if (false == session->RegisterSend(oldUserEnter)) {
+            gServerFrame->CloseSession(sessionId);
+            break;
+        }
     }
 
-    session->RegisterSend(packetEnter);
+    if (false == session->RegisterSend(packetEnter)) {
+        gServerFrame->CloseSession(sessionId);
+        return;
+    }
+
     session->EnterLobby();
 }
 
@@ -264,12 +275,17 @@ void ProcessPlayerSelectRoleCS(GameSession* session, const Packets::PlayerSelect
     auto success = gGameRoomManager->GetRoom(sessionGameRoom)->ChangeRolePlayer(sessionId, role->role());
     if (not success) {
         auto packetRejectSelection = FbsPacketFactory::RejectSelectionRoleSC();
-        session->RegisterSend(packetRejectSelection);
+        if (false == session->RegisterSend(packetRejectSelection)) {
+            gServerFrame->CloseSession(session->GetId());
+        }
         return;
     }
 
     auto packetConfirmSelection = FbsPacketFactory::ConfirmSelectoinRoleSC();
-    session->RegisterSend(packetConfirmSelection);
+    if (false == session->RegisterSend(packetConfirmSelection)) {
+        gServerFrame->CloseSession(session->GetId());
+        return;
+    }
 
     auto packetChangeRole = FbsPacketFactory::PlayerChangeRoleSC(sessionId, role->role());
 
@@ -279,7 +295,9 @@ void ProcessPlayerSelectRoleCS(GameSession* session, const Packets::PlayerSelect
 
 void ProcessLatencyCS(GameSession* session, const Packets::PacketLatencyCS* const latency) {
     auto packetLatency = FbsPacketFactory::PacketLatencySC(latency->latency());
-    session->RegisterSend(packetLatency);
+    if (false == session->RegisterSend(packetLatency)) {
+        gServerFrame->CloseSession(session->GetId());
+    }
 }
 
 void ProcessRequestAttackCS(GameSession* session, const Packets::RequestAttackCS* const attack) {
@@ -295,8 +313,6 @@ void ProcessRequestAttackCS(GameSession* session, const Packets::RequestAttackCS
 
     auto dir = FbsPacketFactory::GetVector3(attack->dir());
     userObject->Attack(-dir);
-    userObject->Update();
-    userObject->LateUpdate();
 }
 
 void ProcessRequestUseItemCS(GameSession* session, const Packets::RequestUseItemCS* const useItem) {

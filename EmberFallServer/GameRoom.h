@@ -74,6 +74,7 @@ public:
 
     void EndGameLoop();
     bool CheckAndStartGame();
+    void SpawnItem();
 
     void CheckSessionsHeartBeat();
     void CheckGameEnd();

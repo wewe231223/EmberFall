@@ -10,7 +10,10 @@ LibConsole::~LibConsole() {
 }
 
 void LibConsole::Init() {
-    AllocConsole();
+    if (FALSE == AllocConsole()) {
+        MessageBox(nullptr, L"AllocConsole Failure", L"", MB_OK);
+        return;
+    }
 
     mOldStdOut = stdout;
     mOldStdIn = stdin;
@@ -30,9 +33,17 @@ void LibConsole::Init() {
 }
 
 void LibConsole::Terminate() {
-    if (mConsoleOut) fclose(mConsoleOut);
-    if (mConsoleIn) fclose(mConsoleIn);
-    if (mConsoleErr) fclose(mConsoleErr);
+    if (mConsoleOut) {
+        fclose(mConsoleOut);
+    }
+
+    if (mConsoleIn) {
+        fclose(mConsoleIn);
+    }
+
+    if (mConsoleErr) {
+        fclose(mConsoleErr);
+    }
 
     FreeConsole();
 }

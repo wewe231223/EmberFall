@@ -36,6 +36,7 @@ public:
 
 private:
     bool IsGameRoomEvent(IoType type) const;
+    void ProcessIoEvent(OverlappedEx* overlappedEx, ULONG_PTR completionKey);
     void IoThread();
     void TimerThread();
     void DbThread();

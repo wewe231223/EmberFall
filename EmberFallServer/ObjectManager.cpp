@@ -316,11 +316,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         obj->Init();
 
-        auto [min, max] = GameProtocol::Logic::ITEM_SPAWN_AREA;
-        obj->GetTransform()->Translate(Random::GetRandomVec3(min, max));
-
-        sector->AddInSector(validId, obj->GetPosition());
-        obj->RegisterUpdate();
         return obj;
     }
 
@@ -337,10 +332,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         obj->Init();
 
-        obj->GetTransform()->Translate(Random::GetRandomVec3(GameProtocol::Logic::ITEM_SPAWN_AREA));
-
-        sector->AddInSector(validId, obj->GetPosition());
-        obj->RegisterUpdate();
         return obj;
     }
 

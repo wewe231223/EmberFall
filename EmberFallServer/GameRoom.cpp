@@ -247,6 +247,50 @@ bool GameRoom::CheckAndStartGame() {
     return true;
 }
 
+void GameRoom::SpawnItem() {
+    if (GameRoomState::GAME_ROOM_STATE_INGAME != mGameRoomState) {
+        return;
+    }
+
+    auto stage = mStage.GetStageIdx();
+    if (Packets::GameStage_LOBBY == stage or Packets::GameStage_LAST == stage) {
+        return;
+    }
+
+    mSessionLock.ReadLock();
+    std::unordered_set<SessionIdType> sessionsInGameRoom = GetSessions();
+    mSessionLock.ReadUnlock();
+
+    for (auto& sessionId : sessionsInGameRoom) {
+        auto session = gServerFrame->GetSession(sessionId);
+        if (nullptr == session) {
+            continue;
+        }
+
+        auto userObj = session->GetUserObject();
+        if (nullptr == userObj) {
+            continue;
+        }
+
+        auto pos = userObj->GetPosition();
+
+        auto potion = mStage.GetObjectManager()->SpawnObject(Packets::EntityType_ITEM_POTION);
+        potion->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::ITEM_SPAWN_AREA, pos));
+        potion->GetTransform()->Update();
+        potion->GetBoundingObject()->Update(potion->GetWorld());
+
+        mStage.GetTerrainCollider().HandleTerrainCollision(potion);
+
+        auto itemPos = potion->GetPosition();
+        mStage.AddInSector(potion->GetId(), itemPos);
+
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Room [{}]: Spawn Item , {}, {}, {}", mRoomIdx, itemPos.x, itemPos.y, itemPos.z);
+    }
+
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Room [{}]: Spawn Items", mRoomIdx);
+    gServerFrame->AddTimerEvent(SYSTEM_ID, GameProtocol::Logic::ITEM_SPAWN_DELAY, IoType::SPAWN_ITEM, mRoomIdx);
+}
+
 void GameRoom::CheckSessionsHeartBeat() { 
     decltype(auto) sessionList = GetSessions();
     mSessionLock.ReadLock();
@@ -491,7 +535,9 @@ void GameRoom::BroadCast(SessionIdType sender, OverlappedSend* packet) {
         }
 
         auto clonedPacket = FbsPacketFactory::ClonePacket(packet);
-        session->RegisterSend(clonedPacket);
+        if (false == session->RegisterSend(clonedPacket)) {
+            gServerFrame->CloseSession(sessionId);
+        }
     }
 
     FbsPacketFactory::ReleasePacketBuf(packet);
@@ -509,7 +555,9 @@ void GameRoom::BroadCast(OverlappedSend* packet) {
         }
 
         auto clonedPacket = FbsPacketFactory::ClonePacket(packet);
-        session->RegisterSend(clonedPacket);
+        if (false == session->RegisterSend(clonedPacket)) {
+            gServerFrame->CloseSession(sessionId);
+        }
     }
 
     FbsPacketFactory::ReleasePacketBuf(packet);

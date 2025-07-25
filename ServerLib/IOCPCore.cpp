@@ -73,6 +73,7 @@ void IOCPCore::ClientIoThread() {
         }
 
         if (IoType::DISCONNECT == overlappedEx->type) {
+            std::cout << "disconnected" << std::endl;
             break;
         }
 

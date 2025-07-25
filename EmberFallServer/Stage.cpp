@@ -126,9 +126,7 @@ void Stage::StartStage(uint8_t gemCount) {
         auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
     }
 
-    for (int i = 0; i < GameProtocol::Logic::TEST_ITEM_SPAWN_COUNT; ++i) {
-        auto item = mObjectManager->SpawnObject(Packets::EntityType_ITEM_POTION);
-    }
+    gServerFrame->AddTimerEvent(SYSTEM_ID, GameProtocol::Logic::ITEM_SPAWN_DELAY, IoType::SPAWN_ITEM, mGameRoomIdx);
 }
 
 void Stage::StartStage(uint8_t gemCount, Packets::GameStage stage) {

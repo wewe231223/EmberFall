@@ -56,7 +56,9 @@ void SessionManager::Send(SessionIdType to, OverlappedSend* const overlappedSend
         return;
     }
 
-    session->RegisterSend(overlappedSend);
+    if (false == session->RegisterSend(overlappedSend)) {
+        CloseSession(to);
+    }
 }
 
 void SessionManager::CheckSessionsHeartBeat(const std::vector<SessionIdType>& sessionsId) {
@@ -74,7 +76,9 @@ void SessionManager::CheckSessionsHeartBeat(const std::vector<SessionIdType>& se
         }
 
         session->mHeartBeat.fetch_add(1);
-        session->RegisterSend(FbsPacketFactory::ClonePacket(packetHeartBeat));
+        if (false == session->RegisterSend(FbsPacketFactory::ClonePacket(packetHeartBeat))) {
+            timeOutSessions.push_back(id);
+        }
     }
     FbsPacketFactory::ReleasePacketBuf(packetHeartBeat);
 
@@ -97,7 +101,9 @@ void SessionManager::CheckSessionsHeartBeat() {
         }
 
         session->mHeartBeat.fetch_add(1);
-        session->RegisterSend(packetHeartBeat);
+        if (false == session->RegisterSend(packetHeartBeat)) {
+            timeOutSessions.push_back(id);
+        }
     }
     FbsPacketFactory::ReleasePacketBuf(packetHeartBeat);
 

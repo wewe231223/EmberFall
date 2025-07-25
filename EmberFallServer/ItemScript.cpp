@@ -29,8 +29,7 @@ void ItemScript::Init() {
     spec.defence = 0.0f;
     owner->mSpec.hp = GameProtocol::Logic::MAX_HP;
 
-    auto itemLifeTime = SysClock::now() + GameProtocol::Logic::ITEM_LIFE_TIME;
-    gServerFrame->AddTimerEvent(owner->GetId(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
+    gServerFrame->AddTimerEvent(owner->GetId(), GameProtocol::Logic::ITEM_LIFE_TIME, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
 }
 
 void ItemScript::Update(const float deltaTime) { }
