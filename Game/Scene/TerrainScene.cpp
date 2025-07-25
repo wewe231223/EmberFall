@@ -370,7 +370,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextProjLoc->SetEntityType(data->entity()); 
 
 					nextProjLoc->SetEmpty(false);
-					nextProjLoc->SetActiveState(false); 
+					nextProjLoc->SetActiveState(true); 
 
 					ParticleVertex v{};
 					v.position = nextProjLoc->GetTransform().GetPosition();
@@ -391,22 +391,8 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					v.remainEmit = 10000;
 					v.emitIndex = 0;
 
-					auto id = data->objectId();
-					Time.AddEvent(1s, [id, this, v]() {
-						if (mGameObjectMap.contains(id)) {
-							ParticleVertex pv = v; 
-
-							mGameObjectMap[id]->GetTransform().ResetPrediction();
-							mGameObjectMap[id]->SetActiveState(true);
-						
-
-							mParticleMap[id] = mRenderManager->GetParticleManager().CreateEmitParticle(pv);
-							mParticleMap[id].Get()->position = pv.position;
-
-						}
-						
-						return false;
-					});
+					mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
+					mParticleMap[data->objectId()].Get()->position = v.position;
 
 				}	
 				break;
@@ -462,13 +448,6 @@ void TerrainScene::ProcessObjectDisappeared(const uint8_t* buffer) {
 		if (mGameObjectMap.contains(data->objectId())) {
 			mGameObjectMap[data->objectId()]->GetTransform().ResetPrediction();
 			mGameObjectMap[data->objectId()]->SetActiveState(false);
-
-			// 화살은 remove 로 처리
-			if (mGameObjectMap[data->objectId()]->GetEntityType() == Packets::EntityType_PROJECTILE) {
-				Console.Log("{} 번 화살 삭제.", LogType::Info, data->objectId());
-				mParticleMap[data->objectId()].Get()->Flags = static_cast<UINT>(ParticleFlag::Delete);
-				mParticleMap.erase(data->objectId());
-			}
 		}
 	}
 }
@@ -487,13 +466,11 @@ void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
 			mGameObjectMap[data->objectId()]->SetActiveState(false);
 			mGameObjectMap[data->objectId()]->SetEmpty(true);
 
-
 			if (mGameObjectMap[data->objectId()]->GetEntityType() == Packets::EntityType_PROJECTILE) {
 				Console.Log("{} 번 화살 삭제.", LogType::Info, data->objectId());
 				mParticleMap[data->objectId()].Get()->Flags = static_cast<UINT>(ParticleFlag::Delete);
 				mParticleMap.erase(data->objectId());
 			}
-
 
 		}
 	}
@@ -1608,16 +1585,29 @@ void TerrainScene::SendNetwork() {
 
 
 	auto& mouseTracker = Input.GetMouseTracker(); 
-
 	if (mouseTracker.leftButton == DirectX::Mouse::ButtonStateTracker::PRESSED) {
 		
 		if (mMyPlayer != nullptr) {
 			auto dir = mMyPlayer->GetTransform().GetForward();
 			dir.y = 0.f;
-			
+
+			if (mMyPlayer->GetMyRole() == Packets::EntityType_HUMAN_ARCHER) {
+				Time.AddEvent(1s, [dir]() {
+					decltype(auto) packet = FbsPacketFactory::RequestFireCS(gClientCore->GetSessionId(), dir, Packets::ProjectileTypes_ARROW);
+					gClientCore->Send(packet);
+					return false; 
+				});			
+			}
+			else if (mMyPlayer->GetMyRole() == Packets::EntityType_HUMAN_MAGICIAN) {
+				Time.AddEvent(1s, [dir]() {
+					decltype(auto) packet = FbsPacketFactory::RequestFireCS(gClientCore->GetSessionId(), dir, Packets::ProjectileTypes_MAGIC_ARROW);
+					gClientCore->Send(packet);
+					return false;
+				});
+			}
+	
 			decltype(auto) packet = FbsPacketFactory::RequestAttackCS(gClientCore->GetSessionId(), dir);
 			gClientCore->Send(packet);
-
 		}
 	}
 
