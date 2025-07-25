@@ -162,9 +162,29 @@ void ServerFrame::ProcessIoEvent(OverlappedEx* overlappedEx, ULONG_PTR completio
             break;
         }
 
-        if (Packets::EntityType_PROJECTILE == obj->mSpec.entity) {
-            gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Erase Projectile from world");
+        auto packetRemove = FbsPacketFactory::ObjectRemoveSC(obj->GetId());
+        decltype(auto) stage = gGameRoomManager->GetRoom(roomId)->GetStage();
+        auto nearbyPlayers = stage.GetSectorSystem()->GetNearbyPlayers(obj->GetPosition(), GameProtocol::Logic::PLAYER_VIEW_RANGE);
+        for (const auto playerId : nearbyPlayers) {
+            auto session = gServerFrame->GetSession(static_cast<SessionIdType>(playerId));
+            if (nullptr == session or SESSION_INGAME != session->GetSessionState()) {
+                continue;
+            }
+
+            auto playerObj = session->GetUserObject();
+            if (nullptr == playerObj) {
+                continue;
+            }
+
+            auto packet = FbsPacketFactory::ClonePacket(packetRemove);
+            if (false == session->RegisterSend(packet)) {
+                gServerFrame->CloseSession(playerId);
+                continue;
+            }
         }
+
+        FbsPacketFactory::ReleasePacketBuf(packetRemove);
+
         obj->Reset();
     }
     break;

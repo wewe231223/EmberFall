@@ -63,9 +63,6 @@ void MonsterScript::LateUpdate(const float deltaTime) {
 
         owner->mSpec.active = false;
         gServerFrame->AddTimerEvent(owner->GetId(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
-
-        auto packetRemove = FbsPacketFactory::ObjectRemoveSC(owner->GetId());
-        owner->StorePacket(packetRemove);
         return;
     }
 }
