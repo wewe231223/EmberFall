@@ -168,8 +168,8 @@ void ServerFrame::ProcessIoEvent(OverlappedEx* overlappedEx, ULONG_PTR completio
         auto sessionList = gGameRoomManager->GetRoom(roomId)->GetSessions();
         gGameRoomManager->GetRoom(roomId)->GetSessionLock().ReadUnlock();
 
-        for (const auto playerId : nearbyPlayers) {
-            auto session = gServerFrame->GetSession(static_cast<SessionIdType>(playerId));
+        for (const auto sessionId : sessionList) {
+            auto session = gServerFrame->GetSession(static_cast<SessionIdType>(sessionId));
             if (nullptr == session or SESSION_INGAME != session->GetSessionState()) {
                 continue;
             }
@@ -181,7 +181,7 @@ void ServerFrame::ProcessIoEvent(OverlappedEx* overlappedEx, ULONG_PTR completio
 
             auto packet = FbsPacketFactory::ClonePacket(packetRemove);
             if (false == session->RegisterSend(packet)) {
-                gServerFrame->CloseSession(playerId);
+                gServerFrame->CloseSession(sessionId);
                 continue;
             }
         }
