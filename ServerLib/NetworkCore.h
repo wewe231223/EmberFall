@@ -18,32 +18,29 @@
 #include "PacketHandler.h"
 
 class ClientCore {
-public:
-    ClientCore();
-    ~ClientCore();
+    static inline constexpr size_t RECV_BUF_SIZ = 1024;
+    using RecvBuf = std::array<uint8_t, RECV_BUF_SIZ>;
 
 public:
+    SessionIdType GetSessionId() const;
+    RecvBuf& GetBuffer();
+
     bool Start(const std::string& ip, const UINT16 port);
     void End();
-    
+
     void InitSessionId(SessionIdType id);
-    std::shared_ptr<class Session> GetSession() const;
-    SessionIdType GetSessionId() const;
-    bool IsClosedSession() const;
-    std::shared_ptr<PacketHandler> GetPacketHandler() const;
 
-    OverlappedConnect* GetOverlappedConnect();
+    size_t Recv();
     void Send(OverlappedSend* const overlappedSend);
-    void CloseSession();
 
-    bool PQCS(INT32 transfferdBytes, ULONG_PTR completionKey, OverlappedEx* overlapped);
+    void ProcessRemainData(size_t validSize);
 
 private:
-    std::thread mWorkerThread{ };
-    std::shared_ptr<class Session> mSession{ nullptr };
-    OverlappedConnect mOverlappedConnect{ };
-    OverlappedDisconnect mOverlappedDisconnect{ };
+    SOCKET mSocket{ INVALID_SOCKET };
+    SessionIdType mSessionId{ };
 
-    std::shared_ptr<IOCPCore> mIocpCore{ nullptr };
-    std::shared_ptr<PacketHandler> mPacketHandler{ nullptr };
+    WSABUF mRecvWSABuf{ };
+    RecvBuf mRecvBuf{ };
+
+    size_t mPrevRemain{ };
 };

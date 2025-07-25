@@ -38,7 +38,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 	case Packets::PacketTypes_PT_NOTIFY_ID_SC:
 	{
 		decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::NotifyIdSC>(buffer);
-		gClientCore->InitSessionId(data->playerId());
+		gClientCore2->InitSessionId(data->playerId());
 
 		break;
 	}
@@ -47,7 +47,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ProtocolVersionSC>(buffer);
 		if (PROTOCOL_VERSION_MAJOR != data->major() or
 			PROTOCOL_VERSION_MINOR != data->minor()) {
-			gClientCore->CloseSession();
+			gClientCore2->End();
 			MessageBox(nullptr, L"ERROR!!!!!\nProtocolVersion Mismatching", L"", MB_OK | MB_ICONERROR);
 			::exit(0);
 		}
@@ -57,8 +57,8 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 	{
 		decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::HeartBeatSC>(buffer);
 
-		decltype(auto) packet = FbsPacketFactory::HeartBeatCS(gClientCore->GetSessionId());
-		gClientCore->Send(packet); 
+		decltype(auto) packet = FbsPacketFactory::HeartBeatCS(gClientCore2->GetSessionId());
+		gClientCore2->Send(packet); 
 
 		break;
 	}
@@ -67,8 +67,8 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 		switch (mPlayerRole) {
 		case PlayerRole_SwordMan:
 		{
-			if (mPlayerIndexmap[gClientCore->GetSessionId()] == &mPlayers[5]) {
-				mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[mMySlot];
+			if (mPlayerIndexmap[gClientCore2->GetSessionId()] == &mPlayers[5]) {
+				mPlayerIndexmap[gClientCore2->GetSessionId()] = &mPlayers[mMySlot];
 
 				std::get<1>(mPlayers[mMySlot]).GetName() = std::get<1>(mPlayers[5]).GetName();
 
@@ -84,29 +84,29 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 				}
 			}
 
-			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform();
-			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])) = mPlayerPreFabs["SwordMan"].Clone();
-			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform() = transform;
+			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore2->GetSessionId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[gClientCore2->GetSessionId()])) = mPlayerPreFabs["SwordMan"].Clone();
+			std::get<0>(*(mPlayerIndexmap[gClientCore2->GetSessionId()])).GetTransform() = transform;
 		}
 			break;
 		case PlayerRole_Archer:
 		{
-			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform();
-			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])) = mPlayerPreFabs["Archer"].Clone();
-			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform() = transform;
+			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore2->GetSessionId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[gClientCore2->GetSessionId()])) = mPlayerPreFabs["Archer"].Clone();
+			std::get<0>(*(mPlayerIndexmap[gClientCore2->GetSessionId()])).GetTransform() = transform;
 		}
 			break;
 		case PlayerRole_Mage:
 		{
-			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform();
-			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])) = mPlayerPreFabs["Mage"].Clone();
-			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform() = transform;
+			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore2->GetSessionId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[gClientCore2->GetSessionId()])) = mPlayerPreFabs["Mage"].Clone();
+			std::get<0>(*(mPlayerIndexmap[gClientCore2->GetSessionId()])).GetTransform() = transform;
 		}
 			break;
 		case PlayerRole_ShieldMan:
 		{
-			if (mPlayerIndexmap[gClientCore->GetSessionId()] == &mPlayers[5]) {
-				mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[mMySlot];
+			if (mPlayerIndexmap[gClientCore2->GetSessionId()] == &mPlayers[5]) {
+				mPlayerIndexmap[gClientCore2->GetSessionId()] = &mPlayers[mMySlot];
 
 				std::get<1>(mPlayers[mMySlot]).GetName() = std::get<1>(mPlayers[5]).GetName();
 
@@ -122,14 +122,14 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 				}
 			}
 
-			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform();
-			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])) = mPlayerPreFabs["ShieldMan"].Clone();
-			std::get<0>(*(mPlayerIndexmap[gClientCore->GetSessionId()])).GetTransform() = transform;
+			auto transform = std::get<0>(*(mPlayerIndexmap[gClientCore2->GetSessionId()])).GetTransform();
+			std::get<0>(*(mPlayerIndexmap[gClientCore2->GetSessionId()])) = mPlayerPreFabs["ShieldMan"].Clone();
+			std::get<0>(*(mPlayerIndexmap[gClientCore2->GetSessionId()])).GetTransform() = transform;
 		}
 			break;
 		case PlayerRole_Demon:
 		{
-			mPlayerIndexmap[gClientCore->GetSessionId()] = &mPlayers[5];
+			mPlayerIndexmap[gClientCore2->GetSessionId()] = &mPlayers[5];
 			std::get<1>(mPlayers[5]).GetName() = std::get<1>(mPlayers[mMySlot]).GetName();
 
 			std::get<0>(mPlayers[mMySlot]).SetActiveState(false);
@@ -273,7 +273,7 @@ const uint8_t* LobbyScene::ProcessPacket(const uint8_t* buffer) {
 
 		mPlayerSlotMap[packet->playerId()] = packet->playerSlot();
 
-		if (gClientCore->GetSessionId() == packet->playerId()) {
+		if (gClientCore2->GetSessionId() == packet->playerId()) {
 			mMySlot = packet->playerSlot();
 
 			LobbyScene::SettingButton(mMySlot); 
@@ -430,8 +430,8 @@ void LobbyScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	light.Specular = { 1.f, 1.f, 1.f, 1.f };
 	light.Ambient = { 0.2f, 0.2f, 0.2f, 1.f };
 
-	auto packet = FbsPacketFactory::PlayerEnterInLobbyCS(gClientCore->GetSessionId()); 
-	gClientCore->Send(packet); 
+	auto packet = FbsPacketFactory::PlayerEnterInLobbyCS(gClientCore2->GetSessionId()); 
+	gClientCore2->Send(packet); 
 
 	mLeftArrowButton = Button{};
 	mLeftArrowButton.Init(mRenderManager->GetCanvas(), Button::InvokeCondition::LeftClick, mRenderManager->GetTextureManager().GetTexture("left_arrow"));
@@ -452,10 +452,12 @@ void LobbyScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 }
 
 void LobbyScene::ProcessNetwork() {
-	auto packetHandler = gClientCore->GetPacketHandler();
-	decltype(auto) buffer = packetHandler->GetBuffer();
+	auto size = gClientCore2->Recv();
+	decltype(auto) buffer = gClientCore2->GetBuffer();
 
-	LobbyScene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
+	LobbyScene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.data()), size);
+
+	gClientCore2->ProcessRemainData(size);
 }
 
 void LobbyScene::Update() {
@@ -490,8 +492,8 @@ void LobbyScene::Update() {
 			default:
 				break;
 			}
-			decltype(auto) packet = FbsPacketFactory::PlayerSelectRole(gClientCore->GetSessionId(), role);
-			gClientCore->Send(packet); 
+			decltype(auto) packet = FbsPacketFactory::PlayerSelectRole(gClientCore2->GetSessionId(), role);
+			gClientCore2->Send(packet); 
 		}
 	}
 
@@ -1366,8 +1368,8 @@ void LobbyScene::ReadyPlayer() {
 	if (mPlayerRole != PlayerRole_None) {
 		mIsReady = true;
 
-		decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore->GetSessionId());
-		gClientCore->Send(packet);
+		decltype(auto) packet = FbsPacketFactory::PlayerReadyInLobbyCS(gClientCore2->GetSessionId());
+		gClientCore2->Send(packet);
 
 		mReadyButton.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Cancel"));
 		mReadyButton.SetCallBack([&]() { LobbyScene::CancelReadyPlayer(); }, Button::InvokeCondition::LeftClick);
@@ -1378,8 +1380,8 @@ void LobbyScene::CancelReadyPlayer() {
 	if (mIsReady) {
 		mIsReady = false;
 
-		decltype(auto) packet = FbsPacketFactory::PlayerCancelReadyCS(gClientCore->GetSessionId());
-		gClientCore->Send(packet);
+		decltype(auto) packet = FbsPacketFactory::PlayerCancelReadyCS(gClientCore2->GetSessionId());
+		gClientCore2->Send(packet);
 		
 		mReadyButton.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Ready"));
 		mReadyButton.SetCallBack([&]() { LobbyScene::ReadyPlayer(); }, Button::InvokeCondition::LeftClick);

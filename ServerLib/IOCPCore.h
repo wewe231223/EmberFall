@@ -29,8 +29,6 @@ public:
     void RegisterSocket(SOCKET socket, ULONG_PTR registerKey);
     void RegisterSocket(const IServerEntity* const networkObject);
 
-    void ClientIoThread();
-
 private:
     HANDLE mIocpHandle{ INVALID_HANDLE_VALUE };
 };

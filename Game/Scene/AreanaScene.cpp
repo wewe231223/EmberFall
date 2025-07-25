@@ -58,7 +58,7 @@ void ArenaScene::ProcessObjectAppeared(const uint8_t* buffer) {
 	// 플레이어 등장 
 	if (data->objectId() < OBJECT_ID_START) {
 		// 내 플레이어 등장 
-		if (data->objectId() == gClientCore->GetSessionId()) {
+		if (data->objectId() == gClientCore2->GetSessionId()) {
 			// 플레이어 인스턴스가 없다면 
 			if (mMyPlayer == nullptr) {
 
@@ -369,7 +369,7 @@ void ArenaScene::ProcessObjectMove(const uint8_t* buffer) {
 			mPlayerIndexmap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
 
 
-			if (data->objectId() == gClientCore->GetSessionId()) {
+			if (data->objectId() == gClientCore2->GetSessionId()) {
 				return;
 			}
 
@@ -398,7 +398,7 @@ void ArenaScene::ProcessObjectMove(const uint8_t* buffer) {
 void ArenaScene::ProcessObjectAttacked(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAttackedSC>(buffer);
 	// HP 깍기 
-	if (data->objectId() == gClientCore->GetSessionId()) {
+	if (data->objectId() == gClientCore2->GetSessionId()) {
 		mHealthBarUI.SetHealth(data->hp());
 
 		if (data->hp() <= MathUtil::EPSILON and mMyPlayer != nullptr) {
@@ -417,7 +417,7 @@ void ArenaScene::ProcessPacketAnimation(const uint8_t* buffer) {
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
 
-			if (data->objectId() == gClientCore->GetSessionId()) {
+			if (data->objectId() == gClientCore2->GetSessionId()) {
 				if (data->animation() == Packets::AnimationState_ATTACK) {
 					mMyPlayer->LockRotate(true);
 
@@ -526,8 +526,8 @@ void ArenaScene::ProcessProjectileMove(const uint8_t* buffer) {
 
 void ArenaScene::ProcessHeartBeat(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::HeartBeatSC>(buffer);
-	decltype(auto) packet = FbsPacketFactory::HeartBeatCS(gClientCore->GetSessionId());
-	gClientCore->Send(packet);
+	decltype(auto) packet = FbsPacketFactory::HeartBeatCS(gClientCore2->GetSessionId());
+	gClientCore2->Send(packet);
 }
 
 
@@ -665,8 +665,8 @@ void ArenaScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 		}
 
 		auto time = std::chrono::steady_clock::now();
-		auto packet = FbsPacketFactory::LatencyCS(gClientCore->GetSessionId(), time.time_since_epoch().count());
-		gClientCore->Send(packet);
+		auto packet = FbsPacketFactory::LatencyCS(gClientCore2->GetSessionId(), time.time_since_epoch().count());
+		gClientCore2->Send(packet);
 
 		return true;
 		});
@@ -679,18 +679,18 @@ void ArenaScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 		mIsBlind = not mIsBlind;
 	});
 
-	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
-	gClientCore->Send(packet);
+	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore2->GetSessionId());
+	gClientCore2->Send(packet);
 
 }
 
 void ArenaScene::ProcessNetwork() {
-	auto packetHandler = gClientCore->GetPacketHandler();
-	decltype(auto) buffer = packetHandler->GetBuffer();
+	auto size = gClientCore2->Recv();
+	decltype(auto) buffer = gClientCore2->GetBuffer();
 
+	ArenaScene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.data()), size);
 
-
-	ArenaScene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
+	gClientCore2->ProcessRemainData(size);
 }
 
 void ArenaScene::SendLook() {
@@ -698,8 +698,8 @@ void ArenaScene::SendLook() {
 		auto look = mCamera.GetTransform().GetForward();
 		look.y = 0.f;
 
-		decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(gClientCore->GetSessionId(), look);
-		gClientCore->Send(packetCamera);
+		decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(gClientCore2->GetSessionId(), look);
+		gClientCore2->Send(packetCamera);
 	}
 }
 
@@ -713,7 +713,7 @@ void ArenaScene::UpdateSound() {
 			continue;
 		}
 		// 나의 경우 
-		if (pair.first == gClientCore->GetSessionId()) {
+		if (pair.first == gClientCore2->GetSessionId()) {
 			// 움직이는 상태라면
 			if (pair.second->GetTransform().GetMovingState()) {
 				// 이전에 멈춘 상태였다면
@@ -1078,18 +1078,18 @@ void ArenaScene::Update() {
 }
 
 void ArenaScene::SendNetwork() {
-	auto id = gClientCore->GetSessionId();
+	auto id = gClientCore2->GetSessionId();
 	auto& keyTracker = Input.GetKeyboardTracker();
 
 	for (const auto& key : std::views::iota(static_cast<uint8_t>(0), static_cast<uint8_t>(255))) {
 		if (keyTracker.IsKeyPressed(static_cast<DirectX::Keyboard::Keys>(key)) or keyTracker.IsKeyReleased(static_cast<DirectX::Keyboard::Keys>(key))) {
 			if (keyTracker.IsKeyPressed(static_cast<DirectX::Keyboard::Keys>(key))) {
 				decltype(auto) packet = FbsPacketFactory::PlayerInputCS(id, key, true);
-				gClientCore->Send(packet);
+				gClientCore2->Send(packet);
 			}
 			else if (keyTracker.IsKeyReleased(static_cast<DirectX::Keyboard::Keys>(key))) {
 				decltype(auto) packet = FbsPacketFactory::PlayerInputCS(id, key, false);
-				gClientCore->Send(packet);
+				gClientCore2->Send(packet);
 			}
 		}
 	}
@@ -1102,8 +1102,8 @@ void ArenaScene::SendNetwork() {
 		if (mMyPlayer != nullptr) {
 			auto dir = mMyPlayer->GetTransform().GetForward();
 			dir.y = 0.f;
-			decltype(auto) packet = FbsPacketFactory::RequestAttackCS(gClientCore->GetSessionId(), dir);
-			gClientCore->Send(packet);
+			decltype(auto) packet = FbsPacketFactory::RequestAttackCS(gClientCore2->GetSessionId(), dir);
+			gClientCore2->Send(packet);
 		}
 	}
 }

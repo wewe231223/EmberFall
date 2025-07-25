@@ -3,12 +3,13 @@
 #include "Listener.h"
 #include "Session.h"
 
-ClientCore::ClientCore() {
-    mIocpCore = std::make_shared<IOCPCore>();
-    mPacketHandler = std::make_shared<PacketHandler>();
+SessionIdType ClientCore::GetSessionId() const {
+    return mSessionId;
 }
 
-ClientCore::~ClientCore() { }
+ClientCore::RecvBuf& ClientCore::GetBuffer() {
+    return mRecvBuf;
+}
 
 bool ClientCore::Start(const std::string& ip, const UINT16 port) {
     WSADATA data{ };
@@ -16,64 +17,82 @@ bool ClientCore::Start(const std::string& ip, const UINT16 port) {
         return false;
     }
 
-    mSession = std::make_shared<Session>(NetworkUtil::CreateSocket());
-
-    mIocpCore->Init(1);
-    mIocpCore->RegisterSocket(mSession.get());
-    if (not mSession->Connect(ip, port)) {
+    mSocket = NetworkUtil::CreateClientSocket();
+    if (INVALID_SOCKET == mSocket) {
         return false;
     }
 
-    mWorkerThread = std::thread{ [=]() { mIocpCore->ClientIoThread(); } };
+    sockaddr_in serverAddr{ };
+    if (false == NetworkUtil::InitSockAddr(serverAddr, port, ip.data())) {
+        return false;
+    }
 
-    std::cout << "test" << std::endl; 
+    if (SOCKET_ERROR == ::connect(mSocket, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr))) {
+        auto error = WSAGetLastError();
+        if (WSAEWOULDBLOCK != error) {
+            return false;
+        }
+    }
 
-    return true; 
+    return true;
 }
 
 void ClientCore::End() {
-    CloseSession();
-    PQCS(0, 0, &mOverlappedDisconnect);
-
-    if (mWorkerThread.joinable()) {
-        mWorkerThread.join();
-    }
-
+    ::closesocket(mSocket);
     ::WSACleanup();
 }
 
 void ClientCore::InitSessionId(SessionIdType id) {
-    mSession->InitId(id);
+    mSessionId = id;
 }
 
-std::shared_ptr<Session> ClientCore::GetSession() const {
-    return mSession;
-}
+size_t ClientCore::Recv() {
+    DWORD recvdBytes;
+    DWORD recvFlag{ 0 };
 
-SessionIdType ClientCore::GetSessionId() const {
-    return static_cast<SessionIdType>(mSession->GetId());
-}
+    mRecvWSABuf.buf = reinterpret_cast<char*>(mRecvBuf.data() + mPrevRemain);
+    mRecvWSABuf.len = static_cast<uint32_t>(RECV_BUF_SIZ - mPrevRemain);
+    auto ret = ::WSARecv(mSocket, &mRecvWSABuf, 1, &recvdBytes, &recvFlag, nullptr, nullptr);
+    if (SOCKET_ERROR == ret) {
+        if (::WSAGetLastError() != WSAEWOULDBLOCK) {
+            Crash("");
+        }
+        else {
+            return 0;
+        }
+    }
 
-bool ClientCore::IsClosedSession() const {
-    return mSession->IsClosed();
-}
+    if (0 >= recvdBytes) {
+        End();
+    }
 
-std::shared_ptr<PacketHandler> ClientCore::GetPacketHandler() const {
-    return mPacketHandler;
-}
+    auto it = mRecvBuf.data();
+    auto last = mRecvBuf.data() + recvdBytes;
+    while (it != last) {
+        auto packetSize = *reinterpret_cast<PacketSizeT*>(it);
+        if (std::distance(it, last) < packetSize) {
+            break;
+        }
 
-OverlappedConnect* ClientCore::GetOverlappedConnect() {
-    return &mOverlappedConnect;
+        it += packetSize;
+    }
+
+    size_t validSize = std::distance(mRecvBuf.data(), it);
+    mPrevRemain = recvdBytes - validSize;
+
+    return validSize;
 }
 
 void ClientCore::Send(OverlappedSend* const overlappedSend) {
-    mSession->RegisterSend(overlappedSend);
+    DWORD sent_bytes{ };
+    if (SOCKET_ERROR != ::WSASend(mSocket, &overlappedSend->wsaBuf, 1, &sent_bytes, 0, nullptr, nullptr)) {
+        FbsPacketFactory::ReleasePacketBuf(overlappedSend);
+    }
 }
 
-void ClientCore::CloseSession() {
-    mSession->Close();
-}
-
-bool ClientCore::PQCS(INT32 transfferdBytes, ULONG_PTR completionKey, OverlappedEx* overlapped) {
-    return ::PostQueuedCompletionStatus(mIocpCore->GetHandle(), transfferdBytes, completionKey, overlapped->GetRawPtr());
+void ClientCore::ProcessRemainData(size_t validSize) {
+    auto target = mRecvBuf.data() + validSize;
+    if (mPrevRemain > 0) {
+        ::memcpy(mRecvBuf.data(), target, mPrevRemain);
+    }
 }

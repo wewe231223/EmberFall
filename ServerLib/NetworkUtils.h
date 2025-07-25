@@ -55,6 +55,14 @@ namespace NetworkUtil {
         return ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, nullptr, NULL, WSA_FLAG_OVERLAPPED);
     }
 
+    inline SOCKET CreateClientSocket()
+    {
+        u_long nonBlock = 1;
+        auto socket = ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, nullptr, NULL, NULL);
+        ::ioctlsocket(socket, FIONBIO, &nonBlock);
+        return socket;
+    }
+
     inline bool InitSockAddr(sockaddr_in& address, UINT16 port, const char* ip=nullptr)
     {
         std::memset(&address, 0, sizeof(address));

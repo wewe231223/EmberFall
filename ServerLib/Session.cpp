@@ -33,10 +33,6 @@ void Session::ProcessOverlapped(OverlappedEx* overlapped, INT32 numOfBytes) {
         ProcessRecv(numOfBytes);
         break;
 
-    case IoType::CONNECT:
-        ProcessConnect(numOfBytes, reinterpret_cast<OverlappedConnect*>(overlapped));
-        break;
-
     default:
         break;
     }
@@ -134,34 +130,7 @@ bool Session::RegisterSend(OverlappedSend* const overlappedSend) {
     return true;
 }
 
-void Session::ProcessRecv(INT32 numOfBytes) {
-    if (0 >= numOfBytes) {
-        MessageBoxA(nullptr, "Received Bytes less than equal 0\n", "Session Closed", MB_OK | MB_ICONERROR);
-        Close();
-        return;
-    }
-
-    auto dataBeg = mOverlappedRecv.buffer.begin();
-    auto dataEnd = dataBeg + numOfBytes;
-    auto remainBegin = ValidatePackets(dataBeg, dataEnd);
-    mPrevRemainSize = std::distance(remainBegin, dataEnd);
-    auto dataSize = numOfBytes - mPrevRemainSize;
-
-    // 받아온 Recv 버퍼의 내용을 저장.
-    auto coreService = gClientCore;
-    if (0 == mPrevRemainSize) {
-        coreService->GetPacketHandler()->Write(mOverlappedRecv.buffer.data(), dataSize);
-        if (false == RegisterRecv()) {
-            gClientCore->CloseSession();
-        }
-        return;
-    }
-
-    std::move(remainBegin, dataEnd, dataBeg);
-    if (false == RegisterRecv()) {
-        gClientCore->CloseSession();
-    }
-}
+void Session::ProcessRecv(INT32 numOfBytes) { }
 
 void Session::ProcessSend(INT32 numOfBytes, OverlappedSend* overlappedSend) {
     if (0 >= numOfBytes) {
@@ -205,52 +174,6 @@ std::pair<std::string, UINT16> Session::GetAddress() const {
     return std::make_pair(mIP, mPort);
 }
 
-bool Session::Connect(const std::string& serverIp, const UINT16 port) {
-    sockaddr_in serverAddr{ };
-    NetworkUtil::InitSockAddr(serverAddr, 0);
-    if (SOCKET_ERROR == ::bind(mSocket, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr))) {
-        return false;
-    }
-
-    if (false == NetworkUtil::InitSockAddr(serverAddr, port, serverIp.data())) {
-        return false;
-    }
-
-    if (false == NetworkUtil::InitConnectExFunc(mSocket)) {
-        return false;
-    }
-
-    DWORD bytes{ };
-    auto clientCore = gClientCore;
-    auto overlappedConnect = clientCore->GetOverlappedConnect();
-    auto result = NetworkUtil::ConnectEx(
-        mSocket,
-        reinterpret_cast<sockaddr*>(&serverAddr),
-        sizeof(serverAddr),
-        nullptr,
-        NULL,
-        &bytes,
-        overlappedConnect
-    );
-
-    if (false == result) {
-        auto errorCode = ::WSAGetLastError();
-        if (WSA_IO_PENDING != errorCode) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-void Session::ProcessConnect(INT32 numOfBytes, OverlappedConnect* overlapped) {
-    if (true == mConnected.exchange(true)) {
-        return;
-    }
-
-    RegisterRecv();
-}
-
 void Session::WaitTilSessionConn() {
     mConnected.wait(false);
 }
@@ -286,13 +209,6 @@ void Session::HandleSocketError(INT32 errorCore) {
     case WSAECONNRESET: // 소프트웨어로 인해 연결 중단.
     case WSAECONNABORTED: // 피어별 연결 다시 설정. (원격 호스트에서 강제 중단.)
     {
-        if (SessionNetType::CLIENT == mNetType) {
-            MessageBoxA(nullptr, "Socket Error!", NetworkUtil::WSAErrorMessage().c_str(), MB_OK | MB_ICONERROR);
-            gClientCore->CloseSession();
-        }
-        else {
-            return;
-        }
     }
     break;
 

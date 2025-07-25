@@ -66,7 +66,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     gLibConsole.Init(); 
 
     if (DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, IPDialogProc) == IDOK) { 
-        if (not gClientCore->Start(iPAddr, SERVER_PORT)) {
+        if (not gClientCore2->Start(iPAddr, SERVER_PORT)) {
             CrashExp(true, "Failed to connect");
             return -1; 
         }
@@ -182,10 +182,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
 
-    decltype(auto) packet = FbsPacketFactory::PlayerExitCS(gClientCore->GetSessionId());
-    gClientCore->Send(packet);
+    decltype(auto) packet = FbsPacketFactory::PlayerExitCS(gClientCore2->GetSessionId());
+    gClientCore2->Send(packet);
 
-    gClientCore->End();
+    gClientCore2->End();
 
     SoundManager::GetInstance().Terminate(); 
 

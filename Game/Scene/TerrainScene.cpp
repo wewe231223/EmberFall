@@ -20,7 +20,7 @@ void TerrainScene::ProcessPacketProtocolVersion(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ProtocolVersionSC>(buffer);
 	if (PROTOCOL_VERSION_MAJOR != data->major() or
 		PROTOCOL_VERSION_MINOR != data->minor()) {
-		gClientCore->CloseSession();
+		gClientCore2->End();
 		MessageBox(nullptr, L"ERROR!!!!!\nProtocolVersion Mismatching", L"", MB_OK | MB_ICONERROR);
 		::exit(0);
 	}
@@ -28,7 +28,7 @@ void TerrainScene::ProcessPacketProtocolVersion(const uint8_t* buffer) {
 
 void TerrainScene::ProcessNotifyId(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::NotifyIdSC>(buffer);
-	gClientCore->InitSessionId(data->playerId());
+	gClientCore2->InitSessionId(data->playerId());
 }
 
 void TerrainScene::ProcessPlayerExit(const uint8_t* buffer) {
@@ -95,7 +95,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 	// 플레이어 등장 
 	if (data->objectId() < OBJECT_ID_START) {
 		// 내 플레이어 등장 
-		if (data->objectId() == gClientCore->GetSessionId()) {
+		if (data->objectId() == gClientCore2->GetSessionId()) {
 			// 플레이어 인스턴스가 없다면 
 			if (mMyPlayer == nullptr) {
 				auto nextLoc = FindNextPlayerLoc();
@@ -489,7 +489,7 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 				mPlayerIndexmap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
 
 
-				if (data->objectId() == gClientCore->GetSessionId()) {
+				if (data->objectId() == gClientCore2->GetSessionId()) {
 					return;
 				}
 
@@ -526,7 +526,7 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 void TerrainScene::ProcessObjectAttacked(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAttackedSC>(buffer);
 	// HP 깍기 
-	if (data->objectId() == gClientCore->GetSessionId()) {
+	if (data->objectId() == gClientCore2->GetSessionId()) {
 		mHealthBarUI.SetHealth(data->hp());
 
 		if (data->hp() <= MathUtil::EPSILON and mMyPlayer != nullptr) {
@@ -548,7 +548,7 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
 			
-			if (data->objectId() == gClientCore->GetSessionId()) {
+			if (data->objectId() == gClientCore2->GetSessionId()) {
 				if (data->animation() == Packets::AnimationState_ATTACK) {
 					mMyPlayer->LockRotate(true); 
 
@@ -809,8 +809,8 @@ void TerrainScene::ProcessBuffHeal(const uint8_t* buffer) {
 
 void TerrainScene::ProcessHeartBeat(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::HeartBeatSC>(buffer);
-	decltype(auto) packet = FbsPacketFactory::HeartBeatCS(gClientCore->GetSessionId()); 
-	gClientCore->Send(packet);
+	decltype(auto) packet = FbsPacketFactory::HeartBeatCS(gClientCore2->GetSessionId()); 
+	gClientCore2->Send(packet);
 }
 
 void TerrainScene::ProcessGameEnd(const uint8_t* buffer) {
@@ -1034,8 +1034,8 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 		}
 
 		auto time = std::chrono::steady_clock::now(); 
-		auto packet = FbsPacketFactory::LatencyCS(gClientCore->GetSessionId(), time.time_since_epoch().count());
-		gClientCore->Send(packet);
+		auto packet = FbsPacketFactory::LatencyCS(gClientCore2->GetSessionId(), time.time_since_epoch().count());
+		gClientCore2->Send(packet);
 
 		return true; 
 	});
@@ -1050,13 +1050,13 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 
 
 	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F8, mInputSign, [this]() {
-		decltype(auto) packet = FbsPacketFactory::ChangeToNextSceneCS(gClientCore->GetSessionId()); 
-		gClientCore->Send(packet);
+		decltype(auto) packet = FbsPacketFactory::ChangeToNextSceneCS(gClientCore2->GetSessionId()); 
+		gClientCore2->Send(packet);
 	});
 
 
-	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
-	gClientCore->Send(packet);
+	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore2->GetSessionId());
+	gClientCore2->Send(packet);
 
 #ifdef DEV_MODE
 	//Time.AddEvent(1s, [&]() {
@@ -1073,12 +1073,12 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 
 // 별도 시간 누적 타이머 
 void TerrainScene::ProcessNetwork() {
-	auto packetHandler = gClientCore->GetPacketHandler(); 
-	decltype(auto) buffer = packetHandler->GetBuffer(); 
+	auto size = gClientCore2->Recv(); 
+	decltype(auto) buffer = gClientCore2->GetBuffer(); 
 
+	TerrainScene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.data()), size);
 
-
-	TerrainScene::ProcessPackets(reinterpret_cast<const uint8_t*>(buffer.Data()), buffer.Size());
+	gClientCore2->ProcessRemainData(size);
 }
 
 void TerrainScene::UpdateSound() {
@@ -1091,7 +1091,7 @@ void TerrainScene::UpdateSound() {
 			continue;
 		}
 		// 나의 경우 
-		if (pair.first == gClientCore->GetSessionId()) {
+		if (pair.first == gClientCore2->GetSessionId()) {
 			// 움직이는 상태라면
 			if (pair.second->GetTransform().GetMovingState()) {
 				// 이전에 멈춘 상태였다면
@@ -1273,8 +1273,6 @@ void TerrainScene::UpdateSound() {
 }
 
 void TerrainScene::ProcessPackets(const uint8_t* buffer, size_t size) {
-	Console.Log("현재 프레임이 처리하는 버퍼 : {}", LogType::Info, size); 
-
 	const uint8_t* iter = buffer; 
 
 	while (iter < buffer + size) {
@@ -1560,18 +1558,18 @@ void TerrainScene::Update() {
 }
 
 void TerrainScene::SendNetwork() {
-	auto id = gClientCore->GetSessionId();
+	auto id = gClientCore2->GetSessionId();
 	auto& keyTracker = Input.GetKeyboardTracker();
 
 	for (const auto& key : std::views::iota(static_cast<uint8_t>(0), static_cast<uint8_t>(255))) {
 		if (keyTracker.IsKeyPressed(static_cast<DirectX::Keyboard::Keys>(key)) or keyTracker.IsKeyReleased(static_cast<DirectX::Keyboard::Keys>(key))) {
 			if (keyTracker.IsKeyPressed(static_cast<DirectX::Keyboard::Keys>(key))) {
 				decltype(auto) packet = FbsPacketFactory::PlayerInputCS(id, key, true);
-				gClientCore->Send(packet);
+				gClientCore2->Send(packet);
 			}
 			else if (keyTracker.IsKeyReleased(static_cast<DirectX::Keyboard::Keys>(key))) {
 				decltype(auto) packet = FbsPacketFactory::PlayerInputCS(id, key, false);
-				gClientCore->Send(packet);
+				gClientCore2->Send(packet);
 			}
 		}
 	}
@@ -1586,21 +1584,21 @@ void TerrainScene::SendNetwork() {
 
 			if (mMyPlayer->GetMyRole() == Packets::EntityType_HUMAN_ARCHER) {
 				Time.AddEvent(1s, [dir]() {
-					decltype(auto) packet = FbsPacketFactory::RequestFireCS(gClientCore->GetSessionId(), dir, Packets::ProjectileTypes_ARROW);
-					gClientCore->Send(packet);
+					decltype(auto) packet = FbsPacketFactory::RequestFireCS(gClientCore2->GetSessionId(), dir, Packets::ProjectileTypes_ARROW);
+					gClientCore2->Send(packet);
 					return false; 
 				});			
 			}
 			else if (mMyPlayer->GetMyRole() == Packets::EntityType_HUMAN_MAGICIAN) {
 				Time.AddEvent(1s, [dir]() {
-					decltype(auto) packet = FbsPacketFactory::RequestFireCS(gClientCore->GetSessionId(), dir, Packets::ProjectileTypes_MAGIC_ARROW);
-					gClientCore->Send(packet);
+					decltype(auto) packet = FbsPacketFactory::RequestFireCS(gClientCore2->GetSessionId(), dir, Packets::ProjectileTypes_MAGIC_ARROW);
+					gClientCore2->Send(packet);
 					return false;
 				});
 			}
 	
-			decltype(auto) packet = FbsPacketFactory::RequestAttackCS(gClientCore->GetSessionId(), dir);
-			gClientCore->Send(packet);
+			decltype(auto) packet = FbsPacketFactory::RequestAttackCS(gClientCore2->GetSessionId(), dir);
+			gClientCore2->Send(packet);
 		}
 	}
 
@@ -1622,8 +1620,8 @@ void TerrainScene::SendLook() {
 		auto look = mCamera.GetTransform().GetForward();
 		look.y = 0.f;
 
-		decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(gClientCore->GetSessionId(), look);
-		gClientCore->Send(packetCamera);
+		decltype(auto) packetCamera = FbsPacketFactory::PlayerLookCS(gClientCore2->GetSessionId(), look);
+		gClientCore2->Send(packetCamera);
 	}
 }
 

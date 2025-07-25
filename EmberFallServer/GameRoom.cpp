@@ -283,11 +283,8 @@ void GameRoom::SpawnItem() {
 
         auto itemPos = potion->GetPosition();
         mStage.AddInSector(potion->GetId(), itemPos);
-
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Room [{}]: Spawn Item , {}, {}, {}", mRoomIdx, itemPos.x, itemPos.y, itemPos.z);
     }
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Room [{}]: Spawn Items", mRoomIdx);
     gServerFrame->AddTimerEvent(SYSTEM_ID, GameProtocol::Logic::ITEM_SPAWN_DELAY, IoType::SPAWN_ITEM, mRoomIdx);
 }
 

@@ -70,9 +70,6 @@ public:
     // 에러 발생으로 인한 연결 종료 처리
     virtual void HandleSocketError(INT32 errorCore);
 
-    // For Client
-    bool Connect(const std::string& serverIp, const UINT16 port);
-    void ProcessConnect(INT32 numOfBytes, OverlappedConnect* overlapped);
     void WaitTilSessionConn();
     void NotifyingSessionConn();
     
