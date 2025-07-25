@@ -18,7 +18,7 @@
 #include "PacketHandler.h"
 
 class ClientCore {
-    static inline constexpr size_t RECV_BUF_SIZ = 1024;
+    static inline constexpr size_t RECV_BUF_SIZ = 4096;
     using RecvBuf = std::array<uint8_t, RECV_BUF_SIZ>;
 
 public:

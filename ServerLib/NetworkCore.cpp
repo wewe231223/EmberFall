@@ -80,13 +80,16 @@ size_t ClientCore::Recv() {
             break;
         }
 
-        it += packetSize;
+        if (it + packetSize < last) {
+            it += packetSize;
+        }
+        else {
+            break;
+        }
     }
 
-    size_t validSize = std::distance(mRecvBuf.data(), it);
-    mPrevRemain = remainData - validSize;
-
-    return validSize;
+    mPrevRemain = std::distance(it, last);
+    return  remainData - mPrevRemain;
 }
 
 void ClientCore::Send(OverlappedSend* const overlappedSend) {
