@@ -59,14 +59,7 @@ Bow::Bow(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage)
 
 Bow::~Bow() { }
 
-void Bow::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) {
-    auto attackPos = pos + dir * (mHitBox.z * 2.0f);
-    gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnProjectile(
-        Packets::ProjectileTypes_ARROW, 
-        attackPos, 
-        dir
-    );
-}
+void Bow::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) { }
 
 LongSword::LongSword(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage)
     : IWeapon{ roomIdx, damage } {

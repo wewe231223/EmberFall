@@ -320,7 +320,26 @@ void ProcessRequestUseItemCS(GameSession* session, const Packets::RequestUseItem
 }
 
 void ProcessRequestFireProjectileCS(GameSession* session, const Packets::RequestFireCS* const fire) {
+    auto sessionState = session->GetSessionState();
+    if (SESSION_INGAME != sessionState) {
+        return;
+    }
 
+    const auto userObject = session->GetUserObject();
+    if (nullptr == userObject) {
+        return;
+    }
+
+    auto dir = FbsPacketFactory::GetVector3(fire->dir());
+    auto pos = userObject->GetPosition();
+    auto hitbox = userObject->GetBoundingObject();
+
+    auto attackPos = pos + dir * (hitbox->GetForwardExtents() * 2.0f);
+    gGameRoomManager->GetRoom(session->GetMyRoomIdx())->GetStage().GetObjectManager()->SpawnProjectile(
+        Packets::ProjectileTypes_ARROW,
+        attackPos,
+        dir
+    );
 }
 
 void ProcessTestChangeToNextSceneCS(GameSession* session) {

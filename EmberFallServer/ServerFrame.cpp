@@ -163,8 +163,11 @@ void ServerFrame::ProcessIoEvent(OverlappedEx* overlappedEx, ULONG_PTR completio
         }
 
         auto packetRemove = FbsPacketFactory::ObjectRemoveSC(obj->GetId());
-        decltype(auto) stage = gGameRoomManager->GetRoom(roomId)->GetStage();
-        auto nearbyPlayers = stage.GetSectorSystem()->GetNearbyPlayers(obj->GetPosition(), GameProtocol::Logic::PLAYER_VIEW_RANGE);
+
+        gGameRoomManager->GetRoom(roomId)->GetSessionLock().ReadLock();
+        auto sessionList = gGameRoomManager->GetRoom(roomId)->GetSessions();
+        gGameRoomManager->GetRoom(roomId)->GetSessionLock().ReadUnlock();
+
         for (const auto playerId : nearbyPlayers) {
             auto session = gServerFrame->GetSession(static_cast<SessionIdType>(playerId));
             if (nullptr == session or SESSION_INGAME != session->GetSessionState()) {
