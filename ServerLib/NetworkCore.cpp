@@ -66,10 +66,16 @@ size_t ClientCore::Recv() {
         End();
     }
 
+    auto remainData = recvdBytes + mPrevRemain;
+
     auto it = mRecvBuf.data();
-    auto last = mRecvBuf.data() + recvdBytes;
+    auto last = mRecvBuf.data() + remainData;
     while (it != last) {
         auto packetSize = *reinterpret_cast<PacketSizeT*>(it);
+        if (0 == packetSize) {
+            MessageBoxA(nullptr, "", "", MB_OK);
+        }
+
         if (std::distance(it, last) < packetSize) {
             break;
         }
@@ -78,7 +84,7 @@ size_t ClientCore::Recv() {
     }
 
     size_t validSize = std::distance(mRecvBuf.data(), it);
-    mPrevRemain = recvdBytes - validSize;
+    mPrevRemain = remainData - validSize;
 
     return validSize;
 }
