@@ -192,6 +192,17 @@ void OnTerrain(inout ParticleVertex v)
     }
 }
 
+void OnTerrainStop(inout ParticleVertex v)
+{
+    float h = GetHeight(v.position.x, v.position.z);
+    if (v.position.y < h + v.halfHeight * 0.5f)
+    {
+        v.position.y = h + v.halfHeight * 0.5f;
+        v.velocity = float3(0.0f, 0.0f, 0.0f); // 속도 초기화 
+    }
+}
+
+
 //----------------------------------------------------------[ Emit Particle Update ]----------------------------------------------------------
 
 uint CreateSmokeParticle(ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
@@ -395,7 +406,7 @@ uint CreateBloodParticle(ParticleVertex emitter, uint vertexID, inout PointStrea
 {
     ParticleVertex p = (ParticleVertex) 0;
 
-    const float lifeTime = 1.5f;
+    const float lifeTime = 2.3f;
     
     p.position = emitter.position;
 
@@ -417,7 +428,7 @@ uint CreateBloodParticle(ParticleVertex emitter, uint vertexID, inout PointStrea
     p.totalLifetime = lifeTime;
     p.lifetime = lifeTime;
 
-    p.type = ParticleType_smoke;
+    p.type = ParticleType_blood;
     p.emitType = ParticleType_ember;
     p.remainEmit = 0;
     p.emitIndex = emitter.emitIndex;
@@ -504,7 +515,16 @@ void EmberParticleUpdate(inout ParticleVertex v, inout PointStream<ParticleVerte
         ParticleVertex n = v;
 
         UpdateParticle(n, deltaTime);
-        OnTerrain(n); // 지면 충돌 처리
+        
+        if (v.type == ParticleType_blood)
+        {
+            OnTerrainStop(n); // 지면 충돌 처리
+        }
+        else
+        {
+            OnTerrain(n); // 지면 충돌 처리
+        }
+        
 
         stream.Append(n);
     }
