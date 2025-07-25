@@ -330,10 +330,11 @@ void ProcessRequestFireProjectileCS(GameSession* session, const Packets::Request
         return;
     }
 
-    auto dir = FbsPacketFactory::GetVector3(fire->dir());
+    auto dir = userObject->GetTransform()->Forward();
     auto pos = userObject->GetPosition();
     auto hitbox = userObject->GetBoundingObject();
 
+    userObject->Attack();
     auto attackPos = pos + dir * (hitbox->GetForwardExtents() * 2.0f);
     gGameRoomManager->GetRoom(session->GetMyRoomIdx())->GetStage().GetObjectManager()->SpawnProjectile(
         Packets::ProjectileTypes_ARROW,
