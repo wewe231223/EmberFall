@@ -358,7 +358,7 @@ uint CreatePathParticle(ParticleVertex emitter, uint vertexID, inout PointStream
 {
     ParticleVertex p = (ParticleVertex) 0;
 
-    const float lifeTime = 1.5f;
+    const float lifeTime = 0.5f;
     
     p.position = emitter.position;
 
@@ -387,7 +387,7 @@ uint CreatePathParticle(ParticleVertex emitter, uint vertexID, inout PointStream
   
     
      [unroll]
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 36; ++i)
     {
         p.direction = GenerateRandomDirection(vertexID + i);
         
@@ -399,7 +399,7 @@ uint CreatePathParticle(ParticleVertex emitter, uint vertexID, inout PointStream
         stream.Append(p);
     }
     
-    return 10;
+    return 36;
 }
 
 uint CreateBloodParticle(ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)

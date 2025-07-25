@@ -370,6 +370,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextProjLoc->SetEntityType(data->entity()); 
 
 					nextProjLoc->SetEmpty(false);
+					nextProjLoc->SetActiveState(false); 
 
 					ParticleVertex v{};
 					v.position = nextProjLoc->GetTransform().GetPosition();
@@ -383,15 +384,30 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					v.spriteFrameInCol = 4;
 					v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
 					v.velocity = { 0.f, 0.f, 0.f };
-					v.totalLifeTime = 0.1f;
-					v.lifeTime = 0.1f;
+					v.totalLifeTime = 0.05f;
+					v.lifeTime = 0.05f;
 					v.type = ParticleType_emit;
 					v.emitType = ParticleType_path;
-					v.remainEmit = 1000;
+					v.remainEmit = 10000;
 					v.emitIndex = 0;
 
-					mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
-					mParticleMap[data->objectId()].Get()->position = v.position;
+					auto id = data->objectId();
+					Time.AddEvent(1s, [id, this, v]() {
+						if (mGameObjectMap.contains(id)) {
+							ParticleVertex pv = v; 
+
+							mGameObjectMap[id]->GetTransform().ResetPrediction();
+							mGameObjectMap[id]->SetActiveState(true);
+						
+
+							mParticleMap[id] = mRenderManager->GetParticleManager().CreateEmitParticle(pv);
+							mParticleMap[id].Get()->position = pv.position;
+
+						}
+						
+						return false;
+					});
+
 				}	
 				break;
 				default:
