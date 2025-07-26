@@ -127,13 +127,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_EMBERFALL));
 
-#ifdef DEV_MODE
-    TextBlock* CPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1000.f, 0.f, 1400.f, 100.f }, StringColor::Black, "NotoSansKR");
-    IntervalTimer CPUTimer{};
-    TextBlock* GPUTime = TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1000.f, 30.f, 1400.f, 200.f }, StringColor::Black, "NotoSansKR");
-    IntervalTimer GPUTimer{};
-#endif 
-
     // 기본 메시지 루프입니다:
     while (true) {
         if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
@@ -145,9 +138,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
         }
         else {
-#ifdef DEV_MODE
-            CPUTimer.Start();
-#endif
             Time.AdvanceTime();
             Input.Update();
 			SoundManager::GetInstance().Update();
@@ -158,23 +148,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
             renderer.Render();
 
-
-#ifdef DEV_MODE
-            CPUTimer.End();
-#endif 
             if (sceneManager.CheckLoaded()) {
                 renderer.ExecuteLoadCommandList();
             }
-#ifdef DEV_MODE
-            GPUTimer.Start();
-#endif  
             renderer.ExecuteRender();
 
-#ifdef DEV_MODE
-            GPUTimer.End();
-            CPUTime->GetText() = std::format(L"CPU Time : {:.2f}us", CPUTimer.Microseconds());
-            GPUTime->GetText() = std::format(L"GPU Time : {:.2f}us", GPUTimer.Microseconds());
-#endif
 
             // 게임 루프... 
             frameCount++;

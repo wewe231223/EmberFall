@@ -501,8 +501,7 @@ uint CreateMagicExplodeParticle(ParticleVertex emitter, uint vertexID, inout Poi
     for (int i = 0; i < 36; ++i)
     {
         p.direction = GenerateRandomDirection(vertexID + i);
-        // p.direction.y = abs(p.direction.y);
-        
+
         p.remainEmit = GenerateRandomUintInRange(0, 7, vertexID + i);
 
         float speed = GenerateRandomInRange(6.f, 8.f, vertexID + i + 100);

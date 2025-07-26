@@ -940,41 +940,6 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	mTerrainObject.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("TerrainMaterial"));
 	mRenderManager->GetMeshRenderManager().RegisterTerrainCPPointBuffer(mTerrainObject.GetCPPositionBuffer());
 
-
-
-
-#ifdef DEV_MODE
-	{
-		auto& boss = mGameObjects.emplace_back();
-		boss.mShader = mShaderMap["SkinnedNormalShader"].get();
-		boss.mMesh = mMeshMap["Demon"].get();
-		boss.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial");
-		boss.mGraphController = mDemonAnimationController;
-		boss.mAnimated = true;
-		boss.mCollider = mColliderMap["Demon"];
-		boss.SetActiveState(true);
-		boss.SetEmpty(false);
-
-		boss.GetTransform().GetPosition() = { 3.f, tCollider.GetHeight(3.f, 36.f), 36.f };
-	}
-
-	{
-		auto& imp = mGameObjects.emplace_back();
-		imp.mShader = mShaderMap["SkinnedNormalShader"].get();
-		imp.mMesh = mMeshMap["MonsterType1"].get();
-		imp.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("MonsterType1Material");
-		imp.mGraphController = mMonsterAnimationController;
-		imp.mAnimated = true;
-		imp.mCollider = mColliderMap["MonsterType1"];
-		imp.SetActiveState(true);
-		imp.SetEmpty(false);
-		//imp.mGraphController.Transition(9);
-
-		imp.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 36.f), 36.f };
-	}
-#endif 
-
-
 	{
 		mEquipments["Sword"] = EquipmentObject{};
 		mEquipments["Sword"].mMesh = mMeshMap["Sword"].get();
@@ -1466,17 +1431,11 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 
 
 void TerrainScene::Update() {
-	mPositionBlock->GetText() = std::format(L"Position : ({:.2f}, {:.2f}, {:.2f})", mCamera.GetTransform().GetPosition().x, mCamera.GetTransform().GetPosition().y, mCamera.GetTransform().GetPosition().z);
-
-
 	float coefficient{ mIsBlind ? -1.f : 1.f };
 	mRenderManager->GetFogRangeStart() += coefficient * Time.GetDeltaTime<float, std::chrono::seconds>() * 500.f;
 	mRenderManager->GetFogRangeStart() = std::clamp(mRenderManager->GetFogRangeStart(), 7.f, 2000.f);
 
 
-#ifdef DEV_MODE
-	mLatencyBlock->GetText() = std::format(L"Latency : {} ms", TerrainScene::GetAverageLatency<std::chrono::milliseconds>());
-#endif 
 
 	mRenderManager->GetParticleManager().UpdateEmitParticle(); 
 
@@ -1681,9 +1640,6 @@ void TerrainScene::SendNetwork() {
 
 void TerrainScene::Exit() {
 	Input.EraseCallBack(mInputSign);
-	mLatencyBlock->SetActiveState(false);
-	mPositionBlock->SetActiveState(false);
-	mPktsBlock->SetActiveState(false);
 
 	mExpired = true; 
 	
