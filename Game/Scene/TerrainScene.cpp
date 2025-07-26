@@ -351,7 +351,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextItemLoc->SetEmpty(false); 
 				}
 				break;
-				case Packets::EntityType_PROJECTILE:
+				case Packets::EntityType_PROJECTILE_ARROW:
 				{
 					*nextProjLoc = GameObject{};
 					mGameObjectMap[data->objectId()] = &(*nextProjLoc);
@@ -388,9 +388,47 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 					mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
 					mParticleMap[data->objectId()].Get()->position = v.position;
-
 				}	
 				break;
+				case Packets::EntityType_PROJECTILE_MAGIC_ARROW:
+				{
+					*nextProjLoc = GameObject{};
+					mGameObjectMap[data->objectId()] = &(*nextProjLoc);
+					nextProjLoc->mShader = mShaderMap["StandardShader"].get();
+					nextProjLoc->mMesh = mMeshMap["StaffProj"].get();
+					nextProjLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("StaffMaterial");
+					nextProjLoc->mCollider = mColliderMap["StaffProj"];
+					nextProjLoc->SetActiveState(true);
+
+					nextProjLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
+					nextProjLoc->SetEntityType(data->entity());
+					nextProjLoc->SetEmpty(false);
+
+					nextProjLoc->GetTransform().Rotate(0.f, data->yaw());
+
+					ParticleVertex v{};
+					v.position = nextProjLoc->GetTransform().GetPosition();
+
+					v.halfheight = 10.f;
+					v.halfWidth = 10.f;
+					v.material = mRenderManager->GetMaterialManager().GetMaterial("ArrowPath");
+					v.spritable = true;
+					v.spriteDuration = 1.f;
+					v.spriteFrameInRow = 5;
+					v.spriteFrameInCol = 2;
+					v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+					v.velocity = { 0.f, 0.f, 0.f };
+					v.totalLifeTime = 0.1f;
+					v.lifeTime = 0.1f;
+					v.type = ParticleType_emit;
+					v.emitType = ParticleType_path;
+					v.remainEmit = 10000;
+					v.emitIndex = 0;
+
+					mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
+					mParticleMap[data->objectId()].Get()->position = v.position;
+				}
+				break; 
 				default:
 				{
 					*nextLoc = GameObject{};
