@@ -203,8 +203,8 @@ public:
 public:
 	bool Empty() const; 
 
-	DefaultBufferCPUIterator CPUBegin() { return DefaultBufferCPUIterator(mData.get(), mElementSize); }
-	DefaultBufferCPUIterator CPUEnd() { return DefaultBufferCPUIterator(mData.get() + mSize, mElementSize); }
+	DefaultBufferCPUIterator CPUBegin() { return DefaultBufferCPUIterator(mData, mElementSize); }
+	DefaultBufferCPUIterator CPUEnd() { return DefaultBufferCPUIterator(mData + mSize, mElementSize); }
 
 	DefaultBufferGPUIterator GPUBegin() { return DefaultBufferGPUIterator(mBuffer->GetGPUVirtualAddress(), mElementSize); }
 	DefaultBufferGPUIterator GPUEnd() { return DefaultBufferGPUIterator(mBuffer->GetGPUVirtualAddress() + mSize, mElementSize); }
@@ -226,7 +226,7 @@ private:
 	ComPtr<ID3D12Resource> mBuffer{ nullptr };
 	ComPtr<ID3D12Resource> mUploadBuffer{ nullptr };
 
-	std::shared_ptr<BYTE[]> mData{ nullptr };
+	BYTE* mData{}; 
 
 	size_t mSize{ 0 };
 	size_t mElementSize{ 0 };

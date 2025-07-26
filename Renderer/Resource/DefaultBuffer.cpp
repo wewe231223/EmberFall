@@ -31,7 +31,7 @@ DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsC
 		IID_PPV_ARGS(&mUploadBuffer)
 	));
 
-	mData = std::make_shared<BYTE[]>(mSize);
+	mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mData));
 
 	if (initialData != nullptr) {
 		D3D12_SUBRESOURCE_DATA subresourceData = {};
@@ -84,7 +84,7 @@ DefaultBuffer::DefaultBuffer(ComPtr<ID3D12Device> device, size_t unitSize, size_
 		IID_PPV_ARGS(&mUploadBuffer)
 	));
 
-	mData = std::make_shared<BYTE[]>(mSize);
+	mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mData));
 
 	std::wstring name{ L"Upload Size - " + std::to_wstring(mSize) };
 	std::wstring name2{ L"Default Size - " + std::to_wstring(mSize) };
@@ -142,20 +142,15 @@ bool DefaultBuffer::Empty() const {
 }
 
 BYTE* DefaultBuffer::Data() {
-	return mData.get();
+	return mData;
 }
 
 void DefaultBuffer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList) {
 	D3D12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_COPY_DEST) };
 	commandList->ResourceBarrier(1, &barrier);
 
-	D3D12_SUBRESOURCE_DATA subresourceData{};
-	subresourceData.pData = mData.get();
-	subresourceData.RowPitch = mSize;
-	subresourceData.SlicePitch = mSize;
+	commandList->CopyResource(mBuffer.Get(), mUploadBuffer.Get());
 
-	::UpdateSubresources(commandList.Get(), mBuffer.Get(), mUploadBuffer.Get(), 0, 0, 1, &subresourceData);
-	
 	barrier = CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
 	commandList->ResourceBarrier(1, &barrier);
 }
@@ -168,11 +163,6 @@ void DefaultBuffer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList, Defaul
 	auto size = end - begin;
 	auto offset = begin - CPUBegin();
 
-	BYTE* data{ nullptr };
-	CheckHR(mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&data)));
-	std::memcpy(data, *begin, size);
-	mUploadBuffer->Unmap(0, nullptr);
-
 	commandList->CopyBufferRegion(mBuffer.Get(), dstBegin, mUploadBuffer.Get(), offset , size);
 
 	barrier = CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_GENERIC_READ);
@@ -183,12 +173,8 @@ void DefaultBuffer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_
 	D3D12_RESOURCE_BARRIER barrier{ CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), currentState, D3D12_RESOURCE_STATE_COPY_DEST) };
 	commandList->ResourceBarrier(1, &barrier);
 
-	D3D12_SUBRESOURCE_DATA subresourceData{};
-	subresourceData.pData = mData.get();
-	subresourceData.RowPitch = mSize;
-	subresourceData.SlicePitch = mSize;
-
-	::UpdateSubresources(commandList.Get(), mBuffer.Get(), mUploadBuffer.Get(), 0, 0, 1, &subresourceData);
+	
+	commandList->CopyResource(mBuffer.Get(), mUploadBuffer.Get());
 
 	barrier = CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, currentState);
 	commandList->ResourceBarrier(1, &barrier);
@@ -200,11 +186,6 @@ void DefaultBuffer::Upload(ComPtr<ID3D12GraphicsCommandList> commandList, D3D12_
 
 	auto size = end - begin;
 	auto offset = begin - CPUBegin();
-
-	BYTE* data{ nullptr };
-	CheckHR(mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&data)));
-	std::memcpy(data, *begin, size);
-	mUploadBuffer->Unmap(0, nullptr);
 
 	commandList->CopyBufferRegion(mBuffer.Get(), dstBegin, mUploadBuffer.Get(), offset, size);
 
