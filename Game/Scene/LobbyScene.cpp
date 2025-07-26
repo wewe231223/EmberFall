@@ -783,9 +783,9 @@ void LobbyScene::BuildMaterial() {
 	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Quiver_baseColor");
 	mRenderManager->GetMaterialManager().CreateMaterial("QuiverMaterial", mat);
 
-	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("Staff_BaseColor");
+	mat.mDiffuseTexture[0] = mRenderManager->GetTextureManager().GetTexture("White");
 	mat.mNormalTexture[0] = mRenderManager->GetTextureManager().GetTexture("Staff_Normal");
-	mat.mEmissiveTexture[0] = mRenderManager->GetTextureManager().GetTexture("Staff_Emission");
+	mat.mEmissiveTexture[0] = mRenderManager->GetTextureManager().GetTexture("White");
 	mat.mEmissiveColor = SimpleMath::Color(1.0f, 1.0f, 1.0f, 1.0f);
 	mRenderManager->GetMaterialManager().CreateMaterial("StaffMaterial", mat);
 

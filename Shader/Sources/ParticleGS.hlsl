@@ -1,6 +1,12 @@
-#define ParticleType_emit 1
-#define ParticleType_shell 2
-#define ParticleType_ember 3
+#define ParticleType_emit   1
+#define ParticleType_shell  2
+#define ParticleType_ember  3
+#define ParticleType_smoke  4
+#define ParticleType_explode 5 
+#define ParticleType_path 6 
+#define ParticleType_blood 7
+#define ParticleType_magicPath 8
+#define ParticleType_magicExplode 9 
 
 cbuffer Camera : register(b0)
 {
@@ -76,7 +82,7 @@ struct Particle_PS_IN
 {
     float4 positionH : SV_Position;
     float3 positionV : POSITION0;
-    uint material : MATERIAL;
+    uint textureId : TEXID; 
     float4 curPosition : POSITION1;
     float4 prevPosition : POSITION2;
     float2 uv : TEXCOORD;
@@ -139,12 +145,19 @@ void CreateBillBoard(ParticleVertex vertex, inout TriangleStream<Particle_PS_IN>
     positions[3] = float4(vertex.position - right * vertex.halfWidth + up * vertex.halfHeight, 1.f);
 
     Particle_PS_IN outpoint;
+    
+    uint texid = materialConstants[vertex.material].diffuseTexture[0];
+    if (vertex.type == ParticleType_magicExplode)
+    {
+        texid = materialConstants[vertex.material].diffuseTexture[vertex.remainEmit];
+    }
+    
     [unroll(4)]
     for (uint i = 0; i < 4; i++)
     {
         outpoint.positionV = mul(positions[i], view).xyz;
         outpoint.positionH = mul(positions[i], viewProjection);
-        outpoint.material = vertex.material;
+        outpoint.textureId = texid; 
         outpoint.uv = mul(uvTransform, float3(uvs[i], 1.f)).xy;
 
         outpoint.opacity = vertex.opacity;
@@ -164,12 +177,8 @@ void ParticleGSPassGS(point ParticleVertex input[1], inout TriangleStream<Partic
 
 float4 ParticleGSPassPS(Particle_PS_IN input) : SV_Target
 {
-    float4 Color = textures[materialConstants[input.material].diffuseTexture[0]].Sample(linearWrapSampler, input.uv);
+    float4 Color = textures[input.textureId].Sample(linearWrapSampler, input.uv);
     Color.a *= input.opacity;
-    
-    Color.rgb *= 0.7f; 
-    Color.rgb *= materialConstants[input.material].diffuse.rgb; 
-  
     
     return Color;
 }

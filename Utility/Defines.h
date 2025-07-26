@@ -143,6 +143,8 @@ enum : UINT {
     ParticleType_explode = 5,
     ParticleType_path = 6,
     ParticleType_blood = 7,
+    ParticleType_magicPath = 8, 
+    ParticleType_magicExplode = 9,
 };
 
 

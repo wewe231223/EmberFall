@@ -421,7 +421,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					v.totalLifeTime = 0.1f;
 					v.lifeTime = 0.1f;
 					v.type = ParticleType_emit;
-					v.emitType = ParticleType_path;
+					v.emitType = ParticleType_magicPath;
 					v.remainEmit = 10000;
 					v.emitIndex = 0;
 
@@ -504,6 +504,32 @@ void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
 				Console.Log("{} 번 화살 삭제.", LogType::Info, data->objectId());
 				mParticleMap[data->objectId()].Get()->Flags = static_cast<UINT>(ParticleFlag::Delete);
 				mParticleMap.erase(data->objectId());
+
+
+				if (mGameObjectMap[data->objectId()]->GetEntityType() == Packets::EntityType_PROJECTILE_MAGIC_ARROW) {
+					ParticleVertex v{};
+					v.position = mGameObjectMap[data->objectId()]->GetTransform().GetPosition();
+
+					v.halfheight = 10.f;
+					v.halfWidth = 10.f;
+					v.material = mRenderManager->GetMaterialManager().GetMaterial("MagicExplode");
+					v.spritable = true;
+					v.spriteDuration = 1.f;
+					v.spriteFrameInRow = 8;
+					v.spriteFrameInCol = 8;
+					v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+					v.velocity = { 0.f, 0.f, 0.f };
+					v.totalLifeTime = 0.01f;
+					v.lifeTime = 0.01f;
+					v.type = ParticleType_emit;
+					v.emitType = ParticleType_magicExplode;
+					v.remainEmit = 1000;
+					v.emitIndex = 0;
+
+
+					mRenderManager->GetParticleManager().CreateFreeEmitParticle(v); 
+
+				}
 			}
 
 		}
@@ -913,41 +939,6 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	mTerrainObject = TerrainObject{ device, commandList,"Resources/Binarys/Terrain/terrain.raw" };
 	mTerrainObject.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("TerrainMaterial"));
 	mRenderManager->GetMeshRenderManager().RegisterTerrainCPPointBuffer(mTerrainObject.GetCPPositionBuffer());
-
-
-
-
-#ifdef DEV_MODE
-	{
-		auto& boss = mGameObjects.emplace_back();
-		boss.mShader = mShaderMap["SkinnedNormalShader"].get();
-		boss.mMesh = mMeshMap["Demon"].get();
-		boss.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial");
-		boss.mGraphController = mDemonAnimationController;
-		boss.mAnimated = true;
-		boss.mCollider = mColliderMap["Demon"];
-		boss.SetActiveState(true);
-		boss.SetEmpty(false);
-
-		boss.GetTransform().GetPosition() = { 3.f, tCollider.GetHeight(3.f, 36.f), 36.f };
-	}
-
-	{
-		auto& imp = mGameObjects.emplace_back();
-		imp.mShader = mShaderMap["SkinnedNormalShader"].get();
-		imp.mMesh = mMeshMap["MonsterType1"].get();
-		imp.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("MonsterType1Material");
-		imp.mGraphController = mMonsterAnimationController;
-		imp.mAnimated = true;
-		imp.mCollider = mColliderMap["MonsterType1"];
-		imp.SetActiveState(true);
-		imp.SetEmpty(false);
-		//imp.mGraphController.Transition(9);
-
-		imp.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 36.f), 36.f };
-	}
-#endif 
-
 
 	{
 		mEquipments["Sword"] = EquipmentObject{};
@@ -1440,17 +1431,11 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 
 
 void TerrainScene::Update() {
-	mPositionBlock->GetText() = std::format(L"Position : ({:.2f}, {:.2f}, {:.2f})", mCamera.GetTransform().GetPosition().x, mCamera.GetTransform().GetPosition().y, mCamera.GetTransform().GetPosition().z);
-
-
 	float coefficient{ mIsBlind ? -1.f : 1.f };
 	mRenderManager->GetFogRangeStart() += coefficient * Time.GetDeltaTime<float, std::chrono::seconds>() * 500.f;
 	mRenderManager->GetFogRangeStart() = std::clamp(mRenderManager->GetFogRangeStart(), 7.f, 2000.f);
 
 
-#ifdef DEV_MODE
-	mLatencyBlock->GetText() = std::format(L"Latency : {} ms", TerrainScene::GetAverageLatency<std::chrono::milliseconds>());
-#endif 
 
 	mRenderManager->GetParticleManager().UpdateEmitParticle(); 
 
@@ -1655,9 +1640,6 @@ void TerrainScene::SendNetwork() {
 
 void TerrainScene::Exit() {
 	Input.EraseCallBack(mInputSign);
-	mLatencyBlock->SetActiveState(false);
-	mPositionBlock->SetActiveState(false);
-	mPktsBlock->SetActiveState(false);
 
 	mExpired = true; 
 	
