@@ -55,7 +55,8 @@ void ArrowScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const
         return;
     }
 
-    if (ObjectTag::PLAYER == opponent->GetTag()) {
+    auto opponentTag = opponent->GetTag();
+    if (ObjectTag::PLAYER == opponentTag or ObjectTag::TRIGGER == opponentTag or ObjectTag::NONE == opponentTag) {
         return;
     }
 

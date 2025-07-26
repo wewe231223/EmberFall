@@ -427,7 +427,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnProjectile(Packets::ProjectileTy
 
         SimpleMath::Vector3 center = ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb.Center;
         SimpleMath::Vector3 extents = ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb.Extents;
-        extents.x *= 3.0f;
+        extents.x = 0.2f;
         extents.y = 0.2f;
 
         obj->CreateBoundingObject<OBBCollider>(center, extents);
@@ -437,10 +437,11 @@ std::shared_ptr<GameObject> ObjectManager::SpawnProjectile(Packets::ProjectileTy
         obj->GetTransform()->SetPosition(firePos);
         obj->GetTransform()->SetLook(dir);
 
+        obj->GetTransform()->Update();
         obj->GetBoundingObject()->Update(obj->GetTransform()->GetWorld());
         sector->AddInSector(validId, obj->GetPosition());
 
-        obj->RegisterUpdate(10ms);
+        obj->RegisterUpdate(5ms);
         return obj;
     }
     break;
@@ -454,7 +455,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnProjectile(Packets::ProjectileTy
 
         SimpleMath::Vector3 center = ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb.Center;
         SimpleMath::Vector3 extents = ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb.Extents;
-        extents.x *= 3.0f;
+        extents.x = 0.2f;
         extents.y = 0.2f;
 
         obj->CreateBoundingObject<OBBCollider>(center, extents);
@@ -464,10 +465,11 @@ std::shared_ptr<GameObject> ObjectManager::SpawnProjectile(Packets::ProjectileTy
         obj->GetTransform()->SetPosition(firePos);
         obj->GetTransform()->SetLook(dir);
 
+        obj->GetTransform()->Update();
         obj->GetBoundingObject()->Update(obj->GetTransform()->GetWorld());
         sector->AddInSector(validId, obj->GetPosition());
 
-        obj->RegisterUpdate(10ms);
+        obj->RegisterUpdate(5ms);
         return obj;
     }
     break;
