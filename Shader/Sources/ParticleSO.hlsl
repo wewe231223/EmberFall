@@ -5,6 +5,8 @@
 #define ParticleType_explode 5 
 #define ParticleType_path 6 
 #define ParticleType_blood 7
+#define ParticleType_magicPath 8
+#define ParticleType_magicExplode 9 
  
 #define ember_LifeTime      6.f
 
@@ -118,10 +120,24 @@ float GenerateRandom(uint seed)
     return FetchRandomValue(combinedSeed);
 }
 
+uint GenerateRandomUint(uint seed)
+{
+    uint timeSeed = uint(globalTime * 1000.f);
+    uint combinedSeed = FastHash(seed) ^ FastHash(timeSeed);
+    float randValue = RandomBuffer[combinedSeed % RANDOM_BUFFER_SIZE];
+    return asuint(randValue);
+}
+
 float GenerateRandomInRange(float min, float max, uint seed)
 {
     float r = GenerateRandom(seed);
     return lerp(min, max, r);
+}
+
+uint GenerateRandomUintInRange(uint minValue, uint maxValue, uint seed)
+{
+    uint raw = GenerateRandomUint(seed);
+    return minValue + (raw % (maxValue - minValue + 1));
 }
 
 float3 GenerateRandomDirection(uint seed)
@@ -402,6 +418,103 @@ uint CreatePathParticle(ParticleVertex emitter, uint vertexID, inout PointStream
     return 5;
 }
 
+uint CreateMagicPathParticle(ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
+{
+    ParticleVertex p = (ParticleVertex) 0;
+
+    const float lifeTime = 0.5f;
+    
+    p.position = emitter.position;
+
+    p.halfWidth = GenerateRandomInRange(0.3f, 0.5f, vertexID);
+    p.halfHeight = p.halfWidth;
+
+    p.material = emitter.material;
+
+    p.spritable = emitter.spritable;
+    p.spriteFrameInRow = emitter.spriteFrameInRow;
+    p.spriteFrameInCol = emitter.spriteFrameInCol;
+    p.spriteDuration = lifeTime;
+
+    p.opacity = 1.0f;
+
+    p.mass = 0.f;
+    p.drag = float3(0.f, 0.f, 0.f);
+
+    p.totalLifetime = lifeTime;
+    p.lifetime = lifeTime;
+
+    p.type = ParticleType_smoke;
+    p.emitType = ParticleType_ember;
+    p.remainEmit = 0;
+    p.emitIndex = emitter.emitIndex;
+  
+    
+     [unroll]
+    for (int i = 0; i < 25; ++i)
+    {
+        p.direction = GenerateRandomDirection(vertexID + i);
+        
+
+        float speed = GenerateRandomInRange(3.f, 5.f, vertexID + i + 100);
+        p.velocity = p.direction * speed;
+
+        OnTerrain(p);
+        stream.Append(p);
+    }
+    
+    return 25;
+}
+
+uint CreateMagicExplodeParticle(ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
+{
+    ParticleVertex p = (ParticleVertex) 0;
+
+    const float lifeTime = 1.5f;
+    
+    p.position = emitter.position;
+
+    p.halfWidth = GenerateRandomInRange(2.f, 4.f, vertexID);
+    p.halfHeight = p.halfWidth;
+
+    p.material = emitter.material;
+
+    p.spritable = emitter.spritable;
+    p.spriteFrameInRow = emitter.spriteFrameInRow;
+    p.spriteFrameInCol = emitter.spriteFrameInCol;
+    p.spriteDuration = lifeTime;
+
+    p.opacity = 1.0f;
+
+    p.mass = 1.f;
+    p.drag = float3(0.f, 0.f, 0.f);
+
+    p.totalLifetime = lifeTime;
+    p.lifetime = lifeTime;
+
+    p.type = ParticleType_magicExplode;
+    p.emitType = ParticleType_ember;
+    p.emitIndex = emitter.emitIndex;
+  
+    
+     [unroll]
+    for (int i = 0; i < 36; ++i)
+    {
+        p.direction = GenerateRandomDirection(vertexID + i);
+        // p.direction.y = abs(p.direction.y);
+        
+        p.remainEmit = GenerateRandomUintInRange(0, 7, vertexID + i);
+
+        float speed = GenerateRandomInRange(6.f, 8.f, vertexID + i + 100);
+        p.velocity = p.direction * speed;
+
+        OnTerrain(p);
+        stream.Append(p);
+    }
+    
+    return 36;
+}
+
 uint CreateBloodParticle(ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
 {
     ParticleVertex p = (ParticleVertex) 0;
@@ -482,7 +595,12 @@ void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout Point
             case ParticleType_blood:
                 emitCount = CreateBloodParticle(v, vertexID, stream);
                 break;
-            
+            case ParticleType_magicPath:
+                emitCount = CreateMagicPathParticle(v, vertexID, stream);
+                break;
+            case ParticleType_magicExplode:
+                emitCount = CreateMagicExplodeParticle(v, vertexID, stream);
+                break; 
 
         }
         

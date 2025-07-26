@@ -87,7 +87,7 @@ namespace GameProtocol {
         };
 
         inline const SimpleMath::Vector3 MAGIC_ARROW_EXPLOSION_EXTENTS{
-            SimpleMath::Vector3{ 2.5f, 100.0f, 2.5f },
+            SimpleMath::Vector3{ 4.5f, 100.0f, 4.5f },
         };
     }
 
