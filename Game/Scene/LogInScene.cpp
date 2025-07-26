@@ -81,6 +81,4 @@ void LogInScene::Exit() {
 	
 	mID->SetActiveState(false);
 	mPW->SetActiveState(false);
-
-	
 }
