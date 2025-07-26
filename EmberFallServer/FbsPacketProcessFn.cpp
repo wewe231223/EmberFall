@@ -336,7 +336,7 @@ void ProcessRequestFireProjectileCS(GameSession* session, const Packets::Request
 
     auto attackPos = pos + dir * (hitbox->GetForwardExtents() * 2.0f);
     gGameRoomManager->GetRoom(session->GetMyRoomIdx())->GetStage().GetObjectManager()->SpawnProjectile(
-        Packets::ProjectileTypes_ARROW,
+        fire->projectileType(),
         attackPos,
         dir
     );

@@ -13,6 +13,7 @@
 #include "EventTrigger.h"
 #include "ItemScript.h"
 #include "ArrowScript.h"
+#include "MagicArrowScript.h"
 
 ObjectManager::ObjectManager(uint16_t roomIdx) 
     : mRoomIdx{ roomIdx } { }
@@ -423,7 +424,12 @@ std::shared_ptr<GameObject> ObjectManager::SpawnProjectile(Packets::ProjectileTy
         obj->mSpec.active = true;
         auto firePos = pos + SimpleMath::Vector3{ 0.0f, 1.5f, 0.0f };
         obj->CreateScript<ArrowScript>(obj, firePos, dir);
-        obj->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb);
+
+        SimpleMath::Vector3 center = ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb.Center;
+        SimpleMath::Vector3 extents = ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb.Extents;
+        extents *= 2.0f;
+
+        obj->CreateBoundingObject<OBBCollider>(center, extents);
 
         obj->Init();
 
@@ -440,7 +446,27 @@ std::shared_ptr<GameObject> ObjectManager::SpawnProjectile(Packets::ProjectileTy
 
     case Packets::ProjectileTypes_MAGIC_ARROW:
     {
-        return nullptr;
+        auto obj = GetObjectFromId(validId);
+        obj->mSpec.active = true;
+        auto firePos = pos + SimpleMath::Vector3{ 0.0f, 1.5f, 0.0f };
+        obj->CreateScript<MagicArrowScript>(obj, firePos, dir);
+
+        SimpleMath::Vector3 center = ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb.Center;
+        SimpleMath::Vector3 extents = ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb.Extents;
+        extents *= 2.0f;
+
+        obj->CreateBoundingObject<OBBCollider>(center, extents);
+
+        obj->Init();
+
+        obj->GetTransform()->SetPosition(firePos);
+        obj->GetTransform()->SetLook(dir);
+
+        obj->GetBoundingObject()->Update(obj->GetTransform()->GetWorld());
+        sector->AddInSector(validId, obj->GetPosition());
+
+        obj->RegisterUpdate(10ms);
+        return obj;
     }
     break;
 

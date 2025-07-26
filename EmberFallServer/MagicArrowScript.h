@@ -9,11 +9,11 @@
 
 #include "Script.h"
 
-class ArrowScript : public Script {
+class MagicArrowScript : public Script {
 public:
-    ArrowScript(std::shared_ptr<GameObject> owner, const SimpleMath::Vector3& pos,
+    MagicArrowScript(std::shared_ptr<GameObject> owner, const SimpleMath::Vector3& pos,
         const SimpleMath::Vector3& dir);
-    virtual ~ArrowScript();
+    virtual ~MagicArrowScript();
 
 public:
     virtual void Init() override;

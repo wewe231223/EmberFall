@@ -434,11 +434,13 @@ enum EntityType : uint8_t {
   EntityType_ITEM_CROSS = 10,
   EntityType_ITEM_HOLYWATER = 11,
   EntityType_PROJECTILE = 12,
+  EntityType_PROJECTILE_ARROW = 13,
+  EntityType_PROJECTILE_MAGIC_ARROW = 14,
   EntityType_MIN = EntityType_ENV,
-  EntityType_MAX = EntityType_PROJECTILE
+  EntityType_MAX = EntityType_PROJECTILE_MAGIC_ARROW
 };
 
-inline const EntityType (&EnumValuesEntityType())[13] {
+inline const EntityType (&EnumValuesEntityType())[15] {
   static const EntityType values[] = {
     EntityType_ENV,
     EntityType_HUMAN,
@@ -452,13 +454,15 @@ inline const EntityType (&EnumValuesEntityType())[13] {
     EntityType_ITEM_POTION,
     EntityType_ITEM_CROSS,
     EntityType_ITEM_HOLYWATER,
-    EntityType_PROJECTILE
+    EntityType_PROJECTILE,
+    EntityType_PROJECTILE_ARROW,
+    EntityType_PROJECTILE_MAGIC_ARROW
   };
   return values;
 }
 
 inline const char * const *EnumNamesEntityType() {
-  static const char * const names[14] = {
+  static const char * const names[16] = {
     "ENV",
     "HUMAN",
     "HUMAN_LONGSWORD",
@@ -472,13 +476,15 @@ inline const char * const *EnumNamesEntityType() {
     "ITEM_CROSS",
     "ITEM_HOLYWATER",
     "PROJECTILE",
+    "PROJECTILE_ARROW",
+    "PROJECTILE_MAGIC_ARROW",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameEntityType(EntityType e) {
-  if (::flatbuffers::IsOutRange(e, EntityType_ENV, EntityType_PROJECTILE)) return "";
+  if (::flatbuffers::IsOutRange(e, EntityType_ENV, EntityType_PROJECTILE_MAGIC_ARROW)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesEntityType()[index];
 }

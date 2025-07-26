@@ -1,18 +1,17 @@
 #include "pch.h"
-#include "ArrowScript.h"
-#include "GameObject.h"
+#include "MagicArrowScript.h"
 #include "ServerFrame.h"
 
-ArrowScript::ArrowScript(std::shared_ptr<GameObject> owner, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir) 
+MagicArrowScript::MagicArrowScript(std::shared_ptr<GameObject> owner, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir)
     : Script{ owner, ObjectTag::ARROW, ScriptType::PROJECTILE } {
-    owner->mSpec.entity = Packets::EntityType_PROJECTILE_ARROW;
+    owner->mSpec.entity = Packets::EntityType_PROJECTILE_MAGIC_ARROW;
     owner->GetPhysics()->AddVelocity(dir);
     owner->GetPhysics()->ResizeVelocity(GameProtocol::Unit::ARROW_SPEED.Count());
 }
 
-ArrowScript::~ArrowScript() { }
+MagicArrowScript::~MagicArrowScript() { }
 
-void ArrowScript::Init() { 
+void MagicArrowScript::Init() {
     auto owner = GetOwner();
     if (nullptr == owner) {
         return;
@@ -23,7 +22,7 @@ void ArrowScript::Init() {
     spec.moveable = true;
     spec.interactable = false;
     spec.animated = false;
-    spec.entity = Packets::EntityType_PROJECTILE_ARROW;
+    spec.entity = Packets::EntityType_PROJECTILE_MAGIC_ARROW;
     spec.defence = 0.0f;
     spec.damage = GameProtocol::Logic::DEFAULT_DAMAGE;
     spec.hp = GameProtocol::Logic::MAX_HP;
@@ -35,21 +34,21 @@ void ArrowScript::Init() {
     owner->GetPhysics()->SetGravityActive(false);
 }
 
-void ArrowScript::Update(const float deltaTime) { 
+void MagicArrowScript::Update(const float deltaTime) { 
     auto owner = GetOwner();
     if (nullptr == owner or false == owner->mSpec.active) {
         return;
     }
-    
+
     auto moveDir = owner->GetPhysics()->GetMoveDir();
     owner->GetTransform()->SetLook(moveDir);
 
     auto pos = owner->GetPosition();
 }
 
-void ArrowScript::LateUpdate(const float deltaTime) { }
+void MagicArrowScript::LateUpdate(const float deltaTime) { }
 
-void ArrowScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
+void MagicArrowScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
     auto owner = GetOwner();
     if (nullptr == owner or false == owner->mSpec.active) {
         return;
@@ -63,7 +62,7 @@ void ArrowScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const
     gServerFrame->AddTimerEvent(owner->GetId(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
 }
 
-void ArrowScript::OnCollisionTerrain(const float height) { 
+void MagicArrowScript::OnCollisionTerrain(const float height) {
     auto owner = GetOwner();
     if (nullptr == owner or false == owner->mSpec.active) {
         return;
@@ -73,4 +72,4 @@ void ArrowScript::OnCollisionTerrain(const float height) {
     gServerFrame->AddTimerEvent(owner->GetId(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
 }
 
-void ArrowScript::DispatchGameEvent(GameEvent* event) { }
+void MagicArrowScript::DispatchGameEvent(GameEvent* event) { }

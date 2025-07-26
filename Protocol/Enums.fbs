@@ -113,7 +113,9 @@ enum EntityType : ubyte {
     ITEM_POTION,
     ITEM_CROSS,
     ITEM_HOLYWATER,
-    PROJECTILE
+    PROJECTILE,
+    PROJECTILE_ARROW,
+    PROJECTILE_MAGIC_ARROW
 }
 
 enum Weapon : ubyte {

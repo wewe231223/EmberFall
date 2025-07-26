@@ -279,6 +279,9 @@
     <ClCompile Include="ThreadUtils.cpp">
       <Filter>MultiThreadLoopTest\Utils</Filter>
     </ClCompile>
+    <ClCompile Include="MagicArrowScript.cpp">
+      <Filter>MultiThreadLoopTest\Script\Projectile</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BehaviorTreeBase.h">
@@ -457,6 +460,9 @@
     </ClInclude>
     <ClInclude Include="ThreadUtils.h">
       <Filter>MultiThreadLoopTest\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="MagicArrowScript.h">
+      <Filter>MultiThreadLoopTest\Script\Projectile</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

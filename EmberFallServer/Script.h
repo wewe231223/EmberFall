@@ -22,6 +22,7 @@ enum class ScriptType : uint8_t {
     EVENT_TRIGGER,
     ITEM,
     SKILL,
+    PROJECTILE,
 };
 
 class Script abstract : public GameObjectComponent {
