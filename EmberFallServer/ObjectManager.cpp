@@ -261,7 +261,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->Init();
 
         auto [min, max] = GameProtocol::Logic::MONSTER_SPAWN_AREA;
-        obj->GetTransform()->Translate(Random::GetRandomVec3(min, max));
+        obj->GetTransform()->SetPosition(Random::GetRandomVec3(min, max));
         
         sector->AddInSector(validId, obj->GetPosition());
 
@@ -284,7 +284,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
         obj->Init();
 
         auto [min, max] = GameProtocol::Logic::GEM_SPAWN_AREA;
-        obj->GetTransform()->Translate(Random::GetRandomVec3(min, max));
+        obj->GetTransform()->SetPosition(Random::GetRandomVec3(min, max));
 
         sector->AddInSector(validId, obj->GetPosition());
         obj->RegisterUpdate();

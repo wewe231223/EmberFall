@@ -36,6 +36,8 @@ public:
     void ProcessRemainData(size_t validSize);
 
 private:
+    std::thread mRecvThread{ };
+
     SOCKET mSocket{ INVALID_SOCKET };
     SessionIdType mSessionId{ };
 

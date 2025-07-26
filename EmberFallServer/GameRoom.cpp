@@ -344,11 +344,10 @@ void GameRoom::CheckGameEnd() {
 
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Register Start Game!!!");
 
-        auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
+        mStageTransitionTarget = static_cast<Packets::GameStage>(mStageTransitionTarget + 1);
+
         gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN);
         mSceneTransitionCounter = SysClock::now();
-
-        mStageTransitionTarget = static_cast<Packets::GameStage>(mStageTransitionTarget + 1);
 
         auto packetStartTransition = FbsPacketFactory::StartSceneTransition(SCENE_TRANSITION_COUNT);
         BroadCast(packetStartTransition);

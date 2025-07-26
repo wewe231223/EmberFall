@@ -107,11 +107,11 @@ namespace GameProtocol {
 
         inline const std::pair<SimpleMath::Vector3, SimpleMath::Vector3>& GetStageMapSize(Packets::GameStage stage)
         {
-            if (Packets::GameStage_NONE > stage or Packets::GameStage_MAX < stage) {
+            if (Packets::GameStage_LOBBY > stage or Packets::GameStage_MAX < stage) {
                 return { };
             }
 
-            return STAGE_MAP_SIZE.at(static_cast<size_t>(stage) - 1);
+            return STAGE_MAP_SIZE.at(static_cast<size_t>(stage) - 2);
         }
     }
 

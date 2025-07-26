@@ -138,7 +138,7 @@ void HumanPlayerScript::OnCollisionTerrain(const float height) {
         return;
     }
 
-    owner->GetPhysics()->mFactor.friction = 1.5f;
+    owner->GetPhysics()->mFactor.friction = 2.0f;
     if (Packets::AnimationState_JUMP == owner->mAnimationStateMachine.GetCurrState()) {
         owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE);
     }

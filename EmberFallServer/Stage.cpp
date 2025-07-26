@@ -133,6 +133,7 @@ void Stage::StartStage(uint8_t gemCount, Packets::GameStage stage) {
     mActive.exchange(true);
     mStage = stage;
     mTerrainCollider.SetTerrain(gBaseTerrain);
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Stage: {}", Packets::EnumNameGameStage(stage));
 
     if (Packets::GameStage_LAST == stage) {
         mTerrainCollider.SetTerrain(nullptr);
