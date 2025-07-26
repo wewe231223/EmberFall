@@ -5,6 +5,8 @@
 #define ParticleType_explode 5 
 #define ParticleType_path 6 
 #define ParticleType_blood 7
+#define ParticleType_magicPath 8
+#define ParticleType_magicExplode 9
  
 #define ember_LifeTime      6.f
 
@@ -450,6 +452,102 @@ uint CreateBloodParticle(ParticleVertex emitter, uint vertexID, inout PointStrea
     return 36;
 }
 
+uint CreateMagicPathParticle(ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
+{
+    ParticleVertex p = (ParticleVertex) 0;
+
+    const float lifeTime = 0.5f;
+    
+    p.position = emitter.position;
+
+    p.halfWidth = GenerateRandomInRange(0.3f, 0.5f, vertexID);
+    p.halfHeight = p.halfWidth;
+
+    p.material = emitter.material;
+
+    p.spritable = emitter.spritable;
+    p.spriteFrameInRow = emitter.spriteFrameInRow;
+    p.spriteFrameInCol = emitter.spriteFrameInCol;
+    p.spriteDuration = lifeTime;
+
+    p.opacity = 1.0f;
+
+    p.mass = 0.0f;
+    p.drag = float3(0.0f, 0.0f, 0.0f);
+
+    p.totalLifetime = lifeTime;
+    p.lifetime = lifeTime;
+
+    p.type = ParticleType_magicPath;
+    p.emitType = ParticleType_ember;
+    p.remainEmit = 0;
+    p.emitIndex = emitter.emitIndex;
+  
+    
+     [unroll]
+    for (int i = 0; i < 5; ++i)
+    {
+        p.direction = GenerateRandomDirection(vertexID + i);
+        
+
+        float speed = GenerateRandomInRange(0.f, 1.f, vertexID + i + 100);
+        p.velocity = p.direction * speed;
+
+        OnTerrain(p);
+        stream.Append(p);
+    }
+    
+    return 5;
+}
+
+uint CreateMagicExplodeParticle(ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
+{
+    ParticleVertex p = (ParticleVertex) 0;
+
+    const float lifeTime = 2.3f;
+    
+    p.position = emitter.position;
+
+    p.halfWidth = GenerateRandomInRange(4.f, 7.f, vertexID);
+    p.halfHeight = p.halfWidth;
+
+    p.material = emitter.material;
+
+    p.spritable = emitter.spritable;
+    p.spriteFrameInRow = emitter.spriteFrameInRow;
+    p.spriteFrameInCol = emitter.spriteFrameInCol;
+    p.spriteDuration = lifeTime;
+
+    p.opacity = 1.0f;
+
+    p.mass = 0.5f;
+    p.drag = float3(0.1f, 0.1f, 0.1f);
+
+    p.totalLifetime = lifeTime;
+    p.lifetime = lifeTime;
+
+    p.type = ParticleType_blood;
+    p.emitType = ParticleType_ember;
+    p.remainEmit = 0;
+    p.emitIndex = emitter.emitIndex;
+  
+    
+     [unroll]
+    for (int i = 0; i < 36; ++i)
+    {
+        p.direction = GenerateRandomDirection(vertexID + i);
+        
+
+        float speed = GenerateRandomInRange(7.f, 10.f, vertexID + i + 100);
+        p.velocity = p.direction * speed;
+
+        OnTerrain(p);
+        stream.Append(p);
+    }
+    
+    return 36;
+}
+
 void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
 {    
     if (emitter.emitIndex != NULL_INDEX)
@@ -481,6 +579,12 @@ void EmitParticleUpdate(inout ParticleVertex emitter, uint vertexID, inout Point
                 break;
             case ParticleType_blood:
                 emitCount = CreateBloodParticle(v, vertexID, stream);
+                break;
+            case ParticleType_magicPath:
+                emitCount = CreateMagicPathParticle(v, vertexID, stream);
+                break;
+            case ParticleType_magicExplode:
+                emitCount = CreateMagicExplodeParticle(v, vertexID, stream);
                 break;
             
 

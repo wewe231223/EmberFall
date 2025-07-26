@@ -421,7 +421,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					v.totalLifeTime = 0.1f;
 					v.lifeTime = 0.1f;
 					v.type = ParticleType_emit;
-					v.emitType = ParticleType_path;
+					v.emitType = ParticleType_magicPath;
 					v.remainEmit = 10000;
 					v.emitIndex = 0;
 
@@ -504,6 +504,31 @@ void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
 				Console.Log("{} 번 화살 삭제.", LogType::Info, data->objectId());
 				mParticleMap[data->objectId()].Get()->Flags = static_cast<UINT>(ParticleFlag::Delete);
 				mParticleMap.erase(data->objectId());
+
+				if (mGameObjectMap[data->objectId()]->GetEntityType() == Packets::EntityType_PROJECTILE_MAGIC_ARROW) {
+					ParticleVertex v{};
+					v.position = mGameObjectMap[data->objectId()]->GetTransform().GetPosition();
+
+					v.halfheight = 10.f;
+					v.halfWidth = 10.f;
+					v.material = mRenderManager->GetMaterialManager().GetMaterial("ExplodeMaterial");
+					v.spritable = true;
+					v.spriteDuration = 1.f;
+					v.spriteFrameInRow = 8;
+					v.spriteFrameInCol = 8;
+					v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+					v.velocity = { 0.f, 0.f, 0.f };
+					v.totalLifeTime = 0.01f;
+					v.lifeTime = 0.01f;
+					v.type = ParticleType_emit;
+					v.emitType = ParticleType_magicExplode;
+					v.remainEmit = 720;
+					v.emitIndex = 0;
+
+					mRenderManager->GetParticleManager().CreateFreeEmitParticle(v); 
+				}
+
+
 			}
 
 		}
