@@ -79,6 +79,8 @@ void CorruptedGemScript::OnDestroy(DestroyingGemEvent* event) {
         if (nullptr != obj) {
             obj->DispatchGameEvent(eventDestroyed);
         }
+
+        gServerFrame->AddTimerEvent(owner->GetId(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
     }
 }
 
