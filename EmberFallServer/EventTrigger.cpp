@@ -5,8 +5,8 @@
 #include "ObjectManager.h"
 #include "GameRoom.h"
 
-EventTrigger::EventTrigger(std::shared_ptr<GameObject> owner, std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount)
-    : Trigger{ owner, lifeTime }, mEvent{ event }, mProduceEventDelay{ eventDelay }, mProduceEventCount{ eventCount } {
+EventTrigger::EventTrigger(std::shared_ptr<GameObject> owner, std::shared_ptr<GameEvent> event, float lifeTime, float eventDelay, int32_t eventCount, ObjectTag alliance)
+    : Trigger{ owner, lifeTime }, mEvent{ event }, mProduceEventDelay{ eventDelay }, mProduceEventCount{ eventCount }, mAlliance{ alliance } {
     if (0 == mProduceEventCount) {
         mProduceEventCount = static_cast<int32_t>(mLifeTime / mProduceEventDelay);
     }
@@ -24,7 +24,8 @@ void EventTrigger::LateUpdate(const float deltaTime) { }
 
 void EventTrigger::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) {
     auto opponentTag = opponent->GetTag();
-    if (ObjectTag::TRIGGER == opponentTag or ObjectTag::ENV == opponentTag or ObjectTag::NONE == opponentTag or ObjectTag::ITEM == opponentTag) {
+    if (ObjectTag::TRIGGER == opponentTag or ObjectTag::ENV == opponentTag or 
+        ObjectTag::NONE == opponentTag or ObjectTag::ITEM == opponentTag or opponentTag == mAlliance) {
         return;
     }
 

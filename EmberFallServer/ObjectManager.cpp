@@ -374,7 +374,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnTrigger(const SimpleMath::Vector
 }
 
 std::shared_ptr<GameObject> ObjectManager::SpawnEventTrigger(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& ext, const SimpleMath::Vector3& dir, 
-    float lifeTime, std::shared_ptr<GameEvent> event, float delay, int32_t count) {
+    float lifeTime, std::shared_ptr<GameEvent> event, float delay, int32_t count, ObjectTag alliance) {
     auto sector = mSector.lock();
     if (nullptr == sector) {
         return nullptr;
@@ -388,7 +388,7 @@ std::shared_ptr<GameObject> ObjectManager::SpawnEventTrigger(const SimpleMath::V
 
     auto obj = GetTrigger(validId);
     obj->mSpec.active = true;
-    obj->CreateScript<EventTrigger>(obj, event, lifeTime, delay, count);
+    obj->CreateScript<EventTrigger>(obj, event, lifeTime, delay, count, alliance);
     obj->GetTransform()->SetPosition(pos);
     obj->GetTransform()->SetLook(dir);
     obj->GetTransform()->Update();
@@ -422,12 +422,13 @@ std::shared_ptr<GameObject> ObjectManager::SpawnProjectile(Packets::ProjectileTy
     {
         auto obj = GetObjectFromId(validId);
         obj->mSpec.active = true;
-        auto firePos = pos + SimpleMath::Vector3{ 0.0f, 1.5f, 0.0f };
+        auto firePos = pos + SimpleMath::Vector3{ 0.0f, 1.2f, 0.0f };
         obj->CreateScript<ArrowScript>(obj, firePos, dir);
 
         SimpleMath::Vector3 center = ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb.Center;
         SimpleMath::Vector3 extents = ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb.Extents;
-        extents *= 2.0f;
+        extents.x *= 3.0f;
+        extents.y = 0.2f;
 
         obj->CreateBoundingObject<OBBCollider>(center, extents);
 
@@ -448,12 +449,13 @@ std::shared_ptr<GameObject> ObjectManager::SpawnProjectile(Packets::ProjectileTy
     {
         auto obj = GetObjectFromId(validId);
         obj->mSpec.active = true;
-        auto firePos = pos + SimpleMath::Vector3{ 0.0f, 1.5f, 0.0f };
+        auto firePos = pos + SimpleMath::Vector3{ 0.0f, 1.2f, 0.0f };
         obj->CreateScript<MagicArrowScript>(obj, firePos, dir);
 
         SimpleMath::Vector3 center = ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb.Center;
         SimpleMath::Vector3 extents = ResourceManager::GetEntityInfo(ENTITY_KEY_ARROW).bb.Extents;
-        extents *= 2.0f;
+        extents.x *= 3.0f;
+        extents.y = 0.2f;
 
         obj->CreateBoundingObject<OBBCollider>(center, extents);
 

@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "MagicArrowScript.h"
 #include "ServerFrame.h"
+#include "GameRoom.h"
+#include "Stage.h"
+#include "ObjectManager.h"
 
 MagicArrowScript::MagicArrowScript(std::shared_ptr<GameObject> owner, const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir)
     : Script{ owner, ObjectTag::ARROW, ScriptType::PROJECTILE } {
@@ -54,12 +57,22 @@ void MagicArrowScript::OnCollision(const std::shared_ptr<GameObject>& opponent, 
         return;
     }
 
+    if (ObjectTag::PLAYER == opponent->GetTag()) {
+        return;
+    }
+
     owner->mSpec.active = false;
 
-    auto event = GameEventFactory::GetEvent<AttackEvent>(owner->GetId(), opponent->GetId(), GameProtocol::Logic::DEFAULT_DAMAGE);
-    opponent->DispatchGameEvent(event);
+    auto attackEvent = GameEventFactory::GetEvent<AttackEvent>(owner->GetId(), opponent->GetId(), GameProtocol::Logic::DEFAULT_DAMAGE);
+    opponent->DispatchGameEvent(attackEvent);
 
     gServerFrame->AddTimerEvent(owner->GetId(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
+    auto pos = owner->GetPosition();
+    auto dir = owner->GetTransform()->Forward();
+
+    auto event = GameEventFactory::GetEvent<AttackEvent>(owner->GetId(), SYSTEM_ID, 20.0f);
+    gGameRoomManager->GetRoom(owner->GetMyRoomIdx())->GetStage().SpawnEventTrigger(pos, GameProtocol::Logic::MAGIC_ARROW_EXPLOSION_EXTENTS, 
+        dir, 0.5f, event, 0.5f, 1, ObjectTag::PLAYER);
 }
 
 void MagicArrowScript::OnCollisionTerrain(const float height) {
@@ -70,6 +83,13 @@ void MagicArrowScript::OnCollisionTerrain(const float height) {
 
     owner->GetPhysics()->ResizeVelocity(0.0f);
     gServerFrame->AddTimerEvent(owner->GetId(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
+
+    auto pos = owner->GetPosition();
+    auto dir = owner->GetTransform()->Forward();
+
+    auto event = GameEventFactory::GetEvent<AttackEvent>(owner->GetId(), SYSTEM_ID, 20.0f);
+    gGameRoomManager->GetRoom(owner->GetMyRoomIdx())->GetStage().SpawnEventTrigger(pos, GameProtocol::Logic::MAGIC_ARROW_EXPLOSION_EXTENTS, 
+        dir, 0.5f, event, 0.5f, 1, ObjectTag::PLAYER);
 }
 
 void MagicArrowScript::DispatchGameEvent(GameEvent* event) { }

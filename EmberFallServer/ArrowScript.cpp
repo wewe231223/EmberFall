@@ -40,7 +40,7 @@ void ArrowScript::Update(const float deltaTime) {
     if (nullptr == owner or false == owner->mSpec.active) {
         return;
     }
-    
+
     auto moveDir = owner->GetPhysics()->GetMoveDir();
     owner->GetTransform()->SetLook(moveDir);
 
@@ -55,11 +55,14 @@ void ArrowScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const
         return;
     }
 
+    if (ObjectTag::PLAYER == opponent->GetTag()) {
+        return;
+    }
+
     owner->mSpec.active = false;
 
     auto event = GameEventFactory::GetEvent<AttackEvent>(owner->GetId(), opponent->GetId(), GameProtocol::Logic::DEFAULT_DAMAGE);
     opponent->DispatchGameEvent(event);
-
     gServerFrame->AddTimerEvent(owner->GetId(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
 }
 

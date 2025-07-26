@@ -47,7 +47,7 @@ public:
     std::shared_ptr<GameObject> SpawnObject(Packets::EntityType entity);
     std::shared_ptr<GameObject> SpawnTrigger(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& ext, const SimpleMath::Vector3& dir, float lifeTime);
     std::shared_ptr<GameObject> SpawnEventTrigger(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& ext, const SimpleMath::Vector3& dir,
-        float lifeTime, std::shared_ptr<GameEvent> event, float delay, int32_t count);
+        float lifeTime, std::shared_ptr<GameEvent> event, float delay, int32_t count, ObjectTag alliance);
     std::shared_ptr<GameObject> SpawnProjectile(Packets::ProjectileTypes projectileType, 
         const SimpleMath::Vector3& pos, const SimpleMath::Vector3& dir, float lifeTime=std::numeric_limits<float>::max());
 

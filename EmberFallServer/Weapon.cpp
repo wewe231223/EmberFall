@@ -32,7 +32,8 @@ void Fist::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, c
     event->knockBackForce = dir * GameProtocol::Logic::MONSTER_KNOCK_BACK_POWER;
 
     auto attackPos = pos + dir * mHitBox.Length();
-    gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 1.5f, event, 1.5f, 1);
+    gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 
+        1.5f, event, 1.5f, 1, ObjectTag::BOSSPLAYER);
 }
 
 Sword::Sword(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage)
@@ -49,7 +50,8 @@ void Sword::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& pos, 
     event->knockBackForce = dir * GameProtocol::Logic::SWORD_KNOCK_BACK_POWER;
 
     auto attackPos = pos + dir * mHitBox.Length();
-    gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 1.5f, event, 1.5f, 1);
+    gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 
+        1.5f, event, 1.5f, 1, ObjectTag::PLAYER);
 }
 
 Bow::Bow(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage)
@@ -75,7 +77,8 @@ void LongSword::Attack(NetworkObjectIdType ownerId, const SimpleMath::Vector3& p
     event->knockBackForce = dir * GameProtocol::Logic::LONGSWORD_KNOCK_BACK_POWER;
 
     auto attackPos = pos + dir * mHitBox.z;
-    gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 1.5f, event, 1.5f, 1);
+    gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 
+        1.5f, event, 1.5f, 1, ObjectTag::PLAYER);
 }
 
 Staff::Staff(uint16_t roomIdx, const SimpleMath::Vector3& hitBoxSize, float damage)
@@ -108,5 +111,6 @@ void Weapons::BossPlayerSword::Attack(NetworkObjectIdType ownerId, const SimpleM
     event->knockBackForce = dir * GameProtocol::Logic::BOSS_SWORD_KNOCK_BACK_POWER;
 
     auto attackPos = pos + dir * mHitBox.z;
-    gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 3.0f, event, 3.0f, 1);
+    gGameRoomManager->GetRoom(GetRoomIdx())->GetStage().GetObjectManager()->SpawnEventTrigger(attackPos, mHitBox, dir, 
+        3.0f, event, 3.0f, 1, ObjectTag::MONSTER);
 }

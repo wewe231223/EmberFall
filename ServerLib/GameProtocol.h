@@ -12,7 +12,7 @@ namespace GameProtocol {
         inline decltype(auto) BOSS_PLAYER_RUN_SPEED = 7.0mps;
 
         inline decltype(auto) DEFAULT_PROJECTILE_SPEED = 33.3mps;
-        inline decltype(auto) ARROW_SPEED = 20.0mps;
+        inline decltype(auto) ARROW_SPEED = 15.0mps;
     }
 
     namespace Key {
@@ -84,6 +84,10 @@ namespace GameProtocol {
         inline const std::pair<SimpleMath::Vector3, SimpleMath::Vector3> MONSTER_PATROL_AREA{
             SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f },
             SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f }
+        };
+
+        inline const SimpleMath::Vector3 MAGIC_ARROW_EXPLOSION_EXTENTS{
+            SimpleMath::Vector3{ 2.5f, 100.0f, 2.5f },
         };
     }
 

@@ -167,8 +167,8 @@ std::shared_ptr<GameObject> Stage::SpawnTrigger(const SimpleMath::Vector3& pos, 
 }
 
 std::shared_ptr<GameObject> Stage::SpawnEventTrigger(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& ext, const SimpleMath::Vector3& dir,
-    float lifeTime, std::shared_ptr<GameEvent> event, float delay, int32_t count) {
-    return mObjectManager->SpawnEventTrigger(pos, ext, dir, lifeTime, event, delay, count);
+    float lifeTime, std::shared_ptr<GameEvent> event, float delay, int32_t count, ObjectTag alliance) {
+    return mObjectManager->SpawnEventTrigger(pos, ext, dir, lifeTime, event, delay, count, alliance);
 }
 
 void Stage::ReleaseObject(NetworkObjectIdType id) {

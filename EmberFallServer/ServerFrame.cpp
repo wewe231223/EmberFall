@@ -388,3 +388,7 @@ void ServerFrame::TimerThread() {
 
     ClearTls();
 }
+
+void ServerFrame::DbThread() {
+
+}

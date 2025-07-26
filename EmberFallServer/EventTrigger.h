@@ -5,7 +5,7 @@
 class EventTrigger : public Trigger {
 public:
     EventTrigger(std::shared_ptr<GameObject> owner, std::shared_ptr<GameEvent> event,
-        float lifeTime, float eventDelay, int32_t eventCount);
+        float lifeTime, float eventDelay, int32_t eventCount, ObjectTag alliance=ObjectTag::NONE);
     virtual ~EventTrigger();
 
 public:
@@ -22,6 +22,7 @@ private:
     float mProduceEventDelay{ };
     int32_t mProduceEventCount{ };
 
+    ObjectTag mAlliance{ };
     std::shared_ptr<GameEvent> mEvent{ };
     std::unordered_map<NetworkObjectIdType, std::pair<float, int32_t>> mProducedEventCounter{ };
 };
