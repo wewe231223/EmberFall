@@ -595,12 +595,6 @@ Short2 SectorSystem::UpdateSectorPos(NetworkObjectIdType id, const SimpleMath::V
 }
 
 void SectorSystem::UpdatePlayerViewList(const std::shared_ptr<GameObject>& player, const SimpleMath::Vector3 pos, const float range) {
-    const auto playerScript = player->GetScript<PlayerScript>();
-    if (nullptr == playerScript) {
-        gLogConsole->PushLog(DebugLevel::LEVEL_WARNING, "In Sector System: PlayerScript Is Null");
-        return;
-    }
-
     auto objManager = mObjManager.lock();
     if (nullptr == objManager) {
         return;
@@ -629,6 +623,7 @@ void SectorSystem::UpdatePlayerViewList(const std::shared_ptr<GameObject>& playe
     if (nullptr == gameSession) {
         return;
     }
+
     gameSession->UpdateViewList(inViewRangeObjects);
 }
 

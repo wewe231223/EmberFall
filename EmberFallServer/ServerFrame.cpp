@@ -158,10 +158,11 @@ void ServerFrame::ProcessIoEvent(OverlappedEx* overlappedEx, ULONG_PTR completio
         auto objId = static_cast<NetworkObjectIdType>(completionKey);
         auto roomId = std::get<int64_t>(overlappedEx->extraInfo);
         auto obj = gGameRoomManager->GetRoom(roomId)->GetStage().GetObjectManager()->GetObjectFromId(objId);
-        if (nullptr == obj) {
+        if (nullptr == obj or false == obj->mSpec.active) {
             break;
         }
 
+        obj->mSpec.active = false;
         auto packetRemove = FbsPacketFactory::ObjectRemoveSC(obj->GetId());
 
         gGameRoomManager->GetRoom(roomId)->GetSessionLock().ReadLock();

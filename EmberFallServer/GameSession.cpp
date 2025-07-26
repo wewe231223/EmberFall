@@ -260,6 +260,12 @@ void GameSession::UpdateViewList(const std::vector<NetworkObjectIdType>& inViewR
     mViewList = newViewList;
 }
 
+void GameSession::UpdatePlayer() {
+    mUserObject->Update();
+    mUserObject->LateUpdate();
+    gGameRoomManager->GetRoom(GetMyRoomIdx())->GetStage().UpdatePlayerViewList(mUserObject, mUserObject->GetPosition(), GameProtocol::Logic::PLAYER_VIEW_RANGE);
+}
+
 void GameSession::EnterLobby() {
     mSessionState = SESSION_INLOBBY;
 

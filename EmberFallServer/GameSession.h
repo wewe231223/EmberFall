@@ -44,6 +44,7 @@ public:
     void InitPlayerScript();
 
     void UpdateViewList(const std::vector<NetworkObjectIdType>& inViewRangeObjects);
+    void UpdatePlayer();
 
     virtual void Close() override;
     virtual void OnConnect() override;

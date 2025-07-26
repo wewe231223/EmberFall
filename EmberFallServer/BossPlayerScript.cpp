@@ -58,7 +58,6 @@ void BossPlayerScript::Update(const float deltaTime) {
     mInput->Update();
 
     auto ownerRoom = owner->GetMyRoomIdx();
-    gGameRoomManager->GetRoom(ownerRoom)->GetStage().UpdatePlayerViewList(owner, owner->GetPosition(), GetViewList().mViewRange.Count());
 }
 
 void BossPlayerScript::LateUpdate(const float deltaTime) {
@@ -78,9 +77,7 @@ void BossPlayerScript::LateUpdate(const float deltaTime) {
 
     if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Boss Player Remove");
-        auto executionTime = SysClock::now();
-        gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), 0s, IoType::REMOVE_NPC);
-        owner->mSpec.active = false;
+        gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC);
         return;
     }
 }
