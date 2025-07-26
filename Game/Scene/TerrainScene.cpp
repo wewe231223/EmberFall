@@ -372,11 +372,11 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 					v.halfheight = 10.f;
 					v.halfWidth = 10.f;
-					v.material = mRenderManager->GetMaterialManager().GetMaterial("SmokeMaterial");
+					v.material = mRenderManager->GetMaterialManager().GetMaterial("ArrowPath");
 					v.spritable = true;
 					v.spriteDuration = 1.f;
-					v.spriteFrameInRow = 4;
-					v.spriteFrameInCol = 4;
+					v.spriteFrameInRow = 5;
+					v.spriteFrameInCol = 2;
 					v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
 					v.velocity = { 0.f, 0.f, 0.f };
 					v.totalLifeTime = 0.1f;
@@ -1025,7 +1025,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 		return true; 
 	}); 
 
-	Time.AddEvent(500ms, [sharedThis]() {
+	Time.AddEvent(250ms, [sharedThis]() {
 		if (sharedThis.expired()) {
 			return false;
 		}

@@ -451,7 +451,7 @@ void LobbyScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 
 
 	std::weak_ptr sharedThis = std::static_pointer_cast<LobbyScene>(shared_from_this());
-	Time.AddEvent(500ms, [sharedThis]() {
+	Time.AddEvent(100ms, [sharedThis]() {
 		if (sharedThis.expired()) {
 			return false;
 		}
