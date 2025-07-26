@@ -499,7 +499,8 @@ void TerrainScene::ProcessObjectRemoved(const uint8_t* buffer) {
 			mGameObjectMap[data->objectId()]->SetActiveState(false);
 			mGameObjectMap[data->objectId()]->SetEmpty(true);
 
-			if (mGameObjectMap[data->objectId()]->GetEntityType() == Packets::EntityType_PROJECTILE) {
+			if (mGameObjectMap[data->objectId()]->GetEntityType() == Packets::EntityType_PROJECTILE_ARROW 
+				or mGameObjectMap[data->objectId()]->GetEntityType() == Packets::EntityType_PROJECTILE_MAGIC_ARROW) {
 				Console.Log("{} 번 화살 삭제.", LogType::Info, data->objectId());
 				mParticleMap[data->objectId()].Get()->Flags = static_cast<UINT>(ParticleFlag::Delete);
 				mParticleMap.erase(data->objectId());
@@ -538,10 +539,6 @@ void TerrainScene::ProcessObjectMove(const uint8_t* buffer) {
 				float predictDuration = mAvgLatency + data->duration();
 
 				auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-
-				if (mGameObjectMap[data->objectId()]->GetEntityType() != Packets::EntityType_PROJECTILE) {
-					// zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
-				}
 
 				mGameObjectMap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
 
@@ -582,8 +579,18 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
-			
 			if (data->objectId() == gClientCore->GetSessionId()) {
+
+				if (data->animation() != Packets::AnimationState_ATTACK) {
+					if (mFireLock) {
+						mFireLock = false; 
+					}
+				}
+
+
+
+
+
 				if (data->animation() == Packets::AnimationState_ATTACK) {
 					mMyPlayer->LockRotate(true); 
 
@@ -1617,21 +1624,28 @@ void TerrainScene::SendNetwork() {
 			auto dir = mMyPlayer->GetTransform().GetForward();
 			dir.y = 0.f;
 
-			if (mMyPlayer->GetMyRole() == Packets::EntityType_HUMAN_ARCHER) {
-				Time.AddEvent(1s, [dir]() {
-					decltype(auto) packet = FbsPacketFactory::RequestFireCS(gClientCore->GetSessionId(), dir, Packets::ProjectileTypes_ARROW);
-					gClientCore->Send(packet);
-					return false; 
-				});			
+			if (not mFireLock) {
+				if (mMyPlayer->GetMyRole() == Packets::EntityType_HUMAN_ARCHER) {
+					mFireLock = true;
+					
+					Time.AddEvent(1s, [dir]() {
+						decltype(auto) packet = FbsPacketFactory::RequestFireCS(gClientCore->GetSessionId(), dir, Packets::ProjectileTypes_ARROW);
+						gClientCore->Send(packet);
+						return false;
+						}
+					);
+				}
+				else if (mMyPlayer->GetMyRole() == Packets::EntityType_HUMAN_MAGICIAN) {
+					mFireLock = true;
+
+					Time.AddEvent(1s, [dir]() {
+						decltype(auto) packet = FbsPacketFactory::RequestFireCS(gClientCore->GetSessionId(), dir, Packets::ProjectileTypes_MAGIC_ARROW);
+						gClientCore->Send(packet);
+						return false;
+						});
+				}
 			}
-			else if (mMyPlayer->GetMyRole() == Packets::EntityType_HUMAN_MAGICIAN) {
-				Time.AddEvent(1s, [dir]() {
-					decltype(auto) packet = FbsPacketFactory::RequestFireCS(gClientCore->GetSessionId(), dir, Packets::ProjectileTypes_MAGIC_ARROW);
-					gClientCore->Send(packet);
-					return false;
-				});
-			}
-	
+
 			decltype(auto) packet = FbsPacketFactory::RequestAttackCS(gClientCore->GetSessionId(), dir);
 			gClientCore->Send(packet);
 		}

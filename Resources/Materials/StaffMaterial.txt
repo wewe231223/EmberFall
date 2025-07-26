@@ -3,12 +3,12 @@ SpecularColor: 0.0, 0.0, 0.0, 0.0
 EmissiveColor: 1.0, 1.0, 1.0, 1.0
 
 DiffuseTextures:
-white
+White
 
 SpecularTextures:
 
 EmissiveTextures:
-white
+White
 
 MetalicTextures:
 
