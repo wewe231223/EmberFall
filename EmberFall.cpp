@@ -31,14 +31,7 @@
 #endif
 
 #include "Config/Config.h"
-#include "ServerLib/LibConsole.h"
 
-
-#ifdef _DEBUG 
-#define MONITER_CPU_GPU_TIME
-#endif 
-
-#define MONITER_CPU_GPU_TIME
 
 #define MAX_LOADSTRING 100
 // 전역 변수:
@@ -63,8 +56,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
-    gLibConsole.Init(); 
-
     if (DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, IPDialogProc) == IDOK) { 
         if (not gClientCore->Start(iPAddr, SERVER_PORT)) {
             CrashExp(true, "Failed to connect");
@@ -167,8 +158,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     SoundManager::GetInstance().Terminate(); 
 
-
-    gLibConsole.Terminate(); 
 
     ::DestroyWindow(hWnd);
 
