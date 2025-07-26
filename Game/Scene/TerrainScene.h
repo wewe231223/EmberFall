@@ -160,6 +160,7 @@ private:
 	bool mInitialized{ false }; 
 	bool mExpired{ false };
 	bool mIsBlind{ false };
+	bool mFireLock{ false };
 
 	size_t mProcessedPacketSize{ 0 };
 };
