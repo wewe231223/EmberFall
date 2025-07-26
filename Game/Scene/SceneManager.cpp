@@ -27,7 +27,7 @@ void SceneManager::Init(std::shared_ptr<RenderManager> renderMgr, DefaultBufferC
 	mSceneFeatureType[static_cast<size_t>(SceneType::TITLE)] = { false, false, false, false, false, false, false };
 	mSceneFeatureType[static_cast<size_t>(SceneType::LOADING)]	= { false, false, false, false, false, false, false }; 
 	mSceneFeatureType[static_cast<size_t>(SceneType::LOBBY)]	= { false, false, true, false, false, false, false }; 
-	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)]	= { true, true, true, true, true, true, false }; 
+	mSceneFeatureType[static_cast<size_t>(SceneType::TERRAIN)]	= { true, true, true, true, true, false, true }; 
 	mSceneFeatureType[static_cast<size_t>(SceneType::FINAL)]	= { true, true, true, true, true, false, false };
 
 	mCurrentSceneType = SceneType::LOADING;
