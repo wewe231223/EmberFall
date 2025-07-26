@@ -47,4 +47,6 @@ private:
 
 	TextBlock* mID{};
 	TextBlock* mPW{};
+
+	Image mTitleImage{};
 };

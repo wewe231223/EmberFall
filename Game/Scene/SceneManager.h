@@ -4,7 +4,7 @@
 #include "../Renderer/Manager/RenderManager.h"
 #include <thread>
 
-//#define START_WITH_TITLE
+#define START_WITH_TITLE
 
 enum class SceneType : BYTE {
 	TITLE,

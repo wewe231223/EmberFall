@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "LogInScene.h"
+#include "../ServerLib/Protocol.h"
 
 LogInScene::LogInScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCamLocation) {
 	mRenderManager = renderMgr;
@@ -51,7 +52,19 @@ void LogInScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 		mRenderManager->GetTextureManager().GetTexture("Login")
 	);
 
+	mLoginButton.SetCallBack([this]() {
+
+		PostMessage(mRenderManager->GetWindowHandle(), WM_ADVANCESCENE, Packets::GameStage_LOBBY, 0);
+		}, Button::InvokeCondition::LeftClick);
+
 	mLoginButton.SetRect(1050.f, 650.f, 250.f, 250.f);
+
+	mTitleImage.Init(
+		mRenderManager->GetCanvas(),
+		mRenderManager->GetTextureManager().GetTexture("EmberFall_Title1")
+	);
+
+	mTitleImage.GetRect() = { 100.f, 50.f, 800.f, 400.f };
 
 }
 
@@ -64,6 +77,7 @@ void LogInScene::Update() {
 	mIDEntry.Update();
 	mPWEntry.Update();
 	mLoginButton.Update();
+	mTitleImage.Update();
 }
 
 void LogInScene::SendNetwork() {
@@ -75,4 +89,7 @@ void LogInScene::Exit() {
 	mPWEntry.SetActiveState(false);
 	mIDEntry.SetActiveState(false);
 	mPWEntry.SetActiveState(false);
+
+	mID->SetActiveState(false);
+	mPW->SetActiveState(false);
 }
