@@ -35,6 +35,7 @@ void MagicArrowScript::Init() {
     owner->GetPhysics()->mFactor.friction = 0.0f;
     owner->GetPhysics()->mFactor.mass = 3.0f;
     owner->GetPhysics()->SetGravityActive(false);
+    gServerFrame->AddTimerEvent(owner->GetId(), GameProtocol::Logic::PROJECTILE_LIFE_TIME, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
 }
 
 void MagicArrowScript::Update(const float deltaTime) { 
@@ -61,8 +62,6 @@ void MagicArrowScript::OnCollision(const std::shared_ptr<GameObject>& opponent, 
     if (ObjectTag::PLAYER == opponentTag or ObjectTag::TRIGGER == opponentTag or ObjectTag::NONE == opponentTag) {
         return;
     }
-
-    owner->mSpec.active = false;
 
     auto attackEvent = GameEventFactory::GetEvent<AttackEvent>(owner->GetId(), opponent->GetId(), GameProtocol::Logic::DEFAULT_DAMAGE);
     opponent->DispatchGameEvent(attackEvent);

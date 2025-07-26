@@ -265,8 +265,7 @@ void ProcessPlayerLookCS(GameSession* session, const Packets::PlayerLookCS* cons
 
     auto lookVec = FbsPacketFactory::GetVector3(look->look());
     userObject->GetTransform()->SetLook(lookVec);
-    userObject->Update();
-    userObject->LateUpdate();
+    session->UpdatePlayer();
 }
 
 void ProcessPlayerSelectRoleCS(GameSession* session, const Packets::PlayerSelectRoleCS* const role) {

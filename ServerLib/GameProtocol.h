@@ -1,6 +1,6 @@
 #pragma once
 
-inline constexpr auto CHECK_SESSION_HEART_BEAT_DELAY = 20s;
+inline constexpr auto CHECK_SESSION_HEART_BEAT_DELAY = 50s;
 
 namespace GameProtocol {
     namespace Unit {
@@ -40,6 +40,7 @@ namespace GameProtocol {
         inline constexpr auto MONSTER_UPDATE_DELAY = 100ms;
         inline constexpr auto ITEM_LIFE_TIME = 15s;
         inline constexpr auto ITEM_SPAWN_DELAY = 5s;
+        inline constexpr auto PROJECTILE_LIFE_TIME = 7s;
 
         inline constexpr float PLAYER_VIEW_RANGE = 100.0f;
         inline constexpr float SECTOR_SIZE = 200.0f;

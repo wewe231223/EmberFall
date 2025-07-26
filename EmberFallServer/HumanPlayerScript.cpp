@@ -113,7 +113,6 @@ void HumanPlayerScript::LateUpdate(const float deltaTime) {
     if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Monster Remove");
         gServerFrame->AddTimerEvent(owner->GetId(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
-        owner->mSpec.active = false;
         return;
     }
 }

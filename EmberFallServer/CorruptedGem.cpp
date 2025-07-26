@@ -79,8 +79,6 @@ void CorruptedGemScript::OnDestroy(DestroyingGemEvent* event) {
         if (nullptr != obj) {
             obj->DispatchGameEvent(eventDestroyed);
         }
-
-        owner->mSpec.active = false;
     }
 }
 
