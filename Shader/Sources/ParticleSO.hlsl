@@ -374,8 +374,8 @@ uint CreatePathParticle(ParticleVertex emitter, uint vertexID, inout PointStream
 
     p.opacity = 1.0f;
 
-    p.mass = 0.3f;
-    p.drag = float3(0.001f, 0.001f, 0.001f);
+    p.mass = 0.f;
+    p.drag = float3(0.f,0.f,0.f);
 
     p.totalLifetime = lifeTime;
     p.lifetime = lifeTime;
@@ -387,19 +387,19 @@ uint CreatePathParticle(ParticleVertex emitter, uint vertexID, inout PointStream
   
     
      [unroll]
-    for (int i = 0; i < 20; ++i)
+    for (int i = 0; i < 5; ++i)
     {
         p.direction = GenerateRandomDirection(vertexID + i);
         
 
-        float speed = GenerateRandomInRange(3.f, 5.5f, vertexID + i + 100);
+        float speed = GenerateRandomInRange(0.f, 1.f, vertexID + i + 100);
         p.velocity = p.direction * speed;
 
         OnTerrain(p);
         stream.Append(p);
     }
     
-    return 20;
+    return 5;
 }
 
 uint CreateBloodParticle(ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)
