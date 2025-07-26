@@ -449,6 +449,19 @@ void LobbyScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	mRightArrowButton.SetActiveState(false);
 	mReadyButton.SetActiveState(false);
 
+
+	std::weak_ptr sharedThis = std::static_pointer_cast<LobbyScene>(shared_from_this());
+	Time.AddEvent(500ms, [sharedThis]() {
+		if (sharedThis.expired()) {
+			return false;
+		}
+
+		auto time = std::chrono::steady_clock::now();
+		auto packet = FbsPacketFactory::LatencyCS(gClientCore->GetSessionId(), time.time_since_epoch().count());
+		gClientCore->Send(packet);
+
+		return true;
+	});
 }
 
 void LobbyScene::ProcessNetwork() {

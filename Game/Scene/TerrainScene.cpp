@@ -347,9 +347,6 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextItemLoc->SetActiveState(true);
 
 					nextItemLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
-					// nextItemLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextItemLoc->GetTransform().GetPosition().x, nextItemLoc->GetTransform().GetPosition().z);
-					nextItemLoc->GetTransform().GetPosition().y += 0.5f;
-
 
 					nextItemLoc->SetEmpty(false); 
 				}

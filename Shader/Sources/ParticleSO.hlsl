@@ -362,7 +362,7 @@ uint CreatePathParticle(ParticleVertex emitter, uint vertexID, inout PointStream
     
     p.position = emitter.position;
 
-    p.halfWidth = GenerateRandomInRange(0.1f, 0.3f, vertexID);
+    p.halfWidth = GenerateRandomInRange(0.3f, 0.5f, vertexID);
     p.halfHeight = p.halfWidth;
 
     p.material = emitter.material;
@@ -387,7 +387,7 @@ uint CreatePathParticle(ParticleVertex emitter, uint vertexID, inout PointStream
   
     
      [unroll]
-    for (int i = 0; i < 36; ++i)
+    for (int i = 0; i < 20; ++i)
     {
         p.direction = GenerateRandomDirection(vertexID + i);
         
@@ -399,7 +399,7 @@ uint CreatePathParticle(ParticleVertex emitter, uint vertexID, inout PointStream
         stream.Append(p);
     }
     
-    return 36;
+    return 20;
 }
 
 uint CreateBloodParticle(ParticleVertex emitter, uint vertexID, inout PointStream<ParticleVertex> stream)

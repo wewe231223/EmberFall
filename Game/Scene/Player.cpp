@@ -157,6 +157,10 @@ void Player::SetAnimation(Packets::AnimationState state) {
 	}
 }
 
+Packets::AnimationState Player::GetAnimationState() const {
+	return mAnimationState; 
+}
+
 void Player::SetMyPlayer() {
 	mMyPlayer = true;
 }

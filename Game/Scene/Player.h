@@ -40,6 +40,7 @@ public:
 	void SetMaterial(MaterialIndex material);
 
 	void SetAnimation(Packets::AnimationState state);
+	Packets::AnimationState GetAnimationState() const;
 
 	void SetMyPlayer();
 	
@@ -50,6 +51,7 @@ public:
 
 	void SetRole(Packets::EntityType role);
 	Packets::EntityType GetMyRole() const;
+
 
 private:
 	Mesh* mMesh{};
@@ -77,4 +79,6 @@ private:
 	bool mRotateLock{ false };
 
 	float mDissolveOffset{ 0.0f };
+
+	Packets::AnimationState mAnimationState{}; 
 };
