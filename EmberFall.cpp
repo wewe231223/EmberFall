@@ -61,13 +61,21 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
+	std::ifstream ipFile{ "IPADDR.txt" };
+	std::string ipAddr;
 
-    if (DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, IPDialogProc) == IDOK) { 
-        if (not gClientCore->Start(iPAddr, SERVER_PORT)) {
-            CrashExp(true, "Failed to connect");
-            return -1; 
-        }
-    } 
+    if (not ipFile.is_open()) {
+		CrashExp(false, "Failed to open IPADDR.txt");
+		return -1;
+    }
+
+	std::getline(ipFile, ipAddr);
+
+    if (not gClientCore->Start(ipAddr.c_str(), SERVER_PORT)) {
+		CrashExp(false, "Failed to connect to server");
+		return -1;
+    }
+
     
 
     MSG msg{};

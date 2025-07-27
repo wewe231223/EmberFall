@@ -463,7 +463,6 @@ bool Renderer::CheckMeshShaderSupport() {
 		return false;
 	}
 
-	MessageBoxW(nullptr, L"Mesh Shader 지원됨!", L"Mesh Shader 확인", MB_ICONINFORMATION | MB_OK);
 	return true;
 }
 
