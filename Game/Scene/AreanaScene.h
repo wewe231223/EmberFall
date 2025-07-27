@@ -73,6 +73,7 @@ private:
 	void ProcessPacketAnimation(const uint8_t* buffer);
 	void ProcessFireProjectile(const uint8_t* buffer);
 	void ProcessProjectileMove(const uint8_t* buffer);
+	void ProcessChangeScene(const uint8_t* buffer);
 	void ProcessHeartBeat(const uint8_t* buffer);
 	void ProcessGameEnd(const uint8_t* buffer);
 
@@ -95,6 +96,7 @@ private:
 	absl::flat_hash_map<NetworkObjectIdType, std::pair<UINT, Sound*>> mSoundMap{};
 
 	std::vector<GameObject> mGameObjects{};
+	std::vector<GameObject> mProjectileObjects{};
 
 
 	std::vector<LODGameObject> mEnvironmentObjects{};
@@ -135,7 +137,7 @@ private:
 	float mAvgLatency{}; 
 
 	Image mGameEnding{}; 
-
+	float mFireLock{ false };
 #ifdef DEV_MODE
 	TextBlock* mLatencyBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 50.f, 1920.f, 100.f }, StringColor::BurlyWood, "NotoSansKR") };
 #endif

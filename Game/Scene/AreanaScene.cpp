@@ -55,13 +55,23 @@ void ArenaScene::ProcessObjectAppeared(const uint8_t* buffer) {
 		return mGameObjects.end();
 		};
 
+	auto FindNextProjLoc = [this]() {
+		for (auto iter = mProjectileObjects.begin(); iter != mProjectileObjects.end(); ++iter) {
+			if (iter->GetEmpty()) {
+				return iter;
+			}
+		}
+		return mProjectileObjects.end();
+		};
+
+
+
 	// 플레이어 등장 
 	if (data->objectId() < OBJECT_ID_START) {
 		// 내 플레이어 등장 
 		if (data->objectId() == gClientCore->GetSessionId()) {
 			// 플레이어 인스턴스가 없다면 
 			if (mMyPlayer == nullptr) {
-
 				auto nextLoc = FindNextPlayerLoc();
 
 				if (nextLoc == mPlayers.end()) {
@@ -108,6 +118,7 @@ void ArenaScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 				mMyPlayer = &(*nextLoc);
+				mMyPlayer->SetRole(data->entity());
 
 				mMyPlayer->SetMyPlayer();
 
@@ -123,13 +134,8 @@ void ArenaScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 				mCurrentCameraMode->Enter();
 
-
-
-
 #ifdef DEV_MODE
-				int sign = NonReplacementSampler::GetInstance().Sample();
-
-				Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::P, sign, [this]() {
+				Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::P, mInputSign, [this]() {
 					mCurrentCameraMode->Exit();
 					if (mCurrentCameraMode == mTPPCameraMode.get()) {
 						mCurrentCameraMode = mFreeCameraMode.get();
@@ -171,28 +177,28 @@ void ArenaScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 				switch (data->entity()) {
 				case Packets::EntityType_HUMAN_LONGSWORD:
-					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mSwordManAnimationController);
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mSwordManAnimationController);
 					nextLoc->AddEquipment(mEquipments["GreatSword"].Clone());
 
 					break;
 				case Packets::EntityType_HUMAN_SWORD:
-					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mShieldManController);
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mShieldManController);
 					nextLoc->AddEquipment(mEquipments["Sword"].Clone());
 					nextLoc->AddEquipment(mEquipments["Shield"].Clone());
 
 					break;
 				case Packets::EntityType_HUMAN_ARCHER:
-					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mArcherAnimationController);
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mArcherAnimationController);
 					nextLoc->AddEquipment(mEquipments["Bow"].Clone());
 					nextLoc->AddEquipment(mEquipments["Quiver"].Clone());
 
 					break;
 				case Packets::EntityType_HUMAN_MAGICIAN:
-					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mMageAnimationController);
+					*nextLoc = Player(mMeshMap["SwordMan"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("CubeMaterial"), mMageAnimationController);
 					nextLoc->AddEquipment(mEquipments["Staff"].Clone());
 					break;
 				case Packets::EntityType_BOSS:
-					*nextLoc = Player(mMeshMap["Demon"].get(), mShaderMap["SkinnedShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial"), mDemonAnimationController);
+					*nextLoc = Player(mMeshMap["Demon"].get(), mShaderMap["SkinnedNormalShader"].get(), mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial"), mDemonAnimationController);
 					nextLoc->AddEquipment(mEquipments["DemonWeapon"].Clone());
 					nextLoc->AddEquipment(mEquipments["DemonCloth"].Clone());
 
@@ -228,6 +234,9 @@ void ArenaScene::ProcessObjectAppeared(const uint8_t* buffer) {
 	else {
 		if (not mGameObjectMap.contains(data->objectId())) {
 			auto nextLoc = FindNextObjectLoc();
+			auto nextProjLoc = FindNextProjLoc();
+
+			mSoundMap[data->objectId()] = std::make_pair(std::numeric_limits<UINT>::max(), nullptr);
 
 			if (nextLoc == mGameObjects.end()) {
 				MessageBox(nullptr, L"ERROR!!!!!\nThere is no more space for Other Object!!", L"", MB_OK | MB_ICONERROR);
@@ -266,7 +275,7 @@ void ArenaScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 
 				nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
-				nextLoc->GetTransform().GetPosition().y = 0.f;
+				// nextLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextLoc->GetTransform().GetPosition().x, nextLoc->GetTransform().GetPosition().z);
 
 				nextLoc->SetEmpty(false);
 
@@ -293,12 +302,100 @@ void ArenaScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mParticleMap[data->objectId()].Get()->position = v.position;
 			}
 			break;
-			case Packets::EntityType_ITEM_POTION:
+			case Packets::EntityType_PROJECTILE_ARROW:
 			{
+				*nextProjLoc = GameObject{};
+				mGameObjectMap[data->objectId()] = &(*nextProjLoc);
+				nextProjLoc->mShader = mShaderMap["StandardShader"].get();
+				nextProjLoc->mMesh = mMeshMap["Arrow"].get();
+				nextProjLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("ArrowMaterial");
+				nextProjLoc->mCollider = mColliderMap["Arrow"];
+				nextProjLoc->SetActiveState(true);
+
+				nextProjLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
+				nextProjLoc->SetEntityType(data->entity());
+				nextProjLoc->SetEmpty(false);
+
+				nextProjLoc->GetTransform().Rotate(0.f, data->yaw());
+
+				ParticleVertex v{};
+				v.position = nextProjLoc->GetTransform().GetPosition();
+
+				v.halfheight = 10.f;
+				v.halfWidth = 10.f;
+				v.material = mRenderManager->GetMaterialManager().GetMaterial("ArrowPath");
+				v.spritable = true;
+				v.spriteDuration = 1.f;
+				v.spriteFrameInRow = 5;
+				v.spriteFrameInCol = 2;
+				v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+				v.velocity = { 0.f, 0.f, 0.f };
+				v.totalLifeTime = 0.1f;
+				v.lifeTime = 0.1f;
+				v.type = ParticleType_emit;
+				v.emitType = ParticleType_path;
+				v.remainEmit = 10000;
+				v.emitIndex = 0;
+
+				mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
+				mParticleMap[data->objectId()].Get()->position = v.position;
+			}
+			break;
+			case Packets::EntityType_PROJECTILE_MAGIC_ARROW:
+			{
+				*nextProjLoc = GameObject{};
+				mGameObjectMap[data->objectId()] = &(*nextProjLoc);
+				nextProjLoc->mShader = mShaderMap["StandardShader"].get();
+				nextProjLoc->mMesh = mMeshMap["StaffProj"].get();
+				nextProjLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("StaffMaterial");
+				nextProjLoc->mCollider = mColliderMap["StaffProj"];
+				nextProjLoc->SetActiveState(true);
+
+				nextProjLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
+				nextProjLoc->SetEntityType(data->entity());
+				nextProjLoc->SetEmpty(false);
+
+				nextProjLoc->GetTransform().Rotate(0.f, data->yaw());
+
+				ParticleVertex v{};
+				v.position = nextProjLoc->GetTransform().GetPosition();
+
+				v.halfheight = 10.f;
+				v.halfWidth = 10.f;
+				v.material = mRenderManager->GetMaterialManager().GetMaterial("ArrowPath");
+				v.spritable = true;
+				v.spriteDuration = 1.f;
+				v.spriteFrameInRow = 5;
+				v.spriteFrameInCol = 2;
+				v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+				v.velocity = { 0.f, 0.f, 0.f };
+				v.totalLifeTime = 0.1f;
+				v.lifeTime = 0.1f;
+				v.type = ParticleType_emit;
+				v.emitType = ParticleType_magicPath;
+				v.remainEmit = 10000;
+				v.emitIndex = 0;
+
+				mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
+				mParticleMap[data->objectId()].Get()->position = v.position;
 			}
 			break;
 			default:
-				break;
+			{
+				*nextLoc = GameObject{};
+				mGameObjectMap[data->objectId()] = &(*nextLoc);
+				nextLoc->mShader = mShaderMap["StandardShader"].get();
+				nextLoc->mMesh = mMeshMap["Cube"].get();
+				nextLoc->mMaterial = mRenderManager->GetMaterialManager().GetMaterial("CorruptedGemMaterial");
+				nextLoc->SetActiveState(true);
+
+
+				nextLoc->GetTransform().SetPosition(FbsPacketFactory::GetVector3(data->pos()));
+				// nextLoc->GetTransform().GetPosition().y = tCollider.GetHeight(nextLoc->GetTransform().GetPosition().x, nextLoc->GetTransform().GetPosition().z);
+
+				nextLoc->SetEmpty(false);
+			}
+			break;
 			}
 		}
 		else {
@@ -307,7 +404,7 @@ void ArenaScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				object.SetActiveState(true);
 
 				auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-				zxPos.y = 0.f; 
+				// zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
 
 				object.GetTransform().GetPosition() = zxPos;
 				object.GetTransform().ResetPrediction();
@@ -352,46 +449,85 @@ void ArenaScene::ProcessObjectRemoved(const uint8_t* buffer) {
 		if (mGameObjectMap.contains(data->objectId())) {
 			mGameObjectMap[data->objectId()]->SetActiveState(false);
 			mGameObjectMap[data->objectId()]->SetEmpty(true);
+
+			if (mGameObjectMap[data->objectId()]->GetEntityType() == Packets::EntityType_PROJECTILE_ARROW
+				or mGameObjectMap[data->objectId()]->GetEntityType() == Packets::EntityType_PROJECTILE_MAGIC_ARROW) {
+				Console.Log("{} 번 화살 삭제.", LogType::Info, data->objectId());
+				mParticleMap[data->objectId()].Get()->Flags = static_cast<UINT>(ParticleFlag::Delete);
+				mParticleMap.erase(data->objectId());
+
+				if (mGameObjectMap[data->objectId()]->GetEntityType() == Packets::EntityType_PROJECTILE_MAGIC_ARROW) {
+					ParticleVertex v{};
+					v.position = mGameObjectMap[data->objectId()]->GetTransform().GetPosition();
+
+					v.halfheight = 10.f;
+					v.halfWidth = 10.f;
+					v.material = mRenderManager->GetMaterialManager().GetMaterial("ExplodeMaterial");
+					v.spritable = true;
+					v.spriteDuration = 1.f;
+					v.spriteFrameInRow = 8;
+					v.spriteFrameInCol = 8;
+					v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+					v.velocity = { 0.f, 0.f, 0.f };
+					v.totalLifeTime = 0.01f;
+					v.lifeTime = 0.01f;
+					v.type = ParticleType_emit;
+					v.emitType = ParticleType_magicExplode;
+					v.remainEmit = 720;
+					v.emitIndex = 0;
+
+					mRenderManager->GetParticleManager().CreateFreeEmitParticle(v);
+				}
+
+
+			}
+
 		}
 	}
 }
 
 void ArenaScene::ProcessObjectMove(const uint8_t* buffer) {
-	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectMoveSC>(buffer);
+	try {
 
-	if (data->objectId() < OBJECT_ID_START) {
-		if (mPlayerIndexmap.contains(data->objectId())) {
-			float predictDuration = mAvgLatency + data->duration() + 0.3f;
+		decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectMoveSC>(buffer);
 
-			auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-			zxPos.y = 0.f;
+		if (data->objectId() < OBJECT_ID_START) {
+			if (mPlayerIndexmap.contains(data->objectId())) {
+				float predictDuration = mAvgLatency + data->duration();
 
-			mPlayerIndexmap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
+				auto zxPos = FbsPacketFactory::GetVector3(data->pos());
+				// zxPos.y = tCollider.GetHeight(zxPos.x, zxPos.z);
+
+				mPlayerIndexmap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
 
 
-			if (data->objectId() == gClientCore->GetSessionId()) {
-				return;
+				if (data->objectId() == gClientCore->GetSessionId()) {
+					return;
+				}
+
+				auto euler = mPlayerIndexmap[data->objectId()]->GetTransform().GetRotation().ToEuler();
+				euler.y = data->yaw();
+				mPlayerIndexmap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
 			}
-
-			auto euler = mPlayerIndexmap[data->objectId()]->GetTransform().GetRotation().ToEuler();
-			euler.y = data->yaw();
-			mPlayerIndexmap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
 		}
+		else {
+			if (mGameObjectMap.contains(data->objectId())) {
+				float predictDuration = mAvgLatency + data->duration();
+
+				auto zxPos = FbsPacketFactory::GetVector3(data->pos());
+
+				mGameObjectMap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
+
+				auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
+				euler.y = data->yaw();
+
+				mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
+			}
+		}
+
 	}
-	else {
-		if (mGameObjectMap.contains(data->objectId())) {
-			float predictDuration = mAvgLatency + data->duration();
-
-			auto zxPos = FbsPacketFactory::GetVector3(data->pos());
-			zxPos.y = 0.f;
-
-			mGameObjectMap[data->objectId()]->GetTransform().SetPrediction(zxPos, predictDuration);
-
-			auto euler = mGameObjectMap[data->objectId()]->GetTransform().GetRotation().ToEuler();
-			euler.y = data->yaw();
-
-			mGameObjectMap[data->objectId()]->GetTransform().GetRotation() = SimpleMath::Quaternion::CreateFromYawPitchRoll(euler.y, euler.x, euler.z);
-		}
+	catch (std::exception e) {
+		Console.Log("ProcessObjectMove Exception: {}", LogType::Error, e.what());
 	}
 }
 
@@ -416,8 +552,18 @@ void ArenaScene::ProcessPacketAnimation(const uint8_t* buffer) {
 
 	if (data->objectId() < OBJECT_ID_START) {
 		if (mPlayerIndexmap.contains(data->objectId())) {
-
 			if (data->objectId() == gClientCore->GetSessionId()) {
+
+				if (data->animation() != Packets::AnimationState_ATTACK) {
+					if (mFireLock) {
+						mFireLock = false;
+					}
+				}
+
+
+
+
+
 				if (data->animation() == Packets::AnimationState_ATTACK) {
 					mMyPlayer->LockRotate(true);
 
@@ -502,8 +648,6 @@ void ArenaScene::ProcessPacketAnimation(const uint8_t* buffer) {
 						default:
 							break;
 						}
-
-
 					}
 				}
 			}
@@ -513,15 +657,94 @@ void ArenaScene::ProcessPacketAnimation(const uint8_t* buffer) {
 	else {
 		if (mGameObjectMap.contains(data->objectId())) {
 			mGameObjectMap[data->objectId()]->GetAnimationController().Transition(static_cast<size_t>(data->animation()));
+
+
+			if (data->animation() == Packets::AnimationState_ATTACK) {
+				// 몬스터 공격 소리 재생 
+
+			}
+			else if (data->animation() == Packets::AnimationState_DEAD) {
+				// 몬스터 죽음 소리 재생 
+
+
+				// 몬스터 죽을 때 높이 높여
+				mGameObjectMap[data->objectId()]->GetTransform().GetPosition().y += 0.2f;
+				mGameObjectMap[data->objectId()]->GetTransform().ResetPrediction();
+				mGameObjectMap[data->objectId()]->GetTransform().LockPrediction(true);
+			}
+
+
+
+
 		}
 	}
 
+	// 장소 불문 누군가 공격당하면 
+	if (data->animation() == Packets::AnimationState_ATTACKED) {
+		auto id = data->objectId();
+
+		if (id < OBJECT_ID_START) {
+			ParticleVertex v{};
+			v.position = mPlayerIndexmap[id]->GetTransform().GetPosition();
+			v.position.y += 1.f;
+
+			v.halfheight = 10.f;
+			v.halfWidth = 10.f;
+			v.material = mRenderManager->GetMaterialManager().GetMaterial("BloodMaterial");
+			v.spritable = true;
+			v.spriteDuration = 1.f;
+			v.spriteFrameInRow = 4;
+			v.spriteFrameInCol = 4;
+			v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+			v.velocity = { 0.f, 0.f, 0.f };
+			v.totalLifeTime = 0.01f;
+			v.lifeTime = 0.01f;
+			v.type = ParticleType_emit;
+			v.emitType = ParticleType_blood;
+			v.remainEmit = 300;
+			v.emitIndex = 0;
+
+			mRenderManager->GetParticleManager().CreateFreeEmitParticle(v);
+
+		}
+		else {
+			ParticleVertex v{};
+			v.position = mGameObjectMap[id]->GetTransform().GetPosition();
+			v.position.y += 0.5f;
+
+			v.halfheight = 10.f;
+			v.halfWidth = 10.f;
+			v.material = mRenderManager->GetMaterialManager().GetMaterial("BloodMaterial");
+			v.spritable = true;
+			v.spriteDuration = 1.f;
+			v.spriteFrameInRow = 4;
+			v.spriteFrameInCol = 4;
+			v.direction = DirectX::XMFLOAT3(0.f, 1.f, 0.f);
+			v.velocity = { 0.f, 0.f, 0.f };
+			v.totalLifeTime = 0.01f;
+			v.lifeTime = 0.01f;
+			v.type = ParticleType_emit;
+			v.emitType = ParticleType_blood;
+			v.remainEmit = 300;
+			v.emitIndex = 0;
+
+			mRenderManager->GetParticleManager().CreateFreeEmitParticle(v);
+		}
+
+	}
 }
 
 void ArenaScene::ProcessFireProjectile(const uint8_t* buffer) {
 }
 
 void ArenaScene::ProcessProjectileMove(const uint8_t* buffer) {
+}
+
+void ArenaScene::ProcessChangeScene(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ChangeSceneSC>(buffer);
+	Console.Log("Scene 을 변경합니다.", LogType::Info);
+
+	PostMessage(mRenderManager->GetWindowHandle(), WM_ADVANCESCENE, data->stage(), 0);
 }
 
 void ArenaScene::ProcessHeartBeat(const uint8_t* buffer) {
@@ -1019,6 +1242,7 @@ const uint8_t* ArenaScene::ProcessPacket(const uint8_t* buffer) {
 	{
 		ArenaScene::ProcessGameEnd(buffer);
 	}
+	break;
 	default:
 		break;
 	}
@@ -1141,16 +1365,39 @@ void ArenaScene::SendNetwork() {
 
 
 	auto& mouseTracker = Input.GetMouseTracker();
-
 	if (mouseTracker.leftButton == DirectX::Mouse::ButtonStateTracker::PRESSED) {
 
 		if (mMyPlayer != nullptr) {
 			auto dir = mMyPlayer->GetTransform().GetForward();
 			dir.y = 0.f;
+
+			if (not mFireLock) {
+				if (mMyPlayer->GetMyRole() == Packets::EntityType_HUMAN_ARCHER) {
+					mFireLock = true;
+
+					Time.AddEvent(1s, [dir]() {
+						decltype(auto) packet = FbsPacketFactory::RequestFireCS(gClientCore->GetSessionId(), dir, Packets::ProjectileTypes_ARROW);
+						gClientCore->Send(packet);
+						return false;
+						}
+					);
+				}
+				else if (mMyPlayer->GetMyRole() == Packets::EntityType_HUMAN_MAGICIAN) {
+					mFireLock = true;
+
+					Time.AddEvent(1s, [dir]() {
+						decltype(auto) packet = FbsPacketFactory::RequestFireCS(gClientCore->GetSessionId(), dir, Packets::ProjectileTypes_MAGIC_ARROW);
+						gClientCore->Send(packet);
+						return false;
+						});
+				}
+			}
+
 			decltype(auto) packet = FbsPacketFactory::RequestAttackCS(gClientCore->GetSessionId(), dir);
 			gClientCore->Send(packet);
 		}
 	}
+
 }
 
 void ArenaScene::Exit() {

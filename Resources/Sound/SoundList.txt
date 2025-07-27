@@ -122,3 +122,38 @@ Death24 Resources/Sound/24Death(Male).wav
 Death25 Resources/Sound/25Death(Male).wav
 
 HealSound Resources/Sound/02_Heal_02.wav
+
+ArcherImpact1 Resources/Sound/Archer_Impact1.wav
+ArcherImpact2 Resources/Sound/Archer_Impact2.wav
+ArcherImpact3 Resources/Sound/Archer_Impact3.wav
+ArcherImpact4 Resources/Sound/Archer_Impact4.wav
+
+LongSwordImpact1 Resources/Sound/LongSword_Impact1.wav
+LongSwordImpact2 Resources/Sound/LongSword_Impact2.wav
+LongSwordImpact3 Resources/Sound/LongSword_Impact3.wav
+
+MagicianCast Resources/Sound/Magician_Cast1.wav
+
+MagicianImpact1 Resources/Sound/Magician_Impact1.wav
+MagicianImpact2 Resources/Sound/Magician_Impact2.wav
+MagicianImpact3 Resources/Sound/Magician_Impact3.wav
+
+ShieldSwordImpact1 Resources/Sound/ShieldSword_Impact1.wav
+ShieldSwordImpact2 Resources/Sound/ShieldSword_Impact2.wav
+ShieldSwordImpact3 Resources/Sound/ShieldSword_Impact3.wav
+
+DemonDeath1 Resources/Sound/Demon_Death1.wav
+DemonDeath2 Resources/Sound/Demon_Death2.wav
+
+ImpDeath1 Resources/Sound/Imp_Death1.wav
+ImpDeath2 Resources/Sound/Imp_Death2.wav
+ImpDeath3 Resources/Sound/Imp_Death3.wav
+ImpDeath4 Resources/Sound/Imp_Death4.wav
+
+DemonImpact1 Resources/Sound/Demon_Impact1.wav
+DemonImpact2 Resources/Sound/Demon_Impact2.wav
+
+ImpImpact1 Resources/Sound/Imp_Impact1.wav
+ImpImpact2 Resources/Sound/Imp_Impact2.wav
+
+
