@@ -234,8 +234,8 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					break;
 				}
 				
-
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
+				mPlayerIndexmap[data->objectId()]->SetRole(data->entity());
 
 				nextLoc->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
 				nextLoc->SetAnimation(data->animation());
@@ -294,7 +294,7 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 
 					nextLoc->SetEmpty(false); 
 				}
-					break;
+				break;
 				case Packets::EntityType_CORRUPTED_GEM:
 				{
 					*nextLoc = GameObject{};
@@ -728,7 +728,7 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 			else if (data->animation() == Packets::AnimationState_DEAD) {
 				// 몬스터 죽음 소리 재생 
 				
-				auto distanceSq = SimpleMath::Vector3::DistanceSquared(mGameObjectMap[data->objectId()]->GetTransform().GetPosition(), mPlayerIndexmap[data->objectId()]->GetTransform().GetPosition());
+				auto distanceSq = SimpleMath::Vector3::DistanceSquared(mGameObjectMap[data->objectId()]->GetTransform().GetPosition(), mGameObjectMap[data->objectId()]->GetTransform().GetPosition());
 
 				if (distanceSq <= SoundDistance * SoundDistance) {
 					float volume = 1.0f - std::clamp(std::sqrtf(distanceSq) / SoundDistance, 0.0f, 1.0f);
