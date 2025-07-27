@@ -1471,6 +1471,7 @@ void TerrainScene::Update() {
 	mInventoryUI.Update();
 	mHealthBarUI.Update();
 	mProfileUI.Update();
+	mGameEnding.Update(); 
 	
 	if (mCurrentCameraMode) {
 		mCurrentCameraMode->Update();
@@ -1590,7 +1591,7 @@ void TerrainScene::Update() {
 		particle.Get()->position = mGameObjectMap[id]->GetTransform().GetPosition();
 	}
 
-
+	
 	TerrainScene::UpdateSound();
 }
 

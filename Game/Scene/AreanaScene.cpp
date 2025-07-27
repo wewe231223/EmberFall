@@ -1343,6 +1343,8 @@ void ArenaScene::Update() {
 	auto [skyBoxMesh, skyBoxShader, skyBoxModelContext] = mSkyBox.GetRenderData();
 	mRenderManager->GetMeshRenderManager().AppendPlaneMeshContext(skyBoxShader, skyBoxMesh, skyBoxModelContext, 0);
 
+	mGameEnding.Update(); 
+
 	ArenaScene::UpdateSound();
 }
 
