@@ -971,7 +971,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 
 	mLayerIndexMap.LoadFromFile("Resources/Binarys/Terrain/LayerIndex.bin");
 
-	//SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/terrain.raw", "Resources/Binarys/Terrain/NTerrain.bin");
+	//SimulateGlobalTessellationAndWriteFile("Resources/Binarys/Terrain/terrain1.raw", "Resources/Binarys/Terrain/NTerrain.bin");
 	tCollider.LoadFromFile("Resources/Binarys/Terrain/NTerrain.bin");
 
 	mSkyBox.mShader = mShaderMap["SkyBoxShader"].get();
@@ -984,7 +984,7 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 		environment.UpdateShaderVariables();
 	}
 
-	mTerrainObject = TerrainObject{ device, commandList,"Resources/Binarys/Terrain/terrain.raw" };
+	mTerrainObject = TerrainObject{ device, commandList,"Resources/Binarys/Terrain/terrain1.raw" };
 	mTerrainObject.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("TerrainMaterial"));
 	mRenderManager->GetMeshRenderManager().RegisterTerrainCPPointBuffer(mTerrainObject.GetCPPositionBuffer());
 
