@@ -13,6 +13,8 @@ public:
 	void Update();
 
 	void SetActiveState(bool state);
+
+	void ChangeImage(UINT img);
 private:
 	CanvasObject mObject{};
 };

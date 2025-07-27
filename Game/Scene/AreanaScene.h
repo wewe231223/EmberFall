@@ -20,6 +20,7 @@
 #include "../External/Include/absl/container/flat_hash_map.h"
 #include "../Game/Scene/MaterialLoader.h"
 #include "../Game/Scene/LayerIndexMap.h"
+#include "../Game/UI/Image.h"
 
 
 class ArenaScene : public IScene {
@@ -73,6 +74,7 @@ private:
 	void ProcessFireProjectile(const uint8_t* buffer);
 	void ProcessProjectileMove(const uint8_t* buffer);
 	void ProcessHeartBeat(const uint8_t* buffer);
+	void ProcessGameEnd(const uint8_t* buffer);
 
 private:
 	std::shared_ptr<RenderManager> mRenderManager{};
@@ -131,6 +133,8 @@ private:
 	bool mExpired{ false };
 
 	float mAvgLatency{}; 
+
+	Image mGameEnding{}; 
 
 #ifdef DEV_MODE
 	TextBlock* mLatencyBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 50.f, 1920.f, 100.f }, StringColor::BurlyWood, "NotoSansKR") };

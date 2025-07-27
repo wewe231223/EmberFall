@@ -883,14 +883,13 @@ void TerrainScene::ProcessHeartBeat(const uint8_t* buffer) {
 void TerrainScene::ProcessGameEnd(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GameEndSC>(buffer);
 
-	// 인간 승 
-	if (data->winner() == Packets::PlayerRole_HUMAN) {
-
+	// 보스 승 ( 인간 전멸 ) 
+	if (mMyPlayer->GetMyRole() == Packets::EntityType_BOSS) {
+		mGameEnding.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Demon_Win"));
+		mGameEnding.SetActiveState(true); 
 	}
-	// 보스 승 
-	else {
 
-	}
+	// 이 스테이지에서 인간 승은 불가능 
 }
 
 
@@ -938,41 +937,6 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	mTerrainObject = TerrainObject{ device, commandList,"Resources/Binarys/Terrain/terrain.raw" };
 	mTerrainObject.SetMaterial(mRenderManager->GetMaterialManager().GetMaterial("TerrainMaterial"));
 	mRenderManager->GetMeshRenderManager().RegisterTerrainCPPointBuffer(mTerrainObject.GetCPPositionBuffer());
-
-
-
-
-#ifdef DEV_MODE
-	{
-		auto& boss = mGameObjects.emplace_back();
-		boss.mShader = mShaderMap["SkinnedNormalShader"].get();
-		boss.mMesh = mMeshMap["Demon"].get();
-		boss.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("DemonMaterial");
-		boss.mGraphController = mDemonAnimationController;
-		boss.mAnimated = true;
-		boss.mCollider = mColliderMap["Demon"];
-		boss.SetActiveState(true);
-		boss.SetEmpty(false);
-
-		boss.GetTransform().GetPosition() = { 3.f, tCollider.GetHeight(3.f, 36.f), 36.f };
-	}
-
-	{
-		auto& imp = mGameObjects.emplace_back();
-		imp.mShader = mShaderMap["SkinnedNormalShader"].get();
-		imp.mMesh = mMeshMap["MonsterType1"].get();
-		imp.mMaterial = mRenderManager->GetMaterialManager().GetMaterial("MonsterType1Material");
-		imp.mGraphController = mMonsterAnimationController;
-		imp.mAnimated = true;
-		imp.mCollider = mColliderMap["MonsterType1"];
-		imp.SetActiveState(true);
-		imp.SetEmpty(false);
-		//imp.mGraphController.Transition(9);
-
-		imp.GetTransform().GetPosition() = { 0.f, tCollider.GetHeight(0.f, 36.f), 36.f };
-	}
-#endif 
-
 
 	{
 		mEquipments["Sword"] = EquipmentObject{};
@@ -1122,20 +1086,11 @@ void TerrainScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsComman
 	});
 
 
+	mGameEnding.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("Demon_Win"));
+	mGameEnding.SetActiveState(false);
+
 	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
 	gClientCore->Send(packet);
-
-#ifdef DEV_MODE
-	//Time.AddEvent(1s, [&]() {
-	//	mPktsBlock->GetText() = std::format(L"Packet/s : {}", PacketHandler::mPacketHandlerDebugSize.load());
-	//	PacketHandler::mPacketHandlerDebugSize.store(0); 
-	//	return true; 
-	//	}
-	//);
-#endif 
-
-
-
 }
 
 // 별도 시간 누적 타이머 
@@ -1453,7 +1408,7 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 	break;
 	case Packets::PacketTypes_PT_GAME_END_SC:
 	{
-
+		TerrainScene::ProcessGameEnd(buffer); 
 	}
 	default:
 		break;

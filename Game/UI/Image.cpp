@@ -20,3 +20,7 @@ void Image::Update() {
 void Image::SetActiveState(bool state) {
 	mObject.SetActive(state);
 }
+
+void Image::ChangeImage(UINT img) {
+	mObject.ChangeImage(img);
+}

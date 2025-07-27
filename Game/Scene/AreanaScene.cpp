@@ -530,6 +530,44 @@ void ArenaScene::ProcessHeartBeat(const uint8_t* buffer) {
 	gClientCore->Send(packet);
 }
 
+void ArenaScene::ProcessGameEnd(const uint8_t* buffer) {
+	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GameEndSC>(buffer);
+
+	// 보스 승 ( 인간 전멸 ) 
+	if (mMyPlayer->GetMyRole() == Packets::EntityType_BOSS) {
+		mGameEnding.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Demon_Win"));
+		mGameEnding.SetActiveState(true);
+	} 
+
+	auto myrole = mMyPlayer->GetMyRole();
+	if (data->winner() == myrole) {
+		// 인간 승 
+		if (myrole != Packets::EntityType_BOSS) {
+			mGameEnding.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Human_Win"));
+			mGameEnding.SetActiveState(true);
+		}
+		else {
+			// 보스 승 
+			mGameEnding.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Demon_Win"));
+			mGameEnding.SetActiveState(true);
+		}
+	}
+	else {
+		// 인간 패 
+		if (myrole != Packets::EntityType_BOSS) {
+			mGameEnding.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Human_Lose"));
+			mGameEnding.SetActiveState(true);
+		}
+		else {
+			// 보스 패 
+			mGameEnding.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Demon_Lose"));
+			mGameEnding.SetActiveState(true);
+		}
+	}
+
+	// 이 스테이지에서 인간 승은 불가능 
+}
+
 
 ArenaScene::ArenaScene(std::shared_ptr<RenderManager> renderMgr, DefaultBufferCPUIterator mainCamLocation) {
 	mInputSign = NonReplacementSampler::GetInstance().Sample();
@@ -678,6 +716,9 @@ void ArenaScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 	Input.RegisterKeyDownCallBack(DirectX::Keyboard::Keys::F7, mInputSign, [this]() {
 		mIsBlind = not mIsBlind;
 	});
+
+	mGameEnding.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("Human_Win"));
+	mGameEnding.SetActiveState(false);
 
 	decltype(auto) packet = FbsPacketFactory::PlayerEnterInGame(gClientCore->GetSessionId());
 	gClientCore->Send(packet);
@@ -974,6 +1015,10 @@ const uint8_t* ArenaScene::ProcessPacket(const uint8_t* buffer) {
 		ArenaScene::ProcessHeartBeat(buffer);
 	}
 	break;
+	case Packets::PacketTypes_PT_GAME_END_SC:
+	{
+		ArenaScene::ProcessGameEnd(buffer);
+	}
 	default:
 		break;
 	}

@@ -21,6 +21,8 @@
 #include "../System/Sound.h"
 #include "../Game/Scene/LayerIndexMap.h"
 #include "../Game/UI/Entry.h"
+#include "../Game/UI/Image.h"
+
 
 class TerrainScene : public IScene {
 	using duration = std::chrono::milliseconds; 
@@ -163,6 +165,8 @@ private:
 	bool mFireLock{ false };
 
 	size_t mProcessedPacketSize{ 0 };
+
+	Image mGameEnding{}; 
 };
 
 template<typename Tu> 
