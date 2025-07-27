@@ -268,7 +268,7 @@ void GameRoom::SpawnItem() {
         }
 
         auto userObj = session->GetUserObject();
-        if (nullptr == userObj) {
+        if (nullptr == userObj or nullptr == userObj->GetScript<HumanPlayerScript>()) {
             continue;
         }
 

@@ -86,6 +86,10 @@ namespace GameProtocol {
             SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f },
             SimpleMath::Vector3{ 10.0f, 0.0f, 10.0f }
         };
+        
+        inline const SimpleMath::Vector3 BOSS_PLAYER_SPAWN_POS{
+            -150.0f, 0.0f, -150.0f
+        };
 
         inline const SimpleMath::Vector3 MAGIC_ARROW_EXPLOSION_EXTENTS{
             SimpleMath::Vector3{ 2.5f, 100.0f, 2.5f },

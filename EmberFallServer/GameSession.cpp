@@ -118,9 +118,9 @@ void GameSession::InitUserObject() {
 
 void GameSession::InitPlayerScript() {
     auto stage = gGameRoomManager->GetRoom(GetMyRoomIdx())->GetStage().GetStageIdx();
-    SimpleMath::Vector3 SPAWN_CENTER = SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f };
+    SimpleMath::Vector3 PLAYER_SPAWN_CENTER = SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f };
     if (Packets::GameStage_LAST == stage) {
-        SPAWN_CENTER = SimpleMath::Vector3::Zero;
+        PLAYER_SPAWN_CENTER = SimpleMath::Vector3::Zero;
     }
 
     switch (mLobbyInfo.lastRole) {
@@ -129,7 +129,7 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_ARCHER);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SPAWN_CENTER));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, PLAYER_SPAWN_CENTER));
 
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
@@ -143,7 +143,7 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_SHIELD_MAN);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SPAWN_CENTER));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, PLAYER_SPAWN_CENTER));
 
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
@@ -157,7 +157,7 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_LONGSWORD_MAN);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SPAWN_CENTER));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, PLAYER_SPAWN_CENTER));
 
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         auto pos = mUserObject->GetPosition();
@@ -173,7 +173,7 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<HumanPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_HUMAN).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_MAGICIAN);
-        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, SPAWN_CENTER));
+        mUserObject->GetTransform()->SetPosition(Random::GetRandVecInArea(GameProtocol::Logic::PLAYER_SPAWN_AREA, PLAYER_SPAWN_CENTER));
 
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
@@ -187,7 +187,12 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<BossPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_DEMON).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_DEMON);
-        mUserObject->GetTransform()->SetPosition(SimpleMath::Vector3{ -200.0f, 0.0f, -200.0f });
+        if (Packets::GameStage_LAST != stage) {
+            mUserObject->GetTransform()->SetPosition(GameProtocol::Logic::BOSS_PLAYER_SPAWN_POS);
+        }
+        else {
+            mUserObject->GetTransform()->SetPosition(SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f });
+        }
 
         auto player = mUserObject->GetScript<BossPlayerScript>();
         if (nullptr == player) {
