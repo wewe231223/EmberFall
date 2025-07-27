@@ -133,6 +133,7 @@ void GameObject::Reset() {
 void GameObject::Init() {
     mTimer->UpdatePoint();
 
+    mRemoved = false;
     decltype(auto) sharedThis = std::static_pointer_cast<GameObject>(shared_from_this());
     mWeaponSystem.SetOwnerId(GetMyRoomIdx(), GetId());
     mAnimationStateMachine.SetOwner(sharedThis);
