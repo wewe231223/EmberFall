@@ -63,4 +63,5 @@ private:
 
     std::shared_mutex mViewListLock{ };
     std::unordered_set<NetworkObjectIdType> mViewList{ };
+    SimpleMath::Vector3 mLastPlayerPos{ };
 };

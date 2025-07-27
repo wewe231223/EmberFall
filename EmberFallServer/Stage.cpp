@@ -115,7 +115,10 @@ void Stage::StartStage(uint8_t gemCount) {
     mObjectManager->Start(gemCount);
 #endif
 
-    mObjectManager->LoadEnvFromFile("../Resources/Binarys/Terrain/SceneObjects_Server.bin");
+    if (false == mEnvLoaded) {
+        mObjectManager->LoadEnvFromFile("../Resources/Binarys/Terrain/SceneObjects_Server.bin");
+        mEnvLoaded = true;
+    }
 
     mStage = Packets::GameStage_TERRAIN;
     mTerrainCollider.SetTerrain(gBaseTerrain);
@@ -133,14 +136,8 @@ void Stage::StartStage(uint8_t gemCount, Packets::GameStage stage) {
     mTerrainCollider.SetTerrain(gBaseTerrain);
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Stage: {}", Packets::EnumNameGameStage(stage));
 
-    if (Packets::GameStage_LAST == stage) {
-        mTerrainCollider.SetTerrain(nullptr);
-        mObjectManager->ResetEnv();
-    }
-    else {
-        for (int i = 0; i < GameProtocol::Logic::MONSTER_SPAWN_COUNT; ++i) {
-            auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
-        }
+    for (int i = 0; i < GameProtocol::Logic::MONSTER_SPAWN_COUNT; ++i) {
+        auto monster = mObjectManager->SpawnObject(Packets::EntityType_MONSTER);
     }
 }
 
@@ -149,9 +146,6 @@ void Stage::EndStage() {
 
     mObjectManager->Reset();
     mCollisionManager->Reset();
-    if (Packets::GameStage_LAST == mStage) {
-        mObjectManager->ResetEnv();
-    }
 
     gLogConsole->PushLog(DebugLevel::LEVEL_INFO, "GameRoom [{}]: End GameLoop", mGameRoomIdx);
 }

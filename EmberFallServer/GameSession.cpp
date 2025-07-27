@@ -118,9 +118,6 @@ void GameSession::InitUserObject() {
 void GameSession::InitPlayerScript() {
     auto stage = gGameRoomManager->GetRoom(GetMyRoomIdx())->GetStage().GetStageIdx();
     SimpleMath::Vector3 PLAYER_SPAWN_CENTER = SimpleMath::Vector3{ 200.0f, 0.0f, 200.0f };
-    if (Packets::GameStage_LAST == stage) {
-        PLAYER_SPAWN_CENTER = SimpleMath::Vector3::Zero;
-    }
 
     switch (mLobbyInfo.lastRole) {
     case Packets::PlayerRole_HUMAN_ARCHER:
@@ -202,12 +199,7 @@ void GameSession::InitPlayerScript() {
         mUserObject->CreateScript<BossPlayerScript>(mUserObject, std::make_shared<Input>());
         mUserObject->CreateBoundingObject<OBBCollider>(ResourceManager::GetEntityInfo(ENTITY_KEY_DEMON).bb);
         mUserObject->mAnimationStateMachine.Init(ANIM_KEY_DEMON);
-        if (Packets::GameStage_LAST != stage) {
-            mUserObject->GetTransform()->SetPosition(GameProtocol::Logic::BOSS_PLAYER_SPAWN_POS);
-        }
-        else {
-            mUserObject->GetTransform()->SetPosition(SimpleMath::Vector3{ -10.0f, 0.0f, -10.0f });
-        }
+        mUserObject->GetTransform()->SetPosition(GameProtocol::Logic::BOSS_PLAYER_SPAWN_POS);
 
         auto player = mUserObject->GetScript<BossPlayerScript>();
         if (nullptr == player) {
@@ -300,10 +292,6 @@ void GameSession::EnterLobby() {
 void GameSession::EnterInGame(Packets::GameStage stage) {
     mSessionState = SESSION_INGAME;
     InitUserObject();
-
-    if (Packets::GameStage_LAST == stage) {
-        mUserObject->GetTransform()->SetPosition(SimpleMath::Vector3::Zero);
-    }
 }
 
 void GameSession::ChangeStage() {

@@ -209,10 +209,9 @@ void GameRoom::EndGameLoop() {
 #endif
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom[{}]: Register End Game!!!", mRoomIdx);
 
-    gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN, mRoomIdx);
-    mSceneTransitionCounter = SysClock::now();
-
     mStageTransitionTarget = Packets::GameStage_LOBBY;
+    mSceneTransitionCounter = SysClock::now();
+    gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN, mRoomIdx);
 
     auto packetStartTransition = FbsPacketFactory::StartSceneTransition(SCENE_TRANSITION_COUNT);
     BroadCast(packetStartTransition);
@@ -339,7 +338,7 @@ void GameRoom::CheckGameEnd() {
         return;
     }
 
-    if (Packets::GameStage_LAST != mStage.GetStageIdx()) {
+    if (Packets::GameStage_STAGE2 != mStage.GetStageIdx()) {
         mGameRoomState = GameRoomState::GAME_ROOM_STATE_TRANSITION;
 
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Register Start Game!!!");
@@ -451,7 +450,7 @@ void GameRoom::ChangeToNextStage() {
 void GameRoom::DebugChangeToNextStage() {
     auto winner = Packets::PlayerRole_HUMAN;
 
-    if (Packets::GameStage_LAST != mStage.GetStageIdx()) {
+    if (Packets::GameStage_STAGE2 != mStage.GetStageIdx()) {
         mGameRoomState = GameRoomState::GAME_ROOM_STATE_TRANSITION;
 
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Register Start Game!!!");

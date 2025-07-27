@@ -60,6 +60,7 @@ private:
     std::atomic_bool mActive{ false };
     Packets::GameStage mStage{ };
     uint16_t mGameRoomIdx{ };
+    bool mEnvLoaded{ false };
 
     TerrainCollider mTerrainCollider{ };
     std::shared_ptr<SectorSystem> mSectorSystem{ };

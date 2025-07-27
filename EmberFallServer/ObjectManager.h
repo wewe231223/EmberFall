@@ -45,6 +45,7 @@ public:
     bool InViewRange(NetworkObjectIdType id1, NetworkObjectIdType id2, const float range);
 
     std::shared_ptr<GameObject> SpawnObject(Packets::EntityType entity);
+    std::shared_ptr<GameObject> SpawnObject(Packets::EntityType entity, const SimpleMath::Vector3& pos);
     std::shared_ptr<GameObject> SpawnTrigger(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& ext, const SimpleMath::Vector3& dir, float lifeTime);
     std::shared_ptr<GameObject> SpawnEventTrigger(const SimpleMath::Vector3& pos, const SimpleMath::Vector3& ext, const SimpleMath::Vector3& dir,
         float lifeTime, std::shared_ptr<GameEvent> event, float delay, int32_t count, ObjectTag alliance);

@@ -114,6 +114,17 @@ namespace GameProtocol {
         inline constexpr const char* BASE_TERRAIN_PATH = "../Resources/Binarys/Terrain/NTerrain.bin";
         inline constexpr const char* LAST_STAGE_TERRAIN_PATH = "";
 
+        inline std::array<SimpleMath::Vector3, 8> GEM_POSITIONS = {
+            SimpleMath::Vector3{ -64.17f, 0.0f, 10.13f},
+            SimpleMath::Vector3{ -11.5f, 0.0f, 154.6f},
+            SimpleMath::Vector3{ 58.9f, 0.0f, 114.4f},
+            SimpleMath::Vector3{ 98.4f, 0.0f, 44.2f},
+            SimpleMath::Vector3{ 70.2f, 0.0f, -73.2f},
+            SimpleMath::Vector3{ 52.6f, 0.0f, -148.3f},
+            SimpleMath::Vector3{ -60.3f, 0.0f, 142.1f},
+            SimpleMath::Vector3{ -117.1f, 0.0f, -90.5f},
+        };
+
         inline const std::pair<SimpleMath::Vector3, SimpleMath::Vector3>& GetStageMapSize(Packets::GameStage stage)
         {
             if (Packets::GameStage_LOBBY > stage or Packets::GameStage_MAX < stage) {

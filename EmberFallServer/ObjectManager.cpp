@@ -74,7 +74,10 @@ void ObjectManager::Init(uint16_t roomIdx) {
 
 void ObjectManager::Start(uint8_t corruptedGemCount) {
     for (uint8_t i = 0; i < corruptedGemCount; ++i) {
-        SpawnObject(Packets::EntityType_CORRUPTED_GEM);
+        auto gem = SpawnObject(Packets::EntityType_CORRUPTED_GEM);
+        gem->GetTransform()->SetPosition(GameProtocol::Map::GEM_POSITIONS.at(i));
+        mSector.lock()->AddInSector(gem->GetId(), gem->GetPosition());
+        gem->RegisterUpdate();
     }
 }
 
@@ -286,9 +289,6 @@ std::shared_ptr<GameObject> ObjectManager::SpawnObject(Packets::EntityType entit
 
         auto [min, max] = GameProtocol::Logic::GEM_SPAWN_AREA;
         obj->GetTransform()->SetPosition(Random::GetRandomVec3(min, max));
-
-        sector->AddInSector(validId, obj->GetPosition());
-        obj->RegisterUpdate();
 
         return obj;
     }
