@@ -102,12 +102,7 @@ void GameObject::DisablePhysics() {
 void GameObject::Reset() {
     // Reset My Spec
     auto myRoom = GetMyRoomIdx();
-    if (nullptr == GetScript<BossPlayerScript>()) {
-        gGameRoomManager->GetRoom(myRoom)->NotifyDestructedObject(GetTag());
-    }
-    else {
-        gGameRoomManager->GetRoom(myRoom)->NotifyDestructedObject(ObjectTag::BOSSPLAYER);
-    }
+    gGameRoomManager->GetRoom(myRoom)->NotifyDestructedObject(GetTag());
 
     mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE, true);
     mSpec.entity = Packets::EntityType_ENV;

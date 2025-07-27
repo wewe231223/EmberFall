@@ -32,6 +32,7 @@ void BossPlayerScript::Init() {
     spec.moveable = true;
     spec.interactable = false;
     spec.animated = true;
+    spec.entity = Packets::EntityType_BOSS;
 
     spec.damage = 30.0f;
     spec.defence = 0.0f;
@@ -82,9 +83,7 @@ void BossPlayerScript::LateUpdate(const float deltaTime) {
             return;
         }
 
-        owner->SetTag(ObjectTag::BOSSPLAYER);
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Boss Player Remove");
-        gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
+        gServerFrame->AddTimerEvent(owner->GetId(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
         return;
     }
 }
