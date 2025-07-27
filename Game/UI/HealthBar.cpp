@@ -30,7 +30,24 @@ void HealthBar::SetHealth(float health) {
 	mHealthBar.GetRect() = {
 		mBaseFrame.GetRect().LTx + healthPaddingX,
 		mBaseFrame.GetRect().LTy + healthPaddingY,
+		(mBaseFrame.GetRect().width - healthPaddingX * 2.f) * (mHealth / mMaxHealth),
+		mBaseFrame.GetRect().height - healthPaddingY * 2.f
+	};
+
+
+}
+
+void HealthBar::SetMaxHealth(float health) {
+	mHealth = health;
+	mMaxHealth = health;
+
+	mHealthBar.GetRect() = {
+		mBaseFrame.GetRect().LTx + healthPaddingX,
+		mBaseFrame.GetRect().LTy + healthPaddingY,
 		(mBaseFrame.GetRect().width - healthPaddingX * 2.f) * (mHealth / 100.f),
 		mBaseFrame.GetRect().height - healthPaddingY * 2.f
 	};
+
+	mBaseFrame.GetRect().width *= (mHealth / 100.f);
+
 }

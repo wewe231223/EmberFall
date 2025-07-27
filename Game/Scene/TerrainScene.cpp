@@ -136,6 +136,8 @@ void TerrainScene::ProcessObjectAppeared(const uint8_t* buffer) {
 					nextLoc->AddEquipment(mEquipments["DemonCloth"].Clone());
 					cameraOffset *= 2.f; 
 					mProfileUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("big_circle_frame"), mRenderManager->GetTextureManager().GetTexture("Devil"));
+
+					mHealthBarUI.SetMaxHealth(200.f); 
 					break;
 				default:
 					MessageBox(nullptr, L"Something went wrong!!", L"", MB_OK | MB_ICONERROR);
