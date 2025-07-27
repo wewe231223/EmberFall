@@ -87,7 +87,6 @@ void GameSession::InitUserObject() {
 
     mUserObject->mSpec.active = true;
     mUserObject->mSpec.entity = static_cast<Packets::EntityType>(mLobbyInfo.lastRole);
-    mUserObject->mSpec.hp = GameProtocol::Logic::MAX_HP;
 
     mUserObject->Init();
     mUserObject->mWeaponSystem.SetWeapon(mUserObject->mSpec.entity, mUserObject->mSpec.damage);

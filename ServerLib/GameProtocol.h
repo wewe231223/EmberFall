@@ -47,9 +47,12 @@ namespace GameProtocol {
 
         inline constexpr uint8_t MAX_ITEM = 3;
         inline constexpr float MAX_HP = 100.0f;
+        inline constexpr float MONSTER_MAX_HP = 30.0f; 
+        inline constexpr float BOSS_MAX_HP = 200.0f;
 
         // Attack
         inline constexpr float DEFAULT_DAMAGE = 10.0f;
+        inline constexpr float BOSS_DAMAGE = 20.0f;
 
         inline constexpr float MONSTER_KNOCK_BACK_POWER = (15000.0N).Count();
         inline constexpr float LONGSWORD_KNOCK_BACK_POWER = (5000.0N).Count();
@@ -115,14 +118,14 @@ namespace GameProtocol {
         inline constexpr const char* LAST_STAGE_TERRAIN_PATH = "";
 
         inline std::array<SimpleMath::Vector3, 8> GEM_POSITIONS = {
-            SimpleMath::Vector3{ -64.17f, 0.0f, 10.13f},
-            SimpleMath::Vector3{ -11.5f, 0.0f, 154.6f},
-            SimpleMath::Vector3{ 58.9f, 0.0f, 114.4f},
-            SimpleMath::Vector3{ 98.4f, 0.0f, 44.2f},
-            SimpleMath::Vector3{ 70.2f, 0.0f, -73.2f},
-            SimpleMath::Vector3{ 52.6f, 0.0f, -148.3f},
-            SimpleMath::Vector3{ -60.3f, 0.0f, 142.1f},
-            SimpleMath::Vector3{ -117.1f, 0.0f, -90.5f},
+            SimpleMath::Vector3{ -64.17f, 0.0f, 10.13f },
+            SimpleMath::Vector3{ -11.5f, 0.0f, 154.6f },
+            SimpleMath::Vector3{ 58.9f, 0.0f, 114.4f },
+            SimpleMath::Vector3{ 98.4f, 0.0f, 44.2f },
+            SimpleMath::Vector3{ 70.2f, 0.0f, -73.2f },
+            SimpleMath::Vector3{ 52.6f, 0.0f, -148.3f },
+            SimpleMath::Vector3{ -60.3f, 0.0f, 142.1f },
+            SimpleMath::Vector3{ -117.1f, 0.0f, -90.5f },
         };
 
         inline const std::pair<SimpleMath::Vector3, SimpleMath::Vector3>& GetStageMapSize(Packets::GameStage stage)

@@ -34,9 +34,9 @@ void BossPlayerScript::Init() {
     spec.animated = true;
     spec.entity = Packets::EntityType_BOSS;
 
-    spec.damage = 30.0f;
+    spec.damage = GameProtocol::Logic::BOSS_DAMAGE;
     spec.defence = 0.0f;
-    owner->mSpec.hp = GameProtocol::Logic::MAX_HP;
+    owner->mSpec.hp = GameProtocol::Logic::BOSS_MAX_HP;
     owner->SetTag(ObjectTag::BOSSPLAYER);
 }
 
