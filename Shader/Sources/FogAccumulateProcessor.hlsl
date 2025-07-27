@@ -3,9 +3,9 @@ RWTexture3D<float4> RWOutput : register(u0);
 
 
 
-static const float DensityOffset = 0.0006f;
+static const float DensityOffset = 0.0005f;
 static float fogBegin = 0.0f;
-static float fogEnd = 600.0f;
+static float fogEnd = 800.0f;
 
 float ComputeSliceDepthDelta(float ndcZ, uint pixelZ)
 {
@@ -36,16 +36,16 @@ float4 AccumulateScattering(float3 accumLight, float accumTransmittance, float3 
 [numthreads(8, 8, 1)]
 void FogAccumulateProcessor_CS(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
-    uint3 volumPixel;
+    int3 volumPixel;
     RWOutput.GetDimensions(volumPixel.x, volumPixel.y, volumPixel.z);
 
     if (all(dispatchThreadID < volumPixel))
     {
-        uint3 pos = uint3(dispatchThreadID.xy, 0);
+        int3 pos = int3(dispatchThreadID.xy, 0);
         float4 accumulationLight = float4(0.0f, 0.0f, 0.0f, 1.0f);
 
 		
-        for (uint z = 0; z < volumPixel.z; ++z)
+        for (int z = 0; z < volumPixel.z; ++z)
         {
             pos.z = z;
             float4 slicePixel = Input[pos];
