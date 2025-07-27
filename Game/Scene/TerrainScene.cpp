@@ -612,10 +612,6 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 					}
 				}
 
-
-
-
-
 				if (data->animation() == Packets::AnimationState_ATTACK) {
 					mMyPlayer->LockRotate(true); 
 
@@ -648,7 +644,7 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 					case Packets::EntityType_HUMAN_SWORD:
 					case Packets::EntityType_HUMAN_MAGICIAN:
 					{
-						UINT type = RandomEngine::GetRandomRange(1U, 2U);
+						UINT type = RandomEngine::GetRandomRange(1U, 25U);
 						SoundManager::GetInstance().PlaySound(std::string{ "Death" } + std::to_string(type), PrimaryVolume, SoundOption::NONE, 0ms, 0ms);
 					}
 					break;
@@ -674,7 +670,7 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 					float volume = 1.0f - std::clamp(std::sqrtf(distanceSq) / SoundDistance, 0.0f, 1.0f);
 					if (data->animation() == Packets::AnimationState_ATTACK) {
 
-						switch (mMyPlayer->GetMyRole()) {
+						switch (mPlayerIndexmap[data->objectId()]->GetMyRole()) {
 						case Packets::EntityType_HUMAN_LONGSWORD:
 							SoundManager::GetInstance().PlaySound(std::string{ "SwordSlash" }, PrimaryVolume * volume, SoundOption::NONE, 0ms, 250ms);
 							break;
@@ -688,29 +684,29 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 						}
 						break;
 						case Packets::EntityType_HUMAN_MAGICIAN:
+							SoundManager::GetInstance().PlaySound("MagicianCast", PrimaryVolume * volume, SoundOption::NONE, 0ms, 200ms);
 							break;
 						default:
 							break;
 						}
 					}
 					else if (data->animation() == Packets::AnimationState_DEAD) {
-						switch (mMyPlayer->GetMyRole()) {
+						switch (mPlayerIndexmap[data->objectId()]->GetMyRole()) {
 						case Packets::EntityType_HUMAN_LONGSWORD:
 						case Packets::EntityType_HUMAN_ARCHER:
 						case Packets::EntityType_HUMAN_SWORD:
 						case Packets::EntityType_HUMAN_MAGICIAN:
 						{
-							UINT type = RandomEngine::GetRandomRange(1U, 2U);
+							UINT type = RandomEngine::GetRandomRange(1U, 25U);
 							SoundManager::GetInstance().PlaySound(std::string{ "Death" } + std::to_string(type), PrimaryVolume * volume, SoundOption::NONE, 0ms, 0ms);
 						}
 						break;
-						case Packets::EntityType_MONSTER:
+						case Packets::EntityType_BOSS:
 						{
-							UINT type = RandomEngine::GetRandomRange(1U, 4U);
-							SoundManager::GetInstance().PlaySound(std::string{ "ImpDeath" } + std::to_string(type), PrimaryVolume * volume, SoundOption::NONE, 0ms, 0ms);
+							UINT type = RandomEngine::GetRandomRange(1U, 2U);
+							SoundManager::GetInstance().PlaySound(std::string{ "DemonDeath" } + std::to_string(type), PrimaryVolume * volume, SoundOption::NONE, 0ms, 0ms);
 						}
 						break;
-
 						default:
 							break;
 						}
@@ -732,6 +728,13 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 			else if (data->animation() == Packets::AnimationState_DEAD) {
 				// 몬스터 죽음 소리 재생 
 				
+				auto distanceSq = SimpleMath::Vector3::DistanceSquared(mGameObjectMap[data->objectId()]->GetTransform().GetPosition(), mPlayerIndexmap[data->objectId()]->GetTransform().GetPosition());
+
+				if (distanceSq <= SoundDistance * SoundDistance) {
+					float volume = 1.0f - std::clamp(std::sqrtf(distanceSq) / SoundDistance, 0.0f, 1.0f);
+					UINT type = RandomEngine::GetRandomRange(1U, 4U);
+					SoundManager::GetInstance().PlaySound(std::string{ "ImpDeath" } + std::to_string(type), 5.f, SoundOption::NONE, 0ms, 0ms);
+				}
 
 				// 몬스터 죽을 때 높이 높여
 				mGameObjectMap[data->objectId()]->GetTransform().GetPosition().y += 0.2f;
@@ -835,9 +838,9 @@ void TerrainScene::ProcessGemDestroyed(const uint8_t* buffer) {
 	v.remainEmit = 500;
 	v.emitIndex = 0;
 
-	mParticleMap[data->objectId()] = mRenderManager->GetParticleManager().CreateEmitParticle(v);
-	mParticleMap[data->objectId()].Get()->position = v.position;
+	mRenderManager->GetParticleManager().CreateFreeEmitParticle(v);
 
+	mParticleMap[data->objectId()].Get()->Flags = static_cast<UINT>(ParticleFlag::Delete);
 
 	
 }

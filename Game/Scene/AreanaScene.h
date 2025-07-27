@@ -126,7 +126,6 @@ private:
 
 	GameObject mSkyBox{};
 
-	Inventory mInventoryUI{};
 	HealthBar mHealthBarUI{};
 	Profile mProfileUI{};
 
@@ -136,7 +135,9 @@ private:
 
 	float mAvgLatency{}; 
 
-	Image mGameEnding{}; 
+	Image mGameEnding{};
+
+
 	float mFireLock{ false };
 #ifdef DEV_MODE
 	TextBlock* mLatencyBlock{ TextBlockManager::GetInstance().CreateTextBlock(L"", D2D1_RECT_F{ 1720.f, 50.f, 1920.f, 100.f }, StringColor::BurlyWood, "NotoSansKR") };
