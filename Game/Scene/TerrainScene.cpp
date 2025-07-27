@@ -897,6 +897,13 @@ void TerrainScene::ProcessHeartBeat(const uint8_t* buffer) {
 void TerrainScene::ProcessGameEnd(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GameEndSC>(buffer);
 
+	if (data->winner() == Packets::PlayerRole_BOSS) {
+		Console.Log("BOSS WIN", LogType::Info);
+	}
+	else {
+		Console.Log("Player Win", LogType::Info); 
+	}
+
 	// 보스 승 ( 인간 전멸 ) 
 	if (mMyPlayer->GetMyRole() == Packets::EntityType_BOSS) {
 		mGameEnding.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Demon_Win"));
@@ -1424,6 +1431,7 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 	{
 		TerrainScene::ProcessGameEnd(buffer); 
 	}
+	break;
 	default:
 		break;
 	}

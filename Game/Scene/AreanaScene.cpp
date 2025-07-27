@@ -1243,6 +1243,11 @@ const uint8_t* ArenaScene::ProcessPacket(const uint8_t* buffer) {
 		ArenaScene::ProcessGameEnd(buffer);
 	}
 	break;
+	case Packets::PacketTypes_PT_CHANGE_SCENE_SC:
+	{
+		ArenaScene::ProcessChangeScene(buffer);
+	}
+	break; 
 	default:
 		break;
 	}
