@@ -599,7 +599,7 @@ void TerrainScene::ProcessObjectAttacked(const uint8_t* buffer) {
 void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::ObjectAnimationChangedSC>(buffer);
 
-	const float PrimaryVolume = 5.f; 
+	const float PrimaryVolume = 2.f; 
 	const float SoundDistance = 10.f; 
 
 	if (data->objectId() < OBJECT_ID_START) {
@@ -900,20 +900,44 @@ void TerrainScene::ProcessHeartBeat(const uint8_t* buffer) {
 void TerrainScene::ProcessGameEnd(const uint8_t* buffer) {
 	decltype(auto) data = FbsPacketFactory::GetDataPtrSC<Packets::GameEndSC>(buffer);
 
-	if (data->winner() == Packets::PlayerRole_BOSS) {
-		Console.Log("BOSS WIN", LogType::Info);
-	}
-	else {
-		Console.Log("Player Win", LogType::Info); 
+	auto myrole = mMyPlayer->GetMyRole();
+
+	// 인간 승 
+	if (data->winner() == Packets::PlayerRole_HUMAN) {
+		// 내가 인간이면 
+		if (myrole == Packets::EntityType_HUMAN_ARCHER or
+			myrole == Packets::EntityType_HUMAN_LONGSWORD or
+			myrole == Packets::EntityType_HUMAN_SWORD or
+			myrole == Packets::EntityType_HUMAN_MAGICIAN) {
+		
+			mGameEnding.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Human_Win"));
+			mGameEnding.SetActiveState(true);
+		
+		}
+		// 아니면 
+		else {
+			mGameEnding.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Demon_Lose"));
+			mGameEnding.SetActiveState(true);
+		}
+	// 인간 패 
+	} else {
+		// 내가 인간이면 
+		if (myrole == Packets::EntityType_HUMAN_ARCHER or
+			myrole == Packets::EntityType_HUMAN_LONGSWORD or
+			myrole == Packets::EntityType_HUMAN_SWORD or
+			myrole == Packets::EntityType_HUMAN_MAGICIAN) {
+
+			mGameEnding.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Human_Lose"));
+			mGameEnding.SetActiveState(true);
+
+		}
+		// 아니면 
+		else {
+			mGameEnding.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Demon_Win"));
+			mGameEnding.SetActiveState(true);
+		}
 	}
 
-	// 보스 승 ( 인간 전멸 ) 
-	if (mMyPlayer->GetMyRole() == Packets::EntityType_BOSS) {
-		mGameEnding.ChangeImage(mRenderManager->GetTextureManager().GetTexture("Demon_Win"));
-		mGameEnding.SetActiveState(true); 
-	}
-
-	// 이 스테이지에서 인간 승은 불가능 
 }
 
 
@@ -1129,7 +1153,7 @@ void TerrainScene::ProcessNetwork() {
 
 void TerrainScene::UpdateSound() {
 	const float footprintDistance = 10.f; // 발자국 소리 들리는 거리 
-	const float PrimaryVolume = 5.f;
+	const float PrimaryVolume = 2.f;
 
 	// 1. 발자국 소리 ( 플레이어 ) 
 	for (auto& pair : mPlayerIndexmap) {

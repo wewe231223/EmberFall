@@ -166,6 +166,8 @@ private:
 
 	size_t mProcessedPacketSize{ 0 };
 
+	Packets::PlayerRole mMyPlayerRole{};
+
 	Image mGameEnding{}; 
 };
 
