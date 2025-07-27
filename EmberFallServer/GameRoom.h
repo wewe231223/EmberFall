@@ -48,6 +48,7 @@ class GameRoom {
 private:
     static constexpr size_t MAX_PLAYER_IN_GAME_ROOM = 5;
     static constexpr float SCENE_TRANSITION_COUNT = 1.f; // second
+    static constexpr float SCENE_TRANSITION_COUNT_TO_LOBBY = 5.0f;
     static constexpr std::chrono::milliseconds SCENE_TRANSITION_EVENT_DELAY = 500ms;
 
 public:

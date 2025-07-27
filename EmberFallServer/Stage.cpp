@@ -64,8 +64,6 @@ void Stage::NotifyAllOfGemDestroyed(const std::vector<SessionIdType>& sessions) 
         if (nullptr == playerScript) {
             continue;
         }
-
-        playerScript->NotifyAllOfGemDestroyed();
     }
 }
 

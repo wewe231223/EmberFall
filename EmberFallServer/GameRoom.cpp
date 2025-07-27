@@ -418,9 +418,8 @@ void GameRoom::ChangeToStage1() {
 
 void GameRoom::ChangeToNextStage() {
     mStage.EndStage();
-    mStage.StartStage(0, mStageTransitionTarget);
-
     mGameRoomState = GameRoomState::GAME_ROOM_STATE_INGAME;
+    mStage.StartStage(0, mStageTransitionTarget);
 
     mSessionLock.ReadLock();
     std::unordered_set<SessionIdType> sessionsInGameRoom = GetSessions();
@@ -579,10 +578,19 @@ void GameRoom::OnSceneCountdownTick() {
     }
 
     auto sceneTransitionTime = std::chrono::duration_cast<std::chrono::milliseconds>(SysClock::now() - mSceneTransitionCounter).count() / 1000.0f;
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "OnSceneCountdownTick - Remain Time: {}s", std::max(0.0f, SCENE_TRANSITION_COUNT - sceneTransitionTime));
-    if (SCENE_TRANSITION_COUNT > sceneTransitionTime) {
-        gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN, mRoomIdx);
-        return;
+    if (Packets::GameStage_LOBBY == mStageTransitionTarget) {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "OnSceneCountdownTick - Remain Time: {}s", std::max(0.0f, SCENE_TRANSITION_COUNT - sceneTransitionTime));
+        if (SCENE_TRANSITION_COUNT_TO_LOBBY > sceneTransitionTime) {
+            gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN, mRoomIdx);
+            return;
+        }
+    }
+    else {
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "OnSceneCountdownTick - Remain Time: {}s", std::max(0.0f, SCENE_TRANSITION_COUNT - sceneTransitionTime));
+        if (SCENE_TRANSITION_COUNT > sceneTransitionTime) {
+            gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN, mRoomIdx);
+            return;
+        }
     }
 
     switch (mStageTransitionTarget) {
@@ -731,39 +739,32 @@ void GameCondition::InitGameCondition(uint8_t humanCount, uint8_t bossCount, uin
 }
 
 std::pair<bool, Packets::PlayerRole> GameCondition::CheckGameEnd(Packets::GameStage stage) {
-    auto pair = std::make_pair(false, Packets::PlayerRole_HUMAN);
 #ifdef DEV_MODE
     if (Packets::GameStage_TERRAIN == stage) {
         if (0 == mGemCount) {
-            pair.first = true;
-            return pair;
+            return std::make_pair(true, Packets::PlayerRole_HUMAN);
         }
     }
 
     if ((0 == mAliveHumanCount + mBossCount)) {
-        pair.first = true;
-        return pair;
+        return std::make_pair(true, Packets::PlayerRole_HUMAN);
     }
 
 #else
     if (Packets::GameStage_TERRAIN == stage) {
         if (0 == mGemCount) {
-            pair.first = true;
-            return pair;
+            return std::make_pair(true, Packets::PlayerRole_HUMAN);
         }
     }
 
     if (0 == mBossCount) {
-        pair.first = true;
-        return pair;
+        return std::make_pair(true, Packets::PlayerRole_HUMAN);
     }
 
     if (0 == mAliveHumanCount) {
-        pair.first = true;
-        pair.second = Packets::PlayerRole_BOSS;
-        return pair;
+        return std::make_pair(true, Packets::PlayerRole_BOSS);
     }
 #endif
 
-    return pair;
+    return std::make_pair(false, Packets::PlayerRole_HUMAN);
 }

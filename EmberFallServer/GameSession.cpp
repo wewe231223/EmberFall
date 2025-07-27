@@ -111,7 +111,6 @@ void GameSession::InitUserObject() {
     }
 
     const float range = script->GetViewList().mViewRange.Count();
-
     gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->AddInSector(myId, pos);
     gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->UpdatePlayerViewList(mUserObject, pos, range);
 }
@@ -135,6 +134,10 @@ void GameSession::InitPlayerScript() {
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
+
+        if (Packets::GameStage_TERRAIN != gGameRoomManager->GetRoom(GetMyRoomIdx())->GetStage().GetStageIdx()) {
+            player->NotifyAllOfGemDestroyed();
+        }
     }
     break;
 
@@ -148,6 +151,10 @@ void GameSession::InitPlayerScript() {
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object - PlayerScript is Null");
+        }
+
+        if (Packets::GameStage_TERRAIN != gGameRoomManager->GetRoom(GetMyRoomIdx())->GetStage().GetStageIdx()) {
+            player->NotifyAllOfGemDestroyed();
         }
     }
     break;
@@ -165,6 +172,10 @@ void GameSession::InitPlayerScript() {
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
         }
+
+        if (Packets::GameStage_TERRAIN != gGameRoomManager->GetRoom(GetMyRoomIdx())->GetStage().GetStageIdx()) {
+            player->NotifyAllOfGemDestroyed();
+        }
     }
     break;
 
@@ -178,6 +189,10 @@ void GameSession::InitPlayerScript() {
         auto player = mUserObject->GetScript<HumanPlayerScript>();
         if (nullptr == player) {
             gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "In InitUser Object -> PlayerScript is Null");
+        }
+
+        if (Packets::GameStage_TERRAIN != gGameRoomManager->GetRoom(GetMyRoomIdx())->GetStage().GetStageIdx()) {
+            player->NotifyAllOfGemDestroyed();
         }
     }
     break;
