@@ -28,19 +28,7 @@ void CorruptedGemScript::Init() {
 
 void CorruptedGemScript::Update(const float deltaTime) { }
 
-void CorruptedGemScript::LateUpdate(const float deltaTime) { 
-    auto owner = GetOwner();
-    if (nullptr == owner) {
-        return;
-    }
-
-    if (false == owner->mSpec.active) {
-        auto packetRemove = FbsPacketFactory::ObjectRemoveSC(owner->GetId());
-        owner->StorePacket(packetRemove);
-
-        gServerFrame->AddTimerEvent(owner->GetId(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
-    }
-}
+void CorruptedGemScript::LateUpdate(const float deltaTime) { }
 
 void CorruptedGemScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const SimpleMath::Vector3& impulse) { }
 
@@ -80,6 +68,10 @@ void CorruptedGemScript::OnDestroy(DestroyingGemEvent* event) {
             obj->DispatchGameEvent(eventDestroyed);
         }
 
+        bool expectedRemoved = false;
+        if (false == owner->mRemoved.compare_exchange_strong(expectedRemoved, true)) {
+            return;
+        }
         gServerFrame->AddTimerEvent(owner->GetId(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
     }
 }

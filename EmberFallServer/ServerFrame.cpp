@@ -162,9 +162,9 @@ void ServerFrame::ProcessIoEvent(OverlappedEx* overlappedEx, ULONG_PTR completio
             break;
         }
 
-        obj->mSpec.active = false;
-        auto packetRemove = FbsPacketFactory::ObjectRemoveSC(obj->GetId());
+        obj->Reset();
 
+        auto packetRemove = FbsPacketFactory::ObjectRemoveSC(obj->GetId());
         gGameRoomManager->GetRoom(roomId)->GetSessionLock().ReadLock();
         auto sessionList = gGameRoomManager->GetRoom(roomId)->GetSessions();
         gGameRoomManager->GetRoom(roomId)->GetSessionLock().ReadUnlock();
@@ -188,8 +188,6 @@ void ServerFrame::ProcessIoEvent(OverlappedEx* overlappedEx, ULONG_PTR completio
         }
 
         FbsPacketFactory::ReleasePacketBuf(packetRemove);
-
-        obj->Reset();
     }
     break;
 

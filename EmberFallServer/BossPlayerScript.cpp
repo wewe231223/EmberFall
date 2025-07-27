@@ -75,7 +75,12 @@ void BossPlayerScript::LateUpdate(const float deltaTime) {
         owner->mAnimationStateMachine.ChangeState(Packets::AnimationState_DEAD);
     }
 
-    if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= 0.0f) {
+    if (isDead and owner->mAnimationStateMachine.GetRemainDuration() <= MathUtil::EPSILON) {
+        bool expectedRemoved = false;
+        if (false == owner->mRemoved.compare_exchange_strong(expectedRemoved, true)) {
+            return;
+        }
+
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Boss Player Remove");
         gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC);
         return;

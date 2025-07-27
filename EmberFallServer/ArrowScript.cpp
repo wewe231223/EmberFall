@@ -62,6 +62,11 @@ void ArrowScript::OnCollision(const std::shared_ptr<GameObject>& opponent, const
 
     auto event = GameEventFactory::GetEvent<AttackEvent>(owner->GetId(), opponent->GetId(), GameProtocol::Logic::DEFAULT_DAMAGE);
     opponent->DispatchGameEvent(event);
+
+    bool expectedRemoved = false;
+    if (false == owner->mRemoved.compare_exchange_strong(expectedRemoved, true)) {
+        return;
+    }
     gServerFrame->AddTimerEvent(owner->GetId(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
 }
 
@@ -72,6 +77,12 @@ void ArrowScript::OnCollisionTerrain(const float height) {
     }
 
     owner->GetPhysics()->ResizeVelocity(0.0f);
+
+    bool expectedRemoved = false;
+    if (false == owner->mRemoved.compare_exchange_strong(expectedRemoved, true)) {
+        return;
+    }
+
     gServerFrame->AddTimerEvent(owner->GetId(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
 }
 

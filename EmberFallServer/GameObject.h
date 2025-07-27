@@ -106,6 +106,7 @@ public:
     ObjectSpec mSpec{ };
     AnimationStateMachine mAnimationStateMachine{ };
     WeaponSystem mWeaponSystem{ INVALID_OBJ_ID };
+    std::atomic_bool mRemoved{ false };
 
 private:
     std::atomic_bool mHeartBeat{ false };
