@@ -1669,6 +1669,10 @@ void TerrainScene::Exit() {
 #endif
 	mExpired = true; 
 	
+	for (auto& [id, particle] : mParticleMap) {
+		particle.Get()->Flags = static_cast<UINT>(ParticleFlag::Delete); 
+	}
+
 	SoundManager::GetInstance().Reset(); 
 }
 

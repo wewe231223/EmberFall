@@ -53,7 +53,7 @@ void ArenaScene::ProcessObjectAppeared(const uint8_t* buffer) {
 			}
 		}
 		return mGameObjects.end();
-		};
+	};
 
 	auto FindNextProjLoc = [this]() {
 		for (auto iter = mProjectileObjects.begin(); iter != mProjectileObjects.end(); ++iter) {
@@ -62,7 +62,7 @@ void ArenaScene::ProcessObjectAppeared(const uint8_t* buffer) {
 			}
 		}
 		return mProjectileObjects.end();
-		};
+	};
 
 
 
@@ -212,6 +212,7 @@ void ArenaScene::ProcessObjectAppeared(const uint8_t* buffer) {
 				mPlayerIndexmap[data->objectId()] = &(*nextLoc);
 
 				nextLoc->GetTransform().GetPosition() = FbsPacketFactory::GetVector3(data->pos());
+				nextLoc->GetTransform().GetPosition().y = 0.f; 
 				nextLoc->SetAnimation(data->animation());
 
 			}
@@ -957,6 +958,7 @@ void ArenaScene::Init(ComPtr<ID3D12Device> device, ComPtr<ID3D12GraphicsCommandL
 		mIsBlind = not mIsBlind;
 	});
 
+	mHealthBarUI.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("health_frame"), mRenderManager->GetTextureManager().GetTexture("health_bar"));
 	mGameEnding.Init(mRenderManager->GetCanvas(), mRenderManager->GetTextureManager().GetTexture("Human_Win"));
 	mGameEnding.SetActiveState(false);
 
