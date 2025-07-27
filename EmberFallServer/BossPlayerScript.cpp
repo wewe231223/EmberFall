@@ -132,6 +132,11 @@ void BossPlayerScript::DispatchGameEvent(GameEvent* event) {
     switch (event->type) {
     case GameEventType::ATTACK_EVENT:
     {
+        auto stage = gGameRoomManager->GetRoom(ownerRoom)->GetStage().GetStageIdx();
+        if (Packets::GameStage_TERRAIN == stage) {
+            break;
+        }
+
         if (event->sender == event->receiver and ObjectTag::MONSTER == senderTag) {
             break;
         }
