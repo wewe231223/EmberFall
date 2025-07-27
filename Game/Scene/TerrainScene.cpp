@@ -633,6 +633,7 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 						}
 						break;
 					case Packets::EntityType_HUMAN_MAGICIAN:
+						SoundManager::GetInstance().PlaySound("MagicianCast", PrimaryVolume, SoundOption::NONE, 0ms, 200ms);
 						break;
 					default:
 						break;
@@ -649,6 +650,12 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 					{
 						UINT type = RandomEngine::GetRandomRange(1U, 2U);
 						SoundManager::GetInstance().PlaySound(std::string{ "Death" } + std::to_string(type), PrimaryVolume, SoundOption::NONE, 0ms, 0ms);
+					}
+					break;
+					case Packets::EntityType_BOSS:
+					{
+						UINT type = RandomEngine::GetRandomRange(1U, 2U);
+						SoundManager::GetInstance().PlaySound(std::string{ "DemonDeath" } + std::to_string(type), PrimaryVolume, SoundOption::NONE, 0ms, 0ms);
 					}
 					break;
 					default:
@@ -697,6 +704,13 @@ void TerrainScene::ProcessPacketAnimation(const uint8_t* buffer) {
 							SoundManager::GetInstance().PlaySound(std::string{ "Death" } + std::to_string(type), PrimaryVolume * volume, SoundOption::NONE, 0ms, 0ms);
 						}
 						break;
+						case Packets::EntityType_MONSTER:
+						{
+							UINT type = RandomEngine::GetRandomRange(1U, 4U);
+							SoundManager::GetInstance().PlaySound(std::string{ "ImpDeath" } + std::to_string(type), PrimaryVolume * volume, SoundOption::NONE, 0ms, 0ms);
+						}
+						break;
+
 						default:
 							break;
 						}
