@@ -115,9 +115,9 @@ void GameObject::Reset() {
     while (true == mGameEvents.try_pop(event)) { }
 
     auto myRoom = GetMyRoomIdx();
+    gGameRoomManager->GetRoom(myRoom)->NotifyDestructedObject(GetTag());
     gGameRoomManager->GetRoom(myRoom)->GetStage().GetSectorSystem()->RemoveInSector(GetId(), GetPosition());
     gGameRoomManager->GetRoom(myRoom)->GetStage().GetObjectManager()->ReleaseObject(GetId());
-    gGameRoomManager->GetRoom(myRoom)->NotifyDestructedObject(GetTag());
 
     mTag = ObjectTag::ENV;
 

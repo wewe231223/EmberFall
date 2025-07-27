@@ -4,13 +4,13 @@
 #include "HumanPlayerScript.h"
 
 GameRoom::GameRoom(uint16_t roomIdx)
-    : mRoomIdx{ roomIdx }, mGameRoomState{ GameRoomState::GAME_ROOM_STATE_LOBBY }, mStage{ Packets::GameStage_LOBBY, roomIdx } { 
+    : mRoomIdx{ roomIdx }, mGameRoomState{ GameRoomState::GAME_ROOM_STATE_LOBBY }, mStage{ Packets::GameStage_LOBBY, roomIdx } {
     for (uint8_t i = 0; i < MAX_PLAYER_IN_GAME_ROOM; ++i) {
         mSessionSlotIndices.push(i);
     }
 }
 
-GameRoom::~GameRoom() { }
+GameRoom::~GameRoom() {}
 
 bool GameRoom::IsEveryPlayerReady() const {
     return mPlayerCount == mReadyPlayerCount;
@@ -75,7 +75,7 @@ uint8_t GameRoom::TryInsertInRoom(SessionIdType sessionId) {
 
     bool expected = false;
     if (true == mHeartBeat.compare_exchange_strong(expected, true)) {
-        gServerFrame->AddTimerEvent(INVALID_OBJ_ID, CHECK_SESSION_HEART_BEAT_DELAY, IoType::CHECK_SESSION_HEART_BEAT);
+        gServerFrame->AddTimerEvent(INVALID_OBJ_ID, CHECK_SESSION_HEART_BEAT_DELAY, IoType::CHECK_SESSION_HEART_BEAT, mRoomIdx);
     }
 
     return GameRoomError::SUCCESS_INSERT_SESSION_IN_ROOM;
@@ -119,7 +119,7 @@ uint8_t GameRoom::RemovePlayer(SessionIdType id, Packets::PlayerRole lastRole, b
     auto packetExit = FbsPacketFactory::PlayerExitSC(id);
     BroadCast(packetExit);
 
-    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "BroadCast End!"); 
+    gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "BroadCast End!");
 
     return GameRoomError::SUCCESS_REMOVE_SESSION_IN_ROOM;
 }
@@ -175,7 +175,7 @@ bool GameRoom::ReadyPlayer(SessionIdType id) {
     if (nullptr == session) {
         return false;
     }
-    
+
     ++mReadyPlayerCount;
     return session->Ready();
 }
@@ -209,7 +209,7 @@ void GameRoom::EndGameLoop() {
 #endif
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "GameRoom[{}]: Register End Game!!!", mRoomIdx);
 
-    gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN, ExtraInfo{ mRoomIdx });
+    gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN, mRoomIdx);
     mSceneTransitionCounter = SysClock::now();
 
     mStageTransitionTarget = Packets::GameStage_LOBBY;
@@ -236,7 +236,7 @@ bool GameRoom::CheckAndStartGame() {
     gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Register Start Game!!!");
 
     auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
-    gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN);
+    gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN, mRoomIdx);
     mSceneTransitionCounter = SysClock::now();
 
     mStageTransitionTarget = Packets::GameStage_TERRAIN;
@@ -288,7 +288,7 @@ void GameRoom::SpawnItem() {
     gServerFrame->AddTimerEvent(SYSTEM_ID, GameProtocol::Logic::ITEM_SPAWN_DELAY, IoType::SPAWN_ITEM, mRoomIdx);
 }
 
-void GameRoom::CheckSessionsHeartBeat() { 
+void GameRoom::CheckSessionsHeartBeat() {
     decltype(auto) sessionList = GetSessions();
     mSessionLock.ReadLock();
     if (sessionList.empty()) {
@@ -346,7 +346,7 @@ void GameRoom::CheckGameEnd() {
 
         mStageTransitionTarget = static_cast<Packets::GameStage>(mStageTransitionTarget + 1);
 
-        gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN);
+        gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN, mRoomIdx);
         mSceneTransitionCounter = SysClock::now();
 
         auto packetStartTransition = FbsPacketFactory::StartSceneTransition(SCENE_TRANSITION_COUNT);
@@ -355,7 +355,7 @@ void GameRoom::CheckGameEnd() {
     else {
         auto packetGameEnd = FbsPacketFactory::GameEndSC(winner);
         BroadCast(packetGameEnd);
-     
+
         EndGameLoop();
     }
 }
@@ -457,7 +457,7 @@ void GameRoom::DebugChangeToNextStage() {
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Register Start Game!!!");
 
         auto excutionTime = SysClock::now() + SCENE_TRANSITION_EVENT_DELAY;
-        gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN);
+        gServerFrame->AddTimerEvent(INVALID_SESSION_ID, SCENE_TRANSITION_EVENT_DELAY, IoType::SCENE_TRANSITION_COUNTDOWN, mRoomIdx);
         mSceneTransitionCounter = SysClock::now();
 
         mStageTransitionTarget = static_cast<Packets::GameStage>(mStageTransitionTarget + 1);
@@ -492,22 +492,22 @@ void GameRoom::NotifyDestructedObject(ObjectTag tag) {
             mStage.NotifyAllOfGemDestroyed(sessions);
         }
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Corrupted Gem, Gem Count : {}", mIngameCondition.GetGemCount());
-        break;
     }
+    break;
 
     case ObjectTag::PLAYER:
     {
         mIngameCondition.FetchSubHumanCount();
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Human Player", mIngameCondition.GetAliveHumanCount());
-        break;
     }
+    break;
 
     case ObjectTag::BOSSPLAYER:
     {
         mIngameCondition.FetchSubBossCount();
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Boss Player", mIngameCondition.GetBossCount());
-        break;
     }
+    break;
 
     default:
         break;
@@ -608,9 +608,9 @@ void GameRoom::OnSceneCountdownTick() {
     }
 }
 
-GameRoomManager::GameRoomManager() { }
+GameRoomManager::GameRoomManager() {}
 
-GameRoomManager::~GameRoomManager() { }
+GameRoomManager::~GameRoomManager() {}
 
 uint8_t GameRoomManager::GetLastErrorCode() {
     return LAST_ERROR_CODE;
@@ -686,9 +686,9 @@ bool GameRoomManager::CancelPlayerReady(uint16_t roomIdx, SessionIdType id) {
     return mGameRooms.at(roomIdx)->CancelPlayerReady(id);
 }
 
-GameCondition::GameCondition() { }
+GameCondition::GameCondition() {}
 
-GameCondition::~GameCondition() { }
+GameCondition::~GameCondition() {}
 
 uint8_t GameCondition::GetAliveHumanCount() const {
     return mAliveHumanCount;

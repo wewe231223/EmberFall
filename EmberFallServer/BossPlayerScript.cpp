@@ -36,6 +36,7 @@ void BossPlayerScript::Init() {
     spec.damage = 30.0f;
     spec.defence = 0.0f;
     owner->mSpec.hp = GameProtocol::Logic::MAX_HP;
+    owner->SetTag(ObjectTag::BOSSPLAYER);
 }
 
 void BossPlayerScript::Update(const float deltaTime) {
@@ -81,8 +82,9 @@ void BossPlayerScript::LateUpdate(const float deltaTime) {
             return;
         }
 
+        owner->SetTag(ObjectTag::BOSSPLAYER);
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Boss Player Remove");
-        gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC);
+        gServerFrame->AddTimerEvent(owner->GetMyRoomIdx(), EXECUTE_IMMEDIATE, IoType::REMOVE_NPC, owner->GetMyRoomIdx());
         return;
     }
 }
