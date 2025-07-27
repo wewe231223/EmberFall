@@ -495,17 +495,17 @@ void GameRoom::NotifyDestructedObject(ObjectTag tag) {
     }
     break;
 
-    case ObjectTag::PLAYER:
-    {
-        mIngameCondition.FetchSubHumanCount();
-        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Human Player", mIngameCondition.GetAliveHumanCount());
-    }
-    break;
-
     case ObjectTag::BOSSPLAYER:
     {
         mIngameCondition.FetchSubBossCount();
         gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Boss Player", mIngameCondition.GetBossCount());
+    }
+    break;
+
+    case ObjectTag::PLAYER:
+    {
+        mIngameCondition.FetchSubHumanCount();
+        gLogConsole->PushLog(DebugLevel::LEVEL_DEBUG, "Remove Human Player", mIngameCondition.GetAliveHumanCount());
     }
     break;
 

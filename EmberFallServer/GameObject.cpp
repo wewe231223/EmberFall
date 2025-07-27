@@ -9,6 +9,8 @@
 #include "ServerFrame.h"
 #include "GameRoom.h"
 
+#include "BossPlayerScript.h"
+
 GameObject::GameObject()
     : mTransform{ std::make_shared<Transform>() }, mPhysics{ std::make_shared<Physics>() }, mTimer{ std::make_unique<SimpleTimer>() } {
     mPhysics->SetTransform(mTransform);
@@ -100,30 +102,11 @@ void GameObject::DisablePhysics() {
 void GameObject::Reset() {
     // Reset My Spec
     auto myRoom = GetMyRoomIdx();
-    gGameRoomManager->GetRoom(myRoom)->NotifyDestructedObject(GetTag());
-    switch (mSpec.entity) {
-    case Packets::EntityType_BOSS:
-    {
+    if (nullptr == GetScript<BossPlayerScript>()) {
+        gGameRoomManager->GetRoom(myRoom)->NotifyDestructedObject(GetTag());
+    }
+    else {
         gGameRoomManager->GetRoom(myRoom)->NotifyDestructedObject(ObjectTag::BOSSPLAYER);
-    }
-    break;
-    case Packets::EntityType_HUMAN_LONGSWORD:
-    case Packets::EntityType_HUMAN_ARCHER:
-    case Packets::EntityType_HUMAN_MAGICIAN:
-    case Packets::EntityType_HUMAN_SWORD:
-    {
-        gGameRoomManager->GetRoom(myRoom)->NotifyDestructedObject(ObjectTag::PLAYER);
-    }
-    break;
-
-    case Packets::EntityType_CORRUPTED_GEM:
-    {
-        gGameRoomManager->GetRoom(myRoom)->NotifyDestructedObject(ObjectTag::CORRUPTED_GEM);
-    }
-    break;
-
-    default:
-        break;
     }
 
     mAnimationStateMachine.ChangeState(Packets::AnimationState_IDLE, true);
