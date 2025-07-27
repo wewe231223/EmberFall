@@ -44,11 +44,6 @@ Renderer::Renderer(HWND rendererWindowHandle)
 
 Renderer::~Renderer() {
 	Renderer::FlushCommandQueue(); 
-
-
-	ImGui_ImplDX12_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
 }
 
 std::shared_ptr<RenderManager> Renderer::GetRenderManager() {
@@ -302,13 +297,7 @@ void Renderer::Render() {
 	mRenderManager->GetTextureManager().Bind(mCommandList);
 
 	mRenderManager->GetCanvas().Render(mCommandList, mRenderManager->GetTextureManager().GetTextureHeapAddress()); 
-	mIMGUIRenderer.BeginRender();
 
-	// Other IMGUI Renders... 
-	Console.Render(); 
-	mRenderManager->GetFeatureManager().Render(); 
-
-	mIMGUIRenderer.EndRender(mCommandList); 
 }
 
 void Renderer::ExecuteRender() {
@@ -732,7 +721,6 @@ void Renderer::InitComputeProcesser() {
 }
 
 void Renderer::InitIMGUIRenderer() {
-	mIMGUIRenderer.Initialize(mRendererWindow, mDevice); 
 }
 
 void Renderer::TransitionGBuffers(D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState) {

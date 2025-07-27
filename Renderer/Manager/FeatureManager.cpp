@@ -14,25 +14,7 @@ void FeatureManager::swap() {
 }
 
 void FeatureManager::Render() {
-    ImGui::Begin("Feature Manager");
 
-    auto drawFeatureCheckbox = [](const char* label, bool& value, bool enabled) {
-        if (!enabled)
-            ImGui::BeginDisabled();
-        ImGui::Checkbox(label, &value);
-        if (!enabled)
-            ImGui::EndDisabled();
-        };
-
-    drawFeatureCheckbox("Particle", mNextFeatures.Particle, mFixedFeatures.Particle);
-    drawFeatureCheckbox("Grass", mNextFeatures.Grass, mFixedFeatures.Grass);
-    drawFeatureCheckbox("Shadow", mNextFeatures.Shadow, mFixedFeatures.Shadow);
-    drawFeatureCheckbox("Bloom", mNextFeatures.Bloom, mFixedFeatures.Bloom);
-	drawFeatureCheckbox("BB", mNextFeatures.RenderBB, mFixedFeatures.RenderBB);
-    drawFeatureCheckbox("MotionBlur", mNextFeatures.MotionBlur, mFixedFeatures.MotionBlur);
-    drawFeatureCheckbox("Fog", mNextFeatures.Fog, mFixedFeatures.Fog);
-
-    ImGui::End();
 }
 
 Features& FeatureManager::GetCurrentFeature() {

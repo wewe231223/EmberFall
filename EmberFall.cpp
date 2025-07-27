@@ -31,7 +31,6 @@
 #endif
 
 #include "Config/Config.h"
-#include "ServerLib/LibConsole.h"
 
 
 #ifdef _DEBUG 
@@ -52,7 +51,6 @@ ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK IPDialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 SceneManager sceneManager{};
 
@@ -63,7 +61,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
-    gLibConsole.Init(); 
 
     if (DialogBox(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, IPDialogProc) == IDOK) { 
         if (not gClientCore->Start(iPAddr, SERVER_PORT)) {
@@ -190,8 +187,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     SoundManager::GetInstance().Terminate(); 
 
 
-    gLibConsole.Terminate(); 
-
     ::DestroyWindow(hWnd);
 
 
@@ -211,8 +206,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam);
-
     constexpr UINT keyPressedCheckBitMask = 0x60000000;
     constexpr UINT keyPressedAtTime = 0x20000000;
 

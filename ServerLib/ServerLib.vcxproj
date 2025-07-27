@@ -159,7 +159,6 @@
     <ClInclude Include="FbsPacketFactory.h" />
     <ClInclude Include="GameMath.h" />
     <ClInclude Include="GameProtocol.h" />
-    <ClInclude Include="LibConsole.h" />
     <ClInclude Include="LogConsole.h" />
     <ClInclude Include="NetworkCore.h" />
     <ClInclude Include="INetworkObject.h" />
@@ -184,7 +183,6 @@
     <ClCompile Include="FbsPacketFactory.cpp" />
     <ClCompile Include="GameMath.cpp" />
     <ClCompile Include="GameProtocol.cpp" />
-    <ClCompile Include="LibConsole.cpp" />
     <ClCompile Include="LogConsole.cpp" />
     <ClCompile Include="NetworkCore.cpp" />
     <ClCompile Include="INetworkObject.cpp" />

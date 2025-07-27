@@ -5,7 +5,7 @@
 #include <bitset>
 #include <array>
 
-// #define EXCLUDE_ASSIMP
+#define EXCLUDE_ASSIMP
 
 struct MeshData {
 	std::vector<DirectX::XMFLOAT3> position{};

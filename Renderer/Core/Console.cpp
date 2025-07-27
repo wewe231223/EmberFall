@@ -5,14 +5,9 @@
 #include <iostream>
 #include "pch.h"
 #include "Console.h"
-#include "../External/Include/ImGui/imgui.h"
-#include "../External/Include/ImGui/imgui_color.h"
+
 #include "../Config/Config.h"
 
-
-constexpr ImVec4 INFO_COLOR{ F4_YELLOW_GREEN };
-constexpr ImVec4 WARNING_COLOR{ F4_WHEAT };
-constexpr ImVec4 ERROR_COLOR{ F4_RED };
 
 ConsoleBase::ConsoleBase() {
 	ConsoleBase::Init(); 
@@ -59,41 +54,7 @@ void ConsoleBase::Init() {
 }
 
 void ConsoleBase::Render() {
-	ImGui::Begin("Console", nullptr );
 
-	ImGuiListClipper clipper;
-	clipper.Begin(static_cast<int>(mBuffer.Size()));
-
-	while (clipper.Step()) {
-		for (auto i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i) {
-			auto& [msg, type] = mBuffer[i];
-
-			switch (type) {
-			case LogType::Info:
-				ImGui::TextColored(INFO_COLOR, msg.first.c_str());
-				ImGui::SameLine(0.f,10.f);
-				ImGui::Text(msg.second.c_str());
-				break;
-			case LogType::Warning:
-				ImGui::TextColored(WARNING_COLOR, msg.first.c_str());
-				ImGui::SameLine(0.f, 10.f);
-				ImGui::Text(msg.second.c_str());
-				break;
-			case LogType::Error:
-				ImGui::TextColored(ERROR_COLOR, msg.first.c_str());
-				ImGui::SameLine(0.f, 10.f);
-				ImGui::Text(msg.second.c_str());
-				break;
-			default:
-				break;
-			}
-
-		}
-	}
-
-
-	ImGui::SetScrollHereY(1.f);
-	ImGui::End();
 }
 
 
