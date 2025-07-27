@@ -1434,8 +1434,9 @@ const uint8_t* TerrainScene::ProcessPacket(const uint8_t* buffer) {
 
 
 void TerrainScene::Update() {
+#ifdef DEV_MODE
 	mPositionBlock->GetText() = std::format(L"Position : ({:.2f}, {:.2f}, {:.2f})", mCamera.GetTransform().GetPosition().x, mCamera.GetTransform().GetPosition().y, mCamera.GetTransform().GetPosition().z);
-
+#endif 
 
 	float coefficient{ mIsBlind ? -1.f : 1.f };
 	mRenderManager->GetFogRangeStart() += coefficient * Time.GetDeltaTime<float, std::chrono::seconds>() * 500.f;
@@ -1649,10 +1650,11 @@ void TerrainScene::SendNetwork() {
 
 void TerrainScene::Exit() {
 	Input.EraseCallBack(mInputSign);
+#ifdef DEV_MODE
 	mLatencyBlock->SetActiveState(false);
 	mPositionBlock->SetActiveState(false);
 	mPktsBlock->SetActiveState(false);
-
+#endif
 	mExpired = true; 
 	
 	SoundManager::GetInstance().Reset(); 

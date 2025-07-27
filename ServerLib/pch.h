@@ -12,7 +12,7 @@
 
 
 #define DEV_MODE // 디버그 모드 설정 여부
-//#undef DEV_MODE
+#undef DEV_MODE
 
 #ifdef DEV_MODE
 #define PRINT_DEBUG_LOG // 디버깅용 로그 출력여부 설정

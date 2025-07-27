@@ -1402,7 +1402,9 @@ void ArenaScene::SendNetwork() {
 
 void ArenaScene::Exit() {
 	Input.EraseCallBack(mInputSign);
+#ifdef DEV_MODE
 	mLatencyBlock->SetActiveState(false); 
+#endif 
 
 	mExpired = true; 
 
